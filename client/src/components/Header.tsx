@@ -1,9 +1,21 @@
 import { Link, useLocation } from "wouter";
 import { useApp } from "../App";
+import { useState } from "react";
 
 function Header() {
   const { user, cart } = useApp();
   const [location] = useLocation();
+  const [hoveredLink, setHoveredLink] = useState<string | null>(null);
+
+  const navLinkStyle = (path: string, isActive: boolean) => ({
+    cursor: "pointer",
+    fontSize: "12px",
+    fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+    fontWeight: hoveredLink === path ? 700 : 400,
+    textDecoration: "none",
+    transition: "all 0.3s ease",
+    textShadow: hoveredLink === path ? "0 0 10px rgba(255,255,255,0.8), 0 0 20px rgba(255,255,255,0.5)" : "none",
+  });
 
   return (
     <header
@@ -20,29 +32,34 @@ function Header() {
           <img
             src="/uploads/artwork/voodoo808-logo.png"
             alt="VOODOO808"
-            style={{ height: "24px", cursor: "pointer", filter: "invert(1)" }}
+            style={{ height: "26px", cursor: "pointer", filter: "invert(1)" }}
           />
         </Link>
         <Link href="/beaty">
           <span
-            style={{
-              cursor: "pointer",
-              fontWeight: location === "/beaty" || location === "/" ? "bold" : "normal",
-              borderBottom: location === "/beaty" || location === "/" ? "1px solid #fff" : "none",
-            }}
+            style={navLinkStyle("/beaty", location === "/beaty" || location === "/")}
+            onMouseEnter={() => setHoveredLink("/beaty")}
+            onMouseLeave={() => setHoveredLink(null)}
           >
             BEATY
           </span>
         </Link>
         <Link href="/zvuky">
           <span
-            style={{
-              cursor: "pointer",
-              fontWeight: location === "/zvuky" ? "bold" : "normal",
-              borderBottom: location === "/zvuky" ? "1px solid #fff" : "none",
-            }}
+            style={navLinkStyle("/zvuky", location === "/zvuky")}
+            onMouseEnter={() => setHoveredLink("/zvuky")}
+            onMouseLeave={() => setHoveredLink(null)}
           >
             ZVUKY
+          </span>
+        </Link>
+        <Link href="/ulozeno">
+          <span
+            style={navLinkStyle("/ulozeno", location === "/ulozeno")}
+            onMouseEnter={() => setHoveredLink("/ulozeno")}
+            onMouseLeave={() => setHoveredLink(null)}
+          >
+            ULOZENO
           </span>
         </Link>
       </div>
@@ -99,12 +116,6 @@ function Header() {
             <circle cx="12" cy="7" r="4" />
           </svg>
         </Link>
-        
-        {user && (
-          <span style={{ fontSize: "12px", color: "#666" }}>
-            {user.email}
-          </span>
-        )}
       </div>
     </header>
   );

@@ -27,7 +27,17 @@ export async function initDatabase() {
         file_url VARCHAR(500),
         artwork_url VARCHAR(500),
         is_published BOOLEAN DEFAULT FALSE,
+        is_highlighted BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS saved_items (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        item_id INTEGER NOT NULL,
+        item_type VARCHAR(20) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id, item_id, item_type)
       );
 
       CREATE TABLE IF NOT EXISTS sound_kits (

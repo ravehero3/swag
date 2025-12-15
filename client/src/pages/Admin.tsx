@@ -13,6 +13,7 @@ interface Beat {
   file_url: string;
   artwork_url: string;
   is_published: boolean;
+  is_highlighted: boolean;
 }
 
 interface SoundKit {
@@ -123,6 +124,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     fileUrl: "",
     artworkUrl: "",
     isPublished: false,
+    isHighlighted: false,
   });
 
   useEffect(() => {
@@ -137,6 +139,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
         fileUrl: editing.file_url || "",
         artworkUrl: editing.artwork_url || "",
         isPublished: editing.is_published,
+        isHighlighted: editing.is_highlighted || false,
       });
       setShowForm(true);
     }
@@ -156,7 +159,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
 
     setShowForm(false);
     setEditing(null);
-    setForm({ title: "", artist: "VOODOO808", bpm: 140, key: "C", price: 0, previewUrl: "", fileUrl: "", artworkUrl: "", isPublished: false });
+    setForm({ title: "", artist: "VOODOO808", bpm: 140, key: "C", price: 0, previewUrl: "", fileUrl: "", artworkUrl: "", isPublished: false, isHighlighted: false });
     onRefresh();
   };
 
@@ -212,6 +215,11 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
               <input type="checkbox" checked={form.isPublished} onChange={(e) => setForm({ ...form, isPublished: e.target.checked })} />
             </div>
             <div>
+              <label style={{ display: "block", marginBottom: "8px" }}>Zvýraznit (Featured)</label>
+              <input type="checkbox" checked={form.isHighlighted} onChange={(e) => setForm({ ...form, isHighlighted: e.target.checked })} />
+              <span style={{ fontSize: "11px", color: "#666", marginLeft: "8px" }}>Pouze jeden beat může být zvýrazněn</span>
+            </div>
+            <div>
               <label style={{ display: "block", marginBottom: "8px" }}>Preview Audio</label>
               <input type="file" accept="audio/*" onChange={async (e) => {
                 if (e.target.files?.[0]) {
@@ -255,6 +263,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
             <th style={{ textAlign: "left", padding: "12px" }}>BPM</th>
             <th style={{ textAlign: "left", padding: "12px" }}>Cena</th>
             <th style={{ textAlign: "left", padding: "12px" }}>Status</th>
+            <th style={{ textAlign: "left", padding: "12px" }}>Featured</th>
             <th style={{ textAlign: "right", padding: "12px" }}>Akce</th>
           </tr>
         </thead>
@@ -265,6 +274,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
               <td style={{ padding: "12px" }}>{beat.bpm}</td>
               <td style={{ padding: "12px" }}>{beat.price} CZK</td>
               <td style={{ padding: "12px" }}>{beat.is_published ? "✓ Publikováno" : "Skryto"}</td>
+              <td style={{ padding: "12px" }}>{beat.is_highlighted ? "⭐" : ""}</td>
               <td style={{ padding: "12px", textAlign: "right" }}>
                 <button className="btn" onClick={() => setEditing(beat)} style={{ marginRight: "8px" }}>Upravit</button>
                 <button className="btn" onClick={() => handleDelete(beat.id)} style={{ color: "#ff4444" }}>Smazat</button>

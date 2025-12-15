@@ -15,6 +15,17 @@ router.get("/", async (_req: Request, res: Response) => {
   }
 });
 
+router.get("/highlighted", async (_req: Request, res: Response) => {
+  try {
+    const result = await pool.query(
+      "SELECT * FROM beats WHERE is_highlighted = true AND is_published = true LIMIT 1"
+    );
+    res.json(result.rows[0] || null);
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při načítání zvýrazněného beatu" });
+  }
+});
+
 router.get("/all", requireAdmin, async (_req: Request, res: Response) => {
   try {
     const result = await pool.query("SELECT * FROM beats ORDER BY created_at DESC");
@@ -38,11 +49,16 @@ router.get("/:id", async (req: Request, res: Response) => {
 
 router.post("/", requireAdmin, async (req: Request, res: Response) => {
   try {
-    const { title, artist, bpm, key, price, previewUrl, fileUrl, artworkUrl, isPublished } = req.body;
+    const { title, artist, bpm, key, price, previewUrl, fileUrl, artworkUrl, isPublished, isHighlighted } = req.body;
+    
+    if (isHighlighted) {
+      await pool.query("UPDATE beats SET is_highlighted = false WHERE is_highlighted = true");
+    }
+    
     const result = await pool.query(
-      `INSERT INTO beats (title, artist, bpm, key, price, preview_url, file_url, artwork_url, is_published)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
-      [title, artist || "VOODOO808", bpm, key, price, previewUrl, fileUrl, artworkUrl, isPublished || false]
+      `INSERT INTO beats (title, artist, bpm, key, price, preview_url, file_url, artwork_url, is_published, is_highlighted)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
+      [title, artist || "VOODOO808", bpm, key, price, previewUrl, fileUrl, artworkUrl, isPublished || false, isHighlighted || false]
     );
     res.json(result.rows[0]);
   } catch (error) {
@@ -53,12 +69,17 @@ router.post("/", requireAdmin, async (req: Request, res: Response) => {
 
 router.put("/:id", requireAdmin, async (req: Request, res: Response) => {
   try {
-    const { title, artist, bpm, key, price, previewUrl, fileUrl, artworkUrl, isPublished } = req.body;
+    const { title, artist, bpm, key, price, previewUrl, fileUrl, artworkUrl, isPublished, isHighlighted } = req.body;
+    
+    if (isHighlighted) {
+      await pool.query("UPDATE beats SET is_highlighted = false WHERE is_highlighted = true");
+    }
+    
     const result = await pool.query(
       `UPDATE beats SET title = $1, artist = $2, bpm = $3, key = $4, price = $5, 
-       preview_url = $6, file_url = $7, artwork_url = $8, is_published = $9
-       WHERE id = $10 RETURNING *`,
-      [title, artist, bpm, key, price, previewUrl, fileUrl, artworkUrl, isPublished, req.params.id]
+       preview_url = $6, file_url = $7, artwork_url = $8, is_published = $9, is_highlighted = $10
+       WHERE id = $11 RETURNING *`,
+      [title, artist, bpm, key, price, previewUrl, fileUrl, artworkUrl, isPublished, isHighlighted, req.params.id]
     );
     res.json(result.rows[0]);
   } catch (error) {

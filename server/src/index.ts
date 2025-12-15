@@ -10,6 +10,7 @@ import beatsRoutes from "./routes/beats.js";
 import soundKitsRoutes from "./routes/soundKits.js";
 import ordersRoutes from "./routes/orders.js";
 import uploadRoutes from "./routes/upload.js";
+import savedRoutes from "./routes/saved.js";
 import { createServer as createViteServer } from "vite";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -60,6 +61,7 @@ app.use("/api/beats", beatsRoutes);
 app.use("/api/sound-kits", soundKitsRoutes);
 app.use("/api/orders", ordersRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/saved", savedRoutes);
 
 async function startServer() {
   await initDatabase();

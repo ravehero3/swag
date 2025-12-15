@@ -26,8 +26,9 @@ function Zvuky() {
   const [kits, setKits] = useState<SoundKit[]>([]);
   const [currentKit, setCurrentKit] = useState<SoundKit | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [savedKits, setSavedKits] = useState<Set<number>>(new Set());
   const audioRef = useRef<HTMLAudioElement>(null);
-  const { addToCart } = useApp();
+  const { user, addToCart } = useApp();
 
   useEffect(() => {
     fetch("/api/sound-kits")
@@ -35,6 +36,20 @@ function Zvuky() {
       .then(setKits)
       .catch(console.error);
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      fetch("/api/saved", { credentials: "include" })
+        .then((res) => res.json())
+        .then((items) => {
+          const kitIds = items
+            .filter((item: { item_type: string }) => item.item_type === "sound_kit")
+            .map((item: { item_id: number }) => item.item_id);
+          setSavedKits(new Set(kitIds));
+        })
+        .catch(console.error);
+    }
+  }, [user]);
 
   const playPreview = (kit: SoundKit) => {
     if (!kit.preview_url) return;
@@ -65,6 +80,38 @@ function Zvuky() {
     });
   };
 
+  const toggleSave = async (kit: SoundKit) => {
+    if (!user) return;
+
+    try {
+      if (savedKits.has(kit.id)) {
+        const res = await fetch(`/api/saved/sound_kit/${kit.id}`, {
+          method: "DELETE",
+          credentials: "include",
+        });
+        if (res.ok) {
+          setSavedKits((prev) => {
+            const next = new Set(prev);
+            next.delete(kit.id);
+            return next;
+          });
+        }
+      } else {
+        const res = await fetch("/api/saved", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ itemId: kit.id, itemType: "sound_kit" }),
+        });
+        if (res.ok) {
+          setSavedKits((prev) => new Set([...prev, kit.id]));
+        }
+      }
+    } catch (error) {
+      console.error("Error toggling save:", error);
+    }
+  };
+
   return (
     <div className="fade-in">
       <audio
@@ -91,8 +138,41 @@ function Zvuky() {
               style={{
                 border: "1px solid #333",
                 overflow: "hidden",
+                position: "relative",
               }}
             >
+              {user && (
+                <button
+                  onClick={() => toggleSave(kit)}
+                  style={{
+                    position: "absolute",
+                    top: "12px",
+                    right: "12px",
+                    background: "rgba(0,0,0,0.6)",
+                    border: "none",
+                    borderRadius: "50%",
+                    width: "36px",
+                    height: "36px",
+                    cursor: "pointer",
+                    zIndex: 10,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill={savedKits.has(kit.id) ? "#ff4444" : "none"}
+                    stroke={savedKits.has(kit.id) ? "#ff4444" : "#fff"}
+                    strokeWidth="2"
+                  >
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                  </svg>
+                </button>
+              )}
+
               <div
                 style={{
                   aspectRatio: "1",

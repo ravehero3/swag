@@ -7,6 +7,7 @@ import Login from "./pages/Login";
 import Admin from "./pages/Admin";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
+import Ulozeno from "./pages/Ulozeno";
 import "./styles/global.css";
 
 interface User {
@@ -106,6 +107,7 @@ function App() {
             <Route path="/prihlasit-se" component={Login} />
             <Route path="/kosik" component={Cart} />
             <Route path="/checkout" component={Checkout} />
+            <Route path="/ulozeno" component={Ulozeno} />
             <Route path="/admin" component={Admin} />
             <Route>
               <div className="fade-in" style={{ textAlign: "center", padding: "100px 20px" }}>
