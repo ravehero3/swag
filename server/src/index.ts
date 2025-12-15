@@ -26,17 +26,29 @@ app.use(cors({
 }));
 app.use(express.json());
 
+const isProduction = process.env.NODE_ENV === "production";
+
+if (isProduction && !process.env.SESSION_SECRET) {
+  console.error("SESSION_SECRET environment variable is required in production");
+  process.exit(1);
+}
+
+if (isProduction) {
+  app.set("trust proxy", 1);
+}
+
 app.use(session({
   store: new PgStore({
     pool,
     tableName: "session",
   }),
-  secret: process.env.SESSION_SECRET || "voodoo808-secret-key",
+  secret: process.env.SESSION_SECRET || "voodoo808-dev-secret-key-change-in-production",
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: false,
+    secure: isProduction,
     httpOnly: true,
+    sameSite: isProduction ? "strict" : "lax",
     maxAge: 30 * 24 * 60 * 60 * 1000,
   },
 }));
