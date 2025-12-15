@@ -20,7 +20,7 @@ function Header() {
           <img
             src="/uploads/artwork/voodoo808-logo.png"
             alt="VOODOO808"
-            style={{ height: "24px", cursor: "pointer" }}
+            style={{ height: "24px", cursor: "pointer", filter: "invert(1)" }}
           />
         </Link>
         <Link href="/beaty">
