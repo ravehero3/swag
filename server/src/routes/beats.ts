@@ -47,6 +47,30 @@ router.get("/:id", async (req: Request, res: Response) => {
   }
 });
 
+router.get("/:id/licenses", async (req: Request, res: Response) => {
+  try {
+    const beatId = req.params.id;
+    
+    const beatCheck = await pool.query("SELECT id FROM beats WHERE id = $1", [beatId]);
+    if (beatCheck.rows.length === 0) {
+      return res.status(404).json({ error: "Beat nenalezen" });
+    }
+
+    const result = await pool.query(
+      `SELECT lt.*, blf.file_url, blf.uploaded_at as file_uploaded_at
+       FROM license_types lt
+       INNER JOIN beat_license_files blf ON lt.id = blf.license_type_id
+       WHERE blf.beat_id = $1 AND lt.is_active = true
+       ORDER BY lt.price ASC`,
+      [beatId]
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error fetching beat licenses:", error);
+    res.status(500).json({ error: "Chyba při načítání licencí beatu" });
+  }
+});
+
 router.post("/", requireAdmin, async (req: Request, res: Response) => {
   try {
     const { title, artist, bpm, key, price, previewUrl, fileUrl, artworkUrl, isPublished, isHighlighted } = req.body;

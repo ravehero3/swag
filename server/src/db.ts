@@ -75,6 +75,27 @@ export async function initDatabase() {
         PRIMARY KEY (sid)
       );
       CREATE INDEX IF NOT EXISTS "IDX_session_expire" ON session ("expire");
+
+      CREATE TABLE IF NOT EXISTS license_types (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        description TEXT,
+        price DECIMAL(10, 2) NOT NULL,
+        file_types TEXT[] NOT NULL,
+        terms_text TEXT,
+        is_negotiable BOOLEAN DEFAULT FALSE,
+        is_active BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS beat_license_files (
+        id SERIAL PRIMARY KEY,
+        beat_id INTEGER REFERENCES beats(id) ON DELETE CASCADE,
+        license_type_id INTEGER REFERENCES license_types(id) ON DELETE CASCADE,
+        file_url VARCHAR(500) NOT NULL,
+        uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(beat_id, license_type_id)
+      );
     `);
     console.log("Database initialized successfully");
   } finally {

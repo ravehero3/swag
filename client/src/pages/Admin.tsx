@@ -33,13 +33,36 @@ interface SoundKit {
   is_published: boolean;
 }
 
+interface LicenseType {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  file_types: string[];
+  terms_text: string;
+  is_negotiable: boolean;
+  is_active: boolean;
+  created_at: string;
+}
+
+interface BeatLicenseFile {
+  id: number;
+  beat_id: number;
+  license_type_id: number;
+  file_url: string;
+  uploaded_at: string;
+  license_name: string;
+  license_description: string;
+}
+
 function Admin() {
   const { user } = useApp();
   const [, navigate] = useLocation();
-  const [tab, setTab] = useState<"beats" | "kits" | "orders">("beats");
+  const [tab, setTab] = useState<"beats" | "kits" | "orders" | "licenses">("beats");
   const [beats, setBeats] = useState<Beat[]>([]);
   const [kits, setKits] = useState<SoundKit[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
+  const [licenses, setLicenses] = useState<LicenseType[]>([]);
   const [showBeatForm, setShowBeatForm] = useState(false);
   const [showKitForm, setShowKitForm] = useState(false);
   const [editingBeat, setEditingBeat] = useState<Beat | null>(null);
@@ -55,14 +78,16 @@ function Admin() {
 
   const loadData = async () => {
     try {
-      const [beatsRes, kitsRes, ordersRes] = await Promise.all([
+      const [beatsRes, kitsRes, ordersRes, licensesRes] = await Promise.all([
         fetch("/api/beats/all", { credentials: "include" }),
         fetch("/api/sound-kits/all", { credentials: "include" }),
         fetch("/api/orders", { credentials: "include" }),
+        fetch("/api/licenses/all", { credentials: "include" }),
       ]);
       setBeats(await beatsRes.json());
       setKits(await kitsRes.json());
       setOrders(await ordersRes.json());
+      setLicenses(await licensesRes.json());
     } catch (err) {
       console.error(err);
     }
@@ -75,13 +100,13 @@ function Admin() {
       <h1 style={{ marginBottom: "24px" }}>Admin Panel</h1>
 
       <div style={{ display: "flex", gap: "12px", marginBottom: "24px" }}>
-        {["beats", "kits", "orders"].map((t) => (
+        {["beats", "kits", "orders", "licenses"].map((t) => (
           <button
             key={t}
             className={tab === t ? "btn btn-filled" : "btn"}
             onClick={() => setTab(t as any)}
           >
-            {t === "beats" ? "Beaty" : t === "kits" ? "Zvuky" : "Objednávky"}
+            {t === "beats" ? "Beaty" : t === "kits" ? "Zvuky" : t === "orders" ? "Objednávky" : "Licence"}
           </button>
         ))}
       </div>
@@ -89,6 +114,7 @@ function Admin() {
       {tab === "beats" && (
         <BeatsTab
           beats={beats}
+          licenses={licenses}
           showForm={showBeatForm}
           setShowForm={setShowBeatForm}
           editing={editingBeat}
@@ -109,6 +135,8 @@ function Admin() {
       )}
 
       {tab === "orders" && <OrdersTab orders={orders} onRefresh={loadData} />}
+
+      {tab === "licenses" && <LicensesTab licenses={licenses} onRefresh={loadData} />}
     </div>
   );
 }

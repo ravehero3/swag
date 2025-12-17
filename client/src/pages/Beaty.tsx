@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useApp } from "../App";
+import ContractModal from "../components/ContractModal";
+import MusicPlayer from "../components/MusicPlayer";
 
 interface Beat {
   id: number;
@@ -13,96 +15,11 @@ interface Beat {
   is_highlighted?: boolean;
 }
 
-function WaveVisualization({ audioUrl, isPlaying, audioRef }: { audioUrl: string; isPlaying: boolean; audioRef: React.RefObject<HTMLAudioElement> }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationRef = useRef<number>();
-  const analyserRef = useRef<AnalyserNode | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
-
-  useEffect(() => {
-    if (!audioRef.current || !canvasRef.current) return;
-
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const draw = () => {
-      if (!analyserRef.current || !ctx) return;
-
-      const bufferLength = analyserRef.current.frequencyBinCount;
-      const dataArray = new Uint8Array(bufferLength);
-      analyserRef.current.getByteFrequencyData(dataArray);
-
-      ctx.fillStyle = "#000";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      const barWidth = (canvas.width / bufferLength) * 2.5;
-      let x = 0;
-
-      for (let i = 0; i < bufferLength; i++) {
-        const barHeight = (dataArray[i] / 255) * canvas.height * 0.8;
-
-        const gradient = ctx.createLinearGradient(0, canvas.height - barHeight, 0, canvas.height);
-        gradient.addColorStop(0, "rgba(255, 255, 255, 0.9)");
-        gradient.addColorStop(1, "rgba(255, 255, 255, 0.3)");
-
-        ctx.fillStyle = gradient;
-        ctx.fillRect(x, canvas.height - barHeight, barWidth - 1, barHeight);
-
-        x += barWidth;
-      }
-
-      animationRef.current = requestAnimationFrame(draw);
-    };
-
-    if (isPlaying && !audioContextRef.current) {
-      audioContextRef.current = new AudioContext();
-      analyserRef.current = audioContextRef.current.createAnalyser();
-      analyserRef.current.fftSize = 256;
-
-      if (!sourceRef.current) {
-        sourceRef.current = audioContextRef.current.createMediaElementSource(audioRef.current);
-        sourceRef.current.connect(analyserRef.current);
-        analyserRef.current.connect(audioContextRef.current.destination);
-      }
-    }
-
-    if (isPlaying) {
-      draw();
-    } else {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-      if (ctx) {
-        ctx.fillStyle = "#000";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        const barCount = 60;
-        const barWidth = canvas.width / barCount;
-        for (let i = 0; i < barCount; i++) {
-          const barHeight = Math.random() * canvas.height * 0.3 + 10;
-          ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
-          ctx.fillRect(i * barWidth + 1, canvas.height - barHeight, barWidth - 2, barHeight);
-        }
-      }
-    }
-
-    return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-    };
-  }, [isPlaying, audioRef]);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      width={800}
-      height={150}
-      style={{ width: "100%", height: "150px", background: "#000" }}
-    />
-  );
+interface LicenseOption {
+  id: string;
+  name: string;
+  format: string;
+  price: number | "NEGOTIATE";
 }
 
 function Beaty() {
@@ -110,7 +27,10 @@ function Beaty() {
   const [highlightedBeat, setHighlightedBeat] = useState<Beat | null>(null);
   const [currentBeat, setCurrentBeat] = useState<Beat | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isLooping, setIsLooping] = useState(false);
+  const [isShuffling, setIsShuffling] = useState(false);
   const [savedBeats, setSavedBeats] = useState<Set<number>>(new Set());
+  const [contractModalBeat, setContractModalBeat] = useState<Beat | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const { user, addToCart } = useApp();
 
@@ -142,6 +62,12 @@ function Beaty() {
     }
   }, [user]);
 
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.loop = isLooping;
+    }
+  }, [isLooping]);
+
   const playBeat = (beat: Beat) => {
     if (currentBeat?.id === beat.id) {
       if (isPlaying) {
@@ -158,14 +84,54 @@ function Beaty() {
     }
   };
 
-  const handleAddToCart = (beat: Beat) => {
-    addToCart({
-      productId: beat.id,
-      productType: "beat",
-      title: beat.title,
-      price: Number(beat.price),
-      artworkUrl: beat.artwork_url || "/uploads/artwork/metallic-logo.png",
-    });
+  const handlePlayPause = () => {
+    if (currentBeat) {
+      playBeat(currentBeat);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (!currentBeat) return;
+    const allBeats = highlightedBeat ? [highlightedBeat, ...beats.filter(b => b.id !== highlightedBeat.id)] : beats;
+    const currentIndex = allBeats.findIndex(b => b.id === currentBeat.id);
+    const prevIndex = currentIndex > 0 ? currentIndex - 1 : allBeats.length - 1;
+    playBeat(allBeats[prevIndex]);
+  };
+
+  const handleNext = () => {
+    if (!currentBeat) return;
+    const allBeats = highlightedBeat ? [highlightedBeat, ...beats.filter(b => b.id !== highlightedBeat.id)] : beats;
+    const currentIndex = allBeats.findIndex(b => b.id === currentBeat.id);
+    
+    if (isShuffling) {
+      const randomIndex = Math.floor(Math.random() * allBeats.length);
+      playBeat(allBeats[randomIndex]);
+    } else {
+      const nextIndex = currentIndex < allBeats.length - 1 ? currentIndex + 1 : 0;
+      playBeat(allBeats[nextIndex]);
+    }
+  };
+
+  const handleAudioEnded = () => {
+    if (!isLooping) {
+      handleNext();
+    }
+  };
+
+  const openContractModal = (beat: Beat) => {
+    setContractModalBeat(beat);
+  };
+
+  const handleAddToCartWithLicense = (beat: Beat, license: LicenseOption) => {
+    if (license.price !== "NEGOTIATE") {
+      addToCart({
+        productId: beat.id,
+        productType: "beat",
+        title: `${beat.title} (${license.name})`,
+        price: license.price,
+        artworkUrl: beat.artwork_url || "/uploads/artwork/metallic-logo.png",
+      });
+    }
   };
 
   const toggleSave = async (beat: Beat) => {
@@ -207,9 +173,17 @@ function Beaty() {
       <audio
         ref={audioRef}
         src={currentBeat?.preview_url}
-        onEnded={() => setIsPlaying(false)}
+        onEnded={handleAudioEnded}
         crossOrigin="anonymous"
       />
+
+      <div style={{ textAlign: "center", marginBottom: "32px" }}>
+        <img
+          src="/uploads/artwork/metallic-logo.png"
+          alt="VOODOO808"
+          style={{ maxWidth: "800px", width: "100%" }}
+        />
+      </div>
 
       {highlightedBeat && (
         <div
@@ -220,39 +194,71 @@ function Beaty() {
             background: "#0a0a0a",
           }}
         >
-          <div style={{ display: "flex", gap: "24px", marginBottom: "24px" }}>
-            <img
-              src={highlightedBeat.artwork_url || "/uploads/artwork/metallic-logo.png"}
-              alt={highlightedBeat.title}
-              style={{ width: "200px", height: "200px", objectFit: "cover" }}
-            />
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center" }}>
-              <div style={{ fontSize: "10px", color: "#666", marginBottom: "8px", letterSpacing: "2px" }}>
-                FEATURED BEAT
+          <div style={{ display: "flex", gap: "24px", alignItems: "flex-start" }}>
+            <div style={{ position: "relative", flexShrink: 0 }}>
+              <img
+                src={highlightedBeat.artwork_url || "/uploads/artwork/metallic-logo.png"}
+                alt={highlightedBeat.title}
+                style={{ width: "200px", height: "200px", objectFit: "cover" }}
+              />
+              <button
+                onClick={() => playBeat(highlightedBeat)}
+                style={{
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  width: "56px",
+                  height: "56px",
+                  borderRadius: "50%",
+                  border: "2px solid #fff",
+                  background: currentBeat?.id === highlightedBeat.id && isPlaying ? "#fff" : "rgba(0,0,0,0.7)",
+                  color: currentBeat?.id === highlightedBeat.id && isPlaying ? "#000" : "#fff",
+                  fontSize: "20px",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {currentBeat?.id === highlightedBeat.id && isPlaying ? "⏸" : "▶"}
+              </button>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", flex: 1 }}>
+              <div style={{ fontSize: "13px", fontFamily: "Work Sans, sans-serif", color: "#999", marginBottom: "16px" }}>
+                Featured Track
               </div>
-              <h1 style={{ fontSize: "32px", fontWeight: "bold", marginBottom: "8px" }}>
+              <div style={{ fontSize: "13px", fontFamily: "Work Sans, sans-serif", color: "#666", marginBottom: "8px" }}>
+                {highlightedBeat.bpm}BPM
+              </div>
+              <h2 style={{ fontSize: "16px", fontFamily: "Work Sans, sans-serif", fontWeight: "bold", marginBottom: "16px" }}>
                 {highlightedBeat.title}
-              </h1>
-              <div style={{ fontSize: "14px", color: "#999", marginBottom: "16px" }}>
-                {highlightedBeat.artist} • {highlightedBeat.bpm} BPM • {highlightedBeat.key}
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+              </h2>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 <button
-                  onClick={() => playBeat(highlightedBeat)}
+                  onClick={() => openContractModal(highlightedBeat)}
                   style={{
-                    width: "56px",
-                    height: "56px",
-                    borderRadius: "50%",
-                    border: "2px solid #fff",
-                    background: currentBeat?.id === highlightedBeat.id && isPlaying ? "#fff" : "transparent",
-                    color: currentBeat?.id === highlightedBeat.id && isPlaying ? "#000" : "#fff",
-                    fontSize: "20px",
+                    padding: "10px 20px",
+                    background: "#fff",
+                    color: "#000",
+                    border: "none",
+                    fontSize: "13px",
+                    fontWeight: "bold",
                     cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
                   }}
                 >
-                  {currentBeat?.id === highlightedBeat.id && isPlaying ? "⏸" : "▶"}
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="9" cy="21" r="1" />
+                    <circle cx="20" cy="21" r="1" />
+                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                  </svg>
+                  <span>+</span>
+                  {highlightedBeat.price} CZK
                 </button>
-                <span style={{ fontSize: "24px", fontWeight: "bold" }}>{highlightedBeat.price} CZK</span>
                 {user && (
                   <button
                     onClick={() => toggleSave(highlightedBeat)}
@@ -275,72 +281,9 @@ function Beaty() {
                     </svg>
                   </button>
                 )}
-                <button className="btn" onClick={() => handleAddToCart(highlightedBeat)}>
-                  DO KOŠÍKU
-                </button>
               </div>
             </div>
           </div>
-          
-          <WaveVisualization
-            audioUrl={highlightedBeat.preview_url}
-            isPlaying={currentBeat?.id === highlightedBeat.id && isPlaying}
-            audioRef={audioRef}
-          />
-        </div>
-      )}
-
-      {!highlightedBeat && (
-        <div style={{ textAlign: "center", marginBottom: "40px" }}>
-          <img
-            src="/uploads/artwork/metallic-logo.png"
-            alt="VOODOO808"
-            style={{ maxWidth: "400px", width: "100%" }}
-          />
-        </div>
-      )}
-
-      {currentBeat && (
-        <div
-          style={{
-            position: "fixed",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            background: "#111",
-            padding: "16px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            borderTop: "1px solid #333",
-            zIndex: 100,
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-            <button
-              onClick={() => playBeat(currentBeat)}
-              style={{
-                width: "40px",
-                height: "40px",
-                borderRadius: "50%",
-                border: "1px solid #fff",
-                background: "transparent",
-                color: "#fff",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              {isPlaying ? "⏸" : "▶"}
-            </button>
-            <div>
-              <div style={{ fontWeight: "bold" }}>{currentBeat.title}</div>
-              <div style={{ fontSize: "12px", color: "#666" }}>
-                {currentBeat.artist} • {currentBeat.bpm} BPM • {currentBeat.key}
-              </div>
-            </div>
-          </div>
-          <div style={{ fontWeight: "bold" }}>{currentBeat.price} CZK</div>
         </div>
       )}
 
@@ -408,14 +351,57 @@ function Beaty() {
                     </svg>
                   </button>
                 )}
-                <button className="btn" onClick={() => handleAddToCart(beat)}>
-                  DO KOŠÍKU
+                <button
+                  onClick={() => openContractModal(beat)}
+                  style={{
+                    padding: "8px 16px",
+                    background: "#fff",
+                    color: "#000",
+                    border: "none",
+                    fontSize: "13px",
+                    fontWeight: "bold",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                  }}
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="9" cy="21" r="1" />
+                    <circle cx="20" cy="21" r="1" />
+                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                  </svg>
+                  <span>+</span>
                 </button>
               </div>
             </div>
           ))
         )}
       </div>
+
+      {contractModalBeat && (
+        <ContractModal
+          beat={contractModalBeat}
+          isOpen={!!contractModalBeat}
+          onClose={() => setContractModalBeat(null)}
+          onAddToCart={handleAddToCartWithLicense}
+          onPlay={() => playBeat(contractModalBeat)}
+          isPlaying={currentBeat?.id === contractModalBeat.id && isPlaying}
+        />
+      )}
+
+      <MusicPlayer
+        currentBeat={currentBeat}
+        isPlaying={isPlaying}
+        isLooping={isLooping}
+        isShuffling={isShuffling}
+        onPlayPause={handlePlayPause}
+        onPrevious={handlePrevious}
+        onNext={handleNext}
+        onToggleLoop={() => setIsLooping(!isLooping)}
+        onToggleShuffle={() => setIsShuffling(!isShuffling)}
+        onBuyClick={openContractModal}
+      />
     </div>
   );
 }

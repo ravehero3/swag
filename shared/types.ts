@@ -62,3 +62,23 @@ export interface CartItem {
   price: number;
   artworkUrl: string;
 }
+
+export interface LicenseType {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  fileTypes: string[];
+  termsText: string;
+  isNegotiable: boolean;
+  isActive: boolean;
+  createdAt: Date;
+}
+
+export interface BeatLicenseFile {
+  id: number;
+  beatId: number;
+  licenseTypeId: number;
+  fileUrl: string;
+  uploadedAt: Date;
+}
