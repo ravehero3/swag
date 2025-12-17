@@ -54,6 +54,7 @@ input::placeholder, textarea::placeholder {
   padding: 10px 20px;
   font-size: 14px;
   transition: all 0.2s;
+  border-radius: 4px;
 }
 
 .btn:hover {
@@ -69,4 +70,27 @@ input::placeholder, textarea::placeholder {
 .btn-filled:hover {
   background: transparent;
   color: #fff;
+}
+
+.btn-bounce {
+  transition: transform 0.15s ease-out;
+}
+
+.btn-bounce:active {
+  animation: bounceClick 0.3s ease-out;
+}
+
+@keyframes bounceClick {
+  0% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-6px);
+  }
+  60% {
+    transform: translateY(2px);
+  }
+  100% {
+    transform: translateY(0);
+  }
 }

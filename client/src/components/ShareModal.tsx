@@ -47,6 +47,7 @@ function ShareModal({ beatId, beatTitle, isOpen, onClose }: ShareModalProps) {
         style={{
           background: "#111",
           border: "1px solid #333",
+          borderRadius: "4px",
           maxWidth: "450px",
           width: "100%",
           padding: "24px",
@@ -71,7 +72,7 @@ function ShareModal({ beatId, beatTitle, isOpen, onClose }: ShareModalProps) {
         </div>
 
         <div style={{ marginBottom: "20px" }}>
-          <label style={{ fontSize: "13px", color: "#999", display: "block", marginBottom: "8px" }}>
+          <label style={{ fontSize: "12px", color: "#999", display: "block", marginBottom: "4px" }}>
             URL odkaz
           </label>
           <div style={{ display: "flex", gap: "8px" }}>
@@ -84,17 +85,20 @@ function ShareModal({ beatId, beatTitle, isOpen, onClose }: ShareModalProps) {
                 padding: "12px",
                 background: "#000",
                 border: "1px solid #333",
+                borderRadius: "4px",
                 color: "#fff",
                 fontSize: "13px",
               }}
             />
             <button
               onClick={handleCopy}
+              className="btn-bounce"
               style={{
                 padding: "12px 20px",
                 background: copied ? "#4CAF50" : "#fff",
                 color: copied ? "#fff" : "#000",
                 border: "none",
+                borderRadius: "4px",
                 fontSize: "13px",
                 fontWeight: "bold",
                 cursor: "pointer",
@@ -108,17 +112,19 @@ function ShareModal({ beatId, beatTitle, isOpen, onClose }: ShareModalProps) {
         </div>
 
         <div>
-          <label style={{ fontSize: "13px", color: "#999", display: "block", marginBottom: "8px" }}>
+          <label style={{ fontSize: "12px", color: "#999", display: "block", marginBottom: "4px" }}>
             Sdílet na sociálních sítích
           </label>
           <button
             onClick={handleInstagramShare}
+            className="btn-bounce"
             style={{
               width: "100%",
               padding: "14px",
               background: "linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)",
               color: "#fff",
               border: "none",
+              borderRadius: "4px",
               fontSize: "14px",
               fontWeight: "bold",
               cursor: "pointer",

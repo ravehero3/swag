@@ -77,6 +77,7 @@ function ContractModal({ beat, isOpen, onClose, onAddToCart, onPlay, isPlaying }
         style={{
           background: "#111",
           border: "1px solid #333",
+          borderRadius: "4px",
           maxWidth: "600px",
           width: "100%",
           maxHeight: "90vh",
@@ -113,7 +114,7 @@ function ContractModal({ beat, isOpen, onClose, onAddToCart, onPlay, isPlaying }
                   <img
                     src={beat.artwork_url || "/uploads/artwork/metallic-logo.png"}
                     alt={beat.title}
-                    style={{ width: "100px", height: "100px", objectFit: "cover" }}
+                    style={{ width: "100px", height: "100px", objectFit: "cover", borderRadius: "4px" }}
                   />
                   <button
                     onClick={onPlay}
@@ -176,6 +177,7 @@ function ContractModal({ beat, isOpen, onClose, onAddToCart, onPlay, isPlaying }
                     style={{
                       padding: "16px",
                       border: selectedLicense?.id === option.id ? "1px solid #fff" : "1px solid #333",
+                      borderRadius: "4px",
                       background: selectedLicense?.id === option.id ? "rgba(255,255,255,0.05)" : "transparent",
                       cursor: "pointer",
                       transition: "all 0.2s",
@@ -222,12 +224,14 @@ function ContractModal({ beat, isOpen, onClose, onAddToCart, onPlay, isPlaying }
               <button
                 onClick={handleAddToCart}
                 disabled={!selectedLicense || selectedLicense.price === "NEGOTIATE"}
+                className="btn-bounce"
                 style={{
                   width: "100%",
                   padding: "14px",
                   background: selectedLicense && selectedLicense.price !== "NEGOTIATE" ? "#fff" : "#333",
                   color: selectedLicense && selectedLicense.price !== "NEGOTIATE" ? "#000" : "#666",
                   border: "none",
+                  borderRadius: "4px",
                   fontSize: "14px",
                   fontWeight: "bold",
                   cursor: selectedLicense && selectedLicense.price !== "NEGOTIATE" ? "pointer" : "not-allowed",
@@ -238,9 +242,9 @@ function ContractModal({ beat, isOpen, onClose, onAddToCart, onPlay, isPlaying }
                 }}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="9" cy="21" r="1" />
-                  <circle cx="20" cy="21" r="1" />
-                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                  <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                  <line x1="3" y1="6" x2="21" y2="6" />
+                  <path d="M16 10a4 4 0 0 1-8 0" />
                 </svg>
                 <span>+</span>
                 {selectedLicense ? (
