@@ -23,7 +23,8 @@ function Header() {
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        padding: "16px",
+        padding: "0 16px",
+        height: "24px",
         borderBottom: "1px solid #333",
         position: "relative",
       }}
@@ -54,7 +55,7 @@ function Header() {
           src="/uploads/artwork/voodoo808-logo.png"
           alt="VOODOO808"
           style={{
-            height: "26px",
+            height: "16px",
             cursor: "pointer",
             filter: "invert(1)",
             position: "absolute",
@@ -66,10 +67,23 @@ function Header() {
       </Link>
 
       <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+        <Link href={user ? (user.isAdmin ? "/admin" : "/prihlasit-se") : "/prihlasit-se"}>
+          <span
+            style={{
+              cursor: "pointer",
+              fontSize: "12px",
+              fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+              fontWeight: 400,
+            }}
+          >
+            ÚČET
+          </span>
+        </Link>
+
         <Link href="/ulozeno">
           <svg
-            width="24"
-            height="24"
+            width="16"
+            height="16"
             viewBox="0 0 24 24"
             fill="none"
             stroke="#fff"
@@ -83,29 +97,28 @@ function Header() {
         <Link href="/kosik">
           <div style={{ position: "relative", cursor: "pointer" }}>
             <svg
-              width="24"
-              height="24"
+              width="16"
+              height="16"
               viewBox="0 0 24 24"
               fill="none"
               stroke="#fff"
               strokeWidth="2"
             >
-              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
-              <line x1="3" y1="6" x2="21" y2="6" />
-              <path d="M16 10a4 4 0 0 1-8 0" />
+              <rect x="3" y="6" width="18" height="15" rx="2" />
+              <path d="M8 6V4a4 4 0 0 1 8 0v2" />
             </svg>
             {cart.length > 0 && (
               <span
                 style={{
                   position: "absolute",
-                  top: "-8px",
-                  right: "-8px",
+                  top: "-6px",
+                  right: "-6px",
                   background: "#fff",
                   color: "#000",
                   borderRadius: "50%",
-                  width: "18px",
-                  height: "18px",
-                  fontSize: "12px",
+                  width: "14px",
+                  height: "14px",
+                  fontSize: "10px",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -115,21 +128,6 @@ function Header() {
               </span>
             )}
           </div>
-        </Link>
-
-        <Link href={user ? (user.isAdmin ? "/admin" : "/prihlasit-se") : "/prihlasit-se"}>
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#fff"
-            strokeWidth="2"
-            style={{ cursor: "pointer" }}
-          >
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-            <circle cx="12" cy="7" r="4" />
-          </svg>
         </Link>
       </div>
     </header>

@@ -48,11 +48,11 @@ function Checkout() {
   if (success) {
     return (
       <div className="fade-in" style={{ maxWidth: "500px", margin: "0 auto", textAlign: "center", padding: "40px" }}>
-        <h1 style={{ marginBottom: "24px" }}>Objednávka vytvořena!</h1>
+        <h1 style={{ marginBottom: "24px", textAlign: "center" }}>Objednávka vytvořena!</h1>
         <p style={{ color: "#666", marginBottom: "24px" }}>
           Děkujeme za vaši objednávku. Na email {email} vám zašleme pokyny k platbě a po jejím přijetí odkaz ke stažení.
         </p>
-        <button className="btn" onClick={() => navigate("/")}>
+        <button className="btn btn-bounce" onClick={() => navigate("/")} style={{ borderRadius: "4px" }}>
           Zpět na hlavní stránku
         </button>
       </div>
@@ -69,9 +69,9 @@ function Checkout() {
 
   return (
     <div className="fade-in" style={{ maxWidth: "500px", margin: "0 auto" }}>
-      <h1 style={{ marginBottom: "24px" }}>Dokončení objednávky</h1>
+      <h1 style={{ marginBottom: "24px", textAlign: "center" }}>Dokončení objednávky</h1>
 
-      <div style={{ marginBottom: "24px", padding: "16px", border: "1px solid #333" }}>
+      <div style={{ marginBottom: "24px", padding: "16px", border: "1px solid #333", borderRadius: "4px" }}>
         <h3 style={{ marginBottom: "12px" }}>Shrnutí objednávky</h3>
         {cart.map((item) => (
           <div
@@ -102,13 +102,13 @@ function Checkout() {
 
       <form onSubmit={handleSubmit}>
         {error && (
-          <div style={{ color: "#ff4444", marginBottom: "16px", padding: "12px", border: "1px solid #ff4444" }}>
+          <div style={{ color: "#ff4444", marginBottom: "16px", padding: "12px", border: "1px solid #ff4444", borderRadius: "4px" }}>
             {error}
           </div>
         )}
 
         <div style={{ marginBottom: "24px" }}>
-          <label style={{ display: "block", marginBottom: "8px" }}>
+          <label style={{ display: "block", marginBottom: "4px", fontSize: "12px", color: "#999" }}>
             Email pro doručení
           </label>
           <input
@@ -117,7 +117,7 @@ function Checkout() {
             onChange={(e) => setEmail(e.target.value)}
             required
             placeholder="vas@email.cz"
-            style={{ width: "100%" }}
+            style={{ width: "100%", borderRadius: "4px" }}
           />
           <p style={{ fontSize: "12px", color: "#666", marginTop: "8px" }}>
             Na tento email vám zašleme odkaz ke stažení po zaplacení
@@ -126,9 +126,9 @@ function Checkout() {
 
         <button
           type="submit"
-          className="btn btn-filled"
+          className="btn btn-filled btn-bounce"
           disabled={loading}
-          style={{ width: "100%" }}
+          style={{ width: "100%", borderRadius: "4px" }}
         >
           {loading ? "Zpracování..." : `Zaplatit ${total} CZK`}
         </button>

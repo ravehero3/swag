@@ -1,6 +1,7 @@
 import { useState, useEffect, createContext, useContext } from "react";
 import { Route, Switch } from "wouter";
 import Header from "./components/Header";
+import Footer from "./components/Footer";
 import Beaty from "./pages/Beaty";
 import Zvuky from "./pages/Zvuky";
 import Login from "./pages/Login";
@@ -97,9 +98,9 @@ function App() {
 
   return (
     <AppContext.Provider value={{ user, setUser, cart, addToCart, removeFromCart, clearCart }}>
-      <div style={{ minHeight: "100vh", background: "#000" }}>
+      <div style={{ minHeight: "100vh", background: "#000", display: "flex", flexDirection: "column" }}>
         <Header />
-        <main style={{ padding: "20px" }} className="fade-in">
+        <main style={{ padding: "20px", flex: 1 }} className="fade-in">
           <Switch>
             <Route path="/" component={Beaty} />
             <Route path="/beaty" component={Beaty} />
@@ -117,6 +118,7 @@ function App() {
             </Route>
           </Switch>
         </main>
+        <Footer />
       </div>
     </AppContext.Provider>
   );

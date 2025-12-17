@@ -100,7 +100,7 @@ function Ulozeno() {
         onEnded={() => setIsPlaying(false)}
       />
 
-      <h1 style={{ fontSize: "24px", marginBottom: "32px" }}>Uložené položky</h1>
+      <h1 style={{ fontSize: "24px", marginBottom: "32px", textAlign: "center" }}>Uložené položky</h1>
 
       {savedItems.length === 0 ? (
         <p style={{ textAlign: "center", color: "#666", padding: "40px" }}>
@@ -159,7 +159,7 @@ function Ulozeno() {
                         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                       </svg>
                     </button>
-                    <button className="btn" onClick={() => handleAddToCart(item)}>
+                    <button className="btn btn-bounce" onClick={() => handleAddToCart(item)} style={{ borderRadius: "4px" }}>
                       DO KOŠÍKU
                     </button>
                   </div>
@@ -185,6 +185,7 @@ function Ulozeno() {
                       border: "1px solid #333",
                       overflow: "hidden",
                       position: "relative",
+                      borderRadius: "4px",
                     }}
                   >
                     <button
@@ -214,7 +215,7 @@ function Ulozeno() {
                       <img
                         src={item.item_data.artwork_url || "/uploads/artwork/metallic-logo.png"}
                         alt={item.item_data.title}
-                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                        style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "4px 4px 0 0" }}
                       />
                       {item.item_data.preview_url && (
                         <button
@@ -250,7 +251,7 @@ function Ulozeno() {
                         <span style={{ fontWeight: "bold" }}>
                           {item.item_data.is_free ? "ZDARMA" : `${item.item_data.price} CZK`}
                         </span>
-                        <button className="btn" onClick={() => handleAddToCart(item)}>
+                        <button className="btn btn-bounce" onClick={() => handleAddToCart(item)} style={{ borderRadius: "4px" }}>
                           {item.item_data.is_free ? "STÁHNOUT" : "DO KOŠÍKU"}
                         </button>
                       </div>

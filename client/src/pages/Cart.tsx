@@ -7,13 +7,13 @@ function Cart() {
 
   return (
     <div className="fade-in" style={{ maxWidth: "600px", margin: "0 auto" }}>
-      <h1 style={{ marginBottom: "24px" }}>Košík</h1>
+      <h1 style={{ marginBottom: "24px", textAlign: "center" }}>Košík</h1>
 
       {cart.length === 0 ? (
         <div style={{ textAlign: "center", padding: "40px" }}>
           <p style={{ color: "#666", marginBottom: "24px" }}>Váš košík je prázdný</p>
           <Link href="/beaty">
-            <button className="btn">Prohlédnout beaty</button>
+            <button className="btn btn-bounce" style={{ borderRadius: "4px" }}>Prohlédnout beaty</button>
           </Link>
         </div>
       ) : (
@@ -32,7 +32,7 @@ function Cart() {
               <img
                 src={item.artworkUrl}
                 alt={item.title}
-                style={{ width: "60px", height: "60px", objectFit: "cover" }}
+                style={{ width: "60px", height: "60px", objectFit: "cover", borderRadius: "4px" }}
               />
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: "bold" }}>{item.title}</div>
@@ -71,7 +71,7 @@ function Cart() {
           </div>
 
           <Link href="/checkout">
-            <button className="btn btn-filled" style={{ width: "100%" }}>
+            <button className="btn btn-filled btn-bounce" style={{ width: "100%", borderRadius: "4px" }}>
               Pokračovat k platbě
             </button>
           </Link>
