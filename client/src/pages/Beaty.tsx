@@ -290,9 +290,12 @@ function Beaty() {
       />
 
       <div style={{ textAlign: "center", marginBottom: "32px" }}>
-        <img
-          src="/uploads/artwork/metallic-logo.png"
-          alt="VOODOO808"
+        <video
+          src="/uploads/artwork/voodoo808-video.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
           style={{ maxWidth: "800px", width: "100%" }}
         />
       </div>
