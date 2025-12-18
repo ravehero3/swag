@@ -313,8 +313,8 @@ function Beaty() {
       
       <div style={{ padding: "0 20px" }}>
         {highlightedBeat && (
-          <div style={{ marginBottom: "48px", display: "flex", justifyContent: "center" }}>
-            <div style={{ display: "flex", gap: "48px", alignItems: "flex-start", marginBottom: "32px", width: "fit-content" }}>
+          <div style={{ marginBottom: "48px", display: "flex", justifyContent: "center", marginTop: "-100px" }}>
+            <div style={{ display: "flex", gap: "48px", alignItems: "flex-start", marginBottom: "32px", width: "800px" }}>
               <div style={{ position: "relative", flexShrink: 0 }}>
                 <img
                   src={highlightedBeat.artwork_url || "/uploads/artwork/metallic-logo.png"}
