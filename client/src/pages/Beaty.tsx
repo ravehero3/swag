@@ -291,7 +291,7 @@ function Beaty() {
 
       <div style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px" }}>
         <video
-          src="/uploads/artwork/voodoo808-video.mp4"
+          src="/uploads/voodoo808-video.mov"
           autoPlay
           loop
           muted
