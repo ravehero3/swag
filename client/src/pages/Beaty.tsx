@@ -428,20 +428,19 @@ function Beaty() {
               style={{
                 display: "flex",
                 alignItems: "center",
-                padding: "12px 0",
-                borderBottom: "1px solid #222",
+                padding: "16px",
                 gap: "16px",
                 border: "1px solid transparent",
+                borderRadius: "2px",
                 cursor: "pointer",
                 transition: "all 0.15s ease",
+                justifyContent: "space-between",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.boxShadow = "inset 0 0 0 1px #fff";
-                e.currentTarget.style.borderColor = "#fff";
+                e.currentTarget.style.border = "1px solid #fff";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow = "none";
-                e.currentTarget.style.borderColor = "transparent";
+                e.currentTarget.style.border = "1px solid transparent";
               }}
             >
               <div style={{ width: "25%", minWidth: "200px" }}>
@@ -451,11 +450,13 @@ function Beaty() {
                 </div>
               </div>
 
-              <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                <span style={{ fontWeight: "bold" }}>{beat.price} CZK</span>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginLeft: "auto" }}>
                 {user && (
                   <button
-                    onClick={() => toggleSave(beat)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleSave(beat);
+                    }}
                     style={{
                       background: "transparent",
                       border: "none",
@@ -476,7 +477,10 @@ function Beaty() {
                   </button>
                 )}
                 <button
-                  onClick={() => openContractModal(beat)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openContractModal(beat);
+                  }}
                   className="btn-bounce"
                   style={{
                     padding: "8px 16px",
@@ -489,7 +493,7 @@ function Beaty() {
                     display: "flex",
                     alignItems: "center",
                     gap: "6px",
-                    borderRadius: "4px",
+                    borderRadius: "2px",
                   }}
                 >
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -497,7 +501,7 @@ function Beaty() {
                     <line x1="3" y1="6" x2="21" y2="6" />
                     <path d="M16 10a4 4 0 0 1-8 0" />
                   </svg>
-                  <span>+</span>
+                  <span>+ {beat.price} CZK</span>
                 </button>
               </div>
             </div>
