@@ -314,7 +314,7 @@ function Beaty() {
       <div style={{ padding: "0 20px" }}>
         {highlightedBeat && (
           <div style={{ marginBottom: "48px", display: "flex", justifyContent: "center", marginTop: "-100px" }}>
-            <div style={{ display: "flex", gap: "48px", alignItems: "flex-start", marginBottom: "32px", width: "800px" }}>
+            <div style={{ display: "flex", gap: "48px", alignItems: "flex-start", marginBottom: "32px", width: "1000px" }}>
               <div style={{ position: "relative", flexShrink: 0 }}>
                 <img
                   src={highlightedBeat.artwork_url || "/uploads/artwork/metallic-logo.png"}
@@ -414,7 +414,7 @@ function Beaty() {
           </div>
         )}
 
-        <div style={{ marginBottom: "48px", maxWidth: "800px", margin: "0 auto" }}>
+        <div style={{ marginBottom: "48px", maxWidth: "1000px", margin: "0 auto" }}>
           <h2 style={{ fontSize: "18px", marginBottom: "24px", fontWeight: "bold", textAlign: "center" }}>BEATY</h2>
           {otherBeats.length === 0 && !highlightedBeat ? (
             <p style={{ textAlign: "center", color: "#666" }}>
@@ -443,6 +443,11 @@ function Beaty() {
                 e.currentTarget.style.border = "1px solid transparent";
               }}
             >
+              <img
+                src={beat.artwork_url || "/uploads/artwork/metallic-logo.png"}
+                alt={beat.title}
+                style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "2px", flexShrink: 0 }}
+              />
               <div style={{ width: "25%", minWidth: "200px" }}>
                 <div style={{ fontWeight: "bold" }}>{beat.title}</div>
                 <div style={{ fontSize: "12px", color: "#666" }}>
@@ -512,7 +517,7 @@ function Beaty() {
         <div style={{ paddingBottom: currentBeat ? "80px" : "20px", textAlign: "center" }}>
           <h2 style={{ fontSize: "18px", marginBottom: "24px", fontWeight: "bold" }}>ZVUKY</h2>
           
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "24px", marginBottom: "48px", maxWidth: "800px", margin: "0 auto 48px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "24px", marginBottom: "48px", maxWidth: "1000px", margin: "0 auto 48px" }}>
             {[1, 2, 3].map((i) => (
               <div
                 key={`empty-${i}`}

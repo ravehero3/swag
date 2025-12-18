@@ -67,7 +67,7 @@ function MusicPlayer({
           <img
             src={currentBeat.artwork_url || "/uploads/artwork/metallic-logo.png"}
             alt={currentBeat.title}
-            style={{ width: "40px", height: "40px", objectFit: "cover", borderRadius: "4px" }}
+            style={{ width: "84px", height: "84px", objectFit: "cover", borderRadius: "2px", marginLeft: "-16px", marginRight: "0" }}
           />
           <div>
             <div style={{ fontWeight: "bold", fontSize: "14px" }}>{currentBeat.title}</div>
@@ -114,8 +114,8 @@ function MusicPlayer({
           <button
             onClick={onPlayPause}
             style={{
-              width: "28px",
-              height: "28px",
+              width: "36px",
+              height: "36px",
               borderRadius: "50%",
               border: "2px solid #fff",
               background: isPlaying ? "#fff" : "transparent",
@@ -124,8 +124,8 @@ function MusicPlayer({
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontSize: "12px",
-              padding: "0",
+              fontSize: "14px",
+              padding: "4px",
             }}
           >
             {isPlaying ? "⏸" : "▶"}
@@ -178,12 +178,12 @@ function MusicPlayer({
               border: "none",
               color: "#fff",
               cursor: "pointer",
-              padding: "2px",
+              padding: "8px",
               borderRadius: "4px",
             }}
             title="Share"
           >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="18" cy="5" r="3" />
               <circle cx="6" cy="12" r="3" />
               <circle cx="18" cy="19" r="3" />
@@ -196,20 +196,20 @@ function MusicPlayer({
             onClick={() => onBuyClick(currentBeat)}
             className="btn-bounce"
             style={{
-              padding: "2px 8px",
+              padding: "16px 8px",
               background: "#fff",
               color: "#000",
               border: "none",
-              fontSize: "10px",
+              fontSize: "12px",
               fontWeight: "bold",
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
               gap: "4px",
-              borderRadius: "4px",
+              borderRadius: "2px",
             }}
           >
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <rect x="3" y="6" width="18" height="15" rx="2" />
               <path d="M8 6V4a4 4 0 0 1 8 0v2" />
             </svg>
