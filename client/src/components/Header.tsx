@@ -1,11 +1,13 @@
 import { Link, useLocation } from "wouter";
 import { useApp } from "../App";
 import { useState } from "react";
+import CartModal from "./CartModal";
 
 function Header() {
   const { user, cart } = useApp();
   const [location] = useLocation();
   const [hoveredLink, setHoveredLink] = useState<string | null>(null);
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   const navLinkStyle = (path: string, isActive: boolean) => ({
     cursor: "pointer",
@@ -94,54 +96,54 @@ function Header() {
           </svg>
         </Link>
 
-        <Link href="/kosik">
-          <div style={{ position: "relative", cursor: "pointer" }}>
-            <style>{`
-              @keyframes pulse {
-                0%, 100% { opacity: 1; transform: scale(1); }
-                50% { opacity: 0.6; transform: scale(1.1); }
-              }
-              .cart-pulse {
-                animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-              }
-            `}</style>
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#fff"
-              strokeWidth="2"
-              className={cart.length > 0 ? "cart-pulse" : ""}
+        <div style={{ position: "relative", cursor: "pointer" }} onClick={() => setIsCartOpen(true)}>
+          <style>{`
+            @keyframes pulse {
+              0%, 100% { opacity: 1; transform: scale(1); }
+              50% { opacity: 0.6; transform: scale(1.1); }
+            }
+            .cart-pulse {
+              animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            }
+          `}</style>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#fff"
+            strokeWidth="2"
+            className={cart.length > 0 ? "cart-pulse" : ""}
+          >
+            <rect x="3" y="6" width="18" height="15" rx="2" />
+            <path d="M8 6V4a4 4 0 0 1 8 0v2" />
+          </svg>
+          {cart.length > 0 && (
+            <span
+              style={{
+                position: "absolute",
+                top: "-6px",
+                right: "-6px",
+                background: "#fff",
+                color: "#000",
+                borderRadius: "50%",
+                width: "14px",
+                height: "14px",
+                fontSize: "10px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
             >
-              <rect x="3" y="6" width="18" height="15" rx="2" />
-              <path d="M8 6V4a4 4 0 0 1 8 0v2" />
-            </svg>
-            {cart.length > 0 && (
-              <span
-                style={{
-                  position: "absolute",
-                  top: "-6px",
-                  right: "-6px",
-                  background: "#fff",
-                  color: "#000",
-                  borderRadius: "50%",
-                  width: "14px",
-                  height: "14px",
-                  fontSize: "10px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                {cart.length}
-              </span>
-            )}
-          </div>
-        </Link>
+              {cart.length}
+            </span>
+          )}
+        </div>
+        <CartModal isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
       </div>
     </header>
   );
 }
 
 export default Header;
+
