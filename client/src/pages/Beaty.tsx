@@ -314,8 +314,8 @@ function Beaty() {
       
       <div style={{ padding: "0 20px" }}>
         {highlightedBeat && (
-          <div style={{ marginBottom: "48px", display: "flex", justifyContent: "center", marginTop: "-100px" }}>
-            <div style={{ display: "flex", gap: "48px", alignItems: "flex-start", marginBottom: "32px", width: "1000px" }}>
+          <div style={{ marginBottom: "48px", display: "flex", justifyContent: "center", marginTop: "-100px", position: "relative", zIndex: 50 }}>
+            <div style={{ display: "flex", gap: "48px", alignItems: "flex-start", marginBottom: "32px", width: "1000px", position: "relative", zIndex: 50 }}>
               <div style={{ position: "relative", flexShrink: 0 }}>
                 <img
                   src={highlightedBeat.artwork_url || "/uploads/artwork/metallic-logo.png"}
@@ -446,7 +446,14 @@ function Beaty() {
               Zatím nejsou k dispozici žádné beaty
             </p>
           ) : (
-            otherBeats.map((beat) => (
+            <>
+              <div style={{ display: "flex", alignItems: "center", padding: "16px", gap: "16px", borderBottom: "1px solid #333" }}>
+                <div style={{ width: "48px", height: "48px", flexShrink: 0 }} />
+                <div style={{ width: "25%", minWidth: "200px", marginRight: "12px", fontWeight: "bold", fontSize: "12px", color: "#666" }}>Name</div>
+                <div style={{ fontWeight: "bold", fontSize: "12px", color: "#666" }}>BPM</div>
+                <div style={{ fontWeight: "bold", fontSize: "12px", color: "#666" }}>Key</div>
+              </div>
+              {otherBeats.map((beat) => (
             <div
               key={beat.id}
               onClick={() => playBeat(beat)}
@@ -459,7 +466,7 @@ function Beaty() {
                 borderRadius: "2px",
                 cursor: "pointer",
                 transition: "all 0.15s ease",
-                justifyContent: "space-between",
+                justifyContent: "flex-start",
                 borderBottom: "0.4px solid #333",
               }}
               onMouseEnter={(e) => {
@@ -476,12 +483,15 @@ function Beaty() {
               />
               <div style={{ width: "25%", minWidth: "200px", marginRight: "12px", display: "flex", alignItems: "center", gap: "12px" }}>
                 <div style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "16px" }}>{beat.title}</div>
-                <div style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", color: "#666", fontSize: "16px" }}>
-                  {beat.bpm} BPM • {beat.key}
-                </div>
+              </div>
+              <div style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", color: "#666", fontSize: "16px", minWidth: "80px" }}>
+                {beat.bpm}
+              </div>
+              <div style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", color: "#666", fontSize: "16px", minWidth: "80px" }}>
+                {beat.key}
               </div>
 
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginLeft: "auto" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginLeft: "auto", marginRight: "16px" }}>
                 {user && (
                   <button
                     onClick={(e) => {
@@ -514,7 +524,7 @@ function Beaty() {
                   }}
                   className="btn-bounce"
                   style={{
-                    padding: "8px 16px",
+                    padding: "12px 16px",
                     background: "#fff",
                     color: "#000",
                     border: "none",
@@ -523,20 +533,22 @@ function Beaty() {
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
-                    gap: "6px",
+                    gap: "2px",
                     borderRadius: "2px",
+                    position: "relative",
+                    minWidth: "120px",
                   }}
                 >
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
-                    <line x1="3" y1="6" x2="21" y2="6" />
-                    <path d="M16 10a4 4 0 0 1-8 0" />
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}>
+                    <rect x="3" y="6" width="18" height="15" rx="2" />
+                    <path d="M8 6V4a4 4 0 0 1 8 0v2" />
                   </svg>
-                  <span>+ {beat.price} CZK</span>
+                  <span style={{ marginLeft: "2px" }}>+ {beat.price} CZK</span>
                 </button>
               </div>
             </div>
-            ))
+            ))}
+            </>
           )}
         </div>
 
