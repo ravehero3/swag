@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useApp } from "../App";
 import ContractModal from "../components/ContractModal";
 import MusicPlayer from "../components/MusicPlayer";
+import SoundWave from "../components/SoundWave";
 
 interface Beat {
   id: number;
@@ -429,6 +430,10 @@ function Beaty() {
               )}
             </div>
           </div>
+        )}
+
+        {isPlaying && currentBeat && (
+          <SoundWave audioRef={audioRef} isPlaying={isPlaying} />
         )}
 
         <div style={{ marginBottom: "48px", maxWidth: "1200px", margin: "0 auto" }}>
