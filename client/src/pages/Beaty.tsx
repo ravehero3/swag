@@ -471,9 +471,9 @@ function Beaty() {
                 alt={beat.title}
                 style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "2px", flexShrink: 0 }}
               />
-              <div style={{ width: "25%", minWidth: "200px" }}>
+              <div style={{ width: "25%", minWidth: "200px", marginRight: "12px" }}>
                 <div style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif" }}>{beat.title}</div>
-                <div style={{ fontSize: "12px", color: "#666" }}>
+                <div style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", color: "#666" }}>
                   {beat.artist} • {beat.bpm} BPM • {beat.key}
                 </div>
               </div>
