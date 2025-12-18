@@ -23,8 +23,8 @@ function Header() {
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        padding: "0 16px",
-        height: "24px",
+        padding: "8px 16px",
+        height: "42px",
         borderBottom: "1px solid #333",
         position: "relative",
       }}

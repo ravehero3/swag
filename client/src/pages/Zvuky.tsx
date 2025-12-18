@@ -113,12 +113,16 @@ function Zvuky() {
   };
 
   return (
-    <div className="fade-in">
+    <div className="fade-in" style={{ padding: "0 20px" }}>
       <audio
         ref={audioRef}
         src={currentKit?.preview_url}
         onEnded={() => setIsPlaying(false)}
       />
+      
+      <div style={{ textAlign: "center", marginBottom: "24px" }}>
+        <h2 style={{ fontSize: "18px", fontWeight: "bold" }}>ZVUKY</h2>
+      </div>
 
       {kits.length === 0 ? (
         <p style={{ textAlign: "center", color: "#666", padding: "40px" }}>

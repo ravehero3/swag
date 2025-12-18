@@ -100,7 +100,7 @@ function App() {
     <AppContext.Provider value={{ user, setUser, cart, addToCart, removeFromCart, clearCart }}>
       <div style={{ minHeight: "100vh", background: "#000", display: "flex", flexDirection: "column" }}>
         <Header />
-        <main style={{ padding: "20px", flex: 1 }} className="fade-in">
+        <main style={{ flex: 1 }} className="fade-in">
           <Switch>
             <Route path="/" component={Beaty} />
             <Route path="/beaty" component={Beaty} />

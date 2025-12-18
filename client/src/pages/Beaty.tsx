@@ -289,18 +289,19 @@ function Beaty() {
         onEnded={() => setIsKitPlaying(false)}
       />
 
-      <div style={{ textAlign: "center", marginBottom: "32px" }}>
+      <div style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px" }}>
         <video
           src="/uploads/artwork/voodoo808-video.mp4"
           autoPlay
           loop
           muted
           playsInline
-          style={{ maxWidth: "800px", width: "100%" }}
+          style={{ width: "100%", display: "block" }}
         />
       </div>
-
-      {highlightedBeat && (
+      
+      <div style={{ padding: "0 20px" }}>
+        {highlightedBeat && (
         <div
           style={{
             marginBottom: "48px",
@@ -405,14 +406,14 @@ function Beaty() {
         </div>
       )}
 
-      <div style={{ marginBottom: "48px" }}>
-        <h2 style={{ fontSize: "18px", marginBottom: "24px", fontWeight: "bold" }}>BEATY</h2>
-        {otherBeats.length === 0 && !highlightedBeat ? (
-          <p style={{ textAlign: "center", color: "#666" }}>
-            Zatím nejsou k dispozici žádné beaty
-          </p>
-        ) : (
-          otherBeats.map((beat) => (
+        <div style={{ marginBottom: "48px", textAlign: "center" }}>
+          <h2 style={{ fontSize: "18px", marginBottom: "24px", fontWeight: "bold" }}>BEATY</h2>
+          {otherBeats.length === 0 && !highlightedBeat ? (
+            <p style={{ textAlign: "center", color: "#666" }}>
+              Zatím nejsou k dispozici žádné beaty
+            </p>
+          ) : (
+            otherBeats.map((beat) => (
             <div
               key={beat.id}
               style={{
@@ -496,12 +497,12 @@ function Beaty() {
                 </button>
               </div>
             </div>
-          ))
-        )}
-      </div>
+            ))
+          )}
+        </div>
 
-      <div style={{ paddingBottom: currentBeat ? "80px" : "20px" }}>
-        <h2 style={{ fontSize: "18px", marginBottom: "24px", fontWeight: "bold" }}>ZVUKY</h2>
+        <div style={{ paddingBottom: currentBeat ? "80px" : "20px", textAlign: "center" }}>
+          <h2 style={{ fontSize: "18px", marginBottom: "24px", fontWeight: "bold" }}>ZVUKY</h2>
         {soundKits.length === 0 ? (
           <p style={{ textAlign: "center", color: "#666", padding: "40px" }}>
             Zatím nejsou k dispozici žádné zvukové kity
@@ -638,6 +639,7 @@ function Beaty() {
             ))}
           </div>
         )}
+        </div>
       </div>
 
       {contractModalBeat && (
