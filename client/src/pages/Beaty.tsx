@@ -355,7 +355,7 @@ function Beaty() {
                     {highlightedBeat.bpm}BPM
                   </span>
                 </div>
-                <h2 style={{ fontSize: "64px", fontFamily: "Work Sans, sans-serif", fontWeight: "bold", marginBottom: "24px", lineHeight: "1.1", position: "relative", zIndex: 10 }}>
+                <h2 style={{ fontSize: "64px", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontWeight: "400", marginBottom: "24px", lineHeight: "1.1", position: "relative", zIndex: 10 }}>
                   {highlightedBeat.title}
                 </h2>
                 <button
@@ -449,7 +449,7 @@ function Beaty() {
                 style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "2px", flexShrink: 0 }}
               />
               <div style={{ width: "25%", minWidth: "200px" }}>
-                <div style={{ fontWeight: "bold" }}>{beat.title}</div>
+                <div style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif" }}>{beat.title}</div>
                 <div style={{ fontSize: "12px", color: "#666" }}>
                   {beat.artist} • {beat.bpm} BPM • {beat.key}
                 </div>
