@@ -57,6 +57,8 @@ function Beaty() {
   const [savedKits, setSavedKits] = useState<Set<number>>(new Set());
   const [currentKit, setCurrentKit] = useState<SoundKit | null>(null);
   const [isKitPlaying, setIsKitPlaying] = useState(false);
+  const [sortBy, setSortBy] = useState<"bpm" | "key" | null>(null);
+  const [sortAsc, setSortAsc] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const kitAudioRef = useRef<HTMLAudioElement>(null);
   const { user, addToCart } = useApp();
@@ -355,7 +357,6 @@ function Beaty() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    position: "relative",
                     zIndex: 1,
                   }}
                 >
@@ -449,11 +450,11 @@ function Beaty() {
             <>
               <div style={{ display: "flex", alignItems: "center", padding: "16px", gap: "16px", borderBottom: "1px solid #333" }}>
                 <div style={{ width: "48px", height: "48px", flexShrink: 0 }} />
-                <div style={{ width: "25%", minWidth: "200px", marginRight: "12px", fontWeight: "bold", fontSize: "12px", color: "#666" }}>Name</div>
-                <div style={{ fontWeight: "bold", fontSize: "12px", color: "#666" }}>BPM</div>
-                <div style={{ fontWeight: "bold", fontSize: "12px", color: "#666" }}>Key</div>
+                <div style={{ width: "25%", minWidth: "200px", marginRight: "12px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666" }}>NÁZEV</div>
+                <button onClick={() => { setSortBy(sortBy === "bpm" ? "bpm" : "bpm"); setSortAsc(sortBy === "bpm" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "bold", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0 }}>BPM {sortBy === "bpm" && (sortAsc ? "↑" : "↓")}</button>
+                <button onClick={() => { setSortBy(sortBy === "key" ? "key" : "key"); setSortAsc(sortBy === "key" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "bold", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0, marginLeft: "48px" }}>Key {sortBy === "key" && (sortAsc ? "↑" : "↓")}</button>
               </div>
-              {otherBeats.map((beat) => (
+              {(sortBy && sortBy === "bpm" ? [...otherBeats].sort((a, b) => sortAsc ? a.bpm - b.bpm : b.bpm - a.bpm) : sortBy && sortBy === "key" ? [...otherBeats].sort((a, b) => sortAsc ? a.key.localeCompare(b.key) : b.key.localeCompare(a.key)) : otherBeats).map((beat) => (
             <div
               key={beat.id}
               onClick={() => playBeat(beat)}
@@ -467,13 +468,13 @@ function Beaty() {
                 cursor: "pointer",
                 transition: "all 0.15s ease",
                 justifyContent: "flex-start",
-                borderBottom: "0.4px solid #333",
+                borderBottom: "1px solid #333",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.border = "1px solid #fff";
+                e.currentTarget.style.borderTop = "1px solid #fff";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.border = "1px solid transparent";
+                e.currentTarget.style.borderTop = "1px solid transparent";
               }}
             >
               <img
@@ -487,7 +488,7 @@ function Beaty() {
               <div style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", color: "#666", fontSize: "16px", minWidth: "80px" }}>
                 {beat.bpm}
               </div>
-              <div style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", color: "#666", fontSize: "16px", minWidth: "80px" }}>
+              <div style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", color: "#666", fontSize: "16px", minWidth: "80px", marginLeft: "48px" }}>
                 {beat.key}
               </div>
 
@@ -552,37 +553,6 @@ function Beaty() {
           )}
         </div>
 
-        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "16px", margin: "48px 0" }}>
-          <div style={{ flex: 1, height: "1px", background: "#333", maxWidth: "500px" }} />
-          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" style={{ opacity: 0.5 }}>
-            <g>
-              <rect x="4" y="16" width="3" height="8" fill="none" stroke="#666" strokeWidth="0.5" rx="1.5" />
-              <rect x="9" y="12" width="3" height="16" fill="none" stroke="#666" strokeWidth="0.5" rx="1.5" />
-              <rect x="14" y="8" width="3" height="24" fill="none" stroke="#666" strokeWidth="0.5" rx="1.5" />
-              <rect x="19" y="6" width="3" height="28" fill="none" stroke="#666" strokeWidth="0.5" rx="1.5" />
-              <rect x="24" y="8" width="3" height="24" fill="none" stroke="#666" strokeWidth="0.5" rx="1.5" />
-              <rect x="29" y="12" width="3" height="16" fill="none" stroke="#666" strokeWidth="0.5" rx="1.5" />
-              <rect x="34" y="16" width="3" height="8" fill="none" stroke="#666" strokeWidth="0.5" rx="1.5" />
-              <style>{`
-                @keyframes soundwave {
-                  0%, 100% { opacity: 0.3; }
-                  50% { opacity: 0.7; }
-                }
-                rect {
-                  animation: soundwave 1s ease-in-out infinite;
-                }
-                rect:nth-child(1) { animation-delay: 0s; }
-                rect:nth-child(2) { animation-delay: 0.1s; }
-                rect:nth-child(3) { animation-delay: 0.2s; }
-                rect:nth-child(4) { animation-delay: 0.3s; }
-                rect:nth-child(5) { animation-delay: 0.2s; }
-                rect:nth-child(6) { animation-delay: 0.1s; }
-                rect:nth-child(7) { animation-delay: 0s; }
-              `}</style>
-            </g>
-          </svg>
-          <div style={{ flex: 1, height: "1px", background: "#333", maxWidth: "500px" }} />
-        </div>
 
         <div style={{ paddingBottom: currentBeat ? "80px" : "20px", textAlign: "center" }}>
           <h2 style={{ fontSize: "18px", marginBottom: "24px", fontWeight: "bold" }}>ZVUKY</h2>
