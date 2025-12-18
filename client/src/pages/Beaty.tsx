@@ -414,8 +414,8 @@ function Beaty() {
           </div>
         )}
 
-        <div style={{ marginBottom: "48px", textAlign: "center" }}>
-          <h2 style={{ fontSize: "18px", marginBottom: "24px", fontWeight: "bold" }}>BEATY</h2>
+        <div style={{ marginBottom: "48px", maxWidth: "800px", margin: "0 auto" }}>
+          <h2 style={{ fontSize: "18px", marginBottom: "24px", fontWeight: "bold", textAlign: "center" }}>BEATY</h2>
           {otherBeats.length === 0 && !highlightedBeat ? (
             <p style={{ textAlign: "center", color: "#666" }}>
               Zatím nejsou k dispozici žádné beaty
@@ -431,10 +431,6 @@ function Beaty() {
                 padding: "12px 0",
                 borderBottom: "1px solid #222",
                 gap: "16px",
-                marginLeft: "-20px",
-                marginRight: "-20px",
-                paddingLeft: "20px",
-                paddingRight: "20px",
                 border: "1px solid transparent",
                 cursor: "pointer",
                 transition: "all 0.15s ease",
