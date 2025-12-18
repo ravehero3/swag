@@ -289,14 +289,14 @@ function Beaty() {
         onEnded={() => setIsKitPlaying(false)}
       />
 
-      <div style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px" }}>
+      <div style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden" }}>
         <video
           src="/uploads/voodoo808-video.mov"
           autoPlay
           loop
           muted
           playsInline
-          style={{ width: "100%", display: "block" }}
+          style={{ width: "100%", height: "auto", display: "block" }}
         />
       </div>
       
