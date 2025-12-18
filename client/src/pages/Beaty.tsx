@@ -289,7 +289,7 @@ function Beaty() {
         onEnded={() => setIsKitPlaying(false)}
       />
 
-      <div style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden" }}>
+      <div style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative" }}>
         <video
           src="/uploads/voodoo808-video.mov"
           autoPlay
@@ -297,6 +297,17 @@ function Beaty() {
           muted
           playsInline
           style={{ width: "100%", height: "auto", display: "block" }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            width: "100%",
+            height: "122px",
+            background: "linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 100%)",
+            pointerEvents: "none",
+          }}
         />
       </div>
       
