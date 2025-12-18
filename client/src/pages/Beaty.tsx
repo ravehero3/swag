@@ -435,7 +435,7 @@ function Beaty() {
                 cursor: "pointer",
                 transition: "all 0.15s ease",
                 justifyContent: "space-between",
-                borderBottom: "0.5px solid #333",
+                borderBottom: "0.4px solid #333",
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.border = "1px solid #fff";
