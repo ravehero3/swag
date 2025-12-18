@@ -321,6 +321,21 @@ function Beaty() {
                   alt={highlightedBeat.title}
                   style={{ width: "200px", height: "200px", objectFit: "cover", border: "1px solid #666", borderRadius: "4px" }}
                 />
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    width: "56px",
+                    height: "56px",
+                    borderRadius: "50%",
+                    backdropFilter: "blur(10px) brightness(1.2)",
+                    background: "rgba(255, 255, 255, 0.1)",
+                    border: "1px solid rgba(255, 255, 255, 0.2)",
+                    pointerEvents: "none",
+                  }}
+                />
                 <button
                   onClick={() => playBeat(highlightedBeat)}
                   style={{
@@ -339,6 +354,8 @@ function Beaty() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
+                    position: "relative",
+                    zIndex: 1,
                   }}
                 >
                   {currentBeat?.id === highlightedBeat.id && isPlaying ? "⏸" : "▶"}
