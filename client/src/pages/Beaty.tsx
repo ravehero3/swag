@@ -414,7 +414,7 @@ function Beaty() {
           </div>
         )}
 
-        <div style={{ marginBottom: "48px", maxWidth: "1000px", margin: "0 auto" }}>
+        <div style={{ marginBottom: "48px", maxWidth: "1200px", margin: "0 auto" }}>
           <h2 style={{ fontSize: "18px", marginBottom: "24px", fontWeight: "bold", textAlign: "center" }}>BEATY</h2>
           {otherBeats.length === 0 && !highlightedBeat ? (
             <p style={{ textAlign: "center", color: "#666" }}>
@@ -435,6 +435,7 @@ function Beaty() {
                 cursor: "pointer",
                 transition: "all 0.15s ease",
                 justifyContent: "space-between",
+                borderBottom: "0.5px solid #333",
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.border = "1px solid #fff";
@@ -512,6 +513,38 @@ function Beaty() {
             </div>
             ))
           )}
+        </div>
+
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "16px", margin: "48px 0" }}>
+          <div style={{ flex: 1, height: "1px", background: "#333", maxWidth: "500px" }} />
+          <svg width="40" height="40" viewBox="0 0 40 40" fill="none" style={{ opacity: 0.5 }}>
+            <g>
+              <rect x="4" y="16" width="3" height="8" fill="none" stroke="#666" strokeWidth="0.5" rx="1.5" />
+              <rect x="9" y="12" width="3" height="16" fill="none" stroke="#666" strokeWidth="0.5" rx="1.5" />
+              <rect x="14" y="8" width="3" height="24" fill="none" stroke="#666" strokeWidth="0.5" rx="1.5" />
+              <rect x="19" y="6" width="3" height="28" fill="none" stroke="#666" strokeWidth="0.5" rx="1.5" />
+              <rect x="24" y="8" width="3" height="24" fill="none" stroke="#666" strokeWidth="0.5" rx="1.5" />
+              <rect x="29" y="12" width="3" height="16" fill="none" stroke="#666" strokeWidth="0.5" rx="1.5" />
+              <rect x="34" y="16" width="3" height="8" fill="none" stroke="#666" strokeWidth="0.5" rx="1.5" />
+              <style>{`
+                @keyframes soundwave {
+                  0%, 100% { opacity: 0.3; }
+                  50% { opacity: 0.7; }
+                }
+                rect {
+                  animation: soundwave 1s ease-in-out infinite;
+                }
+                rect:nth-child(1) { animation-delay: 0s; }
+                rect:nth-child(2) { animation-delay: 0.1s; }
+                rect:nth-child(3) { animation-delay: 0.2s; }
+                rect:nth-child(4) { animation-delay: 0.3s; }
+                rect:nth-child(5) { animation-delay: 0.2s; }
+                rect:nth-child(6) { animation-delay: 0.1s; }
+                rect:nth-child(7) { animation-delay: 0s; }
+              `}</style>
+            </g>
+          </svg>
+          <div style={{ flex: 1, height: "1px", background: "#333", maxWidth: "500px" }} />
         </div>
 
         <div style={{ paddingBottom: currentBeat ? "80px" : "20px", textAlign: "center" }}>
