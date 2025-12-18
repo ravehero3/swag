@@ -345,8 +345,11 @@ function Beaty() {
                 </button>
               </div>
 
-              <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-start", width: "300px" }}>
-                <div style={{ display: "flex", gap: "16px", alignItems: "center", marginBottom: "8px" }}>
+              <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-start", width: "500px" }}>
+                <h2 style={{ fontSize: "64px", fontFamily: "Work Sans, sans-serif", fontWeight: "bold", marginBottom: "24px", lineHeight: "1.1", position: "relative", zIndex: 10 }}>
+                  {highlightedBeat.title}
+                </h2>
+                <div style={{ display: "flex", gap: "16px", alignItems: "center", marginBottom: "16px" }}>
                   <span style={{ fontSize: "13px", fontFamily: "Work Sans, sans-serif", color: "#999" }}>
                     Featured Track
                   </span>
@@ -354,9 +357,6 @@ function Beaty() {
                     {highlightedBeat.bpm}BPM
                   </span>
                 </div>
-                <h2 style={{ fontSize: "64px", fontFamily: "Work Sans, sans-serif", fontWeight: "bold", marginBottom: "24px", lineHeight: "1.1" }}>
-                  {highlightedBeat.title}
-                </h2>
                 <button
                   onClick={() => openContractModal(highlightedBeat)}
                   className="btn-bounce"

@@ -63,18 +63,18 @@ function MusicPlayer({
       >
         <style>{`@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }`}</style>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "16px", flex: 1 }}>
           <img
             src={currentBeat.artwork_url || "/uploads/artwork/metallic-logo.png"}
             alt={currentBeat.title}
-            style={{ width: "20px", height: "20px", objectFit: "cover", borderRadius: "2px" }}
+            style={{ width: "40px", height: "40px", objectFit: "cover", borderRadius: "4px" }}
           />
           <div>
-            <div style={{ fontWeight: "bold", fontSize: "10px" }}>{currentBeat.title}</div>
+            <div style={{ fontWeight: "bold", fontSize: "14px" }}>{currentBeat.title}</div>
           </div>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
           <button
             onClick={onToggleLoop}
             style={{
@@ -82,11 +82,11 @@ function MusicPlayer({
               border: "none",
               color: isLooping ? "#fff" : "#666",
               cursor: "pointer",
-              padding: "2px",
+              padding: "16px",
             }}
             title="Loop"
           >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <polyline points="17 1 21 5 17 9" />
               <path d="M3 11V9a4 4 0 0 1 4-4h14" />
               <polyline points="7 23 3 19 7 15" />
@@ -101,11 +101,11 @@ function MusicPlayer({
               border: "none",
               color: "#fff",
               cursor: "pointer",
-              padding: "2px",
+              padding: "16px",
             }}
             title="Previous"
           >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
               <polygon points="19 20 9 12 19 4 19 20" />
               <line x1="5" y1="19" x2="5" y2="5" stroke="currentColor" strokeWidth="2" />
             </svg>
@@ -114,17 +114,18 @@ function MusicPlayer({
           <button
             onClick={onPlayPause}
             style={{
-              width: "18px",
-              height: "18px",
+              width: "28px",
+              height: "28px",
               borderRadius: "50%",
-              border: "1px solid #fff",
+              border: "2px solid #fff",
               background: isPlaying ? "#fff" : "transparent",
               color: isPlaying ? "#000" : "#fff",
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontSize: "8px",
+              fontSize: "12px",
+              padding: "0",
             }}
           >
             {isPlaying ? "⏸" : "▶"}
@@ -137,11 +138,11 @@ function MusicPlayer({
               border: "none",
               color: "#fff",
               cursor: "pointer",
-              padding: "2px",
+              padding: "16px",
             }}
             title="Next"
           >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
               <polygon points="5 4 15 12 5 20 5 4" />
               <line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" strokeWidth="2" />
             </svg>
@@ -154,11 +155,11 @@ function MusicPlayer({
               border: "none",
               color: isShuffling ? "#fff" : "#666",
               cursor: "pointer",
-              padding: "2px",
+              padding: "16px",
             }}
             title="Shuffle"
           >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <polyline points="16 3 21 3 21 8" />
               <line x1="4" y1="20" x2="21" y2="3" />
               <polyline points="21 16 21 21 16 21" />
