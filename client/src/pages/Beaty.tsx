@@ -448,7 +448,7 @@ function Beaty() {
             </p>
           ) : (
             <>
-              <div style={{ display: "flex", alignItems: "center", padding: "16px", gap: "16px", borderBottom: "1px solid #333" }}>
+              <div style={{ display: "flex", alignItems: "center", padding: "16px", gap: "16px", borderBottom: "1px solid #333", marginTop: "16px" }}>
                 <div style={{ width: "48px", height: "48px", flexShrink: 0 }} />
                 <div style={{ width: "25%", minWidth: "200px", marginRight: "12px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666" }}>NÁZEV</div>
                 <button onClick={() => { setSortBy(sortBy === "bpm" ? "bpm" : "bpm"); setSortAsc(sortBy === "bpm" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "bold", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0 }}>BPM {sortBy === "bpm" && (sortAsc ? "↑" : "↓")}</button>
@@ -469,11 +469,14 @@ function Beaty() {
                 transition: "all 0.15s ease",
                 justifyContent: "flex-start",
                 borderBottom: "1px solid #333",
+                boxShadow: "none",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.borderTop = "1px solid #fff";
+                e.currentTarget.style.boxShadow = "0 0 20px rgba(36, 224, 83, 0.3), inset 0 0 20px rgba(36, 224, 83, 0.1)";
+                e.currentTarget.style.borderTop = "1px solid #24e053";
               }}
               onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = "none";
                 e.currentTarget.style.borderTop = "1px solid transparent";
               }}
             >
@@ -483,7 +486,7 @@ function Beaty() {
                 style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "2px", flexShrink: 0 }}
               />
               <div style={{ width: "25%", minWidth: "200px", marginRight: "12px", display: "flex", alignItems: "center", gap: "12px" }}>
-                <div style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "16px" }}>{beat.title}</div>
+                <div style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "24px" }}>{beat.title}</div>
               </div>
               <div style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", color: "#666", fontSize: "16px", minWidth: "80px" }}>
                 {beat.bpm}
