@@ -27,9 +27,12 @@ function Header() {
         height: "42px",
         borderBottom: "1px solid #333",
         position: "relative",
+        zIndex: 100,
+        backdropFilter: "blur(20px)",
+        backgroundColor: "rgba(0, 0, 0, 0.3)",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "12px", position: "relative", zIndex: 10 }}>
         <Link href="/beaty">
           <span
             style={navLinkStyle("/beaty", location === "/beaty" || location === "/")}
@@ -50,23 +53,20 @@ function Header() {
         </Link>
       </div>
 
-      <Link href="/">
+      <Link href="/" style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%, -50%)", zIndex: 5 }}>
         <img
           src="/uploads/artwork/voodoo808-logo.png"
           alt="VOODOO808"
           style={{
-            height: "16px",
+            height: "24px",
             cursor: "pointer",
             filter: "invert(1)",
-            position: "absolute",
-            left: "50%",
-            top: "50%",
-            transform: "translate(-50%, -50%)",
+            display: "block",
           }}
         />
       </Link>
 
-      <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "16px", position: "relative", zIndex: 10 }}>
         <Link href={user ? (user.isAdmin ? "/admin" : "/prihlasit-se") : "/prihlasit-se"}>
           <span
             style={{
