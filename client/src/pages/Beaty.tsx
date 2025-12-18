@@ -313,57 +313,50 @@ function Beaty() {
       
       <div style={{ padding: "0 20px" }}>
         {highlightedBeat && (
-        <div
-          style={{
-            marginBottom: "48px",
-            padding: "24px",
-            border: "1px solid #333",
-            background: "#0a0a0a",
-            borderRadius: "4px",
-          }}
-        >
-          <div style={{ display: "flex", gap: "24px", alignItems: "flex-start" }}>
-            <div style={{ position: "relative", flexShrink: 0 }}>
-              <img
-                src={highlightedBeat.artwork_url || "/uploads/artwork/metallic-logo.png"}
-                alt={highlightedBeat.title}
-                style={{ width: "200px", height: "200px", objectFit: "cover", borderRadius: "4px" }}
-              />
-              <button
-                onClick={() => playBeat(highlightedBeat)}
-                style={{
-                  position: "absolute",
-                  top: "50%",
-                  left: "50%",
-                  transform: "translate(-50%, -50%)",
-                  width: "56px",
-                  height: "56px",
-                  borderRadius: "50%",
-                  border: "2px solid #fff",
-                  background: currentBeat?.id === highlightedBeat.id && isPlaying ? "#fff" : "rgba(0,0,0,0.7)",
-                  color: currentBeat?.id === highlightedBeat.id && isPlaying ? "#000" : "#fff",
-                  fontSize: "20px",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                {currentBeat?.id === highlightedBeat.id && isPlaying ? "⏸" : "▶"}
-              </button>
-            </div>
+          <div style={{ marginBottom: "48px" }}>
+            <div style={{ display: "flex", gap: "24px", alignItems: "flex-start", marginBottom: "32px" }}>
+              <div style={{ position: "relative", flexShrink: 0 }}>
+                <img
+                  src={highlightedBeat.artwork_url || "/uploads/artwork/metallic-logo.png"}
+                  alt={highlightedBeat.title}
+                  style={{ width: "200px", height: "200px", objectFit: "cover", border: "1px solid #666" }}
+                />
+                <button
+                  onClick={() => playBeat(highlightedBeat)}
+                  style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    width: "56px",
+                    height: "56px",
+                    borderRadius: "50%",
+                    border: "2px solid #fff",
+                    background: currentBeat?.id === highlightedBeat.id && isPlaying ? "#fff" : "rgba(0,0,0,0.7)",
+                    color: currentBeat?.id === highlightedBeat.id && isPlaying ? "#000" : "#fff",
+                    fontSize: "20px",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  {currentBeat?.id === highlightedBeat.id && isPlaying ? "⏸" : "▶"}
+                </button>
+              </div>
 
-            <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", flex: 1 }}>
-              <div style={{ fontSize: "13px", fontFamily: "Work Sans, sans-serif", color: "#999", marginBottom: "16px" }}>
-                Featured Track
-              </div>
-              <div style={{ fontSize: "13px", fontFamily: "Work Sans, sans-serif", color: "#666", marginBottom: "8px" }}>
-                {highlightedBeat.bpm}BPM
-              </div>
-              <h2 style={{ fontSize: "16px", fontFamily: "Work Sans, sans-serif", fontWeight: "bold", marginBottom: "16px" }}>
-                {highlightedBeat.title}
-              </h2>
-              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-start", flex: 1 }}>
+                <div style={{ display: "flex", gap: "16px", alignItems: "center", marginBottom: "8px" }}>
+                  <span style={{ fontSize: "13px", fontFamily: "Work Sans, sans-serif", color: "#999" }}>
+                    Featured Track
+                  </span>
+                  <span style={{ fontSize: "13px", fontFamily: "Work Sans, sans-serif", color: "#666" }}>
+                    {highlightedBeat.bpm}BPM
+                  </span>
+                </div>
+                <h2 style={{ fontSize: "16px", fontFamily: "Work Sans, sans-serif", fontWeight: "bold", marginBottom: "16px" }}>
+                  {highlightedBeat.title}
+                </h2>
                 <button
                   onClick={() => openContractModal(highlightedBeat)}
                   className="btn-bounce"
@@ -379,6 +372,7 @@ function Beaty() {
                     alignItems: "center",
                     gap: "8px",
                     borderRadius: "4px",
+                    width: "fit-content",
                   }}
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -389,33 +383,53 @@ function Beaty() {
                   <span>+</span>
                   {highlightedBeat.price} CZK
                 </button>
-                {user && (
-                  <button
-                    onClick={() => toggleSave(highlightedBeat)}
-                    style={{
-                      background: "transparent",
-                      border: "none",
-                      cursor: "pointer",
-                      padding: "8px",
-                    }}
-                  >
-                    <svg
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill={savedBeats.has(highlightedBeat.id) ? "#ff4444" : "none"}
-                      stroke={savedBeats.has(highlightedBeat.id) ? "#ff4444" : "#fff"}
-                      strokeWidth="2"
-                    >
-                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                    </svg>
-                  </button>
-                )}
               </div>
+
+              {user && (
+                <button
+                  onClick={() => toggleSave(highlightedBeat)}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    cursor: "pointer",
+                    padding: "8px",
+                    alignSelf: "flex-start",
+                    marginTop: "4px",
+                  }}
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill={savedBeats.has(highlightedBeat.id) ? "#ff4444" : "none"}
+                    stroke={savedBeats.has(highlightedBeat.id) ? "#ff4444" : "#fff"}
+                    strokeWidth="2"
+                  >
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                  </svg>
+                </button>
+              )}
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "24px" }}>
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={`empty-${i}`}
+                  style={{
+                    aspectRatio: "1",
+                    border: "1px solid #666",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: "#0a0a0a",
+                  }}
+                >
+                  <span style={{ color: "#666", fontSize: "14px" }}>Empty Slot</span>
+                </div>
+              ))}
             </div>
           </div>
-        </div>
-      )}
+        )}
 
         <div style={{ marginBottom: "48px", textAlign: "center" }}>
           <h2 style={{ fontSize: "18px", marginBottom: "24px", fontWeight: "bold" }}>BEATY</h2>
