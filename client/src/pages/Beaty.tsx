@@ -346,17 +346,18 @@ function Beaty() {
               </div>
 
               <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-start", width: "500px" }}>
-                <h2 style={{ fontSize: "64px", fontFamily: "Work Sans, sans-serif", fontWeight: "bold", marginBottom: "24px", lineHeight: "1.1", position: "relative", zIndex: 10 }}>
-                  {highlightedBeat.title}
-                </h2>
-                <div style={{ display: "flex", gap: "16px", alignItems: "center", marginBottom: "16px" }}>
+                <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "16px" }}>
                   <span style={{ fontSize: "13px", fontFamily: "Work Sans, sans-serif", color: "#999" }}>
                     Featured Track
                   </span>
+                  <span style={{ fontSize: "13px", fontFamily: "Work Sans, sans-serif", color: "#666" }}>•</span>
                   <span style={{ fontSize: "13px", fontFamily: "Work Sans, sans-serif", color: "#666" }}>
                     {highlightedBeat.bpm}BPM
                   </span>
                 </div>
+                <h2 style={{ fontSize: "64px", fontFamily: "Work Sans, sans-serif", fontWeight: "bold", marginBottom: "24px", lineHeight: "1.1", position: "relative", zIndex: 10 }}>
+                  {highlightedBeat.title}
+                </h2>
                 <button
                   onClick={() => openContractModal(highlightedBeat)}
                   className="btn-bounce"
@@ -423,12 +424,28 @@ function Beaty() {
             otherBeats.map((beat) => (
             <div
               key={beat.id}
+              onClick={() => playBeat(beat)}
               style={{
                 display: "flex",
                 alignItems: "center",
                 padding: "12px 0",
                 borderBottom: "1px solid #222",
                 gap: "16px",
+                marginLeft: "-20px",
+                marginRight: "-20px",
+                paddingLeft: "20px",
+                paddingRight: "20px",
+                border: "1px solid transparent",
+                cursor: "pointer",
+                transition: "all 0.15s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.boxShadow = "inset 0 0 0 1px #fff";
+                e.currentTarget.style.borderColor = "#fff";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = "none";
+                e.currentTarget.style.borderColor = "transparent";
               }}
             >
               <div style={{ width: "25%", minWidth: "200px" }}>
