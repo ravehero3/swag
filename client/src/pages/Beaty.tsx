@@ -451,8 +451,8 @@ function Beaty() {
               <div style={{ display: "flex", alignItems: "center", padding: "16px", gap: "16px", borderBottom: "1px solid #333", marginTop: "16px" }}>
                 <div style={{ width: "48px", height: "48px", flexShrink: 0 }} />
                 <div style={{ width: "25%", minWidth: "200px", marginRight: "12px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666" }}>NÁZEV</div>
-                <button onClick={() => { setSortBy(sortBy === "bpm" ? "bpm" : "bpm"); setSortAsc(sortBy === "bpm" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "bold", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0 }}>BPM {sortBy === "bpm" && (sortAsc ? "↑" : "↓")}</button>
-                <button onClick={() => { setSortBy(sortBy === "key" ? "key" : "key"); setSortAsc(sortBy === "key" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "bold", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0, marginLeft: "48px" }}>Key {sortBy === "key" && (sortAsc ? "↑" : "↓")}</button>
+                <button onClick={() => { setSortBy(sortBy === "bpm" ? "bpm" : "bpm"); setSortAsc(sortBy === "bpm" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0 }}>BPM {sortBy === "bpm" && (sortAsc ? "↑" : "↓")}</button>
+                <button onClick={() => { setSortBy(sortBy === "key" ? "key" : "key"); setSortAsc(sortBy === "key" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0, marginLeft: "48px" }}>Key {sortBy === "key" && (sortAsc ? "↑" : "↓")}</button>
               </div>
               {(sortBy && sortBy === "bpm" ? [...otherBeats].sort((a, b) => sortAsc ? a.bpm - b.bpm : b.bpm - a.bpm) : sortBy && sortBy === "key" ? [...otherBeats].sort((a, b) => sortAsc ? a.key.localeCompare(b.key) : b.key.localeCompare(a.key)) : otherBeats).map((beat) => (
             <div
@@ -461,10 +461,10 @@ function Beaty() {
               style={{
                 display: "flex",
                 alignItems: "center",
-                padding: "16px",
+                padding: "6px 16px",
                 gap: "16px",
                 border: "1px solid transparent",
-                borderRadius: "2px",
+                borderRadius: "8px",
                 cursor: "pointer",
                 transition: "all 0.15s ease",
                 justifyContent: "flex-start",
@@ -472,8 +472,8 @@ function Beaty() {
                 boxShadow: "none",
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.boxShadow = "0 0 20px rgba(36, 224, 83, 0.3), inset 0 0 20px rgba(36, 224, 83, 0.1)";
-                e.currentTarget.style.borderTop = "1px solid #24e053";
+                e.currentTarget.style.boxShadow = "0 0 20px rgba(59, 130, 246, 0.4), inset 0 0 20px rgba(59, 130, 246, 0.1)";
+                e.currentTarget.style.borderTop = "1px solid #3b82f6";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.boxShadow = "none";
