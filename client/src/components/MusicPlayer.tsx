@@ -70,7 +70,7 @@ function MusicPlayer({
             style={{ width: "84px", height: "84px", objectFit: "cover", borderRadius: "2px", marginLeft: "-16px", marginRight: "0" }}
           />
           <div>
-            <div style={{ fontWeight: "bold", fontSize: "14px" }}>{currentBeat.title}</div>
+            <div style={{ fontWeight: "bold", fontSize: "18px" }}>{currentBeat.title}</div>
           </div>
         </div>
 
@@ -114,8 +114,8 @@ function MusicPlayer({
           <button
             onClick={onPlayPause}
             style={{
-              width: "36px",
-              height: "36px",
+              width: "72px",
+              height: "72px",
               borderRadius: "50%",
               border: "2px solid #fff",
               background: isPlaying ? "#fff" : "transparent",
@@ -124,7 +124,7 @@ function MusicPlayer({
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontSize: "14px",
+              fontSize: "28px",
               padding: "4px",
             }}
           >

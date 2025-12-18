@@ -363,45 +363,48 @@ function Beaty() {
                 </button>
               </div>
 
-              <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-start", width: "500px" }}>
-                <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "16px" }}>
-                  <span style={{ fontSize: "13px", fontFamily: "Work Sans, sans-serif", color: "#999" }}>
-                    Featured Track
+              <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-start", flex: 1 }}>
+                <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "6px" }}>
+                  <span style={{ fontSize: "12px", fontFamily: "Work Sans, sans-serif", color: "#999" }}>
+                    Featured track
                   </span>
-                  <span style={{ fontSize: "13px", fontFamily: "Work Sans, sans-serif", color: "#666" }}>•</span>
-                  <span style={{ fontSize: "13px", fontFamily: "Work Sans, sans-serif", color: "#666" }}>
+                  <span style={{ fontSize: "12px", fontFamily: "Work Sans, sans-serif", color: "#666" }}>•</span>
+                  <span style={{ fontSize: "12px", fontFamily: "Work Sans, sans-serif", color: "#666" }}>
                     {highlightedBeat.bpm}BPM
                   </span>
                 </div>
-                <h2 style={{ fontSize: "64px", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontWeight: "400", marginBottom: "24px", lineHeight: "1.1", position: "relative", zIndex: 10 }}>
-                  {highlightedBeat.title}
-                </h2>
-                <button
-                  onClick={() => openContractModal(highlightedBeat)}
-                  className="btn-bounce"
-                  style={{
-                    padding: "12px 24px",
-                    background: "#fff",
-                    color: "#000",
-                    border: "none",
-                    fontSize: "13px",
-                    fontWeight: "bold",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    borderRadius: "4px",
-                    width: "fit-content",
-                  }}
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
-                    <line x1="3" y1="6" x2="21" y2="6" />
-                    <path d="M16 10a4 4 0 0 1-8 0" />
-                  </svg>
-                  <span>+</span>
-                  {highlightedBeat.price} CZK
-                </button>
+                <div style={{ display: "flex", alignItems: "center", gap: "24px", justifyContent: "space-between" }}>
+                  <h2 style={{ fontSize: "64px", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontWeight: "400", lineHeight: "1.1", position: "relative", zIndex: 10, margin: 0 }}>
+                    {highlightedBeat.title}
+                  </h2>
+                  <button
+                    onClick={() => openContractModal(highlightedBeat)}
+                    className="btn-bounce"
+                    style={{
+                      padding: "12px 24px",
+                      background: "#fff",
+                      color: "#000",
+                      border: "none",
+                      fontSize: "13px",
+                      fontWeight: "bold",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      borderRadius: "4px",
+                      whiteSpace: "nowrap",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                      <line x1="3" y1="6" x2="21" y2="6" />
+                      <path d="M16 10a4 4 0 0 1-8 0" />
+                    </svg>
+                    <span>+</span>
+                    {highlightedBeat.price} CZK
+                  </button>
+                </div>
               </div>
 
               {user && (
@@ -413,7 +416,7 @@ function Beaty() {
                     cursor: "pointer",
                     padding: "8px",
                     alignSelf: "flex-start",
-                    marginTop: "4px",
+                    marginTop: "0px",
                   }}
                 >
                   <svg
