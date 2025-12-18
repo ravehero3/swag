@@ -313,13 +313,13 @@ function Beaty() {
       
       <div style={{ padding: "0 20px" }}>
         {highlightedBeat && (
-          <div style={{ marginBottom: "48px" }}>
-            <div style={{ display: "flex", gap: "24px", alignItems: "flex-start", marginBottom: "32px" }}>
+          <div style={{ marginBottom: "48px", display: "flex", justifyContent: "center" }}>
+            <div style={{ display: "flex", gap: "48px", alignItems: "flex-start", marginBottom: "32px", width: "fit-content" }}>
               <div style={{ position: "relative", flexShrink: 0 }}>
                 <img
                   src={highlightedBeat.artwork_url || "/uploads/artwork/metallic-logo.png"}
                   alt={highlightedBeat.title}
-                  style={{ width: "200px", height: "200px", objectFit: "cover", border: "1px solid #666" }}
+                  style={{ width: "200px", height: "200px", objectFit: "cover", border: "1px solid #666", borderRadius: "4px" }}
                 />
                 <button
                   onClick={() => playBeat(highlightedBeat)}
@@ -345,7 +345,7 @@ function Beaty() {
                 </button>
               </div>
 
-              <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-start", flex: 1 }}>
+              <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-start", width: "300px" }}>
                 <div style={{ display: "flex", gap: "16px", alignItems: "center", marginBottom: "8px" }}>
                   <span style={{ fontSize: "13px", fontFamily: "Work Sans, sans-serif", color: "#999" }}>
                     Featured Track
@@ -354,14 +354,14 @@ function Beaty() {
                     {highlightedBeat.bpm}BPM
                   </span>
                 </div>
-                <h2 style={{ fontSize: "16px", fontFamily: "Work Sans, sans-serif", fontWeight: "bold", marginBottom: "16px" }}>
+                <h2 style={{ fontSize: "64px", fontFamily: "Work Sans, sans-serif", fontWeight: "bold", marginBottom: "24px", lineHeight: "1.1" }}>
                   {highlightedBeat.title}
                 </h2>
                 <button
                   onClick={() => openContractModal(highlightedBeat)}
                   className="btn-bounce"
                   style={{
-                    padding: "10px 20px",
+                    padding: "12px 24px",
                     background: "#fff",
                     color: "#000",
                     border: "none",
@@ -410,24 +410,6 @@ function Beaty() {
                 </button>
               )}
             </div>
-
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "24px" }}>
-              {[1, 2, 3].map((i) => (
-                <div
-                  key={`empty-${i}`}
-                  style={{
-                    aspectRatio: "1",
-                    border: "1px solid #666",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    backgroundColor: "#0a0a0a",
-                  }}
-                >
-                  <span style={{ color: "#666", fontSize: "14px" }}>Empty Slot</span>
-                </div>
-              ))}
-            </div>
           </div>
         )}
 
@@ -449,23 +431,7 @@ function Beaty() {
                 gap: "16px",
               }}
             >
-              <button
-                onClick={() => playBeat(beat)}
-                style={{
-                  width: "40px",
-                  height: "40px",
-                  borderRadius: "50%",
-                  border: "1px solid #fff",
-                  background:
-                    currentBeat?.id === beat.id && isPlaying ? "#fff" : "transparent",
-                  color: currentBeat?.id === beat.id && isPlaying ? "#000" : "#fff",
-                  flexShrink: 0,
-                }}
-              >
-                {currentBeat?.id === beat.id && isPlaying ? "⏸" : "▶"}
-              </button>
-              
-              <div style={{ flex: 1 }}>
+              <div style={{ width: "25%", minWidth: "200px" }}>
                 <div style={{ fontWeight: "bold" }}>{beat.title}</div>
                 <div style={{ fontSize: "12px", color: "#666" }}>
                   {beat.artist} • {beat.bpm} BPM • {beat.key}
@@ -528,6 +494,25 @@ function Beaty() {
 
         <div style={{ paddingBottom: currentBeat ? "80px" : "20px", textAlign: "center" }}>
           <h2 style={{ fontSize: "18px", marginBottom: "24px", fontWeight: "bold" }}>ZVUKY</h2>
+          
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "24px", marginBottom: "48px", maxWidth: "800px", margin: "0 auto 48px" }}>
+            {[1, 2, 3].map((i) => (
+              <div
+                key={`empty-${i}`}
+                style={{
+                  aspectRatio: "1",
+                  border: "1px solid #666",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: "#0a0a0a",
+                }}
+              >
+                <span style={{ color: "#666", fontSize: "14px" }}>Empty Slot</span>
+              </div>
+            ))}
+          </div>
+
         {soundKits.length === 0 ? (
           <p style={{ textAlign: "center", color: "#666", padding: "40px" }}>
             Zatím nejsou k dispozici žádné zvukové kity

@@ -50,7 +50,7 @@ function MusicPlayer({
           bottom: 0,
           left: 0,
           right: 0,
-          height: "24px",
+          height: "42px",
           background: "#111",
           borderTop: "1px solid #333",
           display: "flex",
