@@ -97,6 +97,24 @@ export async function initDatabase() {
         UNIQUE(beat_id, license_type_id)
       );
     `);
+    
+    // Add test data
+    const beatCount = await client.query("SELECT COUNT(*) FROM beats");
+    if (beatCount.rows[0].count === "0") {
+      // Add 20 test beats
+      const beatInserts = [];
+      for (let i = 1; i <= 20; i++) {
+        beatInserts.push(`
+          ('Test Beat ${i}', 'VOODOO808', ${80 + i}, 'C', ${9.99 + i * 0.5}, '/uploads/preview/beat${i}.mp3', '/uploads/beat${i}.wav', '/uploads/artwork/beat${i}.jpg', true, ${i === 1 ? 'true' : 'false'})
+        `);
+      }
+      
+      await client.query(`
+        INSERT INTO beats (title, artist, bpm, key, price, preview_url, file_url, artwork_url, is_published, is_highlighted) VALUES
+        ${beatInserts.join(',')}
+      `);
+    }
+    
     console.log("Database initialized successfully");
   } finally {
     client.release();

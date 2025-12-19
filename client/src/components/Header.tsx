@@ -94,12 +94,12 @@ function Header() {
           </span>
         </Link>
 
-        <svg
-          width="20"
-          height="20"
-          viewBox="0 0 20 20"
-          fill="white"
+        <img
+          src="/fire.png"
+          alt="Favorites"
           style={{
+            width: "16px",
+            height: "16px",
             cursor: "pointer",
             transition: "transform 0.2s ease",
             transform: hoveredIcon === "heart" ? "scale(1.02)" : "scale(1)",
@@ -108,9 +108,7 @@ function Header() {
           onClick={() => window.location.href = "/ulozeno"}
           onMouseEnter={() => setHoveredIcon("heart")}
           onMouseLeave={() => setHoveredIcon(null)}
-        >
-          <polygon points="10,2 7,8 3,8 6,12 3,17 10,13 17,17 14,12 17,8 13,8" />
-        </svg>
+        />
 
         <div
           style={{
@@ -134,9 +132,13 @@ function Header() {
             .cart-pulse {
               animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
             }
+            .cart-badge:hover {
+              border: 1px solid white;
+            }
           `}</style>
           {cart.length > 0 ? (
             <div
+              className="cart-badge"
               style={{
                 background: "#24e053",
                 color: "#000",
@@ -150,6 +152,7 @@ function Header() {
                 justifyContent: "center",
                 minWidth: "24px",
                 height: "24px",
+                transition: "border 0.2s ease",
               }}
             >
               {cart.length}
