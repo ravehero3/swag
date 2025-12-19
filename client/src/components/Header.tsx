@@ -149,7 +149,7 @@ function Header() {
                 padding: "2px",
                 borderRadius: "4px",
                 fontSize: "16px",
-                fontWeight: "bold",
+                fontWeight: 400,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
