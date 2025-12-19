@@ -2,6 +2,7 @@ import { useState, useEffect, createContext, useContext } from "react";
 import { Route, Switch } from "wouter";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import CartModal from "./components/CartModal";
 import Beaty from "./pages/Beaty";
 import Zvuky from "./pages/Zvuky";
 import Login from "./pages/Login";
@@ -32,6 +33,8 @@ interface AppContextType {
   addToCart: (item: CartItem) => void;
   removeFromCart: (productId: number, productType: string) => void;
   clearCart: () => void;
+  isCartOpen: boolean;
+  setIsCartOpen: (open: boolean) => void;
 }
 
 export const AppContext = createContext<AppContextType>({
@@ -41,6 +44,8 @@ export const AppContext = createContext<AppContextType>({
   addToCart: () => {},
   removeFromCart: () => {},
   clearCart: () => {},
+  isCartOpen: false,
+  setIsCartOpen: () => {},
 });
 
 export const useApp = () => useContext(AppContext);
@@ -49,6 +54,7 @@ function App() {
   const [user, setUser] = useState<User | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   // Add padding to body for fixed header
   useEffect(() => {
@@ -105,7 +111,7 @@ function App() {
   }
 
   return (
-    <AppContext.Provider value={{ user, setUser, cart, addToCart, removeFromCart, clearCart }}>
+    <AppContext.Provider value={{ user, setUser, cart, addToCart, removeFromCart, clearCart, isCartOpen, setIsCartOpen }}>
       <div style={{ minHeight: "100vh", background: "#000", display: "flex", flexDirection: "column" }}>
         <Header />
         <main style={{ flex: 1 }} className="fade-in">
@@ -127,6 +133,7 @@ function App() {
           </Switch>
         </main>
         <Footer />
+        <CartModal isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
       </div>
     </AppContext.Provider>
   );

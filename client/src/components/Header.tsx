@@ -1,13 +1,11 @@
 import { Link, useLocation } from "wouter";
 import { useApp } from "../App";
 import { useState } from "react";
-import CartModal from "./CartModal";
 
 function Header() {
-  const { user, cart } = useApp();
+  const { user, cart, setIsCartOpen } = useApp();
   const [location] = useLocation();
   const [hoveredLink, setHoveredLink] = useState<string | null>(null);
-  const [isCartOpen, setIsCartOpen] = useState(false);
   const [hoveredIcon, setHoveredIcon] = useState<string | null>(null);
 
   const navLinkStyle = (path: string, isActive: boolean) => ({
@@ -175,7 +173,6 @@ function Header() {
             </svg>
           )}
         </div>
-        <CartModal isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
       </div>
     </header>
   );
