@@ -94,12 +94,12 @@ function Header() {
           </span>
         </Link>
 
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="white"
+        <img
+          src="/uploads/fire-icon.png"
+          alt="Saved Items"
           style={{
+            width: "24px",
+            height: "24px",
             cursor: "pointer",
             transition: "transform 0.2s ease, filter 0.2s ease",
             transform: hoveredIcon === "heart" ? "scale(1.02)" : "scale(1)",
@@ -110,9 +110,7 @@ function Header() {
           onClick={() => window.location.href = "/ulozeno"}
           onMouseEnter={() => setHoveredIcon("heart")}
           onMouseLeave={() => setHoveredIcon(null)}
-        >
-          <path d="M12 2c1 0 2 1 2 2v3c0 1-1 2-2 2s-2-1-2-2V4c0-1 1-2 2-2zm5.5 3c.83 0 1.5.67 1.5 1.5v1c0 1.66-1.34 3-3 3h-1v3c0 2.21-1.79 4-4 4s-4-1.79-4-4v-3h-1c-1.66 0-3-1.34-3-3v-1c0-.83.67-1.5 1.5-1.5.83 0 1.5.67 1.5 1.5v1c0 .55.45 1 1 1h8c.55 0 1-.45 1-1v-1c0-.83.67-1.5 1.5-1.5zm-5.5 11v3c0 1.1.9 2 2 2s2-.9 2-2v-3h-4z" />
-        </svg>
+        />
 
         <div
           style={{
