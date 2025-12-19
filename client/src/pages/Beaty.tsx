@@ -440,8 +440,7 @@ function Beaty() {
           <SoundWave audioRef={audioRef} isPlaying={isPlaying} />
         )}
 
-        <div style={{ marginBottom: "48px", maxWidth: "1200px", margin: "0 auto" }}>
-          <h2 style={{ fontSize: "18px", marginBottom: "24px", fontWeight: "bold", textAlign: "center" }}>BEATY</h2>
+        <div style={{ marginBottom: "48px", maxWidth: "1200px", margin: "0 auto", marginTop: "60px" }}>
           {otherBeats.length === 0 && !highlightedBeat ? (
             <p style={{ textAlign: "center", color: "#666" }}>
               Zatím nejsou k dispozici žádné beaty
@@ -452,7 +451,7 @@ function Beaty() {
                 <div style={{ width: "48px", height: "48px", flexShrink: 0 }} />
                 <div style={{ width: "25%", minWidth: "200px", marginRight: "12px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666" }}>NÁZEV</div>
                 <button onClick={() => { setSortBy(sortBy === "bpm" ? "bpm" : "bpm"); setSortAsc(sortBy === "bpm" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0 }}>BPM {sortBy === "bpm" && (sortAsc ? "↑" : "↓")}</button>
-                <button onClick={() => { setSortBy(sortBy === "key" ? "key" : "key"); setSortAsc(sortBy === "key" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0, marginLeft: "48px" }}>Key {sortBy === "key" && (sortAsc ? "↑" : "↓")}</button>
+                <button onClick={() => { setSortBy(sortBy === "key" ? "key" : "key"); setSortAsc(sortBy === "key" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0, marginLeft: "48px" }}>KEY {sortBy === "key" && (sortAsc ? "↑" : "↓")}</button>
               </div>
               {(sortBy && sortBy === "bpm" ? [...otherBeats].sort((a, b) => sortAsc ? a.bpm - b.bpm : b.bpm - a.bpm) : sortBy && sortBy === "key" ? [...otherBeats].sort((a, b) => sortAsc ? a.key.localeCompare(b.key) : b.key.localeCompare(a.key)) : otherBeats).map((beat) => (
             <div
@@ -619,7 +618,7 @@ function Beaty() {
         </div>
 
 
-        <div style={{ paddingBottom: currentBeat ? "80px" : "20px", textAlign: "center" }}>
+        <div style={{ paddingBottom: currentBeat ? "80px" : "20px", textAlign: "center", marginTop: "64px" }}>
           <h2 style={{ fontSize: "18px", marginBottom: "24px", fontWeight: "bold" }}>ZVUKY</h2>
           
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "24px", marginBottom: "48px", maxWidth: "1000px", margin: "0 auto 48px" }}>

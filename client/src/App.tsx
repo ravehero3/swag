@@ -50,6 +50,14 @@ function App() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Add padding to body for fixed header
+  useEffect(() => {
+    document.body.style.paddingTop = "42px";
+    return () => {
+      document.body.style.paddingTop = "0";
+    };
+  }, []);
+
   useEffect(() => {
     fetch("/api/auth/me", { credentials: "include" })
       .then((res) => {
