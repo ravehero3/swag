@@ -482,7 +482,7 @@ function Beaty() {
                 zIndex: 1,
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.boxShadow = "0 0 0 1px #3b82f6, 0 0 16px rgba(59, 130, 246, 0.5)";
+                e.currentTarget.style.boxShadow = "0 0 0 1px #3b82f6, 0 0 8px rgba(59, 130, 246, 0.5)";
                 e.currentTarget.style.border = "1px solid #3b82f6";
               }}
               onMouseLeave={(e) => {

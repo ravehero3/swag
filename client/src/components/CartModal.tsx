@@ -46,18 +46,21 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                 transform: translateY(0);
                 opacity: 1;
               }
-              50% {
-                transform: translateY(-100%);
+              40% {
+                transform: translateY(-120%);
                 opacity: 0;
               }
-              51% {
-                transform: translateY(100%);
+              41% {
+                transform: translateY(120%);
                 opacity: 0;
               }
               100% {
                 transform: translateY(0);
                 opacity: 1;
               }
+            }
+            .flyfx-text {
+              display: inline-block;
             }
           `}</style>
           <div
@@ -160,20 +163,30 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                             overflow: "hidden",
                             position: "relative",
                           }}
-                          onMouseEnter={(e) => {
-                            const btn = e.currentTarget as HTMLButtonElement;
-                            btn.style.borderColor = "#24e053";
-                            btn.style.color = "#24e053";
-                            btn.style.animation = "flyfx 0.4s ease";
-                          }}
-                          onMouseLeave={(e) => {
-                            const btn = e.currentTarget as HTMLButtonElement;
-                            btn.style.borderColor = "#666";
-                            btn.style.color = "#fff";
-                            btn.style.animation = "none";
-                          }}
                         >
-                          Odebrat
+                          <span
+                            className="flyfx-text"
+                            style={{
+                              display: "inline-block",
+                              transition: "all 0.2s ease",
+                            }}
+                            onMouseEnter={(e) => {
+                              const span = e.currentTarget as HTMLSpanElement;
+                              const btn = span.closest("button") as HTMLButtonElement;
+                              btn.style.borderColor = "#24e053";
+                              span.style.color = "#24e053";
+                              span.style.animation = "flyfx 0.4s ease";
+                            }}
+                            onMouseLeave={(e) => {
+                              const span = e.currentTarget as HTMLSpanElement;
+                              const btn = span.closest("button") as HTMLButtonElement;
+                              btn.style.borderColor = "#666";
+                              span.style.color = "#fff";
+                              span.style.animation = "none";
+                            }}
+                          >
+                            Odebrat
+                          </span>
                         </button>
                       </div>
                     </div>
@@ -214,18 +227,29 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                     overflow: "hidden",
                     position: "relative",
                   }}
-                  onMouseEnter={(e) => {
-                    const btn = e.currentTarget as HTMLButtonElement;
-                    btn.style.backgroundColor = "#1fa03f";
-                    btn.style.animation = "flyfx 0.4s ease";
-                  }}
-                  onMouseLeave={(e) => {
-                    const btn = e.currentTarget as HTMLButtonElement;
-                    btn.style.backgroundColor = "#24e053";
-                    btn.style.animation = "none";
-                  }}
                 >
-                  Pokračovat na platbu
+                  <span
+                    className="flyfx-text"
+                    style={{
+                      display: "inline-block",
+                      transition: "all 0.2s ease",
+                      color: "#000",
+                    }}
+                    onMouseEnter={(e) => {
+                      const span = e.currentTarget as HTMLSpanElement;
+                      const btn = span.closest("button") as HTMLButtonElement;
+                      btn.style.backgroundColor = "#1fa03f";
+                      span.style.animation = "flyfx 0.4s ease";
+                    }}
+                    onMouseLeave={(e) => {
+                      const span = e.currentTarget as HTMLSpanElement;
+                      const btn = span.closest("button") as HTMLButtonElement;
+                      btn.style.backgroundColor = "#24e053";
+                      span.style.animation = "none";
+                    }}
+                  >
+                    Pokračovat na platbu
+                  </span>
                 </button>
                 <button
                   onClick={() => clearCart()}
@@ -242,20 +266,30 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                     overflow: "hidden",
                     position: "relative",
                   }}
-                  onMouseEnter={(e) => {
-                    const btn = e.currentTarget as HTMLButtonElement;
-                    btn.style.borderColor = "#24e053";
-                    btn.style.color = "#24e053";
-                    btn.style.animation = "flyfx 0.4s ease";
-                  }}
-                  onMouseLeave={(e) => {
-                    const btn = e.currentTarget as HTMLButtonElement;
-                    btn.style.borderColor = "#666";
-                    btn.style.color = "#fff";
-                    btn.style.animation = "none";
-                  }}
                 >
-                  Vymazat košík
+                  <span
+                    className="flyfx-text"
+                    style={{
+                      display: "inline-block",
+                      transition: "all 0.2s ease",
+                    }}
+                    onMouseEnter={(e) => {
+                      const span = e.currentTarget as HTMLSpanElement;
+                      const btn = span.closest("button") as HTMLButtonElement;
+                      btn.style.borderColor = "#24e053";
+                      span.style.color = "#24e053";
+                      span.style.animation = "flyfx 0.4s ease";
+                    }}
+                    onMouseLeave={(e) => {
+                      const span = e.currentTarget as HTMLSpanElement;
+                      const btn = span.closest("button") as HTMLButtonElement;
+                      btn.style.borderColor = "#666";
+                      span.style.color = "#fff";
+                      span.style.animation = "none";
+                    }}
+                  >
+                    Vymazat košík
+                  </span>
                 </button>
               </div>
             )}
@@ -274,18 +308,26 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                 overflow: "hidden",
                 position: "relative",
               }}
-              onMouseEnter={(e) => {
-                const btn = e.currentTarget as HTMLButtonElement;
-                btn.style.color = "#24e053";
-                btn.style.animation = "flyfx 0.4s ease";
-              }}
-              onMouseLeave={(e) => {
-                const btn = e.currentTarget as HTMLButtonElement;
-                btn.style.color = "#fff";
-                btn.style.animation = "none";
-              }}
             >
-              Zavřít
+              <span
+                className="flyfx-text"
+                style={{
+                  display: "inline-block",
+                  transition: "all 0.2s ease",
+                }}
+                onMouseEnter={(e) => {
+                  const span = e.currentTarget as HTMLSpanElement;
+                  span.style.color = "#24e053";
+                  span.style.animation = "flyfx 0.4s ease";
+                }}
+                onMouseLeave={(e) => {
+                  const span = e.currentTarget as HTMLSpanElement;
+                  span.style.color = "#fff";
+                  span.style.animation = "none";
+                }}
+              >
+                Zavřít
+              </span>
             </button>
           </div>
         </div>
