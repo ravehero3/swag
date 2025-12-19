@@ -619,22 +619,39 @@ function Beaty() {
 
 
         <div style={{ paddingBottom: currentBeat ? "80px" : "20px", textAlign: "center", marginTop: "64px" }}>
-          <h2 style={{ fontSize: "18px", marginBottom: "24px", fontWeight: "bold" }}>ZVUKY</h2>
+          <h2 style={{ fontSize: "18px", marginBottom: "24px", fontWeight: "bold" }}>ZVUKY A PRESETY</h2>
           
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "24px", marginBottom: "48px", maxWidth: "1000px", margin: "0 auto 48px" }}>
-            {[1, 2, 3].map((i) => (
+            {[
+              { label: "DRUM KIT" },
+              { label: "ONE SHOT KIT" },
+              { label: "GROSS BEAT BANK" },
+            ].map((item, i) => (
               <div
                 key={`empty-${i}`}
                 style={{
-                  aspectRatio: "1",
-                  border: "1px solid #666",
                   display: "flex",
+                  flexDirection: "column",
                   alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: "#0a0a0a",
+                  gap: "16px",
                 }}
               >
-                <span style={{ color: "#666", fontSize: "14px" }}>Empty Slot</span>
+                <div
+                  style={{
+                    aspectRatio: "1",
+                    width: "100%",
+                    border: "1px solid #666",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: "#0a0a0a",
+                  }}
+                >
+                  <span style={{ color: "#666", fontSize: "14px" }}>Empty Slot</span>
+                </div>
+                <span style={{ color: "#999", fontSize: "12px", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif" }}>
+                  {item.label}
+                </span>
               </div>
             ))}
           </div>
