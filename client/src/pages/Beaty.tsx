@@ -383,7 +383,7 @@ function Beaty() {
                   </span>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "24px" }}>
-                  <h2 style={{ fontSize: "22px", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontWeight: "400", lineHeight: "1.1", position: "relative", zIndex: 10, margin: 0, marginBottom: "20px" }}>
+                  <h2 style={{ fontSize: "30px", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontWeight: "400", lineHeight: "1.1", position: "relative", zIndex: 10, margin: 0, marginBottom: "20px" }}>
                     {highlightedBeat.title}
                   </h2>
                   <button
