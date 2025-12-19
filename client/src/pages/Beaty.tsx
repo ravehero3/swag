@@ -459,7 +459,6 @@ function Beaty() {
               <div style={{ display: "flex", alignItems: "center", padding: "16px 16px 8px 16px", gap: "16px", borderBottom: "1px solid #333", marginTop: "16px" }}>
                 <div style={{ width: "48px", height: "48px", flexShrink: 0 }} />
                 <div style={{ width: "25%", minWidth: "200px", marginRight: "12px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666" }}>NÁZEV</div>
-                <div style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", minWidth: "80px" }}>DÉLKA</div>
                 <button onClick={() => { setSortBy(sortBy === "bpm" ? "bpm" : "bpm"); setSortAsc(sortBy === "bpm" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0, marginLeft: "64px" }}>BPM {sortBy === "bpm" && (sortAsc ? "↑" : "↓")}</button>
                 <button onClick={() => { setSortBy(sortBy === "key" ? "key" : "key"); setSortAsc(sortBy === "key" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0, marginLeft: "64px" }}>KEY {sortBy === "key" && (sortAsc ? "↑" : "↓")}</button>
               </div>
@@ -498,9 +497,6 @@ function Beaty() {
               />
               <div style={{ width: "25%", minWidth: "200px", marginRight: "12px", display: "flex", alignItems: "center", gap: "12px" }}>
                 <div style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "20px" }}>{beat.title}</div>
-              </div>
-              <div style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", color: "#666", fontSize: "16px", minWidth: "80px" }}>
-                {beat.duration ? `${beat.duration}s` : "-"}
               </div>
               <div style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", color: "#666", fontSize: "16px", minWidth: "80px", marginLeft: "64px" }}>
                 {beat.bpm}
