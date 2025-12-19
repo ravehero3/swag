@@ -390,7 +390,7 @@ function Beaty() {
                     onClick={() => openContractModal(highlightedBeat)}
                     className="btn-bounce"
                     style={{
-                      padding: "12px 16px",
+                      padding: "8px 16px",
                       background: "#fff",
                       color: "#000",
                       border: "none",
@@ -411,9 +411,9 @@ function Beaty() {
                         <rect x="3" y="6" width="18" height="15" rx="2" />
                         <path d="M8 6V4a4 4 0 0 1 8 0v2" />
                       </svg>
-                      <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "#000", lineHeight: "1", right: "-8px", top: "-8px" }}>+</span>
+                      <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "#000", lineHeight: "1", right: "-8px", top: "-4px" }}>+</span>
                     </div>
-                    <span style={{ marginLeft: "8px" }}>{Math.floor(highlightedBeat.price)} CZK</span>
+                    <span style={{ marginLeft: "24px" }}>{Math.floor(highlightedBeat.price)} CZK</span>
                   </button>
                 </div>
               </div>
@@ -604,7 +604,7 @@ function Beaty() {
                   }}
                   className="btn-bounce"
                   style={{
-                    padding: "12px 16px",
+                    padding: "8px 16px",
                     background: "#fff",
                     color: "#000",
                     border: "none",
@@ -626,9 +626,9 @@ function Beaty() {
                       <rect x="3" y="6" width="18" height="15" rx="2" />
                       <path d="M8 6V4a4 4 0 0 1 8 0v2" />
                     </svg>
-                    <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "#000", lineHeight: "1", right: "-8px", top: "-8px" }}>+</span>
+                    <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "#000", lineHeight: "1", right: "-8px", top: "-4px" }}>+</span>
                   </div>
-                  <span style={{ marginLeft: "8px" }}>{Math.floor(beat.price)} CZK</span>
+                  <span style={{ marginLeft: "24px" }}>{Math.floor(beat.price)} CZK</span>
                 </button>
               </div>
             </div>
@@ -804,7 +804,7 @@ function Beaty() {
                       onClick={() => handleAddKitToCart(kit)}
                       className="btn-bounce"
                       style={{
-                        padding: "12px 16px",
+                        padding: "8px 16px",
                         background: "#fff",
                         color: "#000",
                         border: "none",
@@ -828,7 +828,7 @@ function Beaty() {
                             <line x1="3" y1="6" x2="21" y2="6" />
                             <path d="M16 10a4 4 0 0 1-8 0" />
                           </svg>
-                          <span style={{ position: "absolute", top: "-8px", right: "-8px", fontSize: "16px", fontWeight: "400", color: "#000", lineHeight: "1" }}>+</span>
+                          <span style={{ position: "absolute", top: "-4px", right: "-8px", fontSize: "16px", fontWeight: "400", color: "#000", lineHeight: "1" }}>+</span>
                         </div>
                       )}
                       {kit.is_free ? "STÁHNOUT" : `${kit.price} CZK`}
