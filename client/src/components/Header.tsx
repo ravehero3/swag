@@ -94,32 +94,23 @@ function Header() {
           </span>
         </Link>
 
-        <Link href="/ulozeno">
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#fff"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            style={{
-              cursor: "pointer",
-              transition: "transform 0.2s ease",
-              transform: hoveredIcon === "heart" ? "scale(1.02)" : "scale(1)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: "8px",
-            }}
-            onMouseEnter={() => setHoveredIcon("heart")}
-            onMouseLeave={() => setHoveredIcon(null)}
-          >
-            <path d="M8.5 14.5C5.5 12 2 9.5 2 6.5C2 4.5 3.5 3 5.5 3c1.5 0 2.8 1 3.5 2c0.7-1 2-2 3.5-2c2 0 3.5 1.5 3.5 3.5c0 3-3.5 5.5-6.5 8" />
-            <path d="M12 6c1 1.5 1.5 3 1.5 4.5c0 2.5-1 4-3 4.5" />
-          </svg>
-        </Link>
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 20 20"
+          fill="white"
+          style={{
+            cursor: "pointer",
+            transition: "transform 0.2s ease",
+            transform: hoveredIcon === "heart" ? "scale(1.02)" : "scale(1)",
+            padding: "8px",
+          }}
+          onClick={() => window.location.href = "/ulozeno"}
+          onMouseEnter={() => setHoveredIcon("heart")}
+          onMouseLeave={() => setHoveredIcon(null)}
+        >
+          <polygon points="10,2 7,8 3,8 6,12 3,17 10,13 17,17 14,12 17,8 13,8" />
+        </svg>
 
         <div
           style={{
