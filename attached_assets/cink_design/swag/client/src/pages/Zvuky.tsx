@@ -67,6 +67,7 @@ function Zvuky() {
 
   return (
     <div className="fade-in">
+      <h1 style={{ fontFamily: "'Helvetica Neue', 'Helvetica', sans-serif", fontWeight: "900", fontSize: "32px", letterSpacing: "-0.5px", marginBottom: "40px" }}>ZVUKY A PRESETY</h1>
       <audio
         ref={audioRef}
         src={currentKit?.preview_url}

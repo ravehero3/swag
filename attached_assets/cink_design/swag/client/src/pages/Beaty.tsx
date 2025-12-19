@@ -62,6 +62,10 @@ function Beaty() {
         />
       </div>
 
+      <div style={{ marginBottom: "32px" }}>
+        <h2 style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "20px" }}>Beat týdne</h2>
+      </div>
+
       <audio
         ref={audioRef}
         src={currentBeat?.preview_url}
@@ -87,8 +91,8 @@ function Beaty() {
             <button
               onClick={() => playBeat(currentBeat)}
               style={{
-                width: "40px",
-                height: "40px",
+                width: "32px",
+                height: "32px",
                 borderRadius: "50%",
                 border: "1px solid #fff",
                 background: "transparent",
@@ -96,6 +100,8 @@ function Beaty() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                padding: "12px",
+                fontSize: "14px",
               }}
             >
               {isPlaying ? "⏸" : "▶"}
@@ -123,9 +129,13 @@ function Beaty() {
               style={{
                 display: "flex",
                 alignItems: "center",
-                padding: "12px 0",
+                padding: "12px 16px",
                 borderBottom: "1px solid #222",
                 gap: "16px",
+                borderRadius: "4px",
+                border: currentBeat?.id === beat.id ? "1px solid #0066ff" : "1px solid transparent",
+                boxShadow: currentBeat?.id === beat.id ? "0 0 0 1px #0066ff, 0 0 12px 0 rgba(0, 102, 255, 0.5)" : "none",
+                transition: "all 0.2s",
               }}
             >
               <button
@@ -152,9 +162,9 @@ function Beaty() {
               </div>
 
               <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                <span style={{ fontWeight: "bold" }}>{beat.price} CZK</span>
+                <span style={{ fontWeight: "normal", marginRight: "4px" }}>{beat.price} CZK</span>
                 <button className="btn" onClick={() => handleAddToCart(beat)}>
-                  DO KOŠÍKU
+                  <span style={{ marginRight: "4px" }}>+</span> DO KOŠÍKU
                 </button>
               </div>
             </div>
