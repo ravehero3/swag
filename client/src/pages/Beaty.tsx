@@ -322,7 +322,7 @@ function Beaty() {
                 <img
                   src={highlightedBeat.artwork_url || "/uploads/artwork/metallic-logo.png"}
                   alt={highlightedBeat.title}
-                  style={{ width: "200px", height: "200px", objectFit: "cover", border: "1px solid #666", borderRadius: "8px" }}
+                  style={{ width: "200px", height: "200px", objectFit: "cover", border: "1px solid #666", borderRadius: "4px" }}
                 />
                 <div
                   style={{
@@ -393,7 +393,7 @@ function Beaty() {
                       display: "flex",
                       alignItems: "center",
                       gap: "4px",
-                      borderRadius: "8px",
+                      borderRadius: "4px",
                       whiteSpace: "nowrap",
                       flexShrink: 0,
                       position: "relative",
@@ -466,7 +466,7 @@ function Beaty() {
                 padding: "6px 16px",
                 gap: "16px",
                 border: "1px solid transparent",
-                borderRadius: "8px",
+                borderRadius: "4px",
                 cursor: "pointer",
                 transition: "all 0.15s ease",
                 justifyContent: "flex-start",
@@ -485,7 +485,7 @@ function Beaty() {
               <img
                 src={beat.artwork_url || "/uploads/artwork/metallic-logo.png"}
                 alt={beat.title}
-                style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "8px", flexShrink: 0 }}
+                style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "4px", flexShrink: 0 }}
               />
               <div style={{ width: "25%", minWidth: "200px", marginRight: "12px", display: "flex", alignItems: "center", gap: "12px" }}>
                 <div style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "20px" }}>{beat.title}</div>
@@ -604,7 +604,7 @@ function Beaty() {
                     display: "flex",
                     alignItems: "center",
                     gap: "6px",
-                    borderRadius: "8px",
+                    borderRadius: "4px",
                     position: "relative",
                     minWidth: "120px",
                     marginLeft: "8px",
@@ -684,7 +684,7 @@ function Beaty() {
                   border: "1px solid #333",
                   overflow: "hidden",
                   position: "relative",
-                  borderRadius: "8px",
+                  borderRadius: "4px",
                 }}
               >
                 {user && (
@@ -733,7 +733,7 @@ function Beaty() {
                       width: "100%",
                       height: "100%",
                       objectFit: "cover",
-                      borderRadius: "8px 8px 0 0",
+                      borderRadius: "4px 4px 0 0",
                     }}
                   />
                   {kit.preview_url && (
@@ -775,7 +775,7 @@ function Beaty() {
                             fontSize: "10px",
                             padding: "2px 6px",
                             border: "1px solid #444",
-                            borderRadius: "8px",
+                            borderRadius: "4px",
                           }}
                         >
                           {tag}
@@ -791,7 +791,7 @@ function Beaty() {
                     <button
                       className="btn btn-bounce"
                       onClick={() => handleAddKitToCart(kit)}
-                      style={{ borderRadius: "8px" }}
+                      style={{ borderRadius: "4px" }}
                     >
                       {kit.is_free ? "STÁHNOUT" : "DO KOŠÍKU"}
                     </button>

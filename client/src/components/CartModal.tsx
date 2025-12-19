@@ -48,22 +48,27 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
               right: 0,
               top: 0,
               bottom: 0,
-              width: "400px",
-              backgroundColor: "#111",
+              width: "calc(100% / 3)",
+              backgroundColor: "#000",
               boxShadow: "-2px 0 20px rgba(0, 0, 0, 0.5)",
               display: "flex",
               flexDirection: "column",
               animation: "slideIn 0.4s ease-out",
               zIndex: 1000,
+              borderLeft: "0.5px solid #666",
             }}
             onClick={(e) => e.stopPropagation()}
           >
             <div
               style={{
                 backgroundColor: "#24e053",
-                padding: "16px",
+                padding: "0 16px",
                 textAlign: "center",
                 borderBottom: "1px solid #333",
+                height: "42px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
               <h2

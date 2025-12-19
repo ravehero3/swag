@@ -89,7 +89,7 @@ function SoundWave({ audioRef, isPlaying }: SoundWaveProps) {
         style={{
           width: "100%",
           height: "150px",
-          borderRadius: "8px",
+          borderRadius: "4px",
           background: "linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(36,224,83,0.05) 100%)",
           border: "1px solid rgba(36, 224, 83, 0.2)",
           boxShadow: "0 0 20px rgba(36, 224, 83, 0.1)",
