@@ -146,7 +146,7 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                         <div style={{ fontSize: "14px", fontWeight: "bold", marginBottom: "4px" }}>
                           {item.title}
                         </div>
-                        <div style={{ fontSize: "13px", color: "#24e053", marginBottom: "8px" }}>
+                        <div style={{ fontSize: "13px", color: "#fff", marginBottom: "8px" }}>
                           {item.price} CZK
                         </div>
                         <button
@@ -159,34 +159,22 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                             padding: "4px 8px",
                             borderRadius: "2px",
                             cursor: "pointer",
-                            transition: "all 0.2s ease",
+                            transition: "all 0.15s ease",
                             overflow: "hidden",
                             position: "relative",
                           }}
+                          onMouseEnter={(e) => {
+                            const btn = e.currentTarget as HTMLButtonElement;
+                            btn.style.borderColor = "#fff";
+                            btn.style.color = "#fff";
+                          }}
+                          onMouseLeave={(e) => {
+                            const btn = e.currentTarget as HTMLButtonElement;
+                            btn.style.borderColor = "#666";
+                            btn.style.color = "#fff";
+                          }}
                         >
-                          <span
-                            className="flyfx-text"
-                            style={{
-                              display: "inline-block",
-                              transition: "all 0.2s ease",
-                            }}
-                            onMouseEnter={(e) => {
-                              const span = e.currentTarget as HTMLSpanElement;
-                              const btn = span.closest("button") as HTMLButtonElement;
-                              btn.style.borderColor = "#24e053";
-                              span.style.color = "#24e053";
-                              span.style.animation = "flyfx 0.4s ease";
-                            }}
-                            onMouseLeave={(e) => {
-                              const span = e.currentTarget as HTMLSpanElement;
-                              const btn = span.closest("button") as HTMLButtonElement;
-                              btn.style.borderColor = "#666";
-                              span.style.color = "#fff";
-                              span.style.animation = "none";
-                            }}
-                          >
-                            Odebrat
-                          </span>
+                          Odebrat
                         </button>
                       </div>
                     </div>
@@ -207,7 +195,7 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                   }}
                 >
                   <span>Celkem:</span>
-                  <span style={{ color: "#24e053" }}>
+                  <span style={{ color: "#fff" }}>
                     {cart.reduce((sum, item) => sum + item.price, 0)} CZK
                   </span>
                 </div>
@@ -215,7 +203,7 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                   style={{
                     width: "100%",
                     padding: "12px",
-                    backgroundColor: "#24e053",
+                    backgroundColor: "#fff",
                     color: "#000",
                     border: "none",
                     borderRadius: "4px",
@@ -223,33 +211,20 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                     fontWeight: "bold",
                     cursor: "pointer",
                     marginBottom: "8px",
-                    transition: "all 0.2s ease",
+                    transition: "all 0.15s ease",
                     overflow: "hidden",
                     position: "relative",
                   }}
+                  onMouseEnter={(e) => {
+                    const btn = e.currentTarget as HTMLButtonElement;
+                    btn.style.backgroundColor = "#e8e8e8";
+                  }}
+                  onMouseLeave={(e) => {
+                    const btn = e.currentTarget as HTMLButtonElement;
+                    btn.style.backgroundColor = "#fff";
+                  }}
                 >
-                  <span
-                    className="flyfx-text"
-                    style={{
-                      display: "inline-block",
-                      transition: "all 0.2s ease",
-                      color: "#000",
-                    }}
-                    onMouseEnter={(e) => {
-                      const span = e.currentTarget as HTMLSpanElement;
-                      const btn = span.closest("button") as HTMLButtonElement;
-                      btn.style.backgroundColor = "#1fa03f";
-                      span.style.animation = "flyfx 0.4s ease";
-                    }}
-                    onMouseLeave={(e) => {
-                      const span = e.currentTarget as HTMLSpanElement;
-                      const btn = span.closest("button") as HTMLButtonElement;
-                      btn.style.backgroundColor = "#24e053";
-                      span.style.animation = "none";
-                    }}
-                  >
-                    Pokračovat na platbu
-                  </span>
+                  Pokračovat na platbu
                 </button>
                 <button
                   onClick={() => clearCart()}
@@ -262,34 +237,22 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                     borderRadius: "4px",
                     fontSize: "14px",
                     cursor: "pointer",
-                    transition: "all 0.2s ease",
+                    transition: "all 0.15s ease",
                     overflow: "hidden",
                     position: "relative",
                   }}
+                  onMouseEnter={(e) => {
+                    const btn = e.currentTarget as HTMLButtonElement;
+                    btn.style.borderColor = "#fff";
+                    btn.style.color = "#fff";
+                  }}
+                  onMouseLeave={(e) => {
+                    const btn = e.currentTarget as HTMLButtonElement;
+                    btn.style.borderColor = "#666";
+                    btn.style.color = "#fff";
+                  }}
                 >
-                  <span
-                    className="flyfx-text"
-                    style={{
-                      display: "inline-block",
-                      transition: "all 0.2s ease",
-                    }}
-                    onMouseEnter={(e) => {
-                      const span = e.currentTarget as HTMLSpanElement;
-                      const btn = span.closest("button") as HTMLButtonElement;
-                      btn.style.borderColor = "#24e053";
-                      span.style.color = "#24e053";
-                      span.style.animation = "flyfx 0.4s ease";
-                    }}
-                    onMouseLeave={(e) => {
-                      const span = e.currentTarget as HTMLSpanElement;
-                      const btn = span.closest("button") as HTMLButtonElement;
-                      btn.style.borderColor = "#666";
-                      span.style.color = "#fff";
-                      span.style.animation = "none";
-                    }}
-                  >
-                    Vymazat košík
-                  </span>
+                  Vymazat košík
                 </button>
               </div>
             )}
@@ -304,30 +267,20 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                 cursor: "pointer",
                 fontSize: "12px",
                 borderTop: "1px solid #333",
-                transition: "all 0.2s ease",
+                transition: "all 0.15s ease",
                 overflow: "hidden",
                 position: "relative",
               }}
+              onMouseEnter={(e) => {
+                const btn = e.currentTarget as HTMLButtonElement;
+                btn.style.color = "#fff";
+              }}
+              onMouseLeave={(e) => {
+                const btn = e.currentTarget as HTMLButtonElement;
+                btn.style.color = "#fff";
+              }}
             >
-              <span
-                className="flyfx-text"
-                style={{
-                  display: "inline-block",
-                  transition: "all 0.2s ease",
-                }}
-                onMouseEnter={(e) => {
-                  const span = e.currentTarget as HTMLSpanElement;
-                  span.style.color = "#24e053";
-                  span.style.animation = "flyfx 0.4s ease";
-                }}
-                onMouseLeave={(e) => {
-                  const span = e.currentTarget as HTMLSpanElement;
-                  span.style.color = "#fff";
-                  span.style.animation = "none";
-                }}
-              >
-                Zavřít
-              </span>
+              Zavřít
             </button>
           </div>
         </div>
