@@ -407,13 +407,13 @@ function Beaty() {
                     }}
                   >
                     <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, marginLeft: "-4px" }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, marginLeft: "-4px" }}>
                         <rect x="3" y="6" width="18" height="15" rx="2" />
                         <path d="M8 6V4a4 4 0 0 1 8 0v2" />
                       </svg>
                       <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "#000", lineHeight: "1", right: "-8px", top: "-4px" }}>+</span>
                     </div>
-                    <span style={{ marginLeft: "24px" }}>{Math.floor(highlightedBeat.price)} CZK</span>
+                    <span style={{ marginLeft: "24px", fontWeight: 500 }}>{Math.floor(highlightedBeat.price)} CZK</span>
                   </button>
                 </div>
               </div>
@@ -622,13 +622,13 @@ function Beaty() {
                   }}
                 >
                   <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, marginLeft: "-4px" }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, marginLeft: "-4px" }}>
                       <rect x="3" y="6" width="18" height="15" rx="2" />
                       <path d="M8 6V4a4 4 0 0 1 8 0v2" />
                     </svg>
                     <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "#000", lineHeight: "1", right: "-8px", top: "-4px" }}>+</span>
                   </div>
-                  <span style={{ marginLeft: "24px" }}>{Math.floor(beat.price)} CZK</span>
+                  <span style={{ marginLeft: "24px", fontWeight: 500 }}>{Math.floor(beat.price)} CZK</span>
                 </button>
               </div>
             </div>
@@ -823,7 +823,7 @@ function Beaty() {
                     >
                       {!kit.is_free && (
                         <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
                             <line x1="3" y1="6" x2="21" y2="6" />
                             <path d="M16 10a4 4 0 0 1-8 0" />
@@ -831,7 +831,7 @@ function Beaty() {
                           <span style={{ position: "absolute", top: "-4px", right: "-8px", fontSize: "16px", fontWeight: "400", color: "#000", lineHeight: "1" }}>+</span>
                         </div>
                       )}
-                      {kit.is_free ? "STÁHNOUT" : `${kit.price} CZK`}
+                      <span style={{ fontWeight: 500 }}>{kit.is_free ? "STÁHNOUT" : `${kit.price} CZK`}</span>
                     </button>
                   </div>
                 </div>

@@ -114,8 +114,8 @@ function MusicPlayer({
           <button
             onClick={onPlayPause}
             style={{
-              width: "72px",
-              height: "72px",
+              width: "52px",
+              height: "52px",
               borderRadius: "50%",
               border: "2px solid #fff",
               background: isPlaying ? "#fff" : "transparent",
@@ -124,8 +124,9 @@ function MusicPlayer({
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontSize: "28px",
-              padding: "4px",
+              fontSize: "24px",
+              padding: "0",
+              margin: "16px 0",
             }}
           >
             {isPlaying ? "⏸" : "▶"}
