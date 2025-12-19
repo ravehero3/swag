@@ -102,6 +102,8 @@ function Header() {
             fill="none"
             stroke="#fff"
             strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
             style={{
               cursor: "pointer",
               transition: "transform 0.2s ease",
@@ -114,7 +116,8 @@ function Header() {
             onMouseEnter={() => setHoveredIcon("heart")}
             onMouseLeave={() => setHoveredIcon(null)}
           >
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+            <path d="M8.5 14.5C5.5 12 2 9.5 2 6.5C2 4.5 3.5 3 5.5 3c1.5 0 2.8 1 3.5 2c0.7-1 2-2 3.5-2c2 0 3.5 1.5 3.5 3.5c0 3-3.5 5.5-6.5 8" />
+            <path d="M12 6c1 1.5 1.5 3 1.5 4.5c0 2.5-1 4-3 4.5" />
           </svg>
         </Link>
 
@@ -148,7 +151,8 @@ function Header() {
                 color: "#000",
                 padding: "16px",
                 borderRadius: "4px",
-                fontSize: "16px",
+                fontSize: "12px",
+                fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
                 fontWeight: 400,
                 display: "flex",
                 alignItems: "center",
