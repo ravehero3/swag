@@ -94,22 +94,24 @@ function Header() {
           </span>
         </Link>
 
-        <span
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="white"
           style={{
             cursor: "pointer",
-            transition: "transform 0.2s ease, text-shadow 0.2s ease",
+            transition: "transform 0.2s ease, filter 0.2s ease",
             transform: hoveredIcon === "heart" ? "scale(1.02)" : "scale(1)",
             padding: "8px",
-            fontSize: "16px",
-            display: "inline-block",
-            textShadow: hoveredIcon === "heart" ? "0 0 8px rgba(255,165,0,0.5)" : "none",
+            filter: hoveredIcon === "heart" ? "drop-shadow(0 0 8px rgba(255,165,0,0.5))" : "none",
           }}
           onClick={() => window.location.href = "/ulozeno"}
           onMouseEnter={() => setHoveredIcon("heart")}
           onMouseLeave={() => setHoveredIcon(null)}
         >
-          🔥
-        </span>
+          <path d="M12.5 17.5c-3.5-3-6-5-6-7.5 0-2.2 1.5-3.5 3-3.5 1 0 2 .5 2.5 1.3.5-.8 1.5-1.3 2.5-1.3 1.5 0 3 1.3 3 3.5 0 2.5-2.5 4.5-6 7.5z" />
+        </svg>
 
         <div
           style={{

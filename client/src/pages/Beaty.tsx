@@ -632,6 +632,7 @@ function Beaty() {
         </div>
 
 
+        {isHomePage && (
         <div style={{ paddingBottom: currentBeat ? "80px" : "20px", textAlign: "center", marginTop: "64px" }}>
           <h2 style={{ fontSize: "18px", marginBottom: "24px", fontWeight: "bold", fontFamily: "Helvetica Neue Condensed, Helvetica, Arial, sans-serif" }}>ZVUKY A PRESETY</h2>
           
@@ -832,6 +833,7 @@ function Beaty() {
           </div>
         )}
         </div>
+        )}
       </div>
 
       {contractModalBeat && (
