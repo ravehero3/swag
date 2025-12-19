@@ -94,21 +94,22 @@ function Header() {
           </span>
         </Link>
 
-        <img
-          src="/fire.png"
-          alt="Favorites"
+        <span
           style={{
-            width: "16px",
-            height: "16px",
             cursor: "pointer",
-            transition: "transform 0.2s ease",
+            transition: "transform 0.2s ease, text-shadow 0.2s ease",
             transform: hoveredIcon === "heart" ? "scale(1.02)" : "scale(1)",
             padding: "8px",
+            fontSize: "16px",
+            display: "inline-block",
+            textShadow: hoveredIcon === "heart" ? "0 0 8px rgba(255,165,0,0.5)" : "none",
           }}
           onClick={() => window.location.href = "/ulozeno"}
           onMouseEnter={() => setHoveredIcon("heart")}
           onMouseLeave={() => setHoveredIcon(null)}
-        />
+        >
+          🔥
+        </span>
 
         <div
           style={{
