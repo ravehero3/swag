@@ -447,7 +447,7 @@ function Beaty() {
             </p>
           ) : (
             <>
-              <div style={{ display: "flex", alignItems: "center", padding: "16px", gap: "16px", borderBottom: "1px solid #333", marginTop: "16px" }}>
+              <div style={{ display: "flex", alignItems: "center", padding: "16px 16px 8px 16px", gap: "16px", borderBottom: "1px solid #333", marginTop: "16px" }}>
                 <div style={{ width: "48px", height: "48px", flexShrink: 0 }} />
                 <div style={{ width: "25%", minWidth: "200px", marginRight: "12px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666" }}>NÁZEV</div>
                 <button onClick={() => { setSortBy(sortBy === "bpm" ? "bpm" : "bpm"); setSortAsc(sortBy === "bpm" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0 }}>BPM {sortBy === "bpm" && (sortAsc ? "↑" : "↓")}</button>
