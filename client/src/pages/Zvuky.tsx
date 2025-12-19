@@ -267,7 +267,7 @@ function Zvuky() {
                             <line x1="3" y1="6" x2="21" y2="6" />
                             <path d="M16 10a4 4 0 0 1-8 0" />
                           </svg>
-                          <span style={{ position: "absolute", top: "-2px", right: "16px", fontSize: "10px", fontWeight: "bold", color: "#fff", background: "#24e053", borderRadius: "50%", width: "16px", height: "16px", display: "flex", alignItems: "center", justifyContent: "center" }}>+</span>
+                          <span style={{ position: "absolute", top: "-4px", right: "14px", fontSize: "10px", fontWeight: "bold", color: "#fff", background: "#24e053", borderRadius: "50%", width: "16px", height: "16px", display: "flex", alignItems: "center", justifyContent: "center" }}>+</span>
                         </div>
                       )}
                       {kit.is_free ? "STÁHNOUT" : `${kit.price} CZK`}
@@ -284,6 +284,7 @@ function Zvuky() {
                   position: "relative",
                   background: "#0a0a0a",
                   animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+                  borderRadius: "4px",
                 }}
               >
                 <div

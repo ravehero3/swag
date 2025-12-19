@@ -273,10 +273,12 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
               }}
               onMouseEnter={(e) => {
                 const btn = e.currentTarget as HTMLButtonElement;
-                btn.style.color = "#fff";
+                btn.style.backgroundColor = "#fff";
+                btn.style.color = "#000";
               }}
               onMouseLeave={(e) => {
                 const btn = e.currentTarget as HTMLButtonElement;
+                btn.style.backgroundColor = "transparent";
                 btn.style.color = "#fff";
               }}
             >

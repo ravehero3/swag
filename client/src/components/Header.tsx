@@ -74,7 +74,7 @@ function Header() {
         />
       </Link>
 
-      <div style={{ display: "flex", alignItems: "center", gap: "4px", position: "relative", zIndex: 10, padding: "0 16px 0 32px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "8px", position: "relative", zIndex: 10, padding: "0 16px 0 32px" }}>
         <Link href={user ? (user.isAdmin ? "/admin" : "/prihlasit-se") : "/prihlasit-se"}>
           <span
             style={{
@@ -100,7 +100,7 @@ function Header() {
           viewBox="0 0 24 24"
           fill="none"
           stroke="#fff"
-          strokeWidth="1"
+          strokeWidth="2"
           style={{
             cursor: "pointer",
             transition: "transform 0.2s ease, filter 0.2s ease",
