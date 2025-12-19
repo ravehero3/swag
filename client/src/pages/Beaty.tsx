@@ -375,7 +375,7 @@ function Beaty() {
               <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-start", flex: 1 }}>
                 <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "6px" }}>
                   <span style={{ fontSize: "12px", fontFamily: "Work Sans, sans-serif", color: "#999" }}>
-                    Featured track
+                    Beat týdne
                   </span>
                   <span style={{ fontSize: "12px", fontFamily: "Work Sans, sans-serif", color: "#666" }}>•</span>
                   <span style={{ fontSize: "12px", fontFamily: "Work Sans, sans-serif", color: "#666" }}>
@@ -479,14 +479,16 @@ function Beaty() {
                 justifyContent: "flex-start",
                 borderBottom: "1px solid #333",
                 boxShadow: "none",
+                position: "relative",
+                zIndex: 1,
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.boxShadow = "0 0 20px rgba(59, 130, 246, 0.4), inset 0 0 20px rgba(59, 130, 246, 0.1)";
-                e.currentTarget.style.borderTop = "1px solid #3b82f6";
+                e.currentTarget.style.boxShadow = "0 0 0 1px #3b82f6, 0 0 16px rgba(59, 130, 246, 0.5)";
+                e.currentTarget.style.border = "1px solid #3b82f6";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.boxShadow = "none";
-                e.currentTarget.style.borderTop = "1px solid transparent";
+                e.currentTarget.style.border = "1px solid transparent";
               }}
             >
               <img
@@ -635,7 +637,7 @@ function Beaty() {
 
 
         <div style={{ paddingBottom: currentBeat ? "80px" : "20px", textAlign: "center", marginTop: "64px" }}>
-          <h2 style={{ fontSize: "18px", marginBottom: "24px", fontWeight: "bold" }}>ZVUKY A PRESETY</h2>
+          <h2 style={{ fontSize: "18px", marginBottom: "24px", fontWeight: "bold", fontFamily: "Helvetica Neue Condensed, Helvetica, Arial, sans-serif" }}>ZVUKY A PRESETY</h2>
           
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "24px", marginBottom: "48px", maxWidth: "1000px", margin: "0 auto 48px" }}>
             {[
