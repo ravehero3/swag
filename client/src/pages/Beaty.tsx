@@ -452,9 +452,29 @@ function Beaty() {
 
         <div style={{ marginBottom: "48px", maxWidth: "1200px", margin: "0 auto", marginTop: "60px" }}>
           {otherBeats.length === 0 && !highlightedBeat ? (
-            <p style={{ textAlign: "center", color: "#666" }}>
-              Zatím nejsou k dispozici žádné beaty
-            </p>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "8px" }}>
+              {Array(4).fill(null).map((_, index) => (
+                <div
+                  key={index}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    padding: "6px 16px",
+                    gap: "16px",
+                    border: "1px solid #333",
+                    borderRadius: "4px",
+                    background: "#0a0a0a",
+                    animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+                    height: "48px",
+                  }}
+                >
+                  <div style={{ width: "48px", height: "48px", background: "#222", borderRadius: "4px", flexShrink: 0 }} />
+                  <div style={{ width: "25%", minWidth: "200px", height: "16px", background: "#222", borderRadius: "2px" }} />
+                  <div style={{ flex: 1, height: "16px", background: "#222", borderRadius: "2px", marginLeft: "64px" }} />
+                  <div style={{ width: "80px", height: "16px", background: "#222", borderRadius: "2px", marginLeft: "48px" }} />
+                </div>
+              ))}
+            </div>
           ) : (
             <>
               <div style={{ display: "flex", alignItems: "center", padding: "16px 16px 8px 16px", gap: "16px", borderBottom: "1px solid #333", marginTop: "16px" }}>
