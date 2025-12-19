@@ -1,5 +1,5 @@
 import { useState, useEffect, createContext, useContext } from "react";
-import { Route, Switch } from "wouter";
+import { Route, Switch, useLocation } from "wouter";
 import Header from "./components/Header";
 import Home from "./pages/Home";
 import Beaty from "./pages/Beaty";
@@ -48,6 +48,7 @@ function App() {
   const [user, setUser] = useState<User | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [location] = useLocation();
 
   useEffect(() => {
     fetch("/api/auth/me", { credentials: "include" })
@@ -95,27 +96,37 @@ function App() {
     return <div style={{ background: "#000", minHeight: "100vh" }} />;
   }
 
+  const isCartPage = location === "/kosik";
+
   return (
     <AppContext.Provider value={{ user, setUser, cart, addToCart, removeFromCart, clearCart }}>
-      <div style={{ minHeight: "100vh", background: "#000" }}>
+      <div style={{ minHeight: "100vh", background: "#000", display: "flex", flexDirection: "column" }}>
         <Header />
-        <main style={{ padding: "20px" }} className="fade-in">
-          <Switch>
-            <Route path="/" component={Home} />
-            <Route path="/beaty" component={Beaty} />
-            <Route path="/zvuky" component={Zvuky} />
-            <Route path="/prihlasit-se" component={Login} />
-            <Route path="/kosik" component={Cart} />
-            <Route path="/checkout" component={Checkout} />
-            <Route path="/admin" component={Admin} />
-            <Route>
-              <div className="fade-in" style={{ textAlign: "center", padding: "100px 20px" }}>
-                <h1>404</h1>
-                <p>Stránka nenalezena</p>
-              </div>
-            </Route>
-          </Switch>
-        </main>
+        {isCartPage ? (
+          <div style={{ display: "flex", flex: 1 }}>
+            <main style={{ flex: 2 }} />
+            <div style={{ flex: 1, background: "#000", borderLeft: "1px solid #444", padding: "20px", overflowY: "auto" }} className="fade-in">
+              <Cart />
+            </div>
+          </div>
+        ) : (
+          <main style={{ padding: "20px" }} className="fade-in">
+            <Switch>
+              <Route path="/" component={Home} />
+              <Route path="/beaty" component={Beaty} />
+              <Route path="/zvuky" component={Zvuky} />
+              <Route path="/prihlasit-se" component={Login} />
+              <Route path="/checkout" component={Checkout} />
+              <Route path="/admin" component={Admin} />
+              <Route>
+                <div className="fade-in" style={{ textAlign: "center", padding: "100px 20px" }}>
+                  <h1>404</h1>
+                  <p>Stránka nenalezena</p>
+                </div>
+              </Route>
+            </Switch>
+          </main>
+        )}
       </div>
     </AppContext.Provider>
   );

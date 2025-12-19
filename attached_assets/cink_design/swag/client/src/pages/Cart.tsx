@@ -6,7 +6,7 @@ function Cart() {
   const total = cart.reduce((sum, item) => sum + item.price, 0);
 
   return (
-    <div className="fade-in" style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       <h1 style={{ marginBottom: "24px", fontSize: "16px", fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontWeight: "900", letterSpacing: "-0.5px" }}>KOŠÍK</h1>
 
       {cart.length === 0 ? (
@@ -17,7 +17,7 @@ function Cart() {
           </Link>
         </div>
       ) : (
-        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", overflowY: "auto" }}>
           {cart.map((item) => (
             <div
               key={`${item.productType}-${item.productId}`}
@@ -26,21 +26,20 @@ function Cart() {
                 alignItems: "center",
                 padding: "16px 0",
                 borderBottom: "1px solid #333",
-                gap: "16px",
+                gap: "12px",
               }}
             >
               <img
                 src={item.artworkUrl}
                 alt={item.title}
-                style={{ width: "60px", height: "60px", objectFit: "cover" }}
+                style={{ width: "50px", height: "50px", objectFit: "cover", flexShrink: 0 }}
               />
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: "bold" }}>{item.title}</div>
-                <div style={{ fontSize: "12px", color: "#666" }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontWeight: "bold", fontSize: "13px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.title}</div>
+                <div style={{ fontSize: "11px", color: "#666" }}>
                   {item.productType === "beat" ? "Beat" : "Sound Kit"}
                 </div>
               </div>
-              <div style={{ fontWeight: "bold" }}>{item.price} CZK</div>
               <button
                 onClick={() => removeFromCart(item.productId, item.productType)}
                 style={{
@@ -49,6 +48,8 @@ function Cart() {
                   color: "#ff4444",
                   fontSize: "18px",
                   cursor: "pointer",
+                  padding: "0 8px",
+                  flexShrink: 0,
                 }}
               >
                 ✕
@@ -62,16 +63,16 @@ function Cart() {
               justifyContent: "space-between",
               alignItems: "center",
               padding: "24px 0",
-              borderTop: "1px solid #fff",
+              borderTop: "1px solid #444",
               marginTop: "16px",
             }}
           >
-            <span style={{ fontSize: "18px", fontWeight: "bold" }}>Celkem</span>
-            <span style={{ fontSize: "24px", fontWeight: "bold" }}>{total} CZK</span>
+            <span style={{ fontSize: "14px", fontWeight: "bold" }}>Celkem</span>
+            <span style={{ fontSize: "18px", fontWeight: "bold" }}>{total} CZK</span>
           </div>
 
           <Link href="/checkout">
-            <button className="btn btn-filled" style={{ width: "100%", marginTop: "auto" }}>
+            <button className="btn btn-filled" style={{ width: "100%", marginTop: "16px", fontSize: "13px" }}>
               Pokračovat k platbě
             </button>
           </Link>
