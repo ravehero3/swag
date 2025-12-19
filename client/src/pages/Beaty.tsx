@@ -322,7 +322,7 @@ function Beaty() {
                 <img
                   src={highlightedBeat.artwork_url || "/uploads/artwork/metallic-logo.png"}
                   alt={highlightedBeat.title}
-                  style={{ width: "200px", height: "200px", objectFit: "cover", border: "1px solid #666", borderRadius: "4px" }}
+                  style={{ width: "200px", height: "200px", objectFit: "cover", border: "1px solid #666", borderRadius: "8px" }}
                 />
                 <div
                   style={{
@@ -393,7 +393,7 @@ function Beaty() {
                       display: "flex",
                       alignItems: "center",
                       gap: "4px",
-                      borderRadius: "4px",
+                      borderRadius: "8px",
                       whiteSpace: "nowrap",
                       flexShrink: 0,
                       position: "relative",
@@ -454,7 +454,7 @@ function Beaty() {
                 <div style={{ width: "25%", minWidth: "200px", marginRight: "12px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666" }}>NÁZEV</div>
                 <div style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", minWidth: "80px" }}>DÉLKA</div>
                 <button onClick={() => { setSortBy(sortBy === "bpm" ? "bpm" : "bpm"); setSortAsc(sortBy === "bpm" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0, marginLeft: "64px" }}>BPM {sortBy === "bpm" && (sortAsc ? "↑" : "↓")}</button>
-                <button onClick={() => { setSortBy(sortBy === "key" ? "key" : "key"); setSortAsc(sortBy === "key" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0, marginLeft: "48px" }}>KEY {sortBy === "key" && (sortAsc ? "↑" : "↓")}</button>
+                <button onClick={() => { setSortBy(sortBy === "key" ? "key" : "key"); setSortAsc(sortBy === "key" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0, marginLeft: "64px" }}>KEY {sortBy === "key" && (sortAsc ? "↑" : "↓")}</button>
               </div>
               {(sortBy && sortBy === "bpm" ? [...otherBeats].sort((a, b) => sortAsc ? a.bpm - b.bpm : b.bpm - a.bpm) : sortBy && sortBy === "key" ? [...otherBeats].sort((a, b) => sortAsc ? a.key.localeCompare(b.key) : b.key.localeCompare(a.key)) : otherBeats).map((beat) => (
             <div
@@ -485,7 +485,7 @@ function Beaty() {
               <img
                 src={beat.artwork_url || "/uploads/artwork/metallic-logo.png"}
                 alt={beat.title}
-                style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "2px", flexShrink: 0 }}
+                style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "8px", flexShrink: 0 }}
               />
               <div style={{ width: "25%", minWidth: "200px", marginRight: "12px", display: "flex", alignItems: "center", gap: "12px" }}>
                 <div style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "20px" }}>{beat.title}</div>
@@ -604,7 +604,7 @@ function Beaty() {
                     display: "flex",
                     alignItems: "center",
                     gap: "6px",
-                    borderRadius: "2px",
+                    borderRadius: "8px",
                     position: "relative",
                     minWidth: "120px",
                     marginLeft: "8px",
@@ -615,9 +615,9 @@ function Beaty() {
                       <rect x="3" y="6" width="18" height="15" rx="2" />
                       <path d="M8 6V4a4 4 0 0 1 8 0v2" />
                     </svg>
-                    <span style={{ position: "absolute", fontSize: "18px", fontWeight: "bold", color: "#000", lineHeight: "1", right: "-4px", top: "-6px" }}>+</span>
+                    <span style={{ position: "absolute", fontSize: "18px", fontWeight: "bold", color: "#000", lineHeight: "1", right: "0px", top: "-4px" }}>+</span>
                   </div>
-                  <span>{Math.floor(beat.price)} CZK</span>
+                  <span style={{ marginLeft: "8px" }}>{Math.floor(beat.price)} CZK</span>
                 </button>
               </div>
             </div>
@@ -684,7 +684,7 @@ function Beaty() {
                   border: "1px solid #333",
                   overflow: "hidden",
                   position: "relative",
-                  borderRadius: "4px",
+                  borderRadius: "8px",
                 }}
               >
                 {user && (
@@ -733,7 +733,7 @@ function Beaty() {
                       width: "100%",
                       height: "100%",
                       objectFit: "cover",
-                      borderRadius: "4px 4px 0 0",
+                      borderRadius: "8px 8px 0 0",
                     }}
                   />
                   {kit.preview_url && (
@@ -775,7 +775,7 @@ function Beaty() {
                             fontSize: "10px",
                             padding: "2px 6px",
                             border: "1px solid #444",
-                            borderRadius: "4px",
+                            borderRadius: "8px",
                           }}
                         >
                           {tag}
@@ -791,7 +791,7 @@ function Beaty() {
                     <button
                       className="btn btn-bounce"
                       onClick={() => handleAddKitToCart(kit)}
-                      style={{ borderRadius: "4px" }}
+                      style={{ borderRadius: "8px" }}
                     >
                       {kit.is_free ? "STÁHNOUT" : "DO KOŠÍKU"}
                     </button>
