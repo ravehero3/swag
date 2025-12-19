@@ -140,7 +140,7 @@ function Header() {
               style={{
                 background: "#24e053",
                 color: "#000",
-                padding: "8px",
+                padding: "2px",
                 borderRadius: "4px",
                 fontSize: "12px",
                 fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
@@ -148,8 +148,8 @@ function Header() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                minWidth: "16px",
-                height: "16px",
+                minWidth: "24px",
+                height: "24px",
               }}
             >
               {cart.length}

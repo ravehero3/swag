@@ -794,11 +794,36 @@ function Beaty() {
                       {kit.is_free ? "ZDARMA" : `${kit.price} CZK`}
                     </span>
                     <button
-                      className="btn btn-bounce"
                       onClick={() => handleAddKitToCart(kit)}
-                      style={{ borderRadius: "4px" }}
+                      className="btn-bounce"
+                      style={{
+                        padding: "12px 16px",
+                        background: "#fff",
+                        color: "#000",
+                        border: "none",
+                        fontSize: "13px",
+                        fontWeight: "bold",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "4px",
+                        borderRadius: "4px",
+                        whiteSpace: "nowrap",
+                        flexShrink: 0,
+                        position: "relative",
+                      }}
                     >
-                      {kit.is_free ? "STÁHNOUT" : "DO KOŠÍKU"}
+                      {!kit.is_free && (
+                        <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                            <line x1="3" y1="6" x2="21" y2="6" />
+                            <path d="M16 10a4 4 0 0 1-8 0" />
+                          </svg>
+                          <span style={{ position: "absolute", top: "-2px", right: "16px", fontSize: "10px", fontWeight: "bold", color: "#fff", background: "#24e053", borderRadius: "50%", width: "16px", height: "16px", display: "flex", alignItems: "center", justifyContent: "center" }}>+</span>
+                        </div>
+                      )}
+                      {kit.is_free ? "STÁHNOUT" : `${kit.price} CZK`}
                     </button>
                   </div>
                 </div>
