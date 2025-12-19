@@ -382,8 +382,8 @@ function Beaty() {
                     {highlightedBeat.bpm}BPM
                   </span>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "24px", justifyContent: "space-between" }}>
-                  <h2 style={{ fontSize: "64px", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontWeight: "400", lineHeight: "1.1", position: "relative", zIndex: 10, margin: 0 }}>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "24px" }}>
+                  <h2 style={{ fontSize: "22px", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontWeight: "400", lineHeight: "1.1", position: "relative", zIndex: 10, margin: 0, marginBottom: "20px" }}>
                     {highlightedBeat.title}
                   </h2>
                   <button
@@ -404,6 +404,7 @@ function Beaty() {
                       whiteSpace: "nowrap",
                       flexShrink: 0,
                       position: "relative",
+                      width: "fit-content",
                     }}
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -411,7 +412,7 @@ function Beaty() {
                       <line x1="3" y1="6" x2="21" y2="6" />
                       <path d="M16 10a4 4 0 0 1-8 0" />
                     </svg>
-                    <span style={{ position: "absolute", top: "-2px", right: "8px", fontSize: "10px", fontWeight: "bold", color: "#fff", background: "#24e053", borderRadius: "50%", width: "16px", height: "16px", display: "flex", alignItems: "center", justifyContent: "center" }}>+</span>
+                    <span style={{ position: "absolute", top: "-2px", right: "24px", fontSize: "10px", fontWeight: "bold", color: "#fff", background: "#24e053", borderRadius: "50%", width: "16px", height: "16px", display: "flex", alignItems: "center", justifyContent: "center" }}>+</span>
                     {highlightedBeat.price} CZK
                   </button>
                 </div>
@@ -483,11 +484,15 @@ function Beaty() {
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.boxShadow = "0 0 0 1px #3b82f6, 0 0 8px rgba(59, 130, 246, 0.5)";
-                e.currentTarget.style.border = "1px solid #3b82f6";
+                e.currentTarget.style.borderTop = "1px solid #3b82f6";
+                e.currentTarget.style.borderLeft = "1px solid #3b82f6";
+                e.currentTarget.style.borderRight = "1px solid #3b82f6";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.boxShadow = "none";
-                e.currentTarget.style.border = "1px solid transparent";
+                e.currentTarget.style.borderTop = "1px solid transparent";
+                e.currentTarget.style.borderLeft = "1px solid transparent";
+                e.currentTarget.style.borderRight = "1px solid transparent";
               }}
             >
               <img
@@ -821,7 +826,7 @@ function Beaty() {
                             <line x1="3" y1="6" x2="21" y2="6" />
                             <path d="M16 10a4 4 0 0 1-8 0" />
                           </svg>
-                          <span style={{ position: "absolute", top: "-2px", right: "16px", fontSize: "10px", fontWeight: "bold", color: "#fff", background: "#24e053", borderRadius: "50%", width: "16px", height: "16px", display: "flex", alignItems: "center", justifyContent: "center" }}>+</span>
+                          <span style={{ position: "absolute", top: "-2px", right: "40px", fontSize: "10px", fontWeight: "bold", color: "#fff", background: "#24e053", borderRadius: "50%", width: "16px", height: "16px", display: "flex", alignItems: "center", justifyContent: "center" }}>+</span>
                         </div>
                       )}
                       {kit.is_free ? "STÁHNOUT" : `${kit.price} CZK`}
