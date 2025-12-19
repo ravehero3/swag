@@ -330,8 +330,8 @@ function Beaty() {
                     top: "50%",
                     left: "50%",
                     transform: "translate(-50%, -50%)",
-                    width: "56px",
-                    height: "56px",
+                    width: "40px",
+                    height: "40px",
                     borderRadius: "50%",
                     backdropFilter: "blur(10px) brightness(1.2)",
                     background: "rgba(255, 255, 255, 0.1)",
@@ -346,18 +346,19 @@ function Beaty() {
                     top: "50%",
                     left: "50%",
                     transform: "translate(-50%, -50%)",
-                    width: "56px",
-                    height: "56px",
+                    width: "40px",
+                    height: "40px",
                     borderRadius: "50%",
                     border: "2px solid #fff",
                     background: currentBeat?.id === highlightedBeat.id && isPlaying ? "#fff" : "rgba(0,0,0,0.7)",
                     color: currentBeat?.id === highlightedBeat.id && isPlaying ? "#000" : "#fff",
-                    fontSize: "20px",
+                    fontSize: "16px",
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     zIndex: 1,
+                    padding: "8px",
                   }}
                 >
                   {currentBeat?.id === highlightedBeat.id && isPlaying ? "⏸" : "▶"}
@@ -382,7 +383,7 @@ function Beaty() {
                     onClick={() => openContractModal(highlightedBeat)}
                     className="btn-bounce"
                     style={{
-                      padding: "12px 24px",
+                      padding: "12px 16px",
                       background: "#fff",
                       color: "#000",
                       border: "none",
@@ -391,10 +392,11 @@ function Beaty() {
                       cursor: "pointer",
                       display: "flex",
                       alignItems: "center",
-                      gap: "8px",
+                      gap: "4px",
                       borderRadius: "4px",
                       whiteSpace: "nowrap",
                       flexShrink: 0,
+                      position: "relative",
                     }}
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -402,7 +404,7 @@ function Beaty() {
                       <line x1="3" y1="6" x2="21" y2="6" />
                       <path d="M16 10a4 4 0 0 1-8 0" />
                     </svg>
-                    <span>+</span>
+                    <span style={{ position: "absolute", top: "-2px", right: "-2px", fontSize: "10px", fontWeight: "bold", color: "#fff", background: "#24e053", borderRadius: "50%", width: "16px", height: "16px", display: "flex", alignItems: "center", justifyContent: "center" }}>+</span>
                     {highlightedBeat.price} CZK
                   </button>
                 </div>
@@ -597,18 +599,21 @@ function Beaty() {
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
-                    gap: "2px",
+                    gap: "4px",
                     borderRadius: "2px",
                     position: "relative",
                     minWidth: "120px",
                     marginLeft: "8px",
                   }}
                 >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}>
-                    <rect x="3" y="6" width="18" height="15" rx="2" />
-                    <path d="M8 6V4a4 4 0 0 1 8 0v2" />
-                  </svg>
-                  <span style={{ marginLeft: "2px" }}>+ {beat.price} CZK</span>
+                  <div style={{ position: "relative" }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}>
+                      <rect x="3" y="6" width="18" height="15" rx="2" />
+                      <path d="M8 6V4a4 4 0 0 1 8 0v2" />
+                    </svg>
+                    <div style={{ position: "absolute", top: "-4px", right: "-4px", fontSize: "8px", fontWeight: "bold", color: "#000", background: "#24e053", borderRadius: "50%", width: "14px", height: "14px", display: "flex", alignItems: "center", justifyContent: "center" }}>+</div>
+                  </div>
+                  <span>{beat.price} CZK</span>
                 </button>
               </div>
             </div>
