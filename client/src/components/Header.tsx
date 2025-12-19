@@ -74,7 +74,7 @@ function Header() {
         />
       </Link>
 
-      <div style={{ display: "flex", alignItems: "center", gap: "16px", position: "relative", zIndex: 10, padding: "0 8px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "16px", position: "relative", zIndex: 10, padding: "0 2px", marginRight: "-6px" }}>
         <Link href={user ? (user.isAdmin ? "/admin" : "/prihlasit-se") : "/prihlasit-se"}>
           <span
             style={{
