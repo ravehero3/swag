@@ -382,8 +382,8 @@ function Beaty() {
                     {highlightedBeat.bpm}BPM
                   </span>
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "24px" }}>
-                  <h2 style={{ fontSize: "30px", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontWeight: "400", lineHeight: "1.1", position: "relative", zIndex: 10, margin: 0, marginBottom: "20px" }}>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "8px" }}>
+                  <h2 style={{ fontSize: "30px", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontWeight: "400", lineHeight: "1.1", position: "relative", zIndex: 10, margin: 0 }}>
                     {highlightedBeat.title}
                   </h2>
                   <button
@@ -400,21 +400,20 @@ function Beaty() {
                       cursor: "pointer",
                       display: "flex",
                       alignItems: "center",
-                      gap: "4px",
+                      gap: "6px",
                       borderRadius: "4px",
-                      whiteSpace: "nowrap",
-                      flexShrink: 0,
                       position: "relative",
-                      width: "fit-content",
+                      minWidth: "120px",
                     }}
                   >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
-                      <line x1="3" y1="6" x2="21" y2="6" />
-                      <path d="M16 10a4 4 0 0 1-8 0" />
-                    </svg>
-                    <span style={{ position: "absolute", top: "-8px", right: "-8px", fontSize: "16px", fontWeight: "400", color: "#000", lineHeight: "1" }}>+</span>
-                    {Math.floor(highlightedBeat.price)} CZK
+                    <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, marginLeft: "-4px" }}>
+                        <rect x="3" y="6" width="18" height="15" rx="2" />
+                        <path d="M8 6V4a4 4 0 0 1 8 0v2" />
+                      </svg>
+                      <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "#000", lineHeight: "1", right: "-8px", top: "-8px" }}>+</span>
+                    </div>
+                    <span style={{ marginLeft: "8px" }}>{Math.floor(highlightedBeat.price)} CZK</span>
                   </button>
                 </div>
               </div>
