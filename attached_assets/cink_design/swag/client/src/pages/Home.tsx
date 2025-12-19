@@ -14,67 +14,106 @@ interface Beat {
   featured: boolean;
 }
 
+interface SoundKit {
+  id: number;
+  title: string;
+  description: string;
+  type: string;
+  price: number;
+  is_free: boolean;
+  number_of_sounds: number;
+  tags: string[];
+  preview_url: string;
+  artwork_url: string;
+}
+
+const typeLabels: Record<string, string> = {
+  drum_kit: "Drum Kit",
+  one_shot_kit: "One Shot Kit",
+  loop_kit: "Loop Kit",
+  one_shot_bundle: "One Shot Bundle",
+  drum_kit_bundle: "Drum Kit Bundle",
+};
+
 function Home() {
-  const [featuredBeat, setFeaturedBeat] = useState<Beat | null>(null);
   const [playlistBeats, setPlaylistBeats] = useState<Beat[]>([]);
+  const [kits, setKits] = useState<SoundKit[]>([]);
   const [currentBeat, setCurrentBeat] = useState<Beat | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const [currentKit, setCurrentKit] = useState<SoundKit | null>(null);
+  const [isPlayingBeat, setIsPlayingBeat] = useState(false);
+  const [isPlayingKit, setIsPlayingKit] = useState(false);
+  const beatAudioRef = useRef<HTMLAudioElement>(null);
+  const kitAudioRef = useRef<HTMLAudioElement>(null);
   const { addToCart } = useApp();
 
   useEffect(() => {
     fetch("/api/beats")
       .then((res) => res.json())
       .then((beats) => {
-        const featured = beats.find((b: Beat) => b.featured) || beats[0];
-        setFeaturedBeat(featured);
-        // Get up to 13 beats for the playlist (excluding featured beat if it's in the list)
-        const remaining = beats.filter((b: Beat) => b.id !== featured.id).slice(0, 13);
-        setPlaylistBeats(remaining);
+        // Get up to 10 beats for the playlist
+        setPlaylistBeats(beats.slice(0, 10));
       })
       .catch(console.error);
   }, []);
 
-  const playFeaturedBeat = () => {
-    if (!featuredBeat) return;
-    if (currentBeat?.id === featuredBeat.id) {
-      if (isPlaying) {
-        audioRef.current?.pause();
-        setIsPlaying(false);
-      } else {
-        audioRef.current?.play();
-        setIsPlaying(true);
-      }
-    } else {
-      setCurrentBeat(featuredBeat);
-      setIsPlaying(true);
-      setTimeout(() => audioRef.current?.play(), 100);
-    }
-  };
+  useEffect(() => {
+    fetch("/api/sound-kits")
+      .then((res) => res.json())
+      .then(setKits)
+      .catch(console.error);
+  }, []);
 
   const playBeat = (beat: Beat) => {
     if (currentBeat?.id === beat.id) {
-      if (isPlaying) {
-        audioRef.current?.pause();
-        setIsPlaying(false);
+      if (isPlayingBeat) {
+        beatAudioRef.current?.pause();
+        setIsPlayingBeat(false);
       } else {
-        audioRef.current?.play();
-        setIsPlaying(true);
+        beatAudioRef.current?.play();
+        setIsPlayingBeat(true);
       }
     } else {
       setCurrentBeat(beat);
-      setIsPlaying(true);
-      setTimeout(() => audioRef.current?.play(), 100);
+      setIsPlayingBeat(true);
+      setTimeout(() => beatAudioRef.current?.play(), 100);
     }
   };
 
-  const handleAddToCart = (beat: Beat) => {
+  const playKit = (kit: SoundKit) => {
+    if (!kit.preview_url) return;
+    if (currentKit?.id === kit.id) {
+      if (isPlayingKit) {
+        kitAudioRef.current?.pause();
+        setIsPlayingKit(false);
+      } else {
+        kitAudioRef.current?.play();
+        setIsPlayingKit(true);
+      }
+    } else {
+      setCurrentKit(kit);
+      setIsPlayingKit(true);
+      setTimeout(() => kitAudioRef.current?.play(), 100);
+    }
+  };
+
+  const handleAddBeatToCart = (beat: Beat) => {
     addToCart({
       productId: beat.id,
       productType: "beat",
       title: beat.title,
       price: Number(beat.price),
       artworkUrl: beat.artwork_url || "/uploads/artwork/metallic-logo.png",
+    });
+  };
+
+  const handleAddKitToCart = (kit: SoundKit) => {
+    if (kit.is_free) return;
+    addToCart({
+      productId: kit.id,
+      productType: "sound_kit",
+      title: kit.title,
+      price: Number(kit.price),
+      artworkUrl: kit.artwork_url || "/uploads/artwork/metallic-logo.png",
     });
   };
 
@@ -89,87 +128,15 @@ function Home() {
       </div>
 
       <audio
-        ref={audioRef}
+        ref={beatAudioRef}
         src={currentBeat?.preview_url}
-        onEnded={() => setIsPlaying(false)}
+        onEnded={() => setIsPlayingBeat(false)}
       />
-
-      {featuredBeat && (
-        <div
-          style={{
-            marginBottom: "60px",
-            paddingBottom: "40px",
-            borderBottom: "1px solid #222",
-          }}
-        >
-          <h2 style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "20px" }}>
-            Beat týdne
-          </h2>
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "32px",
-              alignItems: "center",
-            }}
-          >
-            <div style={{ aspectRatio: "1", position: "relative" }}>
-              <img
-                src={featuredBeat.artwork_url || "/uploads/artwork/metallic-logo.png"}
-                alt={featuredBeat.title}
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              />
-            </div>
-
-            <div>
-              <h3 style={{ fontSize: "28px", fontWeight: "bold", marginBottom: "12px" }}>
-                {featuredBeat.title}
-              </h3>
-              <p style={{ color: "#666", marginBottom: "20px", fontSize: "16px" }}>
-                {featuredBeat.artist} • {featuredBeat.bpm} BPM • {featuredBeat.key}
-              </p>
-
-              <div style={{ marginBottom: "20px" }}>
-                <button
-                  onClick={playFeaturedBeat}
-                  style={{
-                    width: "48px",
-                    height: "48px",
-                    borderRadius: "50%",
-                    border: "1px solid #fff",
-                    background: "transparent",
-                    color: "#fff",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "20px",
-                    cursor: "pointer",
-                    marginBottom: "20px",
-                  }}
-                >
-                  {currentBeat?.id === featuredBeat.id && isPlaying ? "⏸" : "▶"}
-                </button>
-              </div>
-
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "16px",
-                }}
-              >
-                <span style={{ fontSize: "24px", fontWeight: "bold" }}>
-                  {featuredBeat.price} CZK
-                </span>
-                <button className="btn" onClick={() => handleAddToCart(featuredBeat)}>
-                  <span style={{ marginRight: "4px" }}>+</span> DO KOŠÍKU
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <audio
+        ref={kitAudioRef}
+        src={currentKit?.preview_url}
+        onEnded={() => setIsPlayingKit(false)}
+      />
 
       {playlistBeats.length > 0 && (
         <div
@@ -208,13 +175,13 @@ function Home() {
                     borderRadius: "50%",
                     border: "1px solid #fff",
                     background:
-                      currentBeat?.id === beat.id && isPlaying ? "#fff" : "transparent",
-                    color: currentBeat?.id === beat.id && isPlaying ? "#000" : "#fff",
+                      currentBeat?.id === beat.id && isPlayingBeat ? "#fff" : "transparent",
+                    color: currentBeat?.id === beat.id && isPlayingBeat ? "#000" : "#fff",
                     flexShrink: 0,
                     cursor: "pointer",
                   }}
                 >
-                  {currentBeat?.id === beat.id && isPlaying ? "⏸" : "▶"}
+                  {currentBeat?.id === beat.id && isPlayingBeat ? "⏸" : "▶"}
                 </button>
 
                 <div style={{ flex: 1 }}>
@@ -228,22 +195,124 @@ function Home() {
                   <span style={{ fontWeight: "normal", marginRight: "4px" }}>
                     {beat.price} CZK
                   </span>
-                  <button className="btn" onClick={() => handleAddToCart(beat)}>
+                  <button className="btn" onClick={() => handleAddBeatToCart(beat)}>
                     <span style={{ marginRight: "4px" }}>+</span> DO KOŠÍKU
                   </button>
                 </div>
               </div>
             ))}
           </div>
+
+          <Link href="/beaty">
+            <button className="btn" style={{ marginTop: "16px" }}>
+              Všechny beaty →
+            </button>
+          </Link>
         </div>
       )}
 
-      <div style={{ textAlign: "center" }}>
-        <h2 style={{ fontSize: "20px", marginBottom: "20px" }}>Chceš vidět všechny beaty?</h2>
-        <Link href="/beaty">
-          <button className="btn">Jdi do Beaty →</button>
-        </Link>
-      </div>
+      {kits.length > 0 && (
+        <div>
+          <h1 style={{ fontFamily: "'Helvetica Neue', 'Helvetica', sans-serif", fontWeight: "900", fontSize: "32px", letterSpacing: "-0.5px", marginBottom: "40px" }}>
+            ZVUKY A PRESETY
+          </h1>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+              gap: "24px",
+            }}
+          >
+            {kits.map((kit) => (
+              <div
+                key={kit.id}
+                style={{
+                  border: "1px solid #333",
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    aspectRatio: "1",
+                    background: "#111",
+                    position: "relative",
+                  }}
+                >
+                  <img
+                    src={kit.artwork_url || "/uploads/artwork/metallic-logo.png"}
+                    alt={kit.title}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                  />
+                  {kit.preview_url && (
+                    <button
+                      onClick={() => playKit(kit)}
+                      style={{
+                        position: "absolute",
+                        bottom: "12px",
+                        right: "12px",
+                        width: "48px",
+                        height: "48px",
+                        borderRadius: "50%",
+                        border: "1px solid #fff",
+                        background: currentKit?.id === kit.id && isPlayingKit ? "#fff" : "rgba(0,0,0,0.8)",
+                        color: currentKit?.id === kit.id && isPlayingKit ? "#000" : "#fff",
+                        fontSize: "18px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {currentKit?.id === kit.id && isPlayingKit ? "⏸" : "▶"}
+                    </button>
+                  )}
+                </div>
+
+                <div style={{ padding: "16px" }}>
+                  <div style={{ fontSize: "12px", color: "#666", marginBottom: "4px" }}>
+                    {typeLabels[kit.type] || kit.type}
+                  </div>
+                  <h3 style={{ marginBottom: "8px" }}>{kit.title}</h3>
+                  <p style={{ fontSize: "14px", color: "#999", marginBottom: "12px" }}>
+                    {kit.number_of_sounds} zvuků
+                  </p>
+
+                  {kit.tags && kit.tags.length > 0 && (
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", marginBottom: "12px" }}>
+                      {kit.tags.slice(0, 5).map((tag, i) => (
+                        <span
+                          key={i}
+                          style={{
+                            fontSize: "10px",
+                            padding: "2px 6px",
+                            border: "1px solid #444",
+                          }}
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontWeight: "bold" }}>
+                      {kit.is_free ? "ZDARMA" : `${kit.price} CZK`}
+                    </span>
+                    <button
+                      className="btn"
+                      onClick={() => handleAddKitToCart(kit)}
+                    >
+                      {kit.is_free ? "STÁHNOUT" : "DO KOŠÍKU"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

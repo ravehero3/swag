@@ -54,6 +54,14 @@ function Beaty() {
 
   return (
     <div className="fade-in">
+      <div style={{ textAlign: "center", marginBottom: "40px" }}>
+        <img
+          src="/uploads/artwork/metallic-logo.png"
+          alt="VOODOO808"
+          style={{ maxWidth: "400px", width: "100%" }}
+        />
+      </div>
+
       <div style={{ marginBottom: "32px" }}>
         <h2 style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "20px" }}>Všechny Beaty</h2>
       </div>
