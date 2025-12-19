@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useLocation } from "wouter";
 import { useApp } from "../App";
 import ContractModal from "../components/ContractModal";
 import MusicPlayer from "../components/MusicPlayer";
@@ -45,6 +46,7 @@ const typeLabels: Record<string, string> = {
 };
 
 function Beaty() {
+  const [location] = useLocation();
   const [beats, setBeats] = useState<Beat[]>([]);
   const [highlightedBeat, setHighlightedBeat] = useState<Beat | null>(null);
   const [currentBeat, setCurrentBeat] = useState<Beat | null>(null);
@@ -62,6 +64,10 @@ function Beaty() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const kitAudioRef = useRef<HTMLAudioElement>(null);
   const { user, addToCart } = useApp();
+  
+  // Determine if we're on home page or beaty page
+  const isHomePage = location === "/" || location === "";
+  const beatLimit = isHomePage ? 10 : undefined;
 
   useEffect(() => {
     fetch("/api/beats")
@@ -276,7 +282,8 @@ function Beaty() {
     }
   };
 
-  const otherBeats = beats.filter((b) => b.id !== highlightedBeat?.id);
+  const filteredBeats = beatLimit ? beats.slice(0, beatLimit) : beats;
+  const otherBeats = filteredBeats.filter((b) => b.id !== highlightedBeat?.id);
 
   return (
     <div className="fade-in">
