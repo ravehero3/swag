@@ -95,15 +95,15 @@ function Header() {
         </Link>
 
         <svg
-          width="20"
-          height="20"
+          width="24"
+          height="24"
           viewBox="0 0 24 24"
           fill="white"
           style={{
             cursor: "pointer",
             transition: "transform 0.2s ease, filter 0.2s ease",
             transform: hoveredIcon === "heart" ? "scale(1.02)" : "scale(1)",
-            padding: "6px",
+            padding: "4px",
             filter: hoveredIcon === "heart" ? "drop-shadow(0 0 8px rgba(255,165,0,0.5))" : "none",
             flexShrink: 0,
           }}
@@ -111,7 +111,7 @@ function Header() {
           onMouseEnter={() => setHoveredIcon("heart")}
           onMouseLeave={() => setHoveredIcon(null)}
         >
-          <path d="M19.5 10c0 7-7.5 11-7.5 11S4.5 17 4.5 10a4.5 4.5 0 0 1 9 0c0-3-4.5-4-4.5-4s-4.5 1-4.5 4a4.5 4.5 0 0 1 9 0z" />
+          <path d="M12 2c1 0 2 1 2 2v3c0 1-1 2-2 2s-2-1-2-2V4c0-1 1-2 2-2zm5.5 3c.83 0 1.5.67 1.5 1.5v1c0 1.66-1.34 3-3 3h-1v3c0 2.21-1.79 4-4 4s-4-1.79-4-4v-3h-1c-1.66 0-3-1.34-3-3v-1c0-.83.67-1.5 1.5-1.5.83 0 1.5.67 1.5 1.5v1c0 .55.45 1 1 1h8c.55 0 1-.45 1-1v-1c0-.83.67-1.5 1.5-1.5zm-5.5 11v3c0 1.1.9 2 2 2s2-.9 2-2v-3h-4z" />
         </svg>
 
         <div
