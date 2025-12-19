@@ -8,6 +8,7 @@ function Header() {
   const [location] = useLocation();
   const [hoveredLink, setHoveredLink] = useState<string | null>(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [hoveredIcon, setHoveredIcon] = useState<string | null>(null);
 
   const navLinkStyle = (path: string, isActive: boolean) => ({
     cursor: "pointer",
@@ -67,7 +68,11 @@ function Header() {
             cursor: "pointer",
             filter: "invert(1)",
             display: "block",
+            transition: "transform 0.2s ease",
+            transform: hoveredIcon === "logo" ? "scale(1.02)" : "scale(1)",
           }}
+          onMouseEnter={() => setHoveredIcon("logo")}
+          onMouseLeave={() => setHoveredIcon(null)}
         />
       </Link>
 
@@ -79,7 +84,12 @@ function Header() {
               fontSize: "12px",
               fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
               fontWeight: 400,
+              transition: "transform 0.2s ease",
+              transform: hoveredIcon === "account" ? "scale(1.02)" : "scale(1)",
+              display: "inline-block",
             }}
+            onMouseEnter={() => setHoveredIcon("account")}
+            onMouseLeave={() => setHoveredIcon(null)}
           >
             ÚČET
           </span>
@@ -93,13 +103,32 @@ function Header() {
             fill="none"
             stroke="#fff"
             strokeWidth="2"
-            style={{ cursor: "pointer" }}
+            style={{
+              cursor: "pointer",
+              transition: "transform 0.2s ease",
+              transform: hoveredIcon === "heart" ? "scale(1.02)" : "scale(1)",
+              display: "block",
+            }}
+            onMouseEnter={() => setHoveredIcon("heart")}
+            onMouseLeave={() => setHoveredIcon(null)}
           >
             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
           </svg>
         </Link>
 
-        <div style={{ position: "relative", cursor: "pointer" }} onClick={() => setIsCartOpen(true)}>
+        <div
+          style={{
+            position: "relative",
+            cursor: "pointer",
+            transition: "transform 0.2s ease",
+            transform: hoveredIcon === "cart" ? "scale(1.02)" : "scale(1)",
+            display: "flex",
+            alignItems: "center",
+          }}
+          onClick={() => setIsCartOpen(true)}
+          onMouseEnter={() => setHoveredIcon("cart")}
+          onMouseLeave={() => setHoveredIcon(null)}
+        >
           <style>{`
             @keyframes pulse {
               0%, 100% { opacity: 1; transform: scale(1); }
