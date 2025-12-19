@@ -36,7 +36,7 @@ function Header() {
         backgroundColor: "rgba(0, 0, 0, 0.3)",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: "16px", position: "relative", zIndex: 10, padding: "0 8px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "12px", position: "relative", zIndex: 10, padding: "0 8px" }}>
         <Link href="/beaty">
           <span
             style={navLinkStyle("/beaty", location === "/beaty" || location === "/")}
@@ -74,7 +74,7 @@ function Header() {
         />
       </Link>
 
-      <div style={{ display: "flex", alignItems: "center", gap: "16px", position: "relative", zIndex: 10, padding: "0 16px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "12px", position: "relative", zIndex: 10, padding: "0 16px" }}>
         <Link href={user ? (user.isAdmin ? "/admin" : "/prihlasit-se") : "/prihlasit-se"}>
           <span
             style={{
@@ -95,22 +95,23 @@ function Header() {
         </Link>
 
         <svg
-          width="16"
-          height="16"
+          width="20"
+          height="20"
           viewBox="0 0 24 24"
           fill="white"
           style={{
             cursor: "pointer",
             transition: "transform 0.2s ease, filter 0.2s ease",
             transform: hoveredIcon === "heart" ? "scale(1.02)" : "scale(1)",
-            padding: "8px",
+            padding: "6px",
             filter: hoveredIcon === "heart" ? "drop-shadow(0 0 8px rgba(255,165,0,0.5))" : "none",
+            flexShrink: 0,
           }}
           onClick={() => window.location.href = "/ulozeno"}
           onMouseEnter={() => setHoveredIcon("heart")}
           onMouseLeave={() => setHoveredIcon(null)}
         >
-          <path d="M12.5 17.5c-3.5-3-6-5-6-7.5 0-2.2 1.5-3.5 3-3.5 1 0 2 .5 2.5 1.3.5-.8 1.5-1.3 2.5-1.3 1.5 0 3 1.3 3 3.5 0 2.5-2.5 4.5-6 7.5z" />
+          <path d="M19.5 10c0 7-7.5 11-7.5 11S4.5 17 4.5 10a4.5 4.5 0 0 1 9 0c0-3-4.5-4-4.5-4s-4.5 1-4.5 4a4.5 4.5 0 0 1 9 0z" />
         </svg>
 
         <div
