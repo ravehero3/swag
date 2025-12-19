@@ -211,7 +211,7 @@ function Ulozeno() {
                       </svg>
                     </button>
 
-                    <div style={{ aspectRatio: "1", background: "#111", position: "relative" }}>
+                    <div style={{ aspectRatio: "1", background: "#000", position: "relative" }}>
                       <img
                         src={item.item_data.artwork_url || "/uploads/artwork/metallic-logo.png"}
                         alt={item.item_data.title}
