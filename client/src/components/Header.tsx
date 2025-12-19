@@ -143,37 +143,36 @@ function Header() {
               animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
             }
           `}</style>
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#fff"
-            strokeWidth="2"
-            className={cart.length > 0 ? "cart-pulse" : ""}
-          >
-            <rect x="3" y="6" width="18" height="15" rx="2" />
-            <path d="M8 6V4a4 4 0 0 1 8 0v2" />
-          </svg>
-          {cart.length > 0 && (
-            <span
+          {cart.length > 0 ? (
+            <div
               style={{
-                position: "absolute",
-                top: "-6px",
-                right: "-6px",
-                background: "#fff",
+                background: "#24e053",
                 color: "#000",
-                borderRadius: "50%",
-                width: "14px",
-                height: "14px",
-                fontSize: "10px",
+                padding: "4px",
+                borderRadius: "4px",
+                fontSize: "12px",
+                fontWeight: "bold",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                minWidth: "20px",
+                height: "20px",
               }}
             >
               {cart.length}
-            </span>
+            </div>
+          ) : (
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#fff"
+              strokeWidth="2"
+            >
+              <rect x="3" y="6" width="18" height="15" rx="2" />
+              <path d="M8 6V4a4 4 0 0 1 8 0v2" />
+            </svg>
           )}
         </div>
         <CartModal isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
