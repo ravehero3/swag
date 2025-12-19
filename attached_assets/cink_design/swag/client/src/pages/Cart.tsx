@@ -6,18 +6,18 @@ function Cart() {
   const total = cart.reduce((sum, item) => sum + item.price, 0);
 
   return (
-    <div className="fade-in" style={{ maxWidth: "600px", margin: "0 auto" }}>
-      <h1 style={{ marginBottom: "24px" }}>Košík</h1>
+    <div className="fade-in" style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+      <h1 style={{ marginBottom: "24px", fontSize: "16px", fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif", fontWeight: "900", letterSpacing: "-0.5px" }}>KOŠÍK</h1>
 
       {cart.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "40px" }}>
+        <div style={{ textAlign: "center", padding: "40px", flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
           <p style={{ color: "#666", marginBottom: "24px" }}>Váš košík je prázdný</p>
           <Link href="/beaty">
             <button className="btn">Prohlédnout beaty</button>
           </Link>
         </div>
       ) : (
-        <>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
           {cart.map((item) => (
             <div
               key={`${item.productType}-${item.productId}`}
@@ -71,11 +71,11 @@ function Cart() {
           </div>
 
           <Link href="/checkout">
-            <button className="btn btn-filled" style={{ width: "100%" }}>
+            <button className="btn btn-filled" style={{ width: "100%", marginTop: "auto" }}>
               Pokračovat k platbě
             </button>
           </Link>
-        </>
+        </div>
       )}
     </div>
   );
