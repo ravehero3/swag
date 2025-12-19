@@ -411,7 +411,7 @@ function Beaty() {
                       <line x1="3" y1="6" x2="21" y2="6" />
                       <path d="M16 10a4 4 0 0 1-8 0" />
                     </svg>
-                    <span style={{ position: "absolute", top: "-2px", right: "-2px", fontSize: "10px", fontWeight: "bold", color: "#fff", background: "#24e053", borderRadius: "50%", width: "16px", height: "16px", display: "flex", alignItems: "center", justifyContent: "center" }}>+</span>
+                    <span style={{ position: "absolute", top: "-2px", right: "8px", fontSize: "10px", fontWeight: "bold", color: "#fff", background: "#24e053", borderRadius: "50%", width: "16px", height: "16px", display: "flex", alignItems: "center", justifyContent: "center" }}>+</span>
                     {highlightedBeat.price} CZK
                   </button>
                 </div>
@@ -620,7 +620,7 @@ function Beaty() {
                       <rect x="3" y="6" width="18" height="15" rx="2" />
                       <path d="M8 6V4a4 4 0 0 1 8 0v2" />
                     </svg>
-                    <span style={{ position: "absolute", fontSize: "18px", fontWeight: "bold", color: "#000", lineHeight: "1", right: "0px", top: "-4px" }}>+</span>
+                    <span style={{ position: "absolute", fontSize: "18px", fontWeight: "bold", color: "#000", lineHeight: "1", right: "8px", top: "-4px" }}>+</span>
                   </div>
                   <span style={{ marginLeft: "8px" }}>{Math.floor(beat.price)} CZK</span>
                 </button>
