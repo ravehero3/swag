@@ -29,12 +29,8 @@ interface ContractModalProps {
 }
 
 const licenseOptions: LicenseOption[] = [
-  { id: "mp3_lease", name: "MP3 Lease", format: "MP3", price: 299 },
-  { id: "wav_lease", name: "WAV Lease", format: "WAV & MP3", price: 499 },
-  { id: "track_stems", name: "Track Stems", format: "WAV, MP3 & STEMS", price: 999 },
-  { id: "mp3_unlimited", name: "Mp3 Unlimited Lease", format: "MP3", price: 1499 },
-  { id: "wav_unlimited_stems", name: "WAV Unlimited + Stems (Premium)", format: "MP3, WAV & STEMS", price: 2999 },
-  { id: "exclusive", name: "EXCLUSIVE RIGHTS", format: "NEGOTIATE", price: "NEGOTIATE" },
+  { id: "exclusive_100k", name: "EXCLUSIVE RIGHTS (0 - 100k měsíčních posluchačů)", format: "MP3, WAV, STOPY (STEMS)", price: 5000 },
+  { id: "exclusive_unlimited", name: "EXCLUSIVE RIGHTS (100k a víc měsíčních posluchačů)", format: "MP3, WAV, STOPY (STEMS)", price: 10000 },
 ];
 
 function ContractModal({ beat, isOpen, onClose, onAddToCart, onPlay, isPlaying }: ContractModalProps) {

@@ -413,7 +413,7 @@ function Beaty() {
                       </svg>
                       <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "#000", lineHeight: "1", right: "-6px", top: "-4px" }}>+</span>
                     </div>
-                    <span style={{ marginLeft: "24px", fontWeight: 500 }}>{Math.floor(highlightedBeat.price)} CZK</span>
+                    <span style={{ marginLeft: "28px", fontWeight: 500 }}>{Math.floor(highlightedBeat.price)} CZK</span>
                   </button>
                 </div>
               </div>
@@ -650,7 +650,7 @@ function Beaty() {
                     </svg>
                     <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "#000", lineHeight: "1", right: "-6px", top: "-4px" }}>+</span>
                   </div>
-                  <span style={{ marginLeft: "24px", fontWeight: 500 }}>{Math.floor(beat.price)} CZK</span>
+                  <span style={{ marginLeft: "28px", fontWeight: 500 }}>{Math.floor(beat.price)} CZK</span>
                 </button>
               </div>
             </div>
