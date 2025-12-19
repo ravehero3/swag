@@ -74,7 +74,7 @@ function Header() {
         />
       </Link>
 
-      <div style={{ display: "flex", alignItems: "center", gap: "16px", position: "relative", zIndex: 10, padding: "0 2px", marginRight: "-6px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "16px", position: "relative", zIndex: 10, padding: "0 16px" }}>
         <Link href={user ? (user.isAdmin ? "/admin" : "/prihlasit-se") : "/prihlasit-se"}>
           <span
             style={{
@@ -146,15 +146,15 @@ function Header() {
               style={{
                 background: "#24e053",
                 color: "#000",
-                padding: "2px",
+                padding: "16px",
                 borderRadius: "4px",
                 fontSize: "16px",
                 fontWeight: 400,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                minWidth: "32px",
-                height: "32px",
+                minWidth: "20px",
+                height: "20px",
               }}
             >
               {cart.length}
