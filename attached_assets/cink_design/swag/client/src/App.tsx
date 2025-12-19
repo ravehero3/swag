@@ -1,6 +1,7 @@
 import { useState, useEffect, createContext, useContext } from "react";
 import { Route, Switch } from "wouter";
 import Header from "./components/Header";
+import Home from "./pages/Home";
 import Beaty from "./pages/Beaty";
 import Zvuky from "./pages/Zvuky";
 import Login from "./pages/Login";
@@ -100,7 +101,7 @@ function App() {
         <Header />
         <main style={{ padding: "20px" }} className="fade-in">
           <Switch>
-            <Route path="/" component={Beaty} />
+            <Route path="/" component={Home} />
             <Route path="/beaty" component={Beaty} />
             <Route path="/zvuky" component={Zvuky} />
             <Route path="/prihlasit-se" component={Login} />
