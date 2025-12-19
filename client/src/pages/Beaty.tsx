@@ -413,7 +413,7 @@ function Beaty() {
                       <path d="M16 10a4 4 0 0 1-8 0" />
                     </svg>
                     <span style={{ position: "absolute", top: "-6px", right: "-6px", fontSize: "10px", fontWeight: "bold", color: "#fff", background: "#24e053", borderRadius: "50%", width: "16px", height: "16px", display: "flex", alignItems: "center", justifyContent: "center" }}>+</span>
-                    {highlightedBeat.price} CZK
+                    {Math.floor(highlightedBeat.price)} CZK
                   </button>
                 </div>
               </div>
