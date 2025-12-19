@@ -41,6 +41,24 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                 opacity: 1;
               }
             }
+            @keyframes flyfx {
+              0% {
+                transform: translateY(0);
+                opacity: 1;
+              }
+              50% {
+                transform: translateY(-100%);
+                opacity: 0;
+              }
+              51% {
+                transform: translateY(100%);
+                opacity: 0;
+              }
+              100% {
+                transform: translateY(0);
+                opacity: 1;
+              }
+            }
           `}</style>
           <div
             style={{
@@ -73,7 +91,7 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
             >
               <h2
                 style={{
-                  fontSize: "18px",
+                  fontSize: "12px",
                   fontFamily: "Helvetica Neue Condensed, Helvetica, Arial, sans-serif",
                   fontWeight: "bold",
                   margin: 0,
@@ -139,14 +157,20 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                             borderRadius: "2px",
                             cursor: "pointer",
                             transition: "all 0.2s ease",
+                            overflow: "hidden",
+                            position: "relative",
                           }}
                           onMouseEnter={(e) => {
-                            (e.currentTarget as HTMLButtonElement).style.borderColor = "#24e053";
-                            (e.currentTarget as HTMLButtonElement).style.color = "#24e053";
+                            const btn = e.currentTarget as HTMLButtonElement;
+                            btn.style.borderColor = "#24e053";
+                            btn.style.color = "#24e053";
+                            btn.style.animation = "flyfx 0.4s ease";
                           }}
                           onMouseLeave={(e) => {
-                            (e.currentTarget as HTMLButtonElement).style.borderColor = "#666";
-                            (e.currentTarget as HTMLButtonElement).style.color = "#fff";
+                            const btn = e.currentTarget as HTMLButtonElement;
+                            btn.style.borderColor = "#666";
+                            btn.style.color = "#fff";
+                            btn.style.animation = "none";
                           }}
                         >
                           Odebrat
@@ -187,12 +211,18 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                     cursor: "pointer",
                     marginBottom: "8px",
                     transition: "all 0.2s ease",
+                    overflow: "hidden",
+                    position: "relative",
                   }}
                   onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#1fa03f";
+                    const btn = e.currentTarget as HTMLButtonElement;
+                    btn.style.backgroundColor = "#1fa03f";
+                    btn.style.animation = "flyfx 0.4s ease";
                   }}
                   onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#24e053";
+                    const btn = e.currentTarget as HTMLButtonElement;
+                    btn.style.backgroundColor = "#24e053";
+                    btn.style.animation = "none";
                   }}
                 >
                   Pokračovat na platbu
@@ -209,14 +239,20 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                     fontSize: "14px",
                     cursor: "pointer",
                     transition: "all 0.2s ease",
+                    overflow: "hidden",
+                    position: "relative",
                   }}
                   onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.borderColor = "#24e053";
-                    (e.currentTarget as HTMLButtonElement).style.color = "#24e053";
+                    const btn = e.currentTarget as HTMLButtonElement;
+                    btn.style.borderColor = "#24e053";
+                    btn.style.color = "#24e053";
+                    btn.style.animation = "flyfx 0.4s ease";
                   }}
                   onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.borderColor = "#666";
-                    (e.currentTarget as HTMLButtonElement).style.color = "#fff";
+                    const btn = e.currentTarget as HTMLButtonElement;
+                    btn.style.borderColor = "#666";
+                    btn.style.color = "#fff";
+                    btn.style.animation = "none";
                   }}
                 >
                   Vymazat košík
@@ -234,6 +270,19 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                 cursor: "pointer",
                 fontSize: "12px",
                 borderTop: "1px solid #333",
+                transition: "all 0.2s ease",
+                overflow: "hidden",
+                position: "relative",
+              }}
+              onMouseEnter={(e) => {
+                const btn = e.currentTarget as HTMLButtonElement;
+                btn.style.color = "#24e053";
+                btn.style.animation = "flyfx 0.4s ease";
+              }}
+              onMouseLeave={(e) => {
+                const btn = e.currentTarget as HTMLButtonElement;
+                btn.style.color = "#fff";
+                btn.style.animation = "none";
               }}
             >
               Zavřít
