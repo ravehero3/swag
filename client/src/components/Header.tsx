@@ -26,7 +26,7 @@ function Header() {
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        padding: "8px 16px",
+        padding: "0 16px",
         height: "42px",
         borderBottom: "1px solid #333",
         position: "fixed",
@@ -38,7 +38,7 @@ function Header() {
         backgroundColor: "rgba(0, 0, 0, 0.3)",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: "12px", position: "relative", zIndex: 10 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "16px", position: "relative", zIndex: 10, padding: "0 8px" }}>
         <Link href="/beaty">
           <span
             style={navLinkStyle("/beaty", location === "/beaty" || location === "/")}
@@ -76,7 +76,7 @@ function Header() {
         />
       </Link>
 
-      <div style={{ display: "flex", alignItems: "center", gap: "16px", position: "relative", zIndex: 10 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "16px", position: "relative", zIndex: 10, padding: "0 8px" }}>
         <Link href={user ? (user.isAdmin ? "/admin" : "/prihlasit-se") : "/prihlasit-se"}>
           <span
             style={{
@@ -87,6 +87,7 @@ function Header() {
               transition: "transform 0.2s ease",
               transform: hoveredIcon === "account" ? "scale(1.02)" : "scale(1)",
               display: "inline-block",
+              padding: "8px 0",
             }}
             onMouseEnter={() => setHoveredIcon("account")}
             onMouseLeave={() => setHoveredIcon(null)}
@@ -107,7 +108,10 @@ function Header() {
               cursor: "pointer",
               transition: "transform 0.2s ease",
               transform: hoveredIcon === "heart" ? "scale(1.02)" : "scale(1)",
-              display: "block",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "8px",
             }}
             onMouseEnter={() => setHoveredIcon("heart")}
             onMouseLeave={() => setHoveredIcon(null)}
@@ -124,6 +128,7 @@ function Header() {
             transform: hoveredIcon === "cart" ? "scale(1.02)" : "scale(1)",
             display: "flex",
             alignItems: "center",
+            padding: "8px",
           }}
           onClick={() => setIsCartOpen(true)}
           onMouseEnter={() => setHoveredIcon("cart")}
