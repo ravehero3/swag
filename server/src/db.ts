@@ -105,7 +105,7 @@ export async function initDatabase() {
       const beatInserts = [];
       for (let i = 1; i <= 20; i++) {
         beatInserts.push(`
-          ('Test Beat ${i}', 'VOODOO808', ${80 + i}, 'C', ${9.99 + i * 0.5}, '/uploads/preview/beat${i}.mp3', '/uploads/beat${i}.wav', '/uploads/artwork/beat${i}.jpg', true, ${i === 1 ? 'true' : 'false'})
+          ('Test Beat ${i}', 'VOODOO808', ${80 + i}, 'C', 5000, '/uploads/preview/beat${i}.mp3', '/uploads/beat${i}.wav', '/uploads/artwork/beat${i}.jpg', true, ${i === 1 ? 'true' : 'false'})
         `);
       }
       
