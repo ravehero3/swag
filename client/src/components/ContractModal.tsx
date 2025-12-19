@@ -242,7 +242,7 @@ function ContractModal({ beat, isOpen, onClose, onAddToCart, onPlay, isPlaying }
                     <rect x="3" y="6" width="18" height="15" rx="2" />
                     <path d="M8 6V4a4 4 0 0 1 8 0v2" />
                   </svg>
-                  <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: selectedLicense && selectedLicense.price !== "NEGOTIATE" ? "#000" : "#666", lineHeight: "1", right: "2px", top: "-6px" }}>+</span>
+                  <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: selectedLicense && selectedLicense.price !== "NEGOTIATE" ? "#000" : "#666", lineHeight: "1", right: "10px", top: "-8px" }}>+</span>
                 </div>
                 {selectedLicense ? (
                   selectedLicense.price === "NEGOTIATE" ? "KONTAKTUJTE NÁS" : `${selectedLicense.price} CZK`
