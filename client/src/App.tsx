@@ -1,6 +1,7 @@
 import { useState, useEffect, createContext, useContext } from "react";
 import { Route, Switch } from "wouter";
 import Header from "./components/Header";
+import ExtendedFooter from "./components/ExtendedFooter";
 import Footer from "./components/Footer";
 import CartModal from "./components/CartModal";
 import Beaty from "./pages/Beaty";
@@ -132,6 +133,7 @@ function App() {
             </Route>
           </Switch>
         </main>
+        <ExtendedFooter />
         <Footer />
         <CartModal isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
       </div>
