@@ -69,12 +69,12 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
                 display: 'flex',
                 alignItems: 'flex-end',
                 justifyContent: 'center',
-                width: `${baseSize}px`,
-                height: `${baseSize}px`,
+                width: `${size}px`,
+                height: `${size}px`,
                 transform: `translateY(${translateY}px)`,
-                transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), height 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
                 flexShrink: 0,
-                willChange: 'transform',
+                willChange: 'transform, width, height',
               }}
             >
               <button
