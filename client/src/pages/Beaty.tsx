@@ -694,15 +694,21 @@ function Beaty() {
                       border: "none",
                       cursor: "pointer",
                       padding: "8px",
+                      marginRight: "8px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
                     }}
+                    title={savedBeats.has(beat.id) ? "Remove from favorites" : "Add to favorites"}
                   >
                     <svg
                       width="20"
                       height="20"
                       viewBox="0 0 24 24"
                       fill={savedBeats.has(beat.id) ? "#ff4444" : "none"}
-                      stroke={savedBeats.has(beat.id) ? "#ff4444" : "#fff"}
+                      stroke={savedBeats.has(beat.id) ? "#ff4444" : "#888"}
                       strokeWidth="2"
+                      style={{ transition: "all 0.3s ease" }}
                     >
                       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                     </svg>
