@@ -880,12 +880,11 @@ function Beaty() {
                   </div>
                   <span style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "8px" }}>{Math.floor(beat.price)} CZK</span>
                 </button>
-                {user && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleSave(beat);
-                    }}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (user) toggleSave(beat);
+                  }}
                     style={{
                       background: "transparent",
                       border: "none",
@@ -907,21 +906,20 @@ function Beaty() {
                       const btn = e.currentTarget as HTMLButtonElement;
                       btn.style.transform = "scale(1)";
                     }}
-                    title={savedBeats.has(beat.id) ? "Remove from favorites" : "Add to favorites"}
+                    title={user ? (savedBeats.has(beat.id) ? "Remove from favorites" : "Add to favorites") : "Log in to save"}
                   >
                     <svg
                       width="20"
                       height="20"
                       viewBox="0 0 24 24"
-                      fill={savedBeats.has(beat.id) ? "#ff4444" : "none"}
-                      stroke={savedBeats.has(beat.id) ? "#ff4444" : "#fff"}
+                      fill={user && savedBeats.has(beat.id) ? "#ff4444" : "none"}
+                      stroke={user && savedBeats.has(beat.id) ? "#ff4444" : "#fff"}
                       strokeWidth="1"
                       style={{ transition: "all 0.3s ease" }}
                     >
                       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                     </svg>
                   </button>
-                )}
               </div>
             </div>
             ))}
