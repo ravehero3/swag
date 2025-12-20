@@ -1,46 +1,100 @@
-function FAQ() {
+import Accordion from '../components/Accordion';
+
+export default function FAQ() {
+  const faqItems = [
+    {
+      title: 'Jak mohu objednat?',
+      content: 'Objednávku můžete provést přímo na našem e-shopu. Stačí si vybrat produkty, vložit je do košíku a postupovat podle pokynů v procesu objednávky.'
+    },
+    {
+      title: 'Jaké máte platební metody?',
+      content: 'Akceptujeme platby kartou a bankovním převodem. Více informací najdete na stránce platby.'
+    },
+    {
+      title: 'Jak dlouho trvá doručení?',
+      content: 'Standardní doba doručení je 2-5 pracovních dnů od potvrzení objednávky. Více informací najdete na stránce doručení.'
+    },
+    {
+      title: 'Mohu zboží vrátit?',
+      content: 'Ano, zboží můžete vrátit do 14 dnů od převzetí. Více informací najdete na stránce vrácení zboží.'
+    }
+  ];
+
   return (
-    <div style={{ maxWidth: "1000px", margin: "0 auto", padding: "40px 20px" }} className="fade-in">
-      <h1 style={{ fontSize: "32px", marginBottom: "32px" }}>Často kladené dotazy</h1>
+    <div style={{ minHeight: '100vh', background: '#fff', position: 'relative' }} className="fade-in">
+      {/* Left vertical line - starts at top */}
+      <div
+        style={{
+          display: 'none',
+          position: 'absolute',
+          left: '25%',
+          width: '1px',
+          backgroundColor: '#000',
+          top: 0,
+          bottom: 0,
+          zIndex: 0,
+        }}
+        className="md:block"
+      />
       
-      <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-        <div style={{ borderBottom: "1px solid #333", paddingBottom: "16px" }}>
-          <h3 style={{ fontSize: "18px", marginBottom: "8px" }}>Jak nakupuji v VOODOO808?</h3>
-          <p style={{ color: "#999", lineHeight: "1.6" }}>
-            Procházejte naši kolekci beatů a zvukových kitů. Klikněte na "Koupit" nebo "Do košíku" a postupujte checkout procesem. Po nákupu obdržíte odkaz na stažení.
-          </p>
-        </div>
+      {/* Right vertical line - starts at top */}
+      <div
+        style={{
+          display: 'none',
+          position: 'absolute',
+          right: '25%',
+          width: '1px',
+          backgroundColor: '#000',
+          top: 0,
+          bottom: 0,
+          zIndex: 0,
+        }}
+        className="md:block"
+      />
 
-        <div style={{ borderBottom: "1px solid #333", paddingBottom: "16px" }}>
-          <h3 style={{ fontSize: "18px", marginBottom: "8px" }}>Jak dlouho je soubor dostupný k stažení?</h3>
-          <p style={{ color: "#999", lineHeight: "1.6" }}>
-            Soubory jsou dostupné k stažení po dobu 30 dní od nákupu. Ujistěte se, že je stáhnete v tomto období.
-          </p>
-        </div>
-
-        <div style={{ borderBottom: "1px solid #333", paddingBottom: "16px" }}>
-          <h3 style={{ fontSize: "18px", marginBottom: "8px" }}>Mohu použít kúpené beaty komerčně?</h3>
-          <p style={{ color: "#999", lineHeight: "1.6" }}>
-            Ano, v závislosti na typu licence, kterou zakoupíte. Přečtěte si podrobnosti licence u každého produktu.
-          </p>
-        </div>
-
-        <div style={{ borderBottom: "1px solid #333", paddingBottom: "16px" }}>
-          <h3 style={{ fontSize: "18px", marginBottom: "8px" }}>Jaké formáty jsou dostupné?</h3>
-          <p style={{ color: "#999", lineHeight: "1.6" }}>
-            Naše produkty jsou dostupné v MP3, WAV a dalších formátech v závislosti na produktu.
-          </p>
-        </div>
-
-        <div style={{ borderBottom: "1px solid #333", paddingBottom: "16px" }}>
-          <h3 style={{ fontSize: "18px", marginBottom: "8px" }}>Mám technické problémy. Jak vám mohu napsat?</h3>
-          <p style={{ color: "#999", lineHeight: "1.6" }}>
-            Kontaktujte nás prosím na voodoo808@mail.com nebo použijte WhatsApp: +420 775 181 107
-          </p>
+      {/* Main content */}
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 10,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          paddingTop: '64px',
+          paddingBottom: '40px',
+        }}
+      >
+        <h1
+          style={{
+            fontFamily: '"Roboto Condensed", "Helvetica Neue", Helvetica, Arial, sans-serif',
+            fontSize: '20px',
+            fontWeight: 700,
+            letterSpacing: '0.05em',
+            textTransform: 'uppercase',
+            textAlign: 'center',
+            marginBottom: '48px',
+            color: '#000',
+          }}
+        >
+          ČASTO KLADENÉ DOTAZY
+        </h1>
+        
+        <div
+          style={{
+            width: '100%',
+            paddingLeft: '16px',
+            paddingRight: '16px',
+          }}
+          className="md:w-1/3"
+          style={{
+            width: '100%',
+          }}
+        >
+          <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+            <Accordion items={faqItems} />
+          </div>
         </div>
       </div>
     </div>
   );
 }
-
-export default FAQ;
