@@ -344,7 +344,7 @@ function Beaty() {
                             style={{
                               padding: "4px 12px",
                               background: "#0d0d0d",
-                              color: "#999",
+                              color: "#666",
                               border: "1px solid #333",
                               borderRadius: "20px",
                               fontSize: "11px",
@@ -534,7 +534,7 @@ function Beaty() {
                       style={{
                         padding: "3px 8px",
                         background: "#0d0d0d",
-                        color: "#999",
+                        color: "#666",
                         border: "1px solid #333",
                         borderRadius: "20px",
                         fontSize: "10px",
