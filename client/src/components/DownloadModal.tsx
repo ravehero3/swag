@@ -83,6 +83,7 @@ function DownloadModal({ item, isOpen, onClose, user }: DownloadModalProps) {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          border: "0.5px solid #666",
         }}
         onClick={(e) => e.stopPropagation()}
       >

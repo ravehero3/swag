@@ -287,6 +287,30 @@ function Beaty() {
                   <h2 style={{ fontSize: "30px", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontWeight: "400", lineHeight: "1.1", position: "relative", zIndex: 10, margin: 0 }}>
                     {highlightedBeat.title}
                   </h2>
+                  {highlightedBeat.tags && highlightedBeat.tags.length > 0 && (
+                    <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginBottom: "4px" }}>
+                      {highlightedBeat.tags.map((tag) => (
+                        <button
+                          key={tag}
+                          onClick={() => setSelectedTag(tag)}
+                          style={{
+                            padding: "4px 12px",
+                            background: "#1a1a1a",
+                            color: "#fff",
+                            border: "none",
+                            borderRadius: "20px",
+                            fontSize: "11px",
+                            cursor: "pointer",
+                            transition: "transform 0.2s",
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.02)")}
+                          onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                        >
+                          {tag}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                   <button
                     onClick={() => openContractModal(highlightedBeat)}
                     className="btn-bounce"
@@ -312,7 +336,7 @@ function Beaty() {
                         <rect x="3" y="6" width="18" height="15" rx="2" />
                         <path d="M8 6V4a4 4 0 0 1 8 0v2" />
                       </svg>
-                      <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "#000", lineHeight: "1", right: "-4px", top: "-4px" }}>+</span>
+                      <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "#000", lineHeight: "1", right: "4px", top: "-6px" }}>+</span>
                     </div>
                     <span style={{ marginLeft: "28px", fontWeight: 500 }}>{Math.floor(highlightedBeat.price)} CZK</span>
                   </button>
