@@ -821,18 +821,23 @@ function Beaty() {
             <h2 style={{ fontSize: "24px", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontWeight: "400", marginBottom: "32px", marginTop: 0 }}>
               ZVUKY
             </h2>
-            <ProductsGrid
-              products={testSoundKits.map((kit) => ({
-                id: kit.id,
-                name: kit.title,
-                price: kit.price,
-                images: [kit.artwork_url],
-                soundCount: kit.number_of_sounds,
-                type: kit.type,
-                isFree: kit.is_free,
-                typeLabel: kit.type === "drum_kit" ? "Drum Kit" : kit.type === "one_shot_kit" ? "One Shot Kit" : kit.type === "loop_kit" ? "Loop Kit" : kit.type,
-              }))}
-            />
+            <div style={{ display: "flex", justifyContent: "center" }}>
+              <div style={{ width: "75%" }}>
+                <ProductsGrid
+                  products={testSoundKits.map((kit) => ({
+                    id: kit.id,
+                    name: kit.title,
+                    price: kit.price,
+                    images: [kit.artwork_url],
+                    soundCount: kit.number_of_sounds,
+                    type: kit.type,
+                    isFree: kit.is_free,
+                    typeLabel: kit.type === "drum_kit" ? "Drum Kit" : kit.type === "one_shot_kit" ? "One Shot Kit" : kit.type === "loop_kit" ? "Loop Kit" : kit.type,
+                  }))}
+                  initialCount={3}
+                />
+              </div>
+            </div>
           </div>
         )}
 

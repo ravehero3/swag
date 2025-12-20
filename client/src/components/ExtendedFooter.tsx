@@ -122,6 +122,7 @@ export default function ExtendedFooter() {
   const listStyle = {
     margin: "0px",
     padding: "0px",
+    listStyle: "none" as const,
   };
 
   const listItemStyle = {
