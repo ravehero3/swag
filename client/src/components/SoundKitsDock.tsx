@@ -29,7 +29,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
     if (distance === 0) {
       return 2; // Hovered item: 2x
     } else if (distance === 1) {
-      return 1.5; // Adjacent items: 1.5x
+      return 1.25; // Adjacent items: 1.25x for smoother transition
     } else {
       return 1; // Other items: 1x
     }
@@ -72,8 +72,9 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
                 width: `${baseSize}px`,
                 height: `${baseSize}px`,
                 transform: `translateY(${translateY}px)`,
-                transition: 'transform 0.2s ease-out',
+                transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
                 flexShrink: 0,
+                willChange: 'transform',
               }}
             >
               <button
@@ -88,11 +89,12 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
                   boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
                   cursor: 'pointer',
                   overflow: 'hidden',
-                  transition: 'box-shadow 0.2s ease-out',
+                  transition: 'box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), height 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   position: 'relative',
+                  willChange: 'width, height, box-shadow',
                 }}
                 onMouseEnter={(e) => {
                   (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.8)';

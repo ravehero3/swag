@@ -693,7 +693,7 @@ function Beaty() {
               }}
             >
               <div data-separator style={{ position: "absolute", bottom: 0, left: "80px", right: 0, height: "1px", background: "#333", opacity: 1, transition: "opacity 0.15s ease" }} />
-              <div style={{ position: "relative", display: "flex", alignItems: "center", gap: "4px", marginRight: "-4px" }}>
+              <div style={{ position: "relative", display: "flex", alignItems: "center", gap: "16px", marginRight: "-4px" }}>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -727,7 +727,7 @@ function Beaty() {
                     height="18"
                     viewBox="0 0 24 24"
                     fill={user && savedBeats.has(beat.id) ? "#ff4444" : "none"}
-                    stroke={user && savedBeats.has(beat.id) ? "#ff4444" : "#fff"}
+                    stroke={user && savedBeats.has(beat.id) ? "#ff4444" : "#666"}
                     strokeWidth="1"
                     style={{ transition: "all 0.3s ease" }}
                   >
