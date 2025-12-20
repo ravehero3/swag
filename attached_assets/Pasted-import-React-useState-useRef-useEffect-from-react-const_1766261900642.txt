@@ -1,19 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-interface SoundKitDockItem {
-  id: number;
-  name: string;
-  image: string;
-  price: number;
-  isFree: boolean;
-  onClick: () => void;
-}
-
-interface SoundKitsDockProps {
-  items: SoundKitDockItem[];
-}
-
-const Star = ({ style }: { style: any }) => (
+const Star = ({ style }) => (
   <div
     className="absolute rounded-full bg-white"
     style={style}
@@ -21,7 +8,7 @@ const Star = ({ style }: { style: any }) => (
 );
 
 const StarryBackground = () => {
-  const [stars, setStars] = useState<any[]>([]);
+  const [stars, setStars] = useState([]);
 
   useEffect(() => {
     const initialStars = Array.from({ length: 50 }, (_, i) => ({
@@ -61,12 +48,38 @@ const StarryBackground = () => {
   );
 };
 
-const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [mouseX, setMouseX] = useState<number | null>(null);
-  const dockRef = useRef<HTMLDivElement>(null);
+const CustomIcon = ({ src, size }) => (
+  <img 
+    src={src} 
+    alt="icon" 
+    style={{ 
+      width: `${size * 0.6}px`, 
+      height: `${size * 0.6}px`,
+      objectFit: 'contain'
+    }} 
+  />
+);
 
-  const handleMouseMove = (e: React.MouseEvent) => {
+const Dock = () => {
+  const [hoveredIndex, setHoveredIndex] = useState(null);
+  const [mouseX, setMouseX] = useState(null);
+  const dockRef = useRef(null);
+
+  const customApps = [
+    { customIcon: 'https://i.imgur.com/X8qGBKZ.png', name: 'Friendly Ghosts' },
+    { customIcon: 'https://i.imgur.com/TuqCHV5.png', name: 'One Shot Kit' },
+    { customIcon: 'https://i.imgur.com/5eP2Unn.png', name: 'Friendly Aliens' },
+    { customIcon: 'https://i.imgur.com/kPPH2wm.png', name: 'Friendly Ghosts' },
+    { customIcon: 'https://i.imgur.com/E8r7rYf.png', name: 'Drum Kit' },
+    { customIcon: 'https://i.imgur.com/NqBMnLV.png', name: 'One Shot Kit' },
+    { customIcon: 'https://i.imgur.com/q3ohG1Z.png', name: 'Friendly Aliens 2' },
+    { customIcon: 'https://i.imgur.com/2g4kBkC.png', name: 'Friendly Aliens 3' },
+    { customIcon: 'https://i.imgur.com/wl8O0Fy.png', name: 'One Shot Kit' },
+    { customIcon: 'https://i.imgur.com/vQjJiLd.png', name: 'Friendly Ghosts' },
+    { customIcon: 'https://i.imgur.com/6kLO5bm.png', name: 'White Magic 3' },
+  ];
+
+  const handleMouseMove = (e) => {
     if (dockRef.current) {
       const rect = dockRef.current.getBoundingClientRect();
       setMouseX(e.clientX - rect.left);
@@ -78,11 +91,11 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
     setHoveredIndex(null);
   };
 
-  const getScale = (index: number) => {
+  const getScale = (index) => {
     if (mouseX === null) return 1;
     
     const dockRect = dockRef.current?.getBoundingClientRect();
-    if (!dockRect || !dockRef.current) return 1;
+    if (!dockRect) return 1;
 
     const iconElements = dockRef.current.querySelectorAll('.dock-icon');
     if (!iconElements[index]) return 1;
@@ -102,7 +115,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
   };
 
   return (
-    <div className="relative w-full overflow-hidden bg-black" style={{ minHeight: '400px' }}>
+    <div className="relative w-full h-screen overflow-hidden bg-black">
       {/* Background with gradient to center */}
       <div className="absolute inset-0 bg-gradient-to-b from-gray-900 via-blue-950 to-black">
         <StarryBackground />
@@ -119,14 +132,14 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
       />
 
       {/* Dock container */}
-      <div className="relative z-10 flex items-end justify-center h-full py-16">
+      <div className="relative z-10 flex items-end justify-center h-full pb-8">
         <div
           ref={dockRef}
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
-          className="relative flex items-end gap-2 px-3 py-3 rounded-3xl bg-gray-900/80 backdrop-blur-lg border border-gray-700/50"
+          className="relative flex items-end gap-2 px-3 py-3 rounded-xl bg-gray-900/80 backdrop-blur-lg border border-gray-700/50"
         >
-          {items.map((item, index) => {
+          {customApps.map((app, index) => {
             const scale = getScale(index);
             const baseSize = 56;
             const size = baseSize * scale;
@@ -134,7 +147,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
 
             return (
               <div
-                key={item.id}
+                key={index}
                 className="dock-icon flex items-end justify-center transition-all duration-200 ease-out"
                 onMouseEnter={() => setHoveredIndex(index)}
                 style={{
@@ -143,30 +156,20 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
                   height: `${baseSize}px`,
                 }}
               >
-                <button
-                  onClick={item.onClick}
-                  className="relative flex items-center justify-center rounded-md bg-black/80 shadow-lg cursor-pointer hover:shadow-2xl transition-shadow overflow-hidden border-0"
+                <div
+                  className="relative flex items-center justify-center rounded-md bg-black/80 shadow-lg cursor-pointer hover:shadow-2xl transition-shadow"
                   style={{
                     width: `${size}px`,
                     height: `${size}px`,
-                    padding: 0,
                   }}
                 >
-                  <img 
-                    src={item.image} 
-                    alt={item.name}
-                    style={{ 
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover'
-                    }} 
-                  />
+                  <CustomIcon src={app.customIcon} size={size} />
                   {hoveredIndex === index && (
                     <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 px-3 py-1 bg-gray-800/90 text-white text-sm rounded-lg whitespace-nowrap backdrop-blur-sm">
-                      {item.name}
+                      {app.name}
                     </div>
                   )}
-                </button>
+                </div>
               </div>
             );
           })}
@@ -176,4 +179,4 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
   );
 };
 
-export default SoundKitsDock;
+export default Dock;

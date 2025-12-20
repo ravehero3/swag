@@ -834,8 +834,8 @@ function Beaty() {
         </div>
 
         {isHomePage && (
-          <div style={{ marginTop: "64px", marginBottom: "64px" }}>
-            <h2 style={{ fontSize: "24px", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontWeight: "400", marginBottom: "32px", marginTop: 0 }}>
+          <div style={{ marginTop: "64px", marginBottom: "0px" }}>
+            <h2 style={{ fontSize: "24px", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontWeight: "400", marginBottom: "32px", marginTop: 0, paddingLeft: "20px" }}>
               ZVUKY
             </h2>
             <SoundKitsDock
@@ -846,7 +846,6 @@ function Beaty() {
                 price: kit.price,
                 isFree: kit.is_free,
                 onClick: () => {
-                  // Navigate to zvuky page or show details
                   setLocation("/zvuky");
                 },
               }))}
