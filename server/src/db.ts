@@ -7,11 +7,6 @@ const pool = new pg.Pool({
 export async function initDatabase() {
   const client = await pool.connect();
   try {
-    // Add tags column if it doesn't exist
-    await client.query(`
-      ALTER TABLE beats ADD COLUMN IF NOT EXISTS tags TEXT[] DEFAULT ARRAY[]::TEXT[];
-    `);
-    
     await client.query(`
       CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
