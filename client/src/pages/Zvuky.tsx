@@ -23,8 +23,155 @@ const typeLabels: Record<string, string> = {
   drum_kit_bundle: "Drum Kit Bundle",
 };
 
+const testKits: SoundKit[] = [
+  {
+    id: 1,
+    title: "Analog Drums Vol. 1",
+    description: "Classic analog drum kit",
+    type: "drum_kit",
+    price: 2999,
+    is_free: false,
+    number_of_sounds: 25,
+    tags: ["drums", "analog", "vintage"],
+    preview_url: "",
+    artwork_url: "/uploads/artwork/metallic-logo.png",
+  },
+  {
+    id: 2,
+    title: "Urban Beats Collection",
+    description: "Modern urban production sounds",
+    type: "one_shot_kit",
+    price: 1999,
+    is_free: false,
+    number_of_sounds: 45,
+    tags: ["urban", "hip-hop", "beats"],
+    preview_url: "",
+    artwork_url: "/uploads/artwork/metallic-logo.png",
+  },
+  {
+    id: 3,
+    title: "Cinematic Loops",
+    description: "Epic cinematic loop pack",
+    type: "loop_kit",
+    price: 3499,
+    is_free: false,
+    number_of_sounds: 30,
+    tags: ["cinematic", "loops", "film"],
+    preview_url: "",
+    artwork_url: "/uploads/artwork/metallic-logo.png",
+  },
+  {
+    id: 4,
+    title: "Free Starter Pack",
+    description: "Free sounds to get started",
+    type: "one_shot_kit",
+    price: 0,
+    is_free: true,
+    number_of_sounds: 20,
+    tags: ["free", "starter", "samples"],
+    preview_url: "",
+    artwork_url: "/uploads/artwork/metallic-logo.png",
+  },
+  {
+    id: 5,
+    title: "Electronic Synth Sounds",
+    description: "Futuristic electronic synth pack",
+    type: "drum_kit",
+    price: 2499,
+    is_free: false,
+    number_of_sounds: 35,
+    tags: ["synth", "electronic", "future"],
+    preview_url: "",
+    artwork_url: "/uploads/artwork/metallic-logo.png",
+  },
+  {
+    id: 6,
+    title: "Jazz Drums Bundle",
+    description: "Professional jazz drum sounds",
+    type: "drum_kit_bundle",
+    price: 4999,
+    is_free: false,
+    number_of_sounds: 60,
+    tags: ["jazz", "drums", "professional"],
+    preview_url: "",
+    artwork_url: "/uploads/artwork/metallic-logo.png",
+  },
+  {
+    id: 7,
+    title: "Ambient One Shots",
+    description: "Atmospheric sound effects",
+    type: "one_shot_kit",
+    price: 1499,
+    is_free: false,
+    number_of_sounds: 18,
+    tags: ["ambient", "atmosphere", "sfx"],
+    preview_url: "",
+    artwork_url: "/uploads/artwork/metallic-logo.png",
+  },
+  {
+    id: 8,
+    title: "Trap Essentials",
+    description: "Essential trap production kit",
+    type: "one_shot_bundle",
+    price: 3299,
+    is_free: false,
+    number_of_sounds: 50,
+    tags: ["trap", "hip-hop", "production"],
+    preview_url: "",
+    artwork_url: "/uploads/artwork/metallic-logo.png",
+  },
+  {
+    id: 9,
+    title: "Vintage Vinyl Loops",
+    description: "Warm vintage vinyl loop collection",
+    type: "loop_kit",
+    price: 2799,
+    is_free: false,
+    number_of_sounds: 28,
+    tags: ["vintage", "vinyl", "loops"],
+    preview_url: "",
+    artwork_url: "/uploads/artwork/metallic-logo.png",
+  },
+  {
+    id: 10,
+    title: "Deep House Drums",
+    description: "Deep house drum patterns",
+    type: "drum_kit",
+    price: 1999,
+    is_free: false,
+    number_of_sounds: 22,
+    tags: ["house", "deep", "electronic"],
+    preview_url: "",
+    artwork_url: "/uploads/artwork/metallic-logo.png",
+  },
+  {
+    id: 11,
+    title: "Percussion Masters",
+    description: "World percussion collection",
+    type: "one_shot_bundle",
+    price: 3799,
+    is_free: false,
+    number_of_sounds: 55,
+    tags: ["percussion", "world", "drums"],
+    preview_url: "",
+    artwork_url: "/uploads/artwork/metallic-logo.png",
+  },
+  {
+    id: 12,
+    title: "Retro 80s Pack",
+    description: "Authentic 80s synth and drum sounds",
+    type: "drum_kit_bundle",
+    price: 4299,
+    is_free: false,
+    number_of_sounds: 48,
+    tags: ["retro", "80s", "synth"],
+    preview_url: "",
+    artwork_url: "/uploads/artwork/metallic-logo.png",
+  },
+];
+
 function Zvuky() {
-  const [kits, setKits] = useState<SoundKit[]>([]);
+  const [kits, setKits] = useState<SoundKit[]>(testKits);
   const [currentKit, setCurrentKit] = useState<SoundKit | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [savedKits, setSavedKits] = useState<Set<number>>(new Set());
@@ -34,8 +181,14 @@ function Zvuky() {
   useEffect(() => {
     fetch("/api/sound-kits")
       .then((res) => res.json())
-      .then(setKits)
-      .catch(console.error);
+      .then((data) => {
+        if (data && data.length > 0) {
+          setKits(data);
+        } else {
+          setKits(testKits);
+        }
+      })
+      .catch(() => setKits(testKits));
   }, []);
 
   useEffect(() => {
