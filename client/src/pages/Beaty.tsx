@@ -6,6 +6,7 @@ import DownloadModal from "../components/DownloadModal";
 import MusicPlayer from "../components/MusicPlayer";
 import SoundWave from "../components/SoundWave";
 import ProductsGrid from "../components/ProductsGrid";
+import SoundKitsDock from "../components/SoundKitsDock";
 
 interface Beat {
   id: number;
@@ -41,39 +42,48 @@ interface SoundKit {
 const testSoundKits: SoundKit[] = [
   {
     id: 101,
-    title: "Analog Drums Vol. 1",
+    title: "Friendly Ghosts",
     type: "drum_kit",
     price: 2999,
     is_free: false,
     number_of_sounds: 25,
-    artwork_url: "/uploads/artwork/metallic-logo.png",
+    artwork_url: "/uploads/artwork/friendly-ghosts.png",
   },
   {
     id: 102,
-    title: "Urban Beats Collection",
+    title: "One Shot Kit",
     type: "one_shot_kit",
     price: 1999,
     is_free: false,
     number_of_sounds: 45,
-    artwork_url: "/uploads/artwork/metallic-logo.png",
+    artwork_url: "/uploads/artwork/friendly-aliens.png",
   },
   {
     id: 103,
-    title: "Cinematic Loops",
+    title: "Friendly Aliens",
     type: "loop_kit",
     price: 3499,
     is_free: false,
     number_of_sounds: 30,
-    artwork_url: "/uploads/artwork/metallic-logo.png",
+    artwork_url: "/uploads/artwork/friendly-aliens-3.png",
   },
   {
     id: 104,
-    title: "Free Starter Pack",
+    title: "Friendly Ghosts 3",
     type: "one_shot_kit",
-    price: 0,
-    is_free: true,
+    price: 2499,
+    is_free: false,
     number_of_sounds: 20,
-    artwork_url: "/uploads/artwork/metallic-logo.png",
+    artwork_url: "/uploads/artwork/friendly-ghosts-3.png",
+  },
+  {
+    id: 105,
+    title: "Friendly Aliens 2",
+    type: "drum_kit",
+    price: 2999,
+    is_free: false,
+    number_of_sounds: 35,
+    artwork_url: "/uploads/artwork/friendly-aliens-2.png",
   },
 ];
 
@@ -824,27 +834,23 @@ function Beaty() {
         </div>
 
         {isHomePage && (
-          <div style={{ marginTop: "64px" }}>
+          <div style={{ marginTop: "64px", marginBottom: "64px" }}>
             <h2 style={{ fontSize: "24px", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontWeight: "400", marginBottom: "32px", marginTop: 0 }}>
               ZVUKY
             </h2>
-            <div style={{ display: "flex", justifyContent: "center" }}>
-              <div style={{ width: "75%" }}>
-                <ProductsGrid
-                  products={testSoundKits.map((kit) => ({
-                    id: kit.id,
-                    name: kit.title,
-                    price: kit.price,
-                    images: [kit.artwork_url],
-                    soundCount: kit.number_of_sounds,
-                    type: kit.type,
-                    isFree: kit.is_free,
-                    typeLabel: kit.type === "drum_kit" ? "Drum Kit" : kit.type === "one_shot_kit" ? "One Shot Kit" : kit.type === "loop_kit" ? "Loop Kit" : kit.type,
-                  }))}
-                  initialCount={3}
-                />
-              </div>
-            </div>
+            <SoundKitsDock
+              items={testSoundKits.map((kit) => ({
+                id: kit.id,
+                name: kit.title,
+                image: kit.artwork_url,
+                price: kit.price,
+                isFree: kit.is_free,
+                onClick: () => {
+                  // Navigate to zvuky page or show details
+                  setLocation("/zvuky");
+                },
+              }))}
+            />
           </div>
         )}
 
