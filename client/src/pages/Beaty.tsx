@@ -374,7 +374,7 @@ function Beaty() {
                         borderRadius: "4px",
                         position: "relative",
                         minWidth: "120px",
-                        height: "40px",
+                        height: "32px",
                       }}
                     >
                       <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -393,14 +393,14 @@ function Beaty() {
                         border: "1px solid #666",
                         borderRadius: "4px",
                         cursor: "pointer",
-                        width: "40px",
-                        height: "40px",
+                        width: "32px",
+                        height: "32px",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
                         transition: "background 0.2s",
-                        marginLeft: "4px",
-                        minHeight: "40px",
+                        marginLeft: "2px",
+                        minHeight: "32px",
                       }}
                       onMouseEnter={(e) => (e.currentTarget.style.background = "#1a1a1a")}
                       onMouseLeave={(e) => (e.currentTarget.style.background = "#000")}
@@ -419,14 +419,14 @@ function Beaty() {
                         border: "1px solid #666",
                         borderRadius: "4px",
                         cursor: "pointer",
-                        width: "40px",
-                        height: "40px",
+                        width: "32px",
+                        height: "32px",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
                         transition: "background 0.2s",
-                        marginLeft: "4px",
-                        minHeight: "40px",
+                        marginLeft: "2px",
+                        minHeight: "32px",
                       }}
                       onMouseEnter={(e) => (e.currentTarget.style.background = "#1a1a1a")}
                       onMouseLeave={(e) => (e.currentTarget.style.background = "#000")}
