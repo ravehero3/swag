@@ -13,54 +13,6 @@ interface SoundKitsDockProps {
   items: SoundKitDockItem[];
 }
 
-const Star = ({ style }: { style: any }) => (
-  <div
-    className="absolute rounded-full bg-white"
-    style={style}
-  />
-);
-
-const StarryBackground = () => {
-  const [stars, setStars] = useState<any[]>([]);
-
-  useEffect(() => {
-    const initialStars = Array.from({ length: 50 }, (_, i) => ({
-      id: i,
-      left: Math.random() * 100,
-      top: Math.random() * 100,
-      size: Math.random() * 2 + 1,
-      opacity: Math.random(),
-      duration: Math.random() * 3 + 2,
-      delay: Math.random() * 2,
-    }));
-    setStars(initialStars);
-  }, []);
-
-  return (
-    <div className="absolute inset-0 overflow-hidden">
-      {stars.map((star) => (
-        <Star
-          key={star.id}
-          style={{
-            left: `${star.left}%`,
-            top: `${star.top}%`,
-            width: `${star.size}px`,
-            height: `${star.size}px`,
-            animation: `twinkle ${star.duration}s ease-in-out ${star.delay}s infinite`,
-            opacity: star.opacity,
-          }}
-        />
-      ))}
-      <style>{`
-        @keyframes twinkle {
-          0%, 100% { opacity: 0.2; }
-          50% { opacity: 1; }
-        }
-      `}</style>
-    </div>
-  );
-};
-
 const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [mouseX, setMouseX] = useState<number | null>(null);
@@ -102,75 +54,104 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
   };
 
   return (
-    <div className="relative w-full overflow-hidden bg-black" style={{ minHeight: '400px' }}>
-      {/* Background with gradient to center */}
-      <div className="absolute inset-0 bg-gradient-to-b from-gray-900 via-blue-950 to-black">
-        <StarryBackground />
-      </div>
-      
-      {/* Edge fade to black - all sides */}
-      <div 
-        className="absolute inset-0 pointer-events-none"
+    <div style={{ width: '100%', display: 'flex', justifyContent: 'center', paddingBottom: '64px', paddingTop: '32px', background: 'transparent' }}>
+      <div
+        ref={dockRef}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
         style={{
-          background: `
-            radial-gradient(ellipse at center, transparent 40%, black 100%)
-          `
+          display: 'flex',
+          alignItems: 'flex-end',
+          gap: '8px',
+          padding: '12px',
+          borderRadius: '12px',
+          backgroundColor: 'rgba(31, 41, 55, 0.8)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(107, 114, 128, 0.5)',
+          overflow: 'visible',
+          position: 'relative',
         }}
-      />
+      >
+        {items.map((item, index) => {
+          const scale = getScale(index);
+          const baseSize = 56;
+          const size = baseSize * scale;
+          const translateY = -(size - baseSize) / 2;
 
-      {/* Dock container */}
-      <div className="relative z-10 flex items-end justify-center h-full py-16">
-        <div
-          ref={dockRef}
-          onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseLeave}
-          className="relative flex items-end gap-2 px-3 py-3 rounded-3xl bg-gray-900/80 backdrop-blur-lg border border-gray-700/50"
-        >
-          {items.map((item, index) => {
-            const scale = getScale(index);
-            const baseSize = 56;
-            const size = baseSize * scale;
-            const translateY = -(size - baseSize) / 2;
-
-            return (
-              <div
-                key={item.id}
-                className="dock-icon flex items-end justify-center transition-all duration-200 ease-out"
-                onMouseEnter={() => setHoveredIndex(index)}
+          return (
+            <div
+              key={item.id}
+              className="dock-icon"
+              onMouseEnter={() => setHoveredIndex(index)}
+              style={{
+                display: 'flex',
+                alignItems: 'flex-end',
+                justifyContent: 'center',
+                width: `${baseSize}px`,
+                height: `${baseSize}px`,
+                transform: `translateY(${translateY}px)`,
+                transition: 'transform 0.2s ease-out',
+                flexShrink: 0,
+              }}
+            >
+              <button
+                onClick={item.onClick}
                 style={{
-                  transform: `translateY(${translateY}px)`,
-                  width: `${baseSize}px`,
-                  height: `${baseSize}px`,
+                  width: `${size}px`,
+                  height: `${size}px`,
+                  border: 'none',
+                  padding: 0,
+                  borderRadius: '8px',
+                  backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
+                  cursor: 'pointer',
+                  overflow: 'hidden',
+                  transition: 'box-shadow 0.2s ease-out',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  position: 'relative',
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.8)';
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.5)';
                 }}
               >
-                <button
-                  onClick={item.onClick}
-                  className="relative flex items-center justify-center rounded-md bg-black/80 shadow-lg cursor-pointer hover:shadow-2xl transition-shadow overflow-hidden border-0"
-                  style={{
-                    width: `${size}px`,
-                    height: `${size}px`,
-                    padding: 0,
-                  }}
-                >
-                  <img 
-                    src={item.image} 
-                    alt={item.name}
-                    style={{ 
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover'
-                    }} 
-                  />
-                  {hoveredIndex === index && (
-                    <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 px-3 py-1 bg-gray-800/90 text-white text-sm rounded-lg whitespace-nowrap backdrop-blur-sm">
-                      {item.name}
-                    </div>
-                  )}
-                </button>
-              </div>
-            );
-          })}
-        </div>
+                <img 
+                  src={item.image} 
+                  alt={item.name}
+                  style={{ 
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    display: 'block',
+                  }} 
+                />
+                {hoveredIndex === index && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '-48px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    padding: '6px 12px',
+                    backgroundColor: 'rgba(31, 41, 55, 0.9)',
+                    color: 'white',
+                    fontSize: '14px',
+                    borderRadius: '8px',
+                    whiteSpace: 'nowrap',
+                    backdropFilter: 'blur(10px)',
+                    pointerEvents: 'none',
+                    zIndex: 100,
+                  }}>
+                    {item.name}
+                  </div>
+                )}
+              </button>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
