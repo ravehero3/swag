@@ -24,6 +24,10 @@ const styles = `
       display: block !important;
     }
   }
+  
+  .footer-link:hover {
+    text-decoration: underline !important;
+  }
 `;
 
 
@@ -175,11 +179,11 @@ export default function ExtendedFooter() {
         <div style={sectionStyle} className="footer-section">
           <h3 style={titleStyle}>ZÁKAZNICKÝ SERVIS</h3>
           <ul style={listStyle}>
-            <li style={listItemStyle}><a href="#" style={linkStyle}>Často kladené dotazy</a></li>
-            <li style={listItemStyle}><a href="#" style={linkStyle}>Sledování objednávky</a></li>
-            <li style={listItemStyle}><a href="#" style={linkStyle}>Vrácení zboží</a></li>
-            <li style={listItemStyle}><a href="#" style={linkStyle}>Doručení</a></li>
-            <li style={listItemStyle}><a href="#" style={linkStyle}>Platba</a></li>
+            <li style={listItemStyle}><a href="#" style={linkStyle} className="footer-link">Často kladené dotazy</a></li>
+            <li style={listItemStyle}><a href="#" style={linkStyle} className="footer-link">Sledování objednávky</a></li>
+            <li style={listItemStyle}><a href="#" style={linkStyle} className="footer-link">Vrácení zboží</a></li>
+            <li style={listItemStyle}><a href="#" style={linkStyle} className="footer-link">Doručení</a></li>
+            <li style={listItemStyle}><a href="#" style={linkStyle} className="footer-link">Platba</a></li>
           </ul>
         </div>
 
@@ -187,10 +191,10 @@ export default function ExtendedFooter() {
         <div style={sectionStyle} className="footer-section">
           <h3 style={titleStyle}>O SPOLEČNOSTI</h3>
           <ul style={listStyle}>
-            <li style={listItemStyle}><a href="#" style={linkStyle}>Právní informace</a></li>
-            <li style={listItemStyle}><a href="#" style={linkStyle}>Zásady ochrany osobních údajů</a></li>
-            <li style={listItemStyle}><a href="#" style={linkStyle}>Zásady používání souborů cookie</a></li>
-            <li style={listItemStyle}><a href="#" style={linkStyle}>Nastavení cookies</a></li>
+            <li style={listItemStyle}><a href="#" style={linkStyle} className="footer-link">Právní informace</a></li>
+            <li style={listItemStyle}><a href="#" style={linkStyle} className="footer-link">Zásady ochrany osobních údajů</a></li>
+            <li style={listItemStyle}><a href="#" style={linkStyle} className="footer-link">Zásady používání souborů cookie</a></li>
+            <li style={listItemStyle}><a href="#" style={linkStyle} className="footer-link">Nastavení cookies</a></li>
           </ul>
         </div>
 
@@ -198,9 +202,9 @@ export default function ExtendedFooter() {
         <div style={sectionStyle} className="footer-section">
           <h3 style={titleStyle}>SLEDUJTE NÁS</h3>
           <ul style={listStyle}>
-            <li style={listItemStyle}><a href="https://www.facebook.com/VOODOO808" target="_blank" rel="noopener noreferrer" style={linkStyle}>Facebook</a></li>
-            <li style={listItemStyle}><a href="https://www.instagram.com/voodoobeats808/#" target="_blank" rel="noopener noreferrer" style={linkStyle}>Instagram</a></li>
-            <li style={listItemStyle}><a href="https://www.tiktok.com/@voodoo808?lang=en" target="_blank" rel="noopener noreferrer" style={linkStyle}>TikTok</a></li>
+            <li style={listItemStyle}><a href="https://www.facebook.com/VOODOO808" target="_blank" rel="noopener noreferrer" style={linkStyle} className="footer-link">Facebook</a></li>
+            <li style={listItemStyle}><a href="https://www.instagram.com/voodoobeats808/#" target="_blank" rel="noopener noreferrer" style={linkStyle} className="footer-link">Instagram</a></li>
+            <li style={listItemStyle}><a href="https://www.tiktok.com/@voodoo808?lang=en" target="_blank" rel="noopener noreferrer" style={linkStyle} className="footer-link">TikTok</a></li>
           </ul>
         </div>
 
@@ -218,9 +222,9 @@ export default function ExtendedFooter() {
           <h3 style={titleStyle}>KONTAKTUJTE NÁS</h3>
           <ul style={listStyle}>
             <li style={{...listItemStyle, marginBottom: "8px"}}>Naši poradci jsou vám k dispozici Po–Pá od 9:30 do 19:00</li>
-            <li style={{...listItemStyle, marginBottom: "8px"}}>WhatsApp: <a href="https://wa.me/420775181107" target="_blank" rel="noopener noreferrer" style={{...linkStyle, textDecoration: "underline"}}>+420 775 181 107</a></li>
-            <li style={{...listItemStyle, marginBottom: "8px"}}>Telefon: <a href="tel:+420775181107" style={{...linkStyle, textDecoration: "underline"}}>+420 775 181 107</a></li>
-            <li style={listItemStyle}>E-mail: <a href="mailto:voodoo808@mail.com" style={{...linkStyle, textDecoration: "underline"}}>Napište nám</a></li>
+            <li style={{...listItemStyle, marginBottom: "8px"}}>WhatsApp: <a href="https://wa.me/420775181107" target="_blank" rel="noopener noreferrer" style={{...linkStyle, textDecoration: "underline"}} className="footer-link">+420 775 181 107</a></li>
+            <li style={{...listItemStyle, marginBottom: "8px"}}>Telefon: <a href="tel:+420775181107" style={{...linkStyle, textDecoration: "underline"}} className="footer-link">+420 775 181 107</a></li>
+            <li style={listItemStyle}>E-mail: <a href="mailto:voodoo808@mail.com" style={{...linkStyle, textDecoration: "underline"}} className="footer-link">Napište nám</a></li>
           </ul>
         </div>
       </div>
@@ -256,11 +260,11 @@ export default function ExtendedFooter() {
           onToggle={() => toggleSection('customer')}
         >
           <ul style={{...listStyle, marginTop: "8px"}}>
-            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="#" style={linkStyle}>Často kladené dotazy</a></li>
-            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="#" style={linkStyle}>Sledování objednávky</a></li>
-            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="#" style={linkStyle}>Vrácení zboží</a></li>
-            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="#" style={linkStyle}>Doručení</a></li>
-            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="#" style={linkStyle}>Platba</a></li>
+            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="#" style={linkStyle} className="footer-link">Často kladené dotazy</a></li>
+            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="#" style={linkStyle} className="footer-link">Sledování objednávky</a></li>
+            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="#" style={linkStyle} className="footer-link">Vrácení zboží</a></li>
+            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="#" style={linkStyle} className="footer-link">Doručení</a></li>
+            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="#" style={linkStyle} className="footer-link">Platba</a></li>
           </ul>
         </FooterAccordionItem>
 
@@ -270,10 +274,10 @@ export default function ExtendedFooter() {
           onToggle={() => toggleSection('about')}
         >
           <ul style={{...listStyle, marginTop: "8px"}}>
-            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="#" style={linkStyle}>Právní informace</a></li>
-            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="#" style={linkStyle}>Zásady ochrany osobních údajů</a></li>
-            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="#" style={linkStyle}>Zásady používání souborů cookie</a></li>
-            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="#" style={linkStyle}>Nastavení cookies</a></li>
+            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="#" style={linkStyle} className="footer-link">Právní informace</a></li>
+            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="#" style={linkStyle} className="footer-link">Zásady ochrany osobních údajů</a></li>
+            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="#" style={linkStyle} className="footer-link">Zásady používání souborů cookie</a></li>
+            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="#" style={linkStyle} className="footer-link">Nastavení cookies</a></li>
           </ul>
         </FooterAccordionItem>
 
@@ -283,9 +287,9 @@ export default function ExtendedFooter() {
           onToggle={() => toggleSection('social')}
         >
           <ul style={{...listStyle, marginTop: "8px"}}>
-            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="https://www.facebook.com/VOODOO808" target="_blank" rel="noopener noreferrer" style={linkStyle}>Facebook</a></li>
-            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="https://www.instagram.com/voodoobeats808/#" target="_blank" rel="noopener noreferrer" style={linkStyle}>Instagram</a></li>
-            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="https://www.tiktok.com/@voodoo808?lang=en" target="_blank" rel="noopener noreferrer" style={linkStyle}>TikTok</a></li>
+            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="https://www.facebook.com/VOODOO808" target="_blank" rel="noopener noreferrer" style={linkStyle} className="footer-link">Facebook</a></li>
+            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="https://www.instagram.com/voodoobeats808/#" target="_blank" rel="noopener noreferrer" style={linkStyle} className="footer-link">Instagram</a></li>
+            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="https://www.tiktok.com/@voodoo808?lang=en" target="_blank" rel="noopener noreferrer" style={linkStyle} className="footer-link">TikTok</a></li>
           </ul>
         </FooterAccordionItem>
 
@@ -307,9 +311,9 @@ export default function ExtendedFooter() {
         >
           <ul style={{...listStyle, marginTop: "8px"}}>
             <li style={{...listItemStyle, marginBottom: "8px"}}>Naši poradci jsou vám k dispozici Po–Pá od 9:30 do 19:00</li>
-            <li style={{...listItemStyle, marginBottom: "8px"}}>WhatsApp: <a href="https://wa.me/420775181107" target="_blank" rel="noopener noreferrer" style={{...linkStyle, textDecoration: "underline"}}>+420 775 181 107</a></li>
-            <li style={{...listItemStyle, marginBottom: "8px"}}>Telefon: <a href="tel:+420775181107" style={{...linkStyle, textDecoration: "underline"}}>+420 775 181 107</a></li>
-            <li style={{...listItemStyle}}>E-mail: <a href="mailto:voodoo808@mail.com" style={{...linkStyle, textDecoration: "underline"}}>Napište nám</a></li>
+            <li style={{...listItemStyle, marginBottom: "8px"}}>WhatsApp: <a href="https://wa.me/420775181107" target="_blank" rel="noopener noreferrer" style={{...linkStyle, textDecoration: "underline"}} className="footer-link">+420 775 181 107</a></li>
+            <li style={{...listItemStyle, marginBottom: "8px"}}>Telefon: <a href="tel:+420775181107" style={{...linkStyle, textDecoration: "underline"}} className="footer-link">+420 775 181 107</a></li>
+            <li style={{...listItemStyle}}>E-mail: <a href="mailto:voodoo808@mail.com" style={{...linkStyle, textDecoration: "underline"}} className="footer-link">Napište nám</a></li>
           </ul>
         </FooterAccordionItem>
       </div>

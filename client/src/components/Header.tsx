@@ -1,12 +1,22 @@
 import { Link, useLocation } from "wouter";
 import { useApp } from "../App";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 function Header() {
   const { user, cart, setIsCartOpen } = useApp();
   const [location] = useLocation();
   const [hoveredLink, setHoveredLink] = useState<string | null>(null);
   const [hoveredIcon, setHoveredIcon] = useState<string | null>(null);
+  const [savedCount, setSavedCount] = useState(0);
+
+  useEffect(() => {
+    if (user) {
+      fetch("/api/saved", { credentials: "include" })
+        .then((res) => res.json())
+        .then((items) => setSavedCount(items.length))
+        .catch(() => setSavedCount(0));
+    }
+  }, [user]);
 
   const navLinkStyle = (path: string, isActive: boolean) => ({
     cursor: "pointer",
@@ -94,27 +104,51 @@ function Header() {
           </span>
         </Link>
 
-        <svg
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="#fff"
-          strokeWidth="2"
-          style={{
-            cursor: "pointer",
-            transition: "transform 0.2s ease, filter 0.2s ease",
-            transform: hoveredIcon === "heart" ? "scale(1.02)" : "scale(1)",
-            padding: "4px",
-            filter: hoveredIcon === "heart" ? "drop-shadow(0 0 8px rgba(255,0,0,0.5))" : "none",
-            flexShrink: 0,
-          }}
-          onClick={() => window.location.href = "/ulozeno"}
-          onMouseEnter={() => setHoveredIcon("heart")}
-          onMouseLeave={() => setHoveredIcon(null)}
-        >
-          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-        </svg>
+        <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#fff"
+            strokeWidth="2"
+            style={{
+              cursor: "pointer",
+              transition: "transform 0.2s ease, filter 0.2s ease",
+              transform: hoveredIcon === "heart" ? "scale(1.02)" : "scale(1)",
+              padding: "4px",
+              filter: hoveredIcon === "heart" ? "drop-shadow(0 0 8px rgba(255,0,0,0.5))" : "none",
+              flexShrink: 0,
+            }}
+            onClick={() => window.location.href = "/ulozeno"}
+            onMouseEnter={() => setHoveredIcon("heart")}
+            onMouseLeave={() => setHoveredIcon(null)}
+          >
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          </svg>
+          {savedCount > 0 && (
+            <div
+              style={{
+                position: "absolute",
+                top: "-8px",
+                right: "-8px",
+                backgroundColor: "#fff",
+                color: "#000",
+                borderRadius: "50%",
+                width: "20px",
+                height: "20px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "11px",
+                fontWeight: "bold",
+                fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+              }}
+            >
+              {savedCount}
+            </div>
+          )}
+        </div>
 
         <div
           style={{
