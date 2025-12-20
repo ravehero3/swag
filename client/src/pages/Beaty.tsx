@@ -310,7 +310,7 @@ function Beaty() {
                       onClick={() => openContractModal(highlightedBeat)}
                       className="btn-bounce"
                       style={{
-                        padding: "8px 0px",
+                        padding: "8px 16px",
                         background: "#fff",
                         color: "#000",
                         border: "none",
@@ -333,7 +333,7 @@ function Beaty() {
                         </svg>
                         <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "#000", lineHeight: "1", right: "-10px", top: "-5px" }}>+</span>
                       </div>
-                      <span style={{ marginLeft: "12px", fontWeight: 500 }}>{Math.floor(highlightedBeat.price)} CZK</span>
+                      <span style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "8px" }}>{Math.floor(highlightedBeat.price)} CZK</span>
                     </button>
                     {highlightedBeat.tags && highlightedBeat.tags.length > 0 && (
                       <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
