@@ -290,7 +290,7 @@ function Zvuky() {
       </div>
 
       {kits.length > 0 ? (
-        <div style={{ maxWidth: "1400px", margin: "0 auto", marginBottom: "48px" }}>
+        <div style={{ width: "100%", marginBottom: "48px" }}>
           <ProductsGrid
             products={products}
             savedProducts={Array.from(savedKits)}
