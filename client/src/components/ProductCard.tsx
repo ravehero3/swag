@@ -1,3 +1,5 @@
+import React from 'react';
+
 interface ProductCardProps {
   id: string | number;
   name: string;
@@ -30,6 +32,16 @@ export default function ProductCard({
   onPlayClick,
   typeLabel,
 }: ProductCardProps) {
+  const [isHeartAnimating, setIsHeartAnimating] = React.useState(false);
+
+  const handleHeartClick = () => {
+    if (onToggleSave) {
+      setIsHeartAnimating(true);
+      setTimeout(() => setIsHeartAnimating(false), 300);
+      onToggleSave(id);
+    }
+  };
+
   return (
     <div
       style={{
@@ -40,6 +52,16 @@ export default function ProductCard({
         transition: "all 0.2s ease",
       }}
     >
+      <style>{`
+        @keyframes heartPulse {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.03); }
+          100% { transform: scale(1); }
+        }
+        .heart-pulse {
+          animation: heartPulse 0.3s ease-out;
+        }
+      `}</style>
       {onToggleSave && (
         <button
           onClick={() => onToggleSave(id)}
@@ -138,6 +160,32 @@ export default function ProductCard({
           <span style={{ fontWeight: "bold", fontSize: "14px" }}>
             {isFree ? "ZDARMA" : `${price} CZK`}
           </span>
+          {onToggleSave && (
+            <button
+              onClick={handleHeartClick}
+              className={isHeartAnimating ? "heart-pulse" : ""}
+              style={{
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                padding: "4px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill={isSaved ? "#ff4444" : "none"}
+                stroke={isSaved ? "#ff4444" : "#666"}
+                strokeWidth="2"
+              >
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
     </div>
