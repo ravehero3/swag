@@ -714,12 +714,12 @@ function Beaty() {
                     setDownloadingBeat(beat);
                   }}
                   style={{
-                    background: "#333",
-                    border: "1px solid #444",
+                    background: "#0d0d0d",
+                    border: "1px solid #333",
                     cursor: "pointer",
                     padding: "6px",
                     color: "#666",
-                    transition: "all 0.2s ease",
+                    transition: "all 0.2s ease, border-color 0.2s ease",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -727,10 +727,12 @@ function Beaty() {
                     borderRadius: "2px",
                   }}
                   onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.color = "#999";
+                    const btn = e.currentTarget as HTMLButtonElement;
+                    btn.style.borderColor = "#555";
                   }}
                   onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.color = "#666";
+                    const btn = e.currentTarget as HTMLButtonElement;
+                    btn.style.borderColor = "#333";
                   }}
                   title="Download"
                 >
@@ -745,22 +747,24 @@ function Beaty() {
                     e.stopPropagation();
                   }}
                   style={{
-                    background: "#333",
-                    border: "1px solid #444",
+                    background: "#0d0d0d",
+                    border: "1px solid #333",
                     cursor: "pointer",
                     padding: "6px",
                     color: "#666",
-                    transition: "all 0.2s ease",
+                    transition: "all 0.2s ease, border-color 0.2s ease",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     borderRadius: "2px",
                   }}
                   onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.color = "#999";
+                    const btn = e.currentTarget as HTMLButtonElement;
+                    btn.style.borderColor = "#555";
                   }}
                   onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLButtonElement).style.color = "#666";
+                    const btn = e.currentTarget as HTMLButtonElement;
+                    btn.style.borderColor = "#333";
                   }}
                   title="Share"
                 >
