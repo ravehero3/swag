@@ -41,6 +41,30 @@ function Ulozeno() {
         .then((res) => res.json())
         .then(setSavedItems)
         .catch(console.error);
+    } else {
+      // Load saved items from localStorage for non-logged-in users
+      const savedBeatsJson = localStorage.getItem("voodoo808_saved_beats");
+      const savedKitsJson = localStorage.getItem("voodoo808_saved_kits");
+      
+      const savedBeats = savedBeatsJson ? JSON.parse(savedBeatsJson) : [];
+      const savedKits = savedKitsJson ? JSON.parse(savedKitsJson) : [];
+      
+      // Combine and format for display
+      const combined = [
+        ...savedBeats.map((beat: any, idx: number) => ({
+          id: -(idx + 1),
+          item_id: beat.id,
+          item_type: "beat",
+          item_data: beat,
+        })),
+        ...savedKits.map((kit: any, idx: number) => ({
+          id: -1000 - (idx + 1),
+          item_id: kit.id,
+          item_type: "sound_kit",
+          item_data: kit,
+        })),
+      ];
+      setSavedItems(combined);
     }
   }, [user]);
 
@@ -63,10 +87,25 @@ function Ulozeno() {
   };
 
   const handleRemove = async (item: SavedItem) => {
-    await fetch(`/api/saved/${item.item_type}/${item.item_id}`, {
-      method: "DELETE",
-      credentials: "include",
-    });
+    if (user) {
+      await fetch(`/api/saved/${item.item_type}/${item.item_id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+    } else {
+      // Remove from localStorage for non-logged-in users
+      if (item.item_type === "beat") {
+        const savedBeatsJson = localStorage.getItem("voodoo808_saved_beats");
+        const savedBeats = savedBeatsJson ? JSON.parse(savedBeatsJson) : [];
+        const filtered = savedBeats.filter((b: any) => b.id !== item.item_id);
+        localStorage.setItem("voodoo808_saved_beats", JSON.stringify(filtered));
+      } else {
+        const savedKitsJson = localStorage.getItem("voodoo808_saved_kits");
+        const savedKits = savedKitsJson ? JSON.parse(savedKitsJson) : [];
+        const filtered = savedKits.filter((k: any) => k.id !== item.item_id);
+        localStorage.setItem("voodoo808_saved_kits", JSON.stringify(filtered));
+      }
+    }
     setSavedItems(savedItems.filter((s) => s.id !== item.id));
   };
 
@@ -81,16 +120,9 @@ function Ulozeno() {
     });
   };
 
-  if (!user) {
-    return (
-      <div className="fade-in" style={{ textAlign: "center", padding: "60px 20px" }}>
-        <p style={{ color: "#666" }}>Pro zobrazení uložených položek se musíte přihlásit</p>
-      </div>
-    );
-  }
-
   const beats = savedItems.filter((item) => item.item_type === "beat");
   const soundKits = savedItems.filter((item) => item.item_type === "sound_kit");
+  const isTemporary = !user;
 
   return (
     <div className="fade-in">
@@ -100,7 +132,12 @@ function Ulozeno() {
         onEnded={() => setIsPlaying(false)}
       />
 
-      <h1 style={{ fontSize: "24px", marginBottom: "32px", textAlign: "center" }}>Uložené položky</h1>
+      <h1 style={{ fontSize: "24px", marginBottom: "16px", textAlign: "center" }}>Uložené položky</h1>
+      {isTemporary && (
+        <p style={{ textAlign: "center", fontSize: "12px", color: "#888", marginBottom: "24px" }}>
+          (Dočasné uložení - přihlaste se pro trvalé uložení)
+        </p>
+      )}
 
       {savedItems.length === 0 ? (
         <p style={{ textAlign: "center", color: "#666", padding: "40px" }}>
