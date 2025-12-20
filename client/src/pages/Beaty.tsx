@@ -310,7 +310,7 @@ function Beaty() {
                       onClick={() => openContractModal(highlightedBeat)}
                       className="btn-bounce"
                       style={{
-                        padding: "8px 8px 8px 16px",
+                        padding: "16px 8px 8px 16px",
                         background: "#fff",
                         color: "#000",
                         border: "none",
