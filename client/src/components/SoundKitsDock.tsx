@@ -15,49 +15,30 @@ interface SoundKitsDockProps {
 
 const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const [mouseX, setMouseX] = useState<number | null>(null);
   const dockRef = useRef<HTMLDivElement>(null);
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (dockRef.current) {
-      const rect = dockRef.current.getBoundingClientRect();
-      setMouseX(e.clientX - rect.left);
-    }
-  };
-
   const handleMouseLeave = () => {
-    setMouseX(null);
     setHoveredIndex(null);
   };
 
   const getScale = (index: number) => {
-    if (mouseX === null) return 1;
+    if (hoveredIndex === null) return 1;
     
-    const dockRect = dockRef.current?.getBoundingClientRect();
-    if (!dockRect || !dockRef.current) return 1;
-
-    const iconElements = dockRef.current.querySelectorAll('.dock-icon');
-    if (!iconElements[index]) return 1;
-
-    const iconRect = iconElements[index].getBoundingClientRect();
-    const iconCenter = iconRect.left + iconRect.width / 2 - dockRect.left;
-    const distance = Math.abs(mouseX - iconCenter);
+    const distance = Math.abs(index - hoveredIndex);
     
-    const maxDistance = 150;
-    const maxScale = 2.5;
-    const minScale = 1;
-    
-    if (distance > maxDistance) return minScale;
-    
-    const scale = maxScale - ((maxScale - minScale) * (distance / maxDistance));
-    return scale;
+    if (distance === 0) {
+      return 2; // Hovered item: 2x
+    } else if (distance === 1) {
+      return 1.5; // Adjacent items: 1.5x
+    } else {
+      return 1; // Other items: 1x
+    }
   };
 
   return (
     <div style={{ width: '100%', display: 'flex', justifyContent: 'center', paddingBottom: '64px', paddingTop: '32px', background: 'transparent', overflowX: 'auto' }}>
       <div
         ref={dockRef}
-        onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         style={{
           display: 'flex',
