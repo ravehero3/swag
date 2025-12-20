@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface SoundWaveProps {
   audioRef: React.RefObject<HTMLAudioElement>;
@@ -6,13 +6,13 @@ interface SoundWaveProps {
 }
 
 function SoundWave({ audioRef, isPlaying }: SoundWaveProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [frequencyData, setFrequencyData] = useState<Uint8Array | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const animationRef = useRef<number | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
 
   useEffect(() => {
-    if (!audioRef.current || !canvasRef.current) return;
+    if (!audioRef.current) return;
 
     const setupAudioContext = () => {
       if (audioContextRef.current) return;
@@ -21,7 +21,7 @@ function SoundWave({ audioRef, isPlaying }: SoundWaveProps) {
         const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)() as AudioContext;
         const source = audioContext.createMediaElementAudioSource(audioRef.current!);
         const analyser = audioContext.createAnalyser();
-        analyser.fftSize = 512;
+        analyser.fftSize = 256;
         source.connect(analyser);
         analyser.connect(audioContext.destination);
         
@@ -32,43 +32,21 @@ function SoundWave({ audioRef, isPlaying }: SoundWaveProps) {
       }
     };
 
-    const drawWaveform = () => {
-      if (!analyserRef.current || !canvasRef.current) return;
-
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
+    const updateWaveform = () => {
+      if (!analyserRef.current) return;
 
       const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
       analyserRef.current.getByteFrequencyData(dataArray);
-
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      const barWidth = canvas.width / dataArray.length;
-      let x = 0;
-
-      for (let i = 0; i < dataArray.length; i++) {
-        const barHeight = (dataArray[i] / 255) * canvas.height;
-        
-        const hue = (i / dataArray.length) * 360;
-        ctx.fillStyle = `hsl(${hue}, 100%, ${40 + (barHeight / canvas.height) * 20}%)`;
-        ctx.shadowColor = `hsl(${hue}, 100%, 50%)`;
-        ctx.shadowBlur = 10;
-        
-        ctx.fillRect(x, canvas.height - barHeight, barWidth - 1, barHeight);
-        x += barWidth;
-      }
+      setFrequencyData(new Uint8Array(dataArray));
 
       if (isPlaying) {
-        animationRef.current = requestAnimationFrame(drawWaveform);
+        animationRef.current = requestAnimationFrame(updateWaveform);
       }
     };
 
     if (isPlaying) {
       setupAudioContext();
-      drawWaveform();
+      updateWaveform();
     }
 
     return () => {
@@ -78,23 +56,47 @@ function SoundWave({ audioRef, isPlaying }: SoundWaveProps) {
     };
   }, [isPlaying, audioRef]);
 
-  if (!isPlaying) return null;
+  if (!isPlaying || !frequencyData) return null;
+
+  const bars = 120;
+  const step = Math.floor(frequencyData.length / bars);
 
   return (
     <div style={{ display: "flex", justifyContent: "center", margin: "24px auto", maxWidth: "1200px", padding: "0 16px" }}>
-      <canvas
-        ref={canvasRef}
-        width={1000}
-        height={150}
+      <div
         style={{
           width: "100%",
-          height: "150px",
+          height: "80px",
+          backgroundColor: "#0a0a0a",
+          border: "1px solid #262626",
           borderRadius: "4px",
-          background: "linear-gradient(135deg, rgba(0,0,0,0.4) 0%, rgba(36,224,83,0.05) 100%)",
-          border: "1px solid rgba(36, 224, 83, 0.2)",
-          boxShadow: "0 0 20px rgba(36, 224, 83, 0.1)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-around",
+          padding: "0 4px",
+          gap: "1px",
         }}
-      />
+      >
+        {Array.from({ length: bars }).map((_, i) => {
+          const dataIndex = i * step;
+          const value = frequencyData[dataIndex] || 0;
+          const height = (value / 255) * 100;
+          
+          return (
+            <div
+              key={i}
+              style={{
+                flex: 1,
+                height: `${height}%`,
+                backgroundColor: "#fff",
+                opacity: Math.max(0.2, height / 100),
+                transition: "all 0.05s linear",
+                minWidth: "1px",
+              }}
+            />
+          );
+        })}
+      </div>
     </div>
   );
 }
