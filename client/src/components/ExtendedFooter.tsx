@@ -11,6 +11,9 @@ const styles = `
     .footer-mobile {
       display: none !important;
     }
+    .footer-section {
+      border: 1px solid #333333;
+    }
   }
   
   @media (max-width: 1023px) {
@@ -42,7 +45,7 @@ function FooterAccordionItem({ title, children, isOpen, onToggle }: FooterAccord
   }, [isOpen]);
 
   return (
-    <div style={{ borderBottom: "1px solid #000" }}>
+    <div style={{ borderBottom: "1px solid #333333" }}>
       <button
         onClick={onToggle}
         style={{
@@ -60,7 +63,7 @@ function FooterAccordionItem({ title, children, isOpen, onToggle }: FooterAccord
           fontWeight: 400,
           letterSpacing: "0.12px",
           textTransform: "uppercase",
-          color: "#000000",
+          color: "#666666",
           background: "none",
           border: "none",
           cursor: "pointer",
@@ -113,7 +116,7 @@ export default function ExtendedFooter() {
     margin: "0px 0px 12px 0px",
     padding: "0px",
     textTransform: "uppercase" as const,
-    color: "#555555",
+    color: "#666666",
   };
 
   const listStyle = {
@@ -127,20 +130,20 @@ export default function ExtendedFooter() {
     fontSize: "12px",
     lineHeight: "23.6px",
     letterSpacing: "0.12px",
-    color: "#555555",
+    color: "#666666",
   };
 
   const linkStyle = {
     fontSize: "12px",
     lineHeight: "23.6px",
     letterSpacing: "0.12px",
-    color: "#555555",
+    color: "#666666",
     textDecoration: "none",
     cursor: "pointer",
   };
 
   return (
-    <footer style={{ backgroundColor: "#aaaaad", width: "100%" }}>
+    <footer style={{ backgroundColor: "#000000", width: "100%" }}>
       <style>{styles}</style>
       {/* Desktop Footer - 6 columns */}
       <div 
@@ -149,7 +152,7 @@ export default function ExtendedFooter() {
           width: "100%",
           display: "grid",
           gridTemplateColumns: "repeat(6, 1fr)",
-          borderTop: "1px solid #000",
+          borderTop: "1px solid #333333",
           fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif',
           fontSize: "12px",
           fontWeight: 400,
@@ -158,7 +161,7 @@ export default function ExtendedFooter() {
         } as React.CSSProperties}
       >
         {/* Section 1: Newsletter */}
-        <div style={sectionStyle}>
+        <div style={sectionStyle} className="footer-section">
           <h3 style={titleStyle}>ODBĚR NOVINEK</h3>
           <ul style={listStyle}>
             <li style={listItemStyle}>
@@ -168,7 +171,7 @@ export default function ExtendedFooter() {
         </div>
 
         {/* Section 2: Customer Service */}
-        <div style={sectionStyle}>
+        <div style={sectionStyle} className="footer-section">
           <h3 style={titleStyle}>ZÁKAZNICKÝ SERVIS</h3>
           <ul style={listStyle}>
             <li style={listItemStyle}><a href="#" style={linkStyle}>Často kladené dotazy</a></li>
@@ -180,7 +183,7 @@ export default function ExtendedFooter() {
         </div>
 
         {/* Section 3: About */}
-        <div style={sectionStyle}>
+        <div style={sectionStyle} className="footer-section">
           <h3 style={titleStyle}>O SPOLEČNOSTI</h3>
           <ul style={listStyle}>
             <li style={listItemStyle}><a href="#" style={linkStyle}>Právní informace</a></li>
@@ -191,7 +194,7 @@ export default function ExtendedFooter() {
         </div>
 
         {/* Section 4: Follow Us */}
-        <div style={sectionStyle}>
+        <div style={sectionStyle} className="footer-section">
           <h3 style={titleStyle}>SLEDUJTE NÁS</h3>
           <ul style={listStyle}>
             <li style={listItemStyle}><a href="#" style={linkStyle}>Facebook</a></li>
@@ -201,7 +204,7 @@ export default function ExtendedFooter() {
         </div>
 
         {/* Section 5: Team */}
-        <div style={sectionStyle}>
+        <div style={sectionStyle} className="footer-section">
           <h3 style={titleStyle}>TEAM VOODOO808</h3>
           <ul style={listStyle}>
             <li style={listItemStyle}>Země / Region: Česká republika</li>
@@ -210,7 +213,7 @@ export default function ExtendedFooter() {
         </div>
 
         {/* Section 6: Contact */}
-        <div style={sectionStyle}>
+        <div style={sectionStyle} className="footer-section">
           <h3 style={titleStyle}>KONTAKTUJTE NÁS</h3>
           <ul style={listStyle}>
             <li style={{...listItemStyle, marginBottom: "8px"}}>Naši poradci jsou vám k dispozici Po–Pá od 9:30 do 19:00</li>
@@ -227,7 +230,7 @@ export default function ExtendedFooter() {
         style={{
           width: "100%",
           display: "block",
-          borderTop: "1px solid #000",
+          borderTop: "1px solid #333333",
           fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif',
           fontSize: "12px",
           fontWeight: 400,
