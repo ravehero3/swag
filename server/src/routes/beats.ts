@@ -4,11 +4,24 @@ import { requireAdmin } from "../middleware/auth.js";
 
 const router = Router();
 
-router.get("/", async (_req: Request, res: Response) => {
+router.get("/", async (req: Request, res: Response) => {
   try {
-    const result = await pool.query(
-      "SELECT * FROM beats WHERE is_published = true ORDER BY created_at DESC"
-    );
+    const { search, tag } = req.query;
+    let query = "SELECT * FROM beats WHERE is_published = true";
+    const params: any[] = [];
+    
+    if (tag) {
+      query += ` AND $${params.length + 1} = ANY(tags)`;
+      params.push(tag);
+    }
+    
+    if (search) {
+      query += ` AND title ILIKE $${params.length + 1}`;
+      params.push(`%${search}%`);
+    }
+    
+    query += " ORDER BY created_at DESC";
+    const result = await pool.query(query, params);
     res.json(result.rows);
   } catch (error) {
     res.status(500).json({ error: "Chyba při načítání beatů" });
@@ -73,16 +86,17 @@ router.get("/:id/licenses", async (req: Request, res: Response) => {
 
 router.post("/", requireAdmin, async (req: Request, res: Response) => {
   try {
-    const { title, artist, bpm, key, price, previewUrl, fileUrl, artworkUrl, isPublished, isHighlighted } = req.body;
+    const { title, artist, bpm, key, price, previewUrl, fileUrl, artworkUrl, tags, isPublished, isHighlighted } = req.body;
     
     if (isHighlighted) {
       await pool.query("UPDATE beats SET is_highlighted = false WHERE is_highlighted = true");
     }
     
+    const beatTags = Array.isArray(tags) ? tags.slice(0, 3) : [];
     const result = await pool.query(
-      `INSERT INTO beats (title, artist, bpm, key, price, preview_url, file_url, artwork_url, is_published, is_highlighted)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
-      [title, artist || "VOODOO808", bpm, key, price, previewUrl, fileUrl, artworkUrl, isPublished || false, isHighlighted || false]
+      `INSERT INTO beats (title, artist, bpm, key, price, preview_url, file_url, artwork_url, tags, is_published, is_highlighted)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
+      [title, artist || "VOODOO808", bpm, key, price, previewUrl, fileUrl, artworkUrl, beatTags, isPublished || false, isHighlighted || false]
     );
     res.json(result.rows[0]);
   } catch (error) {
@@ -93,17 +107,18 @@ router.post("/", requireAdmin, async (req: Request, res: Response) => {
 
 router.put("/:id", requireAdmin, async (req: Request, res: Response) => {
   try {
-    const { title, artist, bpm, key, price, previewUrl, fileUrl, artworkUrl, isPublished, isHighlighted } = req.body;
+    const { title, artist, bpm, key, price, previewUrl, fileUrl, artworkUrl, tags, isPublished, isHighlighted } = req.body;
     
     if (isHighlighted) {
       await pool.query("UPDATE beats SET is_highlighted = false WHERE is_highlighted = true");
     }
     
+    const beatTags = Array.isArray(tags) ? tags.slice(0, 3) : [];
     const result = await pool.query(
       `UPDATE beats SET title = $1, artist = $2, bpm = $3, key = $4, price = $5, 
-       preview_url = $6, file_url = $7, artwork_url = $8, is_published = $9, is_highlighted = $10
-       WHERE id = $11 RETURNING *`,
-      [title, artist, bpm, key, price, previewUrl, fileUrl, artworkUrl, isPublished, isHighlighted, req.params.id]
+       preview_url = $6, file_url = $7, artwork_url = $8, tags = $9, is_published = $10, is_highlighted = $11
+       WHERE id = $12 RETURNING *`,
+      [title, artist, bpm, key, price, previewUrl, fileUrl, artworkUrl, beatTags, isPublished, isHighlighted, req.params.id]
     );
     res.json(result.rows[0]);
   } catch (error) {

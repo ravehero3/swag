@@ -15,6 +15,7 @@ interface Beat {
   price: number;
   preview_url: string;
   artwork_url: string;
+  tags?: string[];
   is_highlighted?: boolean;
 }
 
@@ -40,6 +41,8 @@ function Beaty() {
   const [downloadingBeat, setDownloadingBeat] = useState<Beat | null>(null);
   const [sortBy, setSortBy] = useState<"bpm" | "key" | null>(null);
   const [sortAsc, setSortAsc] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const { user, addToCart } = useApp();
   
@@ -48,7 +51,13 @@ function Beaty() {
   const beatLimit = isHomePage ? 10 : undefined;
 
   useEffect(() => {
-    fetch("/api/beats")
+    let url = "/api/beats";
+    const params = new URLSearchParams();
+    if (selectedTag) params.append("tag", selectedTag);
+    if (searchQuery) params.append("search", searchQuery);
+    if (params.toString()) url += "?" + params.toString();
+    
+    fetch(url)
       .then((res) => res.json())
       .then(setBeats)
       .catch(console.error);
@@ -59,7 +68,7 @@ function Beaty() {
         if (beat) setHighlightedBeat(beat);
       })
       .catch(console.error);
-  }, []);
+  }, [selectedTag, searchQuery]);
 
   useEffect(() => {
     if (user) {
@@ -343,6 +352,54 @@ function Beaty() {
         )}
 
         <div style={{ marginBottom: "48px", maxWidth: "1200px", margin: "0 auto", marginTop: "60px" }}>
+          {!isHomePage && (
+            <div style={{ marginBottom: "24px", display: "flex", gap: "16px", alignItems: "center" }}>
+              <input
+                type="text"
+                placeholder="Hledat..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setSelectedTag(null);
+                }}
+                style={{
+                  flex: 1,
+                  padding: "12px 16px",
+                  background: "#0a0a0a",
+                  border: "1px solid #333",
+                  borderRadius: "4px",
+                  color: "#fff",
+                  fontSize: "14px",
+                  fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+                }}
+              />
+              {selectedTag && (
+                <button
+                  onClick={() => {
+                    setSelectedTag(null);
+                    setSearchQuery("");
+                  }}
+                  style={{
+                    padding: "8px 16px",
+                    background: "#333",
+                    border: "1px solid #555",
+                    borderRadius: "4px",
+                    color: "#fff",
+                    cursor: "pointer",
+                    fontSize: "12px",
+                    fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+                  }}
+                >
+                  ✕ Vymazat filtr
+                </button>
+              )}
+            </div>
+          )}
+          {selectedTag && (
+            <div style={{ marginBottom: "16px", padding: "8px 16px", background: "#1a1a1a", borderRadius: "4px", fontSize: "12px", color: "#999" }}>
+              Filtrováno podle tagu: <strong>{selectedTag}</strong>
+            </div>
+          )}
           {otherBeats.length === 0 && !highlightedBeat ? (
             <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "8px" }}>
               {Array(4).fill(null).map((_, index) => (
@@ -412,8 +469,45 @@ function Beaty() {
                 alt={beat.title}
                 style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "4px", flexShrink: 0 }}
               />
-              <div style={{ width: "25%", minWidth: "200px", marginRight: "12px", display: "flex", alignItems: "center", gap: "12px" }}>
+              <div style={{ width: "25%", minWidth: "200px", marginRight: "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
                 <div style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "20px" }}>{beat.title}</div>
+                {beat.tags && beat.tags.length > 0 && (
+                  <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                    {beat.tags.map((tag) => (
+                      <button
+                        key={tag}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedTag(tag);
+                          setSearchQuery("");
+                        }}
+                        style={{
+                          padding: "4px 10px",
+                          background: "#1a1a1a",
+                          color: "#999",
+                          border: "1px solid #333",
+                          borderRadius: "20px",
+                          fontSize: "11px",
+                          fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+                          cursor: "pointer",
+                          transition: "transform 0.15s ease, border-color 0.15s ease",
+                        }}
+                        onMouseEnter={(e) => {
+                          const btn = e.currentTarget as HTMLButtonElement;
+                          btn.style.transform = "scale(1.02)";
+                          btn.style.borderColor = "#555";
+                        }}
+                        onMouseLeave={(e) => {
+                          const btn = e.currentTarget as HTMLButtonElement;
+                          btn.style.transform = "scale(1)";
+                          btn.style.borderColor = "#333";
+                        }}
+                      >
+                        {tag}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
               <div style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", color: "#666", fontSize: "16px", minWidth: "80px", marginLeft: "64px" }}>
                 {beat.bpm}

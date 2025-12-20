@@ -12,6 +12,7 @@ interface Beat {
   preview_url: string;
   file_url: string;
   artwork_url: string;
+  tags: string[];
   is_published: boolean;
   is_highlighted: boolean;
 }
@@ -151,9 +152,11 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     previewUrl: "",
     fileUrl: "",
     artworkUrl: "",
+    tags: [] as string[],
     isPublished: false,
     isHighlighted: false,
   });
+  const [tagInput, setTagInput] = useState("");
 
   useEffect(() => {
     if (editing) {
@@ -166,6 +169,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
         previewUrl: editing.preview_url || "",
         fileUrl: editing.file_url || "",
         artworkUrl: editing.artwork_url || "",
+        tags: editing.tags || [],
         isPublished: editing.is_published,
         isHighlighted: editing.is_highlighted || false,
       });
@@ -187,7 +191,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
 
     setShowForm(false);
     setEditing(null);
-    setForm({ title: "", artist: "VOODOO808", bpm: 140, key: "C", price: 0, previewUrl: "", fileUrl: "", artworkUrl: "", isPublished: false, isHighlighted: false });
+    setForm({ title: "", artist: "VOODOO808", bpm: 140, key: "C", price: 0, previewUrl: "", fileUrl: "", artworkUrl: "", tags: [], isPublished: false, isHighlighted: false });
     onRefresh();
   };
 
@@ -246,6 +250,25 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
               <label style={{ display: "block", marginBottom: "8px" }}>Zvýraznit (Featured)</label>
               <input type="checkbox" checked={form.isHighlighted} onChange={(e) => setForm({ ...form, isHighlighted: e.target.checked })} />
               <span style={{ fontSize: "11px", color: "#666", marginLeft: "8px" }}>Pouze jeden beat může být zvýrazněn</span>
+            </div>
+            <div style={{ gridColumn: "1 / -1" }}>
+              <label style={{ display: "block", marginBottom: "8px" }}>Tagy (max 3)</label>
+              <div style={{ display: "flex", gap: "8px" }}>
+                <input value={tagInput} onChange={(e) => setTagInput(e.target.value)} placeholder="Přidat tag" style={{ flex: 1 }} />
+                <button type="button" className="btn" onClick={() => {
+                  if (tagInput && form.tags.length < 3) {
+                    setForm({ ...form, tags: [...form.tags, tagInput] });
+                    setTagInput("");
+                  }
+                }}>+</button>
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", marginTop: "8px" }}>
+                {form.tags.map((tag, i) => (
+                  <span key={i} style={{ padding: "4px 8px", border: "1px solid #fff", fontSize: "12px" }}>
+                    {tag} <button type="button" onClick={() => setForm({ ...form, tags: form.tags.filter((_, j) => j !== i) })} style={{ background: "none", border: "none", color: "#fff", cursor: "pointer" }}>×</button>
+                  </span>
+                ))}
+              </div>
             </div>
             <div>
               <label style={{ display: "block", marginBottom: "8px" }}>Preview Audio</label>
@@ -573,6 +596,35 @@ function OrdersTab({ orders, onRefresh }: any) {
                     <option value="delivered">Doručeno</option>
                   </select>
                 </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+}
+
+function LicensesTab({ licenses, onRefresh }: any) {
+  return (
+    <div>
+      {licenses.length === 0 ? (
+        <p style={{ color: "#666" }}>Zatím nejsou žádné licence</p>
+      ) : (
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr style={{ borderBottom: "1px solid #333" }}>
+              <th style={{ textAlign: "left", padding: "12px" }}>Název</th>
+              <th style={{ textAlign: "left", padding: "12px" }}>Cena</th>
+              <th style={{ textAlign: "left", padding: "12px" }}>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {licenses.map((license: LicenseType) => (
+              <tr key={license.id} style={{ borderBottom: "1px solid #222" }}>
+                <td style={{ padding: "12px" }}>{license.name}</td>
+                <td style={{ padding: "12px" }}>{license.price} CZK</td>
+                <td style={{ padding: "12px" }}>{license.is_active ? "✓ Aktivní" : "Neaktivní"}</td>
               </tr>
             ))}
           </tbody>
