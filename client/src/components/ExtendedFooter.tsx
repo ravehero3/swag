@@ -198,9 +198,9 @@ export default function ExtendedFooter() {
         <div style={sectionStyle} className="footer-section">
           <h3 style={titleStyle}>SLEDUJTE NÁS</h3>
           <ul style={listStyle}>
-            <li style={listItemStyle}><a href="#" style={linkStyle}>Facebook</a></li>
-            <li style={listItemStyle}><a href="#" style={linkStyle}>Instagram</a></li>
-            <li style={listItemStyle}><a href="#" style={linkStyle}>TikTok</a></li>
+            <li style={listItemStyle}><a href="https://www.facebook.com/VOODOO808" target="_blank" rel="noopener noreferrer" style={linkStyle}>Facebook</a></li>
+            <li style={listItemStyle}><a href="https://www.instagram.com/voodoobeats808/#" target="_blank" rel="noopener noreferrer" style={linkStyle}>Instagram</a></li>
+            <li style={listItemStyle}><a href="https://www.tiktok.com/@voodoo808?lang=en" target="_blank" rel="noopener noreferrer" style={linkStyle}>TikTok</a></li>
           </ul>
         </div>
 
@@ -283,9 +283,9 @@ export default function ExtendedFooter() {
           onToggle={() => toggleSection('social')}
         >
           <ul style={{...listStyle, marginTop: "8px"}}>
-            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="#" style={linkStyle}>Facebook</a></li>
-            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="#" style={linkStyle}>Instagram</a></li>
-            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="#" style={linkStyle}>TikTok</a></li>
+            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="https://www.facebook.com/VOODOO808" target="_blank" rel="noopener noreferrer" style={linkStyle}>Facebook</a></li>
+            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="https://www.instagram.com/voodoobeats808/#" target="_blank" rel="noopener noreferrer" style={linkStyle}>Instagram</a></li>
+            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="https://www.tiktok.com/@voodoo808?lang=en" target="_blank" rel="noopener noreferrer" style={linkStyle}>TikTok</a></li>
           </ul>
         </FooterAccordionItem>
 
