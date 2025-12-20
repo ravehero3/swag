@@ -343,9 +343,9 @@ function Beaty() {
                             onClick={() => setLocation(`/beaty?tag=${encodeURIComponent(tag)}`)}
                             style={{
                               padding: "4px 12px",
-                              background: "#1a1a1a",
-                              color: "#fff",
-                              border: "none",
+                              background: "#0d0d0d",
+                              color: "#999",
+                              border: "1px solid #333",
                               borderRadius: "20px",
                               fontSize: "11px",
                               cursor: "pointer",
@@ -533,7 +533,7 @@ function Beaty() {
                       }}
                       style={{
                         padding: "3px 8px",
-                        background: "#1a1a1a",
+                        background: "#0d0d0d",
                         color: "#999",
                         border: "1px solid #333",
                         borderRadius: "20px",
