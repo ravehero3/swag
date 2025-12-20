@@ -342,17 +342,27 @@ function Beaty() {
                             key={tag}
                             onClick={() => setLocation(`/beaty?tag=${encodeURIComponent(tag)}`)}
                             style={{
-                              padding: "4px 12px",
+                              padding: "3px 8px",
                               background: "#0d0d0d",
                               color: "#666",
                               border: "1px solid #333",
                               borderRadius: "20px",
-                              fontSize: "11px",
+                              fontSize: "10px",
+                              fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
                               cursor: "pointer",
-                              transition: "transform 0.2s",
+                              transition: "transform 0.15s ease, border-color 0.15s ease",
+                              whiteSpace: "nowrap",
                             }}
-                            onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.02)")}
-                            onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                            onMouseEnter={(e) => {
+                              const btn = e.currentTarget as HTMLButtonElement;
+                              btn.style.transform = "scale(1.02)";
+                              btn.style.borderColor = "#555";
+                            }}
+                            onMouseLeave={(e) => {
+                              const btn = e.currentTarget as HTMLButtonElement;
+                              btn.style.transform = "scale(1)";
+                              btn.style.borderColor = "#333";
+                            }}
                           >
                             {tag}
                           </button>
