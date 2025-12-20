@@ -42,9 +42,10 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
         onMouseLeave={handleMouseLeave}
         style={{
           display: 'flex',
-          alignItems: 'flex-end',
+          alignItems: 'center',
           gap: '8px',
           padding: '12px',
+          height: '80px',
           borderRadius: '12px',
           backgroundColor: 'rgba(31, 41, 55, 0.8)',
           backdropFilter: 'blur(20px)',
@@ -67,7 +68,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
               onMouseEnter={() => setHoveredIndex(index)}
               style={{
                 display: 'flex',
-                alignItems: 'flex-end',
+                alignItems: 'center',
                 justifyContent: 'center',
                 width: `${size}px`,
                 height: `${size}px`,
