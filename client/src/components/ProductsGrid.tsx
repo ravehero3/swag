@@ -50,8 +50,9 @@ export default function ProductsGrid({
     <div
       style={{
         display: "grid",
-        gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+        gridTemplateColumns: "repeat(4, 1fr)",
         gap: "0",
+        width: "100%",
       }}
     >
       {displayProducts.map((product) => (
