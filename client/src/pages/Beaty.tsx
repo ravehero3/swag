@@ -495,43 +495,6 @@ function Beaty() {
               />
               <div style={{ width: "25%", minWidth: "200px", marginRight: "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
                 <div style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "20px" }}>{beat.title}</div>
-                {beat.tags && beat.tags.length > 0 && (
-                  <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
-                    {beat.tags.map((tag) => (
-                      <button
-                        key={tag}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedTag(tag);
-                          setSearchQuery("");
-                        }}
-                        style={{
-                          padding: "4px 10px",
-                          background: "#1a1a1a",
-                          color: "#999",
-                          border: "1px solid #333",
-                          borderRadius: "20px",
-                          fontSize: "11px",
-                          fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
-                          cursor: "pointer",
-                          transition: "transform 0.15s ease, border-color 0.15s ease",
-                        }}
-                        onMouseEnter={(e) => {
-                          const btn = e.currentTarget as HTMLButtonElement;
-                          btn.style.transform = "scale(1.02)";
-                          btn.style.borderColor = "#555";
-                        }}
-                        onMouseLeave={(e) => {
-                          const btn = e.currentTarget as HTMLButtonElement;
-                          btn.style.transform = "scale(1)";
-                          btn.style.borderColor = "#333";
-                        }}
-                      >
-                        {tag}
-                      </button>
-                    ))}
-                  </div>
-                )}
               </div>
               <div style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", color: "#666", fontSize: "16px", minWidth: "80px", marginLeft: "64px" }}>
                 {beat.bpm}
@@ -539,6 +502,45 @@ function Beaty() {
               <div style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", color: "#666", fontSize: "16px", minWidth: "80px", marginLeft: "48px" }}>
                 {beat.key}
               </div>
+
+              {beat.tags && beat.tags.length > 0 && (
+                <div style={{ display: "flex", gap: "4px", flexWrap: "wrap", marginLeft: "12px", alignItems: "center" }}>
+                  {beat.tags.map((tag) => (
+                    <button
+                      key={tag}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedTag(tag);
+                        setSearchQuery("");
+                      }}
+                      style={{
+                        padding: "3px 8px",
+                        background: "#1a1a1a",
+                        color: "#999",
+                        border: "1px solid #333",
+                        borderRadius: "20px",
+                        fontSize: "10px",
+                        fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+                        cursor: "pointer",
+                        transition: "transform 0.15s ease, border-color 0.15s ease",
+                        whiteSpace: "nowrap",
+                      }}
+                      onMouseEnter={(e) => {
+                        const btn = e.currentTarget as HTMLButtonElement;
+                        btn.style.transform = "scale(1.02)";
+                        btn.style.borderColor = "#555";
+                      }}
+                      onMouseLeave={(e) => {
+                        const btn = e.currentTarget as HTMLButtonElement;
+                        btn.style.transform = "scale(1)";
+                        btn.style.borderColor = "#333";
+                      }}
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
+              )}
 
               <div style={{ display: "flex", alignItems: "center", gap: "8px", marginLeft: "auto", marginRight: "16px" }}>
                 {user && (
