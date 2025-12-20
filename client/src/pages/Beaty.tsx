@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { useApp } from "../App";
 import ContractModal from "../components/ContractModal";
+import DownloadModal from "../components/DownloadModal";
 import MusicPlayer from "../components/MusicPlayer";
 import SoundWave from "../components/SoundWave";
 
@@ -59,6 +60,7 @@ function Beaty() {
   const [savedKits, setSavedKits] = useState<Set<number>>(new Set());
   const [currentKit, setCurrentKit] = useState<SoundKit | null>(null);
   const [isKitPlaying, setIsKitPlaying] = useState(false);
+  const [downloadingKit, setDownloadingKit] = useState<SoundKit | null>(null);
   const [sortBy, setSortBy] = useState<"bpm" | "key" | null>(null);
   const [sortAsc, setSortAsc] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -208,7 +210,10 @@ function Beaty() {
   };
 
   const handleAddKitToCart = (kit: SoundKit) => {
-    if (kit.is_free) return;
+    if (kit.is_free) {
+      setDownloadingKit(kit);
+      return;
+    }
     addToCart({
       productId: kit.id,
       productType: "sound_kit",
@@ -864,6 +869,13 @@ function Beaty() {
         </div>
         )}
       </div>
+
+      <DownloadModal
+        kit={downloadingKit}
+        isOpen={!!downloadingKit}
+        onClose={() => setDownloadingKit(null)}
+        user={user}
+      />
 
       {contractModalBeat && (
         <ContractModal
