@@ -310,7 +310,7 @@ function Beaty() {
                       onClick={() => openContractModal(highlightedBeat)}
                       className="btn-bounce"
                       style={{
-                        padding: "16px 8px 8px 16px",
+                        padding: "8px 8px 8px 16px",
                         background: "#fff",
                         color: "#000",
                         border: "none",
@@ -350,6 +350,7 @@ function Beaty() {
                         justifyContent: "center",
                         transition: "background 0.2s",
                         marginLeft: "4px",
+                        minHeight: "40px",
                       }}
                       onMouseEnter={(e) => (e.currentTarget.style.background = "#1a1a1a")}
                       onMouseLeave={(e) => (e.currentTarget.style.background = "#000")}
@@ -375,6 +376,7 @@ function Beaty() {
                         justifyContent: "center",
                         transition: "background 0.2s",
                         marginLeft: "4px",
+                        minHeight: "40px",
                       }}
                       onMouseEnter={(e) => (e.currentTarget.style.background = "#1a1a1a")}
                       onMouseLeave={(e) => (e.currentTarget.style.background = "#000")}
