@@ -324,6 +324,7 @@ function Beaty() {
                         borderRadius: "4px",
                         position: "relative",
                         minWidth: "120px",
+                        height: "40px",
                       }}
                     >
                       <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -339,7 +340,7 @@ function Beaty() {
                       style={{
                         padding: "8px",
                         background: "#000",
-                        border: "0.5px solid #666",
+                        border: "1px solid #666",
                         borderRadius: "4px",
                         cursor: "pointer",
                         width: "40px",
@@ -364,7 +365,7 @@ function Beaty() {
                       style={{
                         padding: "8px",
                         background: "#000",
-                        border: "0.5px solid #666",
+                        border: "1px solid #666",
                         borderRadius: "4px",
                         cursor: "pointer",
                         width: "40px",
@@ -531,9 +532,10 @@ function Beaty() {
             </div>
           ) : (
             <>
-              <div style={{ display: "flex", alignItems: "center", padding: "16px 16px 8px 16px", gap: "16px", borderBottom: "1px solid #333", marginTop: "16px" }}>
+              <div style={{ display: "flex", alignItems: "center", padding: "16px 16px 8px 16px", gap: "16px", marginTop: "16px", position: "relative" }}>
                 <div style={{ width: "48px", height: "48px", flexShrink: 0 }} />
                 <div style={{ width: "25%", minWidth: "200px", marginRight: "12px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666" }}>NÁZEV</div>
+                <div style={{ position: "absolute", bottom: 0, left: "80px", right: 0, height: "1px", background: "#333" }} />
                 <button onClick={() => { setSortBy(sortBy === "bpm" ? "bpm" : "bpm"); setSortAsc(sortBy === "bpm" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0, marginLeft: "64px" }}>BPM {sortBy === "bpm" && (sortAsc ? "↑" : "↓")}</button>
                 <button onClick={() => { setSortBy(sortBy === "key" ? "key" : "key"); setSortAsc(sortBy === "key" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0, marginLeft: "104px" }}>KEY {sortBy === "key" && (sortAsc ? "↑" : "↓")}</button>
               </div>
@@ -551,24 +553,30 @@ function Beaty() {
                 cursor: "pointer",
                 transition: "all 0.15s ease",
                 justifyContent: "flex-start",
-                borderBottom: "1px solid #333",
                 boxShadow: "none",
                 position: "relative",
                 zIndex: 1,
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.boxShadow = "0 0 0 1px #3b82f6, 0 0 8px rgba(59, 130, 246, 0.5)";
-                e.currentTarget.style.borderTop = "1px solid #3b82f6";
-                e.currentTarget.style.borderLeft = "1px solid #3b82f6";
-                e.currentTarget.style.borderRight = "1px solid #3b82f6";
+                const target = e.currentTarget as HTMLElement;
+                target.style.boxShadow = "0 0 0 1px #3b82f6, 0 0 8px rgba(59, 130, 246, 0.5)";
+                target.style.borderTop = "1px solid #3b82f6";
+                target.style.borderLeft = "1px solid #3b82f6";
+                target.style.borderRight = "1px solid #3b82f6";
+                const separator = target.querySelector('[data-separator]') as HTMLElement;
+                if (separator) separator.style.opacity = "0.5";
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow = "none";
-                e.currentTarget.style.borderTop = "1px solid transparent";
-                e.currentTarget.style.borderLeft = "1px solid transparent";
-                e.currentTarget.style.borderRight = "1px solid transparent";
+                const target = e.currentTarget as HTMLElement;
+                target.style.boxShadow = "none";
+                target.style.borderTop = "1px solid transparent";
+                target.style.borderLeft = "1px solid transparent";
+                target.style.borderRight = "1px solid transparent";
+                const separator = target.querySelector('[data-separator]') as HTMLElement;
+                if (separator) separator.style.opacity = "1";
               }}
             >
+              <div data-separator style={{ position: "absolute", bottom: 0, left: "80px", right: 0, height: "1px", background: "#333", opacity: 1, transition: "opacity 0.15s ease" }} />
               <img
                 src={beat.artwork_url || "/uploads/artwork/metallic-logo.png"}
                 alt={beat.title}
