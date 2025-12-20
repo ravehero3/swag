@@ -54,7 +54,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
   };
 
   return (
-    <div style={{ width: '100%', display: 'flex', justifyContent: 'center', paddingBottom: '64px', paddingTop: '32px', background: 'transparent' }}>
+    <div style={{ width: '100%', display: 'flex', justifyContent: 'center', paddingBottom: '64px', paddingTop: '32px', background: 'transparent', overflowX: 'auto' }}>
       <div
         ref={dockRef}
         onMouseMove={handleMouseMove}
@@ -70,6 +70,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
           border: '1px solid rgba(107, 114, 128, 0.5)',
           overflow: 'visible',
           position: 'relative',
+          minWidth: 'fit-content',
         }}
       >
         {items.map((item, index) => {
@@ -125,8 +126,9 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
                   style={{ 
                     width: '100%',
                     height: '100%',
-                    objectFit: 'cover',
+                    objectFit: 'contain',
                     display: 'block',
+                    padding: '4px',
                   }} 
                 />
                 {hoveredIndex === index && (
