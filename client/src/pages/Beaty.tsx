@@ -339,7 +339,7 @@ function Beaty() {
                       style={{
                         padding: "8px",
                         background: "#000",
-                        border: "none",
+                        border: "0.5px solid #666",
                         borderRadius: "4px",
                         cursor: "pointer",
                         width: "40px",
@@ -348,6 +348,7 @@ function Beaty() {
                         alignItems: "center",
                         justifyContent: "center",
                         transition: "background 0.2s",
+                        marginLeft: "4px",
                       }}
                       onMouseEnter={(e) => (e.currentTarget.style.background = "#1a1a1a")}
                       onMouseLeave={(e) => (e.currentTarget.style.background = "#000")}
@@ -363,7 +364,7 @@ function Beaty() {
                       style={{
                         padding: "8px",
                         background: "#000",
-                        border: "none",
+                        border: "0.5px solid #666",
                         borderRadius: "4px",
                         cursor: "pointer",
                         width: "40px",
@@ -372,6 +373,7 @@ function Beaty() {
                         alignItems: "center",
                         justifyContent: "center",
                         transition: "background 0.2s",
+                        marginLeft: "4px",
                       }}
                       onMouseEnter={(e) => (e.currentTarget.style.background = "#1a1a1a")}
                       onMouseLeave={(e) => (e.currentTarget.style.background = "#000")}
