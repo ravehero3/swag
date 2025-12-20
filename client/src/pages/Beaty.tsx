@@ -29,7 +29,7 @@ interface LicenseOption {
 
 
 function Beaty() {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const [beats, setBeats] = useState<Beat[]>([]);
   const [highlightedBeat, setHighlightedBeat] = useState<Beat | null>(null);
   const [currentBeat, setCurrentBeat] = useState<Beat | null>(null);
@@ -49,6 +49,24 @@ function Beaty() {
   // Determine if we're on home page or beaty page
   const isHomePage = location === "/" || location === "";
   const beatLimit = isHomePage ? 10 : undefined;
+
+  // Parse URL parameters on mount and when location changes
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const tagParam = searchParams.get("tag");
+    const searchParam = searchParams.get("search");
+    
+    if (tagParam) {
+      setSelectedTag(tagParam);
+      setSearchQuery("");
+    } else if (searchParam) {
+      setSearchQuery(searchParam);
+      setSelectedTag(null);
+    } else {
+      setSelectedTag(null);
+      setSearchQuery("");
+    }
+  }, [location]);
 
   useEffect(() => {
     let url = "/api/beats";
@@ -322,7 +340,7 @@ function Beaty() {
                         {highlightedBeat.tags.map((tag) => (
                           <button
                             key={tag}
-                            onClick={() => setSelectedTag(tag)}
+                            onClick={() => setLocation(`/beaty?tag=${encodeURIComponent(tag)}`)}
                             style={{
                               padding: "4px 12px",
                               background: "#1a1a1a",
@@ -402,8 +420,7 @@ function Beaty() {
               {selectedTag && (
                 <button
                   onClick={() => {
-                    setSelectedTag(null);
-                    setSearchQuery("");
+                    setLocation("/beaty");
                   }}
                   style={{
                     padding: "8px 16px",
@@ -512,8 +529,7 @@ function Beaty() {
                       key={tag}
                       onClick={(e) => {
                         e.stopPropagation();
-                        setSelectedTag(tag);
-                        setSearchQuery("");
+                        setLocation(`/beaty?tag=${encodeURIComponent(tag)}`);
                       }}
                       style={{
                         padding: "3px 8px",
