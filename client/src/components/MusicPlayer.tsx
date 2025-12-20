@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import ShareModal from "./ShareModal";
 
 interface Beat {
@@ -24,6 +24,7 @@ interface MusicPlayerProps {
   onToggleLoop: () => void;
   onToggleShuffle: () => void;
   onBuyClick: (beat: Beat) => void;
+  audioRef?: React.RefObject<HTMLAudioElement>;
 }
 
 function MusicPlayer({
@@ -37,10 +38,33 @@ function MusicPlayer({
   onToggleLoop,
   onToggleShuffle,
   onBuyClick,
+  audioRef,
 }: MusicPlayerProps) {
   const [showShareModal, setShowShareModal] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const internalAudioRef = useRef<HTMLAudioElement>(null);
+  const activeAudioRef = audioRef || internalAudioRef;
+
+  useEffect(() => {
+    const audio = activeAudioRef.current;
+    if (!audio) return;
+
+    const updateTime = () => setCurrentTime(audio.currentTime);
+    const updateDuration = () => setDuration(audio.duration);
+
+    audio.addEventListener("timeupdate", updateTime);
+    audio.addEventListener("loadedmetadata", updateDuration);
+
+    return () => {
+      audio.removeEventListener("timeupdate", updateTime);
+      audio.removeEventListener("loadedmetadata", updateDuration);
+    };
+  }, [activeAudioRef, currentBeat]);
 
   if (!currentBeat) return null;
+
+  const progressPercent = duration ? (currentTime / duration) * 100 : 0;
 
   return (
     <>
@@ -62,6 +86,17 @@ function MusicPlayer({
         }}
       >
         <style>{`@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }`}</style>
+
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: "#222" }}>
+          <div
+            style={{
+              height: "100%",
+              background: "#fff",
+              width: `${progressPercent}%`,
+              transition: isPlaying ? "none" : "width 0.1s linear",
+            }}
+          />
+        </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "16px", flex: 1 }}>
           <img
@@ -197,24 +232,31 @@ function MusicPlayer({
             onClick={() => onBuyClick(currentBeat)}
             className="btn-bounce"
             style={{
-              padding: "16px 8px",
+              padding: "8px 8px 8px 16px",
               background: "#fff",
               color: "#000",
               border: "none",
               fontSize: "12px",
-              fontWeight: "bold",
+              fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+              fontWeight: 400,
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
-              gap: "4px",
-              borderRadius: "2px",
+              gap: "6px",
+              borderRadius: "4px",
+              position: "relative",
+              minWidth: "120px",
+              height: "32px",
             }}
           >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="3" y="6" width="18" height="15" rx="2" />
-              <path d="M8 6V4a4 4 0 0 1 8 0v2" />
-            </svg>
-            {currentBeat.price} CZK
+            <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, marginLeft: "-8px" }}>
+                <rect x="3" y="6" width="18" height="15" rx="2" />
+                <path d="M8 6V4a4 4 0 0 1 8 0v2" />
+              </svg>
+              <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "#000", lineHeight: "1", right: "-10px", top: "-5px" }}>+</span>
+            </div>
+            <span style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "8px" }}>{Math.floor(currentBeat.price)} CZK</span>
           </button>
         </div>
       </div>

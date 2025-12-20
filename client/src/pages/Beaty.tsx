@@ -872,6 +872,7 @@ function Beaty() {
         onToggleLoop={() => setIsLooping(!isLooping)}
         onToggleShuffle={() => setIsShuffling(!isShuffling)}
         onBuyClick={openContractModal}
+        audioRef={audioRef}
       />
     </div>
   );

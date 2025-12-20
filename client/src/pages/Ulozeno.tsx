@@ -159,8 +159,35 @@ function Ulozeno() {
                         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                       </svg>
                     </button>
-                    <button className="btn btn-bounce" onClick={() => handleAddToCart(item)} style={{ borderRadius: "4px" }}>
-                      DO KOŠÍKU
+                    <button
+                      onClick={() => handleAddToCart(item)}
+                      className="btn-bounce"
+                      style={{
+                        padding: "8px 8px 8px 16px",
+                        background: "#fff",
+                        color: "#000",
+                        border: "none",
+                        fontSize: "12px",
+                        fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+                        fontWeight: 400,
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        borderRadius: "4px",
+                        position: "relative",
+                        minWidth: "120px",
+                        height: "32px",
+                      }}
+                    >
+                      <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, marginLeft: "-8px" }}>
+                          <rect x="3" y="6" width="18" height="15" rx="2" />
+                          <path d="M8 6V4a4 4 0 0 1 8 0v2" />
+                        </svg>
+                        <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "#000", lineHeight: "1", right: "-10px", top: "-5px" }}>+</span>
+                      </div>
+                      <span style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "8px" }}>DO KOŠÍKU</span>
                     </button>
                   </div>
                 </div>
