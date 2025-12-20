@@ -1,6 +1,6 @@
 import { useLocation } from "wouter";
 
-interface SoundKit {
+interface Item {
   id: number;
   title: string;
   artwork_url: string;
@@ -8,16 +8,19 @@ interface SoundKit {
 }
 
 interface DownloadModalProps {
-  kit: SoundKit | null;
+  item: Item | null;
   isOpen: boolean;
   onClose: () => void;
   user: any;
 }
 
-function DownloadModal({ kit, isOpen, onClose, user }: DownloadModalProps) {
+function DownloadModal({ item, isOpen, onClose, user }: DownloadModalProps) {
   const [, setLocation] = useLocation();
 
-  if (!isOpen || !kit) return null;
+  if (!isOpen || !item) return null;
+
+  // Determine if this is a beat or sound kit based on available properties
+  const isSoundKit = 'number_of_sounds' in item;
 
   const handleDownload = async () => {
     if (!user) {
@@ -27,7 +30,11 @@ function DownloadModal({ kit, isOpen, onClose, user }: DownloadModalProps) {
     }
 
     try {
-      const response = await fetch(`/api/sound-kits/${kit.id}/download`, {
+      const endpoint = isSoundKit 
+        ? `/api/sound-kits/${item.id}/download`
+        : `/api/beats/${item.id}/download`;
+        
+      const response = await fetch(endpoint, {
         credentials: "include",
       });
 
@@ -36,7 +43,7 @@ function DownloadModal({ kit, isOpen, onClose, user }: DownloadModalProps) {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `${kit.title}.zip`;
+        a.download = `${item.title}.${isSoundKit ? 'zip' : 'mp3'}`;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
@@ -70,7 +77,7 @@ function DownloadModal({ kit, isOpen, onClose, user }: DownloadModalProps) {
           aspectRatio: "1",
           borderRadius: "4px",
           overflow: "hidden",
-          backgroundImage: `url(${kit.artwork_url || "/uploads/artwork/metallic-logo.png"})`,
+          backgroundImage: `url(${item.artwork_url || "/uploads/artwork/metallic-logo.png"})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
           display: "flex",
@@ -97,7 +104,7 @@ function DownloadModal({ kit, isOpen, onClose, user }: DownloadModalProps) {
               ZDARMA STÁHNOUT BEAT K POSLECHU
             </p>
             <h2 style={{ fontSize: "28px", fontWeight: "bold", color: "#fff", lineHeight: "1.2" }}>
-              {kit.title}
+              {item.title}
             </h2>
           </div>
 

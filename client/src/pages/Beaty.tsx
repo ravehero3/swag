@@ -18,18 +18,6 @@ interface Beat {
   is_highlighted?: boolean;
 }
 
-interface SoundKit {
-  id: number;
-  title: string;
-  description: string;
-  type: string;
-  price: number;
-  is_free: boolean;
-  number_of_sounds: number;
-  tags: string[];
-  preview_url: string;
-  artwork_url: string;
-}
 
 interface LicenseOption {
   id: string;
@@ -38,13 +26,6 @@ interface LicenseOption {
   price: number | "NEGOTIATE";
 }
 
-const typeLabels: Record<string, string> = {
-  drum_kit: "Drum Kit",
-  one_shot_kit: "One Shot Kit",
-  loop_kit: "Loop Kit",
-  one_shot_bundle: "One Shot Bundle",
-  drum_kit_bundle: "Drum Kit Bundle",
-};
 
 function Beaty() {
   const [location] = useLocation();
@@ -56,15 +37,10 @@ function Beaty() {
   const [isShuffling, setIsShuffling] = useState(false);
   const [savedBeats, setSavedBeats] = useState<Set<number>>(new Set());
   const [contractModalBeat, setContractModalBeat] = useState<Beat | null>(null);
-  const [soundKits, setSoundKits] = useState<SoundKit[]>([]);
-  const [savedKits, setSavedKits] = useState<Set<number>>(new Set());
-  const [currentKit, setCurrentKit] = useState<SoundKit | null>(null);
-  const [isKitPlaying, setIsKitPlaying] = useState(false);
-  const [downloadingKit, setDownloadingKit] = useState<SoundKit | null>(null);
+  const [downloadingBeat, setDownloadingBeat] = useState<Beat | null>(null);
   const [sortBy, setSortBy] = useState<"bpm" | "key" | null>(null);
   const [sortAsc, setSortAsc] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
-  const kitAudioRef = useRef<HTMLAudioElement>(null);
   const { user, addToCart } = useApp();
   
   // Determine if we're on home page or beaty page
@@ -83,11 +59,6 @@ function Beaty() {
         if (beat) setHighlightedBeat(beat);
       })
       .catch(console.error);
-
-    fetch("/api/sound-kits")
-      .then((res) => res.json())
-      .then(setSoundKits)
-      .catch(console.error);
   }, []);
 
   useEffect(() => {
@@ -99,11 +70,6 @@ function Beaty() {
             .filter((item: { item_type: string }) => item.item_type === "beat")
             .map((item: { item_id: number }) => item.item_id);
           setSavedBeats(new Set(beatIds));
-
-          const kitIds = items
-            .filter((item: { item_type: string }) => item.item_type === "sound_kit")
-            .map((item: { item_id: number }) => item.item_id);
-          setSavedKits(new Set(kitIds));
         })
         .catch(console.error);
     }
@@ -116,11 +82,6 @@ function Beaty() {
   }, [isLooping]);
 
   const playBeat = (beat: Beat) => {
-    if (kitAudioRef.current) {
-      kitAudioRef.current.pause();
-      setIsKitPlaying(false);
-    }
-
     if (currentBeat?.id === beat.id) {
       if (isPlaying) {
         audioRef.current?.pause();
@@ -133,29 +94,6 @@ function Beaty() {
       setCurrentBeat(beat);
       setIsPlaying(true);
       setTimeout(() => audioRef.current?.play(), 100);
-    }
-  };
-
-  const playKitPreview = (kit: SoundKit) => {
-    if (!kit.preview_url) return;
-    
-    if (audioRef.current) {
-      audioRef.current.pause();
-      setIsPlaying(false);
-    }
-
-    if (currentKit?.id === kit.id) {
-      if (isKitPlaying) {
-        kitAudioRef.current?.pause();
-        setIsKitPlaying(false);
-      } else {
-        kitAudioRef.current?.play();
-        setIsKitPlaying(true);
-      }
-    } else {
-      setCurrentKit(kit);
-      setIsKitPlaying(true);
-      setTimeout(() => kitAudioRef.current?.play(), 100);
     }
   };
 
@@ -209,20 +147,6 @@ function Beaty() {
     }
   };
 
-  const handleAddKitToCart = (kit: SoundKit) => {
-    if (kit.is_free) {
-      setDownloadingKit(kit);
-      return;
-    }
-    addToCart({
-      productId: kit.id,
-      productType: "sound_kit",
-      title: kit.title,
-      price: Number(kit.price),
-      artworkUrl: kit.artwork_url || "/uploads/artwork/metallic-logo.png",
-    });
-  };
-
   const toggleSave = async (beat: Beat) => {
     if (!user) return;
 
@@ -255,38 +179,6 @@ function Beaty() {
     }
   };
 
-  const toggleSaveKit = async (kit: SoundKit) => {
-    if (!user) return;
-
-    try {
-      if (savedKits.has(kit.id)) {
-        const res = await fetch(`/api/saved/sound_kit/${kit.id}`, {
-          method: "DELETE",
-          credentials: "include",
-        });
-        if (res.ok) {
-          setSavedKits((prev) => {
-            const next = new Set(prev);
-            next.delete(kit.id);
-            return next;
-          });
-        }
-      } else {
-        const res = await fetch("/api/saved", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ itemId: kit.id, itemType: "sound_kit" }),
-        });
-        if (res.ok) {
-          setSavedKits((prev) => new Set([...prev, kit.id]));
-        }
-      }
-    } catch (error) {
-      console.error("Error toggling save:", error);
-    }
-  };
-
   const filteredBeats = beatLimit ? beats.slice(0, beatLimit) : beats;
   const otherBeats = filteredBeats.filter((b) => b.id !== highlightedBeat?.id);
 
@@ -297,11 +189,6 @@ function Beaty() {
         src={currentBeat?.preview_url}
         onEnded={handleAudioEnded}
         crossOrigin="anonymous"
-      />
-      <audio
-        ref={kitAudioRef}
-        src={currentKit?.preview_url}
-        onEnded={() => setIsKitPlaying(false)}
       />
 
       <div style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative" }}>
@@ -564,6 +451,7 @@ function Beaty() {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
+                    setDownloadingBeat(beat);
                   }}
                   style={{
                     background: "#333",
@@ -665,215 +553,12 @@ function Beaty() {
         </div>
 
 
-        {isHomePage && (
-        <div style={{ paddingBottom: currentBeat ? "80px" : "20px", textAlign: "center", marginTop: "64px" }}>
-          <h2 style={{ fontSize: "18px", marginBottom: "24px", fontWeight: "bold", fontFamily: "Helvetica Neue Condensed, Helvetica, Arial, sans-serif" }}>ZVUKY A PRESETY</h2>
-          
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "24px", marginBottom: "48px", maxWidth: "1000px", margin: "0 auto 48px" }}>
-            {[
-              { label: "DRUM KIT" },
-              { label: "ONE SHOT KIT" },
-              { label: "GROSS BEAT BANK" },
-            ].map((item, i) => (
-              <div
-                key={`empty-${i}`}
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: "16px",
-                }}
-              >
-                <div
-                  style={{
-                    aspectRatio: "1",
-                    width: "100%",
-                    border: "1px solid #666",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    backgroundColor: "#0a0a0a",
-                  }}
-                >
-                  <span style={{ color: "#666", fontSize: "14px" }}>Empty Slot</span>
-                </div>
-                <span style={{ color: "#999", fontSize: "12px", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif" }}>
-                  {item.label}
-                </span>
-              </div>
-            ))}
-          </div>
-
-        {soundKits.length === 0 ? (
-          <p style={{ textAlign: "center", color: "#666", padding: "40px" }}>
-            Zatím nejsou k dispozici žádné zvukové kity
-          </p>
-        ) : (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-              gap: "24px",
-            }}
-          >
-            {soundKits.map((kit) => (
-              <div
-                key={kit.id}
-                style={{
-                  border: "1px solid #333",
-                  overflow: "hidden",
-                  position: "relative",
-                  borderRadius: "4px",
-                }}
-              >
-                {user && (
-                  <button
-                    onClick={() => toggleSaveKit(kit)}
-                    style={{
-                      position: "absolute",
-                      top: "12px",
-                      right: "12px",
-                      background: "rgba(0,0,0,0.6)",
-                      border: "none",
-                      borderRadius: "50%",
-                      width: "36px",
-                      height: "36px",
-                      cursor: "pointer",
-                      zIndex: 10,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <svg
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill={savedKits.has(kit.id) ? "#ff4444" : "none"}
-                      stroke={savedKits.has(kit.id) ? "#ff4444" : "#fff"}
-                      strokeWidth="2"
-                    >
-                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                    </svg>
-                  </button>
-                )}
-
-                <div
-                  style={{
-                    aspectRatio: "1",
-                    background: "#111",
-                    position: "relative",
-                  }}
-                >
-                  <img
-                    src={kit.artwork_url || "/uploads/artwork/metallic-logo.png"}
-                    alt={kit.title}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      borderRadius: "4px 4px 0 0",
-                    }}
-                  />
-                  {kit.preview_url && (
-                    <button
-                      onClick={() => playKitPreview(kit)}
-                      style={{
-                        position: "absolute",
-                        bottom: "12px",
-                        right: "12px",
-                        width: "48px",
-                        height: "48px",
-                        borderRadius: "50%",
-                        border: "1px solid #fff",
-                        background: currentKit?.id === kit.id && isKitPlaying ? "#fff" : "rgba(0,0,0,0.8)",
-                        color: currentKit?.id === kit.id && isKitPlaying ? "#000" : "#fff",
-                        fontSize: "18px",
-                      }}
-                    >
-                      {currentKit?.id === kit.id && isKitPlaying ? "⏸" : "▶"}
-                    </button>
-                  )}
-                </div>
-
-                <div style={{ padding: "16px" }}>
-                  <div style={{ fontSize: "12px", color: "#666", marginBottom: "4px" }}>
-                    {typeLabels[kit.type] || kit.type}
-                  </div>
-                  <h3 style={{ marginBottom: "8px" }}>{kit.title}</h3>
-                  <p style={{ fontSize: "14px", color: "#999", marginBottom: "12px" }}>
-                    {kit.number_of_sounds} zvuků
-                  </p>
-
-                  {kit.tags && kit.tags.length > 0 && (
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", marginBottom: "12px" }}>
-                      {kit.tags.slice(0, 5).map((tag, i) => (
-                        <span
-                          key={i}
-                          style={{
-                            fontSize: "10px",
-                            padding: "2px 6px",
-                            border: "1px solid #444",
-                            borderRadius: "4px",
-                          }}
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontWeight: "bold" }}>
-                      {kit.is_free ? "ZDARMA" : `${kit.price} CZK`}
-                    </span>
-                    <button
-                      onClick={() => handleAddKitToCart(kit)}
-                      className="btn-bounce"
-                      style={{
-                        padding: "8px 16px",
-                        background: "#fff",
-                        color: "#000",
-                        border: "none",
-                        fontSize: "12px",
-                        fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
-                        fontWeight: 400,
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "4px",
-                        borderRadius: "4px",
-                        whiteSpace: "nowrap",
-                        flexShrink: 0,
-                        position: "relative",
-                      }}
-                    >
-                      {!kit.is_free && (
-                        <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginLeft: "-4px" }}>
-                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
-                            <line x1="3" y1="6" x2="21" y2="6" />
-                            <path d="M16 10a4 4 0 0 1-8 0" />
-                          </svg>
-                          <span style={{ position: "absolute", top: "-4px", right: "-8px", fontSize: "16px", fontWeight: "400", color: "#000", lineHeight: "1" }}>+</span>
-                        </div>
-                      )}
-                      <span style={{ fontWeight: 500 }}>{kit.is_free ? "STÁHNOUT" : `${kit.price} CZK`}</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-        </div>
-        )}
       </div>
 
       <DownloadModal
-        kit={downloadingKit}
-        isOpen={!!downloadingKit}
-        onClose={() => setDownloadingKit(null)}
+        item={downloadingBeat}
+        isOpen={!!downloadingBeat}
+        onClose={() => setDownloadingBeat(null)}
         user={user}
       />
 
