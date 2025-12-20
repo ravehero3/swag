@@ -5,6 +5,7 @@ import ContractModal from "../components/ContractModal";
 import DownloadModal from "../components/DownloadModal";
 import MusicPlayer from "../components/MusicPlayer";
 import SoundWave from "../components/SoundWave";
+import ProductsGrid from "../components/ProductsGrid";
 
 interface Beat {
   id: number;
@@ -26,6 +27,55 @@ interface LicenseOption {
   format: string;
   price: number | "NEGOTIATE";
 }
+
+interface SoundKit {
+  id: number;
+  title: string;
+  type: string;
+  price: number;
+  is_free: boolean;
+  number_of_sounds: number;
+  artwork_url: string;
+}
+
+const testSoundKits: SoundKit[] = [
+  {
+    id: 101,
+    title: "Analog Drums Vol. 1",
+    type: "drum_kit",
+    price: 2999,
+    is_free: false,
+    number_of_sounds: 25,
+    artwork_url: "/uploads/artwork/metallic-logo.png",
+  },
+  {
+    id: 102,
+    title: "Urban Beats Collection",
+    type: "one_shot_kit",
+    price: 1999,
+    is_free: false,
+    number_of_sounds: 45,
+    artwork_url: "/uploads/artwork/metallic-logo.png",
+  },
+  {
+    id: 103,
+    title: "Cinematic Loops",
+    type: "loop_kit",
+    price: 3499,
+    is_free: false,
+    number_of_sounds: 30,
+    artwork_url: "/uploads/artwork/metallic-logo.png",
+  },
+  {
+    id: 104,
+    title: "Free Starter Pack",
+    type: "one_shot_kit",
+    price: 0,
+    is_free: true,
+    number_of_sounds: 20,
+    artwork_url: "/uploads/artwork/metallic-logo.png",
+  },
+];
 
 
 function Beaty() {
@@ -762,6 +812,25 @@ function Beaty() {
           )}
         </div>
 
+        {isHomePage && (
+          <div style={{ marginTop: "64px" }}>
+            <h2 style={{ fontSize: "24px", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontWeight: "400", marginBottom: "32px", marginTop: 0 }}>
+              ZVUKY
+            </h2>
+            <ProductsGrid
+              products={testSoundKits.map((kit) => ({
+                id: kit.id,
+                name: kit.title,
+                price: kit.price,
+                images: [kit.artwork_url],
+                soundCount: kit.number_of_sounds,
+                type: kit.type,
+                isFree: kit.is_free,
+                typeLabel: kit.type === "drum_kit" ? "Drum Kit" : kit.type === "one_shot_kit" ? "One Shot Kit" : kit.type === "loop_kit" ? "Loop Kit" : kit.type,
+              }))}
+            />
+          </div>
+        )}
 
       </div>
 
