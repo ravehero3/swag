@@ -278,19 +278,19 @@ function Zvuky() {
   }));
 
   return (
-    <div className="fade-in" style={{ padding: "0 20px" }}>
+    <div className="fade-in">
       <audio
         ref={audioRef}
         src={currentKit?.preview_url}
         onEnded={() => setIsPlaying(false)}
       />
       
-      <div style={{ textAlign: "center", marginBottom: "48px" }}>
+      <div style={{ textAlign: "center", marginBottom: "48px", padding: "0 20px" }}>
         <h2 style={{ fontSize: "18px", fontWeight: "bold" }}>ZVUKY</h2>
       </div>
 
       {kits.length > 0 ? (
-        <div style={{ width: "100%", marginBottom: "48px" }}>
+        <div style={{ width: "100%", marginBottom: "48px", marginTop: "200px" }}>
           <ProductsGrid
             products={products}
             savedProducts={Array.from(savedKits)}
@@ -306,6 +306,7 @@ function Zvuky() {
             display: "grid",
             gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
             gap: "24px",
+            padding: "0 20px",
           }}
         >
           {Array(6).fill(null).map((_, index) => (
