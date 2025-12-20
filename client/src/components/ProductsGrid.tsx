@@ -49,32 +49,42 @@ export default function ProductsGrid({
   return (
     <div
       style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(4, 1fr)",
-        gap: "0",
+        display: "flex",
+        justifyContent: "center",
         width: "100%",
+        padding: "0 20px",
       }}
     >
-      {displayProducts.map((product) => (
-        <ProductCard
-          key={product.id}
-          id={product.id}
-          name={product.name}
-          slug={product.slug}
-          price={Number(product.price)}
-          images={product.images}
-          sizes={product.sizes}
-          colorCount={product.colorCount || 1}
-          isSaved={savedProducts.includes(product.id)}
-          onToggleSave={onToggleSave}
-          soundCount={product.soundCount}
-          type={product.type}
-          isFree={product.isFree}
-          isPlaying={currentPlayingId === product.id && isPlaying}
-          onPlayClick={onPlayClick ? () => onPlayClick(product.id) : undefined}
-          typeLabel={product.typeLabel}
-        />
-      ))}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gap: "0",
+          maxWidth: "1200px",
+          width: "100%",
+        }}
+      >
+        {displayProducts.map((product) => (
+          <ProductCard
+            key={product.id}
+            id={product.id}
+            name={product.name}
+            slug={product.slug}
+            price={Number(product.price)}
+            images={product.images}
+            sizes={product.sizes}
+            colorCount={product.colorCount || 1}
+            isSaved={savedProducts.includes(product.id)}
+            onToggleSave={onToggleSave}
+            soundCount={product.soundCount}
+            type={product.type}
+            isFree={product.isFree}
+            isPlaying={currentPlayingId === product.id && isPlaying}
+            onPlayClick={onPlayClick ? () => onPlayClick(product.id) : undefined}
+            typeLabel={product.typeLabel}
+          />
+        ))}
+      </div>
     </div>
   );
 }
