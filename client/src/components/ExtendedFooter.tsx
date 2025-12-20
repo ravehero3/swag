@@ -179,11 +179,9 @@ export default function ExtendedFooter() {
         <div style={sectionStyle} className="footer-section">
           <h3 style={titleStyle}>ZÁKAZNICKÝ SERVIS</h3>
           <ul style={listStyle}>
-            <li style={listItemStyle}><a href="#" style={linkStyle} className="footer-link">Často kladené dotazy</a></li>
-            <li style={listItemStyle}><a href="#" style={linkStyle} className="footer-link">Sledování objednávky</a></li>
-            <li style={listItemStyle}><a href="#" style={linkStyle} className="footer-link">Vrácení zboží</a></li>
-            <li style={listItemStyle}><a href="#" style={linkStyle} className="footer-link">Doručení</a></li>
-            <li style={listItemStyle}><a href="#" style={linkStyle} className="footer-link">Platba</a></li>
+            <li style={listItemStyle}><a href="/faq" style={linkStyle} className="footer-link">Často kladené dotazy</a></li>
+            <li style={listItemStyle}><a href="/doruceni" style={linkStyle} className="footer-link">Doručení</a></li>
+            <li style={listItemStyle}><a href="/platba" style={linkStyle} className="footer-link">Platba</a></li>
           </ul>
         </div>
 
@@ -191,10 +189,10 @@ export default function ExtendedFooter() {
         <div style={sectionStyle} className="footer-section">
           <h3 style={titleStyle}>O SPOLEČNOSTI</h3>
           <ul style={listStyle}>
-            <li style={listItemStyle}><a href="#" style={linkStyle} className="footer-link">Právní informace</a></li>
-            <li style={listItemStyle}><a href="#" style={linkStyle} className="footer-link">Zásady ochrany osobních údajů</a></li>
-            <li style={listItemStyle}><a href="#" style={linkStyle} className="footer-link">Zásady používání souborů cookie</a></li>
-            <li style={listItemStyle}><a href="#" style={linkStyle} className="footer-link">Nastavení cookies</a></li>
+            <li style={listItemStyle}><a href="/pravni-informace" style={linkStyle} className="footer-link">Právní informace</a></li>
+            <li style={listItemStyle}><a href="/ochrana-osobnich-udaju" style={linkStyle} className="footer-link">Zásady ochrany osobních údajů</a></li>
+            <li style={listItemStyle}><a href="/cookies" style={linkStyle} className="footer-link">Zásady používání souborů cookie</a></li>
+            <li style={listItemStyle}><a href="/nastaveni-cookies" style={linkStyle} className="footer-link">Nastavení cookies</a></li>
           </ul>
         </div>
 
@@ -260,11 +258,9 @@ export default function ExtendedFooter() {
           onToggle={() => toggleSection('customer')}
         >
           <ul style={{...listStyle, marginTop: "8px"}}>
-            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="#" style={linkStyle} className="footer-link">Často kladené dotazy</a></li>
-            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="#" style={linkStyle} className="footer-link">Sledování objednávky</a></li>
-            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="#" style={linkStyle} className="footer-link">Vrácení zboží</a></li>
-            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="#" style={linkStyle} className="footer-link">Doručení</a></li>
-            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="#" style={linkStyle} className="footer-link">Platba</a></li>
+            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="/faq" style={linkStyle} className="footer-link">Často kladené dotazy</a></li>
+            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="/doruceni" style={linkStyle} className="footer-link">Doručení</a></li>
+            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="/platba" style={linkStyle} className="footer-link">Platba</a></li>
           </ul>
         </FooterAccordionItem>
 
@@ -274,10 +270,10 @@ export default function ExtendedFooter() {
           onToggle={() => toggleSection('about')}
         >
           <ul style={{...listStyle, marginTop: "8px"}}>
-            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="#" style={linkStyle} className="footer-link">Právní informace</a></li>
-            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="#" style={linkStyle} className="footer-link">Zásady ochrany osobních údajů</a></li>
-            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="#" style={linkStyle} className="footer-link">Zásady používání souborů cookie</a></li>
-            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="#" style={linkStyle} className="footer-link">Nastavení cookies</a></li>
+            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="/pravni-informace" style={linkStyle} className="footer-link">Právní informace</a></li>
+            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="/ochrana-osobnich-udaju" style={linkStyle} className="footer-link">Zásady ochrany osobních údajů</a></li>
+            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="/cookies" style={linkStyle} className="footer-link">Zásady používání souborů cookie</a></li>
+            <li style={{...listItemStyle, marginBottom: "8px"}}><a href="/nastaveni-cookies" style={linkStyle} className="footer-link">Nastavení cookies</a></li>
           </ul>
         </FooterAccordionItem>
 

@@ -11,6 +11,13 @@ import Admin from "./pages/Admin";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import Ulozeno from "./pages/Ulozeno";
+import FAQ from "./pages/FAQ";
+import Delivery from "./pages/Delivery";
+import Payment from "./pages/Payment";
+import LegalInfo from "./pages/LegalInfo";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import CookiePolicy from "./pages/CookiePolicy";
+import CookieSettings from "./pages/CookieSettings";
 import "./styles/global.css";
 
 interface User {
@@ -125,6 +132,13 @@ function App() {
             <Route path="/checkout" component={Checkout} />
             <Route path="/ulozeno" component={Ulozeno} />
             <Route path="/admin" component={Admin} />
+            <Route path="/faq" component={FAQ} />
+            <Route path="/doruceni" component={Delivery} />
+            <Route path="/platba" component={Payment} />
+            <Route path="/pravni-informace" component={LegalInfo} />
+            <Route path="/ochrana-osobnich-udaju" component={PrivacyPolicy} />
+            <Route path="/cookies" component={CookiePolicy} />
+            <Route path="/nastaveni-cookies" component={CookieSettings} />
             <Route>
               <div className="fade-in" style={{ textAlign: "center", padding: "100px 20px" }}>
                 <h1>404</h1>
