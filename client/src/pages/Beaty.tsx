@@ -292,7 +292,7 @@ function Beaty() {
       
       <div style={{ padding: "0 20px" }}>
         {highlightedBeat && (
-          <div style={{ marginBottom: "48px", display: "flex", justifyContent: "center", marginTop: "-100px", position: "relative", zIndex: 50 }}>
+          <div style={{ marginBottom: "48px", display: "flex", justifyContent: "center", marginTop: "-116px", position: "relative", zIndex: 50 }}>
             <div style={{ display: "flex", gap: "48px", alignItems: "flex-start", marginBottom: "32px", width: "1000px", position: "relative", zIndex: 50 }}>
               <div style={{ position: "relative", flexShrink: 0 }}>
                 <img
