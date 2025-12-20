@@ -693,11 +693,53 @@ function Beaty() {
               }}
             >
               <div data-separator style={{ position: "absolute", bottom: 0, left: "80px", right: 0, height: "1px", background: "#333", opacity: 1, transition: "opacity 0.15s ease" }} />
-              <img
-                src={beat.artwork_url || "/uploads/artwork/metallic-logo.png"}
-                alt={beat.title}
-                style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "4px", flexShrink: 0 }}
-              />
+              <div style={{ position: "relative", display: "flex", alignItems: "center", gap: "4px", marginRight: "-4px" }}>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (user) toggleSave(beat);
+                  }}
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    cursor: "pointer",
+                    padding: "4px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    transition: "transform 0.2s ease",
+                    width: "28px",
+                    height: "28px",
+                    flexShrink: 0,
+                  }}
+                  onMouseEnter={(e) => {
+                    const btn = e.currentTarget as HTMLButtonElement;
+                    btn.style.transform = "scale(1.1)";
+                  }}
+                  onMouseLeave={(e) => {
+                    const btn = e.currentTarget as HTMLButtonElement;
+                    btn.style.transform = "scale(1)";
+                  }}
+                  title={user ? (savedBeats.has(beat.id) ? "Remove from favorites" : "Add to favorites") : "Log in to save"}
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill={user && savedBeats.has(beat.id) ? "#ff4444" : "none"}
+                    stroke={user && savedBeats.has(beat.id) ? "#ff4444" : "#fff"}
+                    strokeWidth="1"
+                    style={{ transition: "all 0.3s ease" }}
+                  >
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                  </svg>
+                </button>
+                <img
+                  src={beat.artwork_url || "/uploads/artwork/metallic-logo.png"}
+                  alt={beat.title}
+                  style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "4px", flexShrink: 0 }}
+                />
+              </div>
               <div style={{ width: "25%", minWidth: "200px", marginRight: "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
                 <div style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "20px" }}>{beat.title}</div>
               </div>
@@ -880,46 +922,6 @@ function Beaty() {
                   </div>
                   <span style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "8px" }}>{Math.floor(beat.price)} CZK</span>
                 </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (user) toggleSave(beat);
-                  }}
-                    style={{
-                      background: "transparent",
-                      border: "none",
-                      cursor: "pointer",
-                      padding: "8px",
-                      marginLeft: "8px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      transition: "transform 0.2s ease",
-                      width: "32px",
-                      height: "32px",
-                    }}
-                    onMouseEnter={(e) => {
-                      const btn = e.currentTarget as HTMLButtonElement;
-                      btn.style.transform = "scale(1.1)";
-                    }}
-                    onMouseLeave={(e) => {
-                      const btn = e.currentTarget as HTMLButtonElement;
-                      btn.style.transform = "scale(1)";
-                    }}
-                    title={user ? (savedBeats.has(beat.id) ? "Remove from favorites" : "Add to favorites") : "Log in to save"}
-                  >
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill={user && savedBeats.has(beat.id) ? "#ff4444" : "none"}
-                      stroke={user && savedBeats.has(beat.id) ? "#ff4444" : "#fff"}
-                      strokeWidth="1"
-                      style={{ transition: "all 0.3s ease" }}
-                    >
-                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                    </svg>
-                  </button>
               </div>
             </div>
             ))}
