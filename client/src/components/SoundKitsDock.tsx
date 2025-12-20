@@ -72,9 +72,10 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
                 width: `${size}px`,
                 height: `${size}px`,
                 transform: `translateY(${translateY}px)`,
-                transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), height 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                transition: 'transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), height 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), z-index 0.1s',
                 flexShrink: 0,
                 willChange: 'transform, width, height',
+                zIndex: hoveredIndex === index ? 50 : 1,
               }}
             >
               <button
@@ -85,11 +86,11 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
                   border: 'none',
                   padding: 0,
                   borderRadius: '8px',
-                  backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                  backgroundColor: 'rgba(0, 0, 0, 0.4)',
                   boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
                   cursor: 'pointer',
                   overflow: 'hidden',
-                  transition: 'box-shadow 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), height 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                  transition: 'box-shadow 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), height 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -98,9 +99,11 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
                 }}
                 onMouseEnter={(e) => {
                   (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.8)';
+                  (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(0, 0, 0, 0.6)';
                 }}
                 onMouseLeave={(e) => {
                   (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.5)';
+                  (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(0, 0, 0, 0.4)';
                 }}
               >
                 <img 

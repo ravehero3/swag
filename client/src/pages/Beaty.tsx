@@ -930,7 +930,7 @@ function Beaty() {
         </div>
 
         {isHomePage && (
-          <div style={{ marginTop: "64px", marginBottom: "0px" }}>
+          <div style={{ marginTop: "64px", marginBottom: "100px" }}>
             <h2 style={{ fontSize: "24px", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontWeight: "400", marginBottom: "32px", marginTop: 0, paddingLeft: "20px" }}>
               ZVUKY
             </h2>
