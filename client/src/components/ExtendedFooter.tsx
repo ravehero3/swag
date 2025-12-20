@@ -3,6 +3,27 @@
 import { useState, useRef, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
 
+const styles = `
+  @media (min-width: 1024px) {
+    .footer-desktop {
+      display: grid !important;
+    }
+    .footer-mobile {
+      display: none !important;
+    }
+  }
+  
+  @media (max-width: 1023px) {
+    .footer-desktop {
+      display: none !important;
+    }
+    .footer-mobile {
+      display: block !important;
+    }
+  }
+`;
+
+
 interface FooterAccordionItemProps {
   title: string;
   children: React.ReactNode;
@@ -120,11 +141,13 @@ export default function ExtendedFooter() {
 
   return (
     <footer style={{ backgroundColor: "#aaaaad", width: "100%" }}>
+      <style>{styles}</style>
       {/* Desktop Footer - 6 columns */}
       <div 
+        className="footer-desktop"
         style={{
           width: "100%",
-          display: "none",
+          display: "grid",
           gridTemplateColumns: "repeat(6, 1fr)",
           borderTop: "1px solid #000",
           fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif',
@@ -200,8 +223,10 @@ export default function ExtendedFooter() {
 
       {/* Mobile Footer - Accordion style */}
       <div 
+        className="footer-mobile"
         style={{
           width: "100%",
+          display: "block",
           borderTop: "1px solid #000",
           fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif',
           fontSize: "12px",
