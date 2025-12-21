@@ -264,6 +264,7 @@ function MusicPlayer({
               // Create particles
               for (let i = 0; i < 7; i++) {
                 const particle = document.createElement("div");
+                particle.setAttribute("data-particle", "true");
                 const angle = (i / 7) * Math.PI * 2;
                 particle.style.position = "absolute";
                 particle.style.width = "4px";
@@ -306,8 +307,8 @@ function MusicPlayer({
               const plusSymbol = btn.querySelector("span[style*='position: absolute']") as HTMLElement;
               if (plusSymbol) plusSymbol.style.color = "#fff";
               
-              // Remove particles
-              const particles = btn.querySelectorAll("div");
+              // Remove only particles, not icon container
+              const particles = btn.querySelectorAll("div[data-particle='true']");
               particles.forEach((p) => p.remove());
             }}
           >
