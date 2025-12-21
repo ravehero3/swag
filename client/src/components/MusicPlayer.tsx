@@ -233,8 +233,8 @@ function MusicPlayer({
             className="btn-bounce"
             style={{
               padding: "8px 8px 8px 16px",
-              background: "#fff",
-              color: "#000",
+              background: "#aaaaac",
+              color: "#fff",
               border: "none",
               fontSize: "12px",
               fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
@@ -247,6 +247,15 @@ function MusicPlayer({
               position: "relative",
               minWidth: "120px",
               height: "32px",
+              transition: "background 0.2s, color 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.background = "#fff";
+              (e.currentTarget as HTMLButtonElement).style.color = "#000";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.background = "#aaaaac";
+              (e.currentTarget as HTMLButtonElement).style.color = "#fff";
             }}
           >
             <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
