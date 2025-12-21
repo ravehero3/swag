@@ -235,7 +235,7 @@ function MusicPlayer({
               padding: "8px 8px 8px 16px",
               background: "#000",
               color: "#fff",
-              border: "none",
+              border: "1px solid #fff",
               fontSize: "12px",
               fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
               fontWeight: 400,
@@ -247,15 +247,59 @@ function MusicPlayer({
               position: "relative",
               minWidth: "120px",
               height: "32px",
-              transition: "background 0.2s, color 0.2s",
+              transition: "background 0.2s, color 0.2s, box-shadow 0.2s",
+              overflow: "visible",
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.background = "#fff";
-              (e.currentTarget as HTMLButtonElement).style.color = "#000";
+              const btn = e.currentTarget as HTMLButtonElement;
+              btn.style.background = "#fff";
+              btn.style.color = "#000";
+              btn.style.boxShadow = "0 0 20px rgba(255, 255, 255, 0.8), inset 0 0 10px rgba(255, 255, 255, 0.3)";
+              
+              // Create particles
+              for (let i = 0; i < 7; i++) {
+                const particle = document.createElement("div");
+                const angle = (i / 7) * Math.PI * 2;
+                particle.style.position = "absolute";
+                particle.style.width = "4px";
+                particle.style.height = "4px";
+                particle.style.background = "#fff";
+                particle.style.borderRadius = "50%";
+                particle.style.left = "50%";
+                particle.style.top = "50%";
+                particle.style.pointerEvents = "none";
+                particle.style.transform = "translate(-50%, -50%)";
+                particle.style.opacity = "0.8";
+                
+                const distance = 35;
+                const startX = Math.cos(angle) * distance;
+                const startY = Math.sin(angle) * distance;
+                const endX = Math.cos(angle) * (distance + 40);
+                const endY = Math.sin(angle) * (distance + 40);
+                
+                particle.style.animation = `particleFloat-${i} 3s ease-out forwards`;
+                
+                btn.appendChild(particle);
+                
+                const style = document.createElement("style");
+                style.textContent = `
+                  @keyframes particleFloat-${i} {
+                    0% { transform: translate(calc(-50% + ${startX}px), calc(-50% + ${startY}px)); opacity: 0.8; }
+                    100% { transform: translate(calc(-50% + ${endX}px), calc(-50% + ${endY}px)); opacity: 0; }
+                  }
+                `;
+                document.head.appendChild(style);
+              }
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.background = "#000";
-              (e.currentTarget as HTMLButtonElement).style.color = "#fff";
+              const btn = e.currentTarget as HTMLButtonElement;
+              btn.style.background = "#000";
+              btn.style.color = "#fff";
+              btn.style.boxShadow = "none";
+              
+              // Remove particles
+              const particles = btn.querySelectorAll("div");
+              particles.forEach((p) => p.remove());
             }}
           >
             <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
