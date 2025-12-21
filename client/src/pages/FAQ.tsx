@@ -12,11 +12,11 @@ export default function FAQ() {
     },
     {
       title: 'Jak dlouho trvá doručení?',
-      content: 'Standardní doba doručení je 2-5 pracovních dnů od potvrzení objednávky. Více informací najdete na stránce doručení.'
+      content: 'Naše digitální produkty si můžete stáhnout okamžitě po potvrzení objednávky. Přístup do vašeho účtu vám bude zpřístupněn ihned poté, abyste mohli začít užívat zboží bez čekání.'
     },
     {
       title: 'Mohu zboží vrátit?',
-      content: 'Ano, zboží můžete vrátit do 14 dnů od převzetí. Více informací najdete na stránce vrácení zboží.'
+      content: 'Ne :)'
     }
   ];
 
