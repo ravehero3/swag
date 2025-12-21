@@ -427,7 +427,7 @@ function Beaty() {
                         padding: "8px 8px 8px 16px",
                         background: "#000",
                         color: "#fff",
-                        border: "1px solid #fff",
+                        border: "none",
                         fontSize: "12px",
                         fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
                         fontWeight: 400,
@@ -441,12 +441,13 @@ function Beaty() {
                         height: "32px",
                         transition: "background 0.2s, color 0.2s, box-shadow 0.2s",
                         overflow: "visible",
+                        boxShadow: "inset 0 0 0 0.5px #fff",
                       }}
                       onMouseEnter={(e) => {
                         const btn = e.currentTarget as HTMLButtonElement;
                         btn.style.background = "#fff";
                         btn.style.color = "#000";
-                        btn.style.boxShadow = "0 0 20px rgba(255, 255, 255, 0.8), inset 0 0 10px rgba(255, 255, 255, 0.3)";
+                        btn.style.boxShadow = "0 0 20px rgba(255, 255, 255, 0.8), inset 0 0 0 0.5px #000, inset 0 0 10px rgba(255, 255, 255, 0.3)";
                         
                         // Create particles
                         for (let i = 0; i < 7; i++) {
@@ -487,7 +488,7 @@ function Beaty() {
                         const btn = e.currentTarget as HTMLButtonElement;
                         btn.style.background = "#000";
                         btn.style.color = "#fff";
-                        btn.style.boxShadow = "none";
+                        btn.style.boxShadow = "inset 0 0 0 0.5px #fff";
                         
                         // Remove particles
                         const particles = btn.querySelectorAll("div");
@@ -951,7 +952,7 @@ function Beaty() {
                     padding: "8px 8px 8px 16px",
                     background: "#000",
                     color: "#fff",
-                    border: "1px solid #fff",
+                    border: "none",
                     fontSize: "12px",
                     fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
                     fontWeight: 400,
@@ -966,12 +967,13 @@ function Beaty() {
                     marginLeft: "8px",
                     transition: "background 0.2s, color 0.2s, box-shadow 0.2s",
                     overflow: "visible",
+                    boxShadow: "inset 0 0 0 0.5px #fff",
                   }}
                   onMouseEnter={(e) => {
                     const btn = e.currentTarget as HTMLButtonElement;
                     btn.style.background = "#fff";
                     btn.style.color = "#000";
-                    btn.style.boxShadow = "0 0 20px rgba(255, 255, 255, 0.8), inset 0 0 10px rgba(255, 255, 255, 0.3)";
+                    btn.style.boxShadow = "0 0 20px rgba(255, 255, 255, 0.8), inset 0 0 0 0.5px #000, inset 0 0 10px rgba(255, 255, 255, 0.3)";
                     
                     // Create particles
                     for (let i = 0; i < 7; i++) {
@@ -1012,7 +1014,7 @@ function Beaty() {
                     const btn = e.currentTarget as HTMLButtonElement;
                     btn.style.background = "#000";
                     btn.style.color = "#fff";
-                    btn.style.boxShadow = "none";
+                    btn.style.boxShadow = "inset 0 0 0 0.5px #fff";
                     
                     // Remove particles
                     const particles = btn.querySelectorAll("div");
