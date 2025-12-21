@@ -233,7 +233,7 @@ function MusicPlayer({
             className="btn-bounce"
             style={{
               padding: "8px 8px 8px 16px",
-              background: "#aaaaac",
+              background: "#000",
               color: "#fff",
               border: "none",
               fontSize: "12px",
@@ -254,7 +254,7 @@ function MusicPlayer({
               (e.currentTarget as HTMLButtonElement).style.color = "#000";
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.background = "#aaaaac";
+              (e.currentTarget as HTMLButtonElement).style.background = "#000";
               (e.currentTarget as HTMLButtonElement).style.color = "#fff";
             }}
           >
