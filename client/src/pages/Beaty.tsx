@@ -449,6 +449,10 @@ function Beaty() {
                         btn.style.color = "#000";
                         btn.style.boxShadow = "0 0 20px rgba(255, 255, 255, 0.8), inset 0 0 0 0.5px #000, inset 0 0 10px rgba(255, 255, 255, 0.3)";
                         
+                        // Change + symbol color to black
+                        const plusSymbol = btn.querySelector("span[style*='position: absolute']") as HTMLElement;
+                        if (plusSymbol) plusSymbol.style.color = "#000";
+                        
                         // Create particles
                         for (let i = 0; i < 7; i++) {
                           const particle = document.createElement("div");
@@ -490,6 +494,10 @@ function Beaty() {
                         btn.style.color = "#fff";
                         btn.style.boxShadow = "inset 0 0 0 0.5px #fff";
                         
+                        // Change + symbol color back to white
+                        const plusSymbol = btn.querySelector("span[style*='position: absolute']") as HTMLElement;
+                        if (plusSymbol) plusSymbol.style.color = "#fff";
+                        
                         // Remove particles
                         const particles = btn.querySelectorAll("div");
                         particles.forEach((p) => p.remove());
@@ -500,7 +508,7 @@ function Beaty() {
                           <rect x="3" y="6" width="18" height="15" rx="2" />
                           <path d="M8 6V4a4 4 0 0 1 8 0v2" />
                         </svg>
-                        <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "#000", lineHeight: "1", right: "-10px", top: "-5px" }}>+</span>
+                        <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "#fff", lineHeight: "1", right: "-10px", top: "-5px" }}>+</span>
                       </div>
                       <span style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "8px" }}>{Math.floor(highlightedBeat.price)} CZK</span>
                     </button>
@@ -975,6 +983,10 @@ function Beaty() {
                     btn.style.color = "#000";
                     btn.style.boxShadow = "0 0 20px rgba(255, 255, 255, 0.8), inset 0 0 0 0.5px #000, inset 0 0 10px rgba(255, 255, 255, 0.3)";
                     
+                    // Change + symbol color to black
+                    const plusSymbol = btn.querySelector("span[style*='position: absolute']") as HTMLElement;
+                    if (plusSymbol) plusSymbol.style.color = "#000";
+                    
                     // Create particles
                     for (let i = 0; i < 7; i++) {
                       const particle = document.createElement("div");
@@ -1016,6 +1028,10 @@ function Beaty() {
                     btn.style.color = "#fff";
                     btn.style.boxShadow = "inset 0 0 0 0.5px #fff";
                     
+                    // Change + symbol color back to white
+                    const plusSymbol = btn.querySelector("span[style*='position: absolute']") as HTMLElement;
+                    if (plusSymbol) plusSymbol.style.color = "#fff";
+                    
                     // Remove particles
                     const particles = btn.querySelectorAll("div");
                     particles.forEach((p) => p.remove());
@@ -1026,7 +1042,7 @@ function Beaty() {
                       <rect x="3" y="6" width="18" height="15" rx="2" />
                       <path d="M8 6V4a4 4 0 0 1 8 0v2" />
                     </svg>
-                    <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "#000", lineHeight: "1", right: "-10px", top: "-5px" }}>+</span>
+                    <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "#fff", lineHeight: "1", right: "-10px", top: "-5px" }}>+</span>
                   </div>
                   <span style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "8px" }}>{Math.floor(beat.price)} CZK</span>
                 </button>
