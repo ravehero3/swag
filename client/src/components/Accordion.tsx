@@ -29,7 +29,7 @@ export default function Accordion({ items }: AccordionProps) {
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              background: '#1a1a1a',
+              background: '#000',
               border: 'none',
               borderBottom: '1px solid #ccc',
               cursor: 'pointer',
@@ -38,15 +38,15 @@ export default function Accordion({ items }: AccordionProps) {
               fontWeight: 700,
               letterSpacing: '0.05em',
               textTransform: 'uppercase',
-              color: '#d4af37',
+              color: '#aaaaac',
               textAlign: 'left',
               transition: 'background-color 0.2s ease',
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.backgroundColor = '#262626';
+              (e.currentTarget as HTMLElement).style.backgroundColor = '#111';
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.backgroundColor = '#1a1a1a';
+              (e.currentTarget as HTMLElement).style.backgroundColor = '#000';
             }}
           >
             <span>{item.title}</span>
@@ -56,7 +56,7 @@ export default function Accordion({ items }: AccordionProps) {
                 transition: 'transform 0.3s ease',
                 transform: openIndex === index ? 'rotate(180deg)' : 'rotate(0deg)',
                 flexShrink: 0,
-                color: '#d4af37',
+                color: '#aaaaac',
               }}
             />
           </button>
@@ -65,11 +65,11 @@ export default function Accordion({ items }: AccordionProps) {
             <div
               style={{
                 padding: '16px',
-                background: '#1a1a1a',
+                background: '#000',
                 fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
                 fontSize: '14px',
                 lineHeight: '1.6',
-                color: '#ccc',
+                color: '#aaaaac',
                 animation: 'slideDown 0.3s ease',
                 borderBottom: '1px solid #ccc',
               }}

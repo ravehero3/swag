@@ -21,7 +21,7 @@ export default function FAQ() {
   ];
 
   return (
-    <div style={{ minHeight: '100vh', background: '#1a1a1a', position: 'relative' }} className="fade-in">
+    <div style={{ minHeight: '100vh', background: '#000', position: 'relative' }} className="fade-in">
       {/* Left vertical line - starts at top */}
       <div
         style={{
@@ -73,7 +73,7 @@ export default function FAQ() {
             textTransform: 'uppercase',
             textAlign: 'center',
             marginBottom: '48px',
-            color: '#d4af37',
+            color: '#aaaaac',
           }}
         >
           ČASTO KLADENÉ DOTAZY
