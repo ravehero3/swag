@@ -21,7 +21,7 @@ export default function FAQ() {
   ];
 
   return (
-    <div style={{ minHeight: '100vh', background: '#fff', position: 'relative' }} className="fade-in">
+    <div style={{ minHeight: '100vh', background: '#1a1a1a', position: 'relative' }} className="fade-in">
       {/* Left vertical line - starts at top */}
       <div
         style={{
@@ -73,7 +73,7 @@ export default function FAQ() {
             textTransform: 'uppercase',
             textAlign: 'center',
             marginBottom: '48px',
-            color: '#000',
+            color: '#d4af37',
           }}
         >
           ČASTO KLADENÉ DOTAZY
@@ -86,9 +86,6 @@ export default function FAQ() {
             paddingRight: '16px',
           }}
           className="md:w-1/3"
-          style={{
-            width: '100%',
-          }}
         >
           <div style={{ maxWidth: '600px', margin: '0 auto' }}>
             <Accordion items={faqItems} />

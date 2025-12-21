@@ -18,15 +18,9 @@ export default function Accordion({ items }: AccordionProps) {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', borderTop: '1px solid #ccc', borderBottom: '1px solid #ccc' }}>
       {items.map((item, index) => (
-        <div
-          key={index}
-          style={{
-            border: '1px solid #000',
-            borderRadius: '0px',
-          }}
-        >
+        <div key={index}>
           <button
             onClick={() => toggleItem(index)}
             style={{
@@ -35,23 +29,24 @@ export default function Accordion({ items }: AccordionProps) {
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              background: 'white',
+              background: '#1a1a1a',
               border: 'none',
+              borderBottom: '1px solid #ccc',
               cursor: 'pointer',
               fontFamily: '"Roboto Condensed", "Helvetica Neue", Helvetica, Arial, sans-serif',
               fontSize: '14px',
               fontWeight: 700,
               letterSpacing: '0.05em',
               textTransform: 'uppercase',
-              color: '#000',
+              color: '#d4af37',
               textAlign: 'left',
               transition: 'background-color 0.2s ease',
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.backgroundColor = '#f5f5f5';
+              (e.currentTarget as HTMLElement).style.backgroundColor = '#262626';
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.backgroundColor = 'white';
+              (e.currentTarget as HTMLElement).style.backgroundColor = '#1a1a1a';
             }}
           >
             <span>{item.title}</span>
@@ -61,6 +56,7 @@ export default function Accordion({ items }: AccordionProps) {
                 transition: 'transform 0.3s ease',
                 transform: openIndex === index ? 'rotate(180deg)' : 'rotate(0deg)',
                 flexShrink: 0,
+                color: '#d4af37',
               }}
             />
           </button>
@@ -69,13 +65,13 @@ export default function Accordion({ items }: AccordionProps) {
             <div
               style={{
                 padding: '16px',
-                background: '#f9f9f9',
-                borderTop: '1px solid #000',
+                background: '#1a1a1a',
                 fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
                 fontSize: '14px',
                 lineHeight: '1.6',
-                color: '#333',
+                color: '#ccc',
                 animation: 'slideDown 0.3s ease',
+                borderBottom: '1px solid #ccc',
               }}
             >
               {item.content}
