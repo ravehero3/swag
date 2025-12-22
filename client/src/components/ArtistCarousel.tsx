@@ -30,19 +30,17 @@ const ArtistCarousel = () => {
   const displayArtists = [...artists, ...artists, ...artists];
 
   useEffect(() => {
-    const itemWidth = 264; // 160px image + 104px gap
-    const oneSetWidth = itemWidth * artists.length; // One full cycle of artists
+    const itemWidth = 160; // Just the image width
+    const gap = 104;
+    const oneSetWidth = itemWidth * artists.length + gap * (artists.length - 1); // One full cycle
     
     const intervalId = setInterval(() => {
       setOffset((prev) => {
         const newOffset = prev - 1;
-        // Reset after one full cycle to create seamless loop
-        if (newOffset <= -oneSetWidth) {
-          return 0;
-        }
-        return newOffset;
+        // Use modulo to seamlessly loop back
+        return ((newOffset % oneSetWidth) + oneSetWidth) % oneSetWidth;
       });
-    }, 200); // ~1px per 200ms = slower carousel animation
+    }, 50); // Faster animation for smoother scrolling
 
     return () => clearInterval(intervalId);
   }, []);
