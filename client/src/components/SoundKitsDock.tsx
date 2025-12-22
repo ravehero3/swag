@@ -46,6 +46,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
             alignItems: 'center',
             gap: '8px',
             padding: '12px',
+            paddingTop: '70px',
             height: '64px',
             borderRadius: '12px',
             backgroundColor: 'rgba(31, 41, 55, 0.8)',
@@ -54,6 +55,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
             overflow: 'visible',
             position: 'relative',
             minWidth: 'fit-content',
+            marginTop: '-58px',
           }}
         >
           {items.map((item, index) => {
