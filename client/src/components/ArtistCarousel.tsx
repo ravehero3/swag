@@ -27,18 +27,22 @@ const ArtistCarousel = () => {
   const [offset, setOffset] = useState(0);
 
   // Generate enough duplicates for seamless scrolling
-  const displayArtists = [...artists, ...artists, ...artists];
+  const displayArtists = [...artists, ...artists, ...artists, ...artists];
 
   useEffect(() => {
     const itemWidth = 160; // Just the image width
     const gap = 64;
     const oneSetWidth = itemWidth * artists.length + gap * (artists.length - 1); // One full cycle
+    const totalWidth = itemWidth * displayArtists.length + gap * (displayArtists.length - 1); // Total width
     
     const intervalId = setInterval(() => {
       setOffset((prev) => {
         const newOffset = prev - 2;
-        // Use modulo to seamlessly loop back
-        return ((newOffset % oneSetWidth) + oneSetWidth) % oneSetWidth;
+        // Reset after scrolling through 2 full sets to ensure seamless loop
+        if (newOffset <= -oneSetWidth * 2) {
+          return 0;
+        }
+        return newOffset;
       });
     }, 50); // Animation for smoother scrolling
 
