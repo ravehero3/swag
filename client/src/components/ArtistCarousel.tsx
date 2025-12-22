@@ -101,14 +101,14 @@ const ArtistCarousel = () => {
                 alignItems: "center",
                 gap: "16px",
                 flexShrink: 0,
-                width: "160px",
+                width: "192px",
               }}
             >
               {/* Artist Image Circle */}
               <div
                 style={{
-                  width: "160px",
-                  height: "160px",
+                  width: "192px",
+                  height: "192px",
                   borderRadius: "50%",
                   background: `linear-gradient(135deg, #333 0%, #111 100%)`,
                   border: "3px solid #444",
