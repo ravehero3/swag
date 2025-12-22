@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useApp } from "../App";
 import ProductsGrid from "../components/ProductsGrid";
-import SoundKitsDock from "../components/SoundKitsDock";
 
 interface SoundKit {
   id: number;
@@ -278,16 +277,6 @@ function Zvuky() {
     typeLabel: typeLabels[kit.type] || kit.type,
   }));
 
-  // Create dock items from the first 8 sound kits
-  const dockItems = kits.slice(0, 8).map((kit) => ({
-    id: kit.id,
-    name: kit.title,
-    image: kit.artwork_url || "/uploads/artwork/metallic-logo.png",
-    price: kit.price,
-    isFree: kit.is_free,
-    onClick: () => playPreview(kit),
-  }));
-
   return (
     <div className="fade-in">
       <audio
@@ -300,53 +289,8 @@ function Zvuky() {
         <h2 style={{ fontSize: "18px", fontWeight: "bold" }}>ZVUKY</h2>
       </div>
 
-      {/* Background with computer image and dock */}
-      <div style={{
-        width: "100vw",
-        marginLeft: "calc(-50vw + 50%)",
-        marginBottom: "64px",
-        overflow: "hidden",
-        position: "relative",
-        background: "#000",
-      }}>
-        <img
-          src="/uploads/zvuky-computer-background.jpg"
-          alt="Computer with sound kits"
-          style={{
-            width: "100%",
-            height: "auto",
-            display: "block",
-            objectFit: "cover",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            width: "100%",
-            height: "100px",
-            background: "linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 100%)",
-            pointerEvents: "none",
-          }}
-        />
-        {/* Dock positioned at bottom */}
-        <div style={{
-          position: "absolute",
-          bottom: "20px",
-          left: "50%",
-          transform: "translateX(-50%)",
-          width: "100%",
-          display: "flex",
-          justifyContent: "center",
-          zIndex: 10,
-        }}>
-          {dockItems.length > 0 && <SoundKitsDock items={dockItems} />}
-        </div>
-      </div>
-
       {kits.length > 0 ? (
-        <div style={{ width: "100%", marginBottom: "48px", marginTop: "0px" }}>
+        <div style={{ width: "100%", marginBottom: "48px", marginTop: "200px" }}>
           <ProductsGrid
             products={products}
             savedProducts={Array.from(savedKits)}

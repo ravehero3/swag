@@ -1056,22 +1056,61 @@ function Beaty() {
         </div>
 
         {isHomePage && (
-          <div style={{ marginTop: "64px", marginBottom: "100px" }}>
-            <h2 style={{ fontSize: "24px", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontWeight: "400", marginBottom: "32px", marginTop: 0, paddingLeft: "20px" }}>
-              ZVUKY
-            </h2>
-            <SoundKitsDock
-              items={testSoundKits.map((kit) => ({
-                id: kit.id,
-                name: kit.title,
-                image: kit.artwork_url,
-                price: kit.price,
-                isFree: kit.is_free,
-                onClick: () => {
-                  setLocation("/zvuky");
-                },
-              }))}
-            />
+          <div style={{ marginTop: "64px", marginBottom: "64px" }}>
+            {/* Background with computer image and dock */}
+            <div style={{
+              width: "100vw",
+              marginLeft: "calc(-50vw + 50%)",
+              overflow: "hidden",
+              position: "relative",
+              background: "#000",
+            }}>
+              <img
+                src="/uploads/zvuky-computer-background.jpg"
+                alt="Computer with sound kits"
+                style={{
+                  width: "100%",
+                  height: "auto",
+                  display: "block",
+                  objectFit: "cover",
+                }}
+              />
+              <div
+                style={{
+                  position: "absolute",
+                  bottom: 0,
+                  left: 0,
+                  width: "100%",
+                  height: "100px",
+                  background: "linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 100%)",
+                  pointerEvents: "none",
+                }}
+              />
+              {/* Dock positioned at bottom */}
+              <div style={{
+                position: "absolute",
+                bottom: "20px",
+                left: "50%",
+                transform: "translateX(-50%)",
+                width: "100%",
+                display: "flex",
+                justifyContent: "center",
+                zIndex: 10,
+              }}>
+                <SoundKitsDock
+                  items={testSoundKits.map((kit) => ({
+                    id: kit.id,
+                    name: kit.title,
+                    image: kit.artwork_url,
+                    price: kit.price,
+                    isFree: kit.is_free,
+                    onClick: () => {
+                      setLocation("/zvuky");
+                    },
+                  }))}
+                />
+              </div>
+            </div>
           </div>
         )}
 
