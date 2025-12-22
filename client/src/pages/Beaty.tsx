@@ -1099,7 +1099,7 @@ function Beaty() {
               }}>
                 <h2 style={{
                   color: "#fff",
-                  fontSize: "120px",
+                  fontSize: "30px",
                   fontFamily: '"Helvetica Neue Condensed Bold", "Helvetica Neue", Helvetica, Arial, sans-serif',
                   fontWeight: "700",
                   letterSpacing: "-2px",
