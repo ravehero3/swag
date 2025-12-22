@@ -1070,7 +1070,7 @@ function Beaty() {
 
         {isHomePage && (
           <>
-            <div style={{ marginTop: "64px", marginBottom: "0px" }}>
+            <div style={{ marginTop: "-136px", marginBottom: "0px" }}>
               <ArtistCarousel />
             </div>
 
