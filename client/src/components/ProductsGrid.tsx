@@ -48,6 +48,7 @@ export default function ProductsGrid({
 
   return (
     <div
+      className="fade-in-stagger"
       style={{
         display: "flex",
         justifyContent: "center",
