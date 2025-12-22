@@ -27,9 +27,12 @@ const artists: Artist[] = [
 const ArtistCarousel = () => {
   const [offset, setOffset] = useState(0);
 
+  // Generate enough duplicates for seamless scrolling
+  const displayArtists = [...artists, ...artists, ...artists];
+
   useEffect(() => {
     const itemWidth = 264; // 160px image + 104px gap
-    const totalWidth = itemWidth * artists.length;
+    const totalWidth = itemWidth * displayArtists.length; // Use displayArtists length for proper looping
     
     const intervalId = setInterval(() => {
       setOffset((prev) => {
@@ -41,9 +44,6 @@ const ArtistCarousel = () => {
 
     return () => clearInterval(intervalId);
   }, []);
-
-  // Generate enough duplicates for seamless scrolling
-  const displayArtists = [...artists, ...artists, ...artists];
 
   return (
     <div
