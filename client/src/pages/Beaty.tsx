@@ -1069,11 +1069,11 @@ function Beaty() {
 
         {isHomePage && (
           <>
-            {/* Glassmorphism section */}
+            {/* Artist Carousel Section */}
             <div style={{
               width: "100vw",
               marginLeft: "calc(-50vw + 50%)",
-              height: "420px",
+              height: "840px",
               marginTop: "64px",
               background: "rgba(20, 20, 25, 0.6)",
               backdropFilter: "blur(20px)",
@@ -1081,7 +1081,127 @@ function Beaty() {
               border: "1px solid rgba(255, 255, 255, 0.08)",
               position: "relative",
               overflow: "hidden",
-            }} />
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "40px 0",
+            }}>
+              {/* Title */}
+              <h2 style={{
+                color: "#fff",
+                fontSize: "30px",
+                fontFamily: '"Impact", "Helvetica Neue Condensed", sans-serif',
+                fontWeight: "900",
+                margin: "0 0 60px 0",
+                letterSpacing: "0.5px",
+                textTransform: "uppercase",
+              }}>
+                Voodoo808 Dělal Beaty Pro
+              </h2>
+
+              {/* Scrolling carousel */}
+              <div style={{
+                width: "100%",
+                overflow: "hidden",
+                position: "relative",
+                flex: 1,
+                display: "flex",
+                alignItems: "center",
+                maxHeight: "360px",
+              }}>
+                <style>{`
+                  @keyframes scroll-artists {
+                    0% { transform: translateX(0); }
+                    100% { transform: translateX(-100%); }
+                  }
+                  .artist-scroll-container {
+                    display: flex;
+                    gap: 40px;
+                    animation: scroll-artists 60s linear infinite;
+                    will-change: transform;
+                  }
+                `}</style>
+                
+                <div className="artist-scroll-container">
+                  {[
+                    { name: "Calin", id: "calin" },
+                    { name: "Viktor Sheen", id: "viktor-sheen" },
+                    { name: "Hugo Toxxx", id: "hugo-toxxx" },
+                    { name: "Yzomandias", id: "yzomandias" },
+                    { name: "Ektor", id: "ektor" },
+                    { name: "Nik Tendo", id: "nik-tendo" },
+                    { name: "Cashanova Bulhar", id: "cashanova-bulhar" },
+                    { name: "Icy L", id: "icy-l" },
+                    { name: "Smack", id: "smack" },
+                    { name: "Hasan", id: "hasan" },
+                    { name: "Hard Rico", id: "hard-rico" },
+                    { name: "Pil C", id: "pil-c" },
+                    { name: "Luisa", id: "luisa" },
+                    { name: "Dollar Prync", id: "dollar-prync" },
+                    { name: "Saul", id: "saul" },
+                    { name: "Calin", id: "calin" },
+                    { name: "Viktor Sheen", id: "viktor-sheen" },
+                    { name: "Hugo Toxxx", id: "hugo-toxxx" },
+                    { name: "Yzomandias", id: "yzomandias" },
+                    { name: "Ektor", id: "ektor" },
+                  ].map((artist, index) => (
+                    <div key={`${artist.id}-${index}`} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px", flexShrink: 0 }}>
+                      <div
+                        style={{
+                          width: "240px",
+                          height: "240px",
+                          borderRadius: "50%",
+                          border: "2px solid rgba(255, 255, 255, 0.2)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          overflow: "hidden",
+                          background: `linear-gradient(135deg, hsl(${(artist.id.charCodeAt(0) * 7) % 360}, 60%, 45%), hsl(${(artist.id.charCodeAt(0) * 7 + 60) % 360}, 60%, 50%))`,
+                          color: "#fff",
+                          fontSize: "96px",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        {artist.name.charAt(0).toUpperCase()}
+                      </div>
+                      <p style={{
+                        margin: 0,
+                        color: "#fff",
+                        fontSize: "14px",
+                        fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+                        textAlign: "center",
+                        fontWeight: "500",
+                      }}>
+                        {artist.name}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Gradient fade on sides */}
+                <div style={{
+                  position: "absolute",
+                  left: 0,
+                  top: 0,
+                  width: "200px",
+                  height: "100%",
+                  background: "linear-gradient(to right, rgba(20, 20, 25, 0.8), transparent)",
+                  pointerEvents: "none",
+                  zIndex: 10,
+                }} />
+                <div style={{
+                  position: "absolute",
+                  right: 0,
+                  top: 0,
+                  width: "200px",
+                  height: "100%",
+                  background: "linear-gradient(to left, rgba(20, 20, 25, 0.8), transparent)",
+                  pointerEvents: "none",
+                  zIndex: 10,
+                }} />
+              </div>
+            </div>
 
             <div style={{ marginTop: "-216px", marginBottom: "0px" }}>
             {/* Background with computer image and dock */}
