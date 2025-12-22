@@ -7,7 +7,6 @@ import MusicPlayer from "../components/MusicPlayer";
 import SoundWave from "../components/SoundWave";
 import ProductsGrid from "../components/ProductsGrid";
 import SoundKitsDock from "../components/SoundKitsDock";
-import ArtistCarousel from "../components/ArtistCarousel";
 
 interface Beat {
   id: number;
@@ -650,8 +649,6 @@ function Beaty() {
           <SoundWave audioRef={audioRef} isPlaying={isPlaying} />
         )}
 
-        <ArtistCarousel />
-
         <div style={{ marginBottom: "48px", maxWidth: "1200px", margin: "0 auto", marginTop: "60px" }}>
           {!isHomePage && (
             <div style={{ marginBottom: "24px", display: "flex", gap: "16px", alignItems: "center" }}>
@@ -1072,9 +1069,7 @@ function Beaty() {
 
         {isHomePage && (
           <>
-            <ArtistCarousel />
-
-            <div style={{ marginTop: "-216px", marginBottom: "0px" }}>
+            <div style={{ marginTop: "0px", marginBottom: "0px" }}>
             {/* Background with computer image and dock */}
             <div style={{
               width: "100vw",
