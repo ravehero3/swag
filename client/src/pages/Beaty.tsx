@@ -1056,7 +1056,7 @@ function Beaty() {
         </div>
 
         {isHomePage && (
-          <div style={{ marginTop: "-336px", marginBottom: "64px" }}>
+          <div style={{ marginTop: "-536px", marginBottom: "64px" }}>
             {/* Background with computer image and dock */}
             <div style={{
               width: "100vw",
