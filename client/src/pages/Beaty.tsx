@@ -1100,12 +1100,13 @@ function Beaty() {
               }} />
               {/* Title */}
               <h2 style={{
-                color: "#fff",
-                fontSize: "30px",
-                fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+                color: "#999",
+                fontSize: "12px",
+                fontFamily: "Work Sans, sans-serif",
                 fontWeight: "400",
                 margin: "-100px 0 60px 0",
-                lineHeight: "1.1",
+                letterSpacing: "0px",
+                textTransform: "none",
               }}>
                 Voodoo808 Dělal Beaty Pro
               </h2>

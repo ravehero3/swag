@@ -26,25 +26,31 @@ const artists: Artist[] = [
 const ArtistCarousel = () => {
   const [offset, setOffset] = useState(0);
 
-  // Generate enough duplicates for seamless scrolling
-  const displayArtists = [...artists, ...artists, ...artists, ...artists];
+  // Duplicate artists 5 times to ensure seamless scrolling
+  const displayArtists = [
+    ...artists,
+    ...artists,
+    ...artists,
+    ...artists,
+    ...artists,
+  ];
 
   useEffect(() => {
-    const itemWidth = 160; // Just the image width
+    const imageWidth = 160;
     const gap = 64;
-    const oneSetWidth = itemWidth * artists.length + gap * (artists.length - 1); // One full cycle
-    const totalWidth = itemWidth * displayArtists.length + gap * (displayArtists.length - 1); // Total width
-    
+    const singleSetWidth = imageWidth * artists.length + gap * (artists.length - 1);
+
     const intervalId = setInterval(() => {
       setOffset((prev) => {
         const newOffset = prev - 2;
-        // Reset after scrolling through 2 full sets to ensure seamless loop
-        if (newOffset <= -oneSetWidth * 2) {
+        // When we've scrolled one full set, reset to 0
+        // The remaining duplicates keep it seamless
+        if (newOffset <= -singleSetWidth) {
           return 0;
         }
         return newOffset;
       });
-    }, 50); // Animation for smoother scrolling
+    }, 50);
 
     return () => clearInterval(intervalId);
   }, []);
@@ -83,7 +89,7 @@ const ArtistCarousel = () => {
             display: "flex",
             gap: "64px",
             transform: `translateX(${offset}px)`,
-            transition: "transform 0.016s linear",
+            transition: "transform 0.05s linear",
             paddingLeft: "0px",
           }}
         >
