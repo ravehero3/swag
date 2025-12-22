@@ -21,6 +21,7 @@ const artists: Artist[] = [
   { name: "Luisa", id: "luisa" },
   { name: "Dollar Prync", id: "dollar-prync" },
   { name: "Saul", id: "saul" },
+  { name: "Luca Brassi10x", id: "luca-brassi10x" },
 ];
 
 const ArtistCarousel = () => {
@@ -60,20 +61,6 @@ const ArtistCarousel = () => {
         padding: "40px 20px",
       }}
     >
-      {/* Title */}
-      <h2
-        style={{
-          color: "#fff",
-          fontSize: "28px",
-          fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
-          fontWeight: "700",
-          margin: "0 0 60px 0",
-          letterSpacing: "1px",
-        }}
-      >
-        Voodoo808 Produkoval Beaty Pro
-      </h2>
-
       {/* Carousel Container */}
       <div
         style={{
@@ -129,7 +116,7 @@ const ArtistCarousel = () => {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    color: "#fff",
+                    color: "#999",
                     fontSize: "64px",
                     fontWeight: "bold",
                     fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
