@@ -18,7 +18,6 @@ const artists: Artist[] = [
   { name: "Hasan", id: "hasan" },
   { name: "Hard Rico", id: "hard-rico" },
   { name: "Pil C", id: "pil-c" },
-  { name: "Luisa", id: "luisa" },
   { name: "Dollar Prync", id: "dollar-prync" },
   { name: "Saul", id: "saul" },
   { name: "Luca Brassi10x", id: "luca-brassi10x" },
@@ -32,13 +31,16 @@ const ArtistCarousel = () => {
 
   useEffect(() => {
     const itemWidth = 264; // 160px image + 104px gap
-    const totalWidth = itemWidth * displayArtists.length; // Use displayArtists length for proper looping
+    const oneSetWidth = itemWidth * artists.length; // One full cycle of artists
     
     const intervalId = setInterval(() => {
       setOffset((prev) => {
         const newOffset = prev - 1;
-        // Handle negative modulo properly for seamless loop
-        return ((newOffset % totalWidth) + totalWidth) % totalWidth;
+        // Reset after one full cycle to create seamless loop
+        if (newOffset <= -oneSetWidth) {
+          return 0;
+        }
+        return newOffset;
       });
     }, 200); // ~1px per 200ms = slower carousel animation
 
