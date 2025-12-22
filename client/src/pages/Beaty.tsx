@@ -1102,7 +1102,7 @@ function Beaty() {
                   fontSize: "30px",
                   fontFamily: '"Helvetica Neue Condensed Bold", "Helvetica Neue", Helvetica, Arial, sans-serif',
                   fontWeight: "700",
-                  letterSpacing: "-1px",
+                  letterSpacing: "0",
                   margin: 0,
                   lineHeight: "1.1",
                   textTransform: "uppercase",
