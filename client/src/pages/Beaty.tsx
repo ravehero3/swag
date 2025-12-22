@@ -1068,7 +1068,22 @@ function Beaty() {
         </div>
 
         {isHomePage && (
-          <div style={{ marginTop: "-216px", marginBottom: "0px" }}>
+          <>
+            {/* Glassmorphism section */}
+            <div style={{
+              width: "100vw",
+              marginLeft: "calc(-50vw + 50%)",
+              height: "420px",
+              marginTop: "64px",
+              background: "rgba(20, 20, 25, 0.6)",
+              backdropFilter: "blur(20px)",
+              WebkitBackdropFilter: "blur(20px)",
+              border: "1px solid rgba(255, 255, 255, 0.08)",
+              position: "relative",
+              overflow: "hidden",
+            }} />
+
+            <div style={{ marginTop: "-216px", marginBottom: "0px" }}>
             {/* Background with computer image and dock */}
             <div style={{
               width: "100vw",
@@ -1157,6 +1172,7 @@ function Beaty() {
             {/* Black empty space below background */}
             <div style={{ width: "100%", height: "1100px", background: "#000" }} />
           </div>
+          </>
         )}
 
       </div>
