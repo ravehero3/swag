@@ -1101,7 +1101,7 @@ function Beaty() {
               {/* Title */}
               <h2 style={{
                 color: "#fff",
-                fontSize: "30px",
+                fontSize: "18px",
                 fontFamily: '"BB Condensed", "Impact", sans-serif',
                 fontWeight: "900",
                 margin: "-100px 0 60px 0",

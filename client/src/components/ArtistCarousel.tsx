@@ -28,7 +28,7 @@ const ArtistCarousel = () => {
   const [offset, setOffset] = useState(0);
 
   useEffect(() => {
-    const itemWidth = 240; // 160px image + 80px gap
+    const itemWidth = 264; // 160px image + 104px gap
     const totalWidth = itemWidth * artists.length;
     
     const intervalId = setInterval(() => {
@@ -77,7 +77,7 @@ const ArtistCarousel = () => {
         <div
           style={{
             display: "flex",
-            gap: "80px",
+            gap: "104px",
             transform: `translateX(${offset}px)`,
             transition: "transform 0.016s linear",
             paddingLeft: "0px",
@@ -132,7 +132,7 @@ const ArtistCarousel = () => {
               <p
                 style={{
                   fontSize: "12px",
-                  color: "#555",
+                  color: "#444",
                   margin: "0",
                   fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
                   textAlign: "center",
