@@ -31,7 +31,7 @@ const ArtistCarousel = () => {
     const intervalId = setInterval(() => {
       setOffset((prev) => {
         const newOffset = prev - 1;
-        const itemWidth = 200; // 160px image + 40px margin/padding
+        const itemWidth = 240; // 160px image + 80px gap
         const totalWidth = itemWidth * artists.length;
         return newOffset % totalWidth;
       });
