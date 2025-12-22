@@ -1090,7 +1090,7 @@ function Beaty() {
               {/* Title text */}
               <div style={{
                 position: "absolute",
-                top: "64px",
+                top: "128px",
                 left: "50%",
                 transform: "translateX(-50%)",
                 width: "100%",
