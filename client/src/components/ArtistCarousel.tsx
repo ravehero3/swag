@@ -30,11 +30,11 @@ const ArtistCarousel = () => {
     const intervalId = setInterval(() => {
       setOffset((prev) => {
         const newOffset = prev - 1;
-        const itemWidth = 280; // 240px image + 40px margin/padding
+        const itemWidth = 200; // 160px image + 40px margin/padding
         const totalWidth = itemWidth * artists.length;
         return newOffset % totalWidth;
       });
-    }, 60); // ~1px per 60ms = 60000ms for full loop
+    }, 100); // ~1px per 100ms = slower carousel animation
 
     return () => clearInterval(intervalId);
   }, []);
@@ -47,7 +47,7 @@ const ArtistCarousel = () => {
       style={{
         width: "100vw",
         marginLeft: "calc(-50vw + 50%)",
-        minHeight: "550px",
+        minHeight: "450px",
         background: "#000",
         display: "flex",
         flexDirection: "column",
@@ -103,14 +103,14 @@ const ArtistCarousel = () => {
                 alignItems: "center",
                 gap: "16px",
                 flexShrink: 0,
-                width: "240px",
+                width: "160px",
               }}
             >
               {/* Artist Image Circle */}
               <div
                 style={{
-                  width: "240px",
-                  height: "240px",
+                  width: "160px",
+                  height: "160px",
                   borderRadius: "50%",
                   background: `linear-gradient(135deg, #333 0%, #111 100%)`,
                   border: "3px solid #444",
@@ -130,7 +130,7 @@ const ArtistCarousel = () => {
                     alignItems: "center",
                     justifyContent: "center",
                     color: "#fff",
-                    fontSize: "96px",
+                    fontSize: "64px",
                     fontWeight: "bold",
                     fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
                   }}
@@ -148,7 +148,7 @@ const ArtistCarousel = () => {
                   fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
                   textAlign: "center",
                   lineHeight: "1.2",
-                  maxWidth: "240px",
+                  maxWidth: "160px",
                   whiteSpace: "normal",
                   wordWrap: "break-word",
                 }}
