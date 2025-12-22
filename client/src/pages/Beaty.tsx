@@ -1120,6 +1120,7 @@ function Beaty() {
                 display: "flex",
                 justifyContent: "center",
                 zIndex: 10,
+                overflow: "visible", // Added to ensure children aren't clipped
               }}>
                 <SoundKitsDock
                   items={testSoundKits.map((kit) => ({

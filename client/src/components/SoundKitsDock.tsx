@@ -36,8 +36,8 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
   };
 
   return (
-    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '64px', paddingTop: '2174px', background: 'transparent' }}>
-      <div style={{ width: '100%', display: 'flex', justifyContent: 'center', overflowX: 'auto', overflowY: 'visible', padding: '20px 0', marginTop: '500px' }}>
+    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '64px', paddingTop: '2374px', background: 'transparent' }}>
+      <div style={{ width: '100%', display: 'flex', justifyContent: 'center', overflowX: 'auto', overflowY: 'visible', padding: '20px 0', marginTop: '700px' }}>
         <div
           ref={dockRef}
           onMouseLeave={handleMouseLeave}
