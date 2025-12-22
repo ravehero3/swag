@@ -1091,7 +1091,7 @@ function Beaty() {
               <h2 style={{
                 color: "#fff",
                 fontSize: "30px",
-                fontFamily: '"Impact", "Helvetica Neue Condensed", sans-serif',
+                fontFamily: '"BB Condensed", "Impact", sans-serif',
                 fontWeight: "900",
                 margin: "0 0 60px 0",
                 letterSpacing: "0.5px",
