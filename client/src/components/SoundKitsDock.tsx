@@ -36,8 +36,8 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
   };
 
   return (
-    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '64px', paddingTop: '1000px', background: 'transparent' }}>
-      <div style={{ width: '100%', display: 'flex', justifyContent: 'center', overflowX: 'auto', overflowY: 'visible', padding: '20px 0', marginTop: '200px' }}>
+    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '64px', paddingTop: '1000px', background: 'transparent', overflow: 'visible' }}>
+      <div style={{ width: '100%', display: 'flex', justifyContent: 'center', overflowX: 'visible', overflowY: 'visible', padding: '20px 0', marginTop: '200px' }}>
         <div
           ref={dockRef}
           onMouseLeave={handleMouseLeave}
@@ -46,7 +46,6 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
             alignItems: 'center',
             gap: '8px',
             padding: '12px',
-            paddingTop: '70px',
             height: '64px',
             borderRadius: '12px',
             backgroundColor: 'rgba(31, 41, 55, 0.8)',
@@ -55,7 +54,6 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
             overflow: 'visible',
             position: 'relative',
             minWidth: 'fit-content',
-            marginTop: '-58px',
           }}
         >
           {items.map((item, index) => {
@@ -78,8 +76,9 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
                   transform: `translateY(${translateY}px)`,
                   transition: 'transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), height 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), z-index 0.1s',
                   flexShrink: 0,
-                  willChange: 'transform, width, height',
-                  zIndex: hoveredIndex === index ? 50 : 1,
+                  willChange: 'transform, width, height, z-index',
+                  zIndex: hoveredIndex === index ? 9999 : 1,
+                  pointerEvents: 'auto',
                 }}
               >
                 <button
