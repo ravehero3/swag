@@ -1090,7 +1090,7 @@ function Beaty() {
               {/* Title text */}
               <div style={{
                 position: "absolute",
-                top: "828px",
+                top: "892px",
                 left: "50%",
                 transform: "translateX(-50%)",
                 width: "100%",
@@ -1099,7 +1099,7 @@ function Beaty() {
               }}>
                 <h2 style={{
                   color: "#fff",
-                  fontSize: "24px",
+                  fontSize: "48px",
                   fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
                   fontWeight: "400",
                   letterSpacing: "0.5px",
