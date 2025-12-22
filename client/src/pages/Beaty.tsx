@@ -1099,14 +1099,15 @@ function Beaty() {
               }}>
                 <h2 style={{
                   color: "#fff",
-                  fontSize: "30px",
-                  fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
-                  fontWeight: "400",
-                  letterSpacing: "0.5px",
+                  fontSize: "120px",
+                  fontFamily: '"Helvetica Neue Condensed Bold", "Helvetica Neue", Helvetica, Arial, sans-serif',
+                  fontWeight: "700",
+                  letterSpacing: "-1px",
                   margin: 0,
                   lineHeight: "1.2",
+                  textTransform: "uppercase",
                 }}>
-                  Vše co tě dělí od tvejch snů:
+                  PRO VŠECHNY HUDEBNÍ PRODUCENTY CO SE DĚLÁNIM BEATŮ CHTĚJ ŽIVIT
                 </h2>
               </div>
 
