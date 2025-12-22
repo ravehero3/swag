@@ -1099,15 +1099,18 @@ function Beaty() {
               }}>
                 <h2 style={{
                   color: "#fff",
-                  fontSize: "30px",
-                  fontFamily: '"BB-CondBold", sans-serif',
+                  fontSize: "120px",
+                  fontFamily: '"Helvetica Neue Condensed Bold", "Helvetica Neue", Helvetica, Arial, sans-serif',
                   fontWeight: "700",
-                  letterSpacing: "2px",
+                  letterSpacing: "-2px",
                   margin: 0,
-                  lineHeight: "1",
+                  lineHeight: "1.1",
                   textTransform: "uppercase",
                 }}>
-                  PRO VŠECHNY HUDEBNÍ PRODUCENTY CO SE DĚLÁNÍM BEATŮ CHTĚJ ŽIVIT
+                  Pro všechny<br />
+                  hudební producenty<br />
+                  co se děláním beatů<br />
+                  chtěj živit
                 </h2>
               </div>
 
