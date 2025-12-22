@@ -132,7 +132,7 @@ const ArtistCarousel = () => {
               <p
                 style={{
                   fontSize: "12px",
-                  color: "#444",
+                  color: "#666",
                   margin: "0",
                   fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
                   textAlign: "center",
