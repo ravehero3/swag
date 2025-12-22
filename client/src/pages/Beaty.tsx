@@ -1073,8 +1073,8 @@ function Beaty() {
             <div style={{
               width: "100vw",
               marginLeft: "calc(-50vw + 50%)",
-              height: "840px",
-              marginTop: "-36px",
+              height: "700px",
+              marginTop: "24px",
               background: "rgba(20, 20, 25, 0.6)",
               backdropFilter: "blur(20px)",
               WebkitBackdropFilter: "blur(20px)",
