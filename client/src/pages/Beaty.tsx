@@ -1136,25 +1136,25 @@ function Beaty() {
                 
                 <div className="artist-scroll-container">
                   {[
-                    { name: "Calin", id: "calin" },
-                    { name: "Viktor Sheen", id: "viktor-sheen" },
-                    { name: "Hugo Toxxx", id: "hugo-toxxx" },
-                    { name: "Yzomandias", id: "yzomandias" },
+                    { name: "Calin", id: "calin", imageUrl: "/uploads/artwork/calin.png" },
+                    { name: "Viktor Sheen", id: "viktor-sheen", imageUrl: "/uploads/artwork/viktor_sheen.png" },
+                    { name: "Hugo Toxxx", id: "hugo-toxxx", imageUrl: "/uploads/artwork/hugo_toxxx.png" },
+                    { name: "Yzomandias", id: "yzomandias", imageUrl: "/uploads/artwork/yzomandias.png" },
                     { name: "Ektor", id: "ektor" },
-                    { name: "Nik Tendo", id: "nik-tendo" },
+                    { name: "Nik Tendo", id: "nik-tendo", imageUrl: "/uploads/artwork/nik_tendo.png" },
                     { name: "Cashanova Bulhar", id: "cashanova-bulhar" },
                     { name: "Icy L", id: "icy-l" },
-                    { name: "Smack", id: "smack" },
+                    { name: "Smack", id: "smack", imageUrl: "/uploads/artwork/smack.png" },
                     { name: "Hasan", id: "hasan" },
-                    { name: "Hard Rico", id: "hard-rico" },
-                    { name: "Pil C", id: "pil-c" },
-                    { name: "Dollar Prync", id: "dollar-prync" },
+                    { name: "Hard Rico", id: "hard-rico", imageUrl: "/uploads/artwork/hard_rico.png" },
+                    { name: "Pil C", id: "pil-c", imageUrl: "/uploads/artwork/pil_c.png" },
+                    { name: "Dollar Prync", id: "dollar-prync", imageUrl: "/uploads/artwork/dollar_prync.png" },
                     { name: "Saul", id: "saul" },
-                    { name: "Luca Brassi10x", id: "luca-brassi10x" },
-                    { name: "Calin", id: "calin" },
-                    { name: "Viktor Sheen", id: "viktor-sheen" },
-                    { name: "Hugo Toxxx", id: "hugo-toxxx" },
-                    { name: "Yzomandias", id: "yzomandias" },
+                    { name: "Luca Brassi10x", id: "luca-brassi10x", imageUrl: "/uploads/artwork/luca_brassi10x.png" },
+                    { name: "Calin", id: "calin", imageUrl: "/uploads/artwork/calin.png" },
+                    { name: "Viktor Sheen", id: "viktor-sheen", imageUrl: "/uploads/artwork/viktor_sheen.png" },
+                    { name: "Hugo Toxxx", id: "hugo-toxxx", imageUrl: "/uploads/artwork/hugo_toxxx.png" },
+                    { name: "Yzomandias", id: "yzomandias", imageUrl: "/uploads/artwork/yzomandias.png" },
                     { name: "Ektor", id: "ektor" },
                   ].map((artist, index) => (
                     <div key={`${artist.id}-${index}`} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px", flexShrink: 0 }}>
@@ -1174,7 +1174,19 @@ function Beaty() {
                           fontWeight: "bold",
                         }}
                       >
-                        {artist.name.charAt(0).toUpperCase()}
+                        {artist.imageUrl ? (
+                          <img
+                            src={artist.imageUrl}
+                            alt={artist.name}
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                            }}
+                          />
+                        ) : (
+                          artist.name.charAt(0).toUpperCase()
+                        )}
                       </div>
                       <p style={{
                         margin: 0,
