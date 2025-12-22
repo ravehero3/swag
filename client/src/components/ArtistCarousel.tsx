@@ -20,7 +20,7 @@ const artists: Artist[] = [
   { name: "Hard Rico", id: "hard-rico", imageUrl: "/uploads/artwork/hard_rico.png" },
   { name: "Pil C", id: "pil-c", imageUrl: "/uploads/artwork/pil_c.png" },
   { name: "Dollar Prync", id: "dollar-prync", imageUrl: "/uploads/artwork/dollar_prync.png" },
-  { name: "Saul", id: "saul" },
+  { name: "Saul", id: "saul", imageUrl: "/uploads/artwork/saul.png" },
   { name: "Luca Brassi10x", id: "luca-brassi10x", imageUrl: "/uploads/artwork/luca_brassi10x.png" },
 ];
 
