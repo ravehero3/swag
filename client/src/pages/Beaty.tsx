@@ -1074,7 +1074,7 @@ function Beaty() {
               width: "100vw",
               marginLeft: "calc(-50vw + 50%)",
               height: "700px",
-              marginTop: "24px",
+              marginTop: "88px",
               background: "rgba(20, 20, 25, 0.6)",
               backdropFilter: "blur(20px)",
               WebkitBackdropFilter: "blur(20px)",
@@ -1087,6 +1087,17 @@ function Beaty() {
               justifyContent: "center",
               padding: "40px 0",
             }}>
+              {/* Top fade gradient */}
+              <div style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                height: "120px",
+                background: "linear-gradient(to bottom, rgba(0, 0, 0, 1), rgba(0, 0, 0, 0))",
+                pointerEvents: "none",
+                zIndex: 20,
+              }} />
               {/* Title */}
               <h2 style={{
                 color: "#fff",
