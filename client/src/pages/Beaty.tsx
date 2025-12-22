@@ -1099,12 +1099,12 @@ function Beaty() {
               }}>
                 <h2 style={{
                   color: "#fff",
-                  fontSize: "120px",
+                  fontSize: "30px",
                   fontFamily: '"Helvetica Neue Condensed Bold", "Helvetica Neue", Helvetica, Arial, sans-serif',
                   fontWeight: "700",
-                  letterSpacing: "-1px",
+                  letterSpacing: "2px",
                   margin: 0,
-                  lineHeight: "1.2",
+                  lineHeight: "1",
                   textTransform: "uppercase",
                 }}>
                   PRO VŠECHNY HUDEBNÍ PRODUCENTY CO SE DĚLÁNIM BEATŮ CHTĚJ ŽIVIT
