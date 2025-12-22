@@ -47,7 +47,7 @@ const ArtistCarousel = () => {
       style={{
         width: "100vw",
         marginLeft: "calc(-50vw + 50%)",
-        minHeight: "450px",
+        minHeight: "280px",
         background: "#000",
         display: "flex",
         flexDirection: "column",
