@@ -157,6 +157,7 @@ function Beaty() {
   const [sortAsc, setSortAsc] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [showTitle, setShowTitle] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const { user, addToCart } = useApp();
   
@@ -221,6 +222,17 @@ function Beaty() {
       audioRef.current.loop = isLooping;
     }
   }, [isLooping]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY;
+      // Show title after user scrolls more than 300px
+      setShowTitle(scrollPosition > 300);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const playBeat = (beat: Beat) => {
     if (currentBeat?.id === beat.id) {
@@ -1096,6 +1108,8 @@ function Beaty() {
                 width: "100%",
                 textAlign: "center",
                 zIndex: 20,
+                opacity: showTitle ? 1 : 0,
+                transition: "opacity 0.5s ease-in-out",
               }}>
                 <h2 style={{
                   color: "#fff",
