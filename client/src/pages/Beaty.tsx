@@ -1056,7 +1056,7 @@ function Beaty() {
         </div>
 
         {isHomePage && (
-          <div style={{ marginTop: "64px", marginBottom: "64px" }}>
+          <div style={{ marginTop: "-336px", marginBottom: "64px" }}>
             {/* Background with computer image and dock */}
             <div style={{
               width: "100vw",
@@ -1089,7 +1089,7 @@ function Beaty() {
               {/* Dock positioned at bottom */}
               <div style={{
                 position: "absolute",
-                bottom: "20px",
+                bottom: "460px",
                 left: "50%",
                 transform: "translateX(-50%)",
                 width: "100%",
