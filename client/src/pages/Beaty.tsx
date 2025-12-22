@@ -1100,12 +1100,14 @@ function Beaty() {
                 <h2 style={{
                   color: "#fff",
                   fontSize: "48px",
-                  fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+                  fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
                   fontWeight: "400",
                   letterSpacing: "0.5px",
                   margin: 0,
+                  lineHeight: "1.2",
+                  whiteSpace: "pre-line",
                 }}>
-                  Vše co tě dělí od tvejch snů:
+                  {`Vše co tě dělí \nod tvejch snů`}
                 </h2>
               </div>
 
