@@ -31,16 +31,16 @@ const ArtistCarousel = () => {
 
   useEffect(() => {
     const itemWidth = 160; // Just the image width
-    const gap = 104;
+    const gap = 64;
     const oneSetWidth = itemWidth * artists.length + gap * (artists.length - 1); // One full cycle
     
     const intervalId = setInterval(() => {
       setOffset((prev) => {
-        const newOffset = prev - 1;
+        const newOffset = prev - 2;
         // Use modulo to seamlessly loop back
         return ((newOffset % oneSetWidth) + oneSetWidth) % oneSetWidth;
       });
-    }, 50); // Faster animation for smoother scrolling
+    }, 50); // Animation for smoother scrolling
 
     return () => clearInterval(intervalId);
   }, []);
@@ -77,7 +77,7 @@ const ArtistCarousel = () => {
         <div
           style={{
             display: "flex",
-            gap: "104px",
+            gap: "64px",
             transform: `translateX(${offset}px)`,
             transition: "transform 0.016s linear",
             paddingLeft: "0px",

@@ -1127,7 +1127,7 @@ function Beaty() {
                   }
                   .artist-scroll-container {
                     display: flex;
-                    gap: 40px;
+                    gap: 64px;
                     animation: scroll-artists 60s linear infinite;
                     will-change: transform;
                   }
