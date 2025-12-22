@@ -1074,7 +1074,7 @@ function Beaty() {
               width: "100vw",
               marginLeft: "calc(-50vw + 50%)",
               height: "840px",
-              marginTop: "64px",
+              marginTop: "-36px",
               background: "rgba(20, 20, 25, 0.6)",
               backdropFilter: "blur(20px)",
               WebkitBackdropFilter: "blur(20px)",
@@ -1093,7 +1093,7 @@ function Beaty() {
                 fontSize: "30px",
                 fontFamily: '"BB Condensed", "Impact", sans-serif',
                 fontWeight: "900",
-                margin: "0 0 60px 0",
+                margin: "-100px 0 60px 0",
                 letterSpacing: "0.5px",
                 textTransform: "uppercase",
               }}>
