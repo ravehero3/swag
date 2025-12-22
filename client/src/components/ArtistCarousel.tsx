@@ -11,12 +11,12 @@ const artists: Artist[] = [
   { name: "Viktor Sheen", id: "viktor-sheen", imageUrl: "/uploads/artwork/viktor_sheen.png" },
   { name: "Hugo Toxxx", id: "hugo-toxxx", imageUrl: "/uploads/artwork/hugo_toxxx.png" },
   { name: "Yzomandias", id: "yzomandias", imageUrl: "/uploads/artwork/yzomandias.png" },
-  { name: "Ektor", id: "ektor" },
+  { name: "Ektor", id: "ektor", imageUrl: "/uploads/artwork/ektor.png" },
   { name: "Nik Tendo", id: "nik-tendo", imageUrl: "/uploads/artwork/nik_tendo.png" },
-  { name: "Cashanova Bulhar", id: "cashanova-bulhar" },
-  { name: "Icy L", id: "icy-l" },
+  { name: "Cashanova Bulhar", id: "cashanova-bulhar", imageUrl: "/uploads/artwork/cashanova_bulhar.png" },
+  { name: "Icy L", id: "icy-l", imageUrl: "/uploads/artwork/icy_l.png" },
   { name: "Smack", id: "smack", imageUrl: "/uploads/artwork/smack.png" },
-  { name: "Hasan", id: "hasan" },
+  { name: "Hasan", id: "hasan", imageUrl: "/uploads/artwork/hasan.png" },
   { name: "Hard Rico", id: "hard-rico", imageUrl: "/uploads/artwork/hard_rico.png" },
   { name: "Pil C", id: "pil-c", imageUrl: "/uploads/artwork/pil_c.png" },
   { name: "Dollar Prync", id: "dollar-prync", imageUrl: "/uploads/artwork/dollar_prync.png" },
@@ -27,10 +27,8 @@ const artists: Artist[] = [
 const ArtistCarousel = () => {
   const [offset, setOffset] = useState(0);
 
-  // Duplicate artists 5 times to ensure seamless scrolling
+  // Duplicate artists 3 times to ensure seamless scrolling
   const displayArtists = [
-    ...artists,
-    ...artists,
     ...artists,
     ...artists,
     ...artists,
@@ -39,11 +37,11 @@ const ArtistCarousel = () => {
   useEffect(() => {
     const imageWidth = 160;
     const gap = 64;
-    const singleSetWidth = imageWidth * artists.length + gap * (artists.length - 1);
+    const singleSetWidth = imageWidth * artists.length + gap * artists.length;
 
     const intervalId = setInterval(() => {
       setOffset((prev) => {
-        const newOffset = prev - 2;
+        const newOffset = prev - 3;
         // When we've scrolled one full set, reset to 0
         // The remaining duplicates keep it seamless
         if (newOffset <= -singleSetWidth) {
@@ -129,6 +127,7 @@ const ArtistCarousel = () => {
                       width: "100%",
                       height: "100%",
                       objectFit: "cover",
+                      objectPosition: "center",
                     }}
                   />
                 ) : (
