@@ -28,12 +28,14 @@ const ArtistCarousel = () => {
   const [offset, setOffset] = useState(0);
 
   useEffect(() => {
+    const itemWidth = 240; // 160px image + 80px gap
+    const totalWidth = itemWidth * artists.length;
+    
     const intervalId = setInterval(() => {
       setOffset((prev) => {
         const newOffset = prev - 1;
-        const itemWidth = 240; // 160px image + 80px gap
-        const totalWidth = itemWidth * artists.length;
-        return newOffset % totalWidth;
+        // Handle negative modulo properly for seamless loop
+        return ((newOffset % totalWidth) + totalWidth) % totalWidth;
       });
     }, 200); // ~1px per 200ms = slower carousel animation
 
