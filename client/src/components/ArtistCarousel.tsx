@@ -34,7 +34,7 @@ const ArtistCarousel = () => {
         const totalWidth = itemWidth * artists.length;
         return newOffset % totalWidth;
       });
-    }, 100); // ~1px per 100ms = slower carousel animation
+    }, 200); // ~1px per 200ms = slower carousel animation
 
     return () => clearInterval(intervalId);
   }, []);
@@ -56,7 +56,7 @@ const ArtistCarousel = () => {
         overflow: "hidden",
         position: "relative",
         marginBottom: "64px",
-        marginTop: "600px",
+        marginTop: "536px",
         padding: "40px 20px",
       }}
     >
@@ -88,7 +88,7 @@ const ArtistCarousel = () => {
         <div
           style={{
             display: "flex",
-            gap: "40px",
+            gap: "80px",
             transform: `translateX(${offset}px)`,
             transition: "transform 0.016s linear",
             paddingLeft: "0px",
@@ -143,7 +143,7 @@ const ArtistCarousel = () => {
               <p
                 style={{
                   fontSize: "12px",
-                  color: "#ccc",
+                  color: "#555",
                   margin: "0",
                   fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
                   textAlign: "center",
