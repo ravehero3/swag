@@ -1086,6 +1086,29 @@ function Beaty() {
                   pointerEvents: "none",
                 }}
               />
+              
+              {/* Title text */}
+              <div style={{
+                position: "absolute",
+                top: "64px",
+                left: "50%",
+                transform: "translateX(-50%)",
+                width: "100%",
+                textAlign: "center",
+                zIndex: 20,
+              }}>
+                <h2 style={{
+                  color: "#fff",
+                  fontSize: "24px",
+                  fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+                  fontWeight: "400",
+                  letterSpacing: "0.5px",
+                  margin: 0,
+                }}>
+                  Vše co tě dělí od tvejch snů:
+                </h2>
+              </div>
+
               {/* Dock positioned at bottom */}
               <div style={{
                 position: "absolute",
