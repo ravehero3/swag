@@ -1113,7 +1113,7 @@ function Beaty() {
               {/* Dock positioned at bottom */}
               <div style={{
                 position: "absolute",
-                bottom: "50px",
+                bottom: "-14px",
                 left: "50%",
                 transform: "translateX(-50%)",
                 width: "100%",
