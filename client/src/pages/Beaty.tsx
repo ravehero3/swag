@@ -1101,12 +1101,11 @@ function Beaty() {
               {/* Title */}
               <h2 style={{
                 color: "#fff",
-                fontSize: "18px",
-                fontFamily: '"BB Condensed", "Impact", sans-serif',
-                fontWeight: "900",
+                fontSize: "30px",
+                fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+                fontWeight: "400",
                 margin: "-100px 0 60px 0",
-                letterSpacing: "0.5px",
-                textTransform: "uppercase",
+                lineHeight: "1.1",
               }}>
                 Voodoo808 Dělal Beaty Pro
               </h2>
@@ -1148,9 +1147,9 @@ function Beaty() {
                     { name: "Hasan", id: "hasan" },
                     { name: "Hard Rico", id: "hard-rico" },
                     { name: "Pil C", id: "pil-c" },
-                    { name: "Luisa", id: "luisa" },
                     { name: "Dollar Prync", id: "dollar-prync" },
                     { name: "Saul", id: "saul" },
+                    { name: "Luca Brassi10x", id: "luca-brassi10x" },
                     { name: "Calin", id: "calin" },
                     { name: "Viktor Sheen", id: "viktor-sheen" },
                     { name: "Hugo Toxxx", id: "hugo-toxxx" },
