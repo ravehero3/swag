@@ -1071,7 +1071,7 @@ function Beaty() {
             </>
           )}
           
-          <div className="fade-in-section delay-3" style={{ display: "flex", justifyContent: "center", gap: "16px", marginTop: "16px", marginBottom: "32px", marginLeft: "642px", position: "relative", zIndex: 9999, alignItems: "center", pointerEvents: "auto" }}>
+          <div className="fade-in-section delay-3" style={{ display: "flex", justifyContent: "center", gap: "16px", marginTop: "16px", marginBottom: "32px", marginLeft: "650px", position: "relative", zIndex: 9999, alignItems: "center", pointerEvents: "auto" }}>
               <button
                 onClick={() => setLocation("/beaty")}
                 style={{
@@ -1211,20 +1211,23 @@ function Beaty() {
                 .co-se-text {
                   display: inline-block;
                   white-space: nowrap;
-                  font-size: 60px;
-                  height: 60px;
-                  line-height: 60px;
+                  font-size: clamp(40px, 8vw, 60px);
+                  height: auto;
+                  line-height: 1.0;
                 }
                 .beats-word {
                   display: inline-block;
                   transition: font-family 0.3s ease;
                   white-space: nowrap;
-                  font-size: 60px;
-                  width: 150px;
+                  font-size: clamp(40px, 8vw, 60px);
+                  width: auto;
                   text-align: center;
-                  height: 60px;
-                  line-height: 60px;
+                  height: auto;
+                  line-height: 1.0;
                   vertical-align: baseline;
+                  @media (max-width: 768px) {
+                    width: auto;
+                  }
                 }
                 .beats-word:hover {
                   font-family: 'Old London', serif;
@@ -1240,10 +1243,11 @@ function Beaty() {
                 zIndex: 20,
                 opacity: showTitle ? 1 : 0,
                 transition: "opacity 0.5s ease-in-out",
+                marginTop: "200px",
               }}>
                 <h2 style={{
                   color: "#fff",
-                  fontSize: "60px",
+                  fontSize: "clamp(40px, 8vw, 60px)",
                   fontFamily: "'BB Condensed Regular', 'Roboto Condensed', sans-serif",
                   fontWeight: "400",
                   letterSpacing: "0",
@@ -1264,7 +1268,7 @@ function Beaty() {
 
               {/* Dock positioned at bottom */}
               <div style={{
-                position: "absolute",
+                position: "fixed",
                 bottom: "-4px",
                 left: "50%",
                 transform: "translateX(-50%)",
