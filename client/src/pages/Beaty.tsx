@@ -1123,6 +1123,8 @@ function Beaty() {
                   display: inline-block;
                   white-space: nowrap;
                   font-size: 60px;
+                  height: 60px;
+                  line-height: 60px;
                 }
                 .beats-word {
                   display: inline-block;
@@ -1163,7 +1165,7 @@ function Beaty() {
                 }}>
                   PRO VŠECHNY<br />
                   HUDEBNÍ PRODUCENTY<br />
-                  <div style={{ display: "flex", gap: "0.3em", justifyContent: "center", alignItems: "baseline" }}>
+                  <div style={{ display: "flex", gap: "0.3em", justifyContent: "center", alignItems: "center" }}>
                     <span className="co-se-text">CO SE DĚLÁNÍM</span>
                     <span className="beats-word">BEATS</span>
                   </div>
