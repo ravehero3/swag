@@ -1071,7 +1071,7 @@ function Beaty() {
             </>
           )}
           
-          <div className="fade-in-section delay-3" style={{ display: "flex", justifyContent: "center", gap: "16px", marginTop: "64px", marginBottom: "64px", position: "relative", zIndex: 999, alignItems: "center" }}>
+          <div className="fade-in-section delay-3" style={{ display: "flex", justifyContent: "center", gap: "16px", marginTop: "64px", marginBottom: "64px", position: "relative", zIndex: 9999, alignItems: "center", pointerEvents: "auto" }}>
               <button
                 onClick={() => setLocation("/beaty")}
                 style={{
@@ -1093,6 +1093,7 @@ function Beaty() {
                   zIndex: 9999,
                   overflow: "visible",
                   appearance: "none",
+                  pointerEvents: "auto",
                 }}
                 onMouseEnter={(e) => {
                   const btn = e.currentTarget as HTMLButtonElement;
@@ -1166,6 +1167,7 @@ function Beaty() {
                   appearance: "none",
                   minWidth: "60px",
                   justifyContent: "center",
+                  pointerEvents: "auto",
                 }}
                 onMouseEnter={(e) => {
                   const btn = e.currentTarget as HTMLButtonElement;
@@ -1217,18 +1219,18 @@ function Beaty() {
 
         {isHomePage && (
           <>
-            <div ref={artistCarouselRef} className="fade-in-section delay-3 scroll-fade-section" style={{ marginTop: "-136px", marginBottom: "0px", position: "relative", zIndex: 100 }}>
+            <div ref={artistCarouselRef} className="fade-in-section delay-3 scroll-fade-section" style={{ marginTop: "0px", marginBottom: "0px", position: "relative", zIndex: 10 }}>
               <div style={{ textAlign: "center", marginBottom: "8px", paddingTop: "316px" }}>
                 <p style={{ fontSize: "12px", color: "#555", margin: 0, fontFamily: "Work Sans, sans-serif" }}>
                   VOODOO808 dělal beaty pro
                 </p>
               </div>
-              <div style={{ marginTop: "-200px" }}>
+              <div style={{ marginTop: "0px" }}>
                 <ArtistCarousel />
               </div>
             </div>
 
-            <div ref={soundKitsRef} className="fade-in-section delay-4 scroll-fade-section" style={{ marginTop: "-600px", marginBottom: "0px" }}>
+            <div ref={soundKitsRef} className="fade-in-section delay-4 scroll-fade-section" style={{ marginTop: "0px", marginBottom: "0px" }}>
             {/* Background with computer image and dock */}
             <div style={{
               width: "100vw",
