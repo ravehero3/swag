@@ -1077,14 +1077,14 @@ function Beaty() {
                 style={{
                   padding: "8px 20px",
                   background: "rgba(0, 0, 0, 0.7)",
-                  border: "1px solid #999",
+                  border: "0.1px solid rgba(128, 128, 128, 0.5)",
                   borderRadius: "999px",
-                  color: "#fff",
+                  color: "#777",
                   fontSize: "12px",
                   fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
                   fontWeight: "400",
                   cursor: "pointer",
-                  transition: "transform 0.2s ease, background 0.2s ease, border-color 0.2s ease",
+                  transition: "transform 0.2s ease, background 0.2s ease, border-color 0.2s ease, color 0.2s ease",
                   display: "flex",
                   alignItems: "center",
                   gap: "6px",
@@ -1100,6 +1100,7 @@ function Beaty() {
                   btn.style.transform = "scale(1.04)";
                   btn.style.background = "rgba(255, 255, 255, 0.1)";
                   btn.style.borderColor = "#fff";
+                  btn.style.color = "#fff";
                   
                   // Remove any existing shimmer
                   const existingShimmer = btn.querySelector("div[data-shimmer-effect]");
@@ -1141,7 +1142,8 @@ function Beaty() {
                   const btn = e.currentTarget as HTMLButtonElement;
                   btn.style.transform = "scale(1)";
                   btn.style.background = "rgba(0, 0, 0, 0.7)";
-                  btn.style.borderColor = "#999";
+                  btn.style.borderColor = "rgba(128, 128, 128, 0.5)";
+                  btn.style.color = "#777";
                   
                   // Reverse the shimmer animation
                   const shimmer = btn.querySelector("div[data-shimmer-effect]");
