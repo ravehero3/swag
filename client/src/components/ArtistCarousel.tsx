@@ -66,7 +66,7 @@ const ArtistCarousel = () => {
         overflow: "hidden",
         position: "relative",
         marginBottom: "64px",
-        marginTop: "0px",
+        marginTop: "400px",
         padding: "40px 20px",
         zIndex: 100,
       }}
