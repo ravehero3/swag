@@ -1070,6 +1070,48 @@ function Beaty() {
             ))}
             </>
           )}
+          
+          {isHomePage && (
+            <div className="fade-in-section delay-3" style={{ display: "flex", justifyContent: "center", marginTop: "64px", marginBottom: "64px" }}>
+              <button
+                onClick={() => setLocation("/beaty")}
+                style={{
+                  padding: "12px 32px",
+                  background: "#000",
+                  border: "1px solid #fff",
+                  borderRadius: "4px",
+                  color: "#fff",
+                  fontSize: "14px",
+                  fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+                  fontWeight: "400",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  letterSpacing: "0.5px",
+                }}
+                onMouseEnter={(e) => {
+                  const btn = e.currentTarget as HTMLButtonElement;
+                  btn.style.background = "#fff";
+                  btn.style.color = "#000";
+                  btn.style.boxShadow = "0 0 0 1px #fff";
+                }}
+                onMouseLeave={(e) => {
+                  const btn = e.currentTarget as HTMLButtonElement;
+                  btn.style.background = "#000";
+                  btn.style.color = "#fff";
+                  btn.style.boxShadow = "none";
+                }}
+              >
+                Poslechnout další beaty
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="5 12 19 12"></polyline>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+              </button>
+            </div>
+          )}
         </div>
 
         {isHomePage && (
