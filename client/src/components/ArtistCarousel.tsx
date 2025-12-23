@@ -58,7 +58,7 @@ const ArtistCarousel = () => {
         width: "100vw",
         marginLeft: "calc(-50vw + 50%)",
         minHeight: "280px",
-        background: "#000",
+        background: "transparent",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -66,7 +66,7 @@ const ArtistCarousel = () => {
         overflow: "hidden",
         position: "relative",
         marginBottom: "64px",
-        marginTop: "-684px",
+        marginTop: "316px",
         padding: "40px 20px",
       }}
     >
