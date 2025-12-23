@@ -1091,25 +1091,30 @@ function Beaty() {
                   letterSpacing: "0.5px",
                   position: "relative",
                   zIndex: 9999,
-                  overflow: "visible",
+                  overflow: "hidden",
                   appearance: "none",
                   pointerEvents: "auto",
                 }}
                 onMouseEnter={(e) => {
                   const btn = e.currentTarget as HTMLButtonElement;
-                  btn.style.transform = "scale(1.03)";
+                  btn.style.transform = "scale(1.04)";
                   btn.style.background = "rgba(255, 255, 255, 0.1)";
                   btn.style.borderColor = "#fff";
                   
+                  // Remove any existing shimmer
+                  const existingShimmer = btn.querySelector("div[data-shimmer-effect]");
+                  if (existingShimmer) existingShimmer.remove();
+                  
                   // Create shimmer effect
                   const shimmer = document.createElement("div");
+                  shimmer.setAttribute("data-shimmer-effect", "true");
                   shimmer.style.position = "absolute";
                   shimmer.style.top = "0";
                   shimmer.style.left = "-100%";
                   shimmer.style.width = "100%";
                   shimmer.style.height = "100%";
                   shimmer.style.background = "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent)";
-                  shimmer.style.animation = "shimmerSlide 1s ease-in-out";
+                  shimmer.style.animation = "shimmerSlide 0.5s ease-in-out forwards";
                   shimmer.style.pointerEvents = "none";
                   shimmer.style.borderRadius = "999px";
                   
@@ -1124,17 +1129,26 @@ function Beaty() {
                         0% { left: -100%; }
                         100% { left: 100%; }
                       }
+                      @keyframes shimmerSlideReverse {
+                        0% { left: 100%; }
+                        100% { left: -100%; }
+                      }
                     `;
                     document.head.appendChild(style);
                   }
-                  
-                  setTimeout(() => shimmer.remove(), 1000);
                 }}
                 onMouseLeave={(e) => {
                   const btn = e.currentTarget as HTMLButtonElement;
                   btn.style.transform = "scale(1)";
                   btn.style.background = "rgba(0, 0, 0, 0.7)";
                   btn.style.borderColor = "#999";
+                  
+                  // Reverse the shimmer animation
+                  const shimmer = btn.querySelector("div[data-shimmer-effect]");
+                  if (shimmer) {
+                    (shimmer as HTMLElement).style.animation = "shimmerSlideReverse 0.5s ease-in-out forwards";
+                    setTimeout(() => shimmer.remove(), 500);
+                  }
                 }}
               >
                 Poslechnout další beaty
