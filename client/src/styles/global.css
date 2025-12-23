@@ -69,6 +69,36 @@ button {
 .fade-in-stagger > :nth-child(10) { animation-delay: 0.5s; }
 .fade-in-stagger > :nth-child(n+11) { animation-delay: 0.55s; }
 
+/* Grid stagger for products */
+.fade-in-grid > * {
+  animation: fadeInUp 0.7s ease-out forwards;
+  opacity: 0;
+}
+
+.fade-in-grid > :nth-child(1) { animation-delay: 0.1s; }
+.fade-in-grid > :nth-child(2) { animation-delay: 0.15s; }
+.fade-in-grid > :nth-child(3) { animation-delay: 0.2s; }
+.fade-in-grid > :nth-child(4) { animation-delay: 0.25s; }
+.fade-in-grid > :nth-child(5) { animation-delay: 0.3s; }
+.fade-in-grid > :nth-child(6) { animation-delay: 0.35s; }
+.fade-in-grid > :nth-child(7) { animation-delay: 0.4s; }
+.fade-in-grid > :nth-child(8) { animation-delay: 0.45s; }
+.fade-in-grid > :nth-child(9) { animation-delay: 0.5s; }
+.fade-in-grid > :nth-child(10) { animation-delay: 0.55s; }
+.fade-in-grid > :nth-child(n+11) { animation-delay: 0.6s; }
+
+/* Section fade in with delay */
+.fade-in-section {
+  animation: fadeInUp 0.6s ease-out forwards;
+  opacity: 0;
+}
+
+.fade-in-section.delay-1 { animation-delay: 0.2s; }
+.fade-in-section.delay-2 { animation-delay: 0.4s; }
+.fade-in-section.delay-3 { animation-delay: 0.6s; }
+.fade-in-section.delay-4 { animation-delay: 0.8s; }
+.fade-in-section.delay-5 { animation-delay: 1s; }
+
 /* Smooth scale entrance for cards */
 .fade-in-scale {
   animation: fadeInScale 0.6s ease-out forwards;

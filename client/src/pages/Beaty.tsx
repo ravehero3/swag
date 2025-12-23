@@ -337,7 +337,7 @@ function Beaty() {
   const otherBeats = filteredBeats.filter((b) => b.id !== highlightedBeat?.id);
 
   return (
-    <div className="fade-in">
+    <div className="fade-in-section delay-1">
       <audio
         ref={audioRef}
         src={currentBeat?.preview_url}
@@ -367,9 +367,9 @@ function Beaty() {
         />
       </div>
       
-      <div style={{ padding: "0 20px" }}>
+      <div style={{ padding: "0 20px" }} className="fade-in-grid">
         {highlightedBeat && (
-          <div style={{ marginBottom: "48px", display: "flex", justifyContent: "center", marginTop: "-116px", position: "relative", zIndex: 50 }}>
+          <div className="fade-in-section delay-2" style={{ marginBottom: "48px", display: "flex", justifyContent: "center", marginTop: "-116px", position: "relative", zIndex: 50 }}>
             <div style={{ display: "flex", gap: "48px", alignItems: "flex-start", marginBottom: "32px", width: "1000px", position: "relative", zIndex: 50 }}>
               <div style={{ position: "relative", flexShrink: 0 }}>
                 <img
@@ -1070,7 +1070,7 @@ function Beaty() {
 
         {isHomePage && (
           <>
-            <div style={{ marginTop: "-136px", marginBottom: "0px", position: "relative", zIndex: 100 }}>
+            <div className="fade-in-section delay-3" style={{ marginTop: "-136px", marginBottom: "0px", position: "relative", zIndex: 100 }}>
               <div style={{ textAlign: "center", marginBottom: "8px", paddingTop: "316px" }}>
                 <p style={{ fontSize: "12px", color: "#555", margin: 0, fontFamily: "Work Sans, sans-serif" }}>
                   VOODOO808 dělal beaty pro
@@ -1081,7 +1081,7 @@ function Beaty() {
               </div>
             </div>
 
-            <div style={{ marginTop: "-600px", marginBottom: "0px" }}>
+            <div className="fade-in-section delay-4" style={{ marginTop: "-600px", marginBottom: "0px" }}>
             {/* Background with computer image and dock */}
             <div style={{
               width: "100vw",
