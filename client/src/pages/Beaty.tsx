@@ -1072,29 +1072,33 @@ function Beaty() {
           )}
           
           <div className="fade-in-section delay-3" style={{ display: "flex", justifyContent: "center", marginTop: "64px", marginBottom: "64px", position: "relative", zIndex: 999 }}>
-            <Link href="/beaty" style={{ textDecoration: "none" }}>
-              <div
+              <button
+                onClick={() => setLocation("/beaty")}
                 style={{
                   padding: "8px 20px",
-                  background: "rgba(0, 0, 0, 0.5)",
-                  border: "0.2px solid #666",
+                  background: "rgba(0, 0, 0, 0.7)",
+                  border: "1px solid #999",
                   borderRadius: "999px",
                   color: "#fff",
                   fontSize: "12px",
                   fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
                   fontWeight: "400",
                   cursor: "pointer",
-                  transition: "transform 0.2s ease",
+                  transition: "transform 0.2s ease, background 0.2s ease, border-color 0.2s ease",
                   display: "flex",
                   alignItems: "center",
                   gap: "6px",
                   letterSpacing: "0.5px",
                   position: "relative",
-                  zIndex: 999,
+                  zIndex: 9999,
+                  overflow: "visible",
+                  appearance: "none",
                 }}
                 onMouseEnter={(e) => {
-                  const div = e.currentTarget as HTMLDivElement;
-                  div.style.transform = "scale(1.03)";
+                  const btn = e.currentTarget as HTMLButtonElement;
+                  btn.style.transform = "scale(1.03)";
+                  btn.style.background = "rgba(255, 255, 255, 0.1)";
+                  btn.style.borderColor = "#fff";
                   
                   // Create shimmer effect
                   const shimmer = document.createElement("div");
@@ -1108,7 +1112,7 @@ function Beaty() {
                   shimmer.style.pointerEvents = "none";
                   shimmer.style.borderRadius = "999px";
                   
-                  div.appendChild(shimmer);
+                  btn.appendChild(shimmer);
                   
                   // Add keyframe animation if not already present
                   if (!document.querySelector('style[data-shimmer]')) {
@@ -1126,8 +1130,10 @@ function Beaty() {
                   setTimeout(() => shimmer.remove(), 1000);
                 }}
                 onMouseLeave={(e) => {
-                  const div = e.currentTarget as HTMLDivElement;
-                  div.style.transform = "scale(1)";
+                  const btn = e.currentTarget as HTMLButtonElement;
+                  btn.style.transform = "scale(1)";
+                  btn.style.background = "rgba(0, 0, 0, 0.7)";
+                  btn.style.borderColor = "#999";
                 }}
               >
                 Poslechnout další beaty
@@ -1135,8 +1141,7 @@ function Beaty() {
                   <polyline points="5 12 19 12"></polyline>
                   <polyline points="12 5 19 12 12 19"></polyline>
                 </svg>
-              </div>
-            </Link>
+              </button>
           </div>
         </div>
 
