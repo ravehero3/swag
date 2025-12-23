@@ -1076,7 +1076,9 @@ function Beaty() {
                   VOODOO808 dělal beaty pro
                 </p>
               </div>
-              <ArtistCarousel />
+              <div style={{ marginTop: "-200px" }}>
+                <ArtistCarousel />
+              </div>
             </div>
 
             <div style={{ marginTop: "-600px", marginBottom: "0px" }}>
@@ -1123,7 +1125,7 @@ function Beaty() {
               `}</style>
               <div style={{
                 position: "absolute",
-                top: "892px",
+                top: "692px",
                 left: "50%",
                 transform: "translateX(-50%)",
                 width: "100%",
