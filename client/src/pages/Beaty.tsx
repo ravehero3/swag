@@ -1160,8 +1160,6 @@ function Beaty() {
                 />
               </div>
             </div>
-            {/* Black empty space below background */}
-            <div style={{ width: "100%", height: "1100px", background: "#000" }} />
           </div>
           </>
         )}
