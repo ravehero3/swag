@@ -1071,7 +1071,7 @@ function Beaty() {
             </>
           )}
           
-          <div className="fade-in-section delay-3" style={{ display: "flex", justifyContent: "center", marginTop: "64px", marginBottom: "64px" }}>
+          <div className="fade-in-section delay-3" style={{ display: "flex", justifyContent: "center", marginTop: "64px", marginBottom: "64px", position: "relative", zIndex: 999 }}>
             <button
               onClick={() => {
                 console.log("Button clicked, navigating to /beaty, isHomePage:", isHomePage);
@@ -1094,7 +1094,7 @@ function Beaty() {
                 letterSpacing: "0.5px",
                 position: "relative",
                 overflow: "hidden",
-                zIndex: 10,
+                zIndex: 999,
               }}
               onMouseEnter={(e) => {
                 const btn = e.currentTarget as HTMLButtonElement;
