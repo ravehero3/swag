@@ -1131,6 +1131,9 @@ function Beaty() {
                   font-size: 60px;
                   width: 150px;
                   text-align: center;
+                  height: 60px;
+                  line-height: 60px;
+                  vertical-align: baseline;
                 }
                 .beats-word:hover {
                   font-family: 'Old London', serif;
