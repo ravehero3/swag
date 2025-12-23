@@ -1074,7 +1074,7 @@ function Beaty() {
               <ArtistCarousel />
             </div>
 
-            <div style={{ marginTop: "0px", marginBottom: "0px" }}>
+            <div style={{ marginTop: "-1000px", marginBottom: "0px" }}>
             {/* Background with computer image and dock */}
             <div style={{
               width: "100vw",
