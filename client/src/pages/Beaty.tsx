@@ -1071,7 +1071,7 @@ function Beaty() {
             </>
           )}
           
-          <div className="fade-in-section delay-3" style={{ display: "flex", justifyContent: "center", gap: "16px", marginTop: "64px", marginBottom: "32px", position: "relative", zIndex: 9999, alignItems: "center", pointerEvents: "auto" }}>
+          <div className="fade-in-section delay-3" style={{ display: "flex", justifyContent: "center", gap: "16px", marginTop: "-64px", marginBottom: "32px", marginLeft: "200px", position: "relative", zIndex: 9999, alignItems: "center", pointerEvents: "auto" }}>
               <button
                 onClick={() => setLocation("/beaty")}
                 style={{
@@ -1113,7 +1113,7 @@ function Beaty() {
                   shimmer.style.left = "-100%";
                   shimmer.style.width = "100%";
                   shimmer.style.height = "100%";
-                  shimmer.style.background = "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent)";
+                  shimmer.style.background = "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)";
                   shimmer.style.animation = "shimmerSlide 0.5s ease-in-out forwards";
                   shimmer.style.pointerEvents = "none";
                   shimmer.style.borderRadius = "999px";
@@ -1162,7 +1162,7 @@ function Beaty() {
 
         {isHomePage && (
           <>
-            <div ref={artistCarouselRef} className="fade-in-section delay-3 scroll-fade-section" style={{ marginTop: "0px", marginBottom: "0px", position: "relative", zIndex: 10 }}>
+            <div ref={artistCarouselRef} className="fade-in-section delay-3 scroll-fade-section" style={{ marginTop: "-100px", marginBottom: "0px", position: "relative", zIndex: 10 }}>
               <div style={{ textAlign: "center", marginBottom: "8px", paddingTop: "80px" }}>
                 <p style={{ fontSize: "12px", color: "#555", margin: 0, fontFamily: "Work Sans, sans-serif" }}>
                   VOODOO808 dělal beaty pro
