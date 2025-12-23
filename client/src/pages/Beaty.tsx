@@ -1115,12 +1115,13 @@ function Beaty() {
               {/* Title text */}
               <style>{`
                 @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700;900&display=swap');
+                @import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital@0;1&display=swap');
                 .beats-word {
-                  font-weight: 700;
-                  transition: font-weight 0.3s ease;
+                  transition: font-family 0.3s ease;
                 }
                 .beats-word:hover {
-                  font-weight: 900;
+                  font-family: 'Crimson Text', serif;
+                  font-style: italic;
                 }
               `}</style>
               <div style={{
@@ -1142,13 +1143,13 @@ function Beaty() {
                   letterSpacing: "0",
                   margin: 0,
                   lineHeight: "1.0",
-                  textTransform: "none",
+                  textTransform: "uppercase",
                   transition: "all 0.3s ease",
                 }}>
-                  Pro všechny<br />
-                  hudební producenty<br />
-                  co se děláním <span className="beats-word">beats</span><br />
-                  chtěj živit
+                  PRO VŠECHNY<br />
+                  HUDEBNÍ PRODUCENTY<br />
+                  CO SE DĚLÁNÍM <span className="beats-word">BEATS</span><br />
+                  CHTĚJ ŽIVIT
                 </h2>
               </div>
 
