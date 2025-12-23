@@ -66,7 +66,7 @@ const ArtistCarousel = () => {
         overflow: "hidden",
         position: "relative",
         marginBottom: "64px",
-        marginTop: "400px",
+        marginTop: "272px",
         padding: "40px 20px",
         zIndex: 100,
       }}
@@ -87,7 +87,7 @@ const ArtistCarousel = () => {
             display: "flex",
             gap: "64px",
             transform: `translateX(${offset}px)`,
-            transition: "transform 0s linear",
+            transition: "transform 0.05s linear",
             paddingLeft: "0px",
           }}
         >
@@ -109,7 +109,6 @@ const ArtistCarousel = () => {
                   width: "192px",
                   height: "192px",
                   borderRadius: "50%",
-                  background: `linear-gradient(135deg, #333 0%, #111 100%)`,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
