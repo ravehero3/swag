@@ -1119,12 +1119,16 @@ function Beaty() {
                   font-family: 'Old London';
                   src: url('/uploads/OldLondon.ttf') format('truetype');
                 }
+                .co-se-text {
+                  display: inline-block;
+                  white-space: nowrap;
+                  font-size: 60px;
+                }
                 .beats-word {
                   display: inline-block;
                   transition: font-family 0.3s ease;
                   white-space: nowrap;
                   font-size: 60px;
-                  text-align: right;
                   min-width: 100px;
                 }
                 .beats-word:hover {
@@ -1156,7 +1160,7 @@ function Beaty() {
                   PRO VŠECHNY<br />
                   HUDEBNÍ PRODUCENTY<br />
                   <div style={{ display: "flex", gap: "0.3em", justifyContent: "center", alignItems: "baseline" }}>
-                    <span>CO SE DĚLÁNÍM</span>
+                    <span className="co-se-text">CO SE DĚLÁNÍM</span>
                     <span className="beats-word">BEATS</span>
                   </div>
                   CHTĚJ ŽIVIT
