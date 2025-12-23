@@ -1115,13 +1115,16 @@ function Beaty() {
               {/* Title text */}
               <style>{`
                 @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700;900&display=swap');
-                @import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital@0;1&display=swap');
+                @font-face {
+                  font-family: 'Old London';
+                  src: url('/uploads/OldLondon.ttf') format('truetype');
+                }
                 .beats-word {
+                  display: inline-block;
                   transition: font-family 0.3s ease;
                 }
                 .beats-word:hover {
-                  font-family: 'Crimson Text', serif;
-                  font-style: italic;
+                  font-family: 'Old London', serif;
                 }
               `}</style>
               <div style={{
