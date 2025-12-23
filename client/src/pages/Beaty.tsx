@@ -1108,7 +1108,7 @@ function Beaty() {
               {/* Title text */}
               <div style={{
                 position: "absolute",
-                top: "792px",
+                top: "692px",
                 left: "50%",
                 transform: "translateX(-50%)",
                 width: "100%",
@@ -1120,16 +1120,16 @@ function Beaty() {
                 <h2 style={{
                   color: "#fff",
                   fontSize: "60px",
-                  fontFamily: "Work Sans, sans-serif",
+                  fontFamily: "bc-novatica-cyr, sans-serif",
                   fontWeight: "400",
                   letterSpacing: "0",
                   margin: 0,
-                  lineHeight: "1.1",
+                  lineHeight: "1.0",
                   textTransform: "none",
                 }}>
                   Pro všechny<br />
                   hudební producenty<br />
-                  co se děláním beatů<br />
+                  co se děláním <span style={{ fontWeight: "700" }}>beats</span><br />
                   chtěj živit
                 </h2>
               </div>
