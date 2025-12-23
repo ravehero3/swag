@@ -202,6 +202,11 @@ function Zvuky() {
           setSavedKits(new Set(kitIds));
         })
         .catch(console.error);
+    } else {
+      // Load saved kits from localStorage for non-logged-in users
+      const savedKitsJson = localStorage.getItem("voodoo808_saved_kits");
+      const savedKits = savedKitsJson ? JSON.parse(savedKitsJson) : [];
+      setSavedKits(new Set(savedKits.map((k: any) => k.id)));
     }
   }, [user]);
 
@@ -235,34 +240,52 @@ function Zvuky() {
   };
 
   const toggleSave = async (kit: SoundKit) => {
-    if (!user) return;
-
-    try {
-      if (savedKits.has(kit.id)) {
-        const res = await fetch(`/api/saved/sound_kit/${kit.id}`, {
-          method: "DELETE",
-          credentials: "include",
-        });
-        if (res.ok) {
-          setSavedKits((prev) => {
-            const next = new Set(prev);
-            next.delete(kit.id);
-            return next;
+    if (user) {
+      try {
+        if (savedKits.has(kit.id)) {
+          const res = await fetch(`/api/saved/sound_kit/${kit.id}`, {
+            method: "DELETE",
+            credentials: "include",
           });
+          if (res.ok) {
+            setSavedKits((prev) => {
+              const next = new Set(prev);
+              next.delete(kit.id);
+              return next;
+            });
+          }
+        } else {
+          const res = await fetch("/api/saved", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ itemId: kit.id, itemType: "sound_kit" }),
+          });
+          if (res.ok) {
+            setSavedKits((prev) => new Set([...prev, kit.id]));
+          }
         }
-      } else {
-        const res = await fetch("/api/saved", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ itemId: kit.id, itemType: "sound_kit" }),
-        });
-        if (res.ok) {
-          setSavedKits((prev) => new Set([...prev, kit.id]));
-        }
+      } catch (error) {
+        console.error("Error toggling save:", error);
       }
-    } catch (error) {
-      console.error("Error toggling save:", error);
+    } else {
+      // Handle non-logged-in users with localStorage
+      const savedKitsJson = localStorage.getItem("voodoo808_saved_kits");
+      const savedKits = savedKitsJson ? JSON.parse(savedKitsJson) : [];
+      
+      if (savedKits.find((k: any) => k.id === kit.id)) {
+        const filtered = savedKits.filter((k: any) => k.id !== kit.id);
+        localStorage.setItem("voodoo808_saved_kits", JSON.stringify(filtered));
+        setSavedKits((prev) => {
+          const next = new Set(prev);
+          next.delete(kit.id);
+          return next;
+        });
+      } else {
+        savedKits.push(kit);
+        localStorage.setItem("voodoo808_saved_kits", JSON.stringify(savedKits));
+        setSavedKits((prev) => new Set([...prev, kit.id]));
+      }
     }
   };
 
