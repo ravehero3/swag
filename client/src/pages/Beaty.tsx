@@ -728,10 +728,10 @@ function Beaty() {
             </div>
           ) : (
             <>
-              <div style={{ display: "flex", alignItems: "center", padding: "16px 16px 8px 16px", gap: "16px", marginTop: "16px", position: "relative" }}>
+              <div style={{ display: "flex", alignItems: "center", padding: "16px 16px 8px 58px", gap: "16px", marginTop: "16px", position: "relative" }}>
                 <div style={{ width: "48px", height: "48px", flexShrink: 0 }} />
                 <div style={{ width: "240px", marginRight: "12px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666" }}>NÁZEV</div>
-                <div style={{ position: "absolute", bottom: 0, left: "80px", right: "16px", height: "1px", background: "#333" }} />
+                <div style={{ position: "absolute", bottom: 0, left: "122px", right: "16px", height: "1px", background: "#333" }} />
                 <div style={{ width: "80px" }}><button onClick={() => { setSortBy(sortBy === "bpm" ? "bpm" : "bpm"); setSortAsc(sortBy === "bpm" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0 }}>BPM {sortBy === "bpm" && (sortAsc ? "↑" : "↓")}</button></div>
                 <div style={{ width: "80px" }}><button onClick={() => { setSortBy(sortBy === "key" ? "key" : "key"); setSortAsc(sortBy === "key" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0 }}>KEY {sortBy === "key" && (sortAsc ? "↑" : "↓")}</button></div>
               </div>
@@ -772,7 +772,7 @@ function Beaty() {
                 if (separator) separator.style.opacity = "1";
               }}
             >
-              <div data-separator style={{ position: "absolute", bottom: 0, left: "80px", right: "16px", height: "1px", background: "#333", opacity: 1, transition: "opacity 0.15s ease" }} />
+              <div data-separator style={{ position: "absolute", bottom: 0, left: "122px", right: "16px", height: "1px", background: "#333", opacity: 1, transition: "opacity 0.15s ease" }} />
               <div style={{ position: "relative", display: "flex", alignItems: "center", gap: "16px", marginRight: "-4px" }}>
                 <button
                   onClick={(e) => {
@@ -1071,7 +1071,7 @@ function Beaty() {
             </>
           )}
           
-          <div className="fade-in-section delay-3" style={{ display: "flex", justifyContent: "center", gap: "16px", marginTop: "16px", marginBottom: "32px", marginLeft: "568px", position: "relative", zIndex: 9999, alignItems: "center", pointerEvents: "auto" }}>
+          <div className="fade-in-section delay-3" style={{ display: "flex", justifyContent: "center", gap: "16px", marginTop: "16px", marginBottom: "32px", marginLeft: "610px", position: "relative", zIndex: 9999, alignItems: "center", pointerEvents: "auto" }}>
               <button
                 onClick={() => setLocation("/beaty")}
                 style={{
