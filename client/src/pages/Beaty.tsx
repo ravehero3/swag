@@ -1163,13 +1163,13 @@ function Beaty() {
         {isHomePage && (
           <>
             <div ref={artistCarouselRef} className="fade-in-section delay-3 scroll-fade-section" style={{ marginTop: "-100px", marginBottom: "0px", position: "relative", zIndex: 10 }}>
-              <div style={{ textAlign: "center", marginBottom: "8px", paddingTop: "80px" }}>
-                <p style={{ fontSize: "12px", color: "#555", margin: 0, fontFamily: "Work Sans, sans-serif" }}>
-                  VOODOO808 dělal beaty pro
-                </p>
-              </div>
               <div style={{ marginTop: "0px" }}>
                 <ArtistCarousel />
+              </div>
+              <div style={{ display: "flex", justifyContent: "flex-end", paddingRight: "20px", marginTop: "16px" }}>
+                <button className="btn" style={{ marginTop: "16px" }}>
+                  Poslechnout další beaty →
+                </button>
               </div>
             </div>
 
