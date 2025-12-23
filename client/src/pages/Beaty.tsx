@@ -1155,7 +1155,10 @@ function Beaty() {
                 }}>
                   PRO VŠECHNY<br />
                   HUDEBNÍ PRODUCENTY<br />
-                  CO SE DĚLÁNÍM <span className="beats-word">BEATS</span><br />
+                  <div style={{ display: "flex", gap: "0.3em", justifyContent: "center", alignItems: "baseline" }}>
+                    <span>CO SE DĚLÁNÍM</span>
+                    <span className="beats-word">BEATS</span>
+                  </div>
                   CHTĚJ ŽIVIT
                 </h2>
               </div>
