@@ -13,10 +13,18 @@ interface SoundKitsDockProps {
   items: SoundKitDockItem[];
 }
 
+interface Particle {
+  id: number;
+  x: number;
+  y: number;
+  angle: number;
+  distance: number;
+}
+
 const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [particles, setParticles] = useState<Particle[]>([]);
   const [hasAnimated, setHasAnimated] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
   const dockRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -24,7 +32,24 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting && !hasAnimated) {
-          setIsVisible(true);
+          // Create particle explosion
+          const newParticles: Particle[] = [];
+          for (let i = 0; i < 30; i++) {
+            newParticles.push({
+              id: i,
+              x: 0,
+              y: 0,
+              angle: (i / 30) * Math.PI * 2,
+              distance: 150 + Math.random() * 100,
+            });
+          }
+          setParticles(newParticles);
+          
+          // Clear particles after 2 seconds
+          setTimeout(() => {
+            setParticles([]);
+          }, 2000);
+          
           setHasAnimated(true);
         }
       },
@@ -57,22 +82,48 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
   };
 
   return (
-    <div ref={containerRef} style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '64px', paddingTop: '0px', background: 'transparent', overflow: 'visible' }}>
+    <div ref={containerRef} style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '64px', paddingTop: '0px', background: 'transparent', overflow: 'visible', position: 'relative' }}>
       <style>{`
-        @keyframes dockItemPop {
+        @keyframes particleExplode {
           0% {
-            transform: scale(0);
-            opacity: 0;
-          }
-          100% {
-            transform: scale(1);
+            transform: translate(0, 0) scale(1);
             opacity: 1;
           }
+          100% {
+            transform: translate(var(--tx), var(--ty)) scale(0);
+            opacity: 0;
+          }
         }
-        .dock-item-animate {
-          animation: dockItemPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        .particle {
+          animation: particleExplode 2s ease-out forwards;
+          pointer-events: none;
         }
       `}</style>
+      
+      {/* Particles */}
+      {particles.map((particle) => {
+        const endX = Math.cos(particle.angle) * particle.distance;
+        const endY = Math.sin(particle.angle) * particle.distance;
+        return (
+          <div
+            key={particle.id}
+            className="particle"
+            style={{
+              position: 'absolute',
+              left: '50%',
+              top: '200px',
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              backgroundColor: '#fff',
+              transform: 'translate(-50%, -50%)',
+              '--tx': `${endX}px`,
+              '--ty': `${endY}px`,
+            } as any}
+          />
+        );
+      })}
+
       <div style={{ width: '100%', display: 'flex', justifyContent: 'center', overflowX: 'visible', overflowY: 'visible', padding: '20px 0', marginTop: '200px' }}>
         <div
           ref={dockRef}
@@ -101,7 +152,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
             return (
               <div
                 key={item.id}
-                className={`dock-icon ${isVisible ? 'dock-item-animate' : ''}`}
+                className="dock-icon"
                 onMouseEnter={() => setHoveredIndex(index)}
                 style={{
                   display: 'flex',
@@ -115,8 +166,6 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
                   willChange: 'transform, width, height, z-index',
                   zIndex: hoveredIndex === index ? 9999 : 1,
                   pointerEvents: 'auto',
-                  animationDelay: isVisible ? `${index * 0.1}s` : '0s',
-                  transformOrigin: 'center center',
                 }}
               >
                 <button
