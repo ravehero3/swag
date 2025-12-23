@@ -1119,13 +1119,13 @@ function Beaty() {
               }}>
                 <h2 style={{
                   color: "#fff",
-                  fontSize: "30px",
-                  fontFamily: '"Helvetica Neue Condensed Bold", "Helvetica Neue", Helvetica, Arial, sans-serif',
-                  fontWeight: "700",
+                  fontSize: "18px",
+                  fontFamily: "Work Sans, sans-serif",
+                  fontWeight: "400",
                   letterSpacing: "0",
                   margin: 0,
-                  lineHeight: "1.1",
-                  textTransform: "uppercase",
+                  lineHeight: "1.4",
+                  textTransform: "none",
                 }}>
                   Pro všechny<br />
                   hudební producenty<br />
