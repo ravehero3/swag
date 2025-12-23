@@ -1164,13 +1164,13 @@ function Beaty() {
 
         {isHomePage && (
           <>
-            <div ref={artistCarouselRef} className="fade-in-section delay-3 scroll-fade-section" style={{ marginTop: "-100px", marginBottom: "0px", position: "relative", zIndex: 10 }}>
+            <div ref={artistCarouselRef} className="fade-in-section delay-3 scroll-fade-section" style={{ marginTop: "-100px", marginBottom: "-60px", position: "relative", zIndex: 10 }}>
               <div style={{ marginTop: "0px" }}>
                 <ArtistCarousel />
               </div>
             </div>
 
-            <div ref={soundKitsRef} className="fade-in-section delay-4 scroll-fade-section" style={{ marginTop: "0px", marginBottom: "0px" }}>
+            <div ref={soundKitsRef} className="fade-in-section delay-4 scroll-fade-section" style={{ marginTop: "-40px", marginBottom: "0px" }}>
             {/* Background with computer image and dock */}
             <div style={{
               width: "100vw",
