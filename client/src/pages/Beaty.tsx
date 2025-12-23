@@ -1166,8 +1166,8 @@ function Beaty() {
               <div style={{ marginTop: "0px" }}>
                 <ArtistCarousel />
               </div>
-              <div style={{ display: "flex", justifyContent: "flex-end", paddingRight: "20px", marginTop: "16px" }}>
-                <button className="btn" style={{ marginTop: "16px" }}>
+              <div style={{ display: "flex", justifyContent: "flex-end", paddingRight: "220px", marginTop: "80px" }}>
+                <button className="btn">
                   Poslechnout další beaty →
                 </button>
               </div>
