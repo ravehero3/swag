@@ -15,7 +15,28 @@ interface SoundKitsDockProps {
 
 const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [hasAnimated, setHasAnimated] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
   const dockRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasAnimated) {
+          setIsVisible(true);
+          setHasAnimated(true);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [hasAnimated]);
 
   const handleMouseLeave = () => {
     setHoveredIndex(null);
@@ -36,7 +57,22 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
   };
 
   return (
-    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '64px', paddingTop: '0px', background: 'transparent', overflow: 'visible' }}>
+    <div ref={containerRef} style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '64px', paddingTop: '0px', background: 'transparent', overflow: 'visible' }}>
+      <style>{`
+        @keyframes dockItemPop {
+          0% {
+            transform: scale(0);
+            opacity: 0;
+          }
+          100% {
+            transform: scale(1);
+            opacity: 1;
+          }
+        }
+        .dock-item-animate {
+          animation: dockItemPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+      `}</style>
       <div style={{ width: '100%', display: 'flex', justifyContent: 'center', overflowX: 'visible', overflowY: 'visible', padding: '20px 0', marginTop: '200px' }}>
         <div
           ref={dockRef}
@@ -65,7 +101,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
             return (
               <div
                 key={item.id}
-                className="dock-icon"
+                className={`dock-icon ${isVisible ? 'dock-item-animate' : ''}`}
                 onMouseEnter={() => setHoveredIndex(index)}
                 style={{
                   display: 'flex',
@@ -79,6 +115,8 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
                   willChange: 'transform, width, height, z-index',
                   zIndex: hoveredIndex === index ? 9999 : 1,
                   pointerEvents: 'auto',
+                  animationDelay: isVisible ? `${index * 0.1}s` : '0s',
+                  transformOrigin: 'center center',
                 }}
               >
                 <button
