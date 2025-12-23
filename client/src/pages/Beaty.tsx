@@ -1071,7 +1071,7 @@ function Beaty() {
             </>
           )}
           
-          <div className="fade-in-section delay-3" style={{ display: "flex", justifyContent: "center", gap: "16px", marginTop: "-64px", marginBottom: "32px", marginLeft: "200px", position: "relative", zIndex: 9999, alignItems: "center", pointerEvents: "auto" }}>
+          <div className="fade-in-section delay-3" style={{ display: "flex", justifyContent: "center", gap: "16px", marginTop: "0px", marginBottom: "32px", marginLeft: "440px", position: "relative", zIndex: 9999, alignItems: "center", pointerEvents: "auto" }}>
               <button
                 onClick={() => setLocation("/beaty")}
                 style={{
@@ -1165,11 +1165,6 @@ function Beaty() {
             <div ref={artistCarouselRef} className="fade-in-section delay-3 scroll-fade-section" style={{ marginTop: "-100px", marginBottom: "0px", position: "relative", zIndex: 10 }}>
               <div style={{ marginTop: "0px" }}>
                 <ArtistCarousel />
-              </div>
-              <div style={{ display: "flex", justifyContent: "flex-end", paddingRight: "220px", marginTop: "80px" }}>
-                <button className="btn">
-                  Poslechnout další beaty →
-                </button>
               </div>
             </div>
 
