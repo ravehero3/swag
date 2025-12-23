@@ -1071,6 +1071,11 @@ function Beaty() {
         {isHomePage && (
           <>
             <div style={{ marginTop: "-136px", marginBottom: "0px" }}>
+              <div style={{ textAlign: "center", marginBottom: "16px", paddingTop: "16px" }}>
+                <p style={{ fontSize: "12px", color: "#555", margin: 0, fontFamily: "Work Sans, sans-serif" }}>
+                  Voodoo808 dělal beaty pro
+                </p>
+              </div>
               <ArtistCarousel />
             </div>
 
