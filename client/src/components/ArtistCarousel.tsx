@@ -109,7 +109,6 @@ const ArtistCarousel = () => {
                   height: "192px",
                   borderRadius: "50%",
                   background: `linear-gradient(135deg, #333 0%, #111 100%)`,
-                  border: "3px solid #444",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
