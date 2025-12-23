@@ -1119,12 +1119,12 @@ function Beaty() {
               }}>
                 <h2 style={{
                   color: "#fff",
-                  fontSize: "18px",
+                  fontSize: "60px",
                   fontFamily: "Work Sans, sans-serif",
                   fontWeight: "400",
                   letterSpacing: "0",
                   margin: 0,
-                  lineHeight: "1.4",
+                  lineHeight: "1.1",
                   textTransform: "none",
                 }}>
                   Pro všechny<br />
