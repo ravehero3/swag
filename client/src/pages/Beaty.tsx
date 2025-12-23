@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { useApp } from "../App";
+import { useScrollAnimation } from "../hooks/useScrollAnimation";
 import ContractModal from "../components/ContractModal";
 import DownloadModal from "../components/DownloadModal";
 import MusicPlayer from "../components/MusicPlayer";
@@ -160,6 +161,9 @@ function Beaty() {
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [showTitle, setShowTitle] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const beatsListRef = useScrollAnimation();
+  const soundKitsRef = useScrollAnimation();
+  const artistCarouselRef = useScrollAnimation();
   const { user, addToCart } = useApp();
   
   // Determine if we're on home page or beaty page
@@ -650,7 +654,7 @@ function Beaty() {
           <SoundWave audioRef={audioRef} isPlaying={isPlaying} />
         )}
 
-        <div style={{ marginBottom: "48px", maxWidth: "1200px", margin: "0 auto", marginTop: "60px" }}>
+        <div ref={beatsListRef} className="scroll-fade-section" style={{ marginBottom: "48px", maxWidth: "1200px", margin: "0 auto", marginTop: "60px" }}>
           {!isHomePage && (
             <div style={{ marginBottom: "24px", display: "flex", gap: "16px", alignItems: "center" }}>
               <input
@@ -1070,7 +1074,7 @@ function Beaty() {
 
         {isHomePage && (
           <>
-            <div className="fade-in-section delay-3" style={{ marginTop: "-136px", marginBottom: "0px", position: "relative", zIndex: 100 }}>
+            <div ref={artistCarouselRef} className="fade-in-section delay-3 scroll-fade-section" style={{ marginTop: "-136px", marginBottom: "0px", position: "relative", zIndex: 100 }}>
               <div style={{ textAlign: "center", marginBottom: "8px", paddingTop: "316px" }}>
                 <p style={{ fontSize: "12px", color: "#555", margin: 0, fontFamily: "Work Sans, sans-serif" }}>
                   VOODOO808 dělal beaty pro
@@ -1081,7 +1085,7 @@ function Beaty() {
               </div>
             </div>
 
-            <div className="fade-in-section delay-4" style={{ marginTop: "-600px", marginBottom: "0px" }}>
+            <div ref={soundKitsRef} className="fade-in-section delay-4 scroll-fade-section" style={{ marginTop: "-600px", marginBottom: "0px" }}>
             {/* Background with computer image and dock */}
             <div style={{
               width: "100vw",
