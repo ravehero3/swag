@@ -1071,9 +1071,9 @@ function Beaty() {
         {isHomePage && (
           <>
             <div style={{ marginTop: "-136px", marginBottom: "0px" }}>
-              <div style={{ textAlign: "center", marginBottom: "16px", paddingTop: "116px" }}>
+              <div style={{ textAlign: "center", marginBottom: "16px", paddingTop: "116px", marginTop: "100px" }}>
                 <p style={{ fontSize: "12px", color: "#555", margin: 0, fontFamily: "Work Sans, sans-serif" }}>
-                  Voodoo808 dělal beaty pro
+                  VOODOO808 dělal beaty pro
                 </p>
               </div>
               <ArtistCarousel />
@@ -1111,6 +1111,16 @@ function Beaty() {
               />
               
               {/* Title text */}
+              <style>{`
+                @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700;900&display=swap');
+                .beats-word {
+                  font-weight: 700;
+                  transition: font-weight 0.3s ease;
+                }
+                .beats-word:hover {
+                  font-weight: 900;
+                }
+              `}</style>
               <div style={{
                 position: "absolute",
                 top: "692px",
@@ -1125,16 +1135,17 @@ function Beaty() {
                 <h2 style={{
                   color: "#fff",
                   fontSize: "60px",
-                  fontFamily: "bc-novatica-cyr, sans-serif",
+                  fontFamily: "'BB Condensed Regular', 'Roboto Condensed', sans-serif",
                   fontWeight: "400",
                   letterSpacing: "0",
                   margin: 0,
                   lineHeight: "1.0",
                   textTransform: "none",
+                  transition: "all 0.3s ease",
                 }}>
                   Pro všechny<br />
                   hudební producenty<br />
-                  co se děláním <span style={{ fontWeight: "700" }}>beats</span><br />
+                  co se děláním <span className="beats-word">beats</span><br />
                   chtěj živit
                 </h2>
               </div>
