@@ -7,19 +7,19 @@ interface Artist {
 }
 
 const artists: Artist[] = [
+  { name: "Dollar Prync", id: "dollar-prync", imageUrl: "/uploads/artwork/dollar_prync.png" },
+  { name: "Smack", id: "smack", imageUrl: "/uploads/artwork/smack.png" },
+  { name: "Nik Tendo", id: "nik-tendo", imageUrl: "/uploads/artwork/nik_tendo.png" },
   { name: "Calin", id: "calin", imageUrl: "/uploads/artwork/calin.png" },
-  { name: "Viktor Sheen", id: "viktor-sheen", imageUrl: "/uploads/artwork/viktor_sheen.png" },
   { name: "Hugo Toxxx", id: "hugo-toxxx", imageUrl: "/uploads/artwork/hugo_toxxx.png" },
+  { name: "Viktor Sheen", id: "viktor-sheen", imageUrl: "/uploads/artwork/viktor_sheen.png" },
   { name: "Yzomandias", id: "yzomandias", imageUrl: "/uploads/artwork/yzomandias.png" },
   { name: "Ektor", id: "ektor", imageUrl: "/uploads/artwork/ektor.png" },
-  { name: "Nik Tendo", id: "nik-tendo", imageUrl: "/uploads/artwork/nik_tendo.png" },
   { name: "Ca$hanova Bulhar", id: "cashanova-bulhar", imageUrl: "/uploads/artwork/cashanova_bulhar.png" },
-  { name: "Smack", id: "smack", imageUrl: "/uploads/artwork/smack.png" },
   { name: "Hasan", id: "hasan", imageUrl: "/uploads/artwork/hasan.png" },
+  { name: "Luca Brassi10x", id: "luca-brassi10x", imageUrl: "/uploads/artwork/luca_brassi10x.png" },
   { name: "Hard Rico", id: "hard-rico", imageUrl: "/uploads/artwork/hard_rico.png" },
   { name: "Pil C", id: "pil-c", imageUrl: "/uploads/artwork/pil_c.png" },
-  { name: "Dollar Prync", id: "dollar-prync", imageUrl: "/uploads/artwork/dollar_prync.png" },
-  { name: "Luca Brassi10x", id: "luca-brassi10x", imageUrl: "/uploads/artwork/luca_brassi10x.png" },
 ];
 
 const ArtistCarousel = () => {
