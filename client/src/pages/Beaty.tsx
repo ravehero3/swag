@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { useApp } from "../App";
 import { useScrollAnimation } from "../hooks/useScrollAnimation";
 import ContractModal from "../components/ContractModal";
@@ -1072,74 +1072,71 @@ function Beaty() {
           )}
           
           <div className="fade-in-section delay-3" style={{ display: "flex", justifyContent: "center", marginTop: "64px", marginBottom: "64px", position: "relative", zIndex: 999 }}>
-            <button
-              onClick={() => {
-                console.log("Button clicked, navigating to /beaty, isHomePage:", isHomePage);
-                setLocation("/beaty");
-              }}
-              style={{
-                padding: "8px 20px",
-                background: "rgba(0, 0, 0, 0.5)",
-                border: "0.2px solid #666",
-                borderRadius: "999px",
-                color: "#fff",
-                fontSize: "12px",
-                fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
-                fontWeight: "400",
-                cursor: "pointer",
-                transition: "transform 0.2s ease",
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                letterSpacing: "0.5px",
-                position: "relative",
-                overflow: "hidden",
-                zIndex: 999,
-              }}
-              onMouseEnter={(e) => {
-                const btn = e.currentTarget as HTMLButtonElement;
-                console.log("Button hovered");
-                btn.style.transform = "scale(1.03)";
-                
-                // Create shimmer effect
-                const shimmer = document.createElement("div");
-                shimmer.style.position = "absolute";
-                shimmer.style.top = "0";
-                shimmer.style.left = "-100%";
-                shimmer.style.width = "100%";
-                shimmer.style.height = "100%";
-                shimmer.style.background = "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent)";
-                shimmer.style.animation = "shimmerSlide 1s ease-in-out";
-                shimmer.style.pointerEvents = "none";
-                
-                btn.appendChild(shimmer);
-                
-                // Add keyframe animation if not already present
-                if (!document.querySelector('style[data-shimmer]')) {
-                  const style = document.createElement("style");
-                  style.setAttribute("data-shimmer", "true");
-                  style.textContent = `
-                    @keyframes shimmerSlide {
-                      0% { left: -100%; }
-                      100% { left: 100%; }
-                    }
-                  `;
-                  document.head.appendChild(style);
-                }
-                
-                setTimeout(() => shimmer.remove(), 1000);
-              }}
-              onMouseLeave={(e) => {
-                const btn = e.currentTarget as HTMLButtonElement;
-                btn.style.transform = "scale(1)";
-              }}
-            >
-              Poslechnout další beaty
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <polyline points="5 12 19 12"></polyline>
-                <polyline points="12 5 19 12 12 19"></polyline>
-              </svg>
-            </button>
+            <Link href="/beaty" style={{ textDecoration: "none" }}>
+              <div
+                style={{
+                  padding: "8px 20px",
+                  background: "rgba(0, 0, 0, 0.5)",
+                  border: "0.2px solid #666",
+                  borderRadius: "999px",
+                  color: "#fff",
+                  fontSize: "12px",
+                  fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+                  fontWeight: "400",
+                  cursor: "pointer",
+                  transition: "transform 0.2s ease",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  letterSpacing: "0.5px",
+                  position: "relative",
+                  zIndex: 999,
+                }}
+                onMouseEnter={(e) => {
+                  const div = e.currentTarget as HTMLDivElement;
+                  div.style.transform = "scale(1.03)";
+                  
+                  // Create shimmer effect
+                  const shimmer = document.createElement("div");
+                  shimmer.style.position = "absolute";
+                  shimmer.style.top = "0";
+                  shimmer.style.left = "-100%";
+                  shimmer.style.width = "100%";
+                  shimmer.style.height = "100%";
+                  shimmer.style.background = "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent)";
+                  shimmer.style.animation = "shimmerSlide 1s ease-in-out";
+                  shimmer.style.pointerEvents = "none";
+                  shimmer.style.borderRadius = "999px";
+                  
+                  div.appendChild(shimmer);
+                  
+                  // Add keyframe animation if not already present
+                  if (!document.querySelector('style[data-shimmer]')) {
+                    const style = document.createElement("style");
+                    style.setAttribute("data-shimmer", "true");
+                    style.textContent = `
+                      @keyframes shimmerSlide {
+                        0% { left: -100%; }
+                        100% { left: 100%; }
+                      }
+                    `;
+                    document.head.appendChild(style);
+                  }
+                  
+                  setTimeout(() => shimmer.remove(), 1000);
+                }}
+                onMouseLeave={(e) => {
+                  const div = e.currentTarget as HTMLDivElement;
+                  div.style.transform = "scale(1)";
+                }}
+              >
+                Poslechnout další beaty
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="5 12 19 12"></polyline>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+              </div>
+            </Link>
           </div>
         </div>
 
