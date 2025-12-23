@@ -15,8 +15,7 @@ interface SoundKitsDockProps {
 
 interface Particle {
   id: number;
-  x: number;
-  y: number;
+  itemIndex: number;
   angle: number;
   distance: number;
 }
@@ -32,16 +31,21 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting && !hasAnimated) {
-          // Create particle explosion
+          // Create particle explosion from each dock item
           const newParticles: Particle[] = [];
-          for (let i = 0; i < 30; i++) {
-            newParticles.push({
-              id: i,
-              x: 0,
-              y: 0,
-              angle: (i / 30) * Math.PI * 2,
-              distance: 150 + Math.random() * 100,
-            });
+          let particleId = 0;
+          
+          for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
+            // Create 4-5 particles per dock item
+            const particlesPerItem = 5;
+            for (let i = 0; i < particlesPerItem; i++) {
+              newParticles.push({
+                id: particleId++,
+                itemIndex,
+                angle: (i / particlesPerItem) * Math.PI * 2,
+                distance: 100 + Math.random() * 150,
+              });
+            }
           }
           setParticles(newParticles);
           
@@ -61,7 +65,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
     }
 
     return () => observer.disconnect();
-  }, [hasAnimated]);
+  }, [hasAnimated, items.length]);
 
   const handleMouseLeave = () => {
     setHoveredIndex(null);
@@ -104,18 +108,24 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
       {particles.map((particle) => {
         const endX = Math.cos(particle.angle) * particle.distance;
         const endY = Math.sin(particle.angle) * particle.distance;
+        
+        // Calculate the horizontal offset for this dock item
+        // Approximate: each item is ~70px wide (56px + 8px gap + padding)
+        const itemOffsetX = (particle.itemIndex - items.length / 2) * 70;
+        
         return (
           <div
             key={particle.id}
             className="particle"
             style={{
               position: 'absolute',
-              left: '50%',
+              left: `calc(50% + ${itemOffsetX}px)`,
               top: '200px',
               width: '8px',
               height: '8px',
               borderRadius: '50%',
               backgroundColor: '#fff',
+              boxShadow: '0 0 4px rgba(255, 255, 255, 0.8)',
               transform: 'translate(-50%, -50%)',
               '--tx': `${endX}px`,
               '--ty': `${endY}px`,
