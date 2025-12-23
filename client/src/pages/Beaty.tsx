@@ -1124,6 +1124,8 @@ function Beaty() {
                   transition: font-family 0.3s ease;
                   white-space: nowrap;
                   font-size: 60px;
+                  text-align: right;
+                  min-width: 100px;
                 }
                 .beats-word:hover {
                   font-family: 'Old London', serif;
@@ -1153,8 +1155,7 @@ function Beaty() {
                 }}>
                   PRO VŠECHNY<br />
                   HUDEBNÍ PRODUCENTY<br />
-                  CO SE DĚLÁNÍM<br />
-                  <span className="beats-word">BEATS</span><br />
+                  CO SE DĚLÁNÍM <span className="beats-word">BEATS</span><br />
                   CHTĚJ ŽIVIT
                 </h2>
               </div>
