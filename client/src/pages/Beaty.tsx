@@ -1129,7 +1129,8 @@ function Beaty() {
                   transition: font-family 0.3s ease;
                   white-space: nowrap;
                   font-size: 60px;
-                  min-width: 100px;
+                  width: 150px;
+                  text-align: center;
                 }
                 .beats-word:hover {
                   font-family: 'Old London', serif;
