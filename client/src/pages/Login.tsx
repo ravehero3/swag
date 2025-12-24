@@ -101,7 +101,7 @@ function Login() {
   }
 
   return (
-    <div className="fade-in" style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "60vh", padding: "40px 20px" }}>
+    <div className="fade-in" style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh", padding: "40px 20px" }}>
       <div
         style={{
           maxWidth: "400px",
