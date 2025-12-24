@@ -814,7 +814,7 @@ function Beaty() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    transition: "transform 0.2s ease",
+                    transition: "transform 0.2s ease, filter 0.2s ease",
                     width: "28px",
                     height: "28px",
                     flexShrink: 0,
@@ -824,10 +824,22 @@ function Beaty() {
                   onMouseEnter={(e) => {
                     const btn = e.currentTarget as HTMLButtonElement;
                     btn.style.transform = "scale(1.1)";
+                    const svg = btn.querySelector("svg") as SVGElement;
+                    if (svg) {
+                      svg.setAttribute("fill", "#fff");
+                      svg.setAttribute("stroke", "#fff");
+                      svg.style.filter = "drop-shadow(0 0 4px rgba(255, 255, 255, 0.8))";
+                    }
                   }}
                   onMouseLeave={(e) => {
                     const btn = e.currentTarget as HTMLButtonElement;
                     btn.style.transform = "scale(1)";
+                    const svg = btn.querySelector("svg") as SVGElement;
+                    if (svg) {
+                      svg.setAttribute("fill", savedBeats.has(beat.id) ? "#555" : "none");
+                      svg.setAttribute("stroke", "#555");
+                      svg.style.filter = "none";
+                    }
                   }}
                   title={savedBeats.has(beat.id) ? "Remove from favorites" : "Add to favorites"}
                 >
@@ -835,8 +847,8 @@ function Beaty() {
                     width="18"
                     height="18"
                     viewBox="0 0 24 24"
-                    fill={savedBeats.has(beat.id) ? "#999" : "none"}
-                    stroke={savedBeats.has(beat.id) ? "#999" : "#888"}
+                    fill={savedBeats.has(beat.id) ? "#555" : "none"}
+                    stroke="#555"
                     strokeWidth="1"
                     style={{ transition: "all 0.3s ease" }}
                   >
