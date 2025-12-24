@@ -1242,7 +1242,7 @@ function Beaty() {
                   hudební producenty<br />
                   <div style={{ display: "flex", gap: "0.3em", justifyContent: "center", alignItems: "center" }}>
                     <span style={{ fontFamily: "'Snell Roundhand', cursive", fontSize: "50pt", fontWeight: "400" }}>co se děláním</span>
-                    <span style={{ fontFamily: "'Snell Roundhand', cursive", fontSize: "50pt", fontWeight: "bold" }}>beats</span>
+                    <span style={{ fontFamily: "'Old London', serif", fontSize: "50pt", fontWeight: "bold" }}>BEATS</span>
                   </div>
                   chtěj živit
                 </h2>
