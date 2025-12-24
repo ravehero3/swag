@@ -389,9 +389,9 @@ function Beaty() {
           style={{
             position: "absolute",
             bottom: 0,
-            left: 0,
-            width: "100%",
-            height: "166px",
+            left: "calc(-50vw + 50%)",
+            width: "100vw",
+            height: "200px",
             background: "linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 100%)",
             pointerEvents: "none",
           }}
@@ -1228,6 +1228,7 @@ function Beaty() {
                   height: "auto",
                   display: "block",
                   objectFit: "cover",
+                  minHeight: "600px",
                 }}
               />
               <div
