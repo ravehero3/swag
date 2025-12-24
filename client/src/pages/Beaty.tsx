@@ -378,7 +378,7 @@ function Beaty() {
 
       <div style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative" }}>
         <video
-          src="/uploads/hrad-na-web.mov"
+          src={isHomePage ? "/uploads/voodoo808-video.mov" : "/uploads/hrad-na-web.mov"}
           autoPlay
           loop
           muted
