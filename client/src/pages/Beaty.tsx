@@ -1211,31 +1211,33 @@ function Beaty() {
                 .co-se-text {
                   display: inline-block;
                   white-space: nowrap;
-                  font-size: clamp(40px, 8vw, 60px);
+                  font-size: 50pt;
                   height: auto;
-                  line-height: 1.0;
+                  line-height: 1.2;
+                  font-family: "'Snell Roundhand', cursive";
                 }
                 .beats-word {
                   display: inline-block;
                   transition: font-family 0.3s ease;
                   white-space: nowrap;
-                  font-size: clamp(40px, 8vw, 60px);
+                  font-size: 50pt;
                   width: auto;
                   text-align: center;
                   height: auto;
-                  line-height: 1.0;
+                  line-height: 1.2;
                   vertical-align: baseline;
+                  font-family: "'Snell Roundhand', cursive";
                   @media (max-width: 768px) {
                     width: auto;
                   }
                 }
                 .beats-word:hover {
-                  font-family: 'Old London', serif;
+                  font-family: "'Snell Roundhand', cursive";
                 }
               `}</style>
               <div style={{
                 position: "absolute",
-                top: "692px",
+                top: "392px",
                 left: "50%",
                 transform: "translateX(-50%)",
                 width: "100%",
@@ -1247,22 +1249,21 @@ function Beaty() {
               }}>
                 <h2 style={{
                   color: "#fff",
-                  fontSize: "clamp(40px, 8vw, 60px)",
-                  fontFamily: "'BB Condensed Regular', 'Roboto Condensed', sans-serif",
+                  fontSize: "50pt",
+                  fontFamily: "'Snell Roundhand', cursive",
                   fontWeight: "400",
                   letterSpacing: "0",
                   margin: 0,
-                  lineHeight: "1.0",
-                  textTransform: "uppercase",
+                  lineHeight: "1.2",
                   transition: "all 0.3s ease",
                 }}>
-                  PRO VŠECHNY<br />
-                  HUDEBNÍ PRODUCENTY<br />
+                  Pro všechny<br />
+                  hudební producenty<br />
                   <div style={{ display: "flex", gap: "0.3em", justifyContent: "center", alignItems: "center" }}>
-                    <span className="co-se-text">CO SE DĚLÁNÍM</span>
-                    <span className="beats-word">BEATS</span>
+                    <span className="co-se-text">co se děláním</span>
+                    <span className="beats-word">beats</span>
                   </div>
-                  CHTĚJ ŽIVIT
+                  chtěj živit
                 </h2>
               </div>
 
