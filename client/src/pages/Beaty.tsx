@@ -1302,7 +1302,15 @@ function Beaty() {
               </div>
 
               {/* Dock positioned at bottom */}
-              <div style={{
+              <style>{`
+                @media (max-width: 768px) {
+                  .dock-container { 
+                    transform: translateX(-50%) scale(0.65) !important;
+                    transform-origin: center bottom;
+                  }
+                }
+              `}</style>
+              <div className="dock-container" style={{
                 position: "fixed",
                 bottom: "-4px",
                 left: "50%",
@@ -1311,7 +1319,7 @@ function Beaty() {
                 display: "flex",
                 justifyContent: "center",
                 zIndex: 10,
-                overflow: "visible", // Added to ensure children aren't clipped
+                overflow: "visible",
               }}>
                 <SoundKitsDock
                   items={testSoundKits.map((kit) => ({
