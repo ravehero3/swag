@@ -836,8 +836,8 @@ function Beaty() {
                     btn.style.transform = "scale(1)";
                     const svg = btn.querySelector("svg") as SVGElement;
                     if (svg) {
-                      svg.setAttribute("fill", savedBeats.has(beat.id) ? "#555" : "none");
-                      svg.setAttribute("stroke", "#555");
+                      svg.setAttribute("fill", savedBeats.has(beat.id) ? "#fff" : "none");
+                      svg.setAttribute("stroke", "#fff");
                       svg.style.filter = "none";
                     }
                   }}
@@ -847,8 +847,8 @@ function Beaty() {
                     width="18"
                     height="18"
                     viewBox="0 0 24 24"
-                    fill={savedBeats.has(beat.id) ? "#555" : "none"}
-                    stroke="#555"
+                    fill={savedBeats.has(beat.id) ? "#fff" : "none"}
+                    stroke="#fff"
                     strokeWidth="1"
                     style={{ transition: "all 0.3s ease" }}
                   >
