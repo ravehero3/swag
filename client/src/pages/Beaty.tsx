@@ -1203,36 +1203,12 @@ function Beaty() {
               
               {/* Title text */}
               <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700;900&display=swap');
+                @import url('https://fonts.googleapis.com/css2?family=Satisfy:wght@400&display=swap');
                 @font-face {
                   font-family: 'Old London';
                   src: url('/uploads/OldLondon.ttf') format('truetype');
-                }
-                .co-se-text {
-                  display: inline-block;
-                  white-space: nowrap;
-                  font-size: 50pt;
-                  height: auto;
-                  line-height: 1.2;
-                  font-family: "'Snell Roundhand', cursive";
-                }
-                .beats-word {
-                  display: inline-block;
-                  transition: font-family 0.3s ease;
-                  white-space: nowrap;
-                  font-size: 50pt;
-                  width: auto;
-                  text-align: center;
-                  height: auto;
-                  line-height: 1.2;
-                  vertical-align: baseline;
-                  font-family: 'Old London', serif;
-                  @media (max-width: 768px) {
-                    width: auto;
-                  }
-                }
-                .beats-word:hover {
-                  font-family: 'Old London', serif;
+                  font-weight: normal;
+                  font-style: normal;
                 }
               `}</style>
               <div style={{
@@ -1250,7 +1226,7 @@ function Beaty() {
                 <h2 style={{
                   color: "#fff",
                   fontSize: "50pt",
-                  fontFamily: "'Snell Roundhand', cursive",
+                  fontFamily: "Satisfy, cursive",
                   fontWeight: "400",
                   letterSpacing: "0",
                   margin: 0,
@@ -1260,8 +1236,8 @@ function Beaty() {
                   Pro všechny<br />
                   hudební producenty<br />
                   <div style={{ display: "flex", gap: "0.3em", justifyContent: "center", alignItems: "center" }}>
-                    <span className="co-se-text">co se děláním</span>
-                    <span className="beats-word">beats</span>
+                    <span style={{ fontFamily: "Satisfy, cursive", fontSize: "50pt", fontWeight: "400" }}>co se děláním</span>
+                    <span style={{ fontFamily: "'Old London', serif", fontSize: "50pt", fontWeight: "400" }}>beats</span>
                   </div>
                   chtěj živit
                 </h2>
