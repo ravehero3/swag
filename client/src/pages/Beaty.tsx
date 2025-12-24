@@ -1170,7 +1170,7 @@ function Beaty() {
               </div>
             </div>
 
-            <div ref={soundKitsRef} className="fade-in-section delay-4 scroll-fade-section" style={{ marginTop: "-220px", marginBottom: "0px", position: "relative", zIndex: 1 }}>
+            <div ref={soundKitsRef} className="fade-in-section delay-4 scroll-fade-section" style={{ marginTop: "-380px", marginBottom: "0px", position: "relative", zIndex: 1 }}>
             {/* Background with computer image and dock */}
             <div style={{
               width: "100vw",
