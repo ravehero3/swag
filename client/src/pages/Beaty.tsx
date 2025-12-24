@@ -1235,14 +1235,14 @@ function Beaty() {
                   fontWeight: "400",
                   letterSpacing: "0",
                   margin: 0,
-                  lineHeight: "1.2",
+                  lineHeight: "0.9",
                   transition: "all 0.3s ease",
                 }}>
                   Pro všechny<br />
                   hudební producenty<br />
                   <div style={{ display: "flex", gap: "0.3em", justifyContent: "center", alignItems: "center" }}>
                     <span style={{ fontFamily: "'Snell Roundhand', cursive", fontSize: "50pt", fontWeight: "400" }}>co se děláním</span>
-                    <span style={{ fontFamily: "'Old London', serif", fontSize: "50pt", fontWeight: "bold" }}>BEATS</span>
+                    <span style={{ fontFamily: "'Old London', serif", fontSize: "50pt", fontWeight: "400" }}>BEATS</span>
                   </div>
                   chtěj živit
                 </h2>
