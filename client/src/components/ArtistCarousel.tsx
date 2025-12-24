@@ -121,6 +121,7 @@ const ArtistCarousel = () => {
                   justifyContent: "center",
                   overflow: "hidden",
                   flexShrink: 0,
+                  backgroundColor: "#000",
                 }}
               >
                 {artist.imageUrl ? (
