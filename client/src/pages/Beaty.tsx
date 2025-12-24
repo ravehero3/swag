@@ -1226,13 +1226,13 @@ function Beaty() {
                   height: auto;
                   line-height: 1.2;
                   vertical-align: baseline;
-                  font-family: "'Snell Roundhand', cursive";
+                  font-family: 'Old London', serif;
                   @media (max-width: 768px) {
                     width: auto;
                   }
                 }
                 .beats-word:hover {
-                  font-family: "'Snell Roundhand', cursive";
+                  font-family: 'Old London', serif;
                 }
               `}</style>
               <div style={{
