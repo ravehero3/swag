@@ -791,6 +791,8 @@ function Beaty() {
                     width: "28px",
                     height: "28px",
                     flexShrink: 0,
+                    zIndex: 20,
+                    position: "relative",
                   }}
                   onMouseEnter={(e) => {
                     const btn = e.currentTarget as HTMLButtonElement;
