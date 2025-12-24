@@ -1194,7 +1194,7 @@ function Beaty() {
                   }
                 }}
               >
-                Načíst další beaty
+                {isHomePage ? "Poslechnout další beaty" : "Načíst další beaty"}
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <polyline points="5 12 19 12"></polyline>
                   <polyline points="12 5 19 12 12 19"></polyline>
