@@ -1203,7 +1203,12 @@ function Beaty() {
               
               {/* Title text */}
               <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=Satisfy:wght@400&display=swap');
+                @font-face {
+                  font-family: 'Snell Roundhand';
+                  src: local('Snell Roundhand'), local('SnellRoundhand');
+                  font-weight: normal;
+                  font-style: normal;
+                }
                 @font-face {
                   font-family: 'Old London';
                   src: url('/uploads/OldLondon.ttf') format('truetype');
@@ -1226,7 +1231,7 @@ function Beaty() {
                 <h2 style={{
                   color: "#fff",
                   fontSize: "50pt",
-                  fontFamily: "Satisfy, cursive",
+                  fontFamily: "'Snell Roundhand', cursive",
                   fontWeight: "400",
                   letterSpacing: "0",
                   margin: 0,
@@ -1236,8 +1241,8 @@ function Beaty() {
                   Pro všechny<br />
                   hudební producenty<br />
                   <div style={{ display: "flex", gap: "0.3em", justifyContent: "center", alignItems: "center" }}>
-                    <span style={{ fontFamily: "Satisfy, cursive", fontSize: "50pt", fontWeight: "400" }}>co se děláním</span>
-                    <span style={{ fontFamily: "'Old London', serif", fontSize: "50pt", fontWeight: "400" }}>beats</span>
+                    <span style={{ fontFamily: "'Snell Roundhand', cursive", fontSize: "50pt", fontWeight: "400" }}>co se děláním</span>
+                    <span style={{ fontFamily: "'Snell Roundhand', cursive", fontSize: "50pt", fontWeight: "bold" }}>beats</span>
                   </div>
                   chtěj živit
                 </h2>
