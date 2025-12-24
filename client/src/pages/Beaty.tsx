@@ -681,7 +681,17 @@ function Beaty() {
           <SoundWave audioRef={audioRef} isPlaying={isPlaying} />
         )}
 
-        <div ref={beatsListRef} className="scroll-fade-section" style={{ marginBottom: "48px", maxWidth: "1200px", margin: "0 auto", marginTop: "60px" }}>
+        <style>{`
+          @media (max-width: 768px) {
+            .beats-list-container { padding: 0 16px !important; }
+            .beats-header { display: none !important; }
+            .beat-row { flex-direction: column; align-items: flex-start !important; gap: 12px !important; }
+            .beat-row > div { width: 100% !important; }
+            .beat-buttons { width: 100% !important; display: flex; gap: 12px; flex-wrap: wrap; }
+            .beats-button-group { margin-left: 0 !important; justify-content: center !important; width: 100% !important; }
+          }
+        `}</style>
+        <div ref={beatsListRef} className="scroll-fade-section beats-list-container" style={{ marginBottom: "48px", maxWidth: "1200px", margin: "0 auto", marginTop: "60px", padding: "0" }}>
           {!isHomePage && (
             <div style={{ marginBottom: "24px", display: "flex", gap: "16px", alignItems: "center" }}>
               <input
@@ -755,7 +765,7 @@ function Beaty() {
             </div>
           ) : (
             <>
-              <div style={{ display: "flex", alignItems: "center", padding: "16px 16px 8px 58px", gap: "16px", marginTop: "16px", position: "relative" }}>
+              <div className="beats-header" style={{ display: "flex", alignItems: "center", padding: "16px 16px 8px 58px", gap: "16px", marginTop: "16px", position: "relative" }}>
                 <div style={{ width: "48px", height: "48px", flexShrink: 0 }} />
                 <div style={{ width: "240px", marginRight: "12px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666" }}>NÁZEV</div>
                 <div style={{ position: "absolute", bottom: 0, left: "122px", right: "32px", height: "1px", background: "#333" }} />
@@ -766,6 +776,7 @@ function Beaty() {
             <div
               key={beat.id}
               onClick={() => playBeat(beat)}
+              className="beat-row"
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -1112,7 +1123,7 @@ function Beaty() {
             </>
           )}
           
-          <div className="fade-in-section delay-3" style={{ display: "flex", justifyContent: "center", gap: "16px", marginTop: "16px", marginBottom: "32px", marginLeft: "650px", position: "relative", zIndex: 9999, alignItems: "center", pointerEvents: "auto" }}>
+          <div className="fade-in-section delay-3 beats-button-group" style={{ display: "flex", justifyContent: "center", gap: "16px", marginTop: "16px", marginBottom: "32px", marginLeft: "650px", position: "relative", zIndex: 9999, alignItems: "center", pointerEvents: "auto", flexWrap: "wrap" }}>
               <button
                 onClick={() => setLocation("/beaty")}
                 style={{
