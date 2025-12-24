@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "npx tsx server/src/index.ts",
+    "dev": "tsx server/src/index.ts",
     "build": "vite build",
     "start": "NODE_ENV=production node dist/server/index.js"
   },
