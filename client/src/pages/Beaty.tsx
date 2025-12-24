@@ -219,6 +219,12 @@ function Beaty() {
           setSavedBeats(new Set(beatIds));
         })
         .catch(console.error);
+    } else {
+      // Load saved beats from localStorage for non-logged-in users
+      const savedBeatsJson = localStorage.getItem("voodoo808_saved_beats");
+      const savedBeats = savedBeatsJson ? JSON.parse(savedBeatsJson) : [];
+      const beatIds = savedBeats.map((beat: any) => beat.id);
+      setSavedBeats(new Set(beatIds));
     }
   }, [user]);
 
@@ -306,34 +312,55 @@ function Beaty() {
   };
 
   const toggleSave = async (beat: Beat) => {
-    if (!user) return;
-
-    try {
-      if (savedBeats.has(beat.id)) {
-        const res = await fetch(`/api/saved/beat/${beat.id}`, {
-          method: "DELETE",
-          credentials: "include",
-        });
-        if (res.ok) {
-          setSavedBeats((prev) => {
-            const next = new Set(prev);
-            next.delete(beat.id);
-            return next;
+    if (user) {
+      // For logged-in users, use API
+      try {
+        if (savedBeats.has(beat.id)) {
+          const res = await fetch(`/api/saved/beat/${beat.id}`, {
+            method: "DELETE",
+            credentials: "include",
           });
+          if (res.ok) {
+            setSavedBeats((prev) => {
+              const next = new Set(prev);
+              next.delete(beat.id);
+              return next;
+            });
+          }
+        } else {
+          const res = await fetch("/api/saved", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ itemId: beat.id, itemType: "beat" }),
+          });
+          if (res.ok) {
+            setSavedBeats((prev) => new Set([...prev, beat.id]));
+          }
         }
-      } else {
-        const res = await fetch("/api/saved", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ itemId: beat.id, itemType: "beat" }),
-        });
-        if (res.ok) {
-          setSavedBeats((prev) => new Set([...prev, beat.id]));
-        }
+      } catch (error) {
+        console.error("Error toggling save:", error);
       }
-    } catch (error) {
-      console.error("Error toggling save:", error);
+    } else {
+      // For non-logged-in users, use localStorage
+      const savedBeatsJson = localStorage.getItem("voodoo808_saved_beats");
+      const savedBeats = savedBeatsJson ? JSON.parse(savedBeatsJson) : [];
+      
+      if (savedBeats.some((b: any) => b.id === beat.id)) {
+        // Remove from saved
+        const filtered = savedBeats.filter((b: any) => b.id !== beat.id);
+        localStorage.setItem("voodoo808_saved_beats", JSON.stringify(filtered));
+        setSavedBeats((prev) => {
+          const next = new Set(prev);
+          next.delete(beat.id);
+          return next;
+        });
+      } else {
+        // Add to saved
+        const updated = [...savedBeats, beat];
+        localStorage.setItem("voodoo808_saved_beats", JSON.stringify(updated));
+        setSavedBeats((prev) => new Set([...prev, beat.id]));
+      }
     }
   };
 
