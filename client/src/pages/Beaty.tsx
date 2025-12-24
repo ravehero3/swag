@@ -804,7 +804,7 @@ function Beaty() {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (user) toggleSave(beat);
+                    toggleSave(beat);
                   }}
                   style={{
                     background: "transparent",
@@ -829,14 +829,14 @@ function Beaty() {
                     const btn = e.currentTarget as HTMLButtonElement;
                     btn.style.transform = "scale(1)";
                   }}
-                  title={user ? (savedBeats.has(beat.id) ? "Remove from favorites" : "Add to favorites") : "Log in to save"}
+                  title={savedBeats.has(beat.id) ? "Remove from favorites" : "Add to favorites"}
                 >
                   <svg
                     width="18"
                     height="18"
                     viewBox="0 0 24 24"
-                    fill={user && savedBeats.has(beat.id) ? "#ff4444" : "none"}
-                    stroke={user && savedBeats.has(beat.id) ? "#ff4444" : "#666"}
+                    fill={savedBeats.has(beat.id) ? "#ff4444" : "none"}
+                    stroke={savedBeats.has(beat.id) ? "#ff4444" : "#888"}
                     strokeWidth="1"
                     style={{ transition: "all 0.3s ease" }}
                   >
