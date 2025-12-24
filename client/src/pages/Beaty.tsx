@@ -835,8 +835,8 @@ function Beaty() {
                     width="18"
                     height="18"
                     viewBox="0 0 24 24"
-                    fill={savedBeats.has(beat.id) ? "#fff" : "none"}
-                    stroke={savedBeats.has(beat.id) ? "#fff" : "#888"}
+                    fill={savedBeats.has(beat.id) ? "#999" : "none"}
+                    stroke={savedBeats.has(beat.id) ? "#999" : "#888"}
                     strokeWidth="1"
                     style={{ transition: "all 0.3s ease" }}
                   >
