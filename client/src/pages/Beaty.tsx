@@ -1006,26 +1006,26 @@ function Beaty() {
                   alt={beat.title}
                   style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "4px", flexShrink: 0 }}
                 />
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleSave(beat);
-                  }}
-                  className="mobile-heart-btn"
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill={savedBeats.has(beat.id) ? "#ff4444" : "none"}
-                    stroke={savedBeats.has(beat.id) ? "#ff4444" : "#666"}
-                    strokeWidth="1"
-                    style={{ transition: "all 0.3s ease" }}
-                  >
-                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                  </svg>
-                </button>
               </div>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleSave(beat);
+                }}
+                className="mobile-heart-btn"
+              >
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill={savedBeats.has(beat.id) ? "#ff4444" : "none"}
+                  stroke={savedBeats.has(beat.id) ? "#ff4444" : "#666"}
+                  strokeWidth="1"
+                  style={{ transition: "all 0.3s ease" }}
+                >
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                </svg>
+              </button>
               <div className="beat-info-container" style={{ width: "240px", marginRight: "12px", display: "flex", flexDirection: "column", gap: "4px" }}>
                 <div className="beat-meta-mobile-key">{beat.key} <span className="beat-meta-mobile-separator">•</span> <span className="beat-meta-mobile-bpm">{beat.bpm}BPM</span></div>
                 <div className="beat-title-container">
