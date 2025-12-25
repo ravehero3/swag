@@ -766,7 +766,7 @@ function Beaty() {
               gap: 8px !important;
               width: auto !important;
               margin-left: 0 !important;
-              margin-top: 0 !important;
+              margin-top: 64px !important;
               position: relative !important;
               bottom: auto !important;
               right: auto !important;
@@ -782,35 +782,9 @@ function Beaty() {
               left: auto !important;
               margin-left: 0 !important;
             }
-            .beat-buttons-container button.btn-bounce {
-              position: relative !important;
-              bottom: auto !important;
-              right: auto !important;
-              margin-left: 0 !important;
-              margin-right: 0 !important;
-              min-width: auto !important;
-              padding: 6px 8px 6px 12px !important;
-              height: 28px !important;
-              font-size: 11px !important;
-              background: #000 !important;
-              color: #fff !important;
-              border: none !important;
-              font-family: "Helvetica Neue", Helvetica, Arial, sans-serif !important;
-              font-weight: 400 !important;
-              cursor: pointer !important;
-              display: flex !important;
-              align-items: center !important;
-              gap: 6px !important;
-              border-radius: 4px !important;
-              transition: background 0.2s, color 0.2s, box-shadow 0.2s !important;
-              overflow: visible !important;
-              box-shadow: inset 0 0 0 0.5px #fff !important;
-            }
             .beat-buttons-container button:not(.btn-bounce):not(.beat-heart-button) {
               position: relative !important;
               margin-left: 0 !important;
-              width: 28px !important;
-              height: 28px !important;
             }
             .beat-meta-mobile-key {
               display: block !important;
@@ -844,19 +818,6 @@ function Beaty() {
               line-height: 1.1 !important;
               margin: 0 !important;
               margin-top: 0 !important;
-            }
-            .beat-buttons-container button.btn-bounce:hover {
-              background: #fff !important;
-              color: #000 !important;
-              box-shadow: 0 0 20px rgba(255, 255, 255, 0.8), inset 0 0 0 0.5px #000, inset 0 0 10px rgba(255, 255, 255, 0.3) !important;
-            }
-            .beat-buttons-container button:not(.btn-bounce) {
-              width: 32px !important;
-              height: 32px !important;
-              padding: 8px !important;
-              background: #000 !important;
-              border: 1px solid #666 !important;
-              border-radius: 4px !important;
             }
             .mobile-heart-btn svg {
               stroke: #666 !important;
