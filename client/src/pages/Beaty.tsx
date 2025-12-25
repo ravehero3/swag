@@ -793,6 +793,19 @@ function Beaty() {
               padding: 6px 8px 6px 12px !important;
               height: 28px !important;
               font-size: 11px !important;
+              background: #000 !important;
+              color: #fff !important;
+              border: none !important;
+              font-family: "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+              font-weight: 400 !important;
+              cursor: pointer !important;
+              display: flex !important;
+              align-items: center !important;
+              gap: 6px !important;
+              border-radius: 4px !important;
+              transition: background 0.2s, color 0.2s, box-shadow 0.2s !important;
+              overflow: visible !important;
+              box-shadow: inset 0 0 0 0.5px #fff !important;
             }
             .beat-buttons-container button:not(.btn-bounce):not(.beat-heart-button) {
               position: relative !important;
@@ -832,27 +845,6 @@ function Beaty() {
               line-height: 1.1 !important;
               margin: 0 !important;
               margin-top: 0 !important;
-            }
-            /* Style buttons for mobile */
-            .beat-buttons-container button.btn-bounce {
-              padding: 8px 8px 8px 16px !important;
-              background: #000 !important;
-              color: #fff !important;
-              border: none !important;
-              font-size: 12px !important;
-              font-family: "Helvetica Neue", Helvetica, Arial, sans-serif !important;
-              font-weight: 400 !important;
-              cursor: pointer !important;
-              display: flex !important;
-              align-items: center !important;
-              gap: 6px !important;
-              border-radius: 4px !important;
-              position: relative !important;
-              min-width: 120px !important;
-              height: 32px !important;
-              transition: background 0.2s, color 0.2s, box-shadow 0.2s !important;
-              overflow: visible !important;
-              box-shadow: inset 0 0 0 0.5px #fff !important;
             }
             .beat-buttons-container button.btn-bounce:hover {
               background: #fff !important;
