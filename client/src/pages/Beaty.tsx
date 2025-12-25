@@ -511,15 +511,17 @@ function Beaty() {
                         position: "relative",
                         minWidth: "120px",
                         height: "32px",
-                        transition: "background 0.2s, color 0.2s, box-shadow 0.2s",
+                        transition: "background 0.2s, color 0.2s, border-color 0.2s",
                         overflow: "visible",
                         outline: "none",
+                        boxShadow: "none",
                       }}
                       onMouseEnter={(e) => {
                         const btn = e.currentTarget as HTMLButtonElement;
                         btn.style.background = "#fff";
                         btn.style.color = "#000";
                         btn.style.borderColor = "#000";
+                        btn.style.boxShadow = "none";
                         
                         // Change + symbol color to black
                         const plusSymbol = btn.querySelector("span[style*='position: absolute']") as HTMLElement;
@@ -1161,9 +1163,10 @@ function Beaty() {
                     height: "32px",
                     marginLeft: "8px",
                     marginRight: "16px",
-                    transition: "background 0.2s, color 0.2s, box-shadow 0.2s",
+                    transition: "background 0.2s, color 0.2s, border-color 0.2s",
                     overflow: "visible",
                     outline: "none",
+                    boxShadow: "none",
                   }}
                   onMouseEnter={(e) => {
                     const btn = e.currentTarget as HTMLButtonElement;
@@ -1259,15 +1262,17 @@ function Beaty() {
                         position: "relative",
                         minWidth: "120px",
                         height: "32px",
-                        transition: "background 0.2s, color 0.2s, box-shadow 0.2s",
+                        transition: "background 0.2s, color 0.2s, border-color 0.2s",
                         overflow: "visible",
                         outline: "none",
+                        boxShadow: "none",
                       }}
                       onMouseEnter={(e) => {
                         const btn = e.currentTarget as HTMLButtonElement;
                         btn.style.background = "#fff";
                         btn.style.color = "#000";
                         btn.style.borderColor = "#000";
+                        btn.style.boxShadow = "none";
                         const plusSymbol = btn.querySelector("span[style*='position: absolute']") as HTMLElement;
                         if (plusSymbol) plusSymbol.style.color = "#000";
                       }}
@@ -1276,6 +1281,7 @@ function Beaty() {
                         btn.style.background = "#000";
                         btn.style.color = "#fff";
                         btn.style.borderColor = "#fff";
+                        btn.style.boxShadow = "none";
                         const plusSymbol = btn.querySelector("span[style*='position: absolute']") as HTMLElement;
                         if (plusSymbol) plusSymbol.style.color = "#fff";
                       }}
