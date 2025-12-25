@@ -769,7 +769,7 @@ function Beaty() {
             .mobile-heart-btn {
               display: flex !important;
               position: absolute !important;
-              bottom: 56px !important;
+              bottom: 80px !important;
               right: 8px !important;
               top: auto !important;
               background: transparent !important;
