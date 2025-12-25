@@ -228,7 +228,7 @@ function MusicPlayer({
                   --share-btn-offset: -64px !important;
                 }
                 .buy-btn-mobile {
-                  --buy-btn-translate-y: -108px !important;
+                  --buy-btn-translate-y: -172px !important;
                   --buy-btn-translate-x: -100px !important;
                 }
               }
