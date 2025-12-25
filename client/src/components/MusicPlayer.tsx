@@ -279,11 +279,10 @@ function MusicPlayer({
             <style>{`
               @media (max-width: 768px) {
                 .share-btn-mobile {
-                  --share-btn-offset: 0px !important;
                   position: absolute !important;
-                  left: 144px !important;
-                  top: calc(50% + 160px) !important;
-                  transform: translateY(-50%) !important;
+                  right: 8px !important;
+                  top: 8px !important;
+                  transform: none !important;
                   z-index: 1002 !important;
                 }
                 .buy-btn-mobile {
@@ -292,7 +291,9 @@ function MusicPlayer({
                 .buy-btn-mobile-new {
                   display: flex !important;
                   left: 8px !important;
-                  top: 50% !important;
+                  bottom: 8px !important;
+                  top: auto !important;
+                  transform: none !important;
                 }
                 .music-player-controls {
                   display: none !important;
