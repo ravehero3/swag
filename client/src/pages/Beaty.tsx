@@ -1236,15 +1236,15 @@ function Beaty() {
                       }
                     }
                   `}</style>
-                  <div className="buy-btn-playlist-mobile" style={{ display: "flex", alignItems: "center", gap: "6px", width: "100%", height: "100%", transition: "transform 0.2s", background: "#000", border: "1px solid #fff", borderRadius: "4px", padding: "0 8px" }}>
+                  <div className="buy-btn-playlist-mobile" style={{ display: "flex", alignItems: "center", gap: "6px", width: "100%", height: "100%", transition: "transform 0.2s" }}>
                     <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, marginLeft: "-4px" }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, marginLeft: "-8px" }}>
                         <rect x="3" y="6" width="18" height="15" rx="2" />
                         <path d="M8 6V4a4 4 0 0 1 8 0v2" />
                       </svg>
                       <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "#fff", lineHeight: "1", right: "-10px", top: "-5px" }}>+</span>
                     </div>
-                    <span style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "4px" }}>{Math.floor(beat.price)} CZK</span>
+                    <span style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "8px" }}>{Math.floor(beat.price)} CZK</span>
                   </div>
                 </button>
                 <button
