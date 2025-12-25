@@ -866,7 +866,7 @@ function Beaty() {
             .beats-button-group { margin-left: 0 !important; justify-content: center !important; width: 100% !important; }
           }
         `}</style>
-        <div ref={beatsListRef} className="scroll-fade-section beats-list-container" style={{ marginBottom: "48px", maxWidth: "1200px", margin: "0 auto", marginTop: "60px", padding: "0" }}>
+        <div ref={beatsListRef} className="scroll-fade-section beats-list-container" style={{ marginBottom: "48px", maxWidth: "1200px", margin: "0 auto", marginTop: "60px", padding: "0", position: "relative", zIndex: 60 }}>
           {!isHomePage && (
             <div style={{ marginBottom: "24px", display: "flex", gap: "16px", alignItems: "center" }}>
               <input
