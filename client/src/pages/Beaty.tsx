@@ -1095,62 +1095,135 @@ function Beaty() {
                     </button>
                   ))}
                 </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    openContractModal(beat);
-                  }}
-                  className="btn-bounce"
-                  style={{
-                    padding: "8px 8px 8px 16px",
-                    background: "#000",
-                    color: "#fff",
-                    border: "1px solid #fff",
-                    fontSize: "12px",
-                    fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
-                    fontWeight: 400,
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "6px",
-                    borderRadius: "4px",
-                    position: "relative",
-                    minWidth: "120px",
-                    height: "32px",
-                    marginLeft: "8px",
-                    marginRight: "16px",
-                    transition: "background 0.2s, color 0.2s, border-color 0.2s",
-                    overflow: "visible",
-                    outline: "none",
-                    boxShadow: "none",
-                    WebkitAppearance: "none",
-                    appearance: "none",
-                    boxSizing: "border-box",
-                  }}
-                  onMouseEnter={(e) => {
-                    const btn = e.currentTarget as HTMLButtonElement;
-                    btn.style.background = "#fff";
-                    btn.style.color = "#000";
-                    btn.style.borderColor = "#000";
-                    btn.style.boxShadow = "none";
-                  }}
-                  onMouseLeave={(e) => {
-                    const btn = e.currentTarget as HTMLButtonElement;
-                    btn.style.background = "#000";
-                    btn.style.color = "#fff";
-                    btn.style.borderColor = "#fff";
-                    btn.style.boxShadow = "none";
-                  }}
-                >
-                  <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, marginLeft: "-8px" }}>
-                      <rect x="3" y="6" width="18" height="15" rx="2" />
-                      <path d="M8 6V4a4 4 0 0 1 8 0v2" />
-                    </svg>
-                    <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "inherit", lineHeight: "1", right: "-10px", top: "-5px" }}>+</span>
+                  <style>{`
+                    @media (max-width: 768px) {
+                      .buy-btn-playlist-mobile-container {
+                        display: flex !important;
+                        position: absolute !important;
+                        top: 80px !important;
+                        right: 64px !important;
+                        z-index: 100 !important;
+                      }
+                      .heart-icon-playlist-mobile {
+                        transform: translate(16px, -8px) !important;
+                      }
+                      .desktop-buy-btn {
+                        display: none !important;
+                      }
+                    }
+                  `}</style>
+                  <div className="buy-btn-playlist-mobile-container" style={{ display: "none" }}>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openContractModal(beat);
+                      }}
+                      className="btn-bounce"
+                      style={{
+                        padding: "8px 8px 8px 16px",
+                        background: "#000",
+                        color: "#fff",
+                        border: "1px solid #fff",
+                        fontSize: "12px",
+                        fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+                        fontWeight: 400,
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        borderRadius: "4px",
+                        position: "relative",
+                        minWidth: "120px",
+                        height: "32px",
+                        transition: "background 0.2s, color 0.2s, border-color 0.2s",
+                        overflow: "visible",
+                        outline: "none",
+                        boxShadow: "none",
+                        WebkitAppearance: "none",
+                        appearance: "none",
+                        boxSizing: "border-box",
+                      }}
+                      onMouseEnter={(e) => {
+                        const btn = e.currentTarget as HTMLButtonElement;
+                        btn.style.background = "#fff";
+                        btn.style.color = "#000";
+                        btn.style.borderColor = "#000";
+                        btn.style.boxShadow = "none";
+                      }}
+                      onMouseLeave={(e) => {
+                        const btn = e.currentTarget as HTMLButtonElement;
+                        btn.style.background = "#000";
+                        btn.style.color = "#fff";
+                        btn.style.borderColor = "#fff";
+                        btn.style.boxShadow = "none";
+                      }}
+                    >
+                      <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, marginLeft: "-8px" }}>
+                          <rect x="3" y="6" width="18" height="15" rx="2" />
+                          <path d="M8 6V4a4 4 0 0 1 8 0v2" />
+                        </svg>
+                        <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "inherit", lineHeight: "1", right: "-10px", top: "-5px" }}>+</span>
+                      </div>
+                      <span style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "8px" }}>{Math.floor(beat.price)} CZK</span>
+                    </button>
                   </div>
-                  <span style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "8px" }}>{Math.floor(beat.price)} CZK</span>
-                </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openContractModal(beat);
+                    }}
+                    className="btn-bounce desktop-buy-btn"
+                    style={{
+                      padding: "8px 8px 8px 16px",
+                      background: "#000",
+                      color: "#fff",
+                      border: "1px solid #fff",
+                      fontSize: "12px",
+                      fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+                      fontWeight: 400,
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      borderRadius: "4px",
+                      position: "relative",
+                      minWidth: "120px",
+                      height: "32px",
+                      marginLeft: "8px",
+                      marginRight: "16px",
+                      transition: "background 0.2s, color 0.2s, border-color 0.2s",
+                      overflow: "visible",
+                      outline: "none",
+                      boxShadow: "none",
+                      WebkitAppearance: "none",
+                      appearance: "none",
+                      boxSizing: "border-box",
+                    }}
+                    onMouseEnter={(e) => {
+                      const btn = e.currentTarget as HTMLButtonElement;
+                      btn.style.background = "#fff";
+                      btn.style.color = "#000";
+                      btn.style.borderColor = "#000";
+                      btn.style.boxShadow = "none";
+                    }}
+                    onMouseLeave={(e) => {
+                      const btn = e.currentTarget as HTMLButtonElement;
+                      btn.style.background = "#000";
+                      btn.style.color = "#fff";
+                      btn.style.borderColor = "#fff";
+                      btn.style.boxShadow = "none";
+                    }}
+                  >
+                    <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, marginLeft: "-8px" }}>
+                        <rect x="3" y="6" width="18" height="15" rx="2" />
+                        <path d="M8 6V4a4 4 0 0 1 8 0v2" />
+                      </svg>
+                      <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "inherit", lineHeight: "1", right: "-10px", top: "-5px" }}>+</span>
+                    </div>
+                    <span style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "8px" }}>{Math.floor(beat.price)} CZK</span>
+                  </button>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
