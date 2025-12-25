@@ -458,6 +458,33 @@ function Beaty() {
                   <span style={{ fontSize: "12px", fontFamily: "Work Sans, sans-serif", color: "#666" }}>
                     {highlightedBeat.bpm}BPM
                   </span>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleSave(highlightedBeat);
+                    }}
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      cursor: "pointer",
+                      padding: "4px",
+                      display: "flex",
+                      alignItems: "center",
+                      marginLeft: "4px"
+                    }}
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill={savedBeats.has(highlightedBeat.id) ? "#ff4444" : "none"}
+                      stroke={savedBeats.has(highlightedBeat.id) ? "#ff4444" : "#666"}
+                      strokeWidth="1.5"
+                      style={{ transition: "all 0.3s ease" }}
+                    >
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                    </svg>
+                  </button>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "8px" }}>
                   <h2 style={{ fontSize: "30px", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontWeight: "400", lineHeight: "1.1", position: "relative", zIndex: 10, margin: 0 }}>
