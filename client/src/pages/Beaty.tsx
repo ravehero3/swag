@@ -687,38 +687,61 @@ function Beaty() {
             .beats-header { display: none !important; }
             .beat-row { 
               padding: 12px !important;
-              gap: 12px !important;
-              display: grid !important;
-              grid-template-columns: 80px 1fr !important;
-              grid-template-areas: 
-                "image info"
-                "image buttons" !important;
-              align-items: center !important;
-              border: 1px solid #333 !important;
-              margin-bottom: 12px !important;
+              gap: 48px !important;
+              display: flex !important;
+              flex-direction: row !important;
+              align-items: flex-start !important;
+              border: none !important;
+              margin-bottom: 32px !important;
+              background: transparent !important;
             }
             .beat-image-container {
-              grid-area: image;
-              width: 80px !important;
-              height: 80px !important;
+              width: 200px !important;
+              height: 200px !important;
+              flex-shrink: 0 !important;
+              position: relative !important;
+            }
+            .mobile-play-btn, .mobile-play-overlay, .mobile-heart-btn {
+              display: flex !important;
+            }
+            .beat-meta-mobile-key {
+              display: block !important;
+            }
+            .beat-meta-desktop-inline {
+              display: none !important;
             }
             .beat-image-container img {
-              width: 80px !important;
-              height: 80px !important;
+              width: 200px !important;
+              height: 200px !important;
+              border: 1px solid #666 !important;
+              border-radius: 4px !important;
             }
             .beat-info-container {
-              grid-area: info;
               display: flex !important;
               flex-direction: column !important;
-              gap: 2px !important;
+              justify-content: flex-start !important;
+              flex: 1 !important;
+              gap: 8px !important;
             }
             .beat-buttons-container {
-              grid-area: buttons;
               display: flex !important;
               justify-content: flex-start !important;
               align-items: center !important;
-              gap: 8px !important;
-              width: 100% !important;
+              gap: 12px !important;
+              width: auto !important;
+              margin-left: 0 !important;
+              margin-top: 8px !important;
+            }
+            /* Style buttons for mobile to match featured track */
+            .beat-buttons-container button.btn-bounce {
+              padding: 8px 8px 8px 16px !important;
+              height: 32px !important;
+              min-width: 120px !important;
+            }
+            .beat-buttons-container button:not(.btn-bounce) {
+              width: 32px !important;
+              height: 32px !important;
+              padding: 8px !important;
             }
             .beat-tags-container {
               display: none !important;
@@ -849,71 +872,93 @@ function Beaty() {
             >
               <div data-separator style={{ position: "absolute", bottom: 0, left: "122px", right: "32px", height: "1px", background: "#333", opacity: 1, transition: "opacity 0.15s ease" }} />
               <div className="beat-image-container" style={{ position: "relative", display: "flex", alignItems: "center", gap: "16px", marginRight: "-4px" }}>
+                <div
+                  className="mobile-play-overlay"
+                  style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    width: "40px",
+                    height: "40px",
+                    borderRadius: "50%",
+                    backdropFilter: "blur(10px) brightness(1.2)",
+                    background: "rgba(255, 255, 255, 0.1)",
+                    border: "1px solid rgba(255, 255, 255, 0.2)",
+                    pointerEvents: "none",
+                    display: "none"
+                  }}
+                />
                 <button
+                  className="mobile-play-btn"
                   onClick={(e) => {
                     e.stopPropagation();
-                    toggleSave(beat);
+                    playBeat(beat);
                   }}
                   style={{
-                    background: "transparent",
-                    border: "none",
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    width: "40px",
+                    height: "40px",
+                    borderRadius: "50%",
+                    border: "2px solid #fff",
+                    background: currentBeat?.id === beat.id && isPlaying ? "#fff" : "rgba(0,0,0,0.7)",
+                    color: currentBeat?.id === beat.id && isPlaying ? "#000" : "#fff",
+                    fontSize: "16px",
                     cursor: "pointer",
-                    padding: "4px",
-                    display: "flex",
+                    display: "none",
                     alignItems: "center",
                     justifyContent: "center",
-                    transition: "transform 0.2s ease, filter 0.2s ease",
-                    width: "28px",
-                    height: "28px",
-                    flexShrink: 0,
-                    zIndex: 20,
-                    position: "absolute",
-                    top: "4px",
-                    left: "4px",
+                    zIndex: 1,
+                    padding: "8px",
                   }}
-                  onMouseEnter={(e) => {
-                    const btn = e.currentTarget as HTMLButtonElement;
-                    btn.style.transform = "scale(1.1)";
-                    const svg = btn.querySelector("svg") as SVGElement;
-                    if (svg) {
-                      svg.setAttribute("fill", "#fff");
-                      svg.setAttribute("stroke", "#fff");
-                      svg.style.filter = "drop-shadow(0 0 4px rgba(255, 255, 255, 0.8))";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    const btn = e.currentTarget as HTMLButtonElement;
-                    btn.style.transform = "scale(1)";
-                    const svg = btn.querySelector("svg") as SVGElement;
-                    if (svg) {
-                      svg.setAttribute("fill", savedBeats.has(beat.id) ? "#fff" : "none");
-                      svg.setAttribute("stroke", "#fff");
-                      svg.style.filter = "none";
-                    }
-                  }}
-                  title={savedBeats.has(beat.id) ? "Remove from favorites" : "Add to favorites"}
                 >
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill={savedBeats.has(beat.id) ? "#fff" : "none"}
-                    stroke="#fff"
-                    strokeWidth="1"
-                    style={{ transition: "all 0.3s ease" }}
-                  >
-                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                  </svg>
+                  {currentBeat?.id === beat.id && isPlaying ? "⏸" : "▶"}
                 </button>
                 <img
                   src={beat.artwork_url || "/uploads/artwork/metallic-logo.png"}
                   alt={beat.title}
                   style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "4px", flexShrink: 0 }}
                 />
+                {/* Heart symbol for mobile - top right of track section */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleSave(beat);
+                  }}
+                  className="mobile-heart-btn"
+                  style={{
+                    display: "none",
+                    position: "absolute",
+                    top: "-8px",
+                    right: "-12px",
+                    background: "transparent",
+                    border: "none",
+                    cursor: "pointer",
+                    padding: "8px",
+                    zIndex: 100,
+                  }}
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill={savedBeats.has(beat.id) ? "#ff4444" : "none"}
+                    stroke={savedBeats.has(beat.id) ? "#ff4444" : "#fff"}
+                    strokeWidth="2"
+                  >
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                  </svg>
+                </button>
               </div>
               <div className="beat-info-container" style={{ width: "240px", marginRight: "12px", display: "flex", flexDirection: "column", gap: "4px" }}>
-                <div style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "20px" }}>{beat.title}</div>
-                <div style={{ display: "flex", gap: "12px", color: "#666", fontSize: "14px", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif" }}>
+                <div className="beat-meta-mobile-key" style={{ display: "none" }}>{beat.key} <span className="beat-meta-mobile-separator">•</span> <span className="beat-meta-mobile-bpm">{beat.bpm}BPM</span></div>
+                <div className="beat-title-container">
+                  <h2 style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "20px", margin: 0 }}>{beat.title}</h2>
+                </div>
+                <div className="beat-meta-desktop-inline" style={{ display: "flex", gap: "12px", color: "#666", fontSize: "14px", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif" }}>
                   <span>{beat.bpm} I {beat.key}</span>
                 </div>
               </div>
