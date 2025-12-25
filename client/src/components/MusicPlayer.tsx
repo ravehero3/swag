@@ -98,15 +98,68 @@ function MusicPlayer({
           />
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "16px", flex: 1 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "16px", flex: 1, position: "relative" }}>
           <img
             src={currentBeat.artwork_url || "/uploads/artwork/metallic-logo.png"}
             alt={currentBeat.title}
             style={{ width: "84px", height: "84px", objectFit: "cover", borderRadius: "2px", marginLeft: "-16px", marginRight: "0" }}
           />
-          <div>
+          <div style={{ flex: 1 }}>
             <div style={{ fontWeight: "bold", fontSize: "18px" }}>{currentBeat.title}</div>
           </div>
+          <button
+            onClick={() => onBuyClick(currentBeat)}
+            className="btn-bounce buy-btn-mobile-new"
+            style={{
+              padding: "8px 8px 8px 16px",
+              background: "#000",
+              color: "#fff",
+              border: "none",
+              fontSize: "12px",
+              fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+              fontWeight: 400,
+              cursor: "pointer",
+              display: "none",
+              alignItems: "center",
+              gap: "6px",
+              borderRadius: "4px",
+              position: "absolute",
+              right: "0",
+              top: "50%",
+              transform: "translateY(-50%)",
+              minWidth: "120px",
+              height: "32px",
+              transition: "background 0.2s, color 0.2s, box-shadow 0.2s",
+              overflow: "visible",
+              boxShadow: "inset 0 0 0 0.5px #fff",
+              zIndex: 1001
+            }}
+            onMouseEnter={(e) => {
+              const btn = e.currentTarget as HTMLButtonElement;
+              btn.style.background = "#fff";
+              btn.style.color = "#000";
+              btn.style.boxShadow = "0 0 20px rgba(255, 255, 255, 0.8), inset 0 0 0 0.5px #000, inset 0 0 10px rgba(255, 255, 255, 0.3)";
+              const plusSymbol = btn.querySelector("span[style*='position: absolute']") as HTMLElement;
+              if (plusSymbol) plusSymbol.style.color = "#000";
+            }}
+            onMouseLeave={(e) => {
+              const btn = e.currentTarget as HTMLButtonElement;
+              btn.style.background = "#000";
+              btn.style.color = "#fff";
+              btn.style.boxShadow = "inset 0 0 0 0.5px #fff";
+              const plusSymbol = btn.querySelector("span[style*='position: absolute']") as HTMLElement;
+              if (plusSymbol) plusSymbol.style.color = "#fff";
+            }}
+          >
+            <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, marginLeft: "-8px" }}>
+                <rect x="3" y="6" width="18" height="15" rx="2" />
+                <path d="M8 6V4a4 4 0 0 1 8 0v2" />
+              </svg>
+              <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "#fff", lineHeight: "1", right: "-10px", top: "-5px" }}>+</span>
+            </div>
+            <span style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "8px" }}>{Math.floor(currentBeat.price)} CZK</span>
+          </button>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
@@ -225,11 +278,13 @@ function MusicPlayer({
             <style>{`
               @media (max-width: 768px) {
                 .share-btn-mobile {
-                  --share-btn-offset: -64px !important;
+                  --share-btn-offset: -100px !important;
                 }
                 .buy-btn-mobile {
-                  --buy-btn-translate-y: -172px !important;
-                  --buy-btn-translate-x: -100px !important;
+                  display: none !important;
+                }
+                .buy-btn-mobile-new {
+                  display: flex !important;
                 }
               }
             `}</style>
