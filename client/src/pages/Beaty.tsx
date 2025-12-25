@@ -828,7 +828,10 @@ function Beaty() {
               stroke-width: 1px !important;
             }
             .beat-tags-container {
-              display: none !important;
+              display: flex !important;
+              gap: 4px !important;
+              flex-wrap: wrap !important;
+              margin-top: 8px !important;
             }
             .beat-meta-desktop { display: none !important; }
             .beat-row [data-separator] { display: none !important; }
@@ -1031,6 +1034,30 @@ function Beaty() {
                 <div className="beat-title-container">
                   <h2 style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "20px", margin: 0 }}>{beat.title}</h2>
                 </div>
+                <div className="beat-tags-container" style={{ display: "flex", gap: "4px", flexWrap: "wrap", marginTop: "4px" }}>
+                  {beat.tags && beat.tags.length > 0 && beat.tags.map((tag) => (
+                    <button
+                      key={tag}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setLocation(`/beaty?tag=${encodeURIComponent(tag)}`);
+                      }}
+                      style={{
+                        padding: "2px 8px",
+                        background: "#0d0d0d",
+                        color: "#666",
+                        border: "1px solid #333",
+                        borderRadius: "20px",
+                        fontSize: "10px",
+                        fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+                        cursor: "pointer",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
               </div>
               <div className="beat-meta-desktop" style={{ display: "contents" }}>
                 <div style={{ width: "80px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", color: "#666", fontSize: "16px" }}>
@@ -1041,7 +1068,7 @@ function Beaty() {
                 </div>
               </div>
 
-              <div className="beat-tags-container" style={{ display: "flex", gap: "4px", flexWrap: "wrap", marginLeft: "12px", alignItems: "center" }}>
+              <div className="beat-tags-container" style={{ display: "none" }}>
                 {!isHomePage && beat.tags && beat.tags.length > 0 && beat.tags.map((tag) => (
                     <button
                       key={tag}
