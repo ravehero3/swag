@@ -781,7 +781,7 @@ function Beaty() {
             }
             .beat-buttons-container .btn-bounce:not(.beat-heart-button) {
               position: absolute !important;
-              bottom: -118px !important;
+              bottom: -182px !important;
               left: -108px !important;
               right: auto !important;
               top: auto !important;
@@ -791,7 +791,7 @@ function Beaty() {
             .beat-buttons-container button[title="Download"] {
               display: flex !important;
               position: absolute !important;
-              bottom: -118px !important;
+              bottom: -182px !important;
               right: auto !important;
               left: -42px !important;
               top: auto !important;
