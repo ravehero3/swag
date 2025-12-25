@@ -742,7 +742,7 @@ function Beaty() {
               margin-top: auto !important;
               position: absolute !important;
               bottom: 16px !important;
-              right: 8px !important;
+              right: -8px !important;
             }
             .beat-meta-mobile-key {
               display: block !important;
@@ -764,7 +764,7 @@ function Beaty() {
               margin-top: auto !important;
               position: absolute !important;
               bottom: 16px !important;
-              right: 8px !important;
+              right: -8px !important;
             }
             .mobile-heart-btn {
               display: flex !important;
