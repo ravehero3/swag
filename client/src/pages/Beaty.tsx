@@ -683,27 +683,31 @@ function Beaty() {
 
         <style>{`
           @media (max-width: 768px) {
-            .beats-list-container { padding: 0 16px !important; }
+            .beats-list-container { padding: 0 !important; }
             .beats-header { display: none !important; }
             .beat-row { 
-              padding: 12px 0 !important;
+              padding: 16px !important;
               gap: 20px !important;
               display: flex !important;
               flex-direction: row !important;
               align-items: flex-start !important;
-              border: none !important;
-              margin-bottom: 32px !important;
+              border-bottom: 0.5px solid #666 !important;
+              margin-bottom: 0 !important;
               background: transparent !important;
-              width: 100vw !important;
-              margin-left: -20px !important;
+              width: 100% !important;
+              margin-left: 0 !important;
               position: relative !important;
+              box-sizing: border-box !important;
+            }
+            .beat-row:last-child {
+              border-bottom: none !important;
             }
             .beat-image-container {
               width: 150px !important;
               height: 150px !important;
               flex-shrink: 0 !important;
               position: relative !important;
-              margin-left: 20px !important;
+              margin-left: 0 !important;
             }
             .beat-image-container img {
               width: 150px !important;
@@ -717,7 +721,7 @@ function Beaty() {
               justify-content: flex-start !important;
               flex: 1 !important;
               gap: 4px !important;
-              padding-right: 20px !important;
+              padding-right: 0 !important;
               position: relative !important;
               height: 150px !important;
             }
@@ -731,13 +735,13 @@ function Beaty() {
               margin-top: auto !important;
               position: absolute !important;
               bottom: 0 !important;
-              right: 20px !important;
+              right: 0 !important;
             }
             .mobile-heart-btn {
               display: flex !important;
               position: absolute !important;
               top: 0 !important;
-              right: 20px !important;
+              right: 0 !important;
               background: transparent !important;
               border: none !important;
               cursor: pointer !important;
