@@ -280,12 +280,18 @@ function MusicPlayer({
               @media (max-width: 768px) {
                 .share-btn-mobile {
                   --share-btn-offset: 0px !important;
+                  position: absolute !important;
+                  left: 144px !important;
+                  top: calc(50% + 80px) !important;
+                  transform: translateY(-50%) !important;
+                  z-index: 1002 !important;
                 }
                 .buy-btn-mobile {
                   display: none !important;
                 }
                 .buy-btn-mobile-new {
                   display: flex !important;
+                  left: 8px !important;
                 }
                 .music-player-controls {
                   display: none !important;
