@@ -1272,14 +1272,14 @@ function Beaty() {
                     const btn = e.currentTarget as HTMLButtonElement;
                     const svg = btn.querySelector("svg") as SVGElement;
                     if (svg) {
-                      svg.style.filter = "drop-shadow(0 0 8px rgba(255, 255, 255, 0.8))";
+                      svg.style.filter = "drop-shadow(0 0 4px rgba(255, 255, 255, 1)) drop-shadow(0 0 8px rgba(255, 255, 255, 0.9)) drop-shadow(0 0 12px rgba(255, 255, 255, 0.7))";
                     }
                   }}
                   onMouseLeave={(e) => {
                     const btn = e.currentTarget as HTMLButtonElement;
                     const svg = btn.querySelector("svg") as SVGElement;
                     if (svg) {
-                      svg.style.filter = "none";
+                      svg.style.filter = savedBeats.has(beat.id) ? "drop-shadow(0 0 8px rgba(255, 255, 255, 0.6))" : "none";
                     }
                   }}
                 >
