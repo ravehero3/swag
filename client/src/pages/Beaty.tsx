@@ -513,6 +513,7 @@ function Beaty() {
                         height: "32px",
                         transition: "background 0.2s, color 0.2s, box-shadow 0.2s",
                         overflow: "visible",
+                        outline: "none",
                       }}
                       onMouseEnter={(e) => {
                         const btn = e.currentTarget as HTMLButtonElement;
@@ -1163,6 +1164,7 @@ function Beaty() {
                     marginRight: "16px",
                     transition: "background 0.2s, color 0.2s, box-shadow 0.2s",
                     overflow: "visible",
+                    outline: "none",
                   }}
                   onMouseEnter={(e) => {
                     const btn = e.currentTarget as HTMLButtonElement;
@@ -1260,6 +1262,7 @@ function Beaty() {
                         height: "32px",
                         transition: "background 0.2s, color 0.2s, box-shadow 0.2s",
                         overflow: "visible",
+                        outline: "none",
                       }}
                       onMouseEnter={(e) => {
                         const btn = e.currentTarget as HTMLButtonElement;
