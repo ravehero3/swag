@@ -125,7 +125,7 @@ function MusicPlayer({
               borderRadius: "4px",
               position: "absolute",
               right: "0",
-              top: "50%",
+              top: "calc(50% + 80px)",
               transform: "translateY(-50%)",
               minWidth: "120px",
               height: "32px",
@@ -162,7 +162,7 @@ function MusicPlayer({
           </button>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+        <div className="music-player-controls" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
           <button
             onClick={onToggleLoop}
             style={{
@@ -278,13 +278,16 @@ function MusicPlayer({
             <style>{`
               @media (max-width: 768px) {
                 .share-btn-mobile {
-                  --share-btn-offset: -100px !important;
+                  --share-btn-offset: 0px !important;
                 }
                 .buy-btn-mobile {
                   display: none !important;
                 }
                 .buy-btn-mobile-new {
                   display: flex !important;
+                }
+                .music-player-controls {
+                  display: none !important;
                 }
               }
             `}</style>
