@@ -1039,11 +1039,13 @@ function Beaty() {
                 />
               </div>
               <div className="beat-info-container" style={{ width: "240px", marginRight: "12px", display: "flex", flexDirection: "column", gap: "4px" }}>
-                <div className="beat-meta-mobile-key">{beat.key} <span className="beat-meta-mobile-separator">•</span> <span className="beat-meta-mobile-bpm">{beat.bpm}BPM</span></div>
+                <div className="beat-meta-mobile-only" style={{ display: "none" }}>
+                  <div className="beat-meta-mobile-key">{beat.key} <span className="beat-meta-mobile-separator">•</span> <span className="beat-meta-mobile-bpm">{beat.bpm}BPM</span></div>
+                </div>
                 <div className="beat-title-container">
                   <h2 style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "20px", margin: 0 }}>{beat.title}</h2>
                 </div>
-                <div className="beat-tags-container" style={{ display: "flex", gap: "4px", flexWrap: "wrap", marginTop: "4px" }}>
+                <div className="beat-tags-container-mobile" style={{ display: "none", gap: "4px", flexWrap: "wrap", marginTop: "4px" }}>
                   {beat.tags && beat.tags.length > 0 && beat.tags.map((tag) => (
                     <button
                       key={tag}
@@ -1114,6 +1116,41 @@ function Beaty() {
               </div>
 
               <div className="beat-buttons-container" style={{ display: "flex", alignItems: "center", gap: "8px", marginLeft: "auto", marginRight: "16px" }}>
+                <div className="beat-tags-container-desktop" style={{ display: "flex", gap: "4px", marginRight: "16px" }}>
+                  {beat.tags && beat.tags.length > 0 && beat.tags.map((tag) => (
+                    <button
+                      key={tag}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setLocation(`/beaty?tag=${encodeURIComponent(tag)}`);
+                      }}
+                      style={{
+                        padding: "4px 12px",
+                        background: "#0d0d0d",
+                        color: "#666",
+                        border: "1px solid #333",
+                        borderRadius: "20px",
+                        fontSize: "10px",
+                        fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+                        cursor: "pointer",
+                        whiteSpace: "nowrap",
+                        transition: "all 0.2s ease"
+                      }}
+                      onMouseEnter={(e) => {
+                        const btn = e.currentTarget as HTMLButtonElement;
+                        btn.style.color = "#fff";
+                        btn.style.borderColor = "#666";
+                      }}
+                      onMouseLeave={(e) => {
+                        const btn = e.currentTarget as HTMLButtonElement;
+                        btn.style.color = "#666";
+                        btn.style.borderColor = "#333";
+                      }}
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
