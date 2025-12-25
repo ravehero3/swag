@@ -1102,7 +1102,7 @@ function Beaty() {
                         align-items: center !important;
                         gap: 16px !important;
                         position: absolute !important;
-                        top: 82px !important;
+                        top: 80px !important;
                         right: 102px !important;
                         z-index: 100 !important;
                       }
