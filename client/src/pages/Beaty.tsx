@@ -762,26 +762,42 @@ function Beaty() {
             }
             .beat-buttons-container {
               display: flex !important;
-              justify-content: flex-end !important;
+              justify-content: flex-start !important;
               align-items: center !important;
               gap: 8px !important;
               width: auto !important;
               margin-left: 0 !important;
-              margin-top: auto !important;
+              margin-top: 0 !important;
               position: absolute !important;
-              bottom: 8px !important;
-              right: 8px !important;
+              bottom: auto !important;
+              right: auto !important;
+              left: 174px !important;
+              top: 8px !important;
+              flex-wrap: nowrap !important;
             }
             .beat-buttons-container .beat-heart-button {
               position: absolute !important;
               top: 8px !important;
               right: 8px !important;
               bottom: auto !important;
+              margin-left: 0 !important;
             }
             .beat-buttons-container button.btn-bounce {
-              position: absolute !important;
-              bottom: 8px !important;
-              right: 8px !important;
+              position: relative !important;
+              bottom: auto !important;
+              right: auto !important;
+              margin-left: 0 !important;
+              margin-right: 0 !important;
+              min-width: auto !important;
+              padding: 6px 8px 6px 12px !important;
+              height: 28px !important;
+              font-size: 11px !important;
+            }
+            .beat-buttons-container button:not(.btn-bounce):not(.beat-heart-button) {
+              position: relative !important;
+              margin-left: 0 !important;
+              width: 28px !important;
+              height: 28px !important;
             }
             .beat-meta-mobile-key {
               display: block !important;
