@@ -686,33 +686,28 @@ function Beaty() {
             .beats-list-container { padding: 0 16px !important; }
             .beats-header { display: none !important; }
             .beat-row { 
-              padding: 12px !important;
-              gap: 48px !important;
+              padding: 12px 0 !important;
+              gap: 20px !important;
               display: flex !important;
               flex-direction: row !important;
               align-items: flex-start !important;
               border: none !important;
               margin-bottom: 32px !important;
               background: transparent !important;
-            }
-            .beat-image-container {
-              width: 200px !important;
-              height: 200px !important;
-              flex-shrink: 0 !important;
+              width: 100vw !important;
+              margin-left: -20px !important;
               position: relative !important;
             }
-            .mobile-play-btn, .mobile-play-overlay, .mobile-heart-btn {
-              display: flex !important;
-            }
-            .beat-meta-mobile-key {
-              display: block !important;
-            }
-            .beat-meta-desktop-inline {
-              display: none !important;
+            .beat-image-container {
+              width: 150px !important;
+              height: 150px !important;
+              flex-shrink: 0 !important;
+              position: relative !important;
+              margin-left: 20px !important;
             }
             .beat-image-container img {
-              width: 200px !important;
-              height: 200px !important;
+              width: 150px !important;
+              height: 150px !important;
               border: 1px solid #666 !important;
               border-radius: 4px !important;
             }
@@ -721,27 +716,62 @@ function Beaty() {
               flex-direction: column !important;
               justify-content: flex-start !important;
               flex: 1 !important;
-              gap: 8px !important;
+              gap: 4px !important;
+              padding-right: 20px !important;
+              position: relative !important;
+              height: 150px !important;
             }
             .beat-buttons-container {
               display: flex !important;
-              justify-content: flex-start !important;
+              justify-content: flex-end !important;
               align-items: center !important;
-              gap: 12px !important;
+              gap: 8px !important;
               width: auto !important;
               margin-left: 0 !important;
-              margin-top: 8px !important;
+              margin-top: auto !important;
+              position: absolute !important;
+              bottom: 0 !important;
+              right: 20px !important;
             }
-            /* Style buttons for mobile to match featured track */
+            .mobile-heart-btn {
+              display: flex !important;
+              position: absolute !important;
+              top: 0 !important;
+              right: 20px !important;
+              background: transparent !important;
+              border: none !important;
+              cursor: pointer !important;
+              padding: 0 !important;
+              z-index: 100 !important;
+            }
+            .mobile-play-btn, .mobile-play-overlay {
+              display: flex !important;
+            }
+            .beat-meta-mobile-key {
+              display: block !important;
+              margin-top: 10px !important;
+            }
+            .beat-meta-desktop-inline {
+              display: none !important;
+            }
+            .beat-info-container h2 {
+              font-size: 24px !important;
+              font-family: "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+              font-weight: 400 !important;
+              line-height: 1.1 !important;
+              margin: 0 !important;
+            }
+            /* Style buttons for mobile */
             .beat-buttons-container button.btn-bounce {
-              padding: 8px 8px 8px 16px !important;
-              height: 32px !important;
-              min-width: 120px !important;
+              padding: 4px 8px !important;
+              height: 28px !important;
+              min-width: 90px !important;
+              font-size: 10px !important;
             }
             .beat-buttons-container button:not(.btn-bounce) {
-              width: 32px !important;
-              height: 32px !important;
-              padding: 8px !important;
+              width: 28px !important;
+              height: 28px !important;
+              padding: 6px !important;
             }
             .beat-tags-container {
               display: none !important;
@@ -922,24 +952,12 @@ function Beaty() {
                   alt={beat.title}
                   style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "4px", flexShrink: 0 }}
                 />
-                {/* Heart symbol for mobile - top right of track section */}
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     toggleSave(beat);
                   }}
                   className="mobile-heart-btn"
-                  style={{
-                    display: "none",
-                    position: "absolute",
-                    top: "-8px",
-                    right: "-12px",
-                    background: "transparent",
-                    border: "none",
-                    cursor: "pointer",
-                    padding: "8px",
-                    zIndex: 100,
-                  }}
                 >
                   <svg
                     width="24"
@@ -954,6 +972,25 @@ function Beaty() {
                 </button>
               </div>
               <div className="beat-info-container" style={{ width: "240px", marginRight: "12px", display: "flex", flexDirection: "column", gap: "4px" }}>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleSave(beat);
+                  }}
+                  className="mobile-heart-btn"
+                  style={{ display: "none" }}
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill={savedBeats.has(beat.id) ? "#ff4444" : "none"}
+                    stroke={savedBeats.has(beat.id) ? "#ff4444" : "#fff"}
+                    strokeWidth="2"
+                  >
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                  </svg>
+                </button>
                 <div className="beat-meta-mobile-key" style={{ display: "none" }}>{beat.key} <span className="beat-meta-mobile-separator">•</span> <span className="beat-meta-mobile-bpm">{beat.bpm}BPM</span></div>
                 <div className="beat-title-container">
                   <h2 style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "20px", margin: 0 }}>{beat.title}</h2>
