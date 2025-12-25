@@ -687,49 +687,43 @@ function Beaty() {
             .beats-header { display: none !important; }
             .beat-row { 
               padding: 12px !important;
-              gap: 16px !important;
+              gap: 12px !important;
               display: grid !important;
-              grid-template-columns: 120px 1fr !important;
+              grid-template-columns: 80px 1fr !important;
               grid-template-areas: 
                 "image info"
-                "image buttons"
-                "tags tags" !important;
-              align-items: start !important;
+                "image buttons" !important;
+              align-items: center !important;
               border: 1px solid #333 !important;
               margin-bottom: 12px !important;
             }
             .beat-image-container {
               grid-area: image;
-              width: 120px !important;
-              height: 120px !important;
+              width: 80px !important;
+              height: 80px !important;
             }
             .beat-image-container img {
-              width: 120px !important;
-              height: 120px !important;
+              width: 80px !important;
+              height: 80px !important;
             }
             .beat-info-container {
               grid-area: info;
               display: flex !important;
               flex-direction: column !important;
-              gap: 4px !important;
+              gap: 2px !important;
             }
             .beat-buttons-container {
               grid-area: buttons;
               display: flex !important;
-              justify-content: flex-end !important;
+              justify-content: flex-start !important;
               align-items: center !important;
               gap: 8px !important;
               width: 100% !important;
             }
-            .beat-meta-desktop { display: none !important; }
             .beat-tags-container {
-              grid-area: tags;
-              margin-left: 0 !important;
-              margin-top: 8px !important;
-              display: flex !important;
-              flex-direction: row !important;
-              flex-wrap: wrap !important;
+              display: none !important;
             }
+            .beat-meta-desktop { display: none !important; }
             .beat-row [data-separator] { display: none !important; }
             .beats-button-group { margin-left: 0 !important; justify-content: center !important; width: 100% !important; }
           }
@@ -920,8 +914,7 @@ function Beaty() {
               <div className="beat-info-container" style={{ width: "240px", marginRight: "12px", display: "flex", flexDirection: "column", gap: "4px" }}>
                 <div style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "20px" }}>{beat.title}</div>
                 <div style={{ display: "flex", gap: "12px", color: "#666", fontSize: "14px", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif" }}>
-                  <span>{beat.bpm} BPM</span>
-                  <span>{beat.key}</span>
+                  <span>{beat.bpm} I {beat.key}</span>
                 </div>
               </div>
               <div className="beat-meta-desktop" style={{ display: "contents" }}>
@@ -934,7 +927,7 @@ function Beaty() {
               </div>
 
               <div className="beat-tags-container" style={{ display: "flex", gap: "4px", flexWrap: "wrap", marginLeft: "12px", alignItems: "center" }}>
-                {beat.tags && beat.tags.length > 0 && beat.tags.map((tag) => (
+                {!isHomePage && beat.tags && beat.tags.length > 0 && beat.tags.map((tag) => (
                     <button
                       key={tag}
                       onClick={(e) => {
