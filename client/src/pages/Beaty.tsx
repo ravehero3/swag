@@ -565,7 +565,7 @@ function Beaty() {
                         const btn = e.currentTarget as HTMLButtonElement;
                         btn.style.background = "#000";
                         btn.style.color = "#fff";
-                        btn.style.boxShadow = "inset 0 0 0 0.5px #fff";
+                        btn.style.borderColor = "#fff";
                         
                         // Change + symbol color back to white
                         const plusSymbol = btn.querySelector("span[style*='position: absolute']") as HTMLElement;
@@ -574,7 +574,6 @@ function Beaty() {
                         // Remove only particles, not icon container
                         const particles = btn.querySelectorAll("div[data-particle='true']");
                         particles.forEach((p) => p.remove());
-                        btn.style.borderColor = "#fff";
                       }}
                     >
                       <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
