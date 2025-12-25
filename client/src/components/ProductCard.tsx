@@ -165,10 +165,10 @@ export default function ProductCard({
               onClick={handleHeartClick}
               className={isHeartAnimating ? "heart-pulse" : ""}
               style={{
-                background: "none",
+                background: "#000",
                 border: "none",
                 cursor: "pointer",
-                padding: "0",
+                padding: "4px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -176,6 +176,7 @@ export default function ProductCard({
                 height: "24px",
                 flexShrink: 0,
                 marginRight: "8px",
+                borderRadius: "4px"
               }}
               title={isSaved ? "Remove from favorites" : "Add to favorites"}
             >

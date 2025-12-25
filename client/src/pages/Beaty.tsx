@@ -464,13 +464,14 @@ function Beaty() {
                       toggleSave(highlightedBeat);
                     }}
                     style={{
-                      background: "transparent",
+                      background: "#000",
                       border: "none",
                       cursor: "pointer",
                       padding: "4px",
                       display: "flex",
                       alignItems: "center",
-                      marginLeft: "4px"
+                      marginLeft: "4px",
+                      borderRadius: "4px"
                     }}
                   >
                     <svg
@@ -1043,6 +1044,16 @@ function Beaty() {
                   toggleSave(beat);
                 }}
                 className="mobile-heart-btn"
+                style={{
+                  background: "#000",
+                  border: "none",
+                  padding: "8px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderRadius: "4px",
+                  cursor: "pointer"
+                }}
               >
                 <svg
                   width="24"
@@ -1139,7 +1150,7 @@ function Beaty() {
                       toggleSave(beat);
                     }}
                     style={{
-                      background: "transparent",
+                      background: "#000",
                       border: "none",
                       cursor: "pointer",
                       padding: "8px",
@@ -1147,6 +1158,7 @@ function Beaty() {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
+                      borderRadius: "4px",
                     }}
                     title={savedBeats.has(beat.id) ? "Remove from favorites" : "Add to favorites"}
                   >
