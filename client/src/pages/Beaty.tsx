@@ -1102,8 +1102,8 @@ function Beaty() {
                         align-items: center !important;
                         gap: 16px !important;
                         position: absolute !important;
-                        top: 112px !important;
-                        right: 12px !important;
+                        top: 72px !important;
+                        right: 72px !important;
                         z-index: 100 !important;
                       }
                       .heart-icon-playlist-mobile {
