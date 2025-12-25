@@ -1272,6 +1272,7 @@ function Beaty() {
                     const btn = e.currentTarget as HTMLButtonElement;
                     const svg = btn.querySelector("svg") as SVGElement;
                     if (svg) {
+                      svg.style.stroke = "#fff";
                       svg.style.filter = "drop-shadow(0 0 4px rgba(255, 255, 255, 1)) drop-shadow(0 0 8px rgba(255, 255, 255, 0.9)) drop-shadow(0 0 12px rgba(255, 255, 255, 0.7))";
                     }
                   }}
@@ -1279,6 +1280,7 @@ function Beaty() {
                     const btn = e.currentTarget as HTMLButtonElement;
                     const svg = btn.querySelector("svg") as SVGElement;
                     if (svg) {
+                      svg.style.stroke = savedBeats.has(beat.id) ? "#fff" : "#888";
                       svg.style.filter = savedBeats.has(beat.id) ? "drop-shadow(0 0 8px rgba(255, 255, 255, 0.6))" : "none";
                     }
                   }}
