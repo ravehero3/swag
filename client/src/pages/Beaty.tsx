@@ -759,6 +759,17 @@ function Beaty() {
               padding-right: 0 !important;
               position: relative !important;
             }
+            .beat-buttons-container {
+              display: flex !important;
+              justify-content: flex-start !important;
+              align-items: center !important;
+              gap: 8px !important;
+              width: auto !important;
+              margin-left: 0 !important;
+              margin-top: 64px !important;
+              position: static !important;
+              flex-wrap: wrap !important;
+            }
             .beat-buttons-container .beat-heart-button {
               position: absolute !important;
               bottom: -42px !important;
@@ -775,6 +786,11 @@ function Beaty() {
               right: auto !important;
               top: auto !important;
               margin-left: 0 !important;
+              z-index: 20 !important;
+            }
+            .beat-buttons-container button:not(.btn-bounce):not(.beat-heart-button) {
+              display: flex !important;
+              position: relative !important;
               z-index: 20 !important;
             }
             .beat-meta-mobile-key {
