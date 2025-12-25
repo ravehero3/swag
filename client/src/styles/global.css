@@ -223,3 +223,12 @@ input::placeholder, textarea::placeholder {
     opacity: 0.6;
   }
 }
+
+/* Mobile view button positioning */
+@media (max-width: 768px) {
+  .btn-bounce {
+    position: relative;
+    top: -40px;
+    left: -64px;
+  }
+}
