@@ -686,7 +686,7 @@ function Beaty() {
             .beats-list-container { padding: 0 !important; }
             .beats-header { display: none !important; }
             .beat-row { 
-              padding: 16px !important;
+              padding: 8px !important;
               gap: 20px !important;
               display: flex !important;
               flex-direction: row !important;
@@ -694,10 +694,17 @@ function Beaty() {
               border-bottom: 0.5px solid #666 !important;
               margin-bottom: 0 !important;
               background: transparent !important;
-              width: 100% !important;
-              margin-left: 0 !important;
+              width: calc(100% - 4px) !important;
+              margin-left: 2px !important;
+              margin-right: 2px !important;
               position: relative !important;
               box-sizing: border-box !important;
+              transition: outline 0.2s ease !important;
+            }
+            .beat-row:hover {
+              outline: 1px solid #007bff !important;
+              outline-offset: -1px !important;
+              border-radius: 4px !important;
             }
             .beat-row:last-child {
               border-bottom: none !important;
