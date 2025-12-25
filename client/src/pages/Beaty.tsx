@@ -767,24 +767,25 @@ function Beaty() {
               width: auto !important;
               margin-left: 0 !important;
               margin-top: 64px !important;
-              position: relative !important;
-              bottom: auto !important;
-              right: auto !important;
-              left: auto !important;
-              top: auto !important;
-              flex-wrap: nowrap !important;
+              position: static !important;
             }
             .beat-buttons-container .beat-heart-button {
               position: absolute !important;
-              top: 8px !important;
+              bottom: 8px !important;
               right: 8px !important;
-              bottom: auto !important;
+              top: auto !important;
               left: auto !important;
               margin-left: 0 !important;
+              z-index: 20 !important;
             }
-            .beat-buttons-container button:not(.btn-bounce):not(.beat-heart-button) {
-              position: relative !important;
+            .beat-buttons-container .btn-bounce:not(.beat-heart-button) {
+              position: absolute !important;
+              top: 8px !important;
+              left: 8px !important;
+              right: auto !important;
+              bottom: auto !important;
               margin-left: 0 !important;
+              z-index: 20 !important;
             }
             .beat-meta-mobile-key {
               display: block !important;
