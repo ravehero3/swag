@@ -744,11 +744,34 @@ function Beaty() {
               bottom: 16px !important;
               right: 8px !important;
             }
+            .beat-meta-mobile-key {
+              display: block !important;
+              margin-top: 0 !important;
+              color: #666 !important;
+              font-size: 12px !important;
+              font-family: "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+            }
+            .beat-meta-desktop-inline {
+              display: none !important;
+            }
+            .beat-buttons-container {
+              display: flex !important;
+              justify-content: flex-end !important;
+              align-items: center !important;
+              gap: 8px !important;
+              width: auto !important;
+              margin-left: 0 !important;
+              margin-top: auto !important;
+              position: absolute !important;
+              bottom: 16px !important;
+              right: 8px !important;
+            }
             .mobile-heart-btn {
               display: flex !important;
               position: absolute !important;
-              top: 8px !important;
+              bottom: 56px !important;
               right: 8px !important;
+              top: auto !important;
               background: transparent !important;
               border: none !important;
               cursor: pointer !important;
@@ -757,18 +780,6 @@ function Beaty() {
             }
             .mobile-play-btn, .mobile-play-overlay {
               display: flex !important;
-            }
-            .beat-meta-mobile-key {
-              display: block !important;
-              margin-top: 10px !important;
-            }
-            .beat-meta-desktop-inline {
-              display: flex !important;
-              gap: 12px !important;
-              color: #666 !important;
-              font-size: 14px !important;
-              font-family: "Helvetica Neue", Helvetica, Arial, sans-serif !important;
-              margin-top: 4px !important;
             }
             .beat-info-container h2 {
               font-size: 24px !important;
@@ -1016,12 +1027,9 @@ function Beaty() {
                 </button>
               </div>
               <div className="beat-info-container" style={{ width: "240px", marginRight: "12px", display: "flex", flexDirection: "column", gap: "4px" }}>
-                <div className="beat-meta-mobile-key" style={{ display: "none" }}>{beat.key} <span className="beat-meta-mobile-separator">•</span> <span className="beat-meta-mobile-bpm">{beat.bpm}BPM</span></div>
+                <div className="beat-meta-mobile-key">{beat.key} <span className="beat-meta-mobile-separator">•</span> <span className="beat-meta-mobile-bpm">{beat.bpm}BPM</span></div>
                 <div className="beat-title-container">
                   <h2 style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "20px", margin: 0 }}>{beat.title}</h2>
-                </div>
-                <div className="beat-meta-desktop-inline" style={{ display: "flex", gap: "12px", color: "#666", fontSize: "14px", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif" }}>
-                  <span>{beat.bpm} I {beat.key}</span>
                 </div>
               </div>
               <div className="beat-meta-desktop" style={{ display: "contents" }}>
