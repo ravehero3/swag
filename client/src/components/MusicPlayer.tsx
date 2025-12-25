@@ -218,17 +218,18 @@ function MusicPlayer({
               borderRadius: "4px",
               transform: "translateY(var(--share-btn-offset, 0))",
               transition: "transform 0.2s",
+              zIndex: 1000
             }}
             title="Share"
           >
             <style>{`
               @media (max-width: 768px) {
                 .share-btn-mobile {
-                  --share-btn-offset: -64px;
+                  --share-btn-offset: -64px !important;
                 }
                 .buy-btn-mobile {
-                  --buy-btn-translate-y: 64px;
-                  --buy-btn-translate-x: -100px;
+                  --buy-btn-translate-y: 64px !important;
+                  --buy-btn-translate-x: -100px !important;
                 }
               }
             `}</style>
@@ -264,6 +265,7 @@ function MusicPlayer({
               overflow: "visible",
               boxShadow: "inset 0 0 0 0.5px #fff",
               transform: "translate(var(--buy-btn-translate-x, 0), var(--buy-btn-translate-y, 0))",
+              zIndex: 1000
             }}
             onMouseEnter={(e) => {
               const btn = e.currentTarget as HTMLButtonElement;
