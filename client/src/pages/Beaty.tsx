@@ -1100,12 +1100,12 @@ function Beaty() {
                       .buy-btn-playlist-mobile-container {
                         display: flex !important;
                         position: absolute !important;
-                        top: 104px !important;
-                        right: 128px !important;
+                        top: 112px !important;
+                        right: 136px !important;
                         z-index: 100 !important;
                       }
                       .heart-icon-playlist-mobile {
-                        transform: translate(16px, -8px) !important;
+                        transform: translate(16px, -12px) !important;
                       }
                       .desktop-buy-btn {
                         display: none !important;
