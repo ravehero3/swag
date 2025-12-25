@@ -769,8 +769,19 @@ function Beaty() {
               margin-left: 0 !important;
               margin-top: auto !important;
               position: absolute !important;
-              bottom: 16px !important;
-              right: -8px !important;
+              bottom: 8px !important;
+              right: 8px !important;
+            }
+            .beat-buttons-container .beat-heart-button {
+              position: absolute !important;
+              top: 8px !important;
+              right: 8px !important;
+              bottom: auto !important;
+            }
+            .beat-buttons-container button.btn-bounce {
+              position: absolute !important;
+              bottom: 8px !important;
+              right: 8px !important;
             }
             .beat-meta-mobile-key {
               display: block !important;
@@ -781,18 +792,6 @@ function Beaty() {
             }
             .beat-meta-desktop-inline {
               display: none !important;
-            }
-            .beat-buttons-container {
-              display: flex !important;
-              justify-content: flex-end !important;
-              align-items: center !important;
-              gap: 8px !important;
-              width: auto !important;
-              margin-left: 0 !important;
-              margin-top: auto !important;
-              position: absolute !important;
-              bottom: 16px !important;
-              right: -8px !important;
             }
             .mobile-heart-btn {
               display: flex !important;
