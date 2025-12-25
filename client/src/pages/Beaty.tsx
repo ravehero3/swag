@@ -714,17 +714,17 @@ function Beaty() {
             .beats-list-container { padding: 0 !important; }
             .beats-header { display: none !important; }
             .beat-row { 
-              padding: 8px !important;
-              gap: 20px !important;
-              display: flex !important;
-              flex-direction: row !important;
-              align-items: flex-start !important;
+              padding: 16px !important;
+              gap: 16px !important;
+              display: grid !important;
+              grid-template-columns: 150px 1fr !important;
+              align-items: start !important;
               border-bottom: 0.5px solid #666 !important;
               margin-bottom: 0 !important;
               background: transparent !important;
-              width: calc(100% - 4px) !important;
-              margin-left: 2px !important;
-              margin-right: 2px !important;
+              width: calc(100% - 32px) !important;
+              margin-left: 0 !important;
+              margin-right: 0 !important;
               position: relative !important;
               box-sizing: border-box !important;
               transition: outline 0.2s ease !important;
@@ -743,6 +743,7 @@ function Beaty() {
               flex-shrink: 0 !important;
               position: relative !important;
               margin-left: 0 !important;
+              grid-row: 1 / 3 !important;
             }
             .beat-image-container img {
               width: 150px !important;
@@ -754,11 +755,9 @@ function Beaty() {
               display: flex !important;
               flex-direction: column !important;
               justify-content: flex-start !important;
-              flex: 1 !important;
-              gap: 4px !important;
+              gap: 8px !important;
               padding-right: 0 !important;
               position: relative !important;
-              height: 150px !important;
             }
             .beat-buttons-container {
               display: flex !important;
@@ -768,10 +767,10 @@ function Beaty() {
               width: auto !important;
               margin-left: 0 !important;
               margin-top: 0 !important;
-              position: absolute !important;
-              bottom: 8px !important;
+              position: relative !important;
+              bottom: auto !important;
               right: auto !important;
-              left: 174px !important;
+              left: auto !important;
               top: auto !important;
               flex-wrap: nowrap !important;
             }
