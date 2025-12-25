@@ -1228,23 +1228,67 @@ function Beaty() {
                 >
                   <style>{`
                     @media (max-width: 768px) {
-                      .buy-btn-playlist-mobile {
-                        transform: translate(-104px, 120px) !important;
+                      .buy-btn-playlist-mobile-container {
+                        position: absolute !important;
+                        left: -104px !important;
+                        top: 120px !important;
+                        z-index: 100 !important;
                       }
                       .heart-icon-playlist-mobile {
                         transform: translate(16px, -8px) !important;
                       }
                     }
                   `}</style>
-                  <div className="buy-btn-playlist-mobile" style={{ display: "flex", alignItems: "center", gap: "6px", width: "100%", height: "100%", transition: "transform 0.2s" }}>
-                    <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, marginLeft: "-8px" }}>
-                        <rect x="3" y="6" width="18" height="15" rx="2" />
-                        <path d="M8 6V4a4 4 0 0 1 8 0v2" />
-                      </svg>
-                      <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "#fff", lineHeight: "1", right: "-10px", top: "-5px" }}>+</span>
-                    </div>
-                    <span style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "8px" }}>{Math.floor(beat.price)} CZK</span>
+                  <div className="buy-btn-playlist-mobile-container" style={{ position: "relative" }}>
+                    <button
+                      onClick={() => openContractModal(beat)}
+                      className="btn-bounce"
+                      style={{
+                        padding: "8px 8px 8px 16px",
+                        background: "#000",
+                        color: "#fff",
+                        border: "none",
+                        fontSize: "12px",
+                        fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+                        fontWeight: 400,
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        borderRadius: "4px",
+                        position: "relative",
+                        minWidth: "120px",
+                        height: "32px",
+                        transition: "background 0.2s, color 0.2s, box-shadow 0.2s",
+                        overflow: "visible",
+                        boxShadow: "inset 0 0 0 0.5px #fff",
+                      }}
+                      onMouseEnter={(e) => {
+                        const btn = e.currentTarget as HTMLButtonElement;
+                        btn.style.background = "#fff";
+                        btn.style.color = "#000";
+                        btn.style.boxShadow = "0 0 20px rgba(255, 255, 255, 0.8), inset 0 0 0 0.5px #000, inset 0 0 10px rgba(255, 255, 255, 0.3)";
+                        const plusSymbol = btn.querySelector("span[style*='position: absolute']") as HTMLElement;
+                        if (plusSymbol) plusSymbol.style.color = "#000";
+                      }}
+                      onMouseLeave={(e) => {
+                        const btn = e.currentTarget as HTMLButtonElement;
+                        btn.style.background = "#000";
+                        btn.style.color = "#fff";
+                        btn.style.boxShadow = "inset 0 0 0 0.5px #fff";
+                        const plusSymbol = btn.querySelector("span[style*='position: absolute']") as HTMLElement;
+                        if (plusSymbol) plusSymbol.style.color = "#fff";
+                      }}
+                    >
+                      <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, marginLeft: "-8px" }}>
+                          <rect x="3" y="6" width="18" height="15" rx="2" />
+                          <path d="M8 6V4a4 4 0 0 1 8 0v2" />
+                        </svg>
+                        <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "#fff", lineHeight: "1", right: "-10px", top: "-5px" }}>+</span>
+                      </div>
+                      <span style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "8px" }}>{Math.floor(beat.price)} CZK</span>
+                    </button>
                   </div>
                 </button>
                 <button
