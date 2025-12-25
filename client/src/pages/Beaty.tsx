@@ -1047,7 +1047,7 @@ function Beaty() {
                 <div className="beat-title-container">
                   <h2 style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "20px", margin: 0 }}>{beat.title}</h2>
                 </div>
-                <div className="beat-tags-container-mobile" style={{ display: "none", gap: "4px", flexWrap: "wrap", marginTop: "4px" }}>
+                <div className="beat-tags-container-mobile" style={{ display: "flex", gap: "4px", flexWrap: "wrap", marginTop: "4px" }}>
                   {beat.tags && beat.tags.length > 0 && beat.tags.map((tag) => (
                     <button
                       key={tag}
@@ -1496,6 +1496,14 @@ function Beaty() {
                   .dock-container { 
                     transform: translateX(-50%) scale(0.65) !important;
                     transform-origin: center bottom;
+                  }
+                  .beat-tags-container-mobile {
+                    display: flex !important;
+                  }
+                }
+                @media (min-width: 769px) {
+                  .beat-tags-container-mobile {
+                    display: none !important;
                   }
                 }
               `}</style>
