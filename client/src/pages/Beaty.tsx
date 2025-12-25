@@ -741,14 +741,14 @@ function Beaty() {
               margin-left: 0 !important;
               margin-top: auto !important;
               position: absolute !important;
-              bottom: 0 !important;
-              right: 0 !important;
+              bottom: 16px !important;
+              right: 8px !important;
             }
             .mobile-heart-btn {
               display: flex !important;
               position: absolute !important;
-              top: 0 !important;
-              right: 0 !important;
+              top: 8px !important;
+              right: 8px !important;
               background: transparent !important;
               border: none !important;
               cursor: pointer !important;
@@ -763,7 +763,12 @@ function Beaty() {
               margin-top: 10px !important;
             }
             .beat-meta-desktop-inline {
-              display: none !important;
+              display: flex !important;
+              gap: 12px !important;
+              color: #666 !important;
+              font-size: 14px !important;
+              font-family: "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+              margin-top: 4px !important;
             }
             .beat-info-container h2 {
               font-size: 24px !important;
@@ -771,6 +776,7 @@ function Beaty() {
               font-weight: 400 !important;
               line-height: 1.1 !important;
               margin: 0 !important;
+              margin-top: 0 !important;
             }
             /* Style buttons for mobile */
             .beat-buttons-container button.btn-bounce {
