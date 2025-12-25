@@ -941,7 +941,7 @@ function Beaty() {
           ) : (
             <>
               <div className="beats-header" style={{ display: "flex", alignItems: "center", padding: "6px 16px", gap: "16px", marginTop: "16px", position: "relative" }}>
-                <div style={{ position: "relative", display: "flex", alignItems: "center", gap: "16px", marginRight: "-4px" }}>
+                <div style={{ position: "relative", display: "flex", alignItems: "center", gap: "16px", marginRight: "-4px", width: "48px", flexShrink: 0 }}>
                   <div style={{ width: "48px", height: "48px", flexShrink: 0 }} />
                 </div>
                 <div style={{ width: "240px", marginRight: "12px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666" }}>NÁZEV</div>
@@ -1265,17 +1265,32 @@ function Beaty() {
                     alignItems: "center",
                     justifyContent: "center",
                     borderRadius: "4px",
+                    transition: "all 0.3s ease",
                   }}
                   title={savedBeats.has(beat.id) ? "Remove from favorites" : "Add to favorites"}
+                  onMouseEnter={(e) => {
+                    const btn = e.currentTarget as HTMLButtonElement;
+                    const svg = btn.querySelector("svg") as SVGElement;
+                    if (svg) {
+                      svg.style.filter = "drop-shadow(0 0 8px rgba(255, 255, 255, 0.8))";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    const btn = e.currentTarget as HTMLButtonElement;
+                    const svg = btn.querySelector("svg") as SVGElement;
+                    if (svg) {
+                      svg.style.filter = "none";
+                    }
+                  }}
                 >
                   <svg
                     width="20"
                     height="20"
                     viewBox="0 0 24 24"
-                    fill={savedBeats.has(beat.id) ? "#ff4444" : "none"}
-                    stroke={savedBeats.has(beat.id) ? "#ff4444" : "#888"}
+                    fill={savedBeats.has(beat.id) ? "#fff" : "none"}
+                    stroke={savedBeats.has(beat.id) ? "#fff" : "#888"}
                     strokeWidth="2"
-                    style={{ transition: "all 0.3s ease" }}
+                    style={{ transition: "all 0.3s ease", filter: savedBeats.has(beat.id) ? "drop-shadow(0 0 8px rgba(255, 255, 255, 0.6))" : "none" }}
                   >
                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                   </svg>
