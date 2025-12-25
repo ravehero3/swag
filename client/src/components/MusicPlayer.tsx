@@ -208,7 +208,7 @@ function MusicPlayer({
         <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1, justifyContent: "flex-end" }}>
           <button
             onClick={() => setShowShareModal(true)}
-            className="btn-bounce"
+            className="btn-bounce share-btn-mobile"
             style={{
               background: "transparent",
               border: "none",
@@ -216,9 +216,22 @@ function MusicPlayer({
               cursor: "pointer",
               padding: "8px",
               borderRadius: "4px",
+              transform: "translateY(var(--share-btn-offset, 0))",
+              transition: "transform 0.2s",
             }}
             title="Share"
           >
+            <style>{`
+              @media (max-width: 768px) {
+                .share-btn-mobile {
+                  --share-btn-offset: -64px;
+                }
+                .buy-btn-mobile {
+                  --buy-btn-translate-y: 64px;
+                  --buy-btn-translate-x: -100px;
+                }
+              }
+            `}</style>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="18" cy="5" r="3" />
               <circle cx="6" cy="12" r="3" />
@@ -230,7 +243,7 @@ function MusicPlayer({
 
           <button
             onClick={() => onBuyClick(currentBeat)}
-            className="btn-bounce"
+            className="btn-bounce buy-btn-mobile"
             style={{
               padding: "8px 8px 8px 16px",
               background: "#000",
@@ -247,9 +260,10 @@ function MusicPlayer({
               position: "relative",
               minWidth: "120px",
               height: "32px",
-              transition: "background 0.2s, color 0.2s, box-shadow 0.2s",
+              transition: "background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.2s",
               overflow: "visible",
               boxShadow: "inset 0 0 0 0.5px #fff",
+              transform: "translate(var(--buy-btn-translate-x, 0), var(--buy-btn-translate-y, 0))",
             }}
             onMouseEnter={(e) => {
               const btn = e.currentTarget as HTMLButtonElement;
