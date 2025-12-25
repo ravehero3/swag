@@ -515,6 +515,23 @@ function Beaty() {
                         overflow: "visible",
                         outline: "none",
                         boxShadow: "none",
+                        WebkitAppearance: "none",
+                        appearance: "none",
+                        boxSizing: "border-box",
+                      }}
+                      onMouseEnter={(e) => {
+                        const btn = e.currentTarget as HTMLButtonElement;
+                        btn.style.background = "#fff";
+                        btn.style.color = "#000";
+                        btn.style.borderColor = "#000";
+                        btn.style.boxShadow = "none";
+                      }}
+                      onMouseLeave={(e) => {
+                        const btn = e.currentTarget as HTMLButtonElement;
+                        btn.style.background = "#000";
+                        btn.style.color = "#fff";
+                        btn.style.borderColor = "#fff";
+                        btn.style.boxShadow = "none";
                       }}
                     >
                       <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -522,7 +539,7 @@ function Beaty() {
                           <rect x="3" y="6" width="18" height="15" rx="2" />
                           <path d="M8 6V4a4 4 0 0 1 8 0v2" />
                         </svg>
-                        <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "#fff", lineHeight: "1", right: "-10px", top: "-5px" }}>+</span>
+                        <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "inherit", lineHeight: "1", right: "-10px", top: "-5px" }}>+</span>
                       </div>
                       <span style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "8px" }}>{Math.floor(highlightedBeat.price)} CZK</span>
                     </button>
@@ -1106,135 +1123,33 @@ function Beaty() {
                     overflow: "visible",
                     outline: "none",
                     boxShadow: "none",
+                    WebkitAppearance: "none",
+                    appearance: "none",
+                    boxSizing: "border-box",
                   }}
                   onMouseEnter={(e) => {
                     const btn = e.currentTarget as HTMLButtonElement;
                     btn.style.background = "#fff";
                     btn.style.color = "#000";
                     btn.style.borderColor = "#000";
-                    
-                    // Change + symbol color to black
-                    const plusSymbol = btn.querySelector("span[style*='position: absolute']") as HTMLElement;
-                    if (plusSymbol) plusSymbol.style.color = "#000";
-                    
-                    // Create particles
-                    for (let i = 0; i < 7; i++) {
-                      const particle = document.createElement("div");
-                      particle.setAttribute("data-particle", "true");
-                      const angle = (i / 7) * Math.PI * 2;
-                      particle.style.position = "absolute";
-                      particle.style.width = "4px";
-                      particle.style.height = "4px";
-                      particle.style.background = "#fff";
-                      particle.style.borderRadius = "50%";
-                      particle.style.left = "50%";
-                      particle.style.top = "50%";
-                      particle.style.pointerEvents = "none";
-                      particle.style.transform = "translate(-50%, -50%)";
-                      particle.style.opacity = "0.8";
-                      
-                      const distance = 35;
-                      const startX = Math.cos(angle) * distance;
-                      const startY = Math.sin(angle) * distance;
-                      const endX = Math.cos(angle) * (distance + 40);
-                      const endY = Math.sin(angle) * (distance + 40);
-                      
-                      particle.style.animation = `particleFloat-${i} 3s ease-out forwards`;
-                      
-                      btn.appendChild(particle);
-                      
-                      const style = document.createElement("style");
-                      style.textContent = `
-                        @keyframes particleFloat-${i} {
-                          0% { transform: translate(calc(-50% + ${startX}px), calc(-50% + ${startY}px)); opacity: 0.8; }
-                          100% { transform: translate(calc(-50% + ${endX}px), calc(-50% + ${endY}px)); opacity: 0; }
-                        }
-                      `;
-                      document.head.appendChild(style);
-                    }
+                    btn.style.boxShadow = "none";
                   }}
                   onMouseLeave={(e) => {
                     const btn = e.currentTarget as HTMLButtonElement;
                     btn.style.background = "#000";
                     btn.style.color = "#fff";
                     btn.style.borderColor = "#fff";
-                    
-                    // Change + symbol color back to white
-                    const plusSymbol = btn.querySelector("span[style*='position: absolute']") as HTMLElement;
-                    if (plusSymbol) plusSymbol.style.color = "#fff";
-                    
-                    // Remove only particles, not icon container
-                    const particles = btn.querySelectorAll("div[data-particle='true']");
-                    particles.forEach((p) => p.remove());
+                    btn.style.boxShadow = "none";
                   }}
                 >
-                  <style>{`
-                    @media (max-width: 768px) {
-                      .buy-btn-playlist-mobile-container {
-                        position: absolute !important;
-                        left: -104px !important;
-                        top: 120px !important;
-                        z-index: 100 !important;
-                      }
-                      .heart-icon-playlist-mobile {
-                        transform: translate(16px, -8px) !important;
-                      }
-                    }
-                  `}</style>
-                  <div className="buy-btn-playlist-mobile-container" style={{ position: "relative" }}>
-                    <button
-                      onClick={() => openContractModal(beat)}
-                      className="btn-bounce"
-                      style={{
-                        padding: "8px 8px 8px 16px",
-                        background: "#000",
-                        color: "#fff",
-                        border: "1px solid #fff",
-                        fontSize: "12px",
-                        fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
-                        fontWeight: 400,
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "6px",
-                        borderRadius: "4px",
-                        position: "relative",
-                        minWidth: "120px",
-                        height: "32px",
-                        transition: "background 0.2s, color 0.2s, border-color 0.2s",
-                        overflow: "visible",
-                        outline: "none",
-                        boxShadow: "none",
-                      }}
-                      onMouseEnter={(e) => {
-                        const btn = e.currentTarget as HTMLButtonElement;
-                        btn.style.background = "#fff";
-                        btn.style.color = "#000";
-                        btn.style.borderColor = "#000";
-                        btn.style.boxShadow = "none";
-                        const plusSymbol = btn.querySelector("span[style*='position: absolute']") as HTMLElement;
-                        if (plusSymbol) plusSymbol.style.color = "#000";
-                      }}
-                      onMouseLeave={(e) => {
-                        const btn = e.currentTarget as HTMLButtonElement;
-                        btn.style.background = "#000";
-                        btn.style.color = "#fff";
-                        btn.style.borderColor = "#fff";
-                        btn.style.boxShadow = "none";
-                        const plusSymbol = btn.querySelector("span[style*='position: absolute']") as HTMLElement;
-                        if (plusSymbol) plusSymbol.style.color = "#fff";
-                      }}
-                    >
-                      <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, marginLeft: "-8px" }}>
-                          <rect x="3" y="6" width="18" height="15" rx="2" />
-                          <path d="M8 6V4a4 4 0 0 1 8 0v2" />
-                        </svg>
-                        <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "#fff", lineHeight: "1", right: "-10px", top: "-5px" }}>+</span>
-                      </div>
-                      <span style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "8px" }}>{Math.floor(beat.price)} CZK</span>
-                    </button>
+                  <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, marginLeft: "-8px" }}>
+                      <rect x="3" y="6" width="18" height="15" rx="2" />
+                      <path d="M8 6V4a4 4 0 0 1 8 0v2" />
+                    </svg>
+                    <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "inherit", lineHeight: "1", right: "-10px", top: "-5px" }}>+</span>
                   </div>
+                  <span style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "8px" }}>{Math.floor(beat.price)} CZK</span>
                 </button>
                 <button
                   onClick={(e) => {
