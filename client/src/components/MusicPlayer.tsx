@@ -281,7 +281,8 @@ function MusicPlayer({
                 .share-btn-mobile {
                   position: absolute !important;
                   right: 8px !important;
-                  top: 8px !important;
+                  bottom: 8px !important;
+                  top: auto !important;
                   transform: none !important;
                   z-index: 1002 !important;
                 }
@@ -291,9 +292,10 @@ function MusicPlayer({
                 .buy-btn-mobile-new {
                   display: flex !important;
                   left: 8px !important;
-                  bottom: 8px !important;
-                  top: auto !important;
+                  top: 8px !important;
+                  bottom: auto !important;
                   transform: none !important;
+                  z-index: 1002 !important;
                 }
                 .music-player-controls {
                   display: none !important;
