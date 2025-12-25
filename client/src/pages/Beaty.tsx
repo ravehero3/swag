@@ -1117,7 +1117,7 @@ function Beaty() {
                   ))}
               </div>
 
-              <div className="beat-buttons-container" style={{ display: "flex", alignItems: "center", gap: "8px", marginLeft: "auto", marginRight: "16px" }}>
+              <div className="beat-buttons-container" style={{ display: "flex", alignItems: "center", gap: "8px", marginLeft: "auto", marginRight: "16px", position: "relative" }}>
                 <div className="beat-tags-container-desktop" style={{ display: "flex", gap: "4px", marginRight: "16px" }}>
                   {beat.tags && beat.tags.length > 0 && beat.tags.map((tag) => (
                     <button
@@ -1256,6 +1256,7 @@ function Beaty() {
                     e.stopPropagation();
                     toggleSave(beat);
                   }}
+                  className="beat-heart-button"
                   style={{
                     background: "#000",
                     border: "none",
@@ -1500,10 +1501,26 @@ function Beaty() {
                   .beat-tags-container-mobile {
                     display: flex !important;
                   }
+                  .beat-tags-container-desktop {
+                    display: none !important;
+                  }
+                  .beat-buttons-container {
+                    position: absolute !important;
+                    top: 8px !important;
+                    right: 16px !important;
+                    margin-left: 0 !important;
+                    margin-right: 0 !important;
+                    flex-direction: column !important;
+                    gap: 4px !important;
+                    width: auto !important;
+                  }
                 }
                 @media (min-width: 769px) {
                   .beat-tags-container-mobile {
                     display: none !important;
+                  }
+                  .beat-buttons-container {
+                    position: static !important;
                   }
                 }
               `}</style>
