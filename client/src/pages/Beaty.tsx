@@ -761,8 +761,8 @@ function Beaty() {
             }
             .beat-buttons-container .beat-heart-button {
               position: absolute !important;
-              bottom: -72px !important;
-              right: 88px !important;
+              bottom: -8px !important;
+              right: 152px !important;
               top: auto !important;
               left: auto !important;
               margin-left: 0 !important;
@@ -770,8 +770,8 @@ function Beaty() {
             }
             .beat-buttons-container .btn-bounce:not(.beat-heart-button) {
               position: absolute !important;
-              bottom: -72px !important;
-              left: -72px !important;
+              bottom: -8px !important;
+              left: -136px !important;
               right: auto !important;
               top: auto !important;
               margin-left: 0 !important;
