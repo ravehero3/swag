@@ -1280,16 +1280,25 @@ function Beaty() {
               position: "relative",
               background: "#000",
             }}>
+              <style>{`
+                .mobile-bg-zoom {
+                  width: 100%;
+                  height: auto;
+                  display: block;
+                  object-fit: cover;
+                  min-height: 600px;
+                  transition: transform 0.3s ease;
+                }
+                @media (max-width: 768px) {
+                  .mobile-bg-zoom {
+                    transform: scale(1.1);
+                  }
+                }
+              `}</style>
               <img
                 src="/uploads/zvuky-computer-background.jpg"
                 alt="Computer with sound kits"
-                style={{
-                  width: "100%",
-                  height: "auto",
-                  display: "block",
-                  objectFit: "cover",
-                  minHeight: "600px",
-                }}
+                className="mobile-bg-zoom"
               />
               <div
                 style={{
