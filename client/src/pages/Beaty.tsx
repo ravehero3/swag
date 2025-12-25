@@ -685,9 +685,52 @@ function Beaty() {
           @media (max-width: 768px) {
             .beats-list-container { padding: 0 16px !important; }
             .beats-header { display: none !important; }
-            .beat-row { flex-direction: column; align-items: flex-start !important; gap: 12px !important; }
-            .beat-row > div { width: 100% !important; }
-            .beat-buttons { width: 100% !important; display: flex; gap: 12px; flex-wrap: wrap; }
+            .beat-row { 
+              padding: 12px !important;
+              gap: 16px !important;
+              display: grid !important;
+              grid-template-columns: 120px 1fr !important;
+              grid-template-areas: 
+                "image info"
+                "image buttons"
+                "tags tags" !important;
+              align-items: start !important;
+              border: 1px solid #333 !important;
+              margin-bottom: 12px !important;
+            }
+            .beat-image-container {
+              grid-area: image;
+              width: 120px !important;
+              height: 120px !important;
+            }
+            .beat-image-container img {
+              width: 120px !important;
+              height: 120px !important;
+            }
+            .beat-info-container {
+              grid-area: info;
+              display: flex !important;
+              flex-direction: column !important;
+              gap: 4px !important;
+            }
+            .beat-buttons-container {
+              grid-area: buttons;
+              display: flex !important;
+              justify-content: flex-end !important;
+              align-items: center !important;
+              gap: 8px !important;
+              width: 100% !important;
+            }
+            .beat-meta-desktop { display: none !important; }
+            .beat-tags-container {
+              grid-area: tags;
+              margin-left: 0 !important;
+              margin-top: 8px !important;
+              display: flex !important;
+              flex-direction: row !important;
+              flex-wrap: wrap !important;
+            }
+            .beat-row [data-separator] { display: none !important; }
             .beats-button-group { margin-left: 0 !important; justify-content: center !important; width: 100% !important; }
           }
         `}</style>
@@ -811,7 +854,7 @@ function Beaty() {
               }}
             >
               <div data-separator style={{ position: "absolute", bottom: 0, left: "122px", right: "32px", height: "1px", background: "#333", opacity: 1, transition: "opacity 0.15s ease" }} />
-              <div style={{ position: "relative", display: "flex", alignItems: "center", gap: "16px", marginRight: "-4px" }}>
+              <div className="beat-image-container" style={{ position: "relative", display: "flex", alignItems: "center", gap: "16px", marginRight: "-4px" }}>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -830,7 +873,9 @@ function Beaty() {
                     height: "28px",
                     flexShrink: 0,
                     zIndex: 20,
-                    position: "relative",
+                    position: "absolute",
+                    top: "4px",
+                    left: "4px",
                   }}
                   onMouseEnter={(e) => {
                     const btn = e.currentTarget as HTMLButtonElement;
@@ -872,19 +917,24 @@ function Beaty() {
                   style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "4px", flexShrink: 0 }}
                 />
               </div>
-              <div style={{ width: "240px", marginRight: "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
+              <div className="beat-info-container" style={{ width: "240px", marginRight: "12px", display: "flex", flexDirection: "column", gap: "4px" }}>
                 <div style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "20px" }}>{beat.title}</div>
+                <div style={{ display: "flex", gap: "12px", color: "#666", fontSize: "14px", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif" }}>
+                  <span>{beat.bpm} BPM</span>
+                  <span>{beat.key}</span>
+                </div>
               </div>
-              <div style={{ width: "80px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", color: "#666", fontSize: "16px" }}>
-                {beat.bpm}
-              </div>
-              <div style={{ width: "80px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", color: "#666", fontSize: "16px" }}>
-                {beat.key}
+              <div className="beat-meta-desktop" style={{ display: "contents" }}>
+                <div style={{ width: "80px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", color: "#666", fontSize: "16px" }}>
+                  {beat.bpm}
+                </div>
+                <div style={{ width: "80px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", color: "#666", fontSize: "16px" }}>
+                  {beat.key}
+                </div>
               </div>
 
-              {beat.tags && beat.tags.length > 0 && (
-                <div style={{ display: "flex", gap: "4px", flexWrap: "wrap", marginLeft: "12px", alignItems: "center" }}>
-                  {beat.tags.map((tag) => (
+              <div className="beat-tags-container" style={{ display: "flex", gap: "4px", flexWrap: "wrap", marginLeft: "12px", alignItems: "center" }}>
+                {beat.tags && beat.tags.length > 0 && beat.tags.map((tag) => (
                     <button
                       key={tag}
                       onClick={(e) => {
@@ -917,10 +967,9 @@ function Beaty() {
                       {tag}
                     </button>
                   ))}
-                </div>
-              )}
+              </div>
 
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginLeft: "auto", marginRight: "16px" }}>
+              <div className="beat-buttons-container" style={{ display: "flex", alignItems: "center", gap: "8px", marginLeft: "auto", marginRight: "16px" }}>
                 {user && (
                   <button
                     onClick={(e) => {
