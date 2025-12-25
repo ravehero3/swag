@@ -772,7 +772,7 @@ function Beaty() {
             }
             .beat-buttons-container .beat-heart-button {
               position: absolute !important;
-              bottom: 22px !important;
+              bottom: 26px !important;
               right: -20px !important;
               top: auto !important;
               left: auto !important;
@@ -781,7 +781,7 @@ function Beaty() {
             }
             .beat-buttons-container .btn-bounce:not(.beat-heart-button) {
               position: absolute !important;
-              bottom: -98px !important;
+              bottom: -100px !important;
               left: -108px !important;
               right: auto !important;
               top: auto !important;
@@ -791,7 +791,7 @@ function Beaty() {
             .beat-buttons-container button[title="Download"] {
               display: flex !important;
               position: absolute !important;
-              bottom: -98px !important;
+              bottom: -100px !important;
               right: auto !important;
               left: -42px !important;
               top: auto !important;
