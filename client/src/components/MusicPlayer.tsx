@@ -124,7 +124,7 @@ function MusicPlayer({
               gap: "6px",
               borderRadius: "4px",
               position: "absolute",
-              right: "0",
+              left: "8px",
               top: "calc(50% + 80px)",
               transform: "translateY(-50%)",
               minWidth: "120px",
