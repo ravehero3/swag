@@ -763,15 +763,41 @@ function Beaty() {
             }
             /* Style buttons for mobile */
             .beat-buttons-container button.btn-bounce {
-              padding: 4px 8px !important;
-              height: 28px !important;
-              min-width: 90px !important;
-              font-size: 10px !important;
+              padding: 8px 8px 8px 16px !important;
+              background: #000 !important;
+              color: #fff !important;
+              border: none !important;
+              font-size: 12px !important;
+              font-family: "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+              font-weight: 400 !important;
+              cursor: pointer !important;
+              display: flex !important;
+              align-items: center !important;
+              gap: 6px !important;
+              border-radius: 4px !important;
+              position: relative !important;
+              min-width: 120px !important;
+              height: 32px !important;
+              transition: background 0.2s, color 0.2s, box-shadow 0.2s !important;
+              overflow: visible !important;
+              box-shadow: inset 0 0 0 0.5px #fff !important;
+            }
+            .beat-buttons-container button.btn-bounce:hover {
+              background: #fff !important;
+              color: #000 !important;
+              box-shadow: 0 0 20px rgba(255, 255, 255, 0.8), inset 0 0 0 0.5px #000, inset 0 0 10px rgba(255, 255, 255, 0.3) !important;
             }
             .beat-buttons-container button:not(.btn-bounce) {
-              width: 28px !important;
-              height: 28px !important;
-              padding: 6px !important;
+              width: 32px !important;
+              height: 32px !important;
+              padding: 8px !important;
+              background: #000 !important;
+              border: 1px solid #666 !important;
+              border-radius: 4px !important;
+            }
+            .mobile-heart-btn svg {
+              stroke: #666 !important;
+              stroke-width: 1px !important;
             }
             .beat-tags-container {
               display: none !important;
@@ -964,33 +990,15 @@ function Beaty() {
                     height="24"
                     viewBox="0 0 24 24"
                     fill={savedBeats.has(beat.id) ? "#ff4444" : "none"}
-                    stroke={savedBeats.has(beat.id) ? "#ff4444" : "#fff"}
-                    strokeWidth="2"
+                    stroke={savedBeats.has(beat.id) ? "#ff4444" : "#666"}
+                    strokeWidth="1"
+                    style={{ transition: "all 0.3s ease" }}
                   >
                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                   </svg>
                 </button>
               </div>
               <div className="beat-info-container" style={{ width: "240px", marginRight: "12px", display: "flex", flexDirection: "column", gap: "4px" }}>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleSave(beat);
-                  }}
-                  className="mobile-heart-btn"
-                  style={{ display: "none" }}
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill={savedBeats.has(beat.id) ? "#ff4444" : "none"}
-                    stroke={savedBeats.has(beat.id) ? "#ff4444" : "#fff"}
-                    strokeWidth="2"
-                  >
-                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                  </svg>
-                </button>
                 <div className="beat-meta-mobile-key" style={{ display: "none" }}>{beat.key} <span className="beat-meta-mobile-separator">•</span> <span className="beat-meta-mobile-bpm">{beat.bpm}BPM</span></div>
                 <div className="beat-title-container">
                   <h2 style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "20px", margin: 0 }}>{beat.title}</h2>
