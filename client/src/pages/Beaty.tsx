@@ -1516,7 +1516,7 @@ function Beaty() {
                       min-height: auto !important;
                     }
                     .dock-wrapper {
-                      bottom: -28px !important; /* -404px + 800px - 400px - 24px */
+                      bottom: 36px !important; /* -28px + 64px */
                     }
                   }
                 `}</style>
