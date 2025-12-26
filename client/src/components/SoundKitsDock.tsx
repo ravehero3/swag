@@ -133,7 +133,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
           }
           .reflection-container-mobile {
             position: fixed !important;
-            bottom: 78px !important;
+            bottom: 142px !important;
             left: 0 !important;
             right: 0 !important;
             width: 100% !important;
