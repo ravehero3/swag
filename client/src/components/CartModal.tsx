@@ -106,6 +106,28 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
               </h2>
             </div>
 
+            {/* Horizontal lines */}
+            <div style={{
+              position: 'absolute',
+              top: '242px', // 42px header + 200px
+              left: 0,
+              right: 0,
+              height: '1px',
+              backgroundColor: '#fff',
+              zIndex: 10,
+              pointerEvents: 'none'
+            }} />
+            <div style={{
+              position: 'absolute',
+              top: '302px', // 242px + 60px
+              left: 0,
+              right: 0,
+              height: '1px',
+              backgroundColor: '#fff',
+              zIndex: 10,
+              pointerEvents: 'none'
+            }} />
+
             <div
               style={{
                 flex: 1,
