@@ -32,7 +32,7 @@ function Cart() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white fade-in overflow-x-hidden relative flex flex-col">
+    <div className="min-h-screen bg-black text-white fade-in overflow-x-hidden relative flex flex-col" style={{ minHeight: 'calc(100vh - 42px)' }}>
       {/* Vertical lines effect */}
       <div className="hidden md:block" style={{
         position: 'absolute',
@@ -42,8 +42,7 @@ function Cart() {
         width: '1px',
         backgroundColor: '#fff',
         zIndex: 5,
-        pointerEvents: 'none',
-        height: '100%'
+        pointerEvents: 'none'
       }} />
       <div className="hidden md:block" style={{
         position: 'absolute',
@@ -53,8 +52,7 @@ function Cart() {
         width: '1px',
         backgroundColor: '#fff',
         zIndex: 5,
-        pointerEvents: 'none',
-        height: '100%'
+        pointerEvents: 'none'
       }} />
 
       <div style={{ flex: 1 }}>

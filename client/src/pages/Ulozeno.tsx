@@ -148,7 +148,7 @@ function Ulozeno() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white fade-in overflow-x-hidden relative flex flex-col">
+    <div className="min-h-screen bg-black text-white fade-in overflow-x-hidden relative flex flex-col" style={{ minHeight: 'calc(100vh - 42px)' }}>
       <audio
         ref={audioRef}
         src={currentItem?.item_data.preview_url}
@@ -164,8 +164,7 @@ function Ulozeno() {
         width: '1px',
         backgroundColor: '#fff',
         zIndex: 5,
-        pointerEvents: 'none',
-        height: '100%'
+        pointerEvents: 'none'
       }} />
       <div className="hidden md:block" style={{
         position: 'absolute',
@@ -175,8 +174,7 @@ function Ulozeno() {
         width: '1px',
         backgroundColor: '#fff',
         zIndex: 5,
-        pointerEvents: 'none',
-        height: '100%'
+        pointerEvents: 'none'
       }} />
 
       <div style={{ flex: 1 }}>
