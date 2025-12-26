@@ -170,7 +170,7 @@ function Ulozeno() {
         top: 0,
         bottom: 0,
         width: '1px',
-        backgroundColor: '#000',
+        backgroundColor: '#fff',
         zIndex: 5,
         pointerEvents: 'none'
       }} />
@@ -180,7 +180,7 @@ function Ulozeno() {
         top: 0,
         bottom: 0,
         width: '1px',
-        backgroundColor: '#000',
+        backgroundColor: '#fff',
         zIndex: 5,
         pointerEvents: 'none'
       }} />
