@@ -378,6 +378,9 @@ function Beaty() {
 
       <style>{`
         @media (max-width: 768px) {
+          .beat-tags-container-mobile {
+            display: flex !important;
+          }
           .desktop-only {
             display: none !important;
           }
@@ -814,6 +817,9 @@ function Beaty() {
               flex-wrap: wrap !important;
               margin-top: 8px !important;
             }
+            .beat-tags-container-mobile {
+              display: none !important;
+            }
             .beat-meta-desktop { display: none !important; }
             .beat-row [data-separator] { display: none !important; }
             .beats-button-group { margin-left: 0 !important; justify-content: center !important; width: 100% !important; }
@@ -1000,7 +1006,7 @@ function Beaty() {
                 <div className="beat-title-container">
                   <h2 style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "20px", margin: 0, textTransform: "none" }}>{beat.title}</h2>
                 </div>
-                <div className="beat-tags-container-mobile" style={{ display: "flex", gap: "4px", flexWrap: "wrap", marginTop: "4px" }}>
+                <div className="beat-tags-container-mobile" style={{ gap: "4px", flexWrap: "wrap", marginTop: "4px" }}>
                   {beat.tags && beat.tags.length > 0 && beat.tags.map((tag) => (
                     <button
                       key={tag}
