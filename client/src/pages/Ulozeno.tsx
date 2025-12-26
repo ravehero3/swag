@@ -145,12 +145,34 @@ function Ulozeno() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white fade-in overflow-x-hidden">
+    <div className="min-h-screen bg-black text-white fade-in overflow-x-hidden relative">
       <audio
         ref={audioRef}
         src={currentItem?.item_data.preview_url}
         onEnded={() => setIsPlaying(false)}
       />
+
+      {/* Vertical lines effect */}
+      <div className="hidden md:block" style={{
+        position: 'absolute',
+        left: 'calc(50vw - 350px)',
+        top: 0,
+        bottom: 0,
+        width: '1px',
+        backgroundColor: '#fff',
+        zIndex: 5,
+        pointerEvents: 'none'
+      }} />
+      <div className="hidden md:block" style={{
+        position: 'absolute',
+        right: 'calc(50vw - 350px)',
+        top: 0,
+        bottom: 0,
+        width: '1px',
+        backgroundColor: '#fff',
+        zIndex: 5,
+        pointerEvents: 'none'
+      }} />
 
       {/* Section 1: Title */}
       <section style={{ ...sectionStyle, height: "224px" }}>
