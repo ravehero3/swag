@@ -1463,7 +1463,7 @@ function Beaty() {
                   font-style: normal;
                 }
               `}</style>
-              <div style={{
+              <div className="mobile-title-container" style={{
                 position: "absolute",
                 top: "392px",
                 left: "50%",
@@ -1475,7 +1475,7 @@ function Beaty() {
                 transition: "opacity 0.5s ease-in-out",
                 marginTop: "200px",
               }}>
-                <h2 style={{
+                <h2 className="mobile-title-text" style={{
                   color: "#fff",
                   fontSize: "50pt",
                   fontFamily: "'Snell Roundhand', cursive",
@@ -1488,11 +1488,27 @@ function Beaty() {
                   Pro všechny<br />
                   hudební producenty<br />
                   <div style={{ display: "flex", gap: "0.3em", justifyContent: "center", alignItems: "center" }}>
-                    <span style={{ fontFamily: "'Snell Roundhand', cursive", fontSize: "50pt", fontWeight: "400" }}>co se děláním</span>
-                    <span style={{ fontFamily: "'Old London', serif", fontSize: "50pt", fontWeight: "400" }}>BEATS</span>
+                    <span className="mobile-title-text-span" style={{ fontFamily: "'Snell Roundhand', cursive", fontSize: "50pt", fontWeight: "400" }}>co se děláním</span>
+                    <span className="mobile-title-text-span" style={{ fontFamily: "'Old London', serif", fontSize: "50pt", fontWeight: "400" }}>BEATS</span>
                   </div>
                   chtěj živit
                 </h2>
+                <style>{`
+                  @media (max-width: 768px) {
+                    .mobile-title-container {
+                      margin-top: 0 !important;
+                      position: absolute !important;
+                      bottom: 88px !important;
+                      width: 100% !important;
+                    }
+                    .mobile-title-text {
+                      font-size: 12.5pt !important;
+                    }
+                    .mobile-title-text-span {
+                      font-size: 12.5pt !important;
+                    }
+                  }
+                `}</style>
               </div>
 
               {/* Dock positioned at bottom */}
