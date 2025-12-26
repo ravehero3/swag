@@ -1407,9 +1407,9 @@ function Beaty() {
               </div>
             </div>
 
-            <div ref={soundKitsRef} className="fade-in-section delay-4 scroll-fade-section" style={{ marginTop: "-540px", marginBottom: "0px", position: "relative", zIndex: 1 }}>
+            <div ref={soundKitsRef} className="fade-in-section delay-4 scroll-fade-section sound-kits-section" style={{ marginTop: "-540px", marginBottom: "0px", position: "relative", zIndex: 1 }}>
             {/* Background with computer image and dock */}
-            <div style={{
+            <div className="computer-bg-container" style={{
               width: "100vw",
               marginLeft: "calc(-50vw + 50%)",
               overflow: "hidden",
@@ -1496,16 +1496,25 @@ function Beaty() {
                 <style>{`
                   @media (max-width: 768px) {
                     .mobile-title-container {
-                      margin-top: 0 !important;
+                      margin-top: 400px !important;
                       position: absolute !important;
-                      bottom: 88px !important;
+                      bottom: auto !important;
                       width: 100% !important;
                     }
                     .mobile-title-text {
-                      font-size: 12.5pt !important;
+                      font-size: 25pt !important;
                     }
                     .mobile-title-text-span {
-                      font-size: 12.5pt !important;
+                      font-size: 25pt !important;
+                    }
+                    .sound-kits-section {
+                      margin-top: -140px !important; /* -540px + 400px */
+                    }
+                    .computer-bg-container {
+                      padding-top: 400px !important;
+                    }
+                    .dock-wrapper {
+                      bottom: -404px !important; /* -4px - 400px */
                     }
                   }
                 `}</style>
@@ -1544,7 +1553,7 @@ function Beaty() {
                   }
                 }
               `}</style>
-              <div className="dock-container" style={{
+              <div className="dock-container dock-wrapper" style={{
                 position: "fixed",
                 bottom: "-4px",
                 left: "50%",

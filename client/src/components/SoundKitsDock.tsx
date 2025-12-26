@@ -102,6 +102,26 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
           animation: particleExplode 2s ease-out forwards;
           pointer-events: none;
         }
+        @media (max-width: 768px) {
+          .dock-inner-container {
+            gap: 4px !important;
+            padding: 8px !important;
+            height: 48px !important;
+          }
+          .dock-icon-wrapper {
+            width: 40px !important;
+            height: 40px !important;
+          }
+          .dock-icon-button {
+            width: 40px !important;
+            height: 40px !important;
+          }
+          .dock-reflection-container {
+            height: 48px !important;
+            gap: 4px !important;
+            padding: 8px !important;
+          }
+        }
       `}</style>
       
       {/* Particles */}
@@ -138,6 +158,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
         <div
           ref={dockRef}
           onMouseLeave={handleMouseLeave}
+          className="dock-inner-container"
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -162,7 +183,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
             return (
               <div
                 key={item.id}
-                className="dock-icon"
+                className="dock-icon dock-icon-wrapper"
                 onMouseEnter={() => setHoveredIndex(index)}
                 style={{
                   display: 'flex',
@@ -180,6 +201,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
               >
                 <button
                   onClick={item.onClick}
+                  className="dock-icon-button"
                   style={{
                     width: `${size}px`,
                     height: `${size}px`,
@@ -256,6 +278,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
         WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1), rgba(0,0,0,0))',
       }}>
         <div
+          className="dock-reflection-container"
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -281,6 +304,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
             return (
               <div
                 key={`mirror-${item.id}`}
+                className="dock-icon-wrapper"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -293,6 +317,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
                 }}
               >
                 <div
+                  className="dock-icon-button"
                   style={{
                     width: `${size}px`,
                     height: `${size}px`,
