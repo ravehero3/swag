@@ -219,7 +219,7 @@ function Ulozeno() {
         </section>
 
         {/* Login CTA Section */}
-        {!user && savedItems.length === 0 && (
+        {!user && (
           <section style={{ ...sectionStyle, height: "224px" }}>
             <h2 style={{ ...titleFont, fontSize: "14px", letterSpacing: "0.05em", marginBottom: "8px" }}>
               HLEDÁTE SVÉ ULOŽENÉ PŘEDMĚTY?
