@@ -1512,9 +1512,11 @@ function Beaty() {
                     }
                     .computer-bg-container {
                       padding-top: 400px !important;
+                      padding-bottom: 150px !important;
+                      min-height: auto !important;
                     }
                     .dock-wrapper {
-                      bottom: -4px !important; /* -404px + 800px - 400px */
+                      bottom: -28px !important; /* -404px + 800px - 400px - 24px */
                     }
                   }
                 `}</style>
