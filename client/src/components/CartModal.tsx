@@ -119,7 +119,7 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
             }} />
             <div style={{
               position: 'absolute',
-              top: '302px', // 242px + 60px
+              top: '902px', // 302px + 600px
               left: 0,
               right: 0,
               height: '1px',
