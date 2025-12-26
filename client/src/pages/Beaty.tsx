@@ -1143,15 +1143,21 @@ function Beaty() {
                     @media (max-width: 768px) {
                       .buy-btn-playlist-mobile-container {
                         display: flex !important;
+                        flex-direction: column !important;
                         align-items: center !important;
                         gap: 16px !important;
                         position: absolute !important;
                         top: 80px !important;
-                        right: 102px !important;
+                        right: 402px !important;
                         z-index: 100 !important;
                       }
+                      .buy-btn-playlist-mobile-container button[title="Download"] {
+                        position: relative !important;
+                        top: 64px !important;
+                        margin-left: -300px !important;
+                      }
                       .heart-icon-playlist-mobile {
-                        transform: translate(16px, -12px) !important;
+                        transform: translate(16px, -92px) !important;
                       }
                       .desktop-buy-btn {
                         display: none !important;
