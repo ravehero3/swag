@@ -1006,30 +1006,6 @@ function Beaty() {
                 <div className="beat-title-container">
                   <h2 style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "20px", margin: 0, textTransform: "none" }}>{beat.title}</h2>
                 </div>
-                <div className="beat-tags-container-mobile" style={{ gap: "4px", flexWrap: "wrap", marginTop: "4px" }}>
-                  {beat.tags && beat.tags.length > 0 && beat.tags.map((tag) => (
-                    <button
-                      key={tag}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setLocation(`/beaty?tag=${encodeURIComponent(tag)}`);
-                      }}
-                      style={{
-                        padding: "2px 8px",
-                        background: "#0d0d0d",
-                        color: "#666",
-                        border: "1px solid #333",
-                        borderRadius: "20px",
-                        fontSize: "10px",
-                        fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
-                        cursor: "pointer",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {tag}
-                    </button>
-                  ))}
-                </div>
               </div>
               <div className="beat-meta-desktop" style={{ display: "contents" }}>
                 <div style={{ width: "80px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", color: "#666", fontSize: "16px" }}>
@@ -1038,42 +1014,6 @@ function Beaty() {
                 <div style={{ width: "80px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", color: "#666", fontSize: "16px" }}>
                   {beat.key}
                 </div>
-              </div>
-
-              <div className="beat-tags-container" style={{ display: "none" }}>
-                {beat.tags && beat.tags.length > 0 && beat.tags.map((tag) => (
-                    <button
-                      key={tag}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setLocation(`/beaty?tag=${encodeURIComponent(tag)}`);
-                      }}
-                      style={{
-                        padding: "3px 8px",
-                        background: "#0d0d0d",
-                        color: "#666",
-                        border: "1px solid #333",
-                        borderRadius: "20px",
-                        fontSize: "10px",
-                        fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
-                        cursor: "pointer",
-                        transition: "transform 0.15s ease, border-color 0.15s ease",
-                        whiteSpace: "nowrap",
-                      }}
-                      onMouseEnter={(e) => {
-                        const btn = e.currentTarget as HTMLButtonElement;
-                        btn.style.transform = "scale(1.02)";
-                        btn.style.borderColor = "#555";
-                      }}
-                      onMouseLeave={(e) => {
-                        const btn = e.currentTarget as HTMLButtonElement;
-                        btn.style.transform = "scale(1)";
-                        btn.style.borderColor = "#333";
-                      }}
-                    >
-                      {tag}
-                    </button>
-                  ))}
               </div>
 
               <div className="beat-buttons-container" style={{ display: "flex", alignItems: "center", gap: "8px", marginLeft: "auto", marginRight: "16px", position: "relative" }}>
