@@ -119,7 +119,7 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
             }} />
             <div style={{
               position: 'absolute',
-              top: '902px', // 302px + 600px
+              top: '802px', // 902px - 100px
               left: 0,
               right: 0,
               height: '1px',
@@ -127,6 +127,30 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
               zIndex: 10,
               pointerEvents: 'none'
             }} />
+
+            {cart.length === 0 && (
+              <div style={{
+                position: 'absolute',
+                top: '812px',
+                left: 0,
+                right: 0,
+                display: 'flex',
+                justifyContent: 'center',
+                padding: '0 20px',
+                zIndex: 10,
+                pointerEvents: 'none'
+              }}>
+                <img 
+                  src="/payment-methods.jpg" 
+                  alt="Payment Methods" 
+                  style={{ 
+                    maxWidth: '100%', 
+                    height: 'auto',
+                    opacity: 0.8
+                  }} 
+                />
+              </div>
+            )}
 
             <div
               style={{
