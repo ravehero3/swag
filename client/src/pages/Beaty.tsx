@@ -378,6 +378,9 @@ function Beaty() {
 
       <style>{`
         @media (max-width: 768px) {
+          .desktop-only {
+            display: none !important;
+          }
           .video-container {
             margin-bottom: 0 !important;
             margin-top: 100px !important;
@@ -818,7 +821,7 @@ function Beaty() {
         `}</style>
         <div ref={beatsListRef} className="scroll-fade-section beats-list-container" style={{ marginBottom: "48px", maxWidth: "1200px", margin: "0 auto", marginTop: "60px", padding: "0", position: "relative", zIndex: 60 }}>
           {!isHomePage && (
-            <div style={{ marginBottom: "24px", display: "flex", gap: "16px", alignItems: "center" }}>
+            <div className="desktop-only" style={{ marginBottom: "24px", display: "flex", gap: "16px", alignItems: "center" }}>
               <input
                 type="text"
                 placeholder="Hledat..."
@@ -1032,7 +1035,7 @@ function Beaty() {
               </div>
 
               <div className="beat-tags-container" style={{ display: "none" }}>
-                {!isHomePage && beat.tags && beat.tags.length > 0 && beat.tags.map((tag) => (
+                {beat.tags && beat.tags.length > 0 && beat.tags.map((tag) => (
                     <button
                       key={tag}
                       onClick={(e) => {
@@ -1398,7 +1401,7 @@ function Beaty() {
                   }
                 }}
               >
-                {isHomePage ? "Poslechnout další beaty" : "Načíst další beaty"}
+                Poslechnout další beaty
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <polyline points="5 12 19 12"></polyline>
                   <polyline points="12 5 19 12 12 19"></polyline>
