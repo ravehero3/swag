@@ -64,6 +64,7 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
             }
           `}</style>
           <div
+            className="cart-modal-panel"
             style={{
               position: "fixed",
               right: 0,
@@ -80,6 +81,13 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
             }}
             onClick={(e) => e.stopPropagation()}
           >
+            <style>{`
+              @media (max-width: 768px) {
+                .cart-modal-panel {
+                  width: 100% !important;
+                }
+              }
+            `}</style>
             <div
               style={{
                 backgroundColor: "#24e053",
