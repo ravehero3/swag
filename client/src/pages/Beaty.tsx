@@ -1077,41 +1077,6 @@ function Beaty() {
               </div>
 
               <div className="beat-buttons-container" style={{ display: "flex", alignItems: "center", gap: "8px", marginLeft: "auto", marginRight: "16px", position: "relative" }}>
-                <div className="beat-tags-container-desktop" style={{ display: "flex", gap: "4px", marginRight: "16px" }}>
-                  {beat.tags && beat.tags.length > 0 && beat.tags.map((tag) => (
-                    <button
-                      key={tag}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setLocation(`/beaty?tag=${encodeURIComponent(tag)}`);
-                      }}
-                      style={{
-                        padding: "4px 12px",
-                        background: "#0d0d0d",
-                        color: "#666",
-                        border: "1px solid #333",
-                        borderRadius: "20px",
-                        fontSize: "10px",
-                        fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
-                        cursor: "pointer",
-                        whiteSpace: "nowrap",
-                        transition: "all 0.2s ease"
-                      }}
-                      onMouseEnter={(e) => {
-                        const btn = e.currentTarget as HTMLButtonElement;
-                        btn.style.color = "#fff";
-                        btn.style.borderColor = "#666";
-                      }}
-                      onMouseLeave={(e) => {
-                        const btn = e.currentTarget as HTMLButtonElement;
-                        btn.style.color = "#666";
-                        btn.style.borderColor = "#333";
-                      }}
-                    >
-                      {tag}
-                    </button>
-                  ))}
-                </div>
                   <style>{`
                     @media (max-width: 768px) {
                       .buy-btn-playlist-mobile-container {
