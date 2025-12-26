@@ -1161,7 +1161,7 @@ function Beaty() {
                       .buy-btn-playlist-mobile-container .btn-bounce {
                         position: absolute !important;
                         top: 16px !important;
-                        left: -88px !important;
+                        left: -288px !important;
                         margin-left: 0 !important;
                         bottom: auto !important;
                       }
