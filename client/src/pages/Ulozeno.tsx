@@ -344,6 +344,3 @@ function Ulozeno() {
 }
 
 export default Ulozeno;
-
-
-export default Ulozeno;
