@@ -103,25 +103,39 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
           pointer-events: none;
         }
         @media (max-width: 768px) {
+          .dock-container-mobile {
+            position: fixed !important;
+            bottom: 300px !important;
+            left: 0 !important;
+            right: 0 !important;
+            width: 100% !important;
+            display: flex !important;
+            justify-content: center !important;
+            z-index: 100 !important;
+            pointer-events: none !important;
+          }
+          .dock-container-mobile > * {
+            pointer-events: auto !important;
+          }
           .dock-inner-container {
-            gap: 4px !important;
-            padding: 8px !important;
-            height: 48px !important;
-            margin-top: -100px !important;
+            gap: 5px !important;
+            padding: 10px !important;
+            height: 58px !important;
+            margin-top: 0 !important;
           }
           .dock-icon-wrapper {
-            width: 40px !important;
-            height: 40px !important;
+            width: 48px !important;
+            height: 48px !important;
           }
           .dock-icon-button {
-            width: 40px !important;
-            height: 40px !important;
+            width: 48px !important;
+            height: 48px !important;
           }
           .dock-reflection-container {
-            height: 48px !important;
-            gap: 4px !important;
-            padding: 8px !important;
-            margin-top: -200px !important;
+            height: 58px !important;
+            gap: 5px !important;
+            padding: 10px !important;
+            margin-top: 0 !important;
           }
         }
       `}</style>
@@ -156,7 +170,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
         );
       })}
 
-      <div style={{ width: '100%', display: 'flex', justifyContent: 'center', overflowX: 'visible', overflowY: 'visible', padding: '20px 0', marginTop: '200px' }}>
+      <div className="dock-container-mobile" style={{ width: '100%', display: 'flex', justifyContent: 'center', overflowX: 'visible', overflowY: 'visible', padding: '20px 0', marginTop: '200px', position: 'relative' }}>
         <div
           ref={dockRef}
           onMouseLeave={handleMouseLeave}
