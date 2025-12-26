@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useApp } from "../App";
+import { Link } from "wouter";
 
 interface SavedItem {
   id: number;
@@ -28,6 +29,39 @@ const typeLabels: Record<string, string> = {
   drum_kit_bundle: "Drum Kit Bundle",
 };
 
+function AnimatedLink({ href, text }: { href: string; text: string }) {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <Link
+      href={href}
+      className="relative overflow-hidden bg-white text-black font-normal uppercase tracking-tight transition-all border border-black text-sm"
+      style={{ borderRadius: '4px', padding: '11.8px 25.6px', display: 'inline-block', textDecoration: 'none' }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <span
+        className="block transition-all duration-200"
+        style={{
+          transform: isHovered ? 'translateY(-150%)' : 'translateY(0)',
+          opacity: isHovered ? 0 : 1,
+        }}
+      >
+        {text}
+      </span>
+      <span
+        className="absolute inset-0 flex items-center justify-center transition-all duration-200"
+        style={{
+          transform: isHovered ? 'translateY(0)' : 'translateY(150%)',
+          opacity: isHovered ? 1 : 0,
+        }}
+      >
+        {text}
+      </span>
+    </Link>
+  );
+}
+
 function Ulozeno() {
   const [savedItems, setSavedItems] = useState<SavedItem[]>([]);
   const [currentItem, setCurrentItem] = useState<SavedItem | null>(null);
@@ -42,14 +76,12 @@ function Ulozeno() {
         .then(setSavedItems)
         .catch(console.error);
     } else {
-      // Load saved items from localStorage for non-logged-in users
       const savedBeatsJson = localStorage.getItem("voodoo808_saved_beats");
       const savedKitsJson = localStorage.getItem("voodoo808_saved_kits");
       
       const savedBeats = savedBeatsJson ? JSON.parse(savedBeatsJson) : [];
       const savedKits = savedKitsJson ? JSON.parse(savedKitsJson) : [];
       
-      // Combine and format for display
       const combined = [
         ...savedBeats.map((beat: any, idx: number) => ({
           id: -(idx + 1),
@@ -93,7 +125,6 @@ function Ulozeno() {
         credentials: "include",
       });
     } else {
-      // Remove from localStorage for non-logged-in users
       if (item.item_type === "beat") {
         const savedBeatsJson = localStorage.getItem("voodoo808_saved_beats");
         const savedBeats = savedBeatsJson ? JSON.parse(savedBeatsJson) : [];
@@ -125,217 +156,194 @@ function Ulozeno() {
   const isTemporary = !user;
 
   return (
-    <div className="fade-in">
+    <div className="min-h-screen bg-black text-white relative fade-in">
       <audio
         ref={audioRef}
         src={currentItem?.item_data.preview_url}
         onEnded={() => setIsPlaying(false)}
       />
 
-      {savedItems.length === 0 ? (
-        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh", flexDirection: "column" }}>
-          <h1 style={{ fontSize: "24px", marginBottom: "16px", textAlign: "center" }}>Uložené položky</h1>
+      {/* Vertical lines effect */}
+      <div className="hidden md:block" style={{
+        position: 'absolute',
+        left: 'calc(50vw - 350px)',
+        top: 0,
+        bottom: 0,
+        width: '1px',
+        backgroundColor: '#222',
+        zIndex: 5,
+        pointerEvents: 'none'
+      }} />
+      <div className="hidden md:block" style={{
+        position: 'absolute',
+        right: 'calc(50vw - 350px)',
+        top: 0,
+        bottom: 0,
+        width: '1px',
+        backgroundColor: '#222',
+        zIndex: 5,
+        pointerEvents: 'none'
+      }} />
+
+      <div className="max-w-[700px] mx-auto px-4 py-20 relative z-10">
+        <div className="text-center mb-16">
+          <h1 className="uppercase tracking-[0.2em] font-bold text-3xl mb-4">
+            Uložené položky
+          </h1>
           {isTemporary && (
-            <p style={{ textAlign: "center", fontSize: "12px", color: "#888", marginBottom: "24px" }}>
+            <p className="text-[#888] text-xs uppercase tracking-widest">
               (Dočasné uložení - přihlaste se pro trvalé uložení)
             </p>
           )}
-          <p style={{ textAlign: "center", color: "#666" }}>
-            Zatím nemáte žádné uložené položky
-          </p>
         </div>
-      ) : (
-        <>
-          <h1 style={{ fontSize: "24px", marginBottom: "16px", textAlign: "center" }}>Uložené položky</h1>
-          {isTemporary && (
-            <p style={{ textAlign: "center", fontSize: "12px", color: "#888", marginBottom: "24px" }}>
-              (Dočasné uložení - přihlaste se pro trvalé uložení)
+
+        {savedItems.length === 0 ? (
+          <div className="text-center py-20">
+            <p className="text-[#666] mb-12 uppercase tracking-widest">
+              Zatím nemáte žádné uložené položky
             </p>
-          )}
-          {beats.length > 0 && (
-            <div style={{ marginBottom: "48px" }}>
-              <h2 style={{ fontSize: "16px", marginBottom: "16px", color: "#999" }}>Beaty</h2>
-              {beats.map((item) => (
-                <div
-                  key={item.id}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    padding: "12px 0",
-                    borderBottom: "1px solid #222",
-                    gap: "16px",
-                  }}
-                >
-                  <button
-                    onClick={() => playPreview(item)}
-                    style={{
-                      width: "40px",
-                      height: "40px",
-                      borderRadius: "50%",
-                      border: "1px solid #fff",
-                      background: currentItem?.id === item.id && isPlaying ? "#fff" : "transparent",
-                      color: currentItem?.id === item.id && isPlaying ? "#000" : "#fff",
-                      flexShrink: 0,
-                    }}
-                  >
-                    {currentItem?.id === item.id && isPlaying ? "⏸" : "▶"}
-                  </button>
-                  
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: "bold" }}>{item.item_data.title}</div>
-                    <div style={{ fontSize: "12px", color: "#666" }}>
-                      {item.item_data.artist} • {item.item_data.bpm} BPM • {item.item_data.key}
-                    </div>
-                  </div>
-
-                  <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                    <span style={{ fontWeight: "bold" }}>{item.item_data.price} CZK</span>
-                    <button
-                      onClick={() => handleRemove(item)}
-                      style={{
-                        background: "transparent",
-                        border: "none",
-                        cursor: "pointer",
-                        padding: "8px",
-                      }}
+            <AnimatedLink href="/zvuky" text="PROCHÁZET BEATY" />
+          </div>
+        ) : (
+          <div className="space-y-16">
+            {beats.length > 0 && (
+              <div>
+                <h2 className="text-[#999] uppercase text-sm tracking-[0.2em] mb-8 border-b border-[#222] pb-2">
+                  Beaty
+                </h2>
+                <div className="space-y-4">
+                  {beats.map((item) => (
+                    <div
+                      key={item.id}
+                      className="group flex items-center justify-between p-4 border border-[#222] hover:border-white transition-colors rounded-sm"
                     >
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="#ff4444" stroke="#ff4444" strokeWidth="2">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                      </svg>
-                    </button>
-                    <button
-                      onClick={() => handleAddToCart(item)}
-                      className="btn-bounce"
-                      style={{
-                        padding: "8px 8px 8px 16px",
-                        background: "#fff",
-                        color: "#000",
-                        border: "none",
-                        fontSize: "12px",
-                        fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
-                        fontWeight: 400,
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "6px",
-                        borderRadius: "4px",
-                        position: "relative",
-                        minWidth: "120px",
-                        height: "32px",
-                      }}
-                    >
-                      <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, marginLeft: "-8px" }}>
-                          <rect x="3" y="6" width="18" height="15" rx="2" />
-                          <path d="M8 6V4a4 4 0 0 1 8 0v2" />
-                        </svg>
-                        <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "#000", lineHeight: "1", right: "-10px", top: "-5px" }}>+</span>
-                      </div>
-                      <span style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "8px" }}>DO KOŠÍKU</span>
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {soundKits.length > 0 && (
-            <div>
-              <h2 style={{ fontSize: "16px", marginBottom: "16px", color: "#999" }}>Zvukové kity</h2>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-                  gap: "24px",
-                }}
-              >
-                {soundKits.map((item) => (
-                  <div
-                    key={item.id}
-                    style={{
-                      border: "1px solid #333",
-                      overflow: "hidden",
-                      position: "relative",
-                      borderRadius: "4px",
-                    }}
-                  >
-                    <button
-                      onClick={() => handleRemove(item)}
-                      style={{
-                        position: "absolute",
-                        top: "12px",
-                        right: "12px",
-                        background: "rgba(0,0,0,0.6)",
-                        border: "none",
-                        borderRadius: "50%",
-                        width: "36px",
-                        height: "36px",
-                        cursor: "pointer",
-                        zIndex: 10,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="#ff4444" stroke="#ff4444" strokeWidth="2">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                      </svg>
-                    </button>
-
-                    <div style={{ aspectRatio: "1", background: "#000", position: "relative" }}>
-                      <img
-                        src={item.item_data.artwork_url || "/uploads/artwork/metallic-logo.png"}
-                        alt={item.item_data.title}
-                        style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "4px 4px 0 0" }}
-                      />
-                      {item.item_data.preview_url && (
+                      <div className="flex items-center gap-6">
                         <button
                           onClick={() => playPreview(item)}
-                          style={{
-                            position: "absolute",
-                            bottom: "12px",
-                            right: "12px",
-                            width: "48px",
-                            height: "48px",
-                            borderRadius: "50%",
-                            border: "1px solid #fff",
-                            background: currentItem?.id === item.id && isPlaying ? "#fff" : "rgba(0,0,0,0.8)",
-                            color: currentItem?.id === item.id && isPlaying ? "#000" : "#fff",
-                            fontSize: "18px",
-                          }}
+                          className={`w-12 h-12 rounded-full border flex items-center justify-center transition-all ${
+                            currentItem?.id === item.id && isPlaying 
+                              ? "bg-white border-white text-black" 
+                              : "bg-transparent border-[#444] text-white hover:border-white"
+                          }`}
                         >
-                          {currentItem?.id === item.id && isPlaying ? "⏸" : "▶"}
+                          {currentItem?.id === item.id && isPlaying ? (
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                          ) : (
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="ml-1"><path d="M5 3l14 9-14 9V3z"/></svg>
+                          )}
                         </button>
-                      )}
-                    </div>
-
-                    <div style={{ padding: "16px" }}>
-                      <div style={{ fontSize: "12px", color: "#666", marginBottom: "4px" }}>
-                        {typeLabels[item.item_data.type || ""] || item.item_data.type}
+                        <div>
+                          <h3 className="font-bold uppercase tracking-tight">{item.item_data.title}</h3>
+                          <p className="text-xs text-[#666] uppercase mt-1">
+                            {item.item_data.artist} • {item.item_data.bpm} BPM • {item.item_data.key}
+                          </p>
+                        </div>
                       </div>
-                      <h3 style={{ marginBottom: "8px" }}>{item.item_data.title}</h3>
-                      <p style={{ fontSize: "14px", color: "#999", marginBottom: "12px" }}>
-                        {item.item_data.number_of_sounds} zvuků
-                      </p>
 
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <span style={{ fontWeight: "bold" }}>
-                          {item.item_data.is_free ? "ZDARMA" : `${item.item_data.price} CZK`}
-                        </span>
-                        <button className="btn btn-bounce" onClick={() => handleAddToCart(item)} style={{ borderRadius: "4px" }}>
-                          {item.item_data.is_free ? "STÁHNOUT" : "DO KOŠÍKU"}
-                        </button>
+                      <div className="flex items-center gap-6">
+                        <span className="font-bold text-sm whitespace-nowrap">{item.item_data.price} CZK</span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleRemove(item)}
+                            className="p-2 text-[#666] hover:text-red-500 transition-colors"
+                          >
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => handleAddToCart(item)}
+                            className="bg-white text-black text-[10px] font-bold px-4 py-2 rounded-sm hover:bg-[#eee] transition-colors uppercase tracking-widest"
+                          >
+                            DO KOŠÍKU
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-        </>
-      )}
+            )}
+
+            {soundKits.length > 0 && (
+              <div>
+                <h2 className="text-[#999] uppercase text-sm tracking-[0.2em] mb-8 border-b border-[#222] pb-2">
+                  Zvukové kity
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {soundKits.map((item) => (
+                    <div
+                      key={item.id}
+                      className="group relative border border-[#222] hover:border-white transition-all rounded-sm overflow-hidden"
+                    >
+                      <div className="aspect-square relative overflow-hidden bg-[#111]">
+                        <img
+                          src={item.item_data.artwork_url || "/uploads/artwork/metallic-logo.png"}
+                          alt={item.item_data.title}
+                          className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
+                        />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+                          {item.item_data.preview_url && (
+                            <button
+                              onClick={() => playPreview(item)}
+                              className={`w-14 h-14 rounded-full border-2 flex items-center justify-center transition-all ${
+                                currentItem?.id === item.id && isPlaying 
+                                  ? "bg-white border-white text-black" 
+                                  : "bg-transparent border-white text-white hover:bg-white hover:text-black"
+                              }`}
+                            >
+                              {currentItem?.id === item.id && isPlaying ? (
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                              ) : (
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="ml-1"><path d="M5 3l14 9-14 9V3z"/></svg>
+                              )}
+                            </button>
+                          )}
+                        </div>
+                        <button
+                          onClick={() => handleRemove(item)}
+                          className="absolute top-4 right-4 p-2 bg-black/60 rounded-full text-red-500 hover:bg-black transition-colors z-20"
+                        >
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                          </svg>
+                        </button>
+                      </div>
+
+                      <div className="p-6">
+                        <div className="text-[10px] text-[#666] uppercase tracking-widest mb-2">
+                          {typeLabels[item.item_data.type || ""] || item.item_data.type}
+                        </div>
+                        <h3 className="font-bold uppercase tracking-tight mb-1">{item.item_data.title}</h3>
+                        <p className="text-xs text-[#444] uppercase mb-4">
+                          {item.item_data.number_of_sounds} ZVUKŮ
+                        </p>
+                        
+                        <div className="flex items-center justify-between pt-4 border-t border-[#222]">
+                          <span className="font-bold text-sm">
+                            {item.item_data.is_free ? "ZDARMA" : `${item.item_data.price} CZK`}
+                          </span>
+                          <button 
+                            onClick={() => handleAddToCart(item)}
+                            className="bg-white text-black text-[10px] font-bold px-4 py-2 rounded-sm hover:bg-[#eee] transition-colors uppercase tracking-widest"
+                          >
+                            {item.item_data.is_free ? "STÁHNOUT" : "DO KOŠÍKU"}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
+
+export default Ulozeno;
+
 
 export default Ulozeno;
