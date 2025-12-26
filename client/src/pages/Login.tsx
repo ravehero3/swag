@@ -136,7 +136,7 @@ function Login() {
             />
           </div>
 
-          <div style={{ marginBottom: "4px" }}>
+          <div style={{ marginBottom: "8px" }}>
             <label style={labelStyle}>Heslo</label>
             <input
               type="password"
