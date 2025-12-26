@@ -1153,7 +1153,7 @@ function Beaty() {
                       }
                       .buy-btn-playlist-mobile-container button[title="Download"] {
                         position: absolute !important;
-                        top: 16px !important;
+                        top: -24px !important;
                         left: -64px !important;
                         bottom: auto !important;
                         margin-left: 0 !important;
