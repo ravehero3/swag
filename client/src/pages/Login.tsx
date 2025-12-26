@@ -136,7 +136,7 @@ function Login() {
             />
           </div>
 
-          <div style={{ marginBottom: "24px" }}>
+          <div style={{ marginBottom: "4px" }}>
             <label style={labelStyle}>Heslo</label>
             <input
               type="password"
@@ -151,7 +151,7 @@ function Login() {
             type="submit"
             className="btn btn-filled btn-bounce"
             disabled={loading}
-            style={{ width: "100%", marginBottom: "16px", marginTop: "4px", borderRadius: "4px" }}
+            style={{ width: "100%", marginBottom: "16px", marginTop: "0px", borderRadius: "4px" }}
           >
             {loading ? "..." : isLogin ? "Přihlásit se" : "Registrovat"}
           </button>
@@ -178,9 +178,6 @@ function Login() {
             @media (max-width: 768px) {
               form {
                 width: 100%;
-              }
-              button[type="submit"] {
-                margin-top: 4px !important;
               }
             }
           `}</style>
