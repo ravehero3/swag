@@ -8,7 +8,7 @@ function CookieSettings() {
     marketing: false,
   });
 
-  const handleToggle = (key: string) => {
+  const handleToggle = (key: keyof typeof settings) => {
     setSettings((prev) => ({
       ...prev,
       [key]: !prev[key],

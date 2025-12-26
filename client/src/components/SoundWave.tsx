@@ -19,7 +19,7 @@ function SoundWave({ audioRef, isPlaying }: SoundWaveProps) {
 
       try {
         const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)() as AudioContext;
-        const source = audioContext.createMediaElementAudioSource(audioRef.current!);
+        const source = audioContext.createMediaElementSource(audioRef.current!);
         const analyser = audioContext.createAnalyser();
         analyser.fftSize = 256;
         source.connect(analyser);
