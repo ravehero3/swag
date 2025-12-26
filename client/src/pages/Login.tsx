@@ -151,7 +151,7 @@ function Login() {
             type="submit"
             className="btn btn-filled btn-bounce"
             disabled={loading}
-            style={{ width: "100%", marginBottom: "16px", borderRadius: "4px" }}
+            style={{ width: "100%", marginBottom: "16px", marginTop: "16px", borderRadius: "4px" }}
           >
             {loading ? "..." : isLogin ? "Přihlásit se" : "Registrovat"}
           </button>
@@ -178,6 +178,9 @@ function Login() {
             @media (max-width: 768px) {
               form {
                 width: 100%;
+              }
+              button[type="submit"] {
+                margin-top: 16px !important;
               }
             }
           `}</style>
