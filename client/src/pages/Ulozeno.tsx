@@ -123,14 +123,17 @@ function Ulozeno() {
   const soundKits = savedItems.filter((item) => item.item_type === "sound_kit");
 
   const sectionStyle: React.CSSProperties = {
-    width: "100%",
-    borderBottom: "0.5px solid #333",
+    width: "700px",
+    margin: "0 auto",
+    borderBottom: "0.5px solid #fff",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
     textAlign: "center",
     padding: "0 20px",
+    position: "relative",
+    zIndex: 10,
   };
 
   const titleFont = {
@@ -182,7 +185,7 @@ function Ulozeno() {
         )}
       </section>
 
-      {/* Navigation Buttons Section */}
+      {/* Section 2: Navigation Buttons */}
       <section style={{ ...sectionStyle, height: "44px", flexDirection: "row", gap: "24px" }}>
         <Link href="/ulozeno">
           <span style={{ 
@@ -191,7 +194,7 @@ function Ulozeno() {
             cursor: "pointer",
             color: "white",
             padding: "4px 12px",
-            border: location === "/ulozeno" ? "1px solid #333" : "none",
+            border: location === "/ulozeno" ? "1px solid #fff" : "none",
             borderRadius: "4px"
           }}>
             ULOŽENÉ PRODUKTY
@@ -204,7 +207,7 @@ function Ulozeno() {
             cursor: "pointer",
             color: "white",
             padding: "4px 12px",
-            border: location === "/kosik" ? "1px solid #333" : "none",
+            border: location === "/kosik" ? "1px solid #fff" : "none",
             borderRadius: "4px"
           }}>
             KOŠÍK
