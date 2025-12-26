@@ -1157,14 +1157,14 @@ function Beaty() {
                         margin-left: -428px !important;
                       }
                       .buy-btn-playlist-mobile-container .btn-bounce {
-                        margin-left: 260px !important;
+                        margin-left: 360px !important;
                       }
                       .heart-icon-playlist-mobile {
                         transform: translate(16px, -72px) !important;
                       }
                       .beat-buttons-container button[title="Share"] {
-                        margin-left: -608px !important;
-                        transform: translateY(36px) !important;
+                        margin-left: -604px !important;
+                        transform: translateY(20px) !important;
                       }
                       .desktop-buy-btn {
                         display: none !important;
