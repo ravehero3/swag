@@ -34,8 +34,10 @@ function Ulozeno() {
   const [currentItem, setCurrentItem] = useState<SavedItem | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
-  const { user, addToCart } = useApp();
+  const { user, addToCart, cart } = useApp();
   const [location] = useLocation();
+
+  const cartCount = cart.length;
 
   useEffect(() => {
     if (user) {
@@ -211,7 +213,7 @@ function Ulozeno() {
               border: location === "/kosik" ? "1px solid #fff" : "none",
               borderRadius: "4px"
             }}>
-              KOŠÍK
+              KOŠÍK {cartCount > 0 && `(${cartCount})`}
             </span>
           </Link>
         </section>
