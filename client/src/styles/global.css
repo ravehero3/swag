@@ -226,7 +226,8 @@ input::placeholder, textarea::placeholder {
 
 /* Mobile view button positioning - only for saved items page button */
 @media (max-width: 768px) {
-  .btn.btn-bounce {
+  /* Only apply to buttons in the saved items container, not login page */
+  div[style*="display: grid"] .btn.btn-bounce {
     position: relative;
     top: -40px;
     left: -64px;
