@@ -165,10 +165,22 @@ function Login() {
               color: "#666",
               width: "100%",
               textDecoration: "underline",
+              padding: "8px 0",
+              borderRadius: "4px",
+              cursor: "pointer",
+              fontSize: "14px",
             }}
           >
             {isLogin ? "Nemáte účet? Registrujte se" : "Už máte účet? Přihlaste se"}
           </button>
+
+          <style>{`
+            @media (max-width: 768px) {
+              form {
+                width: 100%;
+              }
+            }
+          `}</style>
         </form>
       </div>
     </div>
