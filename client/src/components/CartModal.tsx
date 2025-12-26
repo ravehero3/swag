@@ -144,7 +144,7 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                   src="/payment-methods.jpg" 
                   alt="Payment Methods" 
                   style={{ 
-                    maxWidth: '100%', 
+                    maxWidth: '50%', 
                     height: 'auto',
                     opacity: 0.8
                   }} 
