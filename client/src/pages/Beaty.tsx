@@ -376,7 +376,14 @@ function Beaty() {
         crossOrigin="anonymous"
       />
 
-      <div style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative" }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .video-container {
+            margin-bottom: 0 !important;
+          }
+        }
+      `}</style>
+      <div className="video-container" style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative" }}>
         <video
           src={isHomePage ? "/uploads/voodoo808-video.mov" : "/uploads/hrad-na-web.mov"}
           autoPlay
