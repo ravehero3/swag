@@ -321,6 +321,7 @@ function Zvuky() {
             onPlayClick={(id) => playPreview(kits.find((k) => k.id === id)!)}
             isPlaying={isPlaying}
             currentPlayingId={currentKit?.id}
+            onAddToCart={(id) => handleAddToCart(kits.find((k) => k.id === id)!)}
           />
         </div>
       ) : (

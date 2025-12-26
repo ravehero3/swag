@@ -16,6 +16,7 @@ interface ProductCardProps {
   isPlaying?: boolean;
   onPlayClick?: () => void;
   typeLabel?: string;
+  onAddToCart?: (id: string | number) => void;
 }
 
 export default function ProductCard({
@@ -31,6 +32,7 @@ export default function ProductCard({
   isPlaying = false,
   onPlayClick,
   typeLabel,
+  onAddToCart,
 }: ProductCardProps) {
   const [isHeartAnimating, setIsHeartAnimating] = React.useState(false);
 
@@ -156,10 +158,68 @@ export default function ProductCard({
           </p>
         )}
 
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px" }}>
-          <span style={{ fontWeight: "bold", fontSize: "14px" }}>
-            {isFree ? "ZDARMA" : `${price} CZK`}
-          </span>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "8px" }}>
+          {onAddToCart && !isFree && (
+            <button
+              onClick={() => onAddToCart(id)}
+              className="btn-bounce"
+              style={{
+                padding: "8px 8px 8px 16px",
+                background: "#000",
+                color: "#fff",
+                border: "1px solid #fff",
+                fontSize: "12px",
+                fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+                fontWeight: 400,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                borderRadius: "4px",
+                position: "relative",
+                minWidth: "120px",
+                height: "32px",
+                transition: "background 0.2s, color 0.2s, border-color 0.2s",
+                overflow: "visible",
+                outline: "none",
+                boxShadow: "none",
+                WebkitAppearance: "none",
+                appearance: "none",
+                boxSizing: "border-box",
+              }}
+              onMouseEnter={(e) => {
+                const btn = e.currentTarget as HTMLButtonElement;
+                btn.style.background = "#fff";
+                btn.style.color = "#000";
+                btn.style.borderColor = "#000";
+              }}
+              onMouseLeave={(e) => {
+                const btn = e.currentTarget as HTMLButtonElement;
+                btn.style.background = "#000";
+                btn.style.color = "#fff";
+                btn.style.borderColor = "#fff";
+              }}
+            >
+              <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, marginLeft: "-8px" }}>
+                  <rect x="3" y="6" width="18" height="15" rx="2" />
+                  <path d="M8 6V4a4 4 0 0 1 8 0v2" />
+                </svg>
+                <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "inherit", lineHeight: "1", right: "-10px", top: "-5px" }}>+</span>
+              </div>
+              <span style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "8px" }}>{price} CZK</span>
+            </button>
+          )}
+          {isFree && (
+            <span style={{ fontWeight: "bold", fontSize: "14px", color: "#999" }}>
+              ZDARMA
+            </span>
+          )}
+          {!isFree && !onAddToCart && (
+            <span style={{ fontWeight: "bold", fontSize: "14px" }}>
+              {price} CZK
+            </span>
+          )}
           {onToggleSave && (
             <button
               onClick={handleHeartClick}
@@ -175,7 +235,6 @@ export default function ProductCard({
                 minWidth: "24px",
                 height: "24px",
                 flexShrink: 0,
-                marginRight: "8px",
                 borderRadius: "4px"
               }}
               title={isSaved ? "Remove from favorites" : "Add to favorites"}

@@ -23,6 +23,7 @@ interface ProductsGridProps {
   onPlayClick?: (productId: string | number) => void;
   isPlaying?: boolean;
   currentPlayingId?: string | number;
+  onAddToCart?: (id: string | number) => void;
 }
 
 export default function ProductsGrid({
@@ -33,6 +34,7 @@ export default function ProductsGrid({
   onPlayClick,
   isPlaying = false,
   currentPlayingId,
+  onAddToCart,
 }: ProductsGridProps) {
   const displayProducts = initialCount ? products.slice(0, initialCount) : products;
 
@@ -83,6 +85,7 @@ export default function ProductsGrid({
             isPlaying={currentPlayingId === product.id && isPlaying}
             onPlayClick={onPlayClick ? () => onPlayClick(product.id) : undefined}
             typeLabel={product.typeLabel}
+            onAddToCart={onAddToCart}
           />
         ))}
       </div>
