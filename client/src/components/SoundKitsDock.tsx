@@ -105,7 +105,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
         @media (max-width: 768px) {
           .dock-container-mobile {
             position: fixed !important;
-            bottom: 300px !important;
+            bottom: 220px !important;
             left: 0 !important;
             right: 0 !important;
             width: 100% !important;
@@ -130,6 +130,17 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
           .dock-icon-button {
             width: 48px !important;
             height: 48px !important;
+          }
+          .reflection-container-mobile {
+            position: fixed !important;
+            top: 142px !important;
+            left: 0 !important;
+            right: 0 !important;
+            width: 100% !important;
+            display: flex !important;
+            justify-content: center !important;
+            z-index: 50 !important;
+            pointer-events: none !important;
           }
           .dock-reflection-container {
             height: 58px !important;
@@ -282,7 +293,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
       </div>
 
       {/* Mirrored Reflection */}
-      <div style={{ 
+      <div className="reflection-container-mobile" style={{ 
         width: '100%', 
         display: 'flex', 
         justifyContent: 'center', 
@@ -292,6 +303,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
         pointerEvents: 'none',
         maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1), rgba(0,0,0,0))',
         WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1), rgba(0,0,0,0))',
+        position: 'relative',
       }}>
         <div
           className="dock-reflection-container"
