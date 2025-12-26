@@ -1157,7 +1157,7 @@ function Beaty() {
                         margin-left: -312px !important;
                       }
                       .buy-btn-playlist-mobile-container .btn-bounce {
-                        margin-left: 600px !important;
+                        margin-left: 724px !important;
                       }
                       .heart-icon-playlist-mobile {
                         transform: translate(16px, -72px) !important;
