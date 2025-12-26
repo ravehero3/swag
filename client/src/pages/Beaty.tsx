@@ -1153,11 +1153,11 @@ function Beaty() {
                       }
                       .buy-btn-playlist-mobile-container button[title="Download"] {
                         position: relative !important;
-                        top: 28px !important;
-                        margin-left: -236px !important;
+                        top: -12px !important;
+                        margin-left: -316px !important;
                       }
                       .buy-btn-playlist-mobile-container .btn-bounce {
-                        margin-left: -64px !important;
+                        margin-left: 0px !important;
                       }
                       .heart-icon-playlist-mobile {
                         transform: translate(16px, -72px) !important;
