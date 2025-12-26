@@ -1153,18 +1153,18 @@ function Beaty() {
                       }
                       .buy-btn-playlist-mobile-container button[title="Download"] {
                         position: relative !important;
-                        top: -20px !important;
-                        margin-left: -428px !important;
+                        top: -18px !important;
+                        margin-left: -388px !important;
                       }
                       .buy-btn-playlist-mobile-container .btn-bounce {
-                        margin-left: 460px !important;
+                        margin-left: 600px !important;
                       }
                       .heart-icon-playlist-mobile {
                         transform: translate(16px, -72px) !important;
                       }
                       .beat-buttons-container button[title="Share"] {
-                        margin-left: -604px !important;
-                        transform: translateY(24px) !important;
+                        margin-left: -572px !important;
+                        transform: translateY(26px) !important;
                       }
                       .desktop-buy-btn {
                         display: none !important;
