@@ -148,7 +148,7 @@ export default function ExtendedFooter() {
   };
 
   return (
-    <footer style={{ backgroundColor: "#000000", width: "100%" }}>
+    <footer style={{ backgroundColor: "#000000", width: "100%", overflow: "hidden" }}>
       <style>{styles}</style>
       {/* Desktop Footer - 6 columns */}
       <div 
@@ -238,6 +238,7 @@ export default function ExtendedFooter() {
           fontSize: "12px",
           fontWeight: 400,
           letterSpacing: "0.12px",
+          overflowX: "hidden",
         }}
       >
         <FooterAccordionItem 

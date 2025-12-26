@@ -4,11 +4,16 @@
   box-sizing: border-box;
 }
 
+html {
+  overflow-x: hidden;
+}
+
 body {
   font-family: "Work Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
   background-color: #000;
   color: #fff;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 a {
