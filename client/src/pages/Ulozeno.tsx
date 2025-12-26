@@ -171,7 +171,6 @@ function Ulozeno() {
         bottom: 0,
         width: '1px',
         backgroundColor: '#fff',
-        opacity: 0.1,
         zIndex: 5,
         pointerEvents: 'none'
       }} />
@@ -182,7 +181,6 @@ function Ulozeno() {
         bottom: 0,
         width: '1px',
         backgroundColor: '#fff',
-        opacity: 0.1,
         zIndex: 5,
         pointerEvents: 'none'
       }} />
