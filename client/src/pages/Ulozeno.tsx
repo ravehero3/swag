@@ -156,7 +156,7 @@ function Ulozeno() {
   const isTemporary = !user;
 
   return (
-    <div className="min-h-screen bg-black text-white relative fade-in">
+    <div className="min-h-screen bg-white text-black relative fade-in">
       <audio
         ref={audioRef}
         src={currentItem?.item_data.preview_url}
@@ -170,7 +170,7 @@ function Ulozeno() {
         top: 0,
         bottom: 0,
         width: '1px',
-        backgroundColor: '#fff',
+        backgroundColor: '#000',
         zIndex: 5,
         pointerEvents: 'none'
       }} />
@@ -180,26 +180,26 @@ function Ulozeno() {
         top: 0,
         bottom: 0,
         width: '1px',
-        backgroundColor: '#fff',
+        backgroundColor: '#000',
         zIndex: 5,
         pointerEvents: 'none'
       }} />
 
       <div className="max-w-[700px] mx-auto px-4 py-20 relative z-10">
-        <div className="text-center mb-16">
-          <h1 className="uppercase tracking-[0.2em] font-bold text-3xl mb-4">
+        <div className="text-center mb-16 flex flex-col items-center">
+          <h1 className="uppercase tracking-[0.2em] font-bold text-3xl mb-4 text-center">
             Uložené položky
           </h1>
           {isTemporary && (
-            <p className="text-[#888] text-xs uppercase tracking-widest">
+            <p className="text-[#888] text-xs uppercase tracking-widest text-center">
               (Dočasné uložení - přihlaste se pro trvalé uložení)
             </p>
           )}
         </div>
 
         {savedItems.length === 0 ? (
-          <div className="text-center py-20">
-            <p className="text-[#666] mb-12 uppercase tracking-widest">
+          <div className="text-center py-20 flex flex-col items-center">
+            <p className="text-[#666] mb-12 uppercase tracking-widest text-center">
               Zatím nemáte žádné uložené položky
             </p>
             <AnimatedLink href="/zvuky" text="PROCHÁZET BEATY" />
@@ -207,23 +207,23 @@ function Ulozeno() {
         ) : (
           <div className="space-y-16">
             {beats.length > 0 && (
-              <div>
-                <h2 className="text-[#999] uppercase text-sm tracking-[0.2em] mb-8 border-b border-[#222] pb-2">
+              <div className="flex flex-col items-center">
+                <h2 className="text-[#999] uppercase text-sm tracking-[0.2em] mb-8 border-b border-[#eee] pb-2 w-full text-center">
                   Beaty
                 </h2>
-                <div className="space-y-4">
+                <div className="space-y-4 w-full">
                   {beats.map((item) => (
                     <div
                       key={item.id}
-                      className="group flex items-center justify-between p-4 border border-[#222] hover:border-white transition-colors rounded-sm"
+                      className="group flex flex-col sm:flex-row items-center justify-between p-4 border border-[#eee] hover:border-black transition-colors rounded-sm text-center sm:text-left"
                     >
-                      <div className="flex items-center gap-6">
+                      <div className="flex flex-col sm:flex-row items-center gap-6">
                         <button
                           onClick={() => playPreview(item)}
                           className={`w-12 h-12 rounded-full border flex items-center justify-center transition-all ${
                             currentItem?.id === item.id && isPlaying 
-                              ? "bg-white border-white text-black" 
-                              : "bg-transparent border-[#444] text-white hover:border-white"
+                              ? "bg-black border-black text-white" 
+                              : "bg-transparent border-[#ccc] text-black hover:border-black"
                           }`}
                         >
                           {currentItem?.id === item.id && isPlaying ? (
@@ -232,7 +232,7 @@ function Ulozeno() {
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="ml-1"><path d="M5 3l14 9-14 9V3z"/></svg>
                           )}
                         </button>
-                        <div>
+                        <div className="flex flex-col items-center sm:items-start">
                           <h3 className="font-bold uppercase tracking-tight">{item.item_data.title}</h3>
                           <p className="text-xs text-[#666] uppercase mt-1">
                             {item.item_data.artist} • {item.item_data.bpm} BPM • {item.item_data.key}
@@ -240,7 +240,7 @@ function Ulozeno() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-6">
+                      <div className="flex flex-col sm:flex-row items-center gap-6 mt-4 sm:mt-0">
                         <span className="font-bold text-sm whitespace-nowrap">{item.item_data.price} CZK</span>
                         <div className="flex items-center gap-2">
                           <button
@@ -253,7 +253,7 @@ function Ulozeno() {
                           </button>
                           <button
                             onClick={() => handleAddToCart(item)}
-                            className="bg-white text-black text-[10px] font-bold px-4 py-2 rounded-sm hover:bg-[#eee] transition-colors uppercase tracking-widest"
+                            className="bg-black text-white text-[10px] font-bold px-4 py-2 rounded-sm hover:bg-[#333] transition-colors uppercase tracking-widest"
                           >
                             DO KOŠÍKU
                           </button>
@@ -266,30 +266,30 @@ function Ulozeno() {
             )}
 
             {soundKits.length > 0 && (
-              <div>
-                <h2 className="text-[#999] uppercase text-sm tracking-[0.2em] mb-8 border-b border-[#222] pb-2">
+              <div className="flex flex-col items-center">
+                <h2 className="text-[#999] uppercase text-sm tracking-[0.2em] mb-8 border-b border-[#eee] pb-2 w-full text-center">
                   Zvukové kity
                 </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full">
                   {soundKits.map((item) => (
                     <div
                       key={item.id}
-                      className="group relative border border-[#222] hover:border-white transition-all rounded-sm overflow-hidden"
+                      className="group relative border border-[#eee] hover:border-black transition-all rounded-sm overflow-hidden flex flex-col items-center text-center"
                     >
-                      <div className="aspect-square relative overflow-hidden bg-[#111]">
+                      <div className="aspect-square w-full relative overflow-hidden bg-[#f9f9f9]">
                         <img
                           src={item.item_data.artwork_url || "/uploads/artwork/metallic-logo.png"}
                           alt={item.item_data.title}
                           className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
                         />
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+                        <div className="absolute inset-0 bg-white/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
                           {item.item_data.preview_url && (
                             <button
                               onClick={() => playPreview(item)}
                               className={`w-14 h-14 rounded-full border-2 flex items-center justify-center transition-all ${
                                 currentItem?.id === item.id && isPlaying 
-                                  ? "bg-white border-white text-black" 
-                                  : "bg-transparent border-white text-white hover:bg-white hover:text-black"
+                                  ? "bg-black border-black text-white" 
+                                  : "bg-transparent border-black text-black hover:bg-black hover:text-white"
                               }`}
                             >
                               {currentItem?.id === item.id && isPlaying ? (
@@ -302,7 +302,7 @@ function Ulozeno() {
                         </div>
                         <button
                           onClick={() => handleRemove(item)}
-                          className="absolute top-4 right-4 p-2 bg-black/60 rounded-full text-red-500 hover:bg-black transition-colors z-20"
+                          className="absolute top-4 right-4 p-2 bg-white/60 rounded-full text-red-500 hover:bg-white transition-colors z-20"
                         >
                           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
@@ -310,22 +310,22 @@ function Ulozeno() {
                         </button>
                       </div>
 
-                      <div className="p-6">
+                      <div className="p-6 w-full flex flex-col items-center">
                         <div className="text-[10px] text-[#666] uppercase tracking-widest mb-2">
                           {typeLabels[item.item_data.type || ""] || item.item_data.type}
                         </div>
                         <h3 className="font-bold uppercase tracking-tight mb-1">{item.item_data.title}</h3>
-                        <p className="text-xs text-[#444] uppercase mb-4">
+                        <p className="text-xs text-[#999] uppercase mb-4">
                           {item.item_data.number_of_sounds} ZVUKŮ
                         </p>
                         
-                        <div className="flex items-center justify-between pt-4 border-t border-[#222]">
+                        <div className="flex flex-col items-center gap-4 pt-4 border-t border-[#eee] w-full">
                           <span className="font-bold text-sm">
                             {item.item_data.is_free ? "ZDARMA" : `${item.item_data.price} CZK`}
                           </span>
                           <button 
                             onClick={() => handleAddToCart(item)}
-                            className="bg-white text-black text-[10px] font-bold px-4 py-2 rounded-sm hover:bg-[#eee] transition-colors uppercase tracking-widest"
+                            className="bg-black text-white text-[10px] font-bold px-4 py-2 rounded-sm hover:bg-[#333] transition-colors uppercase tracking-widest w-full"
                           >
                             {item.item_data.is_free ? "STÁHNOUT" : "DO KOŠÍKU"}
                           </button>
