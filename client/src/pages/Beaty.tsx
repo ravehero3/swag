@@ -1160,9 +1160,10 @@ function Beaty() {
                       }
                       .buy-btn-playlist-mobile-container .btn-bounce {
                         position: absolute !important;
-                        bottom: 16px !important;
+                        top: 16px !important;
                         left: 112px !important;
                         margin-left: 0 !important;
+                        bottom: auto !important;
                       }
                       .heart-icon-playlist-mobile {
                         transform: translate(16px, -72px) !important;
