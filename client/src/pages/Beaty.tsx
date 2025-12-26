@@ -1154,14 +1154,14 @@ function Beaty() {
                       .buy-btn-playlist-mobile-container button[title="Download"] {
                         position: absolute !important;
                         bottom: 16px !important;
-                        left: 42px !important;
+                        left: 16px !important;
                         top: auto !important;
                         margin-left: 0 !important;
                       }
                       .buy-btn-playlist-mobile-container .btn-bounce {
                         position: absolute !important;
                         bottom: 16px !important;
-                        left: 266px !important;
+                        left: 112px !important;
                         margin-left: 0 !important;
                       }
                       .heart-icon-playlist-mobile {
@@ -1170,7 +1170,7 @@ function Beaty() {
                       .beat-buttons-container button[title="Share"] {
                         position: absolute !important;
                         bottom: 16px !important;
-                        left: 78px !important;
+                        left: 64px !important;
                         top: auto !important;
                         margin-left: 0 !important;
                         transform: none !important;
