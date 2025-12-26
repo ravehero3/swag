@@ -107,7 +107,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
             gap: 4px !important;
             padding: 8px !important;
             height: 48px !important;
-            margin-top: -80px !important;
+            margin-top: -100px !important;
           }
           .dock-icon-wrapper {
             width: 40px !important;

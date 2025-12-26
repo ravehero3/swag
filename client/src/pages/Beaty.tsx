@@ -380,6 +380,7 @@ function Beaty() {
         @media (max-width: 768px) {
           .video-container {
             margin-bottom: 0 !important;
+            margin-top: 100px !important;
           }
         }
       `}</style>
