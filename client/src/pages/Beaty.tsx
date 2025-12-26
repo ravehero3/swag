@@ -464,7 +464,7 @@ function Beaty() {
                       toggleSave(highlightedBeat);
                     }}
                     style={{
-                      background: "#000",
+                      background: "transparent",
                       border: "none",
                       cursor: "pointer",
                       padding: "4px",
