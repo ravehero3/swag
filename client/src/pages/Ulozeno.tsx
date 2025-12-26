@@ -132,19 +132,26 @@ function Ulozeno() {
         onEnded={() => setIsPlaying(false)}
       />
 
-      <h1 style={{ fontSize: "24px", marginBottom: "16px", textAlign: "center" }}>Uložené položky</h1>
-      {isTemporary && (
-        <p style={{ textAlign: "center", fontSize: "12px", color: "#888", marginBottom: "24px" }}>
-          (Dočasné uložení - přihlaste se pro trvalé uložení)
-        </p>
-      )}
-
       {savedItems.length === 0 ? (
-        <p style={{ textAlign: "center", color: "#666", padding: "40px" }}>
-          Zatím nemáte žádné uložené položky
-        </p>
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh", flexDirection: "column" }}>
+          <h1 style={{ fontSize: "24px", marginBottom: "16px", textAlign: "center" }}>Uložené položky</h1>
+          {isTemporary && (
+            <p style={{ textAlign: "center", fontSize: "12px", color: "#888", marginBottom: "24px" }}>
+              (Dočasné uložení - přihlaste se pro trvalé uložení)
+            </p>
+          )}
+          <p style={{ textAlign: "center", color: "#666" }}>
+            Zatím nemáte žádné uložené položky
+          </p>
+        </div>
       ) : (
         <>
+          <h1 style={{ fontSize: "24px", marginBottom: "16px", textAlign: "center" }}>Uložené položky</h1>
+          {isTemporary && (
+            <p style={{ textAlign: "center", fontSize: "12px", color: "#888", marginBottom: "24px" }}>
+              (Dočasné uložení - přihlaste se pro trvalé uložení)
+            </p>
+          )}
           {beats.length > 0 && (
             <div style={{ marginBottom: "48px" }}>
               <h2 style={{ fontSize: "16px", marginBottom: "16px", color: "#999" }}>Beaty</h2>
