@@ -187,7 +187,7 @@ function Cart() {
               Prozkoumejte naše beaty a zvukové kity a vyberte si to pravé pro vaši produkci.
             </p>
             <div style={{ height: "16px" }} />
-            <Link href="/beaty">
+            <Link href="/">
               <span style={{
                 backgroundColor: "white",
                 color: "black",
