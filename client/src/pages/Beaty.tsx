@@ -1514,7 +1514,7 @@ function Beaty() {
                       padding-top: 400px !important;
                     }
                     .dock-wrapper {
-                      bottom: -404px !important; /* -4px - 400px */
+                      bottom: 396px !important; /* -404px + 800px */
                     }
                   }
                 `}</style>
