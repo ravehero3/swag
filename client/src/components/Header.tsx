@@ -85,7 +85,7 @@ function Header() {
       </Link>
 
       <div style={{ display: "flex", alignItems: "center", gap: "8px", position: "relative", zIndex: 10, padding: "0 16px 0 32px" }}>
-        <Link href={user ? (user.isAdmin ? "/admin" : "/prihlasit-se") : "/prihlasit-se"}>
+        <Link href={user ? "/ucet" : "/prihlasit-se"}>
           <span
             style={{
               cursor: "pointer",

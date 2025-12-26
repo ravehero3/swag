@@ -995,7 +995,7 @@ function Beaty() {
                   <div className="beat-meta-mobile-key">{beat.key} <span className="beat-meta-mobile-separator">•</span> <span className="beat-meta-mobile-bpm">{beat.bpm}BPM</span></div>
                 </div>
                 <div className="beat-title-container">
-                  <h2 style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "20px", margin: 0 }}>{beat.title}</h2>
+                  <h2 style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "20px", margin: 0, textTransform: "none" }}>{beat.title}</h2>
                 </div>
                 <div className="beat-tags-container-mobile" style={{ display: "flex", gap: "4px", flexWrap: "wrap", marginTop: "4px" }}>
                   {beat.tags && beat.tags.length > 0 && beat.tags.map((tag) => (

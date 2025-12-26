@@ -8,6 +8,7 @@ import Beaty from "./pages/Beaty";
 import Zvuky from "./pages/Zvuky";
 import Login from "./pages/Login";
 import Admin from "./pages/Admin";
+import Ucet from "./pages/Ucet";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import Ulozeno from "./pages/Ulozeno";
@@ -128,6 +129,7 @@ function App() {
             <Route path="/beaty" component={Beaty} />
             <Route path="/zvuky" component={Zvuky} />
             <Route path="/prihlasit-se" component={Login} />
+            <Route path="/ucet" component={Ucet} />
             <Route path="/kosik" component={Cart} />
             <Route path="/checkout" component={Checkout} />
             <Route path="/ulozeno" component={Ulozeno} />
