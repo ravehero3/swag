@@ -125,7 +125,8 @@ function Ulozeno() {
   const soundKits = savedItems.filter((item) => item.item_type === "sound_kit");
 
   const sectionStyle: React.CSSProperties = {
-    width: "700px",
+    width: "100%",
+    maxWidth: "700px",
     margin: "0 auto",
     borderBottom: "0.5px solid #fff",
     display: "flex",
@@ -359,8 +360,11 @@ function Ulozeno() {
                 <div
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+                    gridTemplateColumns: "1fr",
                     width: "100%",
+                    maxWidth: "700px",
+                    margin: "0 auto",
+                    padding: "0 20px",
                   }}
                 >
                   {soundKits.map((item) => (
