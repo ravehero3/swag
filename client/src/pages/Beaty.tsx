@@ -1836,7 +1836,7 @@ function Beaty() {
                     }
                     .computer-bg-container {
                       padding-top: 428px !important;
-                      padding-bottom: 0 !important;
+                      padding-bottom: 16px !important;
                       min-height: auto !important;
                     }
                     .dock-wrapper {
