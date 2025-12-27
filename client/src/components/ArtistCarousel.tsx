@@ -90,6 +90,7 @@ const ArtistCarousel = () => {
           }
           .carousel-fade {
             width: 40px !important;
+            top: -80px !important;
           }
           .carousel-container {
             overflow: visible !important;
