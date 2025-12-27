@@ -421,7 +421,7 @@ function Beaty() {
               margin-top: -52px !important;
             }
             .featured-plus-symbol {
-              top: -17px !important;
+              top: -25px !important;
             }
           }
         }
