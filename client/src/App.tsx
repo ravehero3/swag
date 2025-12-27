@@ -192,7 +192,7 @@ function App() {
 
   return (
     <AppContext.Provider value={{ user, setUser, cart, addToCart, removeFromCart, clearCart, isCartOpen, setIsCartOpen, isNewsletterOpen, setIsNewsletterOpen, currentBeat, setCurrentBeat, isPlaying, setIsPlaying, isLooping, setIsLooping, isShuffling, setIsShuffling, audioRef, allBeats: [], playBeat: () => {}, handlePrevious: () => {}, handleNext: () => {} }}>
-      <div style={{ minHeight: "100vh", background: "#000", display: "flex", flexDirection: "column", paddingBottom: currentBeat ? "84px" : "0" }}>
+      <div style={{ minHeight: "100vh", background: "#000", display: "flex", flexDirection: "column" }}>
         <Header />
         <main style={{ flex: 1 }} className="fade-in">
           <Switch>
