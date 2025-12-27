@@ -148,10 +148,6 @@ function Beaty() {
   const [location, setLocation] = useLocation();
   const [beats, setBeats] = useState<Beat[]>([]);
   const [highlightedBeat, setHighlightedBeat] = useState<Beat | null>(null);
-  const [currentBeat, setCurrentBeat] = useState<Beat | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isLooping, setIsLooping] = useState(false);
-  const [isShuffling, setIsShuffling] = useState(false);
   const [savedBeats, setSavedBeats] = useState<Set<number>>(new Set());
   const [contractModalBeat, setContractModalBeat] = useState<Beat | null>(null);
   const [downloadingBeat, setDownloadingBeat] = useState<Beat | null>(null);
@@ -164,7 +160,7 @@ function Beaty() {
   const beatsListRef = useScrollAnimation();
   const soundKitsRef = useScrollAnimation();
   const artistCarouselRef = useScrollAnimation();
-  const { user, addToCart } = useApp();
+  const { user, addToCart, currentBeat, setCurrentBeat, isPlaying, setIsPlaying, isLooping, setIsLooping, isShuffling, setIsShuffling } = useApp();
   
   // Determine if we're on home page or beaty page
   const isHomePage = location === "/" || location === "";
@@ -1839,19 +1835,7 @@ function Beaty() {
         />
       )}
 
-      <MusicPlayer
-        currentBeat={currentBeat}
-        isPlaying={isPlaying}
-        isLooping={isLooping}
-        isShuffling={isShuffling}
-        onPlayPause={handlePlayPause}
-        onPrevious={handlePrevious}
-        onNext={handleNext}
-        onToggleLoop={() => setIsLooping(!isLooping)}
-        onToggleShuffle={() => setIsShuffling(!isShuffling)}
-        onBuyClick={openContractModal}
-        audioRef={audioRef}
-      />
+      <audio ref={audioRef} onEnded={handleAudioEnded} />
     </div>
   );
 }

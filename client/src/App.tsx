@@ -4,6 +4,7 @@ import Header from "./components/Header";
 import ExtendedFooter from "./components/ExtendedFooter";
 import Footer from "./components/Footer";
 import CartModal from "./components/CartModal";
+import MusicPlayer from "./components/MusicPlayer";
 import Beaty from "./pages/Beaty";
 import Zvuky from "./pages/Zvuky";
 import Login from "./pages/Login";
@@ -44,6 +45,26 @@ interface AppContextType {
   clearCart: () => void;
   isCartOpen: boolean;
   setIsCartOpen: (open: boolean) => void;
+  currentBeat: Beat | null;
+  setCurrentBeat: (beat: Beat | null) => void;
+  isPlaying: boolean;
+  setIsPlaying: (playing: boolean) => void;
+  isLooping: boolean;
+  setIsLooping: (looping: boolean) => void;
+  isShuffling: boolean;
+  setIsShuffling: (shuffling: boolean) => void;
+}
+
+interface Beat {
+  id: number;
+  title: string;
+  artist: string;
+  bpm: number;
+  key: string;
+  price: number;
+  preview_url: string;
+  artwork_url: string;
+  is_highlighted?: boolean;
 }
 
 export const AppContext = createContext<AppContextType>({
@@ -55,6 +76,14 @@ export const AppContext = createContext<AppContextType>({
   clearCart: () => {},
   isCartOpen: false,
   setIsCartOpen: () => {},
+  currentBeat: null,
+  setCurrentBeat: () => {},
+  isPlaying: false,
+  setIsPlaying: () => {},
+  isLooping: false,
+  setIsLooping: () => {},
+  isShuffling: false,
+  setIsShuffling: () => {},
 });
 
 export const useApp = () => useContext(AppContext);
@@ -64,6 +93,10 @@ function App() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [currentBeat, setCurrentBeat] = useState<Beat | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isLooping, setIsLooping] = useState(false);
+  const [isShuffling, setIsShuffling] = useState(false);
 
   // Add padding to body for fixed header
   useEffect(() => {
@@ -120,7 +153,7 @@ function App() {
   }
 
   return (
-    <AppContext.Provider value={{ user, setUser, cart, addToCart, removeFromCart, clearCart, isCartOpen, setIsCartOpen }}>
+    <AppContext.Provider value={{ user, setUser, cart, addToCart, removeFromCart, clearCart, isCartOpen, setIsCartOpen, currentBeat, setCurrentBeat, isPlaying, setIsPlaying, isLooping, setIsLooping, isShuffling, setIsShuffling }}>
       <div style={{ minHeight: "100vh", background: "#000", display: "flex", flexDirection: "column" }}>
         <Header />
         <main style={{ flex: 1 }} className="fade-in">
@@ -149,6 +182,7 @@ function App() {
             </Route>
           </Switch>
         </main>
+        {currentBeat && <MusicPlayer currentBeat={currentBeat} isPlaying={isPlaying} isLooping={isLooping} isShuffling={isShuffling} onPlayPause={() => setIsPlaying(!isPlaying)} onPrevious={() => {}} onNext={() => {}} onToggleLoop={() => setIsLooping(!isLooping)} onToggleShuffle={() => setIsShuffling(!isShuffling)} onBuyClick={(beat) => { const item = { productId: beat.id, productType: "beat" as const, title: beat.title, price: beat.price, artworkUrl: beat.artwork_url }; addToCart(item); }} />}
         <ExtendedFooter />
         <Footer />
         <CartModal isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
