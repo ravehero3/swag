@@ -1837,6 +1837,7 @@ function Beaty() {
                     .computer-bg-container {
                       padding-top: 228px !important;
                       padding-bottom: 0 !important;
+                      margin-bottom: -16px !important;
                       min-height: auto !important;
                     }
                     .dock-wrapper {
@@ -1874,7 +1875,7 @@ function Beaty() {
                   @media (max-width: 768px) {
                     .mobile-beats-text-container {
                       display: block !important;
-                      bottom: 964px !important;
+                      bottom: 864px !important;
                     }
                   }
                   @media (min-width: 769px) {
