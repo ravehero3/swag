@@ -81,7 +81,7 @@ function MusicPlayer({
           alignItems: "center",
           justifyContent: "space-between",
           padding: "0 16px",
-          zIndex: 100,
+          zIndex: 10000,
           animation: "slideUp 0.3s ease-out",
         }}
       >
