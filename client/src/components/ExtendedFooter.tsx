@@ -260,6 +260,7 @@ export default function ExtendedFooter() {
           fontWeight: 400,
           letterSpacing: "0.12px",
           overflowX: "hidden",
+          paddingBottom: "100px",
         }}
       >
         <FooterAccordionItem 

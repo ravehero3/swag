@@ -114,7 +114,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
             z-index: 100 !important;
             pointer-events: none !important;
             margin-top: 40px !important;
-            transform: translateY(80px);
+            transform: translateY(56px);
           }
           .dock-container-mobile > * {
             pointer-events: auto !important;
