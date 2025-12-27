@@ -965,34 +965,6 @@ function Beaty() {
                     display: "none"
                   }}
                 />
-                <button
-                  className="mobile-play-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    playBeat(beat);
-                  }}
-                  style={{
-                    position: "absolute",
-                    top: "50%",
-                    left: "50%",
-                    transform: "translate(-50%, -50%)",
-                    width: "40px",
-                    height: "40px",
-                    borderRadius: "50%",
-                    border: "2px solid #fff",
-                    background: currentBeat?.id === beat.id && isPlaying ? "#fff" : "rgba(0,0,0,0.7)",
-                    color: currentBeat?.id === beat.id && isPlaying ? "#000" : "#fff",
-                    fontSize: "16px",
-                    cursor: "pointer",
-                    display: "none",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    zIndex: 1,
-                    padding: "8px",
-                  }}
-                >
-                  {currentBeat?.id === beat.id && isPlaying ? "⏸" : "▶"}
-                </button>
                 <img
                   src={beat.artwork_url || "/uploads/artwork/metallic-logo.png"}
                   alt={beat.title}
@@ -1211,12 +1183,6 @@ function Beaty() {
                       .beat-info-container {
                         width: auto !important;
                         flex: 1 !important;
-                      }
-                      .mobile-play-btn {
-                        display: none !important;
-                      }
-                      .mobile-play-overlay {
-                        display: none !important;
                       }
                       .mobile-only-buttons {
                         display: flex !important;
