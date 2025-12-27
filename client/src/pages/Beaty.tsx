@@ -1735,7 +1735,7 @@ function Beaty() {
                     min-height: 800px !important;
                   }
                   .computer-bg-container {
-                    padding-bottom: 100px !important;
+                    padding-bottom: 0 !important;
                   }
                 }
               `}</style>
@@ -1761,6 +1761,13 @@ function Beaty() {
                 @font-face {
                   font-family: 'Snell Roundhand';
                   src: local('Snell Roundhand'), local('SnellRoundhand');
+                  font-weight: normal;
+                  font-style: normal;
+                }
+                @font-face {
+                  font-family: 'TANKER';
+                  src: url('/uploads/TANKER.otf') format('opentype'),
+                       url('/uploads/TANKER.woff') format('woff');
                   font-weight: normal;
                   font-style: normal;
                 }
@@ -1834,7 +1841,7 @@ function Beaty() {
               {/* MOBILEBEATSTEXT - appears 200px above dock in mobile view */}
               <div className="mobile-beats-text-container" style={{
                 position: "fixed",
-                bottom: "200px",
+                bottom: "400px",
                 left: "50%",
                 transform: "translateX(-50%)",
                 width: "100%",
@@ -1844,11 +1851,12 @@ function Beaty() {
               }}>
                 <p style={{
                   color: "#fff",
-                  fontSize: "16px",
-                  fontFamily: "Work Sans, sans-serif",
+                  fontSize: "32px",
+                  fontFamily: "'TANKER', sans-serif",
                   margin: 0,
-                  lineHeight: "1.6",
+                  lineHeight: "0.8",
                   letterSpacing: "0.5px",
+                  textTransform: "uppercase",
                 }}>
                   Pro všechny<br />
                   hudební producenty<br />
@@ -1859,7 +1867,7 @@ function Beaty() {
                   @media (max-width: 768px) {
                     .mobile-beats-text-container {
                       display: block !important;
-                      bottom: 200px !important;
+                      bottom: 400px !important;
                     }
                   }
                   @media (min-width: 769px) {
