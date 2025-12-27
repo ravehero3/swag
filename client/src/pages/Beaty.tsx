@@ -1048,7 +1048,7 @@ function Beaty() {
                     </button>
                   ))}
                 </div>
-                <div className="mobile-only-buttons" style={{ display: "none", gap: "8px", marginTop: "4px", alignItems: "center" }}>
+                <div className="mobile-only-buttons" style={{ display: "none", flexDirection: "column", gap: "4px", marginTop: "4px", alignItems: "center" }}>
                   <button
                     style={{
                       padding: "4px",
@@ -1056,8 +1056,8 @@ function Beaty() {
                       border: "1px solid #666",
                       borderRadius: "4px",
                       cursor: "pointer",
-                      width: "28px",
-                      height: "28px",
+                      width: "32px",
+                      height: "32px",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -1068,11 +1068,41 @@ function Beaty() {
                     }}
                     title="Download"
                   >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
                       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                       <polyline points="7 10 12 15 17 10" />
                       <line x1="12" y1="15" x2="12" y2="3" />
                     </svg>
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openContractModal(beat);
+                    }}
+                    className="btn-bounce mobile-cart-btn"
+                    style={{
+                      padding: "8px",
+                      background: "#000",
+                      color: "#fff",
+                      border: "1px solid #fff",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: "32px",
+                      height: "32px",
+                      transition: "background 0.2s, color 0.2s, border-color 0.2s",
+                      boxSizing: "border-box",
+                    }}
+                  >
+                    <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="3" y="6" width="18" height="15" rx="2" />
+                        <path d="M8 6V4a4 4 0 0 1 8 0v2" />
+                      </svg>
+                      <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "inherit", lineHeight: "1", right: "-6px", top: "-5px" }}>+</span>
+                    </div>
                   </button>
                   <button
                     style={{
@@ -1081,8 +1111,8 @@ function Beaty() {
                       border: "1px solid #666",
                       borderRadius: "4px",
                       cursor: "pointer",
-                      width: "28px",
-                      height: "28px",
+                      width: "32px",
+                      height: "32px",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -1092,7 +1122,7 @@ function Beaty() {
                     }}
                     title="Share"
                   >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
                       <circle cx="18" cy="5" r="3" />
                       <circle cx="6" cy="12" r="3" />
                       <circle cx="18" cy="19" r="3" />
@@ -1233,24 +1263,9 @@ function Beaty() {
                       .mobile-only-buttons {
                         display: flex !important;
                       }
-                      .buy-btn-playlist-mobile-container {
-                        display: flex !important;
-                        flex-direction: column !important;
-                        align-items: center !important;
-                        gap: 16px !important;
-                        position: absolute !important;
-                        top: 77px !important;
-                        right: 104px !important;
-                        z-index: 100 !important;
-                      }
-                      .buy-btn-playlist-mobile-container .btn-bounce {
-                        position: absolute !important;
-                        top: 0 !important;
-                        right: -138px !important; /* This aligns to 64px from right (202 - 138 = 64) */
-                        left: auto !important;
-                        margin-left: 0 !important;
-                        bottom: auto !important;
-                      }
+          .buy-btn-playlist-mobile-container {
+            display: none !important;
+          }
                       .heart-icon-playlist-mobile {
                         transform: translate(24px, -80px) !important;
                       }
