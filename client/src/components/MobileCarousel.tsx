@@ -86,7 +86,7 @@ const MobileCarousel = () => {
           }
         }
       `}</style>
-      <div className="carousel-root-container-mobile" style={{ textAlign: "center", marginBottom: "8px", paddingTop: "0px", position: "relative", top: "-64px", zIndex: 99999, overflow: "visible", background: "transparent", width: "100vw", marginLeft: "calc(-50vw + 50%)" }}>
+      <div className="carousel-root-container-mobile" style={{ textAlign: "center", marginBottom: "8px", paddingTop: "0px", position: "relative", top: "-100px", zIndex: 99999, overflow: "visible", background: "transparent", width: "100vw", marginLeft: "calc(-50vw + 50%)" }}>
         <style>{`
           @media (max-width: 768px) {
             .carousel-root-container-mobile {
