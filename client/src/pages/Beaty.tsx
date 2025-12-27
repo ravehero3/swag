@@ -1606,7 +1606,21 @@ function Beaty() {
         {isHomePage && (
           <>
             {/* Mobile Carousel - appears 64px below button on mobile */}
-            <div style={{ marginTop: "64px" }} className="mobile-carousel-wrapper">
+            <style>{`
+              @media (max-width: 768px) {
+                .mobile-carousel-wrapper {
+                  position: relative !important;
+                  z-index: 10000 !important;
+                  background: transparent !important;
+                  width: 100%;
+                }
+                .mobile-carousel-root {
+                  position: relative !important;
+                  z-index: 10000 !important;
+                }
+              }
+            `}</style>
+            <div style={{ marginTop: "64px", position: "relative", zIndex: 10000 }} className="mobile-carousel-wrapper">
               <MobileCarousel />
             </div>
 
