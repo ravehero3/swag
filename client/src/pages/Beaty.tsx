@@ -415,6 +415,20 @@ function Beaty() {
             top: -2px !important;
             right: -6px !important;
           }
+          .playlist-container {
+            padding: 0 2px !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+          }
+          .beat-track {
+            width: calc(100% - 4px) !important;
+            margin: 0 2px !important;
+            box-sizing: border-box !important;
+            border-radius: 0 !important;
+          }
+          .beat-track:hover {
+            background: rgba(0, 0, 255, 0.1) !important;
+          }
         }
       `}</style>
       <div className="video-container" style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative" }}>
