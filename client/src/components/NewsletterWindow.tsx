@@ -74,7 +74,11 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
     <>
       <div 
         className="fixed inset-0 bg-black transition-opacity duration-300 z-40"
-        style={{ opacity: isOpen ? 0.5 : 0, pointerEvents: isOpen ? 'auto' : 'none' }}
+        style={{ 
+          opacity: isOpen ? 0.5 : 0, 
+          pointerEvents: isOpen ? 'auto' : 'none',
+          visibility: isOpen ? 'visible' : 'hidden'
+        }}
         onClick={onClose}
       />
       
@@ -82,6 +86,7 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
         className={`fixed top-0 right-0 h-full w-full md:w-[400px] bg-white md:border-l border-black z-50 transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
+        style={{ visibility: isOpen ? 'visible' : 'hidden' }}
       >
         <div className="h-full flex flex-col">
           <div className="bg-white border-b border-black relative flex items-center justify-center px-6" style={{ height: '44px' }}>
