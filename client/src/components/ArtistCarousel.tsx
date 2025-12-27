@@ -74,36 +74,8 @@ const ArtistCarousel = () => {
     >
       <style>{`
         @media (max-width: 768px) {
-          .artist-carousel-item {
-            width: 104px !important;
-            gap: 8px !important;
-          }
-          .artist-image-circle {
-            width: 80px !important;
-            height: 80px !important;
-          }
-          .artist-carousel-track {
-            gap: 24px !important;
-          }
-          .artist-name-text {
-            font-size: 10px !important;
-            max-width: 80px !important;
-          }
-          .carousel-fade {
-            width: 60px !important;
-            height: 120px !important;
-          }
-          .carousel-container {
-            overflow: hidden !important;
-          }
           .artist-carousel-root {
-            margin-top: 200px !important;
-          }
-          .carousel-root-container {
-            min-height: 180px !important;
-            margin-top: -400px !important;
-            padding-bottom: 40px !important;
-            margin-bottom: 12px !important;
+            display: none !important;
           }
         }
       `}</style>
