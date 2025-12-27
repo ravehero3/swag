@@ -1194,6 +1194,20 @@ function Beaty() {
                 </button>
                   <style>{`
                     @media (max-width: 768px) {
+                      .beat-row {
+                        padding: 6px 2px 6px 2px !important;
+                      }
+                      .beat-image-container {
+                        width: 48px !important;
+                        margin-left: 6px !important;
+                      }
+                      [data-separator] {
+                        left: 2px !important;
+                        right: 2px !important;
+                      }
+                      .beats-header {
+                        padding: 6px 2px 6px 2px !important;
+                      }
                       .beat-info-container {
                         width: auto !important;
                         flex: 1 !important;
