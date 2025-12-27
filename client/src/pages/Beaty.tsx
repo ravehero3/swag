@@ -1152,11 +1152,7 @@ function Beaty() {
                         z-index: 100 !important;
                       }
                       .buy-btn-playlist-mobile-container button[title="Download"] {
-                        position: absolute !important;
-                        top: -18px !important;
-                        left: -180px !important; /* Moved another 16px left from -164px */
-                        bottom: auto !important;
-                        margin-left: 0 !important;
+                        display: none !important;
                       }
                       .buy-btn-playlist-mobile-container .btn-bounce {
                         position: absolute !important;
@@ -1171,8 +1167,8 @@ function Beaty() {
                       }
                       .beat-buttons-container button[title="Share"] {
                         position: absolute !important;
-                        top: 28px !important;
-                        left: -344px !important; /* Moved another 8px left from -336px */
+                        top: 26px !important; /* Moved 2px higher from 28px */
+                        left: -344px !important;
                         bottom: auto !important;
                         margin-left: 0 !important;
                         transform: none !important;
