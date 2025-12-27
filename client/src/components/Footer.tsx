@@ -7,6 +7,8 @@ function Footer() {
         alignItems: "center",
         justifyContent: "center",
         marginTop: "0",
+        position: "relative",
+        zIndex: 5000,
       }}
     >
       <span
