@@ -1728,7 +1728,7 @@ function Beaty() {
                 transform: "translateX(-50%)",
                 width: "100%",
                 textAlign: "center",
-                zIndex: 20,
+                zIndex: 20000,
                 opacity: showTitle ? 1 : 0,
                 transition: "opacity 0.5s ease-in-out",
                 marginTop: "-100px",
@@ -1758,6 +1758,7 @@ function Beaty() {
                       position: relative !important;
                       bottom: auto !important;
                       width: 100% !important;
+                      z-index: 20000 !important;
                     }
                     .mobile-title-text {
                       font-size: 25pt !important;

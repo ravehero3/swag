@@ -76,6 +76,9 @@ const MobileCarousel = () => {
             position: relative !important;
             z-index: 10000 !important;
           }
+          .carousel-root-container-mobile {
+            display: none !important;
+          }
         }
         @media (min-width: 769px) {
           .mobile-carousel-root {
