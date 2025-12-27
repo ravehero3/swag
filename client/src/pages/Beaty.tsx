@@ -420,6 +420,9 @@ function Beaty() {
             .featured-track-container {
               margin-top: -52px !important;
             }
+            .featured-plus-symbol {
+              top: -11px !important;
+            }
           }
         }
       `}</style>
@@ -586,7 +589,7 @@ function Beaty() {
                           <rect x="3" y="6" width="18" height="15" rx="2" />
                           <path d="M8 6V4a4 4 0 0 1 8 0v2" />
                         </svg>
-                        <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "inherit", lineHeight: "1", right: "-10px", top: "-5px" }}>+</span>
+                        <span className="featured-plus-symbol" style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "inherit", lineHeight: "1", right: "-10px", top: "-5px" }}>+</span>
                       </div>
                       <span style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "8px" }}>{Math.floor(highlightedBeat.price)} CZK</span>
                     </button>
