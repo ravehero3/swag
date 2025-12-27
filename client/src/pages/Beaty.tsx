@@ -1236,10 +1236,7 @@ function Beaty() {
                       .heart-icon-playlist-mobile {
                         transform: translate(24px, -80px) !important;
                       }
-                      .beat-buttons-container button[title="Share"] {
-                        display: none !important;
-                      }
-                      .beat-buttons-container button[title="Download"] {
+                      .beat-buttons-container {
                         display: none !important;
                       }
                       .desktop-buy-btn {
