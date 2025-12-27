@@ -1605,7 +1605,7 @@ function Beaty() {
 
         {isHomePage && (
           <>
-            <div ref={artistCarouselRef} className="fade-in-section delay-3 scroll-fade-section" style={{ marginTop: "-200px", marginBottom: "-420px", position: "relative", zIndex: 2000 }}>
+            <div ref={artistCarouselRef} className="fade-in-section delay-3 scroll-fade-section artist-carousel-section-mobile" style={{ marginTop: "-200px", marginBottom: "-420px", position: "relative", zIndex: 10000 }}>
               <div style={{ textAlign: "center", marginBottom: "12px" }} className="mobile-only-carousel-label">
                 <p style={{ fontSize: "12px", color: "#555", margin: 0, fontFamily: "Work Sans, sans-serif" }}>
                   VOODOO808 dělal beaty pro
@@ -1616,17 +1616,22 @@ function Beaty() {
                   display: none;
                 }
                 @media (max-width: 768px) {
+                  .artist-carousel-section-mobile {
+                    z-index: 10000 !important;
+                    margin-top: 50px !important;
+                    position: relative !important;
+                  }
                   .mobile-only-carousel-label {
                     display: block !important;
                     position: relative !important;
-                    z-index: 9999 !important;
+                    z-index: 10001 !important;
                     margin-bottom: 12px !important;
-                    margin-top: 200px !important;
+                    margin-top: 264px !important; /* 200px + 64px */
                     color: #555 !important;
                   }
                 }
               `}</style>
-              <div style={{ marginTop: "0px", position: "relative", zIndex: 2000 }}>
+              <div style={{ marginTop: "0px", position: "relative", zIndex: 10000 }}>
                 <ArtistCarousel />
               </div>
             </div>
