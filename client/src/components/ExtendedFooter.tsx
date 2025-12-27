@@ -173,7 +173,25 @@ export default function ExtendedFooter() {
           <h3 style={titleStyle}>ODBĚR NOVINEK</h3>
           <ul style={listStyle}>
             <li style={listItemStyle}>
-              <a href="#" onClick={(e) => { e.preventDefault(); setIsNewsletterOpen(true); }} style={{...linkStyle, textDecoration: "underline"}}>Přihlaste se k odběru novinek</a>
+              <button 
+                onClick={(e) => { 
+                  e.preventDefault(); 
+                  console.log('Opening newsletter drawer');
+                  setIsNewsletterOpen(true); 
+                }} 
+                style={{
+                  ...linkStyle, 
+                  textDecoration: "underline",
+                  background: "none",
+                  border: "none",
+                  padding: 0,
+                  textAlign: "left",
+                  width: "100%",
+                  display: "block"
+                }}
+              >
+                Přihlaste se k odběru novinek
+              </button>
             </li>
           </ul>
         </div>
@@ -251,7 +269,23 @@ export default function ExtendedFooter() {
         >
           <ul style={{...listStyle, marginTop: "8px"}}>
             <li style={{...listItemStyle, marginBottom: "8px"}}>
-              <a href="#" onClick={(e) => { e.preventDefault(); setIsNewsletterOpen(true); }} style={{...linkStyle, textDecoration: "underline"}}>Přihlaste se k odběru novinek</a>
+              <button 
+                onClick={(e) => { 
+                  e.preventDefault(); 
+                  console.log('Opening newsletter drawer (mobile)');
+                  setIsNewsletterOpen(true); 
+                }} 
+                style={{
+                  ...linkStyle, 
+                  textDecoration: "underline",
+                  background: "none",
+                  border: "none",
+                  padding: 0,
+                  textAlign: "left"
+                }}
+              >
+                Přihlaste se k odběru novinek
+              </button>
             </li>
           </ul>
         </FooterAccordionItem>
