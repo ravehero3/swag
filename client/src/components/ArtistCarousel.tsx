@@ -93,13 +93,13 @@ const ArtistCarousel = () => {
           }
           .carousel-root-container {
             min-height: 180px !important;
-            margin-top: -300px !important;
+            margin-top: -400px !important;
             padding-bottom: 40px !important;
             margin-bottom: 12px !important;
           }
         }
       `}</style>
-      <div className="carousel-root-container" style={{ textAlign: "center", marginBottom: "24px", paddingTop: "0px" }}>
+      <div className="carousel-root-container" style={{ textAlign: "center", marginBottom: "24px", paddingTop: "0px", position: "relative", zIndex: 1000 }}>
         <p style={{ fontSize: "12px", color: "#555", margin: 0, fontFamily: "Work Sans, sans-serif" }}>
           VOODOO808 dělal beaty pro
         </p>
