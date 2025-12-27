@@ -1619,9 +1619,9 @@ function Beaty() {
                   .mobile-only-carousel-label {
                     display: block !important;
                     position: relative !important;
-                    z-index: 9999 !important;
+                    z-index: 110 !important;
                     margin-bottom: 12px !important;
-                    margin-top: -100px !important;
+                    margin-top: 200px !important;
                     color: #555 !important;
                   }
                 }
@@ -1631,7 +1631,7 @@ function Beaty() {
               </div>
             </div>
 
-            <div ref={soundKitsRef} className="fade-in-section delay-4 scroll-fade-section sound-kits-section" style={{ marginTop: "-540px", marginBottom: "0px", position: "relative", zIndex: 1 }}>
+            <div ref={soundKitsRef} className="fade-in-section delay-4 scroll-fade-section sound-kits-section" style={{ marginTop: "-840px", marginBottom: "0px", position: "relative", zIndex: 1 }}>
             {/* Background with computer image and dock */}
             <div className="computer-bg-container" style={{
               width: "100vw",
@@ -1697,7 +1697,7 @@ function Beaty() {
                 zIndex: 20,
                 opacity: showTitle ? 1 : 0,
                 transition: "opacity 0.5s ease-in-out",
-                marginTop: "200px",
+                marginTop: "-100px",
               }}>
                 <h2 className="mobile-title-text" style={{
                   color: "#fff",
@@ -1720,7 +1720,7 @@ function Beaty() {
                 <style>{`
                   @media (max-width: 768px) {
                     .mobile-title-container {
-                      margin-top: 200px !important;
+                      margin-top: -100px !important;
                       position: absolute !important;
                       bottom: auto !important;
                       width: 100% !important;
@@ -1732,10 +1732,10 @@ function Beaty() {
                       font-size: 25pt !important;
                     }
                     .sound-kits-section {
-                      margin-top: -140px !important; /* -540px + 400px */
+                      margin-top: -440px !important;
                     }
                     .computer-bg-container {
-                      padding-top: 400px !important;
+                      padding-top: 100px !important;
                       padding-bottom: 0 !important;
                       min-height: auto !important;
                     }
