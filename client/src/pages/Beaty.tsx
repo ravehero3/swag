@@ -1030,6 +1030,59 @@ function Beaty() {
                     </button>
                   ))}
                 </div>
+                <div className="mobile-only-buttons" style={{ display: "none", gap: "8px", marginTop: "4px" }}>
+                  <button
+                    style={{
+                      padding: "4px",
+                      background: "#000",
+                      border: "1px solid #666",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                      width: "28px",
+                      height: "28px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDownloadingBeat(beat);
+                    }}
+                    title="Download"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="7 10 12 15 17 10" />
+                      <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                  </button>
+                  <button
+                    style={{
+                      padding: "4px",
+                      background: "#000",
+                      border: "1px solid #666",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                      width: "28px",
+                      height: "28px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                    }}
+                    title="Share"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
+                      <circle cx="18" cy="5" r="3" />
+                      <circle cx="6" cy="12" r="3" />
+                      <circle cx="18" cy="19" r="3" />
+                      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                      <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                    </svg>
+                  </button>
+                </div>
               </div>
               <div className="beat-meta-desktop" style={{ display: "contents" }}>
                 <div style={{ width: "80px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", color: "#666", fontSize: "16px" }}>
@@ -1141,6 +1194,13 @@ function Beaty() {
                 </button>
                   <style>{`
                     @media (max-width: 768px) {
+                      .beat-info-container {
+                        width: auto !important;
+                        flex: 1 !important;
+                      }
+                      .mobile-only-buttons {
+                        display: flex !important;
+                      }
                       .buy-btn-playlist-mobile-container {
                         display: flex !important;
                         flex-direction: column !important;
@@ -1152,12 +1212,7 @@ function Beaty() {
                         z-index: 100 !important;
                       }
                       .buy-btn-playlist-mobile-container button[title="Download"] {
-                        position: absolute !important;
-                        top: -18px !important;
-                        left: -180px !important;
-                        bottom: auto !important;
-                        margin-left: 0 !important;
-                        display: flex !important;
+                        display: none !important;
                       }
                       .buy-btn-playlist-mobile-container .btn-bounce {
                         position: absolute !important;
@@ -1171,12 +1226,7 @@ function Beaty() {
                         transform: translate(16px, -72px) !important;
                       }
                       .beat-buttons-container button[title="Share"] {
-                        position: absolute !important;
-                        top: 26px !important; /* Moved 2px higher from 28px */
-                        left: -344px !important;
-                        bottom: auto !important;
-                        margin-left: 0 !important;
-                        transform: none !important;
+                        display: none !important;
                       }
                       .beat-buttons-container button[title="Download"] {
                         display: none !important;
