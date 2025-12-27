@@ -1075,10 +1075,6 @@ function Beaty() {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      position: "absolute",
-                      top: "calc(50% - 12px)",
-                      right: "8px",
-                      transform: "translateY(-50%)",
                     }}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -1137,15 +1133,15 @@ function Beaty() {
                       borderRadius: "4px",
                       transition: "all 0.3s ease",
                       position: "absolute",
-                      top: "8px",
-                      right: "8px",
+                      top: "4px",
+                      right: "4px",
                       zIndex: 10,
                     }}
                     title={savedBeats.has(beat.id) ? "Remove from favorites" : "Add to favorites"}
                   >
                     <svg
-                      width="20"
-                      height="20"
+                      width="18"
+                      height="18"
                       viewBox="0 0 24 24"
                       fill={savedBeats.has(beat.id) ? "#fff" : "none"}
                       stroke={savedBeats.has(beat.id) ? "#fff" : "#888"}
