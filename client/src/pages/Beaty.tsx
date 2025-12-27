@@ -446,7 +446,7 @@ function Beaty() {
             left: "calc(-50vw + 50%)",
             width: "100vw",
             height: "200px",
-            background: "linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 100%)",
+            background: "transparent",
             pointerEvents: "none",
           }}
         />
@@ -589,7 +589,7 @@ function Beaty() {
                           particle.style.position = "absolute";
                           particle.style.width = "4px";
                           particle.style.height = "4px";
-                          particle.style.background = "#000";
+                          particle.style.background = "#fff";
                           particle.style.borderRadius = "50%";
                           particle.style.left = "50%";
                           particle.style.top = "50%";
@@ -650,12 +650,17 @@ function Beaty() {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        transition: "background 0.2s",
+                        transition: "all 0.2s",
                         marginLeft: "2px",
                         minHeight: "32px",
+                        position: "relative",
                       }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = "#1a1a1a")}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = "#000")}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.boxShadow = "0 0 20px rgba(255, 255, 255, 0.8), inset 0 0 10px rgba(255, 255, 255, 0.3)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.boxShadow = "none";
+                      }}
                       title="Download"
                     >
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
@@ -676,12 +681,17 @@ function Beaty() {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        transition: "background 0.2s",
+                        transition: "all 0.2s",
                         marginLeft: "2px",
                         minHeight: "32px",
+                        position: "relative",
                       }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = "#1a1a1a")}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = "#000")}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.boxShadow = "0 0 20px rgba(255, 255, 255, 0.8), inset 0 0 10px rgba(255, 255, 255, 0.3)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.boxShadow = "none";
+                      }}
                       title="Share"
                     >
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
@@ -1815,7 +1825,7 @@ function Beaty() {
                       min-height: auto !important;
                     }
                     .dock-wrapper {
-                      bottom: -124px !important; /* Adjusted to move another 60px lower (-64 - 60 = -124) */
+                      bottom: -24px !important; /* Moved 100px higher */
                     }
                   }
                 `}</style>
