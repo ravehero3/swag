@@ -127,7 +127,7 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
             }} />
             <div style={{
               position: 'absolute',
-              top: '602px', // 802px - 200px
+              top: '702px', // 602px + 100px
               left: 0,
               right: 0,
               height: '1px',
@@ -139,7 +139,7 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
             {cart.length === 0 && (
               <div style={{
                 position: 'absolute',
-                top: '612px', // 812px - 200px
+                top: '712px', // 612px + 100px
                 left: 0,
                 right: 0,
                 display: 'flex',
