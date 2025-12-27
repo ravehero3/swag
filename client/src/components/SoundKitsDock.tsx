@@ -113,7 +113,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
             justify-content: center !important;
             z-index: 100 !important;
             pointer-events: none !important;
-            margin-top: 240px !important;
+            margin-top: 40px !important;
           }
           .dock-container-mobile > * {
             pointer-events: auto !important;

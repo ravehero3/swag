@@ -53,6 +53,7 @@ const ArtistCarousel = () => {
 
   return (
     <div
+      className="artist-carousel-root"
       style={{
         width: "100vw",
         marginLeft: "calc(-50vw + 50%)",
@@ -94,6 +95,9 @@ const ArtistCarousel = () => {
           }
           .carousel-container {
             overflow: hidden !important;
+          }
+          .artist-carousel-root {
+            margin-top: 200px !important;
           }
           .carousel-root-container {
             min-height: 180px !important;
