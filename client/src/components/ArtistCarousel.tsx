@@ -74,7 +74,7 @@ const ArtistCarousel = () => {
       <style>{`
         @media (max-width: 768px) {
           .artist-carousel-item {
-            width: 80px !important;
+            width: 104px !important;
             gap: 8px !important;
           }
           .artist-image-circle {
@@ -89,11 +89,11 @@ const ArtistCarousel = () => {
             max-width: 80px !important;
           }
           .carousel-fade {
-            width: 40px !important;
-            top: -80px !important;
+            width: 60px !important;
+            height: 120px !important;
           }
           .carousel-container {
-            overflow: visible !important;
+            overflow: hidden !important;
           }
           .carousel-root-container {
             min-height: 180px !important;
