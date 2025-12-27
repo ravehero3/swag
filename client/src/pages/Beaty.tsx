@@ -1035,8 +1035,35 @@ function Beaty() {
                 <div className="beat-meta-mobile-only" style={{ display: "none" }}>
                   <div className="beat-meta-mobile-key">{beat.key} <span className="beat-meta-mobile-separator">•</span> <span className="beat-meta-mobile-bpm">{beat.bpm}BPM</span></div>
                 </div>
-                <div className="beat-title-container">
+                <div className="beat-title-container" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%" }}>
                   <h2 style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "20px", margin: 0, textTransform: "none" }}>{beat.title}</h2>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleSave(beat);
+                    }}
+                    className="mobile-heart-btn"
+                    style={{
+                      display: "none",
+                      background: "transparent",
+                      border: "none",
+                      cursor: "pointer",
+                      padding: "4px",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill={savedBeats.has(beat.id) ? "#fff" : "none"}
+                      stroke={savedBeats.has(beat.id) ? "#fff" : "#888"}
+                      strokeWidth="2"
+                    >
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                    </svg>
+                  </button>
                 </div>
                 <div className="beat-tags-container-mobile" style={{ display: "none", gap: "4px", flexWrap: "wrap", marginTop: "4px" }}>
                   {beat.tags && beat.tags.length > 0 && beat.tags.map((tag) => (
@@ -1062,7 +1089,7 @@ function Beaty() {
                     </button>
                   ))}
                 </div>
-                <div className="mobile-only-buttons" style={{ display: "none", gap: "8px", marginTop: "4px", alignItems: "center" }}>
+                <div className="mobile-only-action-buttons" style={{ display: "none", gap: "8px", marginTop: "8px", alignItems: "center" }}>
                   <button
                     style={{
                       padding: "4px",
@@ -1080,7 +1107,6 @@ function Beaty() {
                       e.stopPropagation();
                       setDownloadingBeat(beat);
                     }}
-                    title="Download"
                   >
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
                       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -1088,124 +1114,62 @@ function Beaty() {
                       <line x1="12" y1="15" x2="12" y2="3" />
                     </svg>
                   </button>
-                  <div style={{ position: "relative", display: "flex", alignItems: "center", gap: "8px" }}>
-                    <button
-                      style={{
-                        padding: "4px",
-                        background: "#000",
-                        border: "1px solid #666",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                        width: "32px",
-                        height: "32px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                      }}
-                      title="Share"
-                    >
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
-                        <circle cx="18" cy="5" r="3" />
-                        <circle cx="6" cy="12" r="3" />
-                        <circle cx="18" cy="19" r="3" />
-                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                  <button
+                    style={{
+                      padding: "4px",
+                      background: "#000",
+                      border: "1px solid #666",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                      width: "32px",
+                      height: "32px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                    }}
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
+                      <circle cx="18" cy="5" r="3" />
+                      <circle cx="6" cy="12" r="3" />
+                      <circle cx="18" cy="19" r="3" />
+                      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                      <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openContractModal(beat);
+                    }}
+                    className="btn-bounce"
+                    style={{
+                      padding: "4px 8px",
+                      background: "#000",
+                      color: "#fff",
+                      border: "1px solid #fff",
+                      fontSize: "12px",
+                      fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+                      fontWeight: 400,
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      borderRadius: "4px",
+                      height: "32px",
+                    }}
+                  >
+                    <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <rect x="3" y="6" width="18" height="15" rx="2" />
+                        <path d="M8 6V4a4 4 0 0 1 8 0v2" />
                       </svg>
-                    </button>
-                    <div className="mobile-playlist-actions" style={{ display: "none", alignItems: "center" }}>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openContractModal(beat);
-                        }}
-                        className="btn-bounce mobile-playlist-cart-btn"
-                        style={{
-                          padding: "8px 8px 8px 16px",
-                          background: "#000",
-                          color: "#fff",
-                          border: "1px solid #fff",
-                          fontSize: "12px",
-                          fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
-                          fontWeight: 400,
-                          cursor: "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "6px",
-                          borderRadius: "4px",
-                          minWidth: "120px",
-                          height: "32px",
-                          transition: "background 0.2s, color 0.2s, border-color 0.2s",
-                          overflow: "visible",
-                          outline: "none",
-                          boxShadow: "none",
-                          WebkitAppearance: "none",
-                          appearance: "none",
-                          boxSizing: "border-box",
-                          position: "relative"
-                        }}
-                        onMouseEnter={(e) => {
-                          const btn = e.currentTarget as HTMLButtonElement;
-                          btn.style.background = "#fff";
-                          btn.style.color = "#000";
-                          btn.style.borderColor = "#000";
-                          btn.style.boxShadow = "none";
-                        }}
-                        onMouseLeave={(e) => {
-                          const btn = e.currentTarget as HTMLButtonElement;
-                          btn.style.background = "#000";
-                          btn.style.color = "#fff";
-                          btn.style.borderColor = "#fff";
-                          btn.style.boxShadow = "none";
-                        }}
-                      >
-                        <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, marginLeft: "-8px" }}>
-                            <rect x="3" y="6" width="18" height="15" rx="2" />
-                            <path d="M8 6V4a4 4 0 0 1 8 0v2" />
-                          </svg>
-                          <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "inherit", lineHeight: "1", right: "-10px", top: "-5px" }}>+</span>
-                        </div>
-                        <span style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "8px" }}>{Math.floor(beat.price)} CZK</span>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleSave(beat);
-                          }}
-                          className="beat-heart-button heart-icon-playlist-mobile"
-                          style={{
-                            background: "transparent",
-                            border: "none",
-                            cursor: "pointer",
-                            padding: "8px",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            borderRadius: "4px",
-                            transition: "all 0.3s ease",
-                            position: "absolute",
-                            top: "-24px",
-                            right: "0",
-                            zIndex: 10,
-                          }}
-                          title={savedBeats.has(beat.id) ? "Remove from favorites" : "Add to favorites"}
-                        >
-                          <svg
-                            width="18"
-                            height="18"
-                            viewBox="0 0 24 24"
-                            fill={savedBeats.has(beat.id) ? "#fff" : "none"}
-                            stroke={savedBeats.has(beat.id) ? "#fff" : "#888"}
-                            strokeWidth="2"
-                          >
-                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                          </svg>
-                        </button>
-                      </button>
+                      <span style={{ position: "absolute", fontSize: "14px", right: "-6px", top: "-4px" }}>+</span>
                     </div>
-                  </div>
+                    <span style={{ fontWeight: 500 }}>{Math.floor(beat.price)} CZK</span>
+                  </button>
                 </div>
               </div>
               <div className="beat-meta-desktop" style={{ display: "contents" }}>
@@ -1336,26 +1300,23 @@ function Beaty() {
                         width: auto !important;
                         flex: 1 !important;
                       }
-                      .mobile-only-buttons {
+                      .mobile-heart-btn {
                         display: flex !important;
-                        gap: 8px !important;
+                      }
+                      .mobile-only-action-buttons {
+                        display: flex !important;
                       }
                       .mobile-playlist-actions {
-                        display: flex !important;
-                        position: absolute !important;
-                        right: 0 !important;
-                        top: 0 !important;
-                        height: 100% !important;
-                        align-items: center !important;
+                        display: none !important;
+                      }
+                      .mobile-only-buttons {
+                        display: none !important;
                       }
           .buy-btn-playlist-mobile-container {
             display: none !important;
           }
                       .heart-icon-playlist-mobile {
-                        display: flex !important;
-                        position: relative !important;
-                        transform: none !important;
-                        margin-top: 4px !important;
+                        display: none !important;
                       }
                       .beat-buttons-container {
                         display: none !important;
