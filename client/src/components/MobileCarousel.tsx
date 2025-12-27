@@ -33,7 +33,7 @@ const MobileCarousel = () => {
   ];
 
   useEffect(() => {
-    const imageWidth = 80;
+    const imageWidth = 70;
     const gap = 8;
     const singleSetWidth = imageWidth * artists.length + gap * artists.length;
 
@@ -121,17 +121,17 @@ const MobileCarousel = () => {
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-                gap: "8px",
+                gap: "6px",
                 flexShrink: 0,
-                width: "140px",
+                width: "90px",
               }}
             >
               {/* Artist Image Circle */}
               <div
                 className="mobile-artist-image-circle"
                 style={{
-                  width: "80px",
-                  height: "80px",
+                  width: "70px",
+                  height: "70px",
                   borderRadius: "50%",
                   display: "flex",
                   alignItems: "center",
@@ -162,7 +162,7 @@ const MobileCarousel = () => {
                       alignItems: "center",
                       justifyContent: "center",
                       color: "#999",
-                      fontSize: "32px",
+                      fontSize: "24px",
                       fontWeight: "bold",
                       fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
                     }}
@@ -176,13 +176,13 @@ const MobileCarousel = () => {
               <p
                 className="mobile-artist-name-text"
                 style={{
-                  fontSize: "10px",
+                  fontSize: "9px",
                   color: "#666",
                   margin: "0",
                   fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
                   textAlign: "center",
                   lineHeight: "1.2",
-                  maxWidth: "80px",
+                  maxWidth: "70px",
                   whiteSpace: "normal",
                   wordWrap: "break-word",
                 }}
