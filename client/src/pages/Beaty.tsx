@@ -965,6 +965,34 @@ function Beaty() {
                     display: "none"
                   }}
                 />
+                <button
+                  className="mobile-play-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    playBeat(beat);
+                  }}
+                  style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    width: "40px",
+                    height: "40px",
+                    borderRadius: "50%",
+                    border: "2px solid #fff",
+                    background: currentBeat?.id === beat.id && isPlaying ? "#fff" : "rgba(0,0,0,0.7)",
+                    color: currentBeat?.id === beat.id && isPlaying ? "#000" : "#fff",
+                    fontSize: "16px",
+                    cursor: "pointer",
+                    display: "none",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    zIndex: 1,
+                    padding: "8px",
+                  }}
+                >
+                  {currentBeat?.id === beat.id && isPlaying ? "⏸" : "▶"}
+                </button>
                 <img
                   src={beat.artwork_url || "/uploads/artwork/metallic-logo.png"}
                   alt={beat.title}
@@ -1220,35 +1248,6 @@ function Beaty() {
                     }
                   `}</style>
                   <div className="buy-btn-playlist-mobile-container" style={{ display: "none" }}>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setDownloadingBeat(beat);
-                      }}
-                      style={{
-                        padding: "8px",
-                        background: "#000",
-                        border: "1px solid #666",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                        width: "32px",
-                        height: "32px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        transition: "background 0.2s",
-                        minHeight: "32px",
-                      }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = "#1a1a1a")}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = "#000")}
-                      title="Download"
-                    >
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                        <polyline points="7 10 12 15 17 10" />
-                        <line x1="12" y1="15" x2="12" y2="3" />
-                      </svg>
-                    </button>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
