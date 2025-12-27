@@ -216,6 +216,7 @@ function MusicPlayer({
               fontSize: "24px",
               padding: "0",
               margin: "16px 0",
+              flexShrink: 0,
             }}
           >
             {isPlaying ? "⏸" : "▶"}
