@@ -33,15 +33,14 @@ const ArtistCarousel = () => {
   ];
 
   useEffect(() => {
-    const imageWidth = 160;
-    const gap = 64;
+    const isMobile = window.innerWidth <= 768;
+    const imageWidth = isMobile ? 80 : 160;
+    const gap = isMobile ? 24 : 64;
     const singleSetWidth = imageWidth * artists.length + gap * artists.length;
 
     const intervalId = setInterval(() => {
       setOffset((prev) => {
         const newOffset = prev - 1;
-        // When we've scrolled one full set, reset to 0
-        // The remaining duplicates keep it seamless
         if (newOffset <= -singleSetWidth) {
           return 0;
         }
@@ -57,7 +56,7 @@ const ArtistCarousel = () => {
       style={{
         width: "100vw",
         marginLeft: "calc(-50vw + 50%)",
-        minHeight: "280px",
+        minHeight: "180px",
         background: "transparent",
         display: "flex",
         flexDirection: "column",
@@ -67,12 +66,39 @@ const ArtistCarousel = () => {
         position: "relative",
         marginBottom: "64px",
         marginTop: "272px",
-        paddingBottom: "200px",
+        paddingBottom: "100px",
         padding: "40px 20px",
         zIndex: 100,
       }}
     >
-      <div style={{ textAlign: "center", marginBottom: "24px", paddingTop: "0px" }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .artist-carousel-item {
+            width: 80px !important;
+            gap: 8px !important;
+          }
+          .artist-image-circle {
+            width: 80px !important;
+            height: 80px !important;
+          }
+          .artist-carousel-track {
+            gap: 24px !important;
+          }
+          .artist-name-text {
+            font-size: 10px !important;
+            max-width: 80px !important;
+          }
+          .carousel-fade {
+            width: 80px !important;
+          }
+          .carousel-root-container {
+            min-height: 180px !important;
+            margin-top: 120px !important;
+            padding-bottom: 40px !important;
+          }
+        }
+      `}</style>
+      <div className="carousel-root-container" style={{ textAlign: "center", marginBottom: "24px", paddingTop: "0px" }}>
         <p style={{ fontSize: "12px", color: "#555", margin: 0, fontFamily: "Work Sans, sans-serif" }}>
           VOODOO808 dělal beaty pro
         </p>
@@ -90,6 +116,7 @@ const ArtistCarousel = () => {
         }}
       >
         <div
+          className="artist-carousel-track"
           style={{
             display: "flex",
             gap: "64px",
@@ -101,6 +128,7 @@ const ArtistCarousel = () => {
           {displayArtists.map((artist, index) => (
             <div
               key={`${artist.id}-${index}`}
+              className="artist-carousel-item"
               style={{
                 display: "flex",
                 flexDirection: "column",
@@ -112,6 +140,7 @@ const ArtistCarousel = () => {
             >
               {/* Artist Image Circle */}
               <div
+                className="artist-image-circle"
                 style={{
                   width: "192px",
                   height: "192px",
@@ -157,6 +186,7 @@ const ArtistCarousel = () => {
 
               {/* Artist Name */}
               <p
+                className="artist-name-text"
                 style={{
                   fontSize: "12px",
                   color: "#666",
@@ -177,6 +207,7 @@ const ArtistCarousel = () => {
 
         {/* Left Gradient Fade */}
         <div
+          className="carousel-fade"
           style={{
             position: "absolute",
             left: 0,
@@ -191,6 +222,7 @@ const ArtistCarousel = () => {
 
         {/* Right Gradient Fade */}
         <div
+          className="carousel-fade"
           style={{
             position: "absolute",
             right: 0,
