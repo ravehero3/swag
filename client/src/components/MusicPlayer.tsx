@@ -105,63 +105,100 @@ function MusicPlayer({
             alt={currentBeat.title}
             style={{ width: "84px", height: "84px", objectFit: "cover", borderRadius: "2px", marginLeft: "-16px", marginRight: "0" }}
           />
-          <div style={{ flex: 1 }}>
+          <div style={{ flex: 1, display: "flex", alignItems: "center", gap: "12px" }}>
             <div style={{ fontWeight: "bold", fontSize: "18px" }}>{currentBeat.title}</div>
+            <button
+              onClick={() => onBuyClick(currentBeat)}
+              className="btn-bounce buy-btn-player"
+              style={{
+                padding: "8px 8px 8px 16px",
+                background: "#000",
+                color: "#fff",
+                border: "none",
+                fontSize: "12px",
+                fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+                fontWeight: 400,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                borderRadius: "4px",
+                position: "relative",
+                minWidth: "120px",
+                height: "32px",
+                transition: "background 0.2s, color 0.2s, box-shadow 0.2s",
+                overflow: "visible",
+                boxShadow: "inset 0 0 0 0.5px #fff",
+                zIndex: 100
+              }}
+              onMouseEnter={(e) => {
+                const btn = e.currentTarget as HTMLButtonElement;
+                btn.style.background = "#fff";
+                btn.style.color = "#000";
+                btn.style.boxShadow = "0 0 20px rgba(255, 255, 255, 0.8), inset 0 0 0 0.5px #000, inset 0 0 10px rgba(255, 255, 255, 0.3)";
+                
+                // Create particles
+                for (let i = 0; i < 7; i++) {
+                  const particle = document.createElement("div");
+                  particle.setAttribute("data-particle", "true");
+                  const angle = (i / 7) * Math.PI * 2;
+                  particle.style.position = "absolute";
+                  particle.style.width = "4px";
+                  particle.style.height = "4px";
+                  particle.style.background = "#fff";
+                  particle.style.borderRadius = "50%";
+                  particle.style.left = "50%";
+                  particle.style.top = "50%";
+                  particle.style.pointerEvents = "none";
+                  particle.style.transform = "translate(-50%, -50%)";
+                  particle.style.opacity = "0.8";
+                  
+                  const distance = 35;
+                  const startX = Math.cos(angle) * distance;
+                  const startY = Math.sin(angle) * distance;
+                  const endX = Math.cos(angle) * (distance + 40);
+                  const endY = Math.sin(angle) * (distance + 40);
+                  
+                  particle.style.animation = `particleFloat-${i} 3s ease-out forwards`;
+                  
+                  btn.appendChild(particle);
+                  
+                  const style = document.createElement("style");
+                  style.textContent = `
+                    @keyframes particleFloat-${i} {
+                      0% { transform: translate(calc(-50% + ${startX}px), calc(-50% + ${startY}px)); opacity: 0.8; }
+                      100% { transform: translate(calc(-50% + ${endX}px), calc(-50% + ${endY}px)); opacity: 0; }
+                    }
+                  `;
+                  document.head.appendChild(style);
+                }
+                
+                const plusSymbol = btn.querySelector("span[style*='position: absolute']") as HTMLElement;
+                if (plusSymbol) plusSymbol.style.color = "#000";
+              }}
+              onMouseLeave={(e) => {
+                const btn = e.currentTarget as HTMLButtonElement;
+                btn.style.background = "#000";
+                btn.style.color = "#fff";
+                btn.style.boxShadow = "inset 0 0 0 0.5px #fff";
+                
+                const plusSymbol = btn.querySelector("span[style*='position: absolute']") as HTMLElement;
+                if (plusSymbol) plusSymbol.style.color = "#fff";
+                
+                const particles = btn.querySelectorAll("div[data-particle='true']");
+                particles.forEach((p) => p.remove());
+              }}
+            >
+              <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, marginLeft: "-8px" }}>
+                  <rect x="3" y="6" width="18" height="15" rx="2" />
+                  <path d="M8 6V4a4 4 0 0 1 8 0v2" />
+                </svg>
+                <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "#fff", lineHeight: "1", right: "-10px", top: "-5px" }}>+</span>
+              </div>
+              <span style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "8px" }}>{Math.floor(currentBeat.price)} CZK</span>
+            </button>
           </div>
-          <button
-            onClick={() => onBuyClick(currentBeat)}
-            className="btn-bounce buy-btn-mobile-new"
-            style={{
-              padding: "8px 8px 8px 16px",
-              background: "#000",
-              color: "#fff",
-              border: "none",
-              fontSize: "12px",
-              fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
-              fontWeight: 400,
-              cursor: "pointer",
-              display: "none",
-              alignItems: "center",
-              gap: "6px",
-              borderRadius: "4px",
-              position: "absolute",
-              left: "0 !important",
-              right: "auto !important",
-              top: "calc(50% + 80px)",
-              transform: "translateY(-50%)",
-              minWidth: "120px",
-              height: "32px",
-              transition: "background 0.2s, color 0.2s, box-shadow 0.2s",
-              overflow: "visible",
-              boxShadow: "inset 0 0 0 0.5px #fff",
-              zIndex: 1001
-            }}
-            onMouseEnter={(e) => {
-              const btn = e.currentTarget as HTMLButtonElement;
-              btn.style.background = "#fff";
-              btn.style.color = "#000";
-              btn.style.boxShadow = "0 0 20px rgba(255, 255, 255, 0.8), inset 0 0 0 0.5px #000, inset 0 0 10px rgba(255, 255, 255, 0.3)";
-              const plusSymbol = btn.querySelector("span[style*='position: absolute']") as HTMLElement;
-              if (plusSymbol) plusSymbol.style.color = "#000";
-            }}
-            onMouseLeave={(e) => {
-              const btn = e.currentTarget as HTMLButtonElement;
-              btn.style.background = "#000";
-              btn.style.color = "#fff";
-              btn.style.boxShadow = "inset 0 0 0 0.5px #fff";
-              const plusSymbol = btn.querySelector("span[style*='position: absolute']") as HTMLElement;
-              if (plusSymbol) plusSymbol.style.color = "#fff";
-            }}
-          >
-            <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, marginLeft: "-8px" }}>
-                <rect x="3" y="6" width="18" height="15" rx="2" />
-                <path d="M8 6V4a4 4 0 0 1 8 0v2" />
-              </svg>
-              <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "#fff", lineHeight: "1", right: "-10px", top: "-5px" }}>+</span>
-            </div>
-            <span style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "8px" }}>{Math.floor(currentBeat.price)} CZK</span>
-          </button>
         </div>
 
         <div className="music-player-controls" style={{ display: "flex", alignItems: "center", gap: "16px" }}>
@@ -263,6 +300,45 @@ function MusicPlayer({
 
         <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1, justifyContent: "flex-end" }}>
           <button
+            onClick={() => {
+              const element = document.createElement('a');
+              element.href = currentBeat.preview_url;
+              element.download = `${currentBeat.title}.mp3`;
+              document.body.appendChild(element);
+              element.click();
+              document.body.removeChild(element);
+            }}
+            className="btn-bounce download-btn-player"
+            style={{
+              background: "transparent",
+              border: "none",
+              color: "#fff",
+              cursor: "pointer",
+              padding: "8px",
+              borderRadius: "4px",
+              transition: "all 0.2s",
+              zIndex: 1000,
+              position: "relative",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.boxShadow = "0 0 20px rgba(255, 255, 255, 0.8), inset 0 0 10px rgba(255, 255, 255, 0.3)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.boxShadow = "none";
+            }}
+            title="Download"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+          </button>
+
+          <button
             onClick={() => setShowShareModal(true)}
             className="btn-bounce share-btn-mobile"
             style={{
@@ -272,9 +348,18 @@ function MusicPlayer({
               cursor: "pointer",
               padding: "8px",
               borderRadius: "4px",
-              transform: "translateY(var(--share-btn-offset, 0))",
-              transition: "transform 0.2s",
-              zIndex: 1000
+              transition: "all 0.2s",
+              zIndex: 1000,
+              position: "relative",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.boxShadow = "0 0 20px rgba(255, 255, 255, 0.8), inset 0 0 10px rgba(255, 255, 255, 0.3)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.boxShadow = "none";
             }}
             title="Share"
           >
@@ -288,16 +373,21 @@ function MusicPlayer({
                   transform: none !important;
                   z-index: 1002 !important;
                 }
+                .download-btn-player {
+                  position: absolute !important;
+                  right: 48px !important;
+                  bottom: 8px !important;
+                  top: auto !important;
+                  z-index: 1002 !important;
+                }
+                .buy-btn-player {
+                  display: none !important;
+                }
                 .buy-btn-mobile {
                   display: none !important;
                 }
                 .buy-btn-mobile-new {
-                  display: flex !important;
-                  left: -22px !important;
-                  top: 58px !important;
-                  bottom: auto !important;
-                  transform: none !important;
-                  z-index: 1002 !important;
+                  display: none !important;
                 }
                 .music-player-controls {
                   display: none !important;
@@ -313,101 +403,6 @@ function MusicPlayer({
             </svg>
           </button>
 
-          <button
-            onClick={() => onBuyClick(currentBeat)}
-            className="btn-bounce buy-btn-mobile"
-            style={{
-              padding: "8px 8px 8px 16px",
-              background: "#000",
-              color: "#fff",
-              border: "none",
-              fontSize: "12px",
-              fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
-              fontWeight: 400,
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "6px",
-              borderRadius: "4px",
-              position: "relative",
-              minWidth: "120px",
-              height: "32px",
-              transition: "background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.2s",
-              overflow: "visible",
-              boxShadow: "inset 0 0 0 0.5px #fff",
-              transform: "translate(var(--buy-btn-translate-x, 0), var(--buy-btn-translate-y, 0))",
-              zIndex: 1000
-            }}
-            onMouseEnter={(e) => {
-              const btn = e.currentTarget as HTMLButtonElement;
-              btn.style.background = "#fff";
-              btn.style.color = "#000";
-              btn.style.boxShadow = "0 0 20px rgba(255, 255, 255, 0.8), inset 0 0 0 0.5px #000, inset 0 0 10px rgba(255, 255, 255, 0.3)";
-              
-              // Change + symbol color to black
-              const plusSymbol = btn.querySelector("span[style*='position: absolute']") as HTMLElement;
-              if (plusSymbol) plusSymbol.style.color = "#000";
-              
-              // Create particles
-              for (let i = 0; i < 7; i++) {
-                const particle = document.createElement("div");
-                particle.setAttribute("data-particle", "true");
-                const angle = (i / 7) * Math.PI * 2;
-                particle.style.position = "absolute";
-                particle.style.width = "4px";
-                particle.style.height = "4px";
-                particle.style.background = "#fff";
-                particle.style.borderRadius = "50%";
-                particle.style.left = "50%";
-                particle.style.top = "50%";
-                particle.style.pointerEvents = "none";
-                particle.style.transform = "translate(-50%, -50%)";
-                particle.style.opacity = "0.8";
-                
-                const distance = 35;
-                const startX = Math.cos(angle) * distance;
-                const startY = Math.sin(angle) * distance;
-                const endX = Math.cos(angle) * (distance + 40);
-                const endY = Math.sin(angle) * (distance + 40);
-                
-                particle.style.animation = `particleFloat-${i} 3s ease-out forwards`;
-                
-                btn.appendChild(particle);
-                
-                const style = document.createElement("style");
-                style.textContent = `
-                  @keyframes particleFloat-${i} {
-                    0% { transform: translate(calc(-50% + ${startX}px), calc(-50% + ${startY}px)); opacity: 0.8; }
-                    100% { transform: translate(calc(-50% + ${endX}px), calc(-50% + ${endY}px)); opacity: 0; }
-                  }
-                `;
-                document.head.appendChild(style);
-              }
-            }}
-            onMouseLeave={(e) => {
-              const btn = e.currentTarget as HTMLButtonElement;
-              btn.style.background = "#000";
-              btn.style.color = "#fff";
-              btn.style.boxShadow = "inset 0 0 0 0.5px #fff";
-              
-              // Change + symbol color back to white
-              const plusSymbol = btn.querySelector("span[style*='position: absolute']") as HTMLElement;
-              if (plusSymbol) plusSymbol.style.color = "#fff";
-              
-              // Remove only particles, not icon container
-              const particles = btn.querySelectorAll("div[data-particle='true']");
-              particles.forEach((p) => p.remove());
-            }}
-          >
-            <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, marginLeft: "-8px" }}>
-                <rect x="3" y="6" width="18" height="15" rx="2" />
-                <path d="M8 6V4a4 4 0 0 1 8 0v2" />
-              </svg>
-              <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "#fff", lineHeight: "1", right: "-10px", top: "-5px" }}>+</span>
-            </div>
-            <span style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "8px" }}>{Math.floor(currentBeat.price)} CZK</span>
-          </button>
         </div>
       </div>
 
