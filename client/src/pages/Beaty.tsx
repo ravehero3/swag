@@ -1627,7 +1627,7 @@ function Beaty() {
                     position: relative !important;
                     z-index: 10001 !important;
                     margin-bottom: 12px !important;
-                    margin-top: 264px !important; /* 200px + 64px */
+                    margin-top: 64px !important; 
                     color: #555 !important;
                   }
                 }
