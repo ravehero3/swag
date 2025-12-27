@@ -1082,38 +1082,6 @@ function Beaty() {
                       <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
                     </svg>
                   </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openContractModal(beat);
-                    }}
-                    className="btn-bounce"
-                    style={{
-                      padding: "4px 8px",
-                      background: "#000",
-                      color: "#fff",
-                      border: "1px solid #fff",
-                      fontSize: "10px",
-                      fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
-                      fontWeight: 400,
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "4px",
-                      borderRadius: "4px",
-                      height: "28px",
-                      transition: "background 0.2s, color 0.2s, border-color 0.2s",
-                    }}
-                  >
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <rect x="3" y="6" width="18" height="15" rx="2" />
-                        <path d="M8 6V4a4 4 0 0 1 8 0v2" />
-                      </svg>
-                      <span style={{ fontSize: "12px", marginLeft: "2px" }}>+</span>
-                    </div>
-                    <span style={{ fontWeight: 500 }}>{Math.floor(beat.price)}</span>
-                  </button>
                 </div>
               </div>
               <div className="beat-meta-desktop" style={{ display: "contents" }}>
@@ -1234,7 +1202,22 @@ function Beaty() {
                         display: flex !important;
                       }
                       .buy-btn-playlist-mobile-container {
-                        display: none !important;
+                        display: flex !important;
+                        flex-direction: column !important;
+                        align-items: center !important;
+                        gap: 16px !important;
+                        position: absolute !important;
+                        top: -72px !important; /* Vertically align with heart icon which is moved -72px */
+                        right: 202px !important;
+                        z-index: 100 !important;
+                      }
+                      .buy-btn-playlist-mobile-container .btn-bounce {
+                        position: absolute !important;
+                        top: 0 !important;
+                        right: -138px !important; /* This aligns to 64px from right (202 - 138 = 64) */
+                        left: auto !important;
+                        margin-left: 0 !important;
+                        bottom: auto !important;
                       }
                       .heart-icon-playlist-mobile {
                         transform: translate(16px, -72px) !important;
