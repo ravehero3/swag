@@ -1875,7 +1875,7 @@ function Beaty() {
                   @media (max-width: 768px) {
                     .mobile-beats-text-container {
                       display: block !important;
-                      bottom: 864px !important;
+                      bottom: 764px !important;
                     }
                   }
                   @media (min-width: 769px) {
