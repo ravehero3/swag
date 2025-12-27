@@ -1079,7 +1079,7 @@ function Beaty() {
                       e.stopPropagation();
                       openContractModal(beat);
                     }}
-                    className="btn-bounce mobile-cart-btn"
+                    className="btn-bounce"
                     style={{
                       padding: "8px",
                       background: "#000",
