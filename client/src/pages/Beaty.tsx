@@ -1835,7 +1835,7 @@ function Beaty() {
                       margin-top: -440px !important;
                     }
                     .computer-bg-container {
-                      padding-top: 100px !important;
+                      padding-top: 164px !important;
                       padding-bottom: 0 !important;
                       min-height: auto !important;
                     }
@@ -1867,7 +1867,7 @@ function Beaty() {
                 }}>
                   Pro všechny<br />
                   hudební producenty<br />
-                  co se děláním BEATS<br />
+                  co se děláním <span style={{ fontFamily: "'Old London', serif", textTransform: "none" }}>BEATS</span><br />
                   chtěj živit
                 </p>
                 <style>{`
