@@ -397,6 +397,24 @@ function Beaty() {
             margin-bottom: 0 !important;
             margin-top: 100px !important;
           }
+          .mobile-cart-btn {
+            padding: 8px !important;
+            min-width: 32px !important;
+            width: 32px !important;
+            height: 32px !important;
+            justify-content: center !important;
+          }
+          .mobile-cart-btn span {
+            display: none !important;
+          }
+          .mobile-cart-btn div svg {
+            margin-left: 0 !important;
+          }
+          .mobile-cart-btn div span {
+            display: block !important;
+            top: -2px !important;
+            right: -6px !important;
+          }
         }
       `}</style>
       <div className="video-container" style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative" }}>
@@ -421,10 +439,10 @@ function Beaty() {
         />
       </div>
       
-      <div style={{ padding: "0 20px" }} className="fade-in-grid">
+      <div style={{ padding: "0 2px" }} className="fade-in-grid">
         {highlightedBeat && (
           <div className="fade-in-section delay-2" style={{ marginBottom: "48px", display: "flex", justifyContent: "center", marginTop: "-116px", position: "relative", zIndex: 50 }}>
-            <div style={{ display: "flex", gap: "48px", alignItems: "flex-start", marginBottom: "32px", width: "1000px", position: "relative", zIndex: 50 }}>
+            <div style={{ display: "flex", gap: "48px", alignItems: "flex-start", marginBottom: "32px", width: "100%", maxWidth: "1000px", position: "relative", zIndex: 50, padding: "0 18px" }}>
               <div style={{ position: "relative", flexShrink: 0 }}>
                 <img
                   src={highlightedBeat.artwork_url || "/uploads/artwork/metallic-logo.png"}
@@ -517,7 +535,7 @@ function Beaty() {
                   <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                     <button
                       onClick={() => openContractModal(highlightedBeat)}
-                      className="btn-bounce"
+                      className="btn-bounce mobile-cart-btn"
                       style={{
                         padding: "8px 8px 8px 16px",
                         background: "#000",
@@ -1250,7 +1268,7 @@ function Beaty() {
                         e.stopPropagation();
                         openContractModal(beat);
                       }}
-                      className="btn-bounce"
+                      className="btn-bounce mobile-cart-btn"
                       style={{
                         padding: "8px 8px 8px 16px",
                         background: "#000",
