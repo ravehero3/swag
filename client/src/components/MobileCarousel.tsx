@@ -87,6 +87,13 @@ const MobileCarousel = () => {
         }
       `}</style>
       <div className="carousel-root-container-mobile" style={{ textAlign: "center", marginBottom: "8px", paddingTop: "0px", position: "relative", zIndex: 99999, overflow: "visible", background: "transparent", width: "100vw", marginLeft: "calc(-50vw + 50%)" }}>
+        <style>{`
+          @media (max-width: 768px) {
+            .carousel-root-container-mobile {
+              display: none !important;
+            }
+          }
+        `}</style>
         <p style={{ fontSize: "12px", color: "#555", margin: 0, fontFamily: "Work Sans, sans-serif" }}>
           VOODOO808 dělal beaty pro
         </p>
