@@ -1207,8 +1207,8 @@ function Beaty() {
                         align-items: center !important;
                         gap: 16px !important;
                         position: absolute !important;
-                        top: -72px !important; /* Vertically align with heart icon which is moved -72px */
-                        right: 202px !important;
+                        top: 28px !important; /* Moved 100px lower from -72px */
+                        right: 122px !important; /* Moved 80px to the right from 202px */
                         z-index: 100 !important;
                       }
                       .buy-btn-playlist-mobile-container .btn-bounce {
