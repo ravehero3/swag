@@ -1152,7 +1152,12 @@ function Beaty() {
                         z-index: 100 !important;
                       }
                       .buy-btn-playlist-mobile-container button[title="Download"] {
-                        display: none !important;
+                        position: absolute !important;
+                        top: -18px !important;
+                        left: -180px !important;
+                        bottom: auto !important;
+                        margin-left: 0 !important;
+                        display: flex !important;
                       }
                       .buy-btn-playlist-mobile-container .btn-bounce {
                         position: absolute !important;
@@ -1172,6 +1177,9 @@ function Beaty() {
                         bottom: auto !important;
                         margin-left: 0 !important;
                         transform: none !important;
+                      }
+                      .beat-buttons-container button[title="Download"] {
+                        display: none !important;
                       }
                       .desktop-buy-btn {
                         display: none !important;
