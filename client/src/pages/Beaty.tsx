@@ -1154,14 +1154,14 @@ function Beaty() {
                       .buy-btn-playlist-mobile-container button[title="Download"] {
                         position: absolute !important;
                         top: -18px !important;
-                        left: -164px !important; /* Moved 100px left from -64px */
+                        left: -180px !important; /* Moved another 16px left from -164px */
                         bottom: auto !important;
                         margin-left: 0 !important;
                       }
                       .buy-btn-playlist-mobile-container .btn-bounce {
                         position: absolute !important;
                         top: 16px !important;
-                        right: -138px !important; /* 202px - 64px = 138px relative to right: 202px */
+                        right: -138px !important; /* This aligns to 64px from right (202 - 138 = 64) */
                         left: auto !important;
                         margin-left: 0 !important;
                         bottom: auto !important;
@@ -1172,7 +1172,7 @@ function Beaty() {
                       .beat-buttons-container button[title="Share"] {
                         position: absolute !important;
                         top: 28px !important;
-                        left: -336px !important; /* Moved 80px left from -256px */
+                        left: -344px !important; /* Moved another 8px left from -336px */
                         bottom: auto !important;
                         margin-left: 0 !important;
                         transform: none !important;
