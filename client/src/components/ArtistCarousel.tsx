@@ -99,7 +99,7 @@ const ArtistCarousel = () => {
           }
         }
       `}</style>
-      <div className="carousel-root-container" style={{ textAlign: "center", marginBottom: "24px", paddingTop: "0px", position: "relative", zIndex: 10000 }}>
+      <div className="carousel-root-container" style={{ textAlign: "center", marginBottom: "24px", paddingTop: "0px", position: "relative", zIndex: 10000, overflow: "visible" }}>
         <p style={{ fontSize: "12px", color: "#555", margin: 0, fontFamily: "Work Sans, sans-serif" }}>
           VOODOO808 dělal beaty pro
         </p>
