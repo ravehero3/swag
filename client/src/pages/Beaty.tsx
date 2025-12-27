@@ -413,6 +413,14 @@ function Beaty() {
           .beat-track:hover {
             background: rgba(0, 0, 255, 0.1) !important;
           }
+          .featured-track-container {
+            margin-top: -116px;
+          }
+          @media (max-width: 768px) {
+            .featured-track-container {
+              margin-top: -52px !important;
+            }
+          }
         }
       `}</style>
       <div className="video-container" style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative" }}>
@@ -439,7 +447,7 @@ function Beaty() {
       
       <div style={{ padding: "0 2px" }} className="fade-in-grid">
         {highlightedBeat && (
-          <div className="fade-in-section delay-2" style={{ marginBottom: "48px", display: "flex", justifyContent: "center", marginTop: "-116px", position: "relative", zIndex: 50 }}>
+          <div className="fade-in-section delay-2 featured-track-container" style={{ marginBottom: "48px", display: "flex", justifyContent: "center", position: "relative", zIndex: 50 }}>
             <div style={{ display: "flex", gap: "48px", alignItems: "flex-start", marginBottom: "32px", width: "100%", maxWidth: "1000px", position: "relative", zIndex: 50, padding: "0 18px" }}>
               <div style={{ position: "relative", flexShrink: 0 }}>
                 <img
