@@ -1695,7 +1695,7 @@ function Beaty() {
               `}</style>
               <div className="mobile-title-container" style={{
                 position: "absolute",
-                top: "892px",
+                top: "792px",
                 left: "50%",
                 transform: "translateX(-50%)",
                 width: "100%",
