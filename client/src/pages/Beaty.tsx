@@ -1754,8 +1754,8 @@ function Beaty() {
                 <style>{`
                   @media (max-width: 768px) {
                     .mobile-title-container {
-                      margin-top: -700px !important;
-                      position: absolute !important;
+                      margin-top: 24px !important;
+                      position: relative !important;
                       bottom: auto !important;
                       width: 100% !important;
                     }

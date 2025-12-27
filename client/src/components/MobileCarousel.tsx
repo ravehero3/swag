@@ -34,7 +34,7 @@ const MobileCarousel = () => {
 
   useEffect(() => {
     const imageWidth = 80;
-    const gap = 40;
+    const gap = 16;
     const singleSetWidth = imageWidth * artists.length + gap * artists.length;
 
     const intervalId = setInterval(() => {
@@ -105,7 +105,7 @@ const MobileCarousel = () => {
           className="mobile-carousel-track"
           style={{
             display: "flex",
-            gap: "40px",
+            gap: "16px",
             transform: `translateX(${offset}px)`,
             transition: "transform 0.05s linear",
             paddingLeft: "0px",
