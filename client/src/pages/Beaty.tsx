@@ -1220,7 +1220,7 @@ function Beaty() {
                         bottom: auto !important;
                       }
                       .heart-icon-playlist-mobile {
-                        transform: translate(24px, -76px) !important;
+                        transform: translate(24px, -80px) !important;
                       }
                       .beat-buttons-container button[title="Share"] {
                         display: none !important;
