@@ -377,6 +377,9 @@ function Beaty() {
           .desktop-only {
             display: none !important;
           }
+          .featured-beat-image {
+            border: none !important;
+          }
           .video-container {
             margin-bottom: 0 !important;
             margin-top: 0 !important;
@@ -454,6 +457,7 @@ function Beaty() {
             <div style={{ display: "flex", gap: "48px", alignItems: "flex-start", marginBottom: "32px", width: "100%", maxWidth: "1000px", position: "relative", zIndex: 50, padding: "0 18px" }}>
               <div style={{ position: "relative", flexShrink: 0 }}>
                 <img
+                  className="featured-beat-image"
                   src={highlightedBeat.artwork_url || "/uploads/artwork/metallic-logo.png"}
                   alt={highlightedBeat.title}
                   style={{ width: "200px", height: "200px", objectFit: "cover", border: "1px solid #666", borderRadius: "4px" }}
