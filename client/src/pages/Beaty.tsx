@@ -1743,6 +1743,7 @@ function Beaty() {
                 src="/uploads/zvuky-computer-background.jpg"
                 alt="Computer with sound kits"
                 className="mobile-bg-zoom"
+                style={{ marginBottom: "-1px" }}
               />
               <div
                 style={{
@@ -1751,7 +1752,7 @@ function Beaty() {
                   left: 0,
                   width: "100%",
                   height: "100px",
-                  background: "linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 100%)",
+                  background: "linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 100%)",
                   pointerEvents: "none",
                 }}
               />
@@ -1761,6 +1762,13 @@ function Beaty() {
                 @font-face {
                   font-family: 'Snell Roundhand';
                   src: local('Snell Roundhand'), local('SnellRoundhand');
+                  font-weight: normal;
+                  font-style: normal;
+                }
+                @font-face {
+                  font-family: 'Ortica';
+                  src: url('/uploads/Ortica-Linear.otf') format('opentype'),
+                       url('/uploads/Ortica-Linear.woff') format('woff');
                   font-weight: normal;
                   font-style: normal;
                 }
@@ -1852,7 +1860,7 @@ function Beaty() {
                 <p style={{
                   color: "#fff",
                   fontSize: "32px",
-                  fontFamily: "'TANKER', sans-serif",
+                  fontFamily: "'Ortica', sans-serif",
                   margin: 0,
                   lineHeight: "0.8",
                   letterSpacing: "0.5px",
