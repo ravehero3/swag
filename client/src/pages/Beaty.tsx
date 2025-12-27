@@ -1633,7 +1633,7 @@ function Beaty() {
               </div>
             </div>
 
-            <div ref={soundKitsRef} className="fade-in-section delay-4 scroll-fade-section sound-kits-section" style={{ marginTop: "-240px", marginBottom: "200px", position: "relative", zIndex: 1 }}>
+            <div ref={soundKitsRef} className="fade-in-section delay-4 scroll-fade-section sound-kits-section" style={{ marginTop: "-440px", marginBottom: "0px", position: "relative", zIndex: 1 }}>
             {/* Background with computer image and dock */}
             <div className="computer-bg-container" style={{
               width: "100vw",
@@ -1641,7 +1641,6 @@ function Beaty() {
               overflow: "hidden",
               position: "relative",
               background: "#000",
-              paddingTop: "200px",
             }}>
               <style>{`
                 .mobile-bg-zoom {
@@ -1788,7 +1787,7 @@ function Beaty() {
               `}</style>
               <div className="dock-container dock-wrapper" style={{
                 position: "fixed",
-                bottom: "-204px",
+                bottom: "-4px",
                 left: "50%",
                 transform: "translateX(-50%)",
                 width: "100%",
