@@ -395,7 +395,7 @@ function Beaty() {
           }
           .video-container {
             margin-bottom: 0 !important;
-            margin-top: 100px !important;
+            margin-top: 0 !important;
           }
           .mobile-cart-btn {
             padding: 8px !important;
