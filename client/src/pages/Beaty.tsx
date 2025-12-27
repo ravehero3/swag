@@ -1606,19 +1606,23 @@ function Beaty() {
         {isHomePage && (
           <>
             <div ref={artistCarouselRef} className="fade-in-section delay-3 scroll-fade-section" style={{ marginTop: "-200px", marginBottom: "-420px", position: "relative", zIndex: 100 }}>
-              <div style={{ textAlign: "center", marginBottom: "12px", display: "none" }} className="mobile-only-carousel-label">
+              <div style={{ textAlign: "center", marginBottom: "12px" }} className="mobile-only-carousel-label">
                 <p style={{ fontSize: "12px", color: "#555", margin: 0, fontFamily: "Work Sans, sans-serif" }}>
                   VOODOO808 dělal beaty pro
                 </p>
               </div>
               <style>{`
+                .mobile-only-carousel-label {
+                  display: none;
+                }
                 @media (max-width: 768px) {
                   .mobile-only-carousel-label {
                     display: block !important;
                     position: relative !important;
-                    z-index: 110 !important;
+                    z-index: 9999 !important;
                     margin-bottom: 12px !important;
                     margin-top: -100px !important;
+                    color: #555 !important;
                   }
                 }
               `}</style>
