@@ -9,6 +9,7 @@ import SoundWave from "../components/SoundWave";
 import ProductsGrid from "../components/ProductsGrid";
 import SoundKitsDock from "../components/SoundKitsDock";
 import ArtistCarousel from "../components/ArtistCarousel";
+import MobileCarousel from "../components/MobileCarousel";
 
 interface Beat {
   id: number;
@@ -1686,6 +1687,11 @@ function Beaty() {
                 }}
               />
               
+              {/* Mobile Carousel - appears only on mobile */}
+              <div style={{ marginBottom: "64px" }}>
+                <MobileCarousel />
+              </div>
+
               {/* Title text */}
               <style>{`
                 @font-face {
