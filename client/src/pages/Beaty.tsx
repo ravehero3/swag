@@ -1835,7 +1835,7 @@ function Beaty() {
                       margin-top: -440px !important;
                     }
                     .computer-bg-container {
-                      padding-top: 328px !important;
+                      padding-top: 428px !important;
                       padding-bottom: 0 !important;
                       min-height: auto !important;
                     }
@@ -1874,7 +1874,7 @@ function Beaty() {
                   @media (max-width: 768px) {
                     .mobile-beats-text-container {
                       display: block !important;
-                      bottom: 464px !important;
+                      bottom: 664px !important;
                     }
                   }
                   @media (min-width: 769px) {
