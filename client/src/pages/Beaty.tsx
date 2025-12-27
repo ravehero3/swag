@@ -224,11 +224,6 @@ function Beaty() {
     }
   }, [user]);
 
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.loop = isLooping;
-    }
-  }, [isLooping]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -243,17 +238,10 @@ function Beaty() {
 
   const playBeat = (beat: Beat) => {
     if (currentBeat?.id === beat.id) {
-      if (isPlaying) {
-        audioRef.current?.pause();
-        setIsPlaying(false);
-      } else {
-        audioRef.current?.play();
-        setIsPlaying(true);
-      }
+      setIsPlaying(!isPlaying);
     } else {
       setCurrentBeat(beat);
       setIsPlaying(true);
-      setTimeout(() => audioRef.current?.play(), 100);
     }
   };
 

@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext } from "react";
+import { useState, useEffect, useRef, createContext, useContext } from "react";
 import { Route, Switch } from "wouter";
 import Header from "./components/Header";
 import ExtendedFooter from "./components/ExtendedFooter";
@@ -53,6 +53,11 @@ interface AppContextType {
   setIsLooping: (looping: boolean) => void;
   isShuffling: boolean;
   setIsShuffling: (shuffling: boolean) => void;
+  audioRef?: React.RefObject<HTMLAudioElement>;
+  allBeats?: Beat[];
+  playBeat?: (beat: Beat) => void;
+  handlePrevious?: () => void;
+  handleNext?: () => void;
 }
 
 interface Beat {
@@ -84,6 +89,11 @@ export const AppContext = createContext<AppContextType>({
   setIsLooping: () => {},
   isShuffling: false,
   setIsShuffling: () => {},
+  audioRef: undefined,
+  allBeats: [],
+  playBeat: () => {},
+  handlePrevious: () => {},
+  handleNext: () => {},
 });
 
 export const useApp = () => useContext(AppContext);
@@ -97,6 +107,7 @@ function App() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLooping, setIsLooping] = useState(false);
   const [isShuffling, setIsShuffling] = useState(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   // Add padding to body for fixed header
   useEffect(() => {
@@ -105,6 +116,27 @@ function App() {
       document.body.style.paddingTop = "0";
     };
   }, []);
+
+  // Update audio src and loop when currentBeat changes
+  useEffect(() => {
+    if (currentBeat && audioRef.current) {
+      audioRef.current.src = currentBeat.preview_url;
+      audioRef.current.loop = isLooping;
+      if (isPlaying) {
+        audioRef.current.play().catch(() => {});
+      }
+    }
+  }, [currentBeat, isLooping]);
+
+  // Handle play/pause state
+  useEffect(() => {
+    if (!audioRef.current) return;
+    if (isPlaying && currentBeat) {
+      audioRef.current.play().catch(() => {});
+    } else {
+      audioRef.current.pause();
+    }
+  }, [isPlaying, currentBeat]);
 
   useEffect(() => {
     fetch("/api/auth/me", { credentials: "include" })
@@ -153,7 +185,7 @@ function App() {
   }
 
   return (
-    <AppContext.Provider value={{ user, setUser, cart, addToCart, removeFromCart, clearCart, isCartOpen, setIsCartOpen, currentBeat, setCurrentBeat, isPlaying, setIsPlaying, isLooping, setIsLooping, isShuffling, setIsShuffling }}>
+    <AppContext.Provider value={{ user, setUser, cart, addToCart, removeFromCart, clearCart, isCartOpen, setIsCartOpen, currentBeat, setCurrentBeat, isPlaying, setIsPlaying, isLooping, setIsLooping, isShuffling, setIsShuffling, audioRef, allBeats: [], playBeat: () => {}, handlePrevious: () => {}, handleNext: () => {} }}>
       <div style={{ minHeight: "100vh", background: "#000", display: "flex", flexDirection: "column" }}>
         <Header />
         <main style={{ flex: 1 }} className="fade-in">
@@ -182,7 +214,8 @@ function App() {
             </Route>
           </Switch>
         </main>
-        {currentBeat && <MusicPlayer currentBeat={currentBeat} isPlaying={isPlaying} isLooping={isLooping} isShuffling={isShuffling} onPlayPause={() => setIsPlaying(!isPlaying)} onPrevious={() => {}} onNext={() => {}} onToggleLoop={() => setIsLooping(!isLooping)} onToggleShuffle={() => setIsShuffling(!isShuffling)} onBuyClick={(beat) => { const item = { productId: beat.id, productType: "beat" as const, title: beat.title, price: beat.price, artworkUrl: beat.artwork_url }; addToCart(item); }} />}
+        {currentBeat && <MusicPlayer currentBeat={currentBeat} isPlaying={isPlaying} isLooping={isLooping} isShuffling={isShuffling} onPlayPause={() => { if (audioRef.current) { if (isPlaying) { audioRef.current.pause(); } else { audioRef.current.play(); } } setIsPlaying(!isPlaying); }} onPrevious={() => {}} onNext={() => {}} onToggleLoop={() => setIsLooping(!isLooping)} onToggleShuffle={() => setIsShuffling(!isShuffling)} onBuyClick={(beat) => { const item = { productId: beat.id, productType: "beat" as const, title: beat.title, price: beat.price, artworkUrl: beat.artwork_url }; addToCart(item); }} audioRef={audioRef} />}
+        <audio ref={audioRef} />
         <ExtendedFooter />
         <Footer />
         <CartModal isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
