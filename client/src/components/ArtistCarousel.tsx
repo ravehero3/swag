@@ -89,7 +89,10 @@ const ArtistCarousel = () => {
             max-width: 80px !important;
           }
           .carousel-fade {
-            width: 80px !important;
+            width: 40px !important;
+          }
+          .carousel-container {
+            overflow: visible !important;
           }
           .carousel-root-container {
             min-height: 180px !important;
@@ -107,6 +110,7 @@ const ArtistCarousel = () => {
 
       {/* Carousel Container */}
       <div
+        className="carousel-container"
         style={{
           width: "100%",
           overflow: "hidden",
