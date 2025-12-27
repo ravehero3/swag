@@ -4,6 +4,7 @@ import Header from "./components/Header";
 import ExtendedFooter from "./components/ExtendedFooter";
 import Footer from "./components/Footer";
 import CartModal from "./components/CartModal";
+import NewsletterWindow from "./components/NewsletterWindow";
 import MusicPlayer from "./components/MusicPlayer";
 import Beaty from "./pages/Beaty";
 import Zvuky from "./pages/Zvuky";
@@ -45,6 +46,8 @@ interface AppContextType {
   clearCart: () => void;
   isCartOpen: boolean;
   setIsCartOpen: (open: boolean) => void;
+  isNewsletterOpen: boolean;
+  setIsNewsletterOpen: (open: boolean) => void;
   currentBeat: Beat | null;
   setCurrentBeat: (beat: Beat | null) => void;
   isPlaying: boolean;
@@ -81,6 +84,8 @@ export const AppContext = createContext<AppContextType>({
   clearCart: () => {},
   isCartOpen: false,
   setIsCartOpen: () => {},
+  isNewsletterOpen: false,
+  setIsNewsletterOpen: () => {},
   currentBeat: null,
   setCurrentBeat: () => {},
   isPlaying: false,
@@ -103,6 +108,7 @@ function App() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isNewsletterOpen, setIsNewsletterOpen] = useState(false);
   const [currentBeat, setCurrentBeat] = useState<Beat | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLooping, setIsLooping] = useState(false);
@@ -185,7 +191,7 @@ function App() {
   }
 
   return (
-    <AppContext.Provider value={{ user, setUser, cart, addToCart, removeFromCart, clearCart, isCartOpen, setIsCartOpen, currentBeat, setCurrentBeat, isPlaying, setIsPlaying, isLooping, setIsLooping, isShuffling, setIsShuffling, audioRef, allBeats: [], playBeat: () => {}, handlePrevious: () => {}, handleNext: () => {} }}>
+    <AppContext.Provider value={{ user, setUser, cart, addToCart, removeFromCart, clearCart, isCartOpen, setIsCartOpen, isNewsletterOpen, setIsNewsletterOpen, currentBeat, setCurrentBeat, isPlaying, setIsPlaying, isLooping, setIsLooping, isShuffling, setIsShuffling, audioRef, allBeats: [], playBeat: () => {}, handlePrevious: () => {}, handleNext: () => {} }}>
       <div style={{ minHeight: "100vh", background: "#000", display: "flex", flexDirection: "column", paddingBottom: currentBeat ? "84px" : "0" }}>
         <Header />
         <main style={{ flex: 1 }} className="fade-in">
@@ -217,6 +223,7 @@ function App() {
         <ExtendedFooter />
         <Footer />
         <CartModal isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+        <NewsletterWindow isOpen={isNewsletterOpen} onClose={() => setIsNewsletterOpen(false)} />
       </div>
       <audio ref={audioRef} />
       {currentBeat && <MusicPlayer currentBeat={currentBeat} isPlaying={isPlaying} isLooping={isLooping} isShuffling={isShuffling} onPlayPause={() => { if (audioRef.current) { if (isPlaying) { audioRef.current.pause(); } else { audioRef.current.play(); } } setIsPlaying(!isPlaying); }} onPrevious={() => {}} onNext={() => {}} onToggleLoop={() => setIsLooping(!isLooping)} onToggleShuffle={() => setIsShuffling(!isShuffling)} onBuyClick={(beat) => { const item = { productId: beat.id, productType: "beat" as const, title: beat.title, price: beat.price, artworkUrl: beat.artwork_url }; addToCart(item); }} audioRef={audioRef} />}

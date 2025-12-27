@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
+import { useApp } from '../App';
 
 const styles = `
   @media (min-width: 1024px) {
@@ -102,6 +103,8 @@ function FooterAccordionItem({ title, children, isOpen, onToggle }: FooterAccord
 export default function ExtendedFooter() {
   const [openSection, setOpenSection] = useState<string | null>(null);
 
+  const { setIsNewsletterOpen } = useApp();
+
   const toggleSection = (section: string) => {
     setOpenSection(openSection === section ? null : section);
   };
@@ -170,7 +173,7 @@ export default function ExtendedFooter() {
           <h3 style={titleStyle}>ODBĚR NOVINEK</h3>
           <ul style={listStyle}>
             <li style={listItemStyle}>
-              <a href="#" style={{...linkStyle, textDecoration: "underline"}}>Přihlaste se k odběru novinek</a>
+              <a href="#" onClick={(e) => { e.preventDefault(); setIsNewsletterOpen(true); }} style={{...linkStyle, textDecoration: "underline"}}>Přihlaste se k odběru novinek</a>
             </li>
           </ul>
         </div>
@@ -248,7 +251,7 @@ export default function ExtendedFooter() {
         >
           <ul style={{...listStyle, marginTop: "8px"}}>
             <li style={{...listItemStyle, marginBottom: "8px"}}>
-              <a href="#" style={{...linkStyle, textDecoration: "underline"}}>Přihlaste se k odběru novinek</a>
+              <a href="#" onClick={(e) => { e.preventDefault(); setIsNewsletterOpen(true); }} style={{...linkStyle, textDecoration: "underline"}}>Přihlaste se k odběru novinek</a>
             </li>
           </ul>
         </FooterAccordionItem>
