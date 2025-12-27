@@ -34,7 +34,7 @@ const MobileCarousel = () => {
 
   useEffect(() => {
     const imageWidth = 80;
-    const gap = 16;
+    const gap = 8;
     const singleSetWidth = imageWidth * artists.length + gap * artists.length;
 
     const intervalId = setInterval(() => {
@@ -83,7 +83,7 @@ const MobileCarousel = () => {
           }
         }
       `}</style>
-      <div className="carousel-root-container-mobile" style={{ textAlign: "center", marginBottom: "16px", paddingTop: "0px", position: "relative", zIndex: 99999, overflow: "visible", background: "transparent" }}>
+      <div className="carousel-root-container-mobile" style={{ textAlign: "center", marginBottom: "16px", paddingTop: "0px", position: "relative", zIndex: 99999, overflow: "visible", background: "transparent", width: "100vw", marginLeft: "calc(-50vw + 50%)" }}>
         <p style={{ fontSize: "12px", color: "#555", margin: 0, fontFamily: "Work Sans, sans-serif" }}>
           VOODOO808 dělal beaty pro
         </p>
@@ -93,7 +93,9 @@ const MobileCarousel = () => {
       <div
         className="carousel-container-mobile"
         style={{
-          width: "100%",
+          width: "100vw",
+          marginLeft: "calc(-50vw + 50%)",
+          marginRight: "calc(-50vw + 50%)",
           overflow: "hidden",
           position: "relative",
           flex: 1,
@@ -105,7 +107,7 @@ const MobileCarousel = () => {
           className="mobile-carousel-track"
           style={{
             display: "flex",
-            gap: "16px",
+            gap: "8px",
             transform: `translateX(${offset}px)`,
             transition: "transform 0.05s linear",
             paddingLeft: "0px",
@@ -198,7 +200,7 @@ const MobileCarousel = () => {
             position: "absolute",
             left: 0,
             top: 0,
-            width: "150px",
+            width: "100px",
             height: "100%",
             background: "linear-gradient(to right, rgba(0, 0, 0, 1), rgba(0, 0, 0, 0))",
             pointerEvents: "none",
@@ -213,7 +215,7 @@ const MobileCarousel = () => {
             position: "absolute",
             right: 0,
             top: 0,
-            width: "150px",
+            width: "100px",
             height: "100%",
             background: "linear-gradient(to left, rgba(0, 0, 0, 1), rgba(0, 0, 0, 0))",
             pointerEvents: "none",
