@@ -1617,6 +1617,10 @@ function Beaty() {
                     position: relative !important;
                     overflow: visible !important;
                     background: transparent !important;
+                    width: 100% !important;
+                    left: 0 !important;
+                    right: 0 !important;
+                    padding: 0 !important;
                   }
                   .mobile-only-carousel-label {
                     display: block !important;
@@ -1628,7 +1632,7 @@ function Beaty() {
                   }
                 }
               `}</style>
-              <div style={{ marginTop: "0px", position: "relative", zIndex: 999999, overflow: "visible", background: "transparent" }}>
+              <div style={{ marginTop: "0px", position: "relative", zIndex: 999999, overflow: "visible", background: "transparent", width: "100%" }}>
                 <ArtistCarousel />
               </div>
             </div>
