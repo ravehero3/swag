@@ -7,7 +7,8 @@ function Cart() {
   const total = cart.reduce((sum, item) => sum + item.price, 0);
 
   const sectionStyle: React.CSSProperties = {
-    width: "700px",
+    width: "100%",
+    maxWidth: "700px",
     margin: "0 auto",
     borderBottom: "0.5px solid #fff",
     display: "flex",
@@ -102,6 +103,7 @@ function Cart() {
                 {cart.map((item) => (
                   <div
                     key={`${item.productType}-${item.productId}`}
+                    className="cart-item-row"
                     style={{
                       display: "flex",
                       alignItems: "center",
@@ -115,13 +117,13 @@ function Cart() {
                       alt={item.title}
                       style={{ width: "60px", height: "60px", objectFit: "cover", borderRadius: "4px", border: "0.5px solid #333" }}
                     />
-                    <div style={{ flex: 1, textAlign: "left" }}>
+                    <div className="cart-item-info" style={{ flex: 1, textAlign: "left" }}>
                       <div style={{ ...titleFont, fontSize: "14px" }}>{item.title}</div>
                       <div style={{ ...regularFont, fontSize: "12px", color: "#666" }}>
                         {item.productType === "beat" ? "Beat" : "Sound Kit"}
                       </div>
                     </div>
-                    <div style={{ ...titleFont, fontSize: "14px" }}>{item.price} CZK</div>
+                    <div style={{ ...titleFont, fontSize: "14px", whiteSpace: "nowrap" }}>{item.price} CZK</div>
                     <button
                       onClick={() => removeFromCart(item.productId, item.productType)}
                       style={{
@@ -130,12 +132,27 @@ function Cart() {
                         color: "#ff4444",
                         fontSize: "18px",
                         cursor: "pointer",
+                        padding: "4px 8px",
                       }}
                     >
                       ✕
                     </button>
                   </div>
                 ))}
+
+                <style dangerouslySetInnerHTML={{ __html: `
+                  @media (max-width: 600px) {
+                    .cart-item-row {
+                      flex-direction: column !important;
+                      text-align: center !important;
+                      gap: 12px !important;
+                      padding: 24px 0 !important;
+                    }
+                    .cart-item-info {
+                      text-align: center !important;
+                    }
+                  }
+                `}} />
 
                 <div
                   style={{
