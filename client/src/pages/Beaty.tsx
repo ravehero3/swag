@@ -1207,7 +1207,7 @@ function Beaty() {
                         align-items: center !important;
                         gap: 16px !important;
                         position: absolute !important;
-                        top: 78px !important;
+                        top: 77px !important;
                         right: 104px !important;
                         z-index: 100 !important;
                       }
@@ -1220,7 +1220,7 @@ function Beaty() {
                         bottom: auto !important;
                       }
                       .heart-icon-playlist-mobile {
-                        transform: translate(16px, -72px) !important;
+                        transform: translate(24px, -76px) !important;
                       }
                       .beat-buttons-container button[title="Share"] {
                         display: none !important;
