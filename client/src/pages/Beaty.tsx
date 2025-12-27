@@ -1146,7 +1146,7 @@ function Beaty() {
                     }}
                     className="btn-bounce"
                     style={{
-                      padding: "4px 8px",
+                      padding: "8px 8px 8px 16px",
                       background: "#000",
                       color: "#fff",
                       border: "1px solid #fff",
@@ -1158,17 +1158,38 @@ function Beaty() {
                       alignItems: "center",
                       gap: "6px",
                       borderRadius: "4px",
+                      position: "relative",
+                      minWidth: "120px",
                       height: "32px",
+                      transition: "background 0.2s, color 0.2s, border-color 0.2s",
+                      overflow: "visible",
+                      outline: "none",
+                      boxShadow: "none",
+                      WebkitAppearance: "none",
+                      appearance: "none",
+                      boxSizing: "border-box",
+                    }}
+                    onMouseEnter={(e) => {
+                      const btn = e.currentTarget as HTMLButtonElement;
+                      btn.style.background = "#fff";
+                      btn.style.color = "#000";
+                      btn.style.borderColor = "#000";
+                    }}
+                    onMouseLeave={(e) => {
+                      const btn = e.currentTarget as HTMLButtonElement;
+                      btn.style.background = "#000";
+                      btn.style.color = "#fff";
+                      btn.style.borderColor = "#fff";
                     }}
                   >
-                    <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, marginLeft: "-8px" }}>
                         <rect x="3" y="6" width="18" height="15" rx="2" />
                         <path d="M8 6V4a4 4 0 0 1 8 0v2" />
                       </svg>
-                      <span style={{ position: "absolute", fontSize: "14px", right: "-6px", top: "-4px" }}>+</span>
+                      <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "inherit", lineHeight: "1", right: "-10px", top: "-5px" }}>+</span>
                     </div>
-                    <span style={{ fontWeight: 500 }}>{Math.floor(beat.price)} CZK</span>
+                    <span style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "8px" }}>{Math.floor(beat.price)} CZK</span>
                   </button>
                 </div>
               </div>
