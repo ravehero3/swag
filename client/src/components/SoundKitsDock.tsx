@@ -104,15 +104,16 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
         }
         @media (max-width: 768px) {
           .dock-container-mobile {
-            position: fixed !important;
-            bottom: 200px !important;
-            left: 0 !important;
-            right: 0 !important;
+            position: relative !important;
+            bottom: auto !important;
+            left: auto !important;
+            right: auto !important;
             width: 100% !important;
             display: flex !important;
             justify-content: center !important;
             z-index: 100 !important;
             pointer-events: none !important;
+            margin-top: 40px !important;
           }
           .dock-container-mobile > * {
             pointer-events: auto !important;
@@ -132,10 +133,10 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
             height: 48px !important;
           }
           .reflection-container-mobile {
-            position: fixed !important;
-            bottom: 102px !important;
-            left: 0 !important;
-            right: 0 !important;
+            position: relative !important;
+            bottom: auto !important;
+            left: auto !important;
+            right: auto !important;
             width: 100% !important;
             display: flex !important;
             justify-content: center !important;

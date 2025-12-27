@@ -421,7 +421,7 @@ function Beaty() {
           }
           @media (max-width: 768px) {
             .featured-track-container {
-              margin-top: -152px !important;
+              margin-top: -52px !important;
             }
             .featured-plus-symbol {
               top: -25px !important;
