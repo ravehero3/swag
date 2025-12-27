@@ -1781,6 +1781,45 @@ function Beaty() {
                 `}</style>
               </div>
 
+              {/* MOBILEBEATSTEXT - appears 200px above dock in mobile view */}
+              <div className="mobile-beats-text-container" style={{
+                position: "fixed",
+                bottom: "200px",
+                left: "50%",
+                transform: "translateX(-50%)",
+                width: "100%",
+                textAlign: "center",
+                zIndex: 20,
+                display: "none",
+              }}>
+                <p style={{
+                  color: "#fff",
+                  fontSize: "16px",
+                  fontFamily: "Work Sans, sans-serif",
+                  margin: 0,
+                  lineHeight: "1.6",
+                  letterSpacing: "0.5px",
+                }}>
+                  Pro všechny<br />
+                  hudební producenty<br />
+                  co se děláním BEATS<br />
+                  chtěj živit
+                </p>
+                <style>{`
+                  @media (max-width: 768px) {
+                    .mobile-beats-text-container {
+                      display: block !important;
+                      bottom: 200px !important;
+                    }
+                  }
+                  @media (min-width: 769px) {
+                    .mobile-beats-text-container {
+                      display: none !important;
+                    }
+                  }
+                `}</style>
+              </div>
+
               {/* Dock positioned at bottom */}
               <style>{`
                 @media (max-width: 768px) {
