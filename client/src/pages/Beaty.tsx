@@ -1115,122 +1115,96 @@ function Beaty() {
                     </svg>
                   </button>
                 </div>
-                <div className="mobile-playlist-actions" style={{ display: "none", alignItems: "center", gap: "8px", position: "absolute", right: "8px", top: "50%", transform: "translateY(-50%)" }}>
-                  <button
-                    style={{
-                      padding: "4px",
-                      background: "#000",
-                      border: "1px solid #666",
-                      borderRadius: "4px",
-                      cursor: "pointer",
-                      width: "32px",
-                      height: "32px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      // Implement share functionality
-                    }}
-                    title="Share"
-                  >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
-                      <circle cx="18" cy="5" r="3" />
-                      <circle cx="6" cy="12" r="3" />
-                      <circle cx="18" cy="19" r="3" />
-                      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-                      <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openContractModal(beat);
-                    }}
-                    className="btn-bounce mobile-playlist-cart-btn"
-                    style={{
-                      padding: "8px 8px 8px 16px",
-                      background: "#000",
-                      color: "#fff",
-                      border: "1px solid #fff",
-                      fontSize: "12px",
-                      fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
-                      fontWeight: 400,
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "6px",
-                      borderRadius: "4px",
-                      minWidth: "120px",
-                      height: "32px",
-                      transition: "background 0.2s, color 0.2s, border-color 0.2s",
-                      overflow: "visible",
-                      outline: "none",
-                      boxShadow: "none",
-                      WebkitAppearance: "none",
-                      appearance: "none",
-                      boxSizing: "border-box",
-                    }}
-                    onMouseEnter={(e) => {
-                      const btn = e.currentTarget as HTMLButtonElement;
-                      btn.style.background = "#fff";
-                      btn.style.color = "#000";
-                      btn.style.borderColor = "#000";
-                      btn.style.boxShadow = "none";
-                    }}
-                    onMouseLeave={(e) => {
-                      const btn = e.currentTarget as HTMLButtonElement;
-                      btn.style.background = "#000";
-                      btn.style.color = "#fff";
-                      btn.style.borderColor = "#fff";
-                      btn.style.boxShadow = "none";
-                    }}
-                  >
-                    <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, marginLeft: "-8px" }}>
-                        <rect x="3" y="6" width="18" height="15" rx="2" />
-                        <path d="M8 6V4a4 4 0 0 1 8 0v2" />
-                      </svg>
-                      <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "inherit", lineHeight: "1", right: "-10px", top: "-5px" }}>+</span>
-                    </div>
-                    <span style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "8px" }}>{Math.floor(beat.price)} CZK</span>
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleSave(beat);
-                    }}
-                    className="beat-heart-button heart-icon-playlist-mobile"
-                    style={{
-                      background: "transparent",
-                      border: "none",
-                      cursor: "pointer",
-                      padding: "8px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      borderRadius: "4px",
-                      transition: "all 0.3s ease",
-                      position: "absolute",
-                      top: "-24px",
-                      right: "0",
-                      zIndex: 10,
-                    }}
-                    title={savedBeats.has(beat.id) ? "Remove from favorites" : "Add to favorites"}
-                  >
-                    <svg
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill={savedBeats.has(beat.id) ? "#fff" : "none"}
-                      stroke={savedBeats.has(beat.id) ? "#fff" : "#888"}
-                      strokeWidth="2"
+                  <div className="mobile-playlist-actions" style={{ display: "none", alignItems: "center", gap: "8px" }}>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openContractModal(beat);
+                      }}
+                      className="btn-bounce mobile-playlist-cart-btn"
+                      style={{
+                        padding: "8px 8px 8px 16px",
+                        background: "#000",
+                        color: "#fff",
+                        border: "1px solid #fff",
+                        fontSize: "12px",
+                        fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+                        fontWeight: 400,
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        borderRadius: "4px",
+                        minWidth: "120px",
+                        height: "32px",
+                        transition: "background 0.2s, color 0.2s, border-color 0.2s",
+                        overflow: "visible",
+                        outline: "none",
+                        boxShadow: "none",
+                        WebkitAppearance: "none",
+                        appearance: "none",
+                        boxSizing: "border-box",
+                        position: "relative"
+                      }}
+                      onMouseEnter={(e) => {
+                        const btn = e.currentTarget as HTMLButtonElement;
+                        btn.style.background = "#fff";
+                        btn.style.color = "#000";
+                        btn.style.borderColor = "#000";
+                        btn.style.boxShadow = "none";
+                      }}
+                      onMouseLeave={(e) => {
+                        const btn = e.currentTarget as HTMLButtonElement;
+                        btn.style.background = "#000";
+                        btn.style.color = "#fff";
+                        btn.style.borderColor = "#fff";
+                        btn.style.boxShadow = "none";
+                      }}
                     >
-                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                    </svg>
-                  </button>
-                </div>
+                      <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, marginLeft: "-8px" }}>
+                          <rect x="3" y="6" width="18" height="15" rx="2" />
+                          <path d="M8 6V4a4 4 0 0 1 8 0v2" />
+                        </svg>
+                        <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "inherit", lineHeight: "1", right: "-10px", top: "-5px" }}>+</span>
+                      </div>
+                      <span style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "8px" }}>{Math.floor(beat.price)} CZK</span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleSave(beat);
+                        }}
+                        className="beat-heart-button heart-icon-playlist-mobile"
+                        style={{
+                          background: "transparent",
+                          border: "none",
+                          cursor: "pointer",
+                          padding: "8px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          borderRadius: "4px",
+                          transition: "all 0.3s ease",
+                          position: "absolute",
+                          top: "-24px",
+                          right: "0",
+                          zIndex: 10,
+                        }}
+                        title={savedBeats.has(beat.id) ? "Remove from favorites" : "Add to favorites"}
+                      >
+                        <svg
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill={savedBeats.has(beat.id) ? "#fff" : "none"}
+                          stroke={savedBeats.has(beat.id) ? "#fff" : "#888"}
+                          strokeWidth="2"
+                        >
+                          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                        </svg>
+                      </button>
+                    </button>
+                  </div>
               </div>
               <div className="beat-meta-desktop" style={{ display: "contents" }}>
                 <div style={{ width: "80px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", color: "#666", fontSize: "16px" }}>
