@@ -1748,7 +1748,7 @@ function Beaty() {
               <div
                 style={{
                   position: "absolute",
-                  bottom: 0,
+                  bottom: -1,
                   left: 0,
                   width: "100%",
                   height: "100px",
@@ -1859,12 +1859,11 @@ function Beaty() {
               }}>
                 <p style={{
                   color: "#fff",
-                  fontSize: "32px",
+                  fontSize: "21px",
                   fontFamily: "'Ortica', sans-serif",
                   margin: 0,
                   lineHeight: "0.8",
                   letterSpacing: "0.5px",
-                  textTransform: "uppercase",
                 }}>
                   Pro všechny<br />
                   hudební producenty<br />
@@ -1875,7 +1874,7 @@ function Beaty() {
                   @media (max-width: 768px) {
                     .mobile-beats-text-container {
                       display: block !important;
-                      bottom: 400px !important;
+                      bottom: 464px !important;
                     }
                   }
                   @media (min-width: 769px) {
