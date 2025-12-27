@@ -1212,6 +1212,12 @@ function Beaty() {
                         width: auto !important;
                         flex: 1 !important;
                       }
+                      .mobile-play-btn {
+                        display: none !important;
+                      }
+                      .mobile-play-overlay {
+                        display: none !important;
+                      }
                       .mobile-only-buttons {
                         display: flex !important;
                       }
