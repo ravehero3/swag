@@ -79,7 +79,7 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
       />
       
       <div 
-        className={`fixed top-0 right-0 h-full w-full md:w-1/3 bg-white md:border-l border-black z-50 transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 right-0 h-full w-full md:w-[400px] bg-white md:border-l border-black z-50 transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
@@ -98,9 +98,9 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto flex flex-col" style={{ paddingLeft: '8px', paddingRight: '8px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', paddingLeft: '0px', paddingRight: '0px' }} className="flex-1">
-              <p className="text-center" style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '14px', fontWeight: 400, lineHeight: '19.6px', letterSpacing: 'normal', marginTop: '0px', marginBottom: '0px', display: 'block', boxSizing: 'border-box' }}>
+          <div className="flex-1 overflow-y-auto flex flex-col px-6 py-8">
+            <div className="mb-8">
+              <p className="text-center" style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '14px', fontWeight: 400, lineHeight: '1.6', color: '#000' }}>
                 Přihlaste se k odběru našeho newsletteru a získejte přístup k nejnovějším kolekcím, exkluzivním nabídkám a novinkám ze světa Ufo Sportu.
               </p>
             </div>
@@ -144,8 +144,8 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
                 )}
               </div>
 
-              <div style={{ marginTop: '24px', marginBottom: '42px' }}>
-                <p className="text-center" style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '12px', fontWeight: 400, lineHeight: '12px', letterSpacing: '0.12px', color: '#4b5563' }}>
+              <div style={{ marginTop: 'auto', marginBottom: '42px' }}>
+                <p className="text-center" style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '12px', fontWeight: 400, lineHeight: '1.4', color: '#666' }}>
                   Odesláním tohoto formuláře souhlasíte se zpracováním vašich{' '}
                   <Link href="/ochrana-osobnich-udaju" className="underline hover:text-black">
                     osobních údajů
@@ -154,22 +154,21 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
                 </p>
               </div>
 
-              <div className="border-t border-black" style={{ marginLeft: '-8px', marginRight: '-8px', marginBottom: '8px' }}></div>
+              <div className="border-t border-black mb-6" style={{ marginLeft: '-24px', marginRight: '-24px' }}></div>
 
               {message && (
-                <div className={`p-3 border text-center`} style={{ marginBottom: '8px', borderColor: message.type === 'success' ? '#24e053' : '#dc2626', backgroundColor: message.type === 'success' ? '#24e053' : '#fee2e2', color: message.type === 'success' ? '#000000' : '#991b1b' }}>
-                  <p style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '12px', lineHeight: '12px' }}>{message.text}</p>
+                <div className={`p-3 border text-center mb-4`} style={{ borderColor: message.type === 'success' ? '#24e053' : '#dc2626', backgroundColor: message.type === 'success' ? '#24e053' : '#fee2e2', color: message.type === 'success' ? '#000000' : '#991b1b' }}>
+                  <p style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '12px', lineHeight: '1.2' }}>{message.text}</p>
                 </div>
               )}
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-black text-white hover:bg-gray-900 transition-colors"
+                className="w-full bg-black text-white hover:bg-gray-900 transition-colors uppercase tracking-widest"
                 style={{ 
                   fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', 
                   padding: '12px', 
-                  marginBottom: '8px',
                   height: '44px',
                   fontSize: '14px',
                   fontWeight: 700
