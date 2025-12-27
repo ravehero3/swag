@@ -1081,16 +1081,17 @@ function Beaty() {
                     }}
                     className="btn-bounce"
                     style={{
-                      padding: "8px",
-                      background: "#000",
-                      color: "#fff",
-                      border: "1px solid #fff",
+                      padding: "8px 12px",
+                      background: "#fff",
+                      color: "#000",
+                      border: "1px solid #000",
                       borderRadius: "4px",
                       cursor: "pointer",
                       display: "flex",
                       alignItems: "center",
-                      justifyContent: "center",
-                      width: "32px",
+                      gap: "8px",
+                      width: "auto",
+                      minWidth: "100px",
                       height: "32px",
                       transition: "background 0.2s, color 0.2s, border-color 0.2s",
                       boxSizing: "border-box",
@@ -1103,6 +1104,9 @@ function Beaty() {
                       </svg>
                       <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "inherit", lineHeight: "1", right: "-6px", top: "-5px" }}>+</span>
                     </div>
+                    <span style={{ fontSize: "12px", fontWeight: "500", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif" }}>
+                      {Math.floor(beat.price)} CZK
+                    </span>
                   </button>
                   <button
                     onClick={(e) => {
