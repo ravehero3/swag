@@ -1075,6 +1075,10 @@ function Beaty() {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
+                      position: "absolute",
+                      top: "calc(50% - 12px)",
+                      right: "8px",
+                      transform: "translateY(-50%)",
                     }}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -1119,6 +1123,40 @@ function Beaty() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
+                      toggleSave(beat);
+                    }}
+                    className="beat-heart-button heart-icon-playlist-mobile"
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      cursor: "pointer",
+                      padding: "8px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      borderRadius: "4px",
+                      transition: "all 0.3s ease",
+                      position: "absolute",
+                      top: "8px",
+                      right: "8px",
+                      zIndex: 10,
+                    }}
+                    title={savedBeats.has(beat.id) ? "Remove from favorites" : "Add to favorites"}
+                  >
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill={savedBeats.has(beat.id) ? "#fff" : "none"}
+                      stroke={savedBeats.has(beat.id) ? "#fff" : "#888"}
+                      strokeWidth="2"
+                    >
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
                       openContractModal(beat);
                     }}
                     className="btn-bounce mobile-playlist-cart-btn"
@@ -1136,7 +1174,7 @@ function Beaty() {
                       gap: "6px",
                       borderRadius: "4px",
                       position: "absolute",
-                      top: "calc(50% + 20px)",
+                      top: "calc(50% + 24px)",
                       right: "8px",
                       transform: "translateY(-50%)",
                       minWidth: "120px",
@@ -1172,36 +1210,6 @@ function Beaty() {
                       <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "inherit", lineHeight: "1", right: "-10px", top: "-5px" }}>+</span>
                     </div>
                     <span style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "8px" }}>{Math.floor(beat.price)} CZK</span>
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleSave(beat);
-                    }}
-                    className="beat-heart-button heart-icon-playlist-mobile"
-                    style={{
-                      background: "transparent",
-                      border: "none",
-                      cursor: "pointer",
-                      padding: "8px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      borderRadius: "4px",
-                      transition: "all 0.3s ease",
-                    }}
-                    title={savedBeats.has(beat.id) ? "Remove from favorites" : "Add to favorites"}
-                  >
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill={savedBeats.has(beat.id) ? "#fff" : "none"}
-                      stroke={savedBeats.has(beat.id) ? "#fff" : "#888"}
-                      strokeWidth="2"
-                    >
-                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                    </svg>
                   </button>
                 </div>
               </div>
