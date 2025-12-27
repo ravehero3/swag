@@ -1137,6 +1137,10 @@ function Beaty() {
                       height: "32px",
                       transition: "background 0.2s, color 0.2s, border-color 0.2s",
                       boxSizing: "border-box",
+                      position: "absolute",
+                      top: "calc(50% + 20px)",
+                      right: "8px",
+                      transform: "translateY(-50%)",
                     }}
                   >
                     <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
