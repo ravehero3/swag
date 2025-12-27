@@ -1600,7 +1600,7 @@ function Beaty() {
 
         {isHomePage && (
           <>
-            <div ref={artistCarouselRef} className="fade-in-section delay-3 scroll-fade-section artist-carousel-section-mobile" style={{ marginTop: "-300px", marginBottom: "0px", position: "relative", zIndex: 99999, overflow: "visible" }}>
+            <div ref={artistCarouselRef} className="fade-in-section delay-3 scroll-fade-section artist-carousel-section-mobile" style={{ marginTop: "-300px", marginBottom: "0px", position: "relative", zIndex: 999999, overflow: "visible" }}>
               <div style={{ textAlign: "center", marginBottom: "12px" }} className="mobile-only-carousel-label">
                 <p style={{ fontSize: "12px", color: "#555", margin: 0, fontFamily: "Work Sans, sans-serif" }}>
                   VOODOO808 dělal beaty pro
@@ -1612,7 +1612,7 @@ function Beaty() {
                 }
                 @media (max-width: 768px) {
                   .artist-carousel-section-mobile {
-                    z-index: 99999 !important;
+                    z-index: 999999 !important;
                     margin-top: 50px !important;
                     position: relative !important;
                     overflow: visible !important;
@@ -1621,14 +1621,14 @@ function Beaty() {
                   .mobile-only-carousel-label {
                     display: block !important;
                     position: relative !important;
-                    z-index: 99999 !important;
+                    z-index: 999999 !important;
                     margin-bottom: 12px !important;
                     margin-top: 64px !important; 
                     color: #555 !important;
                   }
                 }
               `}</style>
-              <div style={{ marginTop: "0px", position: "relative", zIndex: 99999, overflow: "visible", background: "transparent" }}>
+              <div style={{ marginTop: "0px", position: "relative", zIndex: 999999, overflow: "visible", background: "transparent" }}>
                 <ArtistCarousel />
               </div>
             </div>
@@ -1726,7 +1726,7 @@ function Beaty() {
                 <style>{`
                   @media (max-width: 768px) {
                     .mobile-title-container {
-                      margin-top: -300px !important;
+                      margin-top: -700px !important;
                       position: absolute !important;
                       bottom: auto !important;
                       width: 100% !important;
@@ -1746,7 +1746,7 @@ function Beaty() {
                       min-height: auto !important;
                     }
                     .dock-wrapper {
-                      bottom: -64px !important; /* Adjusted from 36px to move 100px lower (36 - 100 = -64) */
+                      bottom: -124px !important; /* Adjusted to move another 60px lower (-64 - 60 = -124) */
                     }
                   }
                 `}</style>
