@@ -93,7 +93,7 @@ const ArtistCarousel = () => {
           }
           .carousel-root-container {
             min-height: 180px !important;
-            margin-top: 0px !important;
+            margin-top: -300px !important;
             padding-bottom: 40px !important;
             margin-bottom: 12px !important;
           }

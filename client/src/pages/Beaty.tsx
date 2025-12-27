@@ -1616,6 +1616,7 @@ function Beaty() {
                   .mobile-only-carousel-label {
                     display: block !important;
                     margin-bottom: 12px !important;
+                    transform: translateY(-100px);
                   }
                 }
               `}</style>
