@@ -1687,7 +1687,7 @@ function Beaty() {
                 @media (max-width: 768px) {
                   .artist-carousel-section-mobile {
                     z-index: 999999 !important;
-                    margin-top: 50px !important;
+                    margin-top: -50px !important;
                     position: relative !important;
                     overflow: visible !important;
                     background: transparent !important;
@@ -1835,7 +1835,7 @@ function Beaty() {
                       margin-top: -440px !important;
                     }
                     .computer-bg-container {
-                      padding-top: 228px !important;
+                      padding-top: 328px !important;
                       padding-bottom: 0 !important;
                       min-height: auto !important;
                     }
