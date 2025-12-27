@@ -1123,36 +1123,55 @@ function Beaty() {
                     }}
                     className="btn-bounce mobile-playlist-cart-btn"
                     style={{
-                      padding: "8px 12px",
-                      background: "#fff",
-                      color: "#000",
-                      border: "1px solid #000",
-                      borderRadius: "4px",
+                      padding: "8px 8px 8px 16px",
+                      background: "#000",
+                      color: "#fff",
+                      border: "1px solid #fff",
+                      fontSize: "12px",
+                      fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+                      fontWeight: 400,
                       cursor: "pointer",
                       display: "flex",
                       alignItems: "center",
-                      gap: "8px",
-                      width: "auto",
-                      minWidth: "100px",
-                      height: "32px",
-                      transition: "background 0.2s, color 0.2s, border-color 0.2s",
-                      boxSizing: "border-box",
+                      gap: "6px",
+                      borderRadius: "4px",
                       position: "absolute",
                       top: "calc(50% + 20px)",
                       right: "8px",
                       transform: "translateY(-50%)",
+                      minWidth: "120px",
+                      height: "32px",
+                      transition: "background 0.2s, color 0.2s, border-color 0.2s",
+                      overflow: "visible",
+                      outline: "none",
+                      boxShadow: "none",
+                      WebkitAppearance: "none",
+                      appearance: "none",
+                      boxSizing: "border-box",
+                    }}
+                    onMouseEnter={(e) => {
+                      const btn = e.currentTarget as HTMLButtonElement;
+                      btn.style.background = "#fff";
+                      btn.style.color = "#000";
+                      btn.style.borderColor = "#000";
+                      btn.style.boxShadow = "none";
+                    }}
+                    onMouseLeave={(e) => {
+                      const btn = e.currentTarget as HTMLButtonElement;
+                      btn.style.background = "#000";
+                      btn.style.color = "#fff";
+                      btn.style.borderColor = "#fff";
+                      btn.style.boxShadow = "none";
                     }}
                   >
                     <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, marginLeft: "-8px" }}>
                         <rect x="3" y="6" width="18" height="15" rx="2" />
                         <path d="M8 6V4a4 4 0 0 1 8 0v2" />
                       </svg>
-                      <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "inherit", lineHeight: "1", right: "-6px", top: "-5px" }}>+</span>
+                      <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "inherit", lineHeight: "1", right: "-10px", top: "-5px" }}>+</span>
                     </div>
-                    <span style={{ fontSize: "12px", fontWeight: "500", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif" }}>
-                      {Math.floor(beat.price)} CZK
-                    </span>
+                    <span style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "8px" }}>{Math.floor(beat.price)} CZK</span>
                   </button>
                   <button
                     onClick={(e) => {
