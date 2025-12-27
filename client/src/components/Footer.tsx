@@ -6,8 +6,7 @@ function Footer() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        borderTop: "1px solid #333",
-        marginTop: "auto",
+        marginTop: "0",
       }}
     >
       <span
