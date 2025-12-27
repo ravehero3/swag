@@ -1207,8 +1207,8 @@ function Beaty() {
                         align-items: center !important;
                         gap: 16px !important;
                         position: absolute !important;
-                        top: 92px !important;
-                        right: 106px !important;
+                        top: 78px !important;
+                        right: 104px !important;
                         z-index: 100 !important;
                       }
                       .buy-btn-playlist-mobile-container .btn-bounce {
