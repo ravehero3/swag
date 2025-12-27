@@ -70,7 +70,10 @@ function MusicPlayer({
     <>
       <div
         style={{
-          position: "relative",
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
           height: "84px",
           background: "#111",
           borderTop: "1px solid #333",
@@ -78,7 +81,7 @@ function MusicPlayer({
           alignItems: "center",
           justifyContent: "space-between",
           padding: "0 16px",
-          zIndex: 100,
+          zIndex: 10000,
           animation: "slideUp 0.3s ease-out",
         }}
       >

@@ -186,7 +186,7 @@ function App() {
 
   return (
     <AppContext.Provider value={{ user, setUser, cart, addToCart, removeFromCart, clearCart, isCartOpen, setIsCartOpen, currentBeat, setCurrentBeat, isPlaying, setIsPlaying, isLooping, setIsLooping, isShuffling, setIsShuffling, audioRef, allBeats: [], playBeat: () => {}, handlePrevious: () => {}, handleNext: () => {} }}>
-      <div style={{ minHeight: "100vh", background: "#000", display: "flex", flexDirection: "column" }}>
+      <div style={{ minHeight: "100vh", background: "#000", display: "flex", flexDirection: "column", paddingBottom: currentBeat ? "84px" : "0" }}>
         <Header />
         <main style={{ flex: 1 }} className="fade-in">
           <Switch>
@@ -214,12 +214,12 @@ function App() {
             </Route>
           </Switch>
         </main>
-        {currentBeat && <MusicPlayer currentBeat={currentBeat} isPlaying={isPlaying} isLooping={isLooping} isShuffling={isShuffling} onPlayPause={() => { if (audioRef.current) { if (isPlaying) { audioRef.current.pause(); } else { audioRef.current.play(); } } setIsPlaying(!isPlaying); }} onPrevious={() => {}} onNext={() => {}} onToggleLoop={() => setIsLooping(!isLooping)} onToggleShuffle={() => setIsShuffling(!isShuffling)} onBuyClick={(beat) => { const item = { productId: beat.id, productType: "beat" as const, title: beat.title, price: beat.price, artworkUrl: beat.artwork_url }; addToCart(item); }} audioRef={audioRef} />}
-        <audio ref={audioRef} />
         <ExtendedFooter />
         <Footer />
         <CartModal isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
       </div>
+      <audio ref={audioRef} />
+      {currentBeat && <MusicPlayer currentBeat={currentBeat} isPlaying={isPlaying} isLooping={isLooping} isShuffling={isShuffling} onPlayPause={() => { if (audioRef.current) { if (isPlaying) { audioRef.current.pause(); } else { audioRef.current.play(); } } setIsPlaying(!isPlaying); }} onPrevious={() => {}} onNext={() => {}} onToggleLoop={() => setIsLooping(!isLooping)} onToggleShuffle={() => setIsShuffling(!isShuffling)} onBuyClick={(beat) => { const item = { productId: beat.id, productType: "beat" as const, title: beat.title, price: beat.price, artworkUrl: beat.artwork_url }; addToCart(item); }} audioRef={audioRef} />}
     </AppContext.Provider>
   );
 }
