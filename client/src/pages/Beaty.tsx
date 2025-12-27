@@ -1835,12 +1835,12 @@ function Beaty() {
                       margin-top: -440px !important;
                     }
                     .computer-bg-container {
-                      padding-top: 164px !important;
+                      padding-top: 228px !important;
                       padding-bottom: 0 !important;
                       min-height: auto !important;
                     }
                     .dock-wrapper {
-                      bottom: -24px !important; /* Moved 100px higher */
+                      bottom: 40px !important; 
                     }
                   }
                 `}</style>
