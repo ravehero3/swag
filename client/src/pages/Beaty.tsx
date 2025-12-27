@@ -1115,7 +1115,34 @@ function Beaty() {
                     </svg>
                   </button>
                 </div>
-                <div className="mobile-playlist-actions" style={{ display: "none" }}>
+                <div className="mobile-playlist-actions" style={{ display: "none", alignItems: "center", gap: "8px", position: "absolute", right: "8px", top: "50%", transform: "translateY(-50%)" }}>
+                  <button
+                    style={{
+                      padding: "4px",
+                      background: "#000",
+                      border: "1px solid #666",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                      width: "32px",
+                      height: "32px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Implement share functionality
+                    }}
+                    title="Share"
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
+                      <circle cx="18" cy="5" r="3" />
+                      <circle cx="6" cy="12" r="3" />
+                      <circle cx="18" cy="19" r="3" />
+                      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                      <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                    </svg>
+                  </button>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -1135,10 +1162,6 @@ function Beaty() {
                       alignItems: "center",
                       gap: "6px",
                       borderRadius: "4px",
-                      position: "absolute",
-                      top: "calc(50% + 40px)",
-                      right: "4px",
-                      transform: "translateY(-50%)",
                       minWidth: "120px",
                       height: "32px",
                       transition: "background 0.2s, color 0.2s, border-color 0.2s",
@@ -1190,9 +1213,8 @@ function Beaty() {
                       borderRadius: "4px",
                       transition: "all 0.3s ease",
                       position: "absolute",
-                      top: "calc(50% + 40px - 16px - 16px - 16px)",
-                      right: "4px",
-                      transform: "translateY(-50%)",
+                      top: "-24px",
+                      right: "0",
                       zIndex: 10,
                     }}
                     title={savedBeats.has(beat.id) ? "Remove from favorites" : "Add to favorites"}
