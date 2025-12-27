@@ -291,8 +291,8 @@ function MusicPlayer({
                 }
                 .buy-btn-mobile-new {
                   display: flex !important;
-                  left: 8px !important;
-                  top: 8px !important;
+                  left: -22px !important;
+                  top: 58px !important;
                   bottom: auto !important;
                   transform: none !important;
                   z-index: 1002 !important;
