@@ -111,7 +111,7 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
                   <label style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '12px', fontWeight: 400, lineHeight: '12px', letterSpacing: '0.12px', color: emailError && touched ? 'red' : 'black' }}>
                     E-mail*
                   </label>
-                  <span style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '12px', fontWeight: 400, lineHeight: '12px', letterSpacing: '0.12px', color: emailError && touched ? 'red' : '#6b7280' }}>*požadovaný</span>
+                  <span style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '12px', fontWeight: 400, lineHeight: '12px', letterSpacing: '0.12px', color: emailError && touched ? 'red' : '#6b7280' }}>*povinné</span>
                 </div>
                 <input
                   type="email"
