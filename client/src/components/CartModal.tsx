@@ -1,4 +1,5 @@
 import { useApp } from "../App";
+import { useEffect, useState } from "react";
 
 interface CartModalProps {
   isOpen: boolean;
@@ -7,6 +8,16 @@ interface CartModalProps {
 
 function CartModal({ isOpen, onClose }: CartModalProps) {
   const { cart, removeFromCart, clearCart } = useApp();
+  const [recentlyViewed, setRecentlyViewed] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      const viewed = localStorage.getItem("voodoo808_recently_viewed");
+      if (viewed) {
+        setRecentlyViewed(JSON.parse(viewed));
+      }
+    }
+  }, [isOpen]);
 
   return (
     <>
@@ -120,8 +131,8 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
               top: '242px', // 42px header + 200px
               left: 0,
               right: 0,
-              height: '1px',
-              backgroundColor: '#fff',
+              height: '0.5px',
+              backgroundColor: '#333',
               zIndex: 10,
               pointerEvents: 'none'
             }} />
@@ -130,11 +141,48 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
               top: '702px', // 602px + 100px
               left: 0,
               right: 0,
-              height: '1px',
-              backgroundColor: '#fff',
+              height: '0.5px',
+              backgroundColor: '#333',
               zIndex: 10,
               pointerEvents: 'none'
             }} />
+
+            {/* Middle Section: Recently Viewed */}
+            <div
+              style={{
+                position: 'absolute',
+                top: '242px',
+                left: 0,
+                right: 0,
+                height: '460px',
+                padding: '20px',
+                overflowY: 'auto',
+                borderBottom: '0.5px solid #333',
+                backgroundColor: '#050505'
+              }}
+            >
+              <h3 style={{ fontSize: '12px', color: '#666', marginBottom: '16px', letterSpacing: '1px', textTransform: 'uppercase' }}>
+                PROHLÍŽELI JSTE
+              </h3>
+              {recentlyViewed.length === 0 ? (
+                <p style={{ color: '#333', fontSize: '11px', textAlign: 'center', marginTop: '40px' }}>Žádné nedávno zobrazené produkty</p>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  {recentlyViewed.map((item: any) => (
+                    <div key={item.id} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <img 
+                        src={item.artworkUrl || item.images?.[0]} 
+                        alt={item.title || item.name} 
+                        style={{ width: '100%', aspectRatio: '1', objectFit: 'cover', borderRadius: '2px', opacity: 0.8 }} 
+                      />
+                      <div style={{ fontSize: '11px', color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {item.title || item.name}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {cart.length === 0 && (
               <div style={{

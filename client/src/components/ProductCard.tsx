@@ -36,7 +36,8 @@ export default function ProductCard({
 }: ProductCardProps) {
   const [isHeartAnimating, setIsHeartAnimating] = React.useState(false);
 
-  const handleHeartClick = () => {
+  const handleHeartClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (onToggleSave) {
       setIsHeartAnimating(true);
       setTimeout(() => setIsHeartAnimating(false), 300);
@@ -44,14 +45,33 @@ export default function ProductCard({
     }
   };
 
+  const handleProductClick = () => {
+    // Save to recently viewed
+    const viewedJson = localStorage.getItem("voodoo808_recently_viewed");
+    let viewed = viewedJson ? JSON.parse(viewedJson) : [];
+    
+    // Remove if already exists and add to front
+    viewed = viewed.filter((v: any) => v.id !== id);
+    viewed.unshift({ id, name, price, images, typeLabel });
+    
+    // Keep last 10
+    localStorage.setItem("voodoo808_recently_viewed", JSON.stringify(viewed.slice(0, 10)));
+
+    // Open in new tab
+    const url = type === 'beat' ? `/beaty` : `/zvuky`; // Adjust if there are specific product pages
+    window.open(url, '_blank');
+  };
+
   return (
     <div
+      onClick={handleProductClick}
       style={{
         border: "1px solid #333",
         overflow: "hidden",
         position: "relative",
         backgroundColor: "#0a0a0a",
         transition: "all 0.2s ease",
+        cursor: "pointer",
       }}
     >
       <style>{`
@@ -66,7 +86,7 @@ export default function ProductCard({
       `}</style>
       {onToggleSave && (
         <button
-          onClick={() => onToggleSave(id)}
+          onClick={handleHeartClick}
           style={{
             position: "absolute",
             top: "12px",
@@ -122,7 +142,10 @@ export default function ProductCard({
         />
         {onPlayClick && (
           <button
-            onClick={onPlayClick}
+            onClick={(e) => {
+              e.stopPropagation();
+              onPlayClick();
+            }}
             style={{
               position: "absolute",
               bottom: "12px",
@@ -161,7 +184,10 @@ export default function ProductCard({
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "8px" }}>
           {onAddToCart && !isFree && (
             <button
-              onClick={() => onAddToCart(id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onAddToCart(id);
+              }}
               className="btn-bounce"
               style={{
                 padding: "8px 8px 8px 16px",
