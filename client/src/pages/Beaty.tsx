@@ -1889,7 +1889,7 @@ function Beaty() {
                 <p style={{
                   color: "#fff",
                   fontSize: "21px",
-                  fontFamily: "'Ortica', sans-serif",
+                  fontFamily: "'Snell Roundhand', cursive",
                   margin: 0,
                   lineHeight: "0.8",
                   letterSpacing: "0.5px",
