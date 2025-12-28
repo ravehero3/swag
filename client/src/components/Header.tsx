@@ -84,7 +84,7 @@ function Header() {
         />
       </Link>
 
-      <div style={{ display: "flex", alignItems: "center", gap: "8px", position: "relative", zIndex: 10, padding: "0 16px 0 32px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "16px", position: "relative", zIndex: 10, paddingRight: "16px" }}>
         <Link href={user ? "/ucet" : "/prihlasit-se"}>
           <span
             style={{
@@ -116,7 +116,6 @@ function Header() {
               cursor: "pointer",
               transition: "transform 0.2s ease, filter 0.2s ease",
               transform: hoveredIcon === "heart" ? "scale(1.02)" : "scale(1)",
-              padding: "4px",
               filter: hoveredIcon === "heart" ? "drop-shadow(0 0 8px rgba(255,0,0,0.5))" : "none",
               flexShrink: 0,
             }}
@@ -158,7 +157,6 @@ function Header() {
             transform: hoveredIcon === "cart" ? "scale(1.02)" : "scale(1)",
             display: "flex",
             alignItems: "center",
-            padding: "8px",
           }}
           onClick={() => setIsCartOpen(true)}
           onMouseEnter={() => setHoveredIcon("cart")}
