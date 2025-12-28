@@ -36,12 +36,14 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
           onClick={onClose}
         >
           <style>{`
-            @keyframes slideIn {
+            @keyframes scaleIn {
               from {
-                transform: translateX(100%);
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.9);
               }
               to {
-                transform: translateX(0);
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
               }
             }
             @keyframes fadeIn {
@@ -78,24 +80,29 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
             className="cart-modal-panel"
             style={{
               position: "fixed",
-              right: 0,
-              top: 0,
-              bottom: 0,
-              width: "calc(100% / 3)",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: "90%",
+              maxWidth: "500px",
+              maxHeight: "90vh",
               backgroundColor: "#000",
-              boxShadow: "-2px 0 20px rgba(0, 0, 0, 0.5)",
+              boxShadow: "0 10px 40px rgba(0, 0, 0, 0.8)",
               display: "flex",
               flexDirection: "column",
-              animation: "slideIn 0.4s ease-out",
+              animation: "scaleIn 0.3s ease-out",
               zIndex: 1000,
-              borderLeft: "0.5px solid #666",
+              border: "1px solid #333",
+              borderRadius: "4px",
             }}
             onClick={(e) => e.stopPropagation()}
           >
             <style>{`
               @media (max-width: 768px) {
                 .cart-modal-panel {
-                  width: 100% !important;
+                  width: 95% !important;
+                  maxWidth: 95% !important;
+                  maxHeight: 95vh !important;
                 }
               }
             `}</style>
