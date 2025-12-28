@@ -1957,6 +1957,47 @@ function Beaty() {
         user={user}
       />
 
+      <style>{`
+        @media (min-width: 769px) {
+          .mobile-only-shop-button-container {
+            display: none !important;
+          }
+        }
+      `}</style>
+      <div className="mobile-only-shop-button-container" style={{ width: "100%", display: "flex", justifyContent: "center", padding: "40px 0", background: "#000", position: "relative", zIndex: 10 }}>
+         <button
+            onClick={() => setLocation("/zvuky")}
+            className="btn-bounce"
+            style={{
+              padding: "12px 24px",
+              background: "transparent",
+              color: "#fff",
+              border: "1px solid #fff",
+              borderRadius: "4px",
+              fontSize: "14px",
+              fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+              fontWeight: 500,
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              textTransform: "uppercase",
+              letterSpacing: "1px",
+              outline: "none",
+            }}
+            onMouseEnter={(e) => {
+              const btn = e.currentTarget as HTMLButtonElement;
+              btn.style.background = "#fff";
+              btn.style.color = "#000";
+            }}
+            onMouseLeave={(e) => {
+              const btn = e.currentTarget as HTMLButtonElement;
+              btn.style.background = "transparent";
+              btn.style.color = "#fff";
+            }}
+          >
+            prejit do obchodu
+          </button>
+      </div>
+
       {contractModalBeat && (
         <ContractModal
           beat={contractModalBeat}
