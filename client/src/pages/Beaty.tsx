@@ -161,7 +161,7 @@ function Beaty() {
   const beatsListRef = useScrollAnimation();
   const soundKitsRef = useScrollAnimation();
   const artistCarouselRef = useScrollAnimation();
-  const { user, addToCart, currentBeat, setCurrentBeat, isPlaying, setIsPlaying, isLooping, setIsLooping, isShuffling, setIsShuffling } = useApp();
+  const { user, addToCart, cart, currentBeat, setCurrentBeat, isPlaying, setIsPlaying, isLooping, setIsLooping, isShuffling, setIsShuffling } = useApp();
   
   // Determine if we're on home page or beaty page
   const isHomePage = location === "/" || location === "";
@@ -540,20 +540,55 @@ function Beaty() {
                       display: "flex",
                       alignItems: "center",
                       marginLeft: "4px",
-                      borderRadius: "4px"
+                      borderRadius: "4px",
+                      position: "relative"
+                    }}
+                    onMouseEnter={(e) => {
+                      const svg = e.currentTarget.querySelector('svg') as SVGElement;
+                      if (svg) {
+                        svg.style.filter = "drop-shadow(0 0 8px rgba(255,255,255,0.8))";
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      const svg = e.currentTarget.querySelector('svg') as SVGElement;
+                      if (svg && !savedBeats.has(highlightedBeat.id)) {
+                        svg.style.filter = "none";
+                      }
                     }}
                   >
                     <svg
                       width="16"
                       height="16"
                       viewBox="0 0 24 24"
-                      fill={savedBeats.has(highlightedBeat.id) ? "#ff4444" : "none"}
-                      stroke={savedBeats.has(highlightedBeat.id) ? "#ff4444" : "#666"}
+                      fill={savedBeats.has(highlightedBeat.id) ? "#fff" : "none"}
+                      stroke={savedBeats.has(highlightedBeat.id) ? "#fff" : "#666"}
                       strokeWidth="1.5"
-                      style={{ transition: "all 0.3s ease" }}
+                      style={{ transition: "all 0.3s ease", filter: savedBeats.has(highlightedBeat.id) ? "drop-shadow(0 0 8px rgba(255,255,255,0.8))" : "none" }}
                     >
                       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                     </svg>
+                    {cart.length > 0 && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: "-8px",
+                          right: "-8px",
+                          backgroundColor: "#24e053",
+                          color: "#000",
+                          borderRadius: "50%",
+                          width: "20px",
+                          height: "20px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: "11px",
+                          fontWeight: "bold",
+                          fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+                        }}
+                      >
+                        {cart.length}
+                      </div>
+                    )}
                   </button>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "8px" }}>

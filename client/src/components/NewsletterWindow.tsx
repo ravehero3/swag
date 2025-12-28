@@ -83,18 +83,18 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
       />
       
       <div 
-        className={`fixed top-0 right-0 h-full w-full md:w-[400px] bg-white md:border-l border-black z-50 transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 right-0 h-full w-full md:w-1/3 bg-black md:border-l border-white z-50 transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
         style={{ visibility: isOpen ? 'visible' : 'hidden' }}
       >
         <div className="h-full flex flex-col">
-          <div className="bg-white border-b border-black relative flex items-center justify-center px-6" style={{ height: '44px' }}>
-            <h2 className="uppercase tracking-wider" style={{ fontFamily: '"Helvetica Neue Condensed Bold", "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '14px', fontWeight: 700, fontStretch: 'condensed' }}>PŘIHLASTE SE K ODBĚRU NAŠEHO NEWSLETTERU</h2>
+          <div className="bg-black border-b border-white relative flex items-center justify-center px-6" style={{ height: '42px' }}>
+            <h2 className="uppercase tracking-wider" style={{ fontFamily: '"Helvetica Neue Condensed Bold", "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '14px', fontWeight: 700, fontStretch: 'condensed', color: '#fff' }}>PŘIHLASTE SE K ODBĚRU NAŠEHO NEWSLETTERU</h2>
             <button
               onClick={onClose}
               className="absolute hover:opacity-70 transition-opacity"
-              style={{ width: '22px', height: '22px', top: '50%', right: '8px', transform: 'translateY(-50%)', padding: '0', border: 'none', background: 'none' }}
+              style={{ width: '22px', height: '22px', top: '50%', right: '8px', transform: 'translateY(-50%)', padding: '0', border: 'none', background: 'none', color: '#fff' }}
               aria-label="Close"
             >
               <svg style={{ width: '22px', height: '22px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -105,7 +105,7 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
 
           <div className="flex-1 overflow-y-auto flex flex-col px-6 py-8">
             <div className="mb-8">
-              <p className="text-center" style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '14px', fontWeight: 400, lineHeight: '1.6', color: '#000' }}>
+              <p className="text-center" style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '14px', fontWeight: 400, lineHeight: '1.6', color: '#fff' }}>
                 Přihlaste se k odběru našeho newsletteru a získejte přístup k nejnovějším kolekcím, exkluzivním nabídkám a novinkám ze světa Ufo Sportu.
               </p>
             </div>
@@ -113,10 +113,10 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
             <form onSubmit={handleSubmit} className="flex flex-col">
               <div style={{ marginBottom: '24px' }}>
                 <div className="flex justify-between items-center" style={{ marginBottom: '4px' }}>
-                  <label style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '12px', fontWeight: 400, lineHeight: '12px', letterSpacing: '0.12px', color: emailError && touched ? 'red' : 'black' }}>
+                  <label style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '12px', fontWeight: 400, lineHeight: '12px', letterSpacing: '0.12px', color: emailError && touched ? '#ff6b6b' : '#fff' }}>
                     E-mail*
                   </label>
-                  <span style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '12px', fontWeight: 400, lineHeight: '12px', letterSpacing: '0.12px', color: emailError && touched ? 'red' : '#6b7280' }}>*povinné</span>
+                  <span style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '12px', fontWeight: 400, lineHeight: '12px', letterSpacing: '0.12px', color: emailError && touched ? '#ff6b6b' : '#999' }}>*povinné</span>
                 </div>
                 <input
                   type="email"
@@ -132,8 +132,9 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
                     fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', 
                     fontSize: '12px', 
                     borderRadius: '4px',
-                    border: emailError && touched ? '1px solid red' : '1px solid black',
-                    color: emailError && touched ? 'red' : 'black'
+                    border: emailError && touched ? '1px solid #ff6b6b' : '1px solid #fff',
+                    backgroundColor: '#000',
+                    color: emailError && touched ? '#ff6b6b' : '#fff'
                   }}
                 />
                 {emailError && (
@@ -150,16 +151,16 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
               </div>
 
               <div style={{ marginTop: 'auto', marginBottom: '42px' }}>
-                <p className="text-center" style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '12px', fontWeight: 400, lineHeight: '1.4', color: '#666' }}>
+                <p className="text-center" style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '12px', fontWeight: 400, lineHeight: '1.4', color: '#999' }}>
                   Odesláním tohoto formuláře souhlasíte se zpracováním vašich{' '}
-                  <Link href="/ochrana-osobnich-udaju" className="underline hover:text-black">
+                  <Link href="/ochrana-osobnich-udaju" className="underline hover:text-white" style={{ color: '#fff' }}>
                     osobních údajů
                   </Link>
                   {' '}za účelem zasílání newsletteru.
                 </p>
               </div>
 
-              <div className="border-t border-black mb-6" style={{ marginLeft: '-24px', marginRight: '-24px' }}></div>
+              <div className="border-t border-white mb-6" style={{ marginLeft: '-24px', marginRight: '-24px' }}></div>
 
               {message && (
                 <div className={`p-3 border text-center mb-4`} style={{ borderColor: message.type === 'success' ? '#24e053' : '#dc2626', backgroundColor: message.type === 'success' ? '#24e053' : '#fee2e2', color: message.type === 'success' ? '#000000' : '#991b1b' }}>
@@ -170,7 +171,7 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-black text-white hover:bg-gray-900 transition-colors uppercase tracking-widest"
+                className="w-full bg-white text-black hover:bg-gray-100 transition-colors uppercase tracking-widest"
                 style={{ 
                   fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', 
                   padding: '12px', 
