@@ -2,15 +2,5 @@
   "buildCommand": "npm run build",
   "devCommand": "npm run dev",
   "installCommand": "npm install",
-  "framework": "express",
-  "env": {
-    "DATABASE_URL": "@database_url",
-    "SESSION_SECRET": "@session_secret"
-  },
-  "functions": {
-    "server/src/index.ts": {
-      "memory": 1024,
-      "maxDuration": 60
-    }
-  }
+  "framework": "express"
 }
