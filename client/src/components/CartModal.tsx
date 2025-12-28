@@ -16,7 +16,15 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
       if (viewed) {
         setRecentlyViewed(JSON.parse(viewed));
       }
+      // Prevent scrolling when modal is open
+      document.body.style.overflow = "hidden";
+    } else {
+      // Restore scrolling when modal is closed
+      document.body.style.overflow = "";
     }
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [isOpen]);
 
   return (
@@ -30,7 +38,7 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
             right: 0,
             bottom: 0,
             backgroundColor: "rgba(0, 0, 0, 0.5)",
-            zIndex: 999,
+            zIndex: 9998,
             animation: "fadeIn 0.3s ease-out",
           }}
           onClick={onClose}
@@ -91,7 +99,7 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
               display: "flex",
               flexDirection: "column",
               animation: "scaleIn 0.3s ease-out",
-              zIndex: 1000,
+              zIndex: 9999,
               border: "1px solid #333",
               borderRadius: "4px",
             }}
