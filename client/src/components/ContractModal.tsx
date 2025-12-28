@@ -60,24 +60,27 @@ function ContractModal({ beat, isOpen, onClose, onAddToCart, onPlay, isPlaying }
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(0, 0, 0, 0.9)",
+        background: "rgba(0, 0, 0, 0.95)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        zIndex: 1000,
+        zIndex: 9999,
         padding: "20px",
+        overflowY: "auto",
       }}
       onClick={onClose}
     >
       <div
         style={{
-          background: "#111",
-          border: "1px solid #333",
+          background: "#000",
+          border: "0.5px solid #333",
           borderRadius: "4px",
           maxWidth: "600px",
           width: "100%",
-          maxHeight: "90vh",
-          overflow: "auto",
+          maxHeight: "none",
+          margin: "auto",
+          position: "relative",
+          zIndex: 10000,
         }}
         onClick={(e) => e.stopPropagation()}
       >
