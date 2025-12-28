@@ -1687,7 +1687,7 @@ function Beaty() {
 
             <div ref={artistCarouselRef} className="fade-in-section delay-3 scroll-fade-section artist-carousel-section-mobile" style={{ marginTop: "-300px", marginBottom: "0px", position: "relative", zIndex: 999999, overflow: "visible" }}>
               <div style={{ textAlign: "center", marginBottom: "12px" }} className="mobile-only-carousel-label">
-                <p style={{ fontSize: "12px", color: "#555", margin: 0, fontFamily: "Work Sans, sans-serif" }}>
+                <p style={{ fontSize: "12px", color: "#555", margin: 0, fontFamily: "Work Sans, sans-serif", position: "relative", top: "-100px" }}>
                   VOODOO808 dělal beaty pro
                 </p>
               </div>
@@ -1985,23 +1985,74 @@ function Beaty() {
           color: #000 !important;
         }
       `}</style>
-      <div className="mobile-only-shop-button-container" style={{ width: "100%", display: "flex", justifyContent: "center", padding: "40px 0", background: "#000", position: "relative", zIndex: 10 }}>
+      <div className="mobile-only-shop-button-container" style={{ width: "100%", display: "flex", justifyContent: "center", padding: "40px 0", background: "#000", position: "relative", zIndex: 10, marginTop: "-64px" }}>
          <button
             onClick={() => setLocation("/zvuky")}
             className="btn-poslechnout"
             style={{
-              padding: "12px 24px",
-              borderRadius: "4px",
-              fontSize: "14px",
+              padding: "8px 20px",
+              background: "rgba(0, 0, 0, 0.7)",
+              border: "0.1px solid rgba(128, 128, 128, 0.5)",
+              borderRadius: "999px",
+              color: "#777",
+              fontSize: "12px",
               fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
-              fontWeight: 500,
+              fontWeight: "400",
               cursor: "pointer",
-              textTransform: "uppercase",
-              letterSpacing: "1px",
-              outline: "none",
+              transition: "transform 0.2s ease, background 0.2s ease, border-color 0.2s ease, color 0.2s ease",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              letterSpacing: "0.5px",
+              position: "relative",
+              zIndex: 9999,
+              overflow: "hidden",
+              appearance: "none",
+              pointerEvents: "auto",
+            }}
+            onMouseEnter={(e) => {
+              const btn = e.currentTarget as HTMLButtonElement;
+              btn.style.transform = "scale(1.04)";
+              btn.style.background = "rgba(255, 255, 255, 0.1)";
+              btn.style.borderColor = "#fff";
+              btn.style.color = "#fff";
+              
+              const existingShimmer = btn.querySelector("div[data-shimmer-effect]");
+              if (existingShimmer) existingShimmer.remove();
+              
+              const shimmer = document.createElement("div");
+              shimmer.setAttribute("data-shimmer-effect", "true");
+              shimmer.style.position = "absolute";
+              shimmer.style.top = "0";
+              shimmer.style.left = "-100%";
+              shimmer.style.width = "100%";
+              shimmer.style.height = "100%";
+              shimmer.style.background = "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent)";
+              shimmer.style.animation = "shimmerSlide 0.5s ease-in-out forwards";
+              shimmer.style.pointerEvents = "none";
+              shimmer.style.borderRadius = "999px";
+              
+              btn.appendChild(shimmer);
+            }}
+            onMouseLeave={(e) => {
+              const btn = e.currentTarget as HTMLButtonElement;
+              btn.style.transform = "scale(1)";
+              btn.style.background = "rgba(0, 0, 0, 0.7)";
+              btn.style.borderColor = "rgba(128, 128, 128, 0.5)";
+              btn.style.color = "#777";
+              
+              const shimmer = btn.querySelector("div[data-shimmer-effect]");
+              if (shimmer) {
+                (shimmer as HTMLElement).style.animation = "shimmerSlideReverse 0.5s ease-in-out forwards";
+                setTimeout(() => shimmer.remove(), 500);
+              }
             }}
           >
-            prejit do obchodu
+            NEJLEPŠÍ ZVUKY IN THE GAME
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="5 12 19 12"></polyline>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
           </button>
       </div>
 
