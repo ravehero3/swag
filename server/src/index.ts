@@ -40,11 +40,8 @@ if (isProduction) {
   app.set("trust proxy", 1);
 }
 
+// Temporarily use memory store for sessions (development only)
 app.use(session({
-  store: new PgStore({
-    pool,
-    tableName: "session",
-  }),
   secret: process.env.SESSION_SECRET || "voodoo808-dev-secret-key-change-in-production",
   resave: false,
   saveUninitialized: false,
@@ -68,7 +65,12 @@ app.use("/api/licenses", licensesRoutes);
 app.use("/api/admin", adminLicensesRoutes);
 
 async function startServer() {
-  await initDatabase();
+  // Database already initialized via Supabase - skip init in development
+  if (process.env.NODE_ENV === "production") {
+    await initDatabase();
+  } else {
+    console.log("Skipping database initialization in development mode");
+  }
 
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
