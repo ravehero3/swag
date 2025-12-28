@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "tsx server/src/index.ts",
-    "build": "tsc && vite build && tsc --project server/tsconfig.json",
+    "build": "vite build && tsc --project server/tsconfig.json",
     "start": "NODE_ENV=production node dist/server/index.js"
   },
   "dependencies": {
