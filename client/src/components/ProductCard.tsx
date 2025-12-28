@@ -292,11 +292,11 @@ export default function ProductCard({
               title={isSaved ? "Remove from favorites" : "Add to favorites"}
             >
               <svg
-                width="20"
-                height="20"
+                width="24"
+                height="24"
                 viewBox="0 0 24 24"
-                fill={isSaved ? "#888" : "none"}
-                stroke={isSaved ? "#888" : "#888"}
+                fill={isSaved ? "#fff" : "none"}
+                stroke={isSaved ? "#fff" : "#fff"}
                 strokeWidth="2"
                 style={{ transition: "all 0.2s ease" }}
               >
