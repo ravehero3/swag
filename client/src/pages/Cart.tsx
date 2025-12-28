@@ -10,7 +10,7 @@ function Cart() {
     width: "100%",
     maxWidth: "700px",
     margin: "0 auto",
-    borderBottom: "0.5px solid #fff",
+    borderBottom: "0.5px solid #333",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
@@ -40,8 +40,8 @@ function Cart() {
         left: 'calc(50vw - 350px)',
         top: 0,
         bottom: 0,
-        width: '1px',
-        backgroundColor: '#fff',
+        width: '0.5px',
+        backgroundColor: '#333',
         zIndex: 5,
         pointerEvents: 'none'
       }} />
@@ -50,8 +50,8 @@ function Cart() {
         right: 'calc(50vw - 350px)',
         top: 0,
         bottom: 0,
-        width: '1px',
-        backgroundColor: '#fff',
+        width: '0.5px',
+        backgroundColor: '#333',
         zIndex: 5,
         pointerEvents: 'none'
       }} />
@@ -74,7 +74,7 @@ function Cart() {
               cursor: "pointer",
               color: "white",
               padding: "4px 12px",
-              border: location === "/ulozeno" ? "1px solid #fff" : "none",
+              border: location === "/ulozeno" ? "0.5px solid #333" : "none",
               borderRadius: "4px"
             }}>
               ULOŽENÉ PRODUKTY
@@ -87,7 +87,7 @@ function Cart() {
               cursor: "pointer",
               color: "white",
               padding: "4px 12px",
-              border: location === "/kosik" ? "1px solid #fff" : "none",
+              border: location === "/kosik" ? "0.5px solid #333" : "none",
               borderRadius: "4px"
             }}>
               KOŠÍK
@@ -108,7 +108,7 @@ function Cart() {
                       display: "flex",
                       alignItems: "center",
                       padding: "16px 0",
-                      borderBottom: "0.5px solid #222",
+                      borderBottom: "0.5px solid #333",
                       gap: "16px",
                     }}
                   >

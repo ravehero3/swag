@@ -128,7 +128,7 @@ function Ulozeno() {
     width: "100%",
     maxWidth: "700px",
     margin: "0 auto",
-    borderBottom: "0.5px solid #fff",
+    borderBottom: "0.5px solid #333",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
@@ -164,8 +164,8 @@ function Ulozeno() {
         left: 'calc(50vw - 350px)',
         top: 0,
         bottom: 0,
-        width: '1px',
-        backgroundColor: '#fff',
+        width: '0.5px',
+        backgroundColor: '#333',
         zIndex: 5,
         pointerEvents: 'none'
       }} />
@@ -174,8 +174,8 @@ function Ulozeno() {
         right: 'calc(50vw - 350px)',
         top: 0,
         bottom: 0,
-        width: '1px',
-        backgroundColor: '#fff',
+        width: '0.5px',
+        backgroundColor: '#333',
         zIndex: 5,
         pointerEvents: 'none'
       }} />
@@ -191,32 +191,32 @@ function Ulozeno() {
 
         {/* Section 2: Navigation Buttons */}
         <section style={{ ...sectionStyle, height: "44px", flexDirection: "row", gap: "24px" }}>
-          <Link href="/ulozeno">
-            <span style={{ 
-              ...regularFont, 
-              fontSize: "14px", 
-              cursor: "pointer",
-              color: "white",
-              padding: "4px 12px",
-              border: location === "/ulozeno" ? "1px solid #fff" : "none",
-              borderRadius: "4px"
-            }}>
-              ULOŽENÉ PRODUKTY
-            </span>
-          </Link>
-          <Link href="/kosik">
-            <span style={{ 
-              ...regularFont, 
-              fontSize: "14px", 
-              cursor: "pointer",
-              color: "white",
-              padding: "4px 12px",
-              border: location === "/kosik" ? "1px solid #fff" : "none",
-              borderRadius: "4px"
-            }}>
-              KOŠÍK {cartCount > 0 && `(${cartCount})`}
-            </span>
-          </Link>
+              <Link href="/ulozeno">
+                <span style={{ 
+                  ...regularFont, 
+                  fontSize: "14px", 
+                  cursor: "pointer",
+                  color: "white",
+                  padding: "4px 12px",
+                  border: location === "/ulozeno" ? "0.5px solid #333" : "none",
+                  borderRadius: "4px"
+                }}>
+                  ULOŽENÉ PRODUKTY
+                </span>
+              </Link>
+              <Link href="/kosik">
+                <span style={{ 
+                  ...regularFont, 
+                  fontSize: "14px", 
+                  cursor: "pointer",
+                  color: "white",
+                  padding: "4px 12px",
+                  border: location === "/kosik" ? "0.5px solid #333" : "none",
+                  borderRadius: "4px"
+                }}>
+                  KOŠÍK {cartCount > 0 && `(${cartCount})`}
+                </span>
+              </Link>
         </section>
 
         {/* Login CTA Section */}
@@ -278,7 +278,7 @@ function Ulozeno() {
                         flexDirection: "column",
                         alignItems: "center",
                         padding: "24px 20px",
-                        borderBottom: "0.5px solid #222",
+                        borderBottom: "0.5px solid #333",
                         width: "100%",
                         gap: "20px",
                       }}
@@ -371,7 +371,7 @@ function Ulozeno() {
                     <div
                       key={item.id}
                       style={{
-                        border: "0.5px solid #222",
+                        border: "0.5px solid #333",
                         overflow: "hidden",
                         position: "relative",
                         display: "flex",
