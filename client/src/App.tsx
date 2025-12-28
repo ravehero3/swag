@@ -15,6 +15,7 @@ import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import Ulozeno from "./pages/Ulozeno";
 import FAQ from "./pages/FAQ";
+import ProductDetail from "./pages/ProductDetail";
 import Delivery from "./pages/Delivery";
 import Payment from "./pages/Payment";
 import LegalInfo from "./pages/LegalInfo";
@@ -206,6 +207,7 @@ function App() {
             <Route path="/ulozeno" component={Ulozeno} />
             <Route path="/admin" component={Admin} />
             <Route path="/faq" component={FAQ} />
+            <Route path="/produkt/:type/:id" component={ProductDetail} />
             <Route path="/doruceni" component={Delivery} />
             <Route path="/platba" component={Payment} />
             <Route path="/pravni-informace" component={LegalInfo} />

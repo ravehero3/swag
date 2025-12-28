@@ -58,7 +58,7 @@ export default function ProductCard({
     localStorage.setItem("voodoo808_recently_viewed", JSON.stringify(viewed.slice(0, 10)));
 
     // Open in new tab
-    const url = type === 'beat' ? `/beaty` : `/zvuky`; // Adjust if there are specific product pages
+    const url = `/produkt/${type === 'beat' ? 'beat' : 'sound_kit'}/${id}`;
     window.open(url, '_blank');
   };
 
