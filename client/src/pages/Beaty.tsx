@@ -1985,7 +1985,7 @@ function Beaty() {
           color: #000 !important;
         }
       `}</style>
-      <div className="mobile-only-shop-button-container" style={{ width: "100%", display: "flex", justifyContent: "center", padding: "40px 0", background: "#000", position: "relative", zIndex: 10, marginTop: "-64px" }}>
+      <div className="mobile-only-shop-button-container" style={{ width: "100%", display: "flex", justifyContent: "center", padding: "40px 0", background: "#000", position: "relative", zIndex: 10, marginTop: "-128px" }}>
          <button
             onClick={() => setLocation("/zvuky")}
             className="btn-poslechnout"
@@ -2009,6 +2009,7 @@ function Beaty() {
               overflow: "hidden",
               appearance: "none",
               pointerEvents: "auto",
+              animation: "slowGlow 4s ease-in-out infinite",
             }}
             onMouseEnter={(e) => {
               const btn = e.currentTarget as HTMLButtonElement;
@@ -2016,6 +2017,8 @@ function Beaty() {
               btn.style.background = "rgba(255, 255, 255, 0.1)";
               btn.style.borderColor = "#fff";
               btn.style.color = "#fff";
+              btn.style.animation = "none";
+              btn.style.boxShadow = "0 0 20px rgba(255, 255, 255, 0.4)";
               
               const existingShimmer = btn.querySelector("div[data-shimmer-effect]");
               if (existingShimmer) existingShimmer.remove();
@@ -2040,6 +2043,8 @@ function Beaty() {
               btn.style.background = "rgba(0, 0, 0, 0.7)";
               btn.style.borderColor = "rgba(128, 128, 128, 0.5)";
               btn.style.color = "#777";
+              btn.style.animation = "slowGlow 4s ease-in-out infinite";
+              btn.style.boxShadow = "none";
               
               const shimmer = btn.querySelector("div[data-shimmer-effect]");
               if (shimmer) {
@@ -2055,6 +2060,14 @@ function Beaty() {
             </svg>
           </button>
       </div>
+
+      <style>{`
+        @keyframes slowGlow {
+          0% { box-shadow: 0 0 5px rgba(255, 255, 255, 0.1); border-color: rgba(128, 128, 128, 0.5); }
+          50% { box-shadow: 0 0 20px rgba(255, 255, 255, 0.3); border-color: rgba(255, 255, 255, 0.6); }
+          100% { box-shadow: 0 0 5px rgba(255, 255, 255, 0.1); border-color: rgba(128, 128, 128, 0.5); }
+        }
+      `}</style>
 
       {contractModalBeat && (
         <ContractModal
