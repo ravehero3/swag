@@ -58,7 +58,21 @@ export default function ProductsGrid({
         padding: "0 20px",
       }}
     >
+      <style>{`
+        @media (max-width: 768px) {
+          .products-grid-container {
+            grid-template-columns: repeat(2, 1fr) !important;
+            padding: 0 !important;
+            width: 100vw !important;
+            margin-left: -20px !important;
+          }
+          .products-grid-root {
+            padding: 0 !important;
+          }
+        }
+      `}</style>
       <div
+        className="products-grid-container"
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(3, 1fr)",
