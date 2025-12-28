@@ -64,7 +64,7 @@ function ContractModal({ beat, isOpen, onClose, onAddToCart, onPlay, isPlaying }
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        zIndex: 9999,
+        zIndex: 100000,
         padding: "20px",
         overflowY: "auto",
       }}
@@ -77,10 +77,10 @@ function ContractModal({ beat, isOpen, onClose, onAddToCart, onPlay, isPlaying }
           borderRadius: "4px",
           maxWidth: "600px",
           width: "100%",
-          maxHeight: "none",
+          maxHeight: "90vh",
           margin: "auto",
           position: "relative",
-          zIndex: 10000,
+          zIndex: 100001,
         }}
         onClick={(e) => e.stopPropagation()}
       >
