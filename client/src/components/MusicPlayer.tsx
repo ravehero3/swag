@@ -106,7 +106,7 @@ function MusicPlayer({
             style={{ width: "84px", height: "84px", objectFit: "cover", borderRadius: "2px", marginLeft: "-16px", marginRight: "0" }}
           />
           <div style={{ flex: 1, display: "flex", alignItems: "center", gap: "12px" }}>
-            <div style={{ fontWeight: "bold", fontSize: "18px" }}>{currentBeat.title}</div>
+            <div className="player-title" style={{ fontWeight: "bold", fontSize: "18px" }}>{currentBeat.title}</div>
             <button
               onClick={() => onBuyClick(currentBeat)}
               className="btn-bounce buy-btn-player"
@@ -365,6 +365,34 @@ function MusicPlayer({
           >
             <style>{`
               @media (max-width: 768px) {
+                .player-title {
+                  font-size: 14px !important;
+                  max-width: 120px !important;
+                  overflow: hidden !important;
+                  text-overflow: ellipsis !important;
+                  white-space: nowrap !important;
+                }
+                .music-player-controls {
+                  display: flex !important;
+                  gap: 8px !important;
+                  margin-right: 80px !important;
+                }
+                .music-player-controls button {
+                  padding: 8px !important;
+                }
+                .music-player-controls button:first-child,
+                .music-player-controls button:last-child {
+                  display: none !important;
+                }
+                .music-player-controls button svg {
+                  width: 16px !important;
+                  height: 16px !important;
+                }
+                .music-player-controls button:nth-child(3) {
+                  width: 36px !important;
+                  height: 36px !important;
+                  font-size: 18px !important;
+                }
                 .share-btn-mobile {
                   position: absolute !important;
                   right: 8px !important;
@@ -387,9 +415,6 @@ function MusicPlayer({
                   display: none !important;
                 }
                 .buy-btn-mobile-new {
-                  display: none !important;
-                }
-                .music-player-controls {
                   display: none !important;
                 }
               }
