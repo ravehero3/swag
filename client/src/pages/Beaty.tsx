@@ -1681,7 +1681,11 @@ function Beaty() {
                 }
               }
             `}</style>
-            <div style={{ marginTop: "64px", position: "relative", zIndex: 10000 }} className="mobile-carousel-wrapper">
+            <div 
+              style={{ marginTop: "64px", position: "relative", zIndex: 10000, cursor: "pointer" }} 
+              className="mobile-carousel-wrapper"
+              onClick={() => setLocation("/zvuky")}
+            >
               <MobileCarousel />
             </div>
 
@@ -1717,7 +1721,10 @@ function Beaty() {
                   }
                 }
               `}</style>
-              <div style={{ marginTop: "0px", position: "relative", zIndex: 999999, overflow: "visible", background: "transparent", width: "100%" }}>
+              <div 
+                style={{ marginTop: "0px", position: "relative", zIndex: 999999, overflow: "visible", background: "transparent", width: "100%", cursor: "pointer" }}
+                onClick={() => setLocation("/zvuky")}
+              >
                 <ArtistCarousel />
               </div>
             </div>

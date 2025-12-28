@@ -65,6 +65,7 @@ export default function ProductCard({
   return (
     <div
       onClick={handleProductClick}
+      className="product-card-container"
       style={{
         border: "1px solid #333",
         overflow: "hidden",
@@ -83,45 +84,24 @@ export default function ProductCard({
         .heart-pulse {
           animation: heartPulse 0.3s ease-out;
         }
+        .product-card-container:hover {
+          transform: scale(1.02);
+          z-index: 10;
+        }
+        .play-button-overlay {
+          opacity: 0;
+          transition: opacity 0.2s ease;
+        }
+        .product-card-container:hover .play-button-overlay {
+          opacity: 1;
+        }
+        @media (max-width: 768px) {
+          .play-button-overlay {
+            opacity: 1;
+          }
+        }
       `}</style>
-      {onToggleSave && (
-        <button
-          onClick={handleHeartClick}
-          style={{
-            position: "absolute",
-            top: "12px",
-            right: "12px",
-            background: "rgba(0,0,0,0.6)",
-            border: "none",
-            borderRadius: "50%",
-            width: "36px",
-            height: "36px",
-            cursor: "pointer",
-            zIndex: 10,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            transition: "background 0.2s ease",
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.background = "rgba(0,0,0,0.8)";
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLButtonElement).style.background = "rgba(0,0,0,0.6)";
-          }}
-        >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill={isSaved ? "#888" : "none"}
-            stroke={isSaved ? "#888" : "#fff"}
-            strokeWidth="2"
-          >
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-          </svg>
-        </button>
-      )}
+      {/* Top heart icon removed - only one heart at the bottom now */}
 
       <div
         style={{
@@ -146,6 +126,7 @@ export default function ProductCard({
               e.stopPropagation();
               onPlayClick();
             }}
+            className="play-button-overlay"
             style={{
               position: "absolute",
               bottom: "12px",
