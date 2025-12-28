@@ -84,7 +84,7 @@ function Header() {
         />
       </Link>
 
-      <div style={{ display: "flex", alignItems: "center", gap: "16px", position: "relative", zIndex: 10, paddingRight: "16px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "12px", position: "relative", zIndex: 10, paddingRight: "12px" }}>
         <Link href={user ? "/ucet" : "/prihlasit-se"}>
           <span
             style={{
