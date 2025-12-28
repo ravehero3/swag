@@ -1682,9 +1682,8 @@ function Beaty() {
               }
             `}</style>
             <div 
-              style={{ marginTop: "64px", position: "relative", zIndex: 10000, cursor: "pointer" }} 
+              style={{ marginTop: "64px", position: "relative", zIndex: 10000 }} 
               className="mobile-carousel-wrapper"
-              onClick={() => setLocation("/zvuky")}
             >
               <MobileCarousel />
             </div>
@@ -1722,8 +1721,7 @@ function Beaty() {
                 }
               `}</style>
               <div 
-                style={{ marginTop: "0px", position: "relative", zIndex: 999999, overflow: "visible", background: "transparent", width: "100%", cursor: "pointer" }}
-                onClick={() => setLocation("/zvuky")}
+                style={{ marginTop: "0px", position: "relative", zIndex: 999999, overflow: "visible", background: "transparent", width: "100%" }}
               >
                 <ArtistCarousel />
               </div>
@@ -1731,13 +1729,25 @@ function Beaty() {
 
             <div ref={soundKitsRef} className="fade-in-section delay-4 scroll-fade-section sound-kits-section" style={{ marginTop: "-440px", marginBottom: "0px", position: "relative", zIndex: 0 }}>
             {/* Background with computer image and dock */}
-            <div className="computer-bg-container" style={{
-              width: "100vw",
-              marginLeft: "calc(-50vw + 50%)",
-              overflow: "hidden",
-              position: "relative",
-              background: "#000",
-            }}>
+            <div 
+              className="computer-bg-container" 
+              style={{
+                width: "100vw",
+                marginLeft: "calc(-50vw + 50%)",
+                overflow: "hidden",
+                position: "relative",
+                background: "#000",
+                cursor: "pointer",
+              }}
+              onClick={(e) => {
+                // Only trigger if clicking the bottom half of the container
+                const rect = e.currentTarget.getBoundingClientRect();
+                const clickY = e.clientY - rect.top;
+                if (clickY > rect.height / 2) {
+                  setLocation("/zvuky");
+                }
+              }}
+            >
               <style>{`
                 .mobile-bg-zoom {
                   width: 100%;
