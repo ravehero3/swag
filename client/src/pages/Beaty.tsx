@@ -378,6 +378,9 @@ function Beaty() {
           .desktop-only {
             display: none !important;
           }
+          .featured-beat-tags {
+            display: none !important;
+          }
           .featured-beat-image {
             border: none !important;
           }
@@ -714,7 +717,7 @@ function Beaty() {
                       </svg>
                     </button>
                     {highlightedBeat.tags && highlightedBeat.tags.length > 0 && (
-                      <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                      <div className="featured-beat-tags" style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
                         {highlightedBeat.tags.map((tag) => (
                           <button
                             key={tag}
