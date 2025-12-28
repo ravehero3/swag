@@ -156,9 +156,10 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                 right: 0,
                 height: '460px',
                 padding: '20px',
-                overflowY: 'auto',
                 borderBottom: '0.5px solid #333',
-                backgroundColor: '#050505'
+                backgroundColor: '#050505',
+                display: 'flex',
+                flexDirection: 'column'
               }}
             >
               <h3 style={{ fontSize: '12px', color: '#666', marginBottom: '16px', letterSpacing: '1px', textTransform: 'uppercase' }}>
@@ -167,9 +168,35 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
               {recentlyViewed.length === 0 ? (
                 <p style={{ color: '#333', fontSize: '11px', textAlign: 'center', marginTop: '40px' }}>Žádné nedávno zobrazené produkty</p>
               ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div 
+                  className="hide-scrollbar"
+                  style={{ 
+                    display: 'flex', 
+                    gap: '12px', 
+                    overflowX: 'auto',
+                    paddingBottom: '10px',
+                    WebkitOverflowScrolling: 'touch'
+                  }}
+                >
+                  <style>{`
+                    .hide-scrollbar::-webkit-scrollbar {
+                      display: none;
+                    }
+                    .hide-scrollbar {
+                      -ms-overflow-style: none;
+                      scrollbar-width: none;
+                    }
+                  `}</style>
                   {recentlyViewed.map((item: any) => (
-                    <div key={item.id} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <div 
+                      key={item.id} 
+                      style={{ 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        gap: '4px',
+                        flex: '0 0 140px'
+                      }}
+                    >
                       <img 
                         src={item.artworkUrl || item.images?.[0]} 
                         alt={item.title || item.name} 

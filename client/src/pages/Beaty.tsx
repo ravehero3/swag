@@ -440,16 +440,27 @@ function Beaty() {
           style={{ width: "100%", height: "auto", display: "block" }}
         />
         <div
+          className="video-overlay-fade"
           style={{
             position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
             bottom: 0,
-            left: "calc(-50vw + 50%)",
-            width: "100vw",
-            height: "200px",
-            background: "transparent",
             pointerEvents: "none",
+            zIndex: 5,
           }}
         />
+        <style>{`
+          .video-overlay-fade {
+            background: linear-gradient(to bottom, transparent calc(100% - 147px), black 100%);
+          }
+          @media (max-width: 768px) {
+            .video-overlay-fade {
+              background: linear-gradient(to bottom, transparent calc(100% - 147px), black 100%);
+            }
+          }
+        `}</style>
       </div>
       
       <div style={{ padding: "0 2px" }} className="fade-in-grid">
