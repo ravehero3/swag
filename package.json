@@ -8,7 +8,8 @@
   "scripts": {
     "dev": "tsx server/src/index.ts",
     "build": "vite build && tsc --project server/tsconfig.json",
-    "start": "NODE_ENV=production node dist/server/index.js"
+    "start": "node dist/server/index.js",
+    "vercel-build": "vite build && tsc --project server/tsconfig.json"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
