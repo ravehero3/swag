@@ -1,5 +1,10 @@
 # VOODOO808.COM - Digital Music Shop
 
+## Recent Changes (December 28, 2025)
+- Migrated from Supabase to Replit's built-in PostgreSQL database
+- Database tables are initialized automatically on server start
+- Using pg library directly for database operations (no Supabase client)
+
 ## Overview
 E-commerce website for selling beats and drum kits to music producers. The site features:
 - **BEATY page**: Beat player with playlist, preview functionality, and purchasing

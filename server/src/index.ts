@@ -65,12 +65,8 @@ app.use("/api/licenses", licensesRoutes);
 app.use("/api/admin", adminLicensesRoutes);
 
 async function startServer() {
-  // Database already initialized via Supabase - skip init in development
-  if (process.env.NODE_ENV === "production") {
-    await initDatabase();
-  } else {
-    console.log("Skipping database initialization in development mode");
-  }
+  // Initialize database tables
+  await initDatabase();
 
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
