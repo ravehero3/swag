@@ -41,8 +41,10 @@ if (isProduction) {
 }
 
 // Temporarily use memory store for sessions (development only)
+const sessionSecret = process.env.SESSION_SECRET || require('crypto').randomBytes(32).toString('hex');
+
 app.use(session({
-  secret: process.env.SESSION_SECRET || "voodoo808-dev-secret-key-change-in-production",
+  secret: sessionSecret,
   resave: false,
   saveUninitialized: false,
   cookie: {
