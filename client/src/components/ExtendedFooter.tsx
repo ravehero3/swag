@@ -262,13 +262,10 @@ export default function ExtendedFooter() {
           overflowX: "hidden",
         }}
       >
-        <FooterAccordionItem 
-          title="ODBĚR NOVINEK" 
-          isOpen={openSection === 'newsletter'} 
-          onToggle={() => toggleSection('newsletter')}
-        >
-          <ul style={{...listStyle, marginTop: "8px"}}>
-            <li style={{...listItemStyle, marginBottom: "8px"}}>
+        <div style={sectionStyle} className="footer-section">
+          <h3 style={titleStyle}>ODBĚR NOVINEK</h3>
+          <ul style={listStyle}>
+            <li style={listItemStyle}>
               <button 
                 onClick={(e) => { 
                   e.preventDefault(); 
@@ -281,14 +278,16 @@ export default function ExtendedFooter() {
                   background: "none",
                   border: "none",
                   padding: 0,
-                  textAlign: "left"
+                  textAlign: "left",
+                  width: "100%",
+                  display: "block"
                 }}
               >
                 Přihlaste se k odběru novinek
               </button>
             </li>
           </ul>
-        </FooterAccordionItem>
+        </div>
 
         <FooterAccordionItem 
           title="ZÁKAZNICKÝ SERVIS" 
