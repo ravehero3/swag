@@ -94,8 +94,8 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
           right: 0,
           height: '100%',
           width: 'min(100%, 33.333%)',
-          backgroundColor: '#f5f5f5',
-          borderLeft: '1px solid #000',
+          backgroundColor: '#000',
+          borderLeft: '1px solid #333',
           zIndex: 9999,
           transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
           transition: 'transform 0.3s ease-in-out',
@@ -104,13 +104,13 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
         }}
       >
         {/* Header */}
-        <div style={{ height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid #000', backgroundColor: '#f5f5f5', position: 'relative', flexShrink: 0 }}>
-          <h2 style={{ fontFamily: '"Helvetica Neue Condensed Bold", "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '12px', fontWeight: 700, fontStretch: 'condensed', margin: '0', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'center', paddingRight: '30px' }}>
+        <div style={{ height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid #333', backgroundColor: '#000', position: 'relative', flexShrink: 0 }}>
+          <h2 style={{ fontFamily: '"Helvetica Neue Condensed Bold", "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '12px', fontWeight: 700, fontStretch: 'condensed', margin: '0', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'center', paddingRight: '30px', color: '#fff' }}>
             PŘIHLASTE SE K ODBĚRU NAŠEHO NEWSLETTERU
           </h2>
           <button
             onClick={onClose}
-            style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', width: '22px', height: '22px', padding: '0', border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', width: '22px', height: '22px', padding: '0', border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}
             aria-label="Close"
           >
             <svg style={{ width: '22px', height: '22px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -119,11 +119,11 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
           </button>
         </div>
 
-        {/* Content */}
+        {/* Content - Flex to push everything to bottom */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-          <form onSubmit={handleSubmit} style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '16px' }}>
+          <form onSubmit={handleSubmit} style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '16px', justifyContent: 'flex-end' }}>
             {/* Description */}
-            <p style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '14px', fontWeight: 400, lineHeight: '1.6', color: '#000', margin: '0 0 24px 0', textAlign: 'center' }}>
+            <p style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '14px', fontWeight: 400, lineHeight: '1.6', color: '#fff', margin: '0 0 24px 0', textAlign: 'center', order: 1 }}>
               Přihlaste se k odběru našeho newsletteru a získejte přístup k nejnovějším kolekcím, exkluzivním nabídkám a novinkám ze světa VOODOO808.
             </p>
 
@@ -144,12 +144,13 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
                 padding: '12px',
                 height: '44px',
                 borderRadius: '4px',
-                border: emailError && touched ? '1px solid #dc2626' : '1px solid #000',
+                border: emailError && touched ? '1px solid #dc2626' : '1px solid #fff',
                 backgroundColor: '#fff',
                 color: emailError && touched ? '#dc2626' : '#000',
                 boxSizing: 'border-box',
                 width: '100%',
-                marginBottom: '64px'
+                marginBottom: '64px',
+                order: 2
               }}
             />
 
@@ -159,17 +160,18 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
                 fontSize: '12px', 
                 color: '#dc2626',
                 margin: '-60px 0 64px 0',
-                whiteSpace: 'pre-line'
+                whiteSpace: 'pre-line',
+                order: 3
               }}>
                 Neplatný formát emailu. Zkuste to znovu, pro příklad „RaveHero3@gmail.com"
               </p>
             )}
 
             {/* Data Processing Text */}
-            <div style={{ marginBottom: '64px' }}>
-              <p style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '12px', fontWeight: 400, lineHeight: '1.4', color: '#4b5563', margin: '0', textAlign: 'center' }}>
+            <div style={{ marginBottom: '64px', order: 4 }}>
+              <p style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '12px', fontWeight: 400, lineHeight: '1.4', color: '#999', margin: '0', textAlign: 'center' }}>
                 Odesláním tohoto formuláře souhlasíte se zpracováním vašich{' '}
-                <Link href="/ochrana-osobnich-udaju" style={{ color: '#000', textDecoration: 'underline', cursor: 'pointer' }}>
+                <Link href="/ochrana-osobnich-udaju" style={{ color: '#fff', textDecoration: 'underline', cursor: 'pointer' }}>
                   osobních údajů
                 </Link>
                 {' '}za účelem zasílání newsletteru.
@@ -177,12 +179,12 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
             </div>
 
             {/* Divider */}
-            <div style={{ height: '1px', backgroundColor: '#000', marginBottom: '4px' }} />
+            <div style={{ height: '1px', backgroundColor: '#333', marginBottom: '4px', order: 5 }} />
 
             {/* Message Display */}
             {message && (
-              <div style={{ padding: '12px', marginBottom: '4px', textAlign: 'center', backgroundColor: message.type === 'success' ? 'rgba(36, 224, 83, 0.1)' : '#fee2e2', border: `1px solid ${message.type === 'success' ? '#24e053' : '#dc2626'}`, borderRadius: '4px' }}>
-                <p style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '12px', lineHeight: '12px', margin: '0', color: message.type === 'success' ? '#000' : '#991b1b' }}>{message.text}</p>
+              <div style={{ padding: '12px', marginBottom: '4px', textAlign: 'center', backgroundColor: message.type === 'success' ? 'rgba(36, 224, 83, 0.1)' : '#fee2e2', border: `1px solid ${message.type === 'success' ? '#24e053' : '#dc2626'}`, borderRadius: '4px', order: 6 }}>
+                <p style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '12px', lineHeight: '12px', margin: '0', color: message.type === 'success' ? '#24e053' : '#dc2626' }}>{message.text}</p>
               </div>
             )}
 
@@ -196,9 +198,9 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
                 height: '44px',
                 fontSize: '12px',
                 fontWeight: 700,
-                border: '1px solid #000',
-                backgroundColor: '#000',
-                color: '#fff',
+                border: 'inset 0 0 0 0.5px #000',
+                backgroundColor: '#fff',
+                color: '#000',
                 cursor: loading ? 'not-allowed' : 'pointer',
                 opacity: loading ? 0.7 : 1,
                 transition: 'all 0.2s ease',
@@ -207,7 +209,21 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
                 borderRadius: '4px',
                 width: '100%',
                 marginBottom: '4px',
-                marginTop: 'auto'
+                marginTop: 'auto',
+                order: 7,
+                boxShadow: 'inset 0 0 0 0.5px #000'
+              }}
+              onMouseEnter={(e) => {
+                const btn = e.currentTarget as HTMLButtonElement;
+                btn.style.backgroundColor = '#000';
+                btn.style.color = '#fff';
+                btn.style.boxShadow = '0 0 20px rgba(255, 255, 255, 0.8), inset 0 0 0 0.5px #fff, inset 0 0 10px rgba(255, 255, 255, 0.3)';
+              }}
+              onMouseLeave={(e) => {
+                const btn = e.currentTarget as HTMLButtonElement;
+                btn.style.backgroundColor = '#fff';
+                btn.style.color = '#000';
+                btn.style.boxShadow = 'inset 0 0 0 0.5px #000';
               }}
             >
               {loading ? 'PŘIHLAŠOVÁNÍ...' : 'PŘIHLÁSIT'}
