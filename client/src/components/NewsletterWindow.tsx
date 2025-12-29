@@ -131,8 +131,8 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
 
             {/* Labels for Email Input */}
             <div style={{ display: 'flex', justifyContent: 'space-between', margin: '0 2px 4px 2px', order: 2 }}>
-              <span style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '10px', color: '#fff' }}>E-mail*</span>
-              <span style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '10px', color: '#666' }}>*požadovaný</span>
+              <span style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '12px', color: '#fff' }}>E-mail*</span>
+              <span style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '12px', color: '#666' }}>*požadovaný</span>
             </div>
 
             {/* Email Input */}
@@ -179,7 +179,7 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
             <div style={{ marginBottom: '64px', marginInline: '2px', order: 5 }}>
               <p style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '12px', fontWeight: 400, lineHeight: '1.4', color: '#666', margin: '0', textAlign: 'center' }}>
                 Odesláním tohoto formuláře souhlasíte se zpracováním vašich{' '}
-                <Link href="/ochrana-osobnich-udaju" style={{ color: '#fff', textDecoration: 'underline', cursor: 'pointer' }}>
+                <Link href="/ochrana-osobnich-udaju" style={{ color: '#fff', textDecoration: 'underline', cursor: 'pointer', fontSize: '12px' }}>
                   osobních údajů
                 </Link>
                 {' '}za účelem zasílání newsletteru.
@@ -205,7 +205,7 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
                 padding: '12px',
                 height: '44px',
                 fontSize: '12px',
-                fontWeight: 700,
+                fontWeight: 400,
                 border: 'none',
                 backgroundColor: '#fff',
                 color: '#000',
