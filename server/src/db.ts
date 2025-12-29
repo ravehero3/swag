@@ -89,14 +89,17 @@ export async function initDatabase() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
 
-      CREATE TABLE IF NOT EXISTS beat_license_files (
-        id SERIAL PRIMARY KEY,
-        beat_id INTEGER REFERENCES beats(id) ON DELETE CASCADE,
-        license_type_id INTEGER REFERENCES license_types(id) ON DELETE CASCADE,
-        file_url VARCHAR(500) NOT NULL,
-        uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        UNIQUE(beat_id, license_type_id)
+      CREATE TABLE IF NOT EXISTS settings (
+        key VARCHAR(255) PRIMARY KEY,
+        value TEXT NOT NULL,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
+
+      INSERT INTO settings (key, value) VALUES 
+        ('header_logo', '/public/uploads/artwork/voodoo808-logo.png'),
+        ('beaty_video_main', '/public/uploads/voodoo808-video.mp4'),
+        ('beaty_video_alt', '/public/uploads/hrad-na-web.mov')
+      ON CONFLICT (key) DO NOTHING;
     `);
     
     // Add test data

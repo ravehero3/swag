@@ -62,6 +62,8 @@ interface AppContextType {
   playBeat?: (beat: Beat) => void;
   handlePrevious?: () => void;
   handleNext?: () => void;
+  settings: Record<string, string>;
+  refreshSettings: () => void;
 }
 
 interface Beat {
@@ -100,6 +102,8 @@ export const AppContext = createContext<AppContextType>({
   playBeat: () => {},
   handlePrevious: () => {},
   handleNext: () => {},
+  settings: {},
+  refreshSettings: () => {},
 });
 
 export const useApp = () => useContext(AppContext);
@@ -114,7 +118,19 @@ function App() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLooping, setIsLooping] = useState(false);
   const [isShuffling, setIsShuffling] = useState(false);
+  const [settings, setSettings] = useState<Record<string, string>>({});
   const audioRef = useRef<HTMLAudioElement>(null);
+
+  const refreshSettings = () => {
+    fetch("/api/settings")
+      .then(res => res.json())
+      .then(setSettings)
+      .catch(console.error);
+  };
+
+  useEffect(() => {
+    refreshSettings();
+  }, []);
 
   // Add padding to body for fixed header
   useEffect(() => {
@@ -192,7 +208,7 @@ function App() {
   }
 
   return (
-    <AppContext.Provider value={{ user, setUser, cart, addToCart, removeFromCart, clearCart, isCartOpen, setIsCartOpen, isNewsletterOpen, setIsNewsletterOpen, currentBeat, setCurrentBeat, isPlaying, setIsPlaying, isLooping, setIsLooping, isShuffling, setIsShuffling, audioRef, allBeats: [], playBeat: () => {}, handlePrevious: () => {}, handleNext: () => {} }}>
+    <AppContext.Provider value={{ user, setUser, cart, addToCart, removeFromCart, clearCart, isCartOpen, setIsCartOpen, isNewsletterOpen, setIsNewsletterOpen, currentBeat, setCurrentBeat, isPlaying, setIsPlaying, isLooping, setIsLooping, isShuffling, setIsShuffling, audioRef, allBeats: [], playBeat: () => {}, handlePrevious: () => {}, handleNext: () => {}, settings, refreshSettings }}>
       <div style={{ minHeight: "100vh", background: "#000", display: "flex", flexDirection: "column" }}>
         <Header />
         <main style={{ flex: 1 }} className="fade-in">

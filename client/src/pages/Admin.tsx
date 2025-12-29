@@ -57,9 +57,9 @@ interface BeatLicenseFile {
 }
 
 function Admin() {
-  const { user } = useApp();
+  const { user, settings, refreshSettings } = useApp();
   const [, navigate] = useLocation();
-  const [tab, setTab] = useState<"beats" | "kits" | "orders" | "licenses">("beats");
+  const [tab, setTab] = useState<"beats" | "kits" | "orders" | "licenses" | "settings">("beats");
   const [beats, setBeats] = useState<Beat[]>([]);
   const [kits, setKits] = useState<SoundKit[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
@@ -115,13 +115,13 @@ function Admin() {
       <h1 style={{ marginBottom: "24px" }}>Admin Panel</h1>
 
       <div style={{ display: "flex", gap: "12px", marginBottom: "24px" }}>
-        {["beats", "kits", "orders", "licenses"].map((t) => (
+        {["beats", "kits", "orders", "licenses", "settings"].map((t) => (
           <button
             key={t}
             className={tab === t ? "btn btn-filled" : "btn"}
             onClick={() => setTab(t as any)}
           >
-            {t === "beats" ? "Beaty" : t === "kits" ? "Zvuky" : t === "orders" ? "Objednávky" : "Licence"}
+            {t === "beats" ? "Beaty" : t === "kits" ? "Zvuky" : t === "orders" ? "Objednávky" : t === "licenses" ? "Licence" : "Nastavení"}
           </button>
         ))}
       </div>
@@ -153,6 +153,8 @@ function Admin() {
       {tab === "orders" && <OrdersTab orders={orders} onRefresh={loadData} />}
 
       {tab === "licenses" && <LicensesTab licenses={licenses} onRefresh={loadData} />}
+
+      {tab === "settings" && <SettingsTab settings={settings} onRefresh={refreshSettings} />}
     </div>
   );
 }
@@ -657,6 +659,71 @@ function LicensesTab({ licenses, onRefresh }: any) {
           </tbody>
         </table>
       )}
+    </div>
+  );
+}
+
+function SettingsTab({ settings, onRefresh }: any) {
+  const uploadFile = async (file: File, type: string) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await fetch(`/api/upload?type=${type}`, {
+      method: "POST",
+      credentials: "include",
+      body: formData,
+    });
+    const data = await res.json();
+    return data.url;
+  };
+
+  const updateSetting = async (key: string, value: string) => {
+    await fetch("/api/admin/settings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ key, value }),
+    });
+    onRefresh();
+  };
+
+  return (
+    <div style={{ padding: "16px", border: "1px solid #333" }}>
+      <h2 style={{ marginBottom: "24px" }}>Obecná nastavení</h2>
+      
+      <div style={{ marginBottom: "32px" }}>
+        <label style={{ display: "block", marginBottom: "8px" }}>Logo v hlavičce</label>
+        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+          <img src={settings.header_logo} alt="Logo preview" style={{ height: "40px", filter: "invert(1)" }} />
+          <input type="file" accept="image/*" onChange={async (e) => {
+            if (e.target.files?.[0]) {
+              const url = await uploadFile(e.target.files[0], "artwork");
+              updateSetting("header_logo", url);
+            }
+          }} />
+        </div>
+      </div>
+
+      <div style={{ marginBottom: "32px" }}>
+        <label style={{ display: "block", marginBottom: "8px" }}>Hlavní video (Beaty page)</label>
+        <input type="file" accept="video/*" onChange={async (e) => {
+          if (e.target.files?.[0]) {
+            const url = await uploadFile(e.target.files[0], "artwork");
+            updateSetting("beaty_video_main", url);
+          }
+        }} />
+        {settings.beaty_video_main && <p style={{ fontSize: "12px", color: "#666", marginTop: "4px" }}>Aktuální: {settings.beaty_video_main}</p>}
+      </div>
+
+      <div style={{ marginBottom: "32px" }}>
+        <label style={{ display: "block", marginBottom: "8px" }}>Alternativní video (Beaty page alt)</label>
+        <input type="file" accept="video/*" onChange={async (e) => {
+          if (e.target.files?.[0]) {
+            const url = await uploadFile(e.target.files[0], "artwork");
+            updateSetting("beaty_video_alt", url);
+          }
+        }} />
+        {settings.beaty_video_alt && <p style={{ fontSize: "12px", color: "#666", marginTop: "4px" }}>Aktuální: {settings.beaty_video_alt}</p>}
+      </div>
     </div>
   );
 }

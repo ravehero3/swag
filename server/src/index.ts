@@ -13,6 +13,7 @@ import uploadRoutes from "./routes/upload.js";
 import savedRoutes from "./routes/saved.js";
 import licensesRoutes from "./routes/licenses.js";
 import adminLicensesRoutes from "./routes/adminLicenses.js";
+import { requireAuth, requireAdmin } from "./middleware/auth.js";
 import { createServer as createViteServer } from "vite";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -65,6 +66,29 @@ app.use("/api/upload", uploadRoutes);
 app.use("/api/saved", savedRoutes);
 app.use("/api/licenses", licensesRoutes);
 app.use("/api/admin", adminLicensesRoutes);
+
+app.get("/api/settings", async (_req, res) => {
+  try {
+    const result = await pool.query("SELECT key, value FROM settings");
+    const settings = result.rows.reduce((acc, row) => ({ ...acc, [row.key]: row.value }), {});
+    res.json(settings);
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při načítání nastavení" });
+  }
+});
+
+app.post("/api/admin/settings", requireAdmin, async (req, res) => {
+  try {
+    const { key, value } = req.body;
+    await pool.query(
+      "INSERT INTO settings (key, value, updated_at) VALUES ($1, $2, CURRENT_TIMESTAMP) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = CURRENT_TIMESTAMP",
+      [key, value]
+    );
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při ukládání nastavení" });
+  }
+});
 
 async function startServer() {
   // Initialize database tables

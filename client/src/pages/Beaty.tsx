@@ -161,7 +161,7 @@ function Beaty() {
   const beatsListRef = useScrollAnimation();
   const soundKitsRef = useScrollAnimation();
   const artistCarouselRef = useScrollAnimation();
-  const { user, addToCart, cart, currentBeat, setCurrentBeat, isPlaying, setIsPlaying, isLooping, setIsLooping, isShuffling, setIsShuffling } = useApp();
+  const { user, addToCart, cart, currentBeat, setCurrentBeat, isPlaying, setIsPlaying, isLooping, setIsLooping, isShuffling, setIsShuffling, settings } = useApp();
   
   // Determine if we're on home page or beaty page
   const isHomePage = location === "/" || location === "";
@@ -435,7 +435,8 @@ function Beaty() {
       `}</style>
       <div className="video-container" style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative", minHeight: "300px", background: "#000" }}>
         <video
-          src={isHomePage ? "/public/uploads/voodoo808-video.mp4" : "/public/uploads/hrad-na-web.mov"}
+          key={isHomePage ? settings.beaty_video_main : settings.beaty_video_alt}
+          src={isHomePage ? (settings.beaty_video_main || "/public/uploads/voodoo808-video.mp4") : (settings.beaty_video_alt || "/public/uploads/hrad-na-web.mov")}
           autoPlay
           loop
           muted
