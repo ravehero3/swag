@@ -121,9 +121,9 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
 
         {/* Content - Flex to push everything to bottom */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-          <form onSubmit={handleSubmit} style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '16px', justifyContent: 'flex-end' }}>
+          <form onSubmit={handleSubmit} style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '16px 2px 2px 2px', justifyContent: 'flex-end' }}>
             {/* Description */}
-            <p style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '14px', fontWeight: 400, lineHeight: '1.6', color: '#fff', margin: '0 0 24px 0', textAlign: 'center', order: 1 }}>
+            <p style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '14px', fontWeight: 400, lineHeight: '1.6', color: '#fff', margin: '0 14px 24px 14px', textAlign: 'center', order: 1 }}>
               Přihlaste se k odběru našeho newsletteru a získejte přístup k nejnovějším kolekcím, exkluzivním nabídkám a novinkám ze světa VOODOO808.
             </p>
 
@@ -148,8 +148,8 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
                 backgroundColor: '#fff',
                 color: emailError && touched ? '#dc2626' : '#000',
                 boxSizing: 'border-box',
-                width: '100%',
-                marginBottom: '64px',
+                width: 'calc(100% - 28px)',
+                margin: '0 14px 64px 14px',
                 order: 2
               }}
             />
@@ -159,7 +159,7 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
                 fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', 
                 fontSize: '12px', 
                 color: '#dc2626',
-                margin: '-60px 0 64px 0',
+                margin: '-60px 14px 64px 14px',
                 whiteSpace: 'pre-line',
                 order: 3
               }}>
@@ -168,7 +168,7 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
             )}
 
             {/* Data Processing Text */}
-            <div style={{ marginBottom: '64px', order: 4 }}>
+            <div style={{ marginBottom: '64px', marginInline: '14px', order: 4 }}>
               <p style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '12px', fontWeight: 400, lineHeight: '1.4', color: '#999', margin: '0', textAlign: 'center' }}>
                 Odesláním tohoto formuláře souhlasíte se zpracováním vašich{' '}
                 <Link href="/ochrana-osobnich-udaju" style={{ color: '#fff', textDecoration: 'underline', cursor: 'pointer' }}>
@@ -183,7 +183,7 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
 
             {/* Message Display */}
             {message && (
-              <div style={{ padding: '12px', marginBottom: '2px', textAlign: 'center', backgroundColor: message.type === 'success' ? 'rgba(36, 224, 83, 0.1)' : '#fee2e2', border: `1px solid ${message.type === 'success' ? '#24e053' : '#dc2626'}`, borderRadius: '4px', order: 6 }}>
+              <div style={{ padding: '12px', margin: '0 14px 2px 14px', textAlign: 'center', backgroundColor: message.type === 'success' ? 'rgba(36, 224, 83, 0.1)' : '#fee2e2', border: `1px solid ${message.type === 'success' ? '#24e053' : '#dc2626'}`, borderRadius: '4px', order: 6 }}>
                 <p style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '12px', lineHeight: '12px', margin: '0', color: message.type === 'success' ? '#24e053' : '#dc2626' }}>{message.text}</p>
               </div>
             )}
@@ -194,7 +194,7 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
               disabled={loading}
               style={{ 
                 fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', 
-                padding: '2px',
+                padding: '0',
                 height: '44px',
                 fontSize: '12px',
                 fontWeight: 700,
@@ -203,7 +203,7 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
                 color: '#000',
                 cursor: loading ? 'not-allowed' : 'pointer',
                 opacity: loading ? 0.7 : 1,
-                transition: 'all 0.2s ease',
+                transition: 'all 0.3s ease',
                 textTransform: 'uppercase',
                 letterSpacing: '0.5px',
                 borderRadius: '4px',
@@ -212,13 +212,11 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
               }}
               onMouseEnter={(e) => {
                 const btn = e.currentTarget as HTMLButtonElement;
-                btn.style.backgroundColor = '#000';
-                btn.style.color = '#fff';
+                btn.style.boxShadow = '0 0 15px 2px rgba(255, 255, 255, 0.8)';
               }}
               onMouseLeave={(e) => {
                 const btn = e.currentTarget as HTMLButtonElement;
-                btn.style.backgroundColor = '#fff';
-                btn.style.color = '#000';
+                btn.style.boxShadow = 'none';
               }}
             >
               {loading ? 'PŘIHLAŠOVÁNÍ...' : 'PŘIHLÁSIT'}
