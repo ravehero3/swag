@@ -439,9 +439,12 @@ function Beaty() {
             .featured-track-container {
               margin-top: -52px !important;
             }
-            .featured-plus-symbol {
-              top: -25px !important;
-            }
+            .featured-buttons-container {
+            gap: 4px !important;
+          }
+          .featured-plus-symbol {
+            top: -29px !important;
+          }
           }
         }
       `}</style>
@@ -608,7 +611,7 @@ function Beaty() {
                   <h2 style={{ fontSize: "30px", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontWeight: "400", lineHeight: "1.1", position: "relative", zIndex: 10, margin: 0 }}>
                     {highlightedBeat.title}
                   </h2>
-                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <div className="featured-buttons-container" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                     <button
                       onClick={() => openContractModal(highlightedBeat)}
                       className="btn-bounce mobile-cart-btn"
@@ -701,6 +704,8 @@ function Beaty() {
                       <span style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "8px" }}>{Math.floor(highlightedBeat.price)} CZK</span>
                     </button>
                     <button
+                      onClick={() => setDownloadingBeat(highlightedBeat)}
+                      className="mobile-cart-btn"
                       style={{
                         padding: "8px",
                         background: "#000",
@@ -713,9 +718,9 @@ function Beaty() {
                         alignItems: "center",
                         justifyContent: "center",
                         transition: "all 0.2s",
-                        marginLeft: "2px",
                         minHeight: "32px",
                         position: "relative",
+                        boxSizing: "border-box",
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.boxShadow = "0 0 20px rgba(255, 255, 255, 0.8), inset 0 0 10px rgba(255, 255, 255, 0.3)";
@@ -732,6 +737,7 @@ function Beaty() {
                       </svg>
                     </button>
                     <button
+                      className="mobile-cart-btn"
                       style={{
                         padding: "8px",
                         background: "#000",
@@ -744,9 +750,9 @@ function Beaty() {
                         alignItems: "center",
                         justifyContent: "center",
                         transition: "all 0.2s",
-                        marginLeft: "2px",
                         minHeight: "32px",
                         position: "relative",
+                        boxSizing: "border-box",
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.boxShadow = "0 0 20px rgba(255, 255, 255, 0.8), inset 0 0 10px rgba(255, 255, 255, 0.3)";
