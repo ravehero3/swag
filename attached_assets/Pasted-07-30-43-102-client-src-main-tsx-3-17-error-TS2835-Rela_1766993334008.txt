@@ -1,0 +1,1489 @@
+07:30:43.102 client/src/main.tsx(3,17): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './App.js'?
+07:30:43.102 client/src/main.tsx(6,21): error TS2584: Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
+07:30:43.102 client/src/main.tsx(7,3): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:43.102 client/src/main.tsx(8,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.005 client/src/App.tsx(3,20): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './components/Header.js'?
+07:30:44.005 client/src/App.tsx(4,28): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './components/ExtendedFooter.js'?
+07:30:44.005 client/src/App.tsx(5,20): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './components/Footer.js'?
+07:30:44.006 client/src/App.tsx(6,23): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './components/CartModal.js'?
+07:30:44.006 client/src/App.tsx(7,30): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './components/NewsletterWindow.js'?
+07:30:44.006 client/src/App.tsx(8,25): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './components/MusicPlayer.js'?
+07:30:44.007 client/src/App.tsx(9,19): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './pages/Beaty.js'?
+07:30:44.007 client/src/App.tsx(10,19): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './pages/Zvuky.js'?
+07:30:44.007 client/src/App.tsx(11,19): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './pages/Login.js'?
+07:30:44.007 client/src/App.tsx(12,19): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './pages/Admin.js'?
+07:30:44.010 client/src/App.tsx(13,18): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './pages/Ucet.js'?
+07:30:44.010 client/src/App.tsx(14,18): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './pages/Cart.js'?
+07:30:44.010 client/src/App.tsx(15,22): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './pages/Checkout.js'?
+07:30:44.010 client/src/App.tsx(16,21): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './pages/Ulozeno.js'?
+07:30:44.010 client/src/App.tsx(17,17): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './pages/FAQ.js'?
+07:30:44.010 client/src/App.tsx(18,27): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './pages/ProductDetail.js'?
+07:30:44.010 client/src/App.tsx(19,22): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './pages/Delivery.js'?
+07:30:44.010 client/src/App.tsx(20,21): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './pages/Payment.js'?
+07:30:44.011 client/src/App.tsx(21,23): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './pages/LegalInfo.js'?
+07:30:44.011 client/src/App.tsx(22,27): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './pages/PrivacyPolicy.js'?
+07:30:44.011 client/src/App.tsx(23,26): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './pages/CookiePolicy.js'?
+07:30:44.011 client/src/App.tsx(24,28): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './pages/CookieSettings.js'?
+07:30:44.011 client/src/App.tsx(121,5): error TS2584: Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
+07:30:44.011 client/src/App.tsx(123,7): error TS2584: Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
+07:30:44.011 client/src/App.tsx(130,24): error TS2812: Property 'src' does not exist on type 'HTMLAudioElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:44.011 client/src/App.tsx(131,24): error TS2812: Property 'loop' does not exist on type 'HTMLAudioElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:44.011 client/src/App.tsx(133,26): error TS2812: Property 'play' does not exist on type 'HTMLAudioElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:44.011 client/src/App.tsx(142,24): error TS2812: Property 'play' does not exist on type 'HTMLAudioElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:44.012 client/src/App.tsx(144,24): error TS2812: Property 'pause' does not exist on type 'HTMLAudioElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:44.012 client/src/App.tsx(154,31): error TS18046: 'data' is of type 'unknown'.
+07:30:44.012 client/src/App.tsx(191,12): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.012 client/src/App.tsx(195,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.012 client/src/App.tsx(196,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.012 client/src/App.tsx(197,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.012 client/src/App.tsx(198,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.012 client/src/App.tsx(199,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.012 client/src/App.tsx(200,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.012 client/src/App.tsx(201,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.012 client/src/App.tsx(202,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.013 client/src/App.tsx(203,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.013 client/src/App.tsx(204,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.013 client/src/App.tsx(205,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.013 client/src/App.tsx(206,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.013 client/src/App.tsx(207,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.013 client/src/App.tsx(208,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.013 client/src/App.tsx(209,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.013 client/src/App.tsx(210,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.013 client/src/App.tsx(211,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.013 client/src/App.tsx(212,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.014 client/src/App.tsx(213,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.014 client/src/App.tsx(214,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.014 client/src/App.tsx(215,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.014 client/src/App.tsx(216,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.014 client/src/App.tsx(217,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.014 client/src/App.tsx(218,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.014 client/src/App.tsx(219,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.014 client/src/App.tsx(220,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.014 client/src/App.tsx(225,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.014 client/src/App.tsx(226,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.015 client/src/App.tsx(227,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.015 client/src/App.tsx(229,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.015 client/src/App.tsx(232,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.015 client/src/App.tsx(233,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.015 client/src/App.tsx(233,211): error TS2812: Property 'pause' does not exist on type 'HTMLAudioElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:44.015 client/src/App.tsx(233,246): error TS2812: Property 'play' does not exist on type 'HTMLAudioElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:44.015 client/src/App.tsx(233,439): error TS7006: Parameter 'beat' implicitly has an 'any' type.
+07:30:44.318 client/src/pages/Zvuky.tsx(2,24): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../App.js'?
+07:30:44.327 client/src/pages/Zvuky.tsx(3,26): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../components/ProductsGrid.js'?
+07:30:44.327 client/src/pages/Zvuky.tsx(185,26): error TS2339: Property 'length' does not exist on type '{}'.
+07:30:44.327 client/src/pages/Zvuky.tsx(186,19): error TS2345: Argument of type '{}' is not assignable to parameter of type 'SetStateAction<SoundKit[]>'.
+07:30:44.327 client/src/pages/Zvuky.tsx(199,26): error TS18046: 'items' is of type 'unknown'.
+07:30:44.328 client/src/pages/Zvuky.tsx(218,27): error TS2812: Property 'pause' does not exist on type 'HTMLAudioElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:44.328 client/src/pages/Zvuky.tsx(221,27): error TS2812: Property 'play' does not exist on type 'HTMLAudioElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:44.328 client/src/pages/Zvuky.tsx(227,42): error TS2812: Property 'play' does not exist on type 'HTMLAudioElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:44.328 client/src/pages/Zvuky.tsx(304,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.328 client/src/pages/Zvuky.tsx(305,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.328 client/src/pages/Zvuky.tsx(311,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.328 client/src/pages/Zvuky.tsx(312,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.328 client/src/pages/Zvuky.tsx(316,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.328 client/src/pages/Zvuky.tsx(317,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.328 client/src/pages/Zvuky.tsx(320,28): error TS7006: Parameter 'id' implicitly has an 'any' type.
+07:30:44.328 client/src/pages/Zvuky.tsx(321,27): error TS7006: Parameter 'id' implicitly has an 'any' type.
+07:30:44.328 client/src/pages/Zvuky.tsx(324,27): error TS7006: Parameter 'id' implicitly has an 'any' type.
+07:30:44.328 client/src/pages/Zvuky.tsx(328,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.328 client/src/pages/Zvuky.tsx(337,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.328 client/src/pages/Zvuky.tsx(348,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.328 client/src/pages/Zvuky.tsx(355,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.328 client/src/pages/Zvuky.tsx(356,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.328 client/src/pages/Zvuky.tsx(357,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.328 client/src/pages/Zvuky.tsx(358,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:44.328 client/src/pages/Zvuky.tsx(359,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.102 client/src/pages/Ulozeno.tsx(2,24): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../App.js'?
+07:30:45.102 client/src/pages/Ulozeno.tsx(46,15): error TS2345: Argument of type 'Dispatch<SetStateAction<SavedItem[]>>' is not assignable to parameter of type '(value: unknown) => void | PromiseLike<void>'.
+07:30:45.103 client/src/pages/Ulozeno.tsx(78,27): error TS2812: Property 'pause' does not exist on type 'HTMLAudioElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:45.103 client/src/pages/Ulozeno.tsx(81,27): error TS2812: Property 'play' does not exist on type 'HTMLAudioElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:45.103 client/src/pages/Ulozeno.tsx(87,42): error TS2812: Property 'play' does not exist on type 'HTMLAudioElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:45.103 client/src/pages/Ulozeno.tsx(154,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.103 client/src/pages/Ulozeno.tsx(155,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.103 client/src/pages/Ulozeno.tsx(162,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.103 client/src/pages/Ulozeno.tsx(172,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.103 client/src/pages/Ulozeno.tsx(183,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.103 client/src/pages/Ulozeno.tsx(185,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.103 client/src/pages/Ulozeno.tsx(186,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.103 client/src/pages/Ulozeno.tsx(188,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.103 client/src/pages/Ulozeno.tsx(193,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.103 client/src/pages/Ulozeno.tsx(194,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.103 client/src/pages/Ulozeno.tsx(195,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.103 client/src/pages/Ulozeno.tsx(207,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.103 client/src/pages/Ulozeno.tsx(208,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.103 client/src/pages/Ulozeno.tsx(224,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.103 client/src/pages/Ulozeno.tsx(225,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.103 client/src/pages/Ulozeno.tsx(228,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.104 client/src/pages/Ulozeno.tsx(231,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.104 client/src/pages/Ulozeno.tsx(232,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.104 client/src/pages/Ulozeno.tsx(233,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.104 client/src/pages/Ulozeno.tsx(247,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.104 client/src/pages/Ulozeno.tsx(257,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.104 client/src/pages/Ulozeno.tsx(258,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.104 client/src/pages/Ulozeno.tsx(261,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.104 client/src/pages/Ulozeno.tsx(268,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.104 client/src/pages/Ulozeno.tsx(270,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.104 client/src/pages/Ulozeno.tsx(271,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.104 client/src/pages/Ulozeno.tsx(272,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.104 client/src/pages/Ulozeno.tsx(274,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.104 client/src/pages/Ulozeno.tsx(286,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.104 client/src/pages/Ulozeno.tsx(287,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.105 client/src/pages/Ulozeno.tsx(304,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.105 client/src/pages/Ulozeno.tsx(304,97): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.105 client/src/pages/Ulozeno.tsx(304,138): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.105 client/src/pages/Ulozeno.tsx(306,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.106 client/src/pages/Ulozeno.tsx(306,127): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.106 client/src/pages/Ulozeno.tsx(309,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.106 client/src/pages/Ulozeno.tsx(310,27): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.106 client/src/pages/Ulozeno.tsx(311,27): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.106 client/src/pages/Ulozeno.tsx(317,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.106 client/src/pages/Ulozeno.tsx(318,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.106 client/src/pages/Ulozeno.tsx(319,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.106 client/src/pages/Ulozeno.tsx(320,27): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.106 client/src/pages/Ulozeno.tsx(330,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.106 client/src/pages/Ulozeno.tsx(331,31): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.106 client/src/pages/Ulozeno.tsx(334,27): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.106 client/src/pages/Ulozeno.tsx(358,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.107 client/src/pages/Ulozeno.tsx(359,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.107 client/src/pages/Ulozeno.tsx(360,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.107 client/src/pages/Ulozeno.tsx(371,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.107 client/src/pages/Ulozeno.tsx(383,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.107 client/src/pages/Ulozeno.tsx(384,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.107 client/src/pages/Ulozeno.tsx(389,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.107 client/src/pages/Ulozeno.tsx(408,27): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.107 client/src/pages/Ulozeno.tsx(409,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.107 client/src/pages/Ulozeno.tsx(413,27): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.107 client/src/pages/Ulozeno.tsx(432,31): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.107 client/src/pages/Ulozeno.tsx(432,99): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.107 client/src/pages/Ulozeno.tsx(432,140): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.107 client/src/pages/Ulozeno.tsx(434,31): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.107 client/src/pages/Ulozeno.tsx(434,129): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.107 client/src/pages/Ulozeno.tsx(440,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.108 client/src/pages/Ulozeno.tsx(441,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.108 client/src/pages/Ulozeno.tsx(444,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.108 client/src/pages/Ulozeno.tsx(445,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.108 client/src/pages/Ulozeno.tsx(449,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.108 client/src/pages/Ulozeno.tsx(450,27): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.108 client/src/pages/Ulozeno.tsx(453,27): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.381 client/src/pages/Ucet.tsx(2,24): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../App.js'?
+07:30:45.381 client/src/pages/Ucet.tsx(35,19): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'SetStateAction<Order[]>'.
+07:30:45.381 client/src/pages/Ucet.tsx(46,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.381 client/src/pages/Ucet.tsx(53,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.382 client/src/pages/Ucet.tsx(54,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.382 client/src/pages/Ucet.tsx(56,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.382 client/src/pages/Ucet.tsx(57,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.382 client/src/pages/Ucet.tsx(58,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.382 client/src/pages/Ucet.tsx(61,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.382 client/src/pages/Ucet.tsx(64,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.382 client/src/pages/Ucet.tsx(66,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.382 client/src/pages/Ucet.tsx(68,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.382 client/src/pages/Ucet.tsx(69,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.382 client/src/pages/Ucet.tsx(70,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.382 client/src/pages/Ucet.tsx(71,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.382 client/src/pages/Ucet.tsx(72,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.382 client/src/pages/Ucet.tsx(74,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.382 client/src/pages/Ucet.tsx(75,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.382 client/src/pages/Ucet.tsx(76,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.382 client/src/pages/Ucet.tsx(78,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.382 client/src/pages/Ucet.tsx(79,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.382 client/src/pages/Ucet.tsx(80,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.382 client/src/pages/Ucet.tsx(90,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.383 client/src/pages/Ucet.tsx(91,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.383 client/src/pages/Ucet.tsx(92,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.383 client/src/pages/Ucet.tsx(96,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.383 client/src/pages/Ucet.tsx(97,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.383 client/src/pages/Ucet.tsx(98,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.383 client/src/pages/Ucet.tsx(100,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.383 client/src/pages/Ucet.tsx(101,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.383 client/src/pages/Ucet.tsx(102,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.560 client/src/pages/ProductDetail.tsx(3,24): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../App.js'?
+07:30:45.560 client/src/pages/ProductDetail.tsx(32,22): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'SetStateAction<ProductData | null>'.
+07:30:45.560 client/src/pages/ProductDetail.tsx(42,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.560 client/src/pages/ProductDetail.tsx(43,24): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.560 client/src/pages/ProductDetail.tsx(46,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.560 client/src/pages/ProductDetail.tsx(47,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.560 client/src/pages/ProductDetail.tsx(49,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.560 client/src/pages/ProductDetail.tsx(50,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.561 client/src/pages/ProductDetail.tsx(59,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.561 client/src/pages/ProductDetail.tsx(60,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.561 client/src/pages/ProductDetail.tsx(64,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.561 client/src/pages/ProductDetail.tsx(65,32): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.561 client/src/pages/ProductDetail.tsx(66,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.561 client/src/pages/ProductDetail.tsx(67,29): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.561 client/src/pages/ProductDetail.tsx(68,42): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.561 client/src/pages/ProductDetail.tsx(69,30): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.561 client/src/pages/ProductDetail.tsx(72,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.561 client/src/pages/ProductDetail.tsx(73,14): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.561 client/src/pages/ProductDetail.tsx(75,14): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.561 client/src/pages/ProductDetail.tsx(89,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.561 client/src/pages/ProductDetail.tsx(93,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.737 client/src/pages/PrivacyPolicy.tsx(3,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.737 client/src/pages/PrivacyPolicy.tsx(4,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.737 client/src/pages/PrivacyPolicy.tsx(6,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.738 client/src/pages/PrivacyPolicy.tsx(7,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.738 client/src/pages/PrivacyPolicy.tsx(8,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.738 client/src/pages/PrivacyPolicy.tsx(9,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.738 client/src/pages/PrivacyPolicy.tsx(14,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.738 client/src/pages/PrivacyPolicy.tsx(15,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.738 client/src/pages/PrivacyPolicy.tsx(16,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.739 client/src/pages/PrivacyPolicy.tsx(17,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.739 client/src/pages/PrivacyPolicy.tsx(18,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.739 client/src/pages/PrivacyPolicy.tsx(19,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.739 client/src/pages/PrivacyPolicy.tsx(20,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.739 client/src/pages/PrivacyPolicy.tsx(24,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.739 client/src/pages/PrivacyPolicy.tsx(25,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.739 client/src/pages/PrivacyPolicy.tsx(26,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.740 client/src/pages/PrivacyPolicy.tsx(27,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.740 client/src/pages/PrivacyPolicy.tsx(28,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.740 client/src/pages/PrivacyPolicy.tsx(29,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.740 client/src/pages/PrivacyPolicy.tsx(30,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.740 client/src/pages/PrivacyPolicy.tsx(34,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.740 client/src/pages/PrivacyPolicy.tsx(35,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.741 client/src/pages/PrivacyPolicy.tsx(36,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.741 client/src/pages/PrivacyPolicy.tsx(41,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.741 client/src/pages/PrivacyPolicy.tsx(42,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.741 client/src/pages/PrivacyPolicy.tsx(43,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.905 client/src/pages/Payment.tsx(3,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.905 client/src/pages/Payment.tsx(4,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.905 client/src/pages/Payment.tsx(6,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.905 client/src/pages/Payment.tsx(7,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.906 client/src/pages/Payment.tsx(8,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.906 client/src/pages/Payment.tsx(9,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.906 client/src/pages/Payment.tsx(10,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.906 client/src/pages/Payment.tsx(11,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.906 client/src/pages/Payment.tsx(12,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.906 client/src/pages/Payment.tsx(13,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.906 client/src/pages/Payment.tsx(17,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.907 client/src/pages/Payment.tsx(18,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.907 client/src/pages/Payment.tsx(19,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.907 client/src/pages/Payment.tsx(22,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.907 client/src/pages/Payment.tsx(27,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.907 client/src/pages/Payment.tsx(28,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.907 client/src/pages/Payment.tsx(29,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.907 client/src/pages/Payment.tsx(34,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.908 client/src/pages/Payment.tsx(35,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:45.908 client/src/pages/Payment.tsx(36,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.120 client/src/pages/Login.tsx(3,24): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../App.js'?
+07:30:46.121 client/src/pages/Login.tsx(31,25): error TS18046: 'data' is of type 'unknown'.
+07:30:46.121 client/src/pages/Login.tsx(34,15): error TS18046: 'data' is of type 'unknown'.
+07:30:46.121 client/src/pages/Login.tsx(35,16): error TS18046: 'data' is of type 'unknown'.
+07:30:46.121 client/src/pages/Login.tsx(67,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.121 client/src/pages/Login.tsx(68,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.121 client/src/pages/Login.tsx(80,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.122 client/src/pages/Login.tsx(81,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.122 client/src/pages/Login.tsx(83,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.122 client/src/pages/Login.tsx(91,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.122 client/src/pages/Login.tsx(104,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.122 client/src/pages/Login.tsx(105,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.122 client/src/pages/Login.tsx(117,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.122 client/src/pages/Login.tsx(121,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.123 client/src/pages/Login.tsx(123,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.123 client/src/pages/Login.tsx(128,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.123 client/src/pages/Login.tsx(129,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.123 client/src/pages/Login.tsx(130,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.123 client/src/pages/Login.tsx(133,50): error TS2339: Property 'value' does not exist on type 'EventTarget & HTMLInputElement'.
+07:30:46.123 client/src/pages/Login.tsx(139,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.124 client/src/pages/Login.tsx(140,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.124 client/src/pages/Login.tsx(141,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.124 client/src/pages/Login.tsx(144,53): error TS2339: Property 'value' does not exist on type 'EventTarget & HTMLInputElement'.
+07:30:46.124 client/src/pages/Login.tsx(150,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.124 client/src/pages/Login.tsx(159,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.124 client/src/pages/Login.tsx(177,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.302 client/src/pages/LegalInfo.tsx(3,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.303 client/src/pages/LegalInfo.tsx(4,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.303 client/src/pages/LegalInfo.tsx(6,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.303 client/src/pages/LegalInfo.tsx(7,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.303 client/src/pages/LegalInfo.tsx(8,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.303 client/src/pages/LegalInfo.tsx(9,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.304 client/src/pages/LegalInfo.tsx(10,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.304 client/src/pages/LegalInfo.tsx(10,46): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.304 client/src/pages/LegalInfo.tsx(11,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.304 client/src/pages/LegalInfo.tsx(11,56): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.304 client/src/pages/LegalInfo.tsx(12,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.304 client/src/pages/LegalInfo.tsx(16,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.305 client/src/pages/LegalInfo.tsx(17,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.305 client/src/pages/LegalInfo.tsx(18,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.305 client/src/pages/LegalInfo.tsx(21,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.305 client/src/pages/LegalInfo.tsx(26,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.305 client/src/pages/LegalInfo.tsx(27,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.305 client/src/pages/LegalInfo.tsx(28,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.306 client/src/pages/LegalInfo.tsx(33,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.306 client/src/pages/LegalInfo.tsx(34,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.306 client/src/pages/LegalInfo.tsx(35,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.406 client/src/pages/FAQ.tsx(1,23): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../components/Accordion.js'?
+07:30:46.407 client/src/pages/FAQ.tsx(24,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.407 client/src/pages/FAQ.tsx(26,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.407 client/src/pages/FAQ.tsx(41,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.407 client/src/pages/FAQ.tsx(56,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.407 client/src/pages/FAQ.tsx(67,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.407 client/src/pages/FAQ.tsx(82,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.407 client/src/pages/FAQ.tsx(90,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.407 client/src/pages/FAQ.tsx(91,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.564 client/src/pages/Delivery.tsx(3,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.565 client/src/pages/Delivery.tsx(4,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.568 client/src/pages/Delivery.tsx(6,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.568 client/src/pages/Delivery.tsx(7,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.568 client/src/pages/Delivery.tsx(8,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.568 client/src/pages/Delivery.tsx(9,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.568 client/src/pages/Delivery.tsx(12,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.568 client/src/pages/Delivery.tsx(17,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.568 client/src/pages/Delivery.tsx(18,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.568 client/src/pages/Delivery.tsx(19,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.568 client/src/pages/Delivery.tsx(20,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.568 client/src/pages/Delivery.tsx(21,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.569 client/src/pages/Delivery.tsx(22,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.569 client/src/pages/Delivery.tsx(23,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.569 client/src/pages/Delivery.tsx(24,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.569 client/src/pages/Delivery.tsx(28,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.569 client/src/pages/Delivery.tsx(29,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.569 client/src/pages/Delivery.tsx(30,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.812 client/src/pages/CookieSettings.tsx(20,5): error TS2304: Cannot find name 'alert'.
+07:30:46.813 client/src/pages/CookieSettings.tsx(34,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.813 client/src/pages/CookieSettings.tsx(35,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.813 client/src/pages/CookieSettings.tsx(37,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.813 client/src/pages/CookieSettings.tsx(41,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.813 client/src/pages/CookieSettings.tsx(43,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.813 client/src/pages/CookieSettings.tsx(44,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.813 client/src/pages/CookieSettings.tsx(45,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.813 client/src/pages/CookieSettings.tsx(46,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.813 client/src/pages/CookieSettings.tsx(48,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.814 client/src/pages/CookieSettings.tsx(57,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.814 client/src/pages/CookieSettings.tsx(58,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.814 client/src/pages/CookieSettings.tsx(59,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.814 client/src/pages/CookieSettings.tsx(60,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.814 client/src/pages/CookieSettings.tsx(62,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.814 client/src/pages/CookieSettings.tsx(71,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.814 client/src/pages/CookieSettings.tsx(72,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.814 client/src/pages/CookieSettings.tsx(73,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.814 client/src/pages/CookieSettings.tsx(74,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.814 client/src/pages/CookieSettings.tsx(76,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.814 client/src/pages/CookieSettings.tsx(85,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.814 client/src/pages/CookieSettings.tsx(86,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.814 client/src/pages/CookieSettings.tsx(87,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.815 client/src/pages/CookieSettings.tsx(88,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.815 client/src/pages/CookieSettings.tsx(90,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.815 client/src/pages/CookieSettings.tsx(99,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.990 client/src/pages/CookiePolicy.tsx(3,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.990 client/src/pages/CookiePolicy.tsx(4,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.990 client/src/pages/CookiePolicy.tsx(6,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.990 client/src/pages/CookiePolicy.tsx(7,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.990 client/src/pages/CookiePolicy.tsx(8,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.990 client/src/pages/CookiePolicy.tsx(9,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.990 client/src/pages/CookiePolicy.tsx(14,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.991 client/src/pages/CookiePolicy.tsx(15,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.991 client/src/pages/CookiePolicy.tsx(16,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.991 client/src/pages/CookiePolicy.tsx(17,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.991 client/src/pages/CookiePolicy.tsx(17,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.991 client/src/pages/CookiePolicy.tsx(18,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.991 client/src/pages/CookiePolicy.tsx(18,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.991 client/src/pages/CookiePolicy.tsx(19,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.991 client/src/pages/CookiePolicy.tsx(19,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.991 client/src/pages/CookiePolicy.tsx(20,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.991 client/src/pages/CookiePolicy.tsx(20,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.991 client/src/pages/CookiePolicy.tsx(24,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.992 client/src/pages/CookiePolicy.tsx(25,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.992 client/src/pages/CookiePolicy.tsx(26,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.992 client/src/pages/CookiePolicy.tsx(29,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.992 client/src/pages/CookiePolicy.tsx(30,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.992 client/src/pages/CookiePolicy.tsx(31,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.992 client/src/pages/CookiePolicy.tsx(32,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.992 client/src/pages/CookiePolicy.tsx(33,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.992 client/src/pages/CookiePolicy.tsx(37,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.992 client/src/pages/CookiePolicy.tsx(38,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:46.992 client/src/pages/CookiePolicy.tsx(39,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.161 client/src/pages/Checkout.tsx(2,24): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../App.js'?
+07:30:47.164 client/src/pages/Checkout.tsx(13,30): error TS7006: Parameter 'sum' implicitly has an 'any' type.
+07:30:47.164 client/src/pages/Checkout.tsx(13,35): error TS7006: Parameter 'item' implicitly has an 'any' type.
+07:30:47.164 client/src/pages/Checkout.tsx(21,31): error TS7006: Parameter 'item' implicitly has an 'any' type.
+07:30:47.165 client/src/pages/Checkout.tsx(50,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.165 client/src/pages/Checkout.tsx(51,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.165 client/src/pages/Checkout.tsx(52,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.165 client/src/pages/Checkout.tsx(55,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.165 client/src/pages/Checkout.tsx(64,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.165 client/src/pages/Checkout.tsx(65,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.166 client/src/pages/Checkout.tsx(71,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.166 client/src/pages/Checkout.tsx(72,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.166 client/src/pages/Checkout.tsx(74,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.166 client/src/pages/Checkout.tsx(75,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.166 client/src/pages/Checkout.tsx(76,20): error TS7006: Parameter 'item' implicitly has an 'any' type.
+07:30:47.166 client/src/pages/Checkout.tsx(77,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.167 client/src/pages/Checkout.tsx(86,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.167 client/src/pages/Checkout.tsx(87,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.167 client/src/pages/Checkout.tsx(90,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.167 client/src/pages/Checkout.tsx(98,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.167 client/src/pages/Checkout.tsx(99,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.167 client/src/pages/Checkout.tsx(103,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.168 client/src/pages/Checkout.tsx(105,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.168 client/src/pages/Checkout.tsx(110,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.168 client/src/pages/Checkout.tsx(111,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.168 client/src/pages/Checkout.tsx(114,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.168 client/src/pages/Checkout.tsx(117,48): error TS2339: Property 'value' does not exist on type 'EventTarget & HTMLInputElement'.
+07:30:47.168 client/src/pages/Checkout.tsx(122,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.169 client/src/pages/Checkout.tsx(127,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.519 client/src/pages/Cart.tsx(1,24): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../App.js'?
+07:30:47.522 client/src/pages/Cart.tsx(7,30): error TS7006: Parameter 'sum' implicitly has an 'any' type.
+07:30:47.523 client/src/pages/Cart.tsx(7,35): error TS7006: Parameter 'item' implicitly has an 'any' type.
+07:30:47.523 client/src/pages/Cart.tsx(36,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.523 client/src/pages/Cart.tsx(38,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.523 client/src/pages/Cart.tsx(48,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.524 client/src/pages/Cart.tsx(59,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.524 client/src/pages/Cart.tsx(61,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.524 client/src/pages/Cart.tsx(62,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.524 client/src/pages/Cart.tsx(64,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.524 client/src/pages/Cart.tsx(69,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.525 client/src/pages/Cart.tsx(70,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.525 client/src/pages/Cart.tsx(71,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.525 client/src/pages/Cart.tsx(83,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.525 client/src/pages/Cart.tsx(84,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.525 client/src/pages/Cart.tsx(100,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.525 client/src/pages/Cart.tsx(101,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.526 client/src/pages/Cart.tsx(102,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.526 client/src/pages/Cart.tsx(103,28): error TS7006: Parameter 'item' implicitly has an 'any' type.
+07:30:47.526 client/src/pages/Cart.tsx(104,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.526 client/src/pages/Cart.tsx(115,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.526 client/src/pages/Cart.tsx(120,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.526 client/src/pages/Cart.tsx(121,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.527 client/src/pages/Cart.tsx(122,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.527 client/src/pages/Cart.tsx(126,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.527 client/src/pages/Cart.tsx(127,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.527 client/src/pages/Cart.tsx(143,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.527 client/src/pages/Cart.tsx(157,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.527 client/src/pages/Cart.tsx(166,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.528 client/src/pages/Cart.tsx(167,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.528 client/src/pages/Cart.tsx(170,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.528 client/src/pages/Cart.tsx(171,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.528 client/src/pages/Cart.tsx(189,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.528 client/src/pages/Cart.tsx(199,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.528 client/src/pages/Cart.tsx(200,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.529 client/src/pages/Cart.tsx(203,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.529 client/src/pages/Cart.tsx(206,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.529 client/src/pages/Cart.tsx(207,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.529 client/src/pages/Cart.tsx(208,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.529 client/src/pages/Cart.tsx(226,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.529 client/src/pages/Cart.tsx(227,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:47.530 client/src/pages/Cart.tsx(230,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.340 client/src/pages/Beaty.tsx(3,24): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../App.js'?
+07:30:48.340 client/src/pages/Beaty.tsx(4,36): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../hooks/useScrollAnimation.js'?
+07:30:48.340 client/src/pages/Beaty.tsx(5,27): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../components/ContractModal.js'?
+07:30:48.340 client/src/pages/Beaty.tsx(6,27): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../components/DownloadModal.js'?
+07:30:48.340 client/src/pages/Beaty.tsx(7,25): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../components/MusicPlayer.js'?
+07:30:48.340 client/src/pages/Beaty.tsx(8,23): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../components/SoundWave.js'?
+07:30:48.340 client/src/pages/Beaty.tsx(9,26): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../components/ProductsGrid.js'?
+07:30:48.340 client/src/pages/Beaty.tsx(10,27): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../components/SoundKitsDock.js'?
+07:30:48.340 client/src/pages/Beaty.tsx(11,28): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../components/ArtistCarousel.js'?
+07:30:48.341 client/src/pages/Beaty.tsx(12,28): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../components/MobileCarousel.js'?
+07:30:48.341 client/src/pages/Beaty.tsx(172,46): error TS2304: Cannot find name 'window'.
+07:30:48.341 client/src/pages/Beaty.tsx(197,13): error TS2345: Argument of type 'Dispatch<SetStateAction<Beat[]>>' is not assignable to parameter of type '(value: unknown) => void | PromiseLike<void>'.
+07:30:48.341 client/src/pages/Beaty.tsx(203,38): error TS2345: Argument of type '{}' is not assignable to parameter of type 'SetStateAction<Beat | null>'.
+07:30:48.341 client/src/pages/Beaty.tsx(213,27): error TS18046: 'items' is of type 'unknown'.
+07:30:48.341 client/src/pages/Beaty.tsx(231,30): error TS2304: Cannot find name 'window'.
+07:30:48.341 client/src/pages/Beaty.tsx(236,5): error TS2304: Cannot find name 'window'.
+07:30:48.341 client/src/pages/Beaty.tsx(237,18): error TS2304: Cannot find name 'window'.
+07:30:48.341 client/src/pages/Beaty.tsx(356,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.341 client/src/pages/Beaty.tsx(357,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.341 client/src/pages/Beaty.tsx(364,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.341 client/src/pages/Beaty.tsx(436,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.341 client/src/pages/Beaty.tsx(437,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.341 client/src/pages/Beaty.tsx(445,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.341 client/src/pages/Beaty.tsx(457,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.341 client/src/pages/Beaty.tsx(469,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.341 client/src/pages/Beaty.tsx(471,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.342 client/src/pages/Beaty.tsx(472,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.342 client/src/pages/Beaty.tsx(473,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.342 client/src/pages/Beaty.tsx(474,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.342 client/src/pages/Beaty.tsx(480,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.342 client/src/pages/Beaty.tsx(495,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.342 client/src/pages/Beaty.tsx(521,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.342 client/src/pages/Beaty.tsx(522,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.342 client/src/pages/Beaty.tsx(523,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.342 client/src/pages/Beaty.tsx(526,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.342 client/src/pages/Beaty.tsx(527,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.342 client/src/pages/Beaty.tsx(530,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.342 client/src/pages/Beaty.tsx(547,51): error TS2339: Property 'querySelector' does not exist on type 'EventTarget & HTMLButtonElement'.
+07:30:48.342 client/src/pages/Beaty.tsx(549,29): error TS2339: Property 'style' does not exist on type 'SVGElement'.
+07:30:48.342 client/src/pages/Beaty.tsx(553,51): error TS2339: Property 'querySelector' does not exist on type 'EventTarget & HTMLButtonElement'.
+07:30:48.342 client/src/pages/Beaty.tsx(555,29): error TS2339: Property 'style' does not exist on type 'SVGElement'.
+07:30:48.342 client/src/pages/Beaty.tsx(559,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.342 client/src/pages/Beaty.tsx(568,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.342 client/src/pages/Beaty.tsx(571,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.342 client/src/pages/Beaty.tsx(594,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.342 client/src/pages/Beaty.tsx(595,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.343 client/src/pages/Beaty.tsx(598,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.343 client/src/pages/Beaty.tsx(599,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.343 client/src/pages/Beaty.tsx(628,29): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.343 client/src/pages/Beaty.tsx(629,29): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.343 client/src/pages/Beaty.tsx(630,29): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.343 client/src/pages/Beaty.tsx(631,29): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.343 client/src/pages/Beaty.tsx(635,44): error TS2584: Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.343 client/src/pages/Beaty.tsx(657,31): error TS2812: Property 'appendChild' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.343 client/src/pages/Beaty.tsx(659,41): error TS2584: Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.343 client/src/pages/Beaty.tsx(666,27): error TS2584: Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.343 client/src/pages/Beaty.tsx(671,29): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.343 client/src/pages/Beaty.tsx(672,29): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.343 client/src/pages/Beaty.tsx(673,29): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.343 client/src/pages/Beaty.tsx(674,29): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.343 client/src/pages/Beaty.tsx(677,47): error TS2812: Property 'querySelectorAll' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.343 client/src/pages/Beaty.tsx(678,44): error TS7006: Parameter 'p' implicitly has an 'any' type.
+07:30:48.343 client/src/pages/Beaty.tsx(681,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.343 client/src/pages/Beaty.tsx(682,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.343 client/src/pages/Beaty.tsx(683,27): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.343 client/src/pages/Beaty.tsx(684,27): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.343 client/src/pages/Beaty.tsx(686,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.343 client/src/pages/Beaty.tsx(688,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.343 client/src/pages/Beaty.tsx(690,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.343 client/src/pages/Beaty.tsx(708,41): error TS2339: Property 'style' does not exist on type 'EventTarget & HTMLButtonElement'.
+07:30:48.343 client/src/pages/Beaty.tsx(711,41): error TS2339: Property 'style' does not exist on type 'EventTarget & HTMLButtonElement'.
+07:30:48.343 client/src/pages/Beaty.tsx(715,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.343 client/src/pages/Beaty.tsx(716,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.344 client/src/pages/Beaty.tsx(717,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.344 client/src/pages/Beaty.tsx(718,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.344 client/src/pages/Beaty.tsx(721,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.344 client/src/pages/Beaty.tsx(739,41): error TS2339: Property 'style' does not exist on type 'EventTarget & HTMLButtonElement'.
+07:30:48.344 client/src/pages/Beaty.tsx(742,41): error TS2339: Property 'style' does not exist on type 'EventTarget & HTMLButtonElement'.
+07:30:48.344 client/src/pages/Beaty.tsx(746,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.344 client/src/pages/Beaty.tsx(747,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.344 client/src/pages/Beaty.tsx(748,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.344 client/src/pages/Beaty.tsx(749,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.344 client/src/pages/Beaty.tsx(750,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.349 client/src/pages/Beaty.tsx(751,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.349 client/src/pages/Beaty.tsx(755,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.349 client/src/pages/Beaty.tsx(757,27): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.349 client/src/pages/Beaty.tsx(774,35): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.349 client/src/pages/Beaty.tsx(775,35): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.349 client/src/pages/Beaty.tsx(779,35): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.349 client/src/pages/Beaty.tsx(780,35): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.349 client/src/pages/Beaty.tsx(793,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.349 client/src/pages/Beaty.tsx(804,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.349 client/src/pages/Beaty.tsx(812,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.349 client/src/pages/Beaty.tsx(821,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.349 client/src/pages/Beaty.tsx(824,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.349 client/src/pages/Beaty.tsx(959,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.349 client/src/pages/Beaty.tsx(961,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.349 client/src/pages/Beaty.tsx(962,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.350 client/src/pages/Beaty.tsx(967,43): error TS2339: Property 'value' does not exist on type 'EventTarget & HTMLInputElement'.
+07:30:48.350 client/src/pages/Beaty.tsx(982,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.350 client/src/pages/Beaty.tsx(1003,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.350 client/src/pages/Beaty.tsx(1004,38): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.350 client/src/pages/Beaty.tsx(1008,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.350 client/src/pages/Beaty.tsx(1010,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.350 client/src/pages/Beaty.tsx(1024,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.350 client/src/pages/Beaty.tsx(1025,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.350 client/src/pages/Beaty.tsx(1026,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.350 client/src/pages/Beaty.tsx(1027,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.350 client/src/pages/Beaty.tsx(1032,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.350 client/src/pages/Beaty.tsx(1033,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.350 client/src/pages/Beaty.tsx(1034,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.350 client/src/pages/Beaty.tsx(1035,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.350 client/src/pages/Beaty.tsx(1037,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.350 client/src/pages/Beaty.tsx(1038,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.350 client/src/pages/Beaty.tsx(1039,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.350 client/src/pages/Beaty.tsx(1039,160): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.350 client/src/pages/Beaty.tsx(1040,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.350 client/src/pages/Beaty.tsx(1040,160): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.350 client/src/pages/Beaty.tsx(1043,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.350 client/src/pages/Beaty.tsx(1063,24): error TS2812: Property 'style' does not exist on type 'HTMLElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.350 client/src/pages/Beaty.tsx(1064,24): error TS2812: Property 'style' does not exist on type 'HTMLElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.350 client/src/pages/Beaty.tsx(1065,24): error TS2812: Property 'style' does not exist on type 'HTMLElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.350 client/src/pages/Beaty.tsx(1066,24): error TS2812: Property 'style' does not exist on type 'HTMLElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.350 client/src/pages/Beaty.tsx(1067,42): error TS2812: Property 'querySelector' does not exist on type 'HTMLElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.350 client/src/pages/Beaty.tsx(1068,42): error TS2812: Property 'style' does not exist on type 'HTMLElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.350 client/src/pages/Beaty.tsx(1072,24): error TS2812: Property 'style' does not exist on type 'HTMLElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.351 client/src/pages/Beaty.tsx(1073,24): error TS2812: Property 'style' does not exist on type 'HTMLElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.351 client/src/pages/Beaty.tsx(1074,24): error TS2812: Property 'style' does not exist on type 'HTMLElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.351 client/src/pages/Beaty.tsx(1075,24): error TS2812: Property 'style' does not exist on type 'HTMLElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.351 client/src/pages/Beaty.tsx(1076,42): error TS2812: Property 'querySelector' does not exist on type 'HTMLElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.351 client/src/pages/Beaty.tsx(1077,42): error TS2812: Property 'style' does not exist on type 'HTMLElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.351 client/src/pages/Beaty.tsx(1080,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.351 client/src/pages/Beaty.tsx(1081,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.351 client/src/pages/Beaty.tsx(1082,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.351 client/src/pages/Beaty.tsx(1099,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.351 client/src/pages/Beaty.tsx(1127,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.351 client/src/pages/Beaty.tsx(1133,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.351 client/src/pages/Beaty.tsx(1134,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.351 client/src/pages/Beaty.tsx(1135,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.351 client/src/pages/Beaty.tsx(1135,68): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.351 client/src/pages/Beaty.tsx(1135,122): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.351 client/src/pages/Beaty.tsx(1137,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.351 client/src/pages/Beaty.tsx(1138,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.351 client/src/pages/Beaty.tsx(1139,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.351 client/src/pages/Beaty.tsx(1155,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.351 client/src/pages/Beaty.tsx(1163,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.351 client/src/pages/Beaty.tsx(1167,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.351 client/src/pages/Beaty.tsx(1169,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.351 client/src/pages/Beaty.tsx(1191,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.351 client/src/pages/Beaty.tsx(1192,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.351 client/src/pages/Beaty.tsx(1210,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.351 client/src/pages/Beaty.tsx(1211,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.351 client/src/pages/Beaty.tsx(1212,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.351 client/src/pages/Beaty.tsx(1213,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.351 client/src/pages/Beaty.tsx(1216,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.351 client/src/pages/Beaty.tsx(1233,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.351 client/src/pages/Beaty.tsx(1234,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.352 client/src/pages/Beaty.tsx(1235,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.352 client/src/pages/Beaty.tsx(1236,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.352 client/src/pages/Beaty.tsx(1237,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.352 client/src/pages/Beaty.tsx(1238,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.352 client/src/pages/Beaty.tsx(1241,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.352 client/src/pages/Beaty.tsx(1273,27): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.352 client/src/pages/Beaty.tsx(1274,27): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.352 client/src/pages/Beaty.tsx(1275,27): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.352 client/src/pages/Beaty.tsx(1279,27): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.352 client/src/pages/Beaty.tsx(1280,27): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.352 client/src/pages/Beaty.tsx(1281,27): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.352 client/src/pages/Beaty.tsx(1284,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.352 client/src/pages/Beaty.tsx(1285,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.352 client/src/pages/Beaty.tsx(1286,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.352 client/src/pages/Beaty.tsx(1287,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.352 client/src/pages/Beaty.tsx(1289,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.352 client/src/pages/Beaty.tsx(1291,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.352 client/src/pages/Beaty.tsx(1295,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.352 client/src/pages/Beaty.tsx(1296,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.352 client/src/pages/Beaty.tsx(1299,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.352 client/src/pages/Beaty.tsx(1304,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.352 client/src/pages/Beaty.tsx(1306,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.352 client/src/pages/Beaty.tsx(1326,27): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.352 client/src/pages/Beaty.tsx(1327,27): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.352 client/src/pages/Beaty.tsx(1331,27): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.352 client/src/pages/Beaty.tsx(1332,27): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.353 client/src/pages/Beaty.tsx(1340,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.353 client/src/pages/Beaty.tsx(1341,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.353 client/src/pages/Beaty.tsx(1361,57): error TS2339: Property 'style' does not exist on type 'EventTarget & HTMLButtonElement'.
+07:30:48.353 client/src/pages/Beaty.tsx(1362,57): error TS2339: Property 'style' does not exist on type 'EventTarget & HTMLButtonElement'.
+07:30:48.353 client/src/pages/Beaty.tsx(1365,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.353 client/src/pages/Beaty.tsx(1366,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.353 client/src/pages/Beaty.tsx(1367,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.353 client/src/pages/Beaty.tsx(1368,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.353 client/src/pages/Beaty.tsx(1371,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.353 client/src/pages/Beaty.tsx(1391,57): error TS2339: Property 'style' does not exist on type 'EventTarget & HTMLButtonElement'.
+07:30:48.353 client/src/pages/Beaty.tsx(1392,57): error TS2339: Property 'style' does not exist on type 'EventTarget & HTMLButtonElement'.
+07:30:48.353 client/src/pages/Beaty.tsx(1395,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.353 client/src/pages/Beaty.tsx(1396,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.353 client/src/pages/Beaty.tsx(1397,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.353 client/src/pages/Beaty.tsx(1398,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.353 client/src/pages/Beaty.tsx(1399,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.353 client/src/pages/Beaty.tsx(1400,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.353 client/src/pages/Beaty.tsx(1403,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.353 client/src/pages/Beaty.tsx(1449,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.353 client/src/pages/Beaty.tsx(1450,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.353 client/src/pages/Beaty.tsx(1482,29): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.353 client/src/pages/Beaty.tsx(1483,29): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.353 client/src/pages/Beaty.tsx(1484,29): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.353 client/src/pages/Beaty.tsx(1485,29): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.353 client/src/pages/Beaty.tsx(1489,29): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.353 client/src/pages/Beaty.tsx(1490,29): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.353 client/src/pages/Beaty.tsx(1491,29): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.353 client/src/pages/Beaty.tsx(1492,29): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.353 client/src/pages/Beaty.tsx(1495,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.354 client/src/pages/Beaty.tsx(1496,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.354 client/src/pages/Beaty.tsx(1497,27): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.354 client/src/pages/Beaty.tsx(1498,27): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.354 client/src/pages/Beaty.tsx(1500,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.354 client/src/pages/Beaty.tsx(1502,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.354 client/src/pages/Beaty.tsx(1505,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.354 client/src/pages/Beaty.tsx(1539,27): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.354 client/src/pages/Beaty.tsx(1540,27): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.354 client/src/pages/Beaty.tsx(1541,27): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.354 client/src/pages/Beaty.tsx(1542,27): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.354 client/src/pages/Beaty.tsx(1546,27): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.354 client/src/pages/Beaty.tsx(1547,27): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.354 client/src/pages/Beaty.tsx(1548,27): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.354 client/src/pages/Beaty.tsx(1549,27): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.354 client/src/pages/Beaty.tsx(1552,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.354 client/src/pages/Beaty.tsx(1553,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.354 client/src/pages/Beaty.tsx(1554,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.354 client/src/pages/Beaty.tsx(1555,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.354 client/src/pages/Beaty.tsx(1557,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.354 client/src/pages/Beaty.tsx(1559,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.354 client/src/pages/Beaty.tsx(1561,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.354 client/src/pages/Beaty.tsx(1581,37): error TS2812: Property 'querySelector' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.354 client/src/pages/Beaty.tsx(1583,27): error TS2339: Property 'style' does not exist on type 'SVGElement'.
+07:30:48.354 client/src/pages/Beaty.tsx(1584,27): error TS2339: Property 'style' does not exist on type 'SVGElement'.
+07:30:48.354 client/src/pages/Beaty.tsx(1589,37): error TS2812: Property 'querySelector' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.360 client/src/pages/Beaty.tsx(1591,27): error TS2339: Property 'style' does not exist on type 'SVGElement'.
+07:30:48.360 client/src/pages/Beaty.tsx(1592,27): error TS2339: Property 'style' does not exist on type 'SVGElement'.
+07:30:48.360 client/src/pages/Beaty.tsx(1596,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.360 client/src/pages/Beaty.tsx(1605,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.360 client/src/pages/Beaty.tsx(1614,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.360 client/src/pages/Beaty.tsx(1615,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.360 client/src/pages/Beaty.tsx(1640,23): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.360 client/src/pages/Beaty.tsx(1641,23): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.360 client/src/pages/Beaty.tsx(1642,23): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.360 client/src/pages/Beaty.tsx(1643,23): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.360 client/src/pages/Beaty.tsx(1646,47): error TS2812: Property 'querySelector' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.361 client/src/pages/Beaty.tsx(1650,35): error TS2584: Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.361 client/src/pages/Beaty.tsx(1662,23): error TS2812: Property 'appendChild' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.361 client/src/pages/Beaty.tsx(1665,24): error TS2584: Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.361 client/src/pages/Beaty.tsx(1666,35): error TS2584: Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.361 client/src/pages/Beaty.tsx(1678,21): error TS2584: Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.361 client/src/pages/Beaty.tsx(1683,23): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.361 client/src/pages/Beaty.tsx(1684,23): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.361 client/src/pages/Beaty.tsx(1685,23): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.361 client/src/pages/Beaty.tsx(1686,23): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.361 client/src/pages/Beaty.tsx(1689,39): error TS2812: Property 'querySelector' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.361 client/src/pages/Beaty.tsx(1691,46): error TS2812: Property 'style' does not exist on type 'HTMLElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.361 client/src/pages/Beaty.tsx(1697,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.361 client/src/pages/Beaty.tsx(1698,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.361 client/src/pages/Beaty.tsx(1699,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.361 client/src/pages/Beaty.tsx(1706,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.361 client/src/pages/Beaty.tsx(1708,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.368 client/src/pages/Beaty.tsx(1722,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.368 client/src/pages/Beaty.tsx(1726,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.368 client/src/pages/Beaty.tsx(1729,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.368 client/src/pages/Beaty.tsx(1730,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.368 client/src/pages/Beaty.tsx(1731,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.368 client/src/pages/Beaty.tsx(1735,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.368 client/src/pages/Beaty.tsx(1761,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.368 client/src/pages/Beaty.tsx(1764,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.368 client/src/pages/Beaty.tsx(1768,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.368 client/src/pages/Beaty.tsx(1770,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.368 client/src/pages/Beaty.tsx(1782,46): error TS2339: Property 'getBoundingClientRect' does not exist on type 'EventTarget & HTMLDivElement'.
+07:30:48.368 client/src/pages/Beaty.tsx(1789,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.369 client/src/pages/Beaty.tsx(1808,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.369 client/src/pages/Beaty.tsx(1814,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.369 client/src/pages/Beaty.tsx(1827,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.369 client/src/pages/Beaty.tsx(1855,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.369 client/src/pages/Beaty.tsx(1867,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.369 client/src/pages/Beaty.tsx(1877,30): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.369 client/src/pages/Beaty.tsx(1878,37): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.369 client/src/pages/Beaty.tsx(1879,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.369 client/src/pages/Beaty.tsx(1880,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.369 client/src/pages/Beaty.tsx(1881,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.369 client/src/pages/Beaty.tsx(1885,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.369 client/src/pages/Beaty.tsx(1917,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.369 client/src/pages/Beaty.tsx(1927,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.369 client/src/pages/Beaty.tsx(1935,30): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.374 client/src/pages/Beaty.tsx(1936,37): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.375 client/src/pages/Beaty.tsx(1937,33): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.375 client/src/pages/Beaty.tsx(1937,120): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.375 client/src/pages/Beaty.tsx(1940,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.375 client/src/pages/Beaty.tsx(1956,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.375 client/src/pages/Beaty.tsx(1988,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.375 client/src/pages/Beaty.tsx(1999,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.375 client/src/pages/Beaty.tsx(2019,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.375 client/src/pages/Beaty.tsx(2026,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.375 client/src/pages/Beaty.tsx(2043,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.375 client/src/pages/Beaty.tsx(2044,10): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.375 client/src/pages/Beaty.tsx(2071,19): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.375 client/src/pages/Beaty.tsx(2072,19): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.375 client/src/pages/Beaty.tsx(2073,19): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.375 client/src/pages/Beaty.tsx(2074,19): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.375 client/src/pages/Beaty.tsx(2075,19): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.375 client/src/pages/Beaty.tsx(2076,19): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.375 client/src/pages/Beaty.tsx(2078,43): error TS2812: Property 'querySelector' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.375 client/src/pages/Beaty.tsx(2081,31): error TS2584: Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.375 client/src/pages/Beaty.tsx(2093,19): error TS2812: Property 'appendChild' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.375 client/src/pages/Beaty.tsx(2097,19): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.375 client/src/pages/Beaty.tsx(2098,19): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.375 client/src/pages/Beaty.tsx(2099,19): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.375 client/src/pages/Beaty.tsx(2100,19): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.375 client/src/pages/Beaty.tsx(2101,19): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.375 client/src/pages/Beaty.tsx(2102,19): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.375 client/src/pages/Beaty.tsx(2104,35): error TS2812: Property 'querySelector' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.375 client/src/pages/Beaty.tsx(2106,42): error TS2812: Property 'style' does not exist on type 'HTMLElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:48.375 client/src/pages/Beaty.tsx(2112,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.375 client/src/pages/Beaty.tsx(2113,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.375 client/src/pages/Beaty.tsx(2114,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.375 client/src/pages/Beaty.tsx(2119,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.375 client/src/pages/Beaty.tsx(2128,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:48.376 client/src/pages/Beaty.tsx(2138,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.079 client/src/pages/Admin.tsx(2,24): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../App.js'?
+07:30:49.080 client/src/pages/Admin.tsx(88,16): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'SetStateAction<Beat[]>'.
+07:30:49.080 client/src/pages/Admin.tsx(89,15): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'SetStateAction<SoundKit[]>'.
+07:30:49.080 client/src/pages/Admin.tsx(90,17): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'SetStateAction<any[]>'.
+07:30:49.080 client/src/pages/Admin.tsx(91,19): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'SetStateAction<LicenseType[]>'.
+07:30:49.080 client/src/pages/Admin.tsx(100,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.081 client/src/pages/Admin.tsx(101,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.081 client/src/pages/Admin.tsx(103,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.081 client/src/pages/Admin.tsx(105,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.081 client/src/pages/Admin.tsx(116,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.081 client/src/pages/Admin.tsx(128,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.087 client/src/pages/Admin.tsx(138,28): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.087 client/src/pages/Admin.tsx(140,30): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.088 client/src/pages/Admin.tsx(199,10): error TS2304: Cannot find name 'confirm'.
+07:30:49.088 client/src/pages/Admin.tsx(213,12): error TS18046: 'data' is of type 'unknown'.
+07:30:49.088 client/src/pages/Admin.tsx(217,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.088 client/src/pages/Admin.tsx(218,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.088 client/src/pages/Admin.tsx(223,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.088 client/src/pages/Admin.tsx(224,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.088 client/src/pages/Admin.tsx(225,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.089 client/src/pages/Admin.tsx(226,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.089 client/src/pages/Admin.tsx(227,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.089 client/src/pages/Admin.tsx(227,93): error TS2339: Property 'value' does not exist on type 'EventTarget & HTMLInputElement'.
+07:30:49.089 client/src/pages/Admin.tsx(229,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.089 client/src/pages/Admin.tsx(230,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.089 client/src/pages/Admin.tsx(231,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.090 client/src/pages/Admin.tsx(231,95): error TS2339: Property 'value' does not exist on type 'EventTarget & HTMLInputElement'.
+07:30:49.090 client/src/pages/Admin.tsx(233,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.090 client/src/pages/Admin.tsx(234,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.090 client/src/pages/Admin.tsx(235,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.090 client/src/pages/Admin.tsx(235,110): error TS2339: Property 'value' does not exist on type 'EventTarget & HTMLInputElement'.
+07:30:49.090 client/src/pages/Admin.tsx(237,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.091 client/src/pages/Admin.tsx(238,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.091 client/src/pages/Admin.tsx(239,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.092 client/src/pages/Admin.tsx(239,89): error TS2339: Property 'value' does not exist on type 'EventTarget & HTMLInputElement'.
+07:30:49.092 client/src/pages/Admin.tsx(241,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.092 client/src/pages/Admin.tsx(242,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.092 client/src/pages/Admin.tsx(243,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.092 client/src/pages/Admin.tsx(243,114): error TS2339: Property 'value' does not exist on type 'EventTarget & HTMLInputElement'.
+07:30:49.092 client/src/pages/Admin.tsx(245,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.093 client/src/pages/Admin.tsx(246,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.093 client/src/pages/Admin.tsx(247,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.093 client/src/pages/Admin.tsx(247,123): error TS2339: Property 'checked' does not exist on type 'EventTarget & HTMLInputElement'.
+07:30:49.093 client/src/pages/Admin.tsx(249,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.093 client/src/pages/Admin.tsx(250,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.093 client/src/pages/Admin.tsx(251,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.094 client/src/pages/Admin.tsx(251,127): error TS2339: Property 'checked' does not exist on type 'EventTarget & HTMLInputElement'.
+07:30:49.094 client/src/pages/Admin.tsx(252,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.094 client/src/pages/Admin.tsx(254,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.094 client/src/pages/Admin.tsx(255,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.094 client/src/pages/Admin.tsx(256,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.094 client/src/pages/Admin.tsx(257,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.094 client/src/pages/Admin.tsx(257,79): error TS2339: Property 'value' does not exist on type 'EventTarget & HTMLInputElement'.
+07:30:49.095 client/src/pages/Admin.tsx(258,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.095 client/src/pages/Admin.tsx(265,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.095 client/src/pages/Admin.tsx(267,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.095 client/src/pages/Admin.tsx(268,27): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.095 client/src/pages/Admin.tsx(273,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.095 client/src/pages/Admin.tsx(274,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.096 client/src/pages/Admin.tsx(275,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.096 client/src/pages/Admin.tsx(276,30): error TS2339: Property 'files' does not exist on type 'EventTarget & HTMLInputElement'.
+07:30:49.096 client/src/pages/Admin.tsx(277,57): error TS2339: Property 'files' does not exist on type 'EventTarget & HTMLInputElement'.
+07:30:49.097 client/src/pages/Admin.tsx(281,35): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.097 client/src/pages/Admin.tsx(283,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.097 client/src/pages/Admin.tsx(284,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.097 client/src/pages/Admin.tsx(285,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.097 client/src/pages/Admin.tsx(286,30): error TS2339: Property 'files' does not exist on type 'EventTarget & HTMLInputElement'.
+07:30:49.097 client/src/pages/Admin.tsx(287,57): error TS2339: Property 'files' does not exist on type 'EventTarget & HTMLInputElement'.
+07:30:49.103 client/src/pages/Admin.tsx(291,32): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.106 client/src/pages/Admin.tsx(293,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.107 client/src/pages/Admin.tsx(294,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.107 client/src/pages/Admin.tsx(295,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.107 client/src/pages/Admin.tsx(296,30): error TS2339: Property 'files' does not exist on type 'EventTarget & HTMLInputElement'.
+07:30:49.107 client/src/pages/Admin.tsx(297,57): error TS2339: Property 'files' does not exist on type 'EventTarget & HTMLInputElement'.
+07:30:49.107 client/src/pages/Admin.tsx(301,35): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.108 client/src/pages/Admin.tsx(304,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.108 client/src/pages/Admin.tsx(310,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.108 client/src/pages/Admin.tsx(311,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.108 client/src/pages/Admin.tsx(312,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.108 client/src/pages/Admin.tsx(313,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.108 client/src/pages/Admin.tsx(314,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.109 client/src/pages/Admin.tsx(315,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.109 client/src/pages/Admin.tsx(316,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.109 client/src/pages/Admin.tsx(317,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.109 client/src/pages/Admin.tsx(318,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.109 client/src/pages/Admin.tsx(321,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.110 client/src/pages/Admin.tsx(323,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.110 client/src/pages/Admin.tsx(324,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.110 client/src/pages/Admin.tsx(325,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.110 client/src/pages/Admin.tsx(326,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.111 client/src/pages/Admin.tsx(327,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.113 client/src/pages/Admin.tsx(328,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.113 client/src/pages/Admin.tsx(329,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.113 client/src/pages/Admin.tsx(330,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.113 client/src/pages/Admin.tsx(331,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.113 client/src/pages/Admin.tsx(398,10): error TS2304: Cannot find name 'confirm'.
+07:30:49.114 client/src/pages/Admin.tsx(412,12): error TS18046: 'data' is of type 'unknown'.
+07:30:49.114 client/src/pages/Admin.tsx(423,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.114 client/src/pages/Admin.tsx(424,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.116 client/src/pages/Admin.tsx(429,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.116 client/src/pages/Admin.tsx(430,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.116 client/src/pages/Admin.tsx(431,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.116 client/src/pages/Admin.tsx(432,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.117 client/src/pages/Admin.tsx(433,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.117 client/src/pages/Admin.tsx(433,93): error TS2339: Property 'value' does not exist on type 'EventTarget & HTMLInputElement'.
+07:30:49.117 client/src/pages/Admin.tsx(435,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.117 client/src/pages/Admin.tsx(436,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.117 client/src/pages/Admin.tsx(437,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.117 client/src/pages/Admin.tsx(437,92): error TS2339: Property 'value' does not exist on type 'EventTarget & HTMLSelectElement'.
+07:30:49.118 client/src/pages/Admin.tsx(438,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.118 client/src/pages/Admin.tsx(439,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.118 client/src/pages/Admin.tsx(440,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.118 client/src/pages/Admin.tsx(441,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.120 client/src/pages/Admin.tsx(442,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.120 client/src/pages/Admin.tsx(445,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.120 client/src/pages/Admin.tsx(446,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.122 client/src/pages/Admin.tsx(447,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.123 client/src/pages/Admin.tsx(447,108): error TS2339: Property 'value' does not exist on type 'EventTarget & HTMLTextAreaElement'.
+07:30:49.123 client/src/pages/Admin.tsx(449,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.123 client/src/pages/Admin.tsx(450,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.123 client/src/pages/Admin.tsx(451,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.123 client/src/pages/Admin.tsx(451,114): error TS2339: Property 'value' does not exist on type 'EventTarget & HTMLInputElement'.
+07:30:49.123 client/src/pages/Admin.tsx(453,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.124 client/src/pages/Admin.tsx(454,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.124 client/src/pages/Admin.tsx(455,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.126 client/src/pages/Admin.tsx(455,115): error TS2339: Property 'checked' does not exist on type 'EventTarget & HTMLInputElement'.
+07:30:49.126 client/src/pages/Admin.tsx(455,140): error TS2339: Property 'checked' does not exist on type 'EventTarget & HTMLInputElement'.
+07:30:49.126 client/src/pages/Admin.tsx(458,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.126 client/src/pages/Admin.tsx(459,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.130 client/src/pages/Admin.tsx(460,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.130 client/src/pages/Admin.tsx(460,132): error TS2339: Property 'value' does not exist on type 'EventTarget & HTMLInputElement'.
+07:30:49.130 client/src/pages/Admin.tsx(462,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.131 client/src/pages/Admin.tsx(463,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.131 client/src/pages/Admin.tsx(464,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.134 client/src/pages/Admin.tsx(464,123): error TS2339: Property 'checked' does not exist on type 'EventTarget & HTMLInputElement'.
+07:30:49.134 client/src/pages/Admin.tsx(466,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.135 client/src/pages/Admin.tsx(467,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.135 client/src/pages/Admin.tsx(468,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.135 client/src/pages/Admin.tsx(469,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.135 client/src/pages/Admin.tsx(469,79): error TS2339: Property 'value' does not exist on type 'EventTarget & HTMLInputElement'.
+07:30:49.135 client/src/pages/Admin.tsx(470,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.135 client/src/pages/Admin.tsx(472,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.136 client/src/pages/Admin.tsx(474,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.136 client/src/pages/Admin.tsx(475,27): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.136 client/src/pages/Admin.tsx(480,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.136 client/src/pages/Admin.tsx(481,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.136 client/src/pages/Admin.tsx(482,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.136 client/src/pages/Admin.tsx(483,30): error TS2339: Property 'files' does not exist on type 'EventTarget & HTMLInputElement'.
+07:30:49.137 client/src/pages/Admin.tsx(484,57): error TS2339: Property 'files' does not exist on type 'EventTarget & HTMLInputElement'.
+07:30:49.137 client/src/pages/Admin.tsx(489,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.137 client/src/pages/Admin.tsx(490,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.137 client/src/pages/Admin.tsx(491,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.137 client/src/pages/Admin.tsx(492,30): error TS2339: Property 'files' does not exist on type 'EventTarget & HTMLInputElement'.
+07:30:49.137 client/src/pages/Admin.tsx(493,57): error TS2339: Property 'files' does not exist on type 'EventTarget & HTMLInputElement'.
+07:30:49.138 client/src/pages/Admin.tsx(498,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.138 client/src/pages/Admin.tsx(499,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.138 client/src/pages/Admin.tsx(500,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.138 client/src/pages/Admin.tsx(501,30): error TS2339: Property 'files' does not exist on type 'EventTarget & HTMLInputElement'.
+07:30:49.138 client/src/pages/Admin.tsx(502,57): error TS2339: Property 'files' does not exist on type 'EventTarget & HTMLInputElement'.
+07:30:49.139 client/src/pages/Admin.tsx(507,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.139 client/src/pages/Admin.tsx(508,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.139 client/src/pages/Admin.tsx(509,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.139 client/src/pages/Admin.tsx(509,104): error TS2339: Property 'value' does not exist on type 'EventTarget & HTMLTextAreaElement'.
+07:30:49.139 client/src/pages/Admin.tsx(511,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.139 client/src/pages/Admin.tsx(512,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.140 client/src/pages/Admin.tsx(513,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.140 client/src/pages/Admin.tsx(513,106): error TS2339: Property 'value' does not exist on type 'EventTarget & HTMLTextAreaElement'.
+07:30:49.140 client/src/pages/Admin.tsx(516,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.140 client/src/pages/Admin.tsx(522,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.140 client/src/pages/Admin.tsx(523,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.140 client/src/pages/Admin.tsx(524,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.141 client/src/pages/Admin.tsx(525,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.141 client/src/pages/Admin.tsx(526,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.141 client/src/pages/Admin.tsx(527,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.141 client/src/pages/Admin.tsx(528,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.141 client/src/pages/Admin.tsx(529,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.141 client/src/pages/Admin.tsx(532,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.142 client/src/pages/Admin.tsx(534,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.142 client/src/pages/Admin.tsx(535,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.142 client/src/pages/Admin.tsx(536,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.142 client/src/pages/Admin.tsx(537,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.142 client/src/pages/Admin.tsx(538,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.142 client/src/pages/Admin.tsx(539,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.142 client/src/pages/Admin.tsx(540,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.143 client/src/pages/Admin.tsx(541,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.143 client/src/pages/Admin.tsx(563,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.143 client/src/pages/Admin.tsx(565,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.143 client/src/pages/Admin.tsx(567,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.143 client/src/pages/Admin.tsx(568,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.143 client/src/pages/Admin.tsx(569,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.144 client/src/pages/Admin.tsx(570,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.144 client/src/pages/Admin.tsx(571,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.144 client/src/pages/Admin.tsx(572,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.144 client/src/pages/Admin.tsx(573,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.144 client/src/pages/Admin.tsx(574,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.144 client/src/pages/Admin.tsx(575,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.144 client/src/pages/Admin.tsx(578,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.145 client/src/pages/Admin.tsx(580,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.145 client/src/pages/Admin.tsx(581,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.145 client/src/pages/Admin.tsx(582,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.145 client/src/pages/Admin.tsx(583,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.145 client/src/pages/Admin.tsx(586,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.145 client/src/pages/Admin.tsx(587,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.145 client/src/pages/Admin.tsx(588,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.146 client/src/pages/Admin.tsx(589,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.146 client/src/pages/Admin.tsx(591,70): error TS2339: Property 'value' does not exist on type 'EventTarget & HTMLSelectElement'.
+07:30:49.146 client/src/pages/Admin.tsx(594,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.146 client/src/pages/Admin.tsx(595,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.146 client/src/pages/Admin.tsx(596,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.146 client/src/pages/Admin.tsx(610,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.147 client/src/pages/Admin.tsx(612,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.147 client/src/pages/Admin.tsx(614,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.147 client/src/pages/Admin.tsx(615,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.147 client/src/pages/Admin.tsx(616,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.147 client/src/pages/Admin.tsx(617,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.147 client/src/pages/Admin.tsx(618,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.148 client/src/pages/Admin.tsx(619,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.148 client/src/pages/Admin.tsx(622,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.148 client/src/pages/Admin.tsx(624,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.148 client/src/pages/Admin.tsx(625,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.148 client/src/pages/Admin.tsx(626,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.148 client/src/pages/Admin.tsx(627,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.267 client/src/components/SoundWave.tsx(10,30): error TS2304: Cannot find name 'AnalyserNode'.
+07:30:49.268 client/src/components/SoundWave.tsx(12,34): error TS2304: Cannot find name 'AudioContext'.
+07:30:49.268 client/src/components/SoundWave.tsx(21,35): error TS2304: Cannot find name 'window'.
+07:30:49.268 client/src/components/SoundWave.tsx(21,59): error TS2304: Cannot find name 'window'.
+07:30:49.268 client/src/components/SoundWave.tsx(21,99): error TS2304: Cannot find name 'AudioContext'.
+07:30:49.268 client/src/components/SoundWave.tsx(43,32): error TS2304: Cannot find name 'requestAnimationFrame'.
+07:30:49.269 client/src/components/SoundWave.tsx(54,9): error TS2304: Cannot find name 'cancelAnimationFrame'.
+07:30:49.269 client/src/components/SoundWave.tsx(65,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.269 client/src/components/SoundWave.tsx(66,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.269 client/src/components/SoundWave.tsx(86,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.450 client/src/components/SoundKitsDock.tsx(31,26): error TS2304: Cannot find name 'IntersectionObserver'.
+07:30:49.459 client/src/components/SoundKitsDock.tsx(32,9): error TS7031: Binding element 'entry' implicitly has an 'any' type.
+07:30:49.459 client/src/components/SoundKitsDock.tsx(89,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.459 client/src/components/SoundKitsDock.tsx(90,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.459 client/src/components/SoundKitsDock.tsx(166,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.459 client/src/components/SoundKitsDock.tsx(186,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.459 client/src/components/SoundKitsDock.tsx(187,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.459 client/src/components/SoundKitsDock.tsx(213,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.459 client/src/components/SoundKitsDock.tsx(231,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.459 client/src/components/SoundKitsDock.tsx(252,54): error TS2812: Property 'style' does not exist on type 'HTMLElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:49.459 client/src/components/SoundKitsDock.tsx(253,54): error TS2812: Property 'style' does not exist on type 'HTMLElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:49.459 client/src/components/SoundKitsDock.tsx(256,54): error TS2812: Property 'style' does not exist on type 'HTMLElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:49.459 client/src/components/SoundKitsDock.tsx(257,54): error TS2812: Property 'style' does not exist on type 'HTMLElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:49.459 client/src/components/SoundKitsDock.tsx(260,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.460 client/src/components/SoundKitsDock.tsx(272,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.460 client/src/components/SoundKitsDock.tsx(298,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.460 client/src/components/SoundKitsDock.tsx(310,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.460 client/src/components/SoundKitsDock.tsx(335,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.460 client/src/components/SoundKitsDock.tsx(349,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.460 client/src/components/SoundKitsDock.tsx(362,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.626 client/src/components/ShareModal.tsx(15,23): error TS2304: Cannot find name 'window'.
+07:30:49.626 client/src/components/ShareModal.tsx(19,23): error TS2339: Property 'clipboard' does not exist on type 'Navigator'.
+07:30:49.626 client/src/components/ShareModal.tsx(29,5): error TS2304: Cannot find name 'window'.
+07:30:49.627 client/src/components/ShareModal.tsx(33,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.627 client/src/components/ShareModal.tsx(46,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.627 client/src/components/ShareModal.tsx(57,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.627 client/src/components/ShareModal.tsx(58,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.627 client/src/components/ShareModal.tsx(59,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.627 client/src/components/ShareModal.tsx(74,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.628 client/src/components/ShareModal.tsx(75,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.628 client/src/components/ShareModal.tsx(78,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.628 client/src/components/ShareModal.tsx(79,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.628 client/src/components/ShareModal.tsx(93,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.628 client/src/components/ShareModal.tsx(114,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.628 client/src/components/ShareModal.tsx(115,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.629 client/src/components/ShareModal.tsx(118,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.630 client/src/components/ShareModal.tsx(137,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.630 client/src/components/ShareModal.tsx(138,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.737 client/src/components/ProductsGrid.tsx(1,25): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './ProductCard.js'?
+07:30:49.739 client/src/components/ProductsGrid.tsx(43,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.739 client/src/components/ProductsGrid.tsx(44,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.739 client/src/components/ProductsGrid.tsx(52,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.739 client/src/components/ProductsGrid.tsx(61,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.740 client/src/components/ProductsGrid.tsx(74,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.740 client/src/components/ProductsGrid.tsx(85,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.953 client/src/components/ProductCard.tsx(62,5): error TS2304: Cannot find name 'window'.
+07:30:49.953 client/src/components/ProductCard.tsx(66,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.954 client/src/components/ProductCard.tsx(78,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.954 client/src/components/ProductCard.tsx(106,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.954 client/src/components/ProductCard.tsx(114,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.954 client/src/components/ProductCard.tsx(124,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.955 client/src/components/ProductCard.tsx(150,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.955 client/src/components/ProductCard.tsx(152,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.955 client/src/components/ProductCard.tsx(156,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.955 client/src/components/ProductCard.tsx(160,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.955 client/src/components/ProductCard.tsx(165,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.955 client/src/components/ProductCard.tsx(167,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.956 client/src/components/ProductCard.tsx(199,21): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:49.956 client/src/components/ProductCard.tsx(200,21): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:49.956 client/src/components/ProductCard.tsx(201,21): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:49.956 client/src/components/ProductCard.tsx(202,21): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:49.956 client/src/components/ProductCard.tsx(206,36): error TS2584: Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
+07:30:49.957 client/src/components/ProductCard.tsx(228,23): error TS2812: Property 'appendChild' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:49.957 client/src/components/ProductCard.tsx(230,24): error TS2584: Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
+07:30:49.957 client/src/components/ProductCard.tsx(231,35): error TS2584: Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
+07:30:49.957 client/src/components/ProductCard.tsx(239,21): error TS2584: Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
+07:30:49.957 client/src/components/ProductCard.tsx(245,21): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:49.957 client/src/components/ProductCard.tsx(246,21): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:49.957 client/src/components/ProductCard.tsx(247,21): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:49.958 client/src/components/ProductCard.tsx(248,21): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:49.958 client/src/components/ProductCard.tsx(251,39): error TS2812: Property 'querySelectorAll' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:49.958 client/src/components/ProductCard.tsx(252,35): error TS7006: Parameter 'p' implicitly has an 'any' type.
+07:30:49.958 client/src/components/ProductCard.tsx(255,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.958 client/src/components/ProductCard.tsx(256,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.958 client/src/components/ProductCard.tsx(257,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.959 client/src/components/ProductCard.tsx(258,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.959 client/src/components/ProductCard.tsx(260,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.959 client/src/components/ProductCard.tsx(262,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.959 client/src/components/ProductCard.tsx(266,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.959 client/src/components/ProductCard.tsx(271,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.959 client/src/components/ProductCard.tsx(276,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.960 client/src/components/ProductCard.tsx(294,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:49.960 client/src/components/ProductCard.tsx(303,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.179 client/src/components/NewsletterWindow.tsx(58,45): error TS18046: 'data' is of type 'unknown'.
+07:30:50.180 client/src/components/NewsletterWindow.tsx(64,43): error TS18046: 'data' is of type 'unknown'.
+07:30:50.180 client/src/components/NewsletterWindow.tsx(74,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.180 client/src/components/NewsletterWindow.tsx(75,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.180 client/src/components/NewsletterWindow.tsx(85,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.180 client/src/components/NewsletterWindow.tsx(91,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.180 client/src/components/NewsletterWindow.tsx(92,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.181 client/src/components/NewsletterWindow.tsx(93,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.181 client/src/components/NewsletterWindow.tsx(94,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.181 client/src/components/NewsletterWindow.tsx(100,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.181 client/src/components/NewsletterWindow.tsx(101,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.181 client/src/components/NewsletterWindow.tsx(106,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.181 client/src/components/NewsletterWindow.tsx(107,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.181 client/src/components/NewsletterWindow.tsx(108,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.182 client/src/components/NewsletterWindow.tsx(113,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.182 client/src/components/NewsletterWindow.tsx(114,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.182 client/src/components/NewsletterWindow.tsx(115,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.182 client/src/components/NewsletterWindow.tsx(116,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.182 client/src/components/NewsletterWindow.tsx(119,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.182 client/src/components/NewsletterWindow.tsx(121,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.183 client/src/components/NewsletterWindow.tsx(125,39): error TS2339: Property 'value' does not exist on type 'EventTarget & HTMLInputElement'.
+07:30:50.183 client/src/components/NewsletterWindow.tsx(141,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.183 client/src/components/NewsletterWindow.tsx(153,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.183 client/src/components/NewsletterWindow.tsx(154,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.183 client/src/components/NewsletterWindow.tsx(156,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.183 client/src/components/NewsletterWindow.tsx(163,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.183 client/src/components/NewsletterWindow.tsx(166,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.184 client/src/components/NewsletterWindow.tsx(167,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.184 client/src/components/NewsletterWindow.tsx(171,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.422 client/src/components/MusicPlayer.tsx(2,24): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './ShareModal.js'?
+07:30:50.422 client/src/components/MusicPlayer.tsx(53,51): error TS2812: Property 'currentTime' does not exist on type 'HTMLAudioElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:50.422 client/src/components/MusicPlayer.tsx(54,52): error TS2812: Property 'duration' does not exist on type 'HTMLAudioElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:50.422 client/src/components/MusicPlayer.tsx(56,11): error TS2812: Property 'addEventListener' does not exist on type 'HTMLAudioElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:50.422 client/src/components/MusicPlayer.tsx(57,11): error TS2812: Property 'addEventListener' does not exist on type 'HTMLAudioElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:50.422 client/src/components/MusicPlayer.tsx(60,13): error TS2812: Property 'removeEventListener' does not exist on type 'HTMLAudioElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:50.422 client/src/components/MusicPlayer.tsx(61,13): error TS2812: Property 'removeEventListener' does not exist on type 'HTMLAudioElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:50.422 client/src/components/MusicPlayer.tsx(70,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.423 client/src/components/MusicPlayer.tsx(71,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.423 client/src/components/MusicPlayer.tsx(89,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.423 client/src/components/MusicPlayer.tsx(91,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.423 client/src/components/MusicPlayer.tsx(92,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.423 client/src/components/MusicPlayer.tsx(102,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.423 client/src/components/MusicPlayer.tsx(103,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.423 client/src/components/MusicPlayer.tsx(108,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.423 client/src/components/MusicPlayer.tsx(109,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.423 client/src/components/MusicPlayer.tsx(110,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.423 client/src/components/MusicPlayer.tsx(136,21): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:50.423 client/src/components/MusicPlayer.tsx(137,21): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:50.423 client/src/components/MusicPlayer.tsx(138,21): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:50.423 client/src/components/MusicPlayer.tsx(142,36): error TS2584: Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
+07:30:50.423 client/src/components/MusicPlayer.tsx(164,23): error TS2812: Property 'appendChild' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:50.424 client/src/components/MusicPlayer.tsx(166,33): error TS2584: Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
+07:30:50.424 client/src/components/MusicPlayer.tsx(173,19): error TS2584: Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
+07:30:50.424 client/src/components/MusicPlayer.tsx(176,40): error TS2812: Property 'querySelector' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:50.424 client/src/components/MusicPlayer.tsx(177,44): error TS2812: Property 'style' does not exist on type 'HTMLElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:50.424 client/src/components/MusicPlayer.tsx(181,21): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:50.424 client/src/components/MusicPlayer.tsx(182,21): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:50.424 client/src/components/MusicPlayer.tsx(183,21): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:50.424 client/src/components/MusicPlayer.tsx(185,40): error TS2812: Property 'querySelector' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:50.424 client/src/components/MusicPlayer.tsx(186,44): error TS2812: Property 'style' does not exist on type 'HTMLElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:50.424 client/src/components/MusicPlayer.tsx(188,39): error TS2812: Property 'querySelectorAll' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:50.424 client/src/components/MusicPlayer.tsx(189,36): error TS7006: Parameter 'p' implicitly has an 'any' type.
+07:30:50.424 client/src/components/MusicPlayer.tsx(192,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.424 client/src/components/MusicPlayer.tsx(193,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.424 client/src/components/MusicPlayer.tsx(194,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.425 client/src/components/MusicPlayer.tsx(195,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.425 client/src/components/MusicPlayer.tsx(197,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.425 client/src/components/MusicPlayer.tsx(199,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.425 client/src/components/MusicPlayer.tsx(204,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.425 client/src/components/MusicPlayer.tsx(205,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.425 client/src/components/MusicPlayer.tsx(216,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.425 client/src/components/MusicPlayer.tsx(217,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.425 client/src/components/MusicPlayer.tsx(218,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.425 client/src/components/MusicPlayer.tsx(219,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.425 client/src/components/MusicPlayer.tsx(220,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.425 client/src/components/MusicPlayer.tsx(224,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.425 client/src/components/MusicPlayer.tsx(235,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.425 client/src/components/MusicPlayer.tsx(236,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.425 client/src/components/MusicPlayer.tsx(237,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.426 client/src/components/MusicPlayer.tsx(241,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.426 client/src/components/MusicPlayer.tsx(263,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.426 client/src/components/MusicPlayer.tsx(274,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.426 client/src/components/MusicPlayer.tsx(275,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.426 client/src/components/MusicPlayer.tsx(276,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.426 client/src/components/MusicPlayer.tsx(280,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.426 client/src/components/MusicPlayer.tsx(291,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.426 client/src/components/MusicPlayer.tsx(292,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.426 client/src/components/MusicPlayer.tsx(293,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.426 client/src/components/MusicPlayer.tsx(294,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.426 client/src/components/MusicPlayer.tsx(295,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.426 client/src/components/MusicPlayer.tsx(296,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.426 client/src/components/MusicPlayer.tsx(301,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.426 client/src/components/MusicPlayer.tsx(302,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.427 client/src/components/MusicPlayer.tsx(304,31): error TS2584: Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
+07:30:50.427 client/src/components/MusicPlayer.tsx(307,15): error TS2584: Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
+07:30:50.427 client/src/components/MusicPlayer.tsx(309,15): error TS2584: Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
+07:30:50.427 client/src/components/MusicPlayer.tsx(327,31): error TS2339: Property 'style' does not exist on type 'EventTarget & HTMLButtonElement'.
+07:30:50.427 client/src/components/MusicPlayer.tsx(330,31): error TS2339: Property 'style' does not exist on type 'EventTarget & HTMLButtonElement'.
+07:30:50.427 client/src/components/MusicPlayer.tsx(334,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.427 client/src/components/MusicPlayer.tsx(335,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.427 client/src/components/MusicPlayer.tsx(336,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.427 client/src/components/MusicPlayer.tsx(337,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.427 client/src/components/MusicPlayer.tsx(341,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.427 client/src/components/MusicPlayer.tsx(359,31): error TS2339: Property 'style' does not exist on type 'EventTarget & HTMLButtonElement'.
+07:30:50.427 client/src/components/MusicPlayer.tsx(362,31): error TS2339: Property 'style' does not exist on type 'EventTarget & HTMLButtonElement'.
+07:30:50.427 client/src/components/MusicPlayer.tsx(366,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.428 client/src/components/MusicPlayer.tsx(422,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.428 client/src/components/MusicPlayer.tsx(423,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.428 client/src/components/MusicPlayer.tsx(424,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.428 client/src/components/MusicPlayer.tsx(425,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.428 client/src/components/MusicPlayer.tsx(426,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.428 client/src/components/MusicPlayer.tsx(427,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.428 client/src/components/MusicPlayer.tsx(434,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.604 client/src/components/MobileCarousel.tsx(54,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.604 client/src/components/MobileCarousel.tsx(73,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.605 client/src/components/MobileCarousel.tsx(89,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.605 client/src/components/MobileCarousel.tsx(90,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.605 client/src/components/MobileCarousel.tsx(97,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.605 client/src/components/MobileCarousel.tsx(103,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.605 client/src/components/MobileCarousel.tsx(116,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.605 client/src/components/MobileCarousel.tsx(127,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.605 client/src/components/MobileCarousel.tsx(140,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.605 client/src/components/MobileCarousel.tsx(155,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.605 client/src/components/MobileCarousel.tsx(166,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.606 client/src/components/MobileCarousel.tsx(186,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.606 client/src/components/MobileCarousel.tsx(207,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.606 client/src/components/MobileCarousel.tsx(222,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.872 client/src/components/Header.tsx(2,24): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../App.js'?
+07:30:50.873 client/src/components/Header.tsx(16,40): error TS18046: 'items' is of type 'unknown'.
+07:30:50.873 client/src/components/Header.tsx(32,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.873 client/src/components/Header.tsx(49,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.873 client/src/components/Header.tsx(50,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.873 client/src/components/Header.tsx(51,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.873 client/src/components/Header.tsx(59,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.873 client/src/components/Header.tsx(60,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.874 client/src/components/Header.tsx(70,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.874 client/src/components/Header.tsx(71,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.874 client/src/components/Header.tsx(87,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.874 client/src/components/Header.tsx(88,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.875 client/src/components/Header.tsx(89,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.875 client/src/components/Header.tsx(107,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.876 client/src/components/Header.tsx(108,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.876 client/src/components/Header.tsx(122,28): error TS2304: Cannot find name 'window'.
+07:30:50.876 client/src/components/Header.tsx(126,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.877 client/src/components/Header.tsx(129,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.877 client/src/components/Header.tsx(152,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.877 client/src/components/Header.tsx(165,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.877 client/src/components/Header.tsx(178,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.877 client/src/components/Header.tsx(199,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.877 client/src/components/Header.tsx(207,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.877 client/src/components/Header.tsx(208,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.953 client/src/components/Footer.tsx(3,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:50.954 client/src/components/Footer.tsx(14,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.066 client/src/components/ExtendedFooter.tsx(5,24): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../App.js'?
+07:30:52.066 client/src/components/ExtendedFooter.tsx(48,45): error TS2812: Property 'scrollHeight' does not exist on type 'HTMLDivElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:52.067 client/src/components/ExtendedFooter.tsx(53,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.067 client/src/components/ExtendedFooter.tsx(54,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.067 client/src/components/ExtendedFooter.tsx(77,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.067 client/src/components/ExtendedFooter.tsx(78,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.067 client/src/components/ExtendedFooter.tsx(88,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.068 client/src/components/ExtendedFooter.tsx(95,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.068 client/src/components/ExtendedFooter.tsx(154,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.068 client/src/components/ExtendedFooter.tsx(155,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.068 client/src/components/ExtendedFooter.tsx(157,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.068 client/src/components/ExtendedFooter.tsx(172,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.068 client/src/components/ExtendedFooter.tsx(173,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.069 client/src/components/ExtendedFooter.tsx(174,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.069 client/src/components/ExtendedFooter.tsx(175,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.069 client/src/components/ExtendedFooter.tsx(176,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.069 client/src/components/ExtendedFooter.tsx(200,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.069 client/src/components/ExtendedFooter.tsx(201,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.070 client/src/components/ExtendedFooter.tsx(202,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.070 client/src/components/ExtendedFooter.tsx(203,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.070 client/src/components/ExtendedFooter.tsx(203,39): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.070 client/src/components/ExtendedFooter.tsx(204,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.070 client/src/components/ExtendedFooter.tsx(204,39): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.070 client/src/components/ExtendedFooter.tsx(205,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.071 client/src/components/ExtendedFooter.tsx(205,39): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.071 client/src/components/ExtendedFooter.tsx(210,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.071 client/src/components/ExtendedFooter.tsx(211,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.071 client/src/components/ExtendedFooter.tsx(212,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.071 client/src/components/ExtendedFooter.tsx(213,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.072 client/src/components/ExtendedFooter.tsx(213,39): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.072 client/src/components/ExtendedFooter.tsx(214,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.072 client/src/components/ExtendedFooter.tsx(214,39): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.072 client/src/components/ExtendedFooter.tsx(215,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.072 client/src/components/ExtendedFooter.tsx(215,39): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.073 client/src/components/ExtendedFooter.tsx(216,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.073 client/src/components/ExtendedFooter.tsx(216,39): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.073 client/src/components/ExtendedFooter.tsx(221,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.073 client/src/components/ExtendedFooter.tsx(222,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.073 client/src/components/ExtendedFooter.tsx(223,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.074 client/src/components/ExtendedFooter.tsx(224,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.074 client/src/components/ExtendedFooter.tsx(224,39): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.074 client/src/components/ExtendedFooter.tsx(225,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.074 client/src/components/ExtendedFooter.tsx(225,39): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.074 client/src/components/ExtendedFooter.tsx(226,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.074 client/src/components/ExtendedFooter.tsx(226,39): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.075 client/src/components/ExtendedFooter.tsx(231,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.075 client/src/components/ExtendedFooter.tsx(232,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.075 client/src/components/ExtendedFooter.tsx(233,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.075 client/src/components/ExtendedFooter.tsx(234,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.075 client/src/components/ExtendedFooter.tsx(235,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.075 client/src/components/ExtendedFooter.tsx(240,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.076 client/src/components/ExtendedFooter.tsx(241,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.076 client/src/components/ExtendedFooter.tsx(242,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.076 client/src/components/ExtendedFooter.tsx(243,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.076 client/src/components/ExtendedFooter.tsx(244,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.076 client/src/components/ExtendedFooter.tsx(244,75): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.077 client/src/components/ExtendedFooter.tsx(245,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.077 client/src/components/ExtendedFooter.tsx(245,74): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.077 client/src/components/ExtendedFooter.tsx(246,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.077 client/src/components/ExtendedFooter.tsx(246,47): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.077 client/src/components/ExtendedFooter.tsx(252,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.077 client/src/components/ExtendedFooter.tsx(265,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.078 client/src/components/ExtendedFooter.tsx(270,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.078 client/src/components/ExtendedFooter.tsx(271,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.078 client/src/components/ExtendedFooter.tsx(272,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.078 client/src/components/ExtendedFooter.tsx(293,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.078 client/src/components/ExtendedFooter.tsx(298,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.079 client/src/components/ExtendedFooter.tsx(299,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.079 client/src/components/ExtendedFooter.tsx(299,65): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.079 client/src/components/ExtendedFooter.tsx(300,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.079 client/src/components/ExtendedFooter.tsx(300,65): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.079 client/src/components/ExtendedFooter.tsx(301,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.080 client/src/components/ExtendedFooter.tsx(301,65): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.080 client/src/components/ExtendedFooter.tsx(305,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.080 client/src/components/ExtendedFooter.tsx(310,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.080 client/src/components/ExtendedFooter.tsx(311,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.080 client/src/components/ExtendedFooter.tsx(311,65): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.080 client/src/components/ExtendedFooter.tsx(312,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.081 client/src/components/ExtendedFooter.tsx(312,65): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.081 client/src/components/ExtendedFooter.tsx(313,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.081 client/src/components/ExtendedFooter.tsx(313,65): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.081 client/src/components/ExtendedFooter.tsx(314,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.082 client/src/components/ExtendedFooter.tsx(314,65): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.082 client/src/components/ExtendedFooter.tsx(318,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.082 client/src/components/ExtendedFooter.tsx(323,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.082 client/src/components/ExtendedFooter.tsx(324,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.082 client/src/components/ExtendedFooter.tsx(324,65): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.082 client/src/components/ExtendedFooter.tsx(325,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.083 client/src/components/ExtendedFooter.tsx(325,65): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.083 client/src/components/ExtendedFooter.tsx(326,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.083 client/src/components/ExtendedFooter.tsx(326,65): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.083 client/src/components/ExtendedFooter.tsx(330,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.083 client/src/components/ExtendedFooter.tsx(335,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.084 client/src/components/ExtendedFooter.tsx(336,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.084 client/src/components/ExtendedFooter.tsx(337,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.084 client/src/components/ExtendedFooter.tsx(341,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.084 client/src/components/ExtendedFooter.tsx(346,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.084 client/src/components/ExtendedFooter.tsx(347,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.085 client/src/components/ExtendedFooter.tsx(348,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.085 client/src/components/ExtendedFooter.tsx(348,75): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.085 client/src/components/ExtendedFooter.tsx(349,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.085 client/src/components/ExtendedFooter.tsx(349,74): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.085 client/src/components/ExtendedFooter.tsx(350,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.086 client/src/components/ExtendedFooter.tsx(350,52): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.211 client/src/components/DownloadModal.tsx(43,21): error TS2304: Cannot find name 'window'.
+07:30:52.212 client/src/components/DownloadModal.tsx(44,19): error TS2584: Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
+07:30:52.212 client/src/components/DownloadModal.tsx(47,9): error TS2584: Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
+07:30:52.213 client/src/components/DownloadModal.tsx(49,9): error TS2304: Cannot find name 'window'.
+07:30:52.213 client/src/components/DownloadModal.tsx(50,9): error TS2584: Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
+07:30:52.213 client/src/components/DownloadModal.tsx(59,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.213 client/src/components/DownloadModal.tsx(72,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.213 client/src/components/DownloadModal.tsx(90,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.214 client/src/components/DownloadModal.tsx(103,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.214 client/src/components/DownloadModal.tsx(104,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.214 client/src/components/DownloadModal.tsx(107,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.214 client/src/components/DownloadModal.tsx(112,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.214 client/src/components/DownloadModal.tsx(130,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.415 client/src/components/ContractModal.tsx(59,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.415 client/src/components/ContractModal.tsx(73,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.416 client/src/components/ContractModal.tsx(88,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.416 client/src/components/ContractModal.tsx(94,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.416 client/src/components/ContractModal.tsx(105,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.416 client/src/components/ContractModal.tsx(106,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.416 client/src/components/ContractModal.tsx(109,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.416 client/src/components/ContractModal.tsx(110,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.417 client/src/components/ContractModal.tsx(111,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.417 client/src/components/ContractModal.tsx(112,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.417 client/src/components/ContractModal.tsx(113,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.417 client/src/components/ContractModal.tsx(118,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.418 client/src/components/ContractModal.tsx(141,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.418 client/src/components/ContractModal.tsx(142,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.418 client/src/components/ContractModal.tsx(145,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.423 client/src/components/ContractModal.tsx(149,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.423 client/src/components/ContractModal.tsx(166,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.423 client/src/components/ContractModal.tsx(167,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.423 client/src/components/ContractModal.tsx(171,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.423 client/src/components/ContractModal.tsx(173,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.423 client/src/components/ContractModal.tsx(185,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.423 client/src/components/ContractModal.tsx(186,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.423 client/src/components/ContractModal.tsx(187,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.423 client/src/components/ContractModal.tsx(190,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.423 client/src/components/ContractModal.tsx(194,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.423 client/src/components/ContractModal.tsx(195,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.423 client/src/components/ContractModal.tsx(198,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.423 client/src/components/ContractModal.tsx(201,29): error TS2304: Cannot find name 'alert'.
+07:30:52.423 client/src/components/ContractModal.tsx(222,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.423 client/src/components/ContractModal.tsx(223,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.423 client/src/components/ContractModal.tsx(243,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.423 client/src/components/ContractModal.tsx(244,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.423 client/src/components/ContractModal.tsx(245,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.423 client/src/components/ContractModal.tsx(246,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.423 client/src/components/ContractModal.tsx(248,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.648 client/src/components/CartModal.tsx(1,24): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../App.js'?
+07:30:52.648 client/src/components/CartModal.tsx(20,7): error TS2584: Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
+07:30:52.649 client/src/components/CartModal.tsx(23,7): error TS2584: Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
+07:30:52.649 client/src/components/CartModal.tsx(26,7): error TS2584: Cannot find name 'document'. Do you need to change your target library? Try changing the 'lib' compiler option to include 'dom'.
+07:30:52.649 client/src/components/CartModal.tsx(31,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.649 client/src/components/CartModal.tsx(33,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.650 client/src/components/CartModal.tsx(46,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.650 client/src/components/CartModal.tsx(87,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.650 client/src/components/CartModal.tsx(108,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.650 client/src/components/CartModal.tsx(117,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.650 client/src/components/CartModal.tsx(129,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.650 client/src/components/CartModal.tsx(144,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.651 client/src/components/CartModal.tsx(154,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.651 client/src/components/CartModal.tsx(166,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.651 client/src/components/CartModal.tsx(180,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.651 client/src/components/CartModal.tsx(184,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.651 client/src/components/CartModal.tsx(186,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.651 client/src/components/CartModal.tsx(196,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.652 client/src/components/CartModal.tsx(206,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.652 client/src/components/CartModal.tsx(215,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.655 client/src/components/CartModal.tsx(220,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.655 client/src/components/CartModal.tsx(230,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.655 client/src/components/CartModal.tsx(241,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.656 client/src/components/CartModal.tsx(253,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.656 client/src/components/CartModal.tsx(261,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.656 client/src/components/CartModal.tsx(265,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.656 client/src/components/CartModal.tsx(266,30): error TS7006: Parameter 'item' implicitly has an 'any' type.
+07:30:52.656 client/src/components/CartModal.tsx(267,21): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.656 client/src/components/CartModal.tsx(278,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.657 client/src/components/CartModal.tsx(289,23): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.657 client/src/components/CartModal.tsx(290,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.657 client/src/components/CartModal.tsx(293,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.657 client/src/components/CartModal.tsx(296,25): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.657 client/src/components/CartModal.tsx(312,33): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:52.657 client/src/components/CartModal.tsx(313,33): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:52.657 client/src/components/CartModal.tsx(317,33): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:52.658 client/src/components/CartModal.tsx(318,33): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:52.658 client/src/components/CartModal.tsx(331,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.658 client/src/components/CartModal.tsx(332,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.658 client/src/components/CartModal.tsx(341,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.658 client/src/components/CartModal.tsx(342,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.658 client/src/components/CartModal.tsx(343,35): error TS7006: Parameter 'sum' implicitly has an 'any' type.
+07:30:52.659 client/src/components/CartModal.tsx(343,40): error TS7006: Parameter 'item' implicitly has an 'any' type.
+07:30:52.659 client/src/components/CartModal.tsx(346,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.659 client/src/components/CartModal.tsx(364,25): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:52.659 client/src/components/CartModal.tsx(368,25): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:52.660 client/src/components/CartModal.tsx(373,17): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.660 client/src/components/CartModal.tsx(390,25): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:52.660 client/src/components/CartModal.tsx(391,25): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:52.660 client/src/components/CartModal.tsx(395,25): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:52.661 client/src/components/CartModal.tsx(396,25): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:52.661 client/src/components/CartModal.tsx(404,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.661 client/src/components/CartModal.tsx(420,21): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:52.663 client/src/components/CartModal.tsx(421,21): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:52.664 client/src/components/CartModal.tsx(425,21): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:52.664 client/src/components/CartModal.tsx(426,21): error TS2812: Property 'style' does not exist on type 'HTMLButtonElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:52.790 client/src/components/ArtistCarousel.tsx(36,22): error TS2304: Cannot find name 'window'.
+07:30:52.802 client/src/components/ArtistCarousel.tsx(55,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.803 client/src/components/ArtistCarousel.tsx(75,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.803 client/src/components/ArtistCarousel.tsx(82,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.803 client/src/components/ArtistCarousel.tsx(83,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.803 client/src/components/ArtistCarousel.tsx(89,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.804 client/src/components/ArtistCarousel.tsx(100,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.804 client/src/components/ArtistCarousel.tsx(111,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.804 client/src/components/ArtistCarousel.tsx(124,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.804 client/src/components/ArtistCarousel.tsx(139,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.804 client/src/components/ArtistCarousel.tsx(150,19): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.804 client/src/components/ArtistCarousel.tsx(170,15): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.805 client/src/components/ArtistCarousel.tsx(191,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.805 client/src/components/ArtistCarousel.tsx(206,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.941 client/src/components/Accordion.tsx(21,5): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.941 client/src/components/Accordion.tsx(23,9): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.941 client/src/components/Accordion.tsx(24,11): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.941 client/src/components/Accordion.tsx(46,48): error TS2812: Property 'style' does not exist on type 'HTMLElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:52.941 client/src/components/Accordion.tsx(49,48): error TS2812: Property 'style' does not exist on type 'HTMLElement'. Try changing the 'lib' compiler option to include 'dom'.
+07:30:52.943 client/src/components/Accordion.tsx(52,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.943 client/src/components/Accordion.tsx(53,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.943 client/src/components/Accordion.tsx(65,13): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:52.943 client/src/components/Accordion.tsx(82,7): error TS17004: Cannot use JSX unless the '--jsx' flag is provided.
+07:30:53.013 client/src/hooks/useScrollAnimation.ts(7,26): error TS2304: Cannot find name 'IntersectionObserver'.
+07:30:53.013 client/src/hooks/useScrollAnimation.ts(8,9): error TS7031: Binding element 'entry' implicitly has an 'any' type.
