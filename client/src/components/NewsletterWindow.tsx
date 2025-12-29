@@ -179,11 +179,11 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
             </div>
 
             {/* Divider */}
-            <div style={{ height: '1px', backgroundColor: '#333', marginBottom: '4px', order: 5 }} />
+            <div style={{ height: '1px', backgroundColor: '#333', marginBottom: '2px', order: 5 }} />
 
             {/* Message Display */}
             {message && (
-              <div style={{ padding: '12px', marginBottom: '4px', textAlign: 'center', backgroundColor: message.type === 'success' ? 'rgba(36, 224, 83, 0.1)' : '#fee2e2', border: `1px solid ${message.type === 'success' ? '#24e053' : '#dc2626'}`, borderRadius: '4px', order: 6 }}>
+              <div style={{ padding: '12px', marginBottom: '2px', textAlign: 'center', backgroundColor: message.type === 'success' ? 'rgba(36, 224, 83, 0.1)' : '#fee2e2', border: `1px solid ${message.type === 'success' ? '#24e053' : '#dc2626'}`, borderRadius: '4px', order: 6 }}>
                 <p style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '12px', lineHeight: '12px', margin: '0', color: message.type === 'success' ? '#24e053' : '#dc2626' }}>{message.text}</p>
               </div>
             )}
@@ -194,11 +194,11 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
               disabled={loading}
               style={{ 
                 fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', 
-                padding: '12px',
+                padding: '2px',
                 height: '44px',
                 fontSize: '12px',
                 fontWeight: 700,
-                border: 'inset 0 0 0 0.5px #000',
+                border: 'none',
                 backgroundColor: '#fff',
                 color: '#000',
                 cursor: loading ? 'not-allowed' : 'pointer',
@@ -208,22 +208,17 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
                 letterSpacing: '0.5px',
                 borderRadius: '4px',
                 width: '100%',
-                marginBottom: '4px',
-                marginTop: 'auto',
-                order: 7,
-                boxShadow: 'inset 0 0 0 0.5px #000'
+                order: 7
               }}
               onMouseEnter={(e) => {
                 const btn = e.currentTarget as HTMLButtonElement;
                 btn.style.backgroundColor = '#000';
                 btn.style.color = '#fff';
-                btn.style.boxShadow = '0 0 20px rgba(255, 255, 255, 0.8), inset 0 0 0 0.5px #fff, inset 0 0 10px rgba(255, 255, 255, 0.3)';
               }}
               onMouseLeave={(e) => {
                 const btn = e.currentTarget as HTMLButtonElement;
                 btn.style.backgroundColor = '#fff';
                 btn.style.color = '#000';
-                btn.style.boxShadow = 'inset 0 0 0 0.5px #000';
               }}
             >
               {loading ? 'PŘIHLAŠOVÁNÍ...' : 'PŘIHLÁSIT'}
