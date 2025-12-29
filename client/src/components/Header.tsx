@@ -69,7 +69,7 @@ function Header() {
 
       <Link href="/" style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%, -50%)", zIndex: 5 }}>
         <img
-          src={settings.header_logo || "/public/uploads/artwork/voodoo808-logo.png"}
+          src={settings.header_logo || "/uploads/artwork/voodoo808-logo.png"}
           alt="VOODOO808"
           style={{
             height: "24px",
