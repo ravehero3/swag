@@ -114,9 +114,9 @@ export async function initDatabase() {
       );
 
       INSERT INTO settings (key, value) VALUES 
-        ('header_logo', '/public/uploads/artwork/voodoo808-logo.png'),
-        ('beaty_video_main', '/public/uploads/voodoo808-video.mp4'),
-        ('beaty_video_alt', '/public/uploads/hrad-na-web.mov')
+        ('header_logo', '/uploads/artwork/voodoo808-logo.png'),
+        ('beaty_video_main', '/uploads/artwork/voodoo808-video.mp4'),
+        ('beaty_video_alt', '/uploads/hrad-na-web.mov')
       ON CONFLICT (key) DO NOTHING;
     `);
     
