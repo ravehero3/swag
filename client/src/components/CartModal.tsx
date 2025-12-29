@@ -29,6 +29,20 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
 
   return (
     <>
+      <style>{`
+        @keyframes slideInRight {
+          from { transform: translateX(100%); }
+          to { transform: translateX(0); }
+        }
+        @keyframes slideOutRight {
+          from { transform: translateX(0); }
+          to { transform: translateX(100%); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+      `}</style>
       {isOpen && (
         <div
           style={{
@@ -43,74 +57,28 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
           }}
           onClick={onClose}
         >
-          <style>{`
-            @keyframes scaleIn {
-              from {
-                opacity: 0;
-                transform: translate(-50%, -50%) scale(0.9);
-              }
-              to {
-                opacity: 1;
-                transform: translate(-50%, -50%) scale(1);
-              }
-            }
-            @keyframes fadeIn {
-              from {
-                opacity: 0;
-              }
-              to {
-                opacity: 1;
-              }
-            }
-            @keyframes flyfx {
-              0% {
-                transform: translateY(0);
-                opacity: 1;
-              }
-              40% {
-                transform: translateY(-120%);
-                opacity: 0;
-              }
-              41% {
-                transform: translateY(120%);
-                opacity: 0;
-              }
-              100% {
-                transform: translateY(0);
-                opacity: 1;
-              }
-            }
-            .flyfx-text {
-              display: inline-block;
-            }
-          `}</style>
           <div
             className="cart-modal-panel"
             style={{
               position: "fixed",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              width: "90%",
-              maxWidth: "500px",
-              maxHeight: "90vh",
+              top: 0,
+              right: 0,
+              height: "100vh",
+              width: "min(100%, 33.333%)",
               backgroundColor: "#000",
-              boxShadow: "0 10px 40px rgba(0, 0, 0, 0.8)",
+              boxShadow: "-10px 0 40px rgba(0, 0, 0, 0.8)",
               display: "flex",
               flexDirection: "column",
-              animation: "scaleIn 0.3s ease-out",
+              animation: "slideInRight 0.3s ease-out",
               zIndex: 9999,
-              border: "1px solid #333",
-              borderRadius: "4px",
+              borderLeft: "1px solid #333",
             }}
             onClick={(e) => e.stopPropagation()}
           >
             <style>{`
               @media (max-width: 768px) {
                 .cart-modal-panel {
-                  width: 95% !important;
-                  maxWidth: 95% !important;
-                  maxHeight: 95vh !important;
+                  width: 100% !important;
                 }
               }
             `}</style>

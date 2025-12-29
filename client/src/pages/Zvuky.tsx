@@ -332,7 +332,7 @@ function Zvuky() {
         }
       `}</style>
       
-      <div className="zvuky-video-container">
+      <div className="zvuky-video-container" style={{ marginTop: "-242px" }}>
         <video
           key={settings.zvuky_video}
           src={settings.zvuky_video || "/uploads/hrad-na-web.mov"}
@@ -355,7 +355,7 @@ function Zvuky() {
       </div>
 
       {kits.length > 0 ? (
-        <div style={{ width: "100%", marginBottom: "48px", marginTop: "200px" }}>
+        <div style={{ width: "100%", marginBottom: "48px", marginTop: "-200px" }}>
           <ProductsGrid
             products={products}
             savedProducts={Array.from(savedKits)}
