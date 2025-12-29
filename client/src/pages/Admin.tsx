@@ -135,6 +135,7 @@ function Admin() {
           editing={editingBeat}
           setEditing={setEditingBeat}
           onRefresh={loadData}
+          loadData={loadData}
         />
       )}
 
@@ -156,7 +157,7 @@ function Admin() {
   );
 }
 
-function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh }: any) {
+function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh, loadData }: any) {
   const [form, setForm] = useState({
     title: "",
     artist: "VOODOO808",
