@@ -59,7 +59,7 @@ interface BeatLicenseFile {
 function Admin() {
   const { user, settings, refreshSettings } = useApp();
   const [, navigate] = useLocation();
-  const [tab, setTab] = useState<"beats" | "kits" | "orders" | "licenses" | "settings" | "assets">("beats");
+  const [tab, setTab] = useState<"beats" | "kits" | "orders" | "licenses" | "settings" | "assets" | "promo">("beats");
   const [beats, setBeats] = useState<Beat[]>([]);
   const [kits, setKits] = useState<SoundKit[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
@@ -115,13 +115,13 @@ function Admin() {
       <h1 style={{ marginBottom: "24px" }}>Admin Panel</h1>
 
       <div style={{ display: "flex", gap: "12px", marginBottom: "24px", flexWrap: "wrap" }}>
-        {["beats", "kits", "orders", "licenses", "settings", "assets"].map((t) => (
+        {["beats", "kits", "orders", "licenses", "settings", "assets", "promo"].map((t) => (
           <button
             key={t}
             className={tab === t ? "btn btn-filled" : "btn"}
             onClick={() => setTab(t as any)}
           >
-            {t === "beats" ? "Beaty" : t === "kits" ? "Zvuky" : t === "orders" ? "Objednávky" : t === "licenses" ? "Licence" : t === "settings" ? "Nastavení" : "Assety (Ikony/Carousel)"}
+            {t === "beats" ? "Beaty" : t === "kits" ? "Zvuky" : t === "orders" ? "Objednávky" : t === "licenses" ? "Licence" : t === "settings" ? "Nastavení" : t === "assets" ? "Assety (Ikony/Carousel)" : "Promo kódy"}
           </button>
         ))}
       </div>
@@ -157,6 +157,8 @@ function Admin() {
       {tab === "settings" && <SettingsTab settings={settings} onRefresh={refreshSettings} />}
 
       {tab === "assets" && <AssetsTab />}
+
+      {tab === "promo" && <PromoCodesTab />}
     </div>
   );
 }
@@ -661,6 +663,77 @@ function LicensesTab({ licenses, onRefresh }: any) {
           </tbody>
         </table>
       )}
+    </div>
+  );
+}
+
+function PromoCodesTab() {
+  const [promoCodes, setPromoCodes] = useState<any[]>([]);
+  const [form, setForm] = useState({ code: "", discountPercent: 10 });
+
+  const loadPromoCodes = async () => {
+    const res = await fetch("/api/promo-codes", { credentials: "include" });
+    const data = await res.json();
+    setPromoCodes(data);
+  };
+
+  useEffect(() => { loadPromoCodes(); }, []);
+
+  const handleSubmit = async (e: any) => {
+    e.preventDefault();
+    await fetch("/api/admin/promo-codes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(form),
+    });
+    setForm({ code: "", discountPercent: 10 });
+    loadPromoCodes();
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm("Opravdu smazat?")) return;
+    await fetch(`/api/admin/promo-codes/${id}`, { method: "DELETE", credentials: "include" });
+    loadPromoCodes();
+  };
+
+  return (
+    <div style={{ padding: "16px", border: "1px solid #333" }}>
+      <h2 style={{ marginBottom: "24px" }}>Správa promo kódů</h2>
+      <form onSubmit={handleSubmit} style={{ marginBottom: "32px", display: "grid", gap: "16px", maxWidth: "400px" }}>
+        <div>
+          <label style={{ display: "block", marginBottom: "8px" }}>Kód</label>
+          <input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} required style={{ width: "100%" }} />
+        </div>
+        <div>
+          <label style={{ display: "block", marginBottom: "8px" }}>Sleva (%)</label>
+          <input type="number" value={form.discountPercent} onChange={(e) => setForm({ ...form, discountPercent: Number(e.target.value) })} required style={{ width: "100%" }} />
+        </div>
+        <button type="submit" className="btn btn-filled">Přidat kód</button>
+      </form>
+
+      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <thead>
+          <tr style={{ borderBottom: "1px solid #333" }}>
+            <th style={{ textAlign: "left", padding: "12px" }}>Kód</th>
+            <th style={{ textAlign: "left", padding: "12px" }}>Sleva</th>
+            <th style={{ textAlign: "left", padding: "12px" }}>Status</th>
+            <th style={{ textAlign: "right", padding: "12px" }}>Akce</th>
+          </tr>
+        </thead>
+        <tbody>
+          {promoCodes.map((pc) => (
+            <tr key={pc.id} style={{ borderBottom: "1px solid #222" }}>
+              <td style={{ padding: "12px" }}>{pc.code}</td>
+              <td style={{ padding: "12px" }}>{pc.discount_percent}%</td>
+              <td style={{ padding: "12px" }}>{pc.is_active ? "Aktivní" : "Neaktivní"}</td>
+              <td style={{ padding: "12px", textAlign: "right" }}>
+                <button onClick={() => handleDelete(pc.id)} style={{ color: "#ff4444", background: "none", border: "none", cursor: "pointer" }}>Smazat</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

@@ -10,7 +10,29 @@ function Checkout() {
   const [success, setSuccess] = useState(false);
   const [, navigate] = useLocation();
 
+  const [promoCode, setPromoCode] = useState("");
+  const [discount, setDiscount] = useState(0);
+  const [promoError, setPromoError] = useState("");
+
+  const applyPromoCode = async () => {
+    try {
+      const res = await fetch("/api/promo-codes", { credentials: "include" });
+      const codes = await res.json();
+      const code = codes.find((c: any) => c.code === promoCode.toUpperCase() && c.is_active);
+      if (code) {
+        setDiscount(code.discount_percent);
+        setPromoError("");
+      } else {
+        setPromoError("Neplatný kód");
+        setDiscount(0);
+      }
+    } catch (err) {
+      setPromoError("Chyba při ověřování kódu");
+    }
+  };
+
   const total = cart.reduce((sum, item) => sum + item.price, 0);
+  const finalTotal = total * (1 - discount / 100);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,7 +51,7 @@ function Checkout() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ email, items, total }),
+        body: JSON.stringify({ email, items, total: finalTotal, promoCode: discount > 0 ? promoCode : null }),
       });
 
       if (!res.ok) {
@@ -93,11 +115,28 @@ function Checkout() {
             justifyContent: "space-between",
             padding: "12px 0",
             fontWeight: "bold",
+            borderTop: discount > 0 ? "1px solid #333" : "none",
+            marginTop: discount > 0 ? "8px" : "0",
           }}
         >
           <span>Celkem</span>
-          <span>{total} CZK</span>
+          <span>{finalTotal} CZK</span>
         </div>
+      </div>
+
+      <div style={{ marginBottom: "24px", padding: "16px", border: "1px solid #333", borderRadius: "4px" }}>
+        <label style={{ display: "block", marginBottom: "8px", fontSize: "12px", color: "#999" }}>Promo kód</label>
+        <div style={{ display: "flex", gap: "8px" }}>
+          <input
+            value={promoCode}
+            onChange={(e) => setPromoCode(e.target.value)}
+            placeholder="Zadejte kód"
+            style={{ flex: 1, borderRadius: "4px" }}
+          />
+          <button type="button" className="btn" onClick={applyPromoCode} style={{ borderRadius: "4px" }}>Použít</button>
+        </div>
+        {promoError && <p style={{ color: "#ff4444", fontSize: "12px", marginTop: "4px" }}>{promoError}</p>}
+        {discount > 0 && <p style={{ color: "#24e053", fontSize: "12px", marginTop: "4px" }}>Sleva {discount}% aplikována!</p>}
       </div>
 
       <form onSubmit={handleSubmit}>
@@ -130,7 +169,7 @@ function Checkout() {
           disabled={loading}
           style={{ width: "100%", borderRadius: "4px" }}
         >
-          {loading ? "Zpracování..." : `Zaplatit ${total} CZK`}
+          {loading ? "Zpracování..." : `Zaplatit ${finalTotal} CZK`}
         </button>
       </form>
     </div>

@@ -67,6 +67,37 @@ app.use("/api/saved", savedRoutes);
 app.use("/api/licenses", licensesRoutes);
 app.use("/api/admin", adminLicensesRoutes);
 
+app.get("/api/promo-codes", requireAdmin, async (_req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM promo_codes ORDER BY created_at DESC");
+    res.json(result.rows);
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při načítání promo kódů" });
+  }
+});
+
+app.post("/api/admin/promo-codes", requireAdmin, async (req, res) => {
+  try {
+    const { code, discountPercent, isActive } = req.body;
+    const result = await pool.query(
+      "INSERT INTO promo_codes (code, discount_percent, is_active) VALUES ($1, $2, $3) RETURNING *",
+      [code.toUpperCase(), discountPercent, isActive ?? true]
+    );
+    res.json(result.rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při ukládání promo kódu" });
+  }
+});
+
+app.delete("/api/admin/promo-codes/:id", requireAdmin, async (req, res) => {
+  try {
+    await pool.query("DELETE FROM promo_codes WHERE id = $1", [req.params.id]);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při mazání promo kódu" });
+  }
+});
+
 app.get("/api/assets", async (req, res) => {
   try {
     const { type } = req.query;
