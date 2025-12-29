@@ -41,7 +41,7 @@ if (isProduction) {
 }
 
 // Temporarily use memory store for sessions (development only)
-const sessionSecret = process.env.SESSION_SECRET || "temp_secret_for_vercel";
+const sessionSecret = process.env.SESSION_SECRET || "voodoo808_stable_secret_12345";
 
 app.use(session({
   secret: sessionSecret,

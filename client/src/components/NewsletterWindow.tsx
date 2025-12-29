@@ -83,7 +83,7 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
       />
       
       <div 
-        className={`fixed top-0 right-0 h-full w-full md:w-1/3 bg-black md:border-l border-white z-50 transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 right-0 h-full w-full md:w-[400px] bg-black md:border-l border-white z-50 transition-transform duration-500 ease-in-out ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
         style={{ visibility: isOpen ? 'visible' : 'hidden' }}
