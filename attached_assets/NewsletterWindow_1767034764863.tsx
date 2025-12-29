@@ -1,5 +1,8 @@
+'use client';
+
 import { useState } from 'react';
-import { Link } from 'wouter';
+import Link from 'next/link';
+import AnimatedButton from './AnimatedButton';
 
 interface NewsletterWindowProps {
   isOpen: boolean;
@@ -34,6 +37,7 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
       return;
     }
 
+    // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       setEmailError(true);
@@ -82,9 +86,9 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
-        <div className="h-full flex flex-col overflow-hidden">
-          <div className="bg-white border-b border-black relative flex items-center justify-center px-6 flex-shrink-0" style={{ height: '44px' }}>
-            <h2 className="uppercase tracking-wider text-center" style={{ fontFamily: '"Helvetica Neue Condensed Bold", "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '12px', fontWeight: 700, fontStretch: 'condensed', margin: '0 24px 0 0' }}>PŘIHLASTE SE K ODBĚRU NAŠEHO NEWSLETTERU</h2>
+        <div className="h-full flex flex-col">
+          <div className="bg-white border-b border-black relative flex items-center justify-center px-6" style={{ height: '44px' }}>
+            <h2 className="uppercase tracking-wider" style={{ fontFamily: '"Helvetica Neue Condensed Bold", "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '14px', fontWeight: 700, fontStretch: 'condensed' }}>PŘIHLASTE SE K ODBĚRU NAŠEHO NEWSLETTERU</h2>
             <button
               onClick={onClose}
               className="absolute hover:opacity-70 transition-opacity"
@@ -97,14 +101,14 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto flex flex-col" style={{ paddingLeft: '16px', paddingRight: '16px', paddingTop: '24px', paddingBottom: '24px' }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', marginBottom: '32px', paddingLeft: '0px', paddingRight: '0px' }}>
-              <p className="text-center" style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '14px', fontWeight: 400, lineHeight: '1.6', letterSpacing: 'normal', marginTop: '0px', marginBottom: '0px', display: 'block', boxSizing: 'border-box' }}>
-                Přihlaste se k odběru našeho newsletteru a získejte přístup k nejnovějším kolekcím, exkluzivním nabídkám a novinkám ze světa VOODOO808.
+          <div className="flex-1 overflow-y-auto flex flex-col" style={{ paddingLeft: '8px', paddingRight: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', paddingLeft: '0px', paddingRight: '0px' }} className="flex-1">
+              <p className="text-center" style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '14px', fontWeight: 400, lineHeight: '19.6px', letterSpacing: 'normal', marginTop: '0px', marginBottom: '0px', display: 'block', boxSizing: 'border-box' }}>
+                Přihlaste se k odběru našeho newsletteru a získejte přístup k nejnovějším kolekcím, exkluzivním nabídkám a novinkám ze světa Ufo Sportu.
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="flex flex-col flex-1">
+            <form onSubmit={handleSubmit} className="flex flex-col">
               <div style={{ marginBottom: '24px' }}>
                 <div className="flex justify-between items-center" style={{ marginBottom: '4px' }}>
                   <label style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '12px', fontWeight: 400, lineHeight: '12px', letterSpacing: '0.12px', color: emailError && touched ? 'red' : 'black' }}>
@@ -127,8 +131,7 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
                     fontSize: '12px', 
                     borderRadius: '4px',
                     border: emailError && touched ? '1px solid red' : '1px solid black',
-                    color: emailError && touched ? 'red' : 'black',
-                    backgroundColor: '#fff'
+                    color: emailError && touched ? 'red' : 'black'
                   }}
                 />
                 {emailError && (
@@ -144,46 +147,36 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
                 )}
               </div>
 
-              <div style={{ marginTop: 'auto', marginBottom: '32px' }}>
-                <p className="text-center" style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '12px', fontWeight: 400, lineHeight: '1.4', color: '#4b5563' }}>
+              <div style={{ marginTop: '24px', marginBottom: '42px' }}>
+                <p className="text-center" style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '12px', fontWeight: 400, lineHeight: '12px', letterSpacing: '0.12px', color: '#4b5563' }}>
                   Odesláním tohoto formuláře souhlasíte se zpracováním vašich{' '}
-                  <Link href="/ochrana-osobnich-udaju" style={{ color: '#000', textDecoration: 'underline', cursor: 'pointer' }}>
+                  <Link href="/ochrana-osobnich-udaju" className="underline hover:text-black">
                     osobních údajů
                   </Link>
                   {' '}za účelem zasílání newsletteru.
                 </p>
               </div>
 
-              <div className="border-t border-black" style={{ marginLeft: '-16px', marginRight: '-16px', marginBottom: '16px' }}></div>
+              <div className="border-t border-black" style={{ marginLeft: '-8px', marginRight: '-8px', marginBottom: '8px' }}></div>
 
               {message && (
-                <div className={`p-3 border text-center`} style={{ marginBottom: '16px', marginLeft: '-16px', marginRight: '-16px', borderColor: message.type === 'success' ? '#24e053' : '#dc2626', borderTop: `1px solid ${message.type === 'success' ? '#24e053' : '#dc2626'}`, borderBottom: `1px solid ${message.type === 'success' ? '#24e053' : '#dc2626'}`, borderLeft: 'none', borderRight: 'none', backgroundColor: message.type === 'success' ? 'rgba(36, 224, 83, 0.1)' : '#fee2e2', color: message.type === 'success' ? '#000000' : '#991b1b', paddingLeft: '16px', paddingRight: '16px' }}>
-                  <p style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '12px', lineHeight: '12px', margin: '0' }}>{message.text}</p>
+                <div className={`p-3 border text-center`} style={{ marginBottom: '8px', borderColor: message.type === 'success' ? '#24e053' : '#dc2626', backgroundColor: message.type === 'success' ? '#24e053' : '#fee2e2', color: message.type === 'success' ? '#000000' : '#991b1b' }}>
+                  <p style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '12px', lineHeight: '12px' }}>{message.text}</p>
                 </div>
               )}
 
-              <button
+              <AnimatedButton 
+                text="PŘIHLÁSIT"
+                loading={loading}
                 type="submit"
-                disabled={loading}
                 className="w-full"
                 style={{ 
                   fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', 
-                  padding: '12px',
-                  height: '44px',
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  border: '1px solid black',
-                  backgroundColor: '#000',
-                  color: '#fff',
-                  cursor: loading ? 'not-allowed' : 'pointer',
-                  opacity: loading ? 0.7 : 1,
-                  transition: 'all 0.2s ease',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.5px'
+                  padding: '12px', 
+                  marginBottom: '8px',
+                  height: '44px'
                 }}
-              >
-                {loading ? 'PŘIHLAŠOVÁNÍ...' : 'PŘIHLÁSIT'}
-              </button>
+              />
             </form>
           </div>
         </div>
