@@ -448,7 +448,7 @@ function Beaty() {
       <div className="video-container" style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative", minHeight: "300px", background: "#000" }}>
         <video
           key={isHomePage ? "analog7" : "beaty_video"}
-          src={isHomePage ? "/uploads/ANALOG7.mp4" : (settings.beaty_video_main || "/uploads/artwork/voodoo808-video.mp4")}
+          src={isHomePage ? "/uploads/voodoo808-video.mp4" : (settings.beaty_video_main || "/uploads/artwork/voodoo808-video.mp4")}
           autoPlay
           loop
           muted

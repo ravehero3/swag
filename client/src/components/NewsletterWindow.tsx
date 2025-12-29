@@ -181,7 +181,7 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
             </div>
 
             {/* Divider */}
-            <div style={{ height: '1px', backgroundColor: '#666', marginBottom: '2px', order: 5 }} />
+            <div style={{ height: '1px', backgroundColor: '#666', marginBottom: '12px', order: 5 }} />
 
             {/* Message Display */}
             {message && (
@@ -196,7 +196,7 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
               disabled={loading}
               style={{ 
                 fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', 
-                padding: '4px',
+                padding: '12px',
                 height: '44px',
                 fontSize: '12px',
                 fontWeight: 700,
