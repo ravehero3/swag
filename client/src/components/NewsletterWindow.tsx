@@ -105,7 +105,7 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
       >
         {/* Header */}
         <div style={{ height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderBottom: '1px solid #333', backgroundColor: '#000', position: 'relative', flexShrink: 0 }}>
-          <h2 style={{ fontFamily: '"Helvetica Neue Condensed Bold", "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '12px', fontWeight: 700, fontStretch: 'condensed', margin: '0', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'center', paddingRight: '30px', color: '#fff' }}>
+          <h2 style={{ fontFamily: '"Helvetica Neue Condensed Bold", "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '12px', fontWeight: 700, fontStretch: 'condensed', margin: '0', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'center', color: '#fff' }}>
             PŘIHLASTE SE K ODBĚRU NAŠEHO NEWSLETTERU
           </h2>
           <button
@@ -124,9 +124,15 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
           <form onSubmit={handleSubmit} style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '16px 12px 12px 12px', justifyContent: 'flex-end' }}>
             {/* Description - Centered vertically in the available space */}
             <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px', order: 1 }}>
-              <p style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '14px', fontWeight: 400, lineHeight: '1.6', color: '#fff', margin: 0, textAlign: 'center' }}>
+              <p style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '14px', fontWeight: 400, lineHeight: '1.6', color: '#666', margin: 0, textAlign: 'center' }}>
                 Přihlaste se k odběru našeho newsletteru a získejte přístup k nejnovějším kolekcím, exkluzivním nabídkám a novinkám ze světa VOODOO808.
               </p>
+            </div>
+
+            {/* Labels for Email Input */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', margin: '0 2px 4px 2px', order: 2 }}>
+              <span style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '10px', color: '#fff' }}>E-mail*</span>
+              <span style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '10px', color: '#666' }}>*požadovaný</span>
             </div>
 
             {/* Email Input */}
@@ -139,7 +145,7 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
               }}
               onBlur={handleBlur}
               required
-              placeholder="E-mail"
+              placeholder=""
               style={{ 
                 fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', 
                 fontSize: '12px',
@@ -150,9 +156,9 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
                 backgroundColor: '#fff',
                 color: emailError && touched ? '#dc2626' : '#000',
                 boxSizing: 'border-box',
-                width: 'calc(100% - 4px)',
-                margin: '0 2px 64px 2px',
-                order: 2
+                width: '100%',
+                margin: '0 0 64px 0',
+                order: 3
               }}
             />
 
@@ -163,15 +169,15 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
                 color: '#dc2626',
                 margin: '-60px 2px 64px 2px',
                 whiteSpace: 'pre-line',
-                order: 3
+                order: 4
               }}>
                 Neplatný formát emailu. Zkuste to znovu, pro příklad „RaveHero3@gmail.com"
               </p>
             )}
 
             {/* Data Processing Text */}
-            <div style={{ marginBottom: '64px', marginInline: '2px', order: 4 }}>
-              <p style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '12px', fontWeight: 400, lineHeight: '1.4', color: '#999', margin: '0', textAlign: 'center' }}>
+            <div style={{ marginBottom: '64px', marginInline: '2px', order: 5 }}>
+              <p style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '12px', fontWeight: 400, lineHeight: '1.4', color: '#666', margin: '0', textAlign: 'center' }}>
                 Odesláním tohoto formuláře souhlasíte se zpracováním vašich{' '}
                 <Link href="/ochrana-osobnich-udaju" style={{ color: '#fff', textDecoration: 'underline', cursor: 'pointer' }}>
                   osobních údajů
@@ -181,11 +187,11 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
             </div>
 
             {/* Divider */}
-            <div style={{ height: '1px', backgroundColor: '#666', marginBottom: '12px', order: 5 }} />
+            <div style={{ height: '1px', backgroundColor: '#666', marginBottom: '12px', order: 6, width: 'calc(100% + 24px)', marginLeft: '-12px' }} />
 
             {/* Message Display */}
             {message && (
-              <div style={{ padding: '12px', margin: '0 2px 2px 2px', textAlign: 'center', backgroundColor: message.type === 'success' ? 'rgba(36, 224, 83, 0.1)' : '#fee2e2', border: `1px solid ${message.type === 'success' ? '#24e053' : '#dc2626'}`, borderRadius: '4px', order: 6 }}>
+              <div style={{ padding: '12px', margin: '0 2px 2px 2px', textAlign: 'center', backgroundColor: message.type === 'success' ? 'rgba(36, 224, 83, 0.1)' : '#fee2e2', border: `1px solid ${message.type === 'success' ? '#24e053' : '#dc2626'}`, borderRadius: '4px', order: 7 }}>
                 <p style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '12px', lineHeight: '12px', margin: '0', color: message.type === 'success' ? '#24e053' : '#dc2626' }}>{message.text}</p>
               </div>
             )}
@@ -210,7 +216,7 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
                 letterSpacing: '0.5px',
                 borderRadius: '4px',
                 width: '100%',
-                order: 7
+                order: 8
               }}
               onMouseEnter={(e) => {
                 const btn = e.currentTarget as HTMLButtonElement;
