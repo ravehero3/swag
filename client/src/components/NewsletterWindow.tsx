@@ -122,10 +122,12 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
         {/* Content - Flex to push everything to bottom */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           <form onSubmit={handleSubmit} style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '16px 2px 2px 2px', justifyContent: 'flex-end' }}>
-            {/* Description */}
-            <p style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '14px', fontWeight: 400, lineHeight: '1.6', color: '#fff', margin: '0 14px 24px 14px', textAlign: 'center', order: 1 }}>
-              Přihlaste se k odběru našeho newsletteru a získejte přístup k nejnovějším kolekcím, exkluzivním nabídkám a novinkám ze světa VOODOO808.
-            </p>
+            {/* Description - Centered vertically in the available space */}
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 14px', order: 1 }}>
+              <p style={{ fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', fontSize: '14px', fontWeight: 400, lineHeight: '1.6', color: '#fff', margin: 0, textAlign: 'center' }}>
+                Přihlaste se k odběru našeho newsletteru a získejte přístup k nejnovějším kolekcím, exkluzivním nabídkám a novinkám ze světa VOODOO808.
+              </p>
+            </div>
 
             {/* Email Input */}
             <input
@@ -179,7 +181,7 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
             </div>
 
             {/* Divider */}
-            <div style={{ height: '1px', backgroundColor: '#333', marginBottom: '2px', order: 5 }} />
+            <div style={{ height: '1px', backgroundColor: '#666', marginBottom: '2px', order: 5 }} />
 
             {/* Message Display */}
             {message && (
@@ -194,7 +196,7 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
               disabled={loading}
               style={{ 
                 fontFamily: 'BB-Regular, "Helvetica Neue", Helvetica, Arial, sans-serif', 
-                padding: '0',
+                padding: '4px',
                 height: '44px',
                 fontSize: '12px',
                 fontWeight: 700,
