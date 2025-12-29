@@ -104,6 +104,28 @@ function Header() {
           </span>
         </Link>
 
+        {user?.isAdmin && (
+          <Link href="/admin">
+            <span
+              style={{
+                cursor: "pointer",
+                fontSize: "12px",
+                fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+                fontWeight: 700,
+                color: "#24e053",
+                transition: "transform 0.2s ease",
+                transform: hoveredIcon === "admin" ? "scale(1.02)" : "scale(1)",
+                display: "inline-block",
+                padding: "8px 0",
+              }}
+              onMouseEnter={() => setHoveredIcon("admin")}
+              onMouseLeave={() => setHoveredIcon(null)}
+            >
+              SPRÁVCE ESHOPU
+            </span>
+          </Link>
+        )}
+
         <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
           <svg
             width="16"

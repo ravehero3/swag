@@ -70,12 +70,26 @@ function Admin() {
   const [editingKit, setEditingKit] = useState<SoundKit | null>(null);
 
   useEffect(() => {
-    if (!user?.isAdmin) {
-      navigate("/prihlasit-se");
-      return;
-    }
-    loadData();
-  }, [user]);
+    // Let's add more robust admin check
+    const checkAdmin = async () => {
+      try {
+        const res = await fetch("/api/auth/me", { credentials: "include" });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.user?.isAdmin) {
+            loadData();
+          } else {
+            navigate("/prihlasit-se");
+          }
+        } else {
+          navigate("/prihlasit-se");
+        }
+      } catch (err) {
+        navigate("/prihlasit-se");
+      }
+    };
+    checkAdmin();
+  }, []);
 
   const loadData = async () => {
     try {
@@ -182,17 +196,29 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     const url = editing ? `/api/beats/${editing.id}` : "/api/beats";
     const method = editing ? "PUT" : "POST";
 
-    await fetch(url, {
+    // Standardize price and numerical values
+    const payload = {
+      ...form,
+      price: Number(form.price),
+      bpm: Number(form.bpm),
+    };
+
+    const res = await fetch(url, {
       method,
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify(form),
+      body: JSON.stringify(payload),
     });
 
-    setShowForm(false);
-    setEditing(null);
-    setForm({ title: "", artist: "VOODOO808", bpm: 140, key: "C", price: 0, previewUrl: "", fileUrl: "", artworkUrl: "", tags: [], isPublished: false, isHighlighted: false });
-    onRefresh();
+    if (res.ok) {
+      setShowForm(false);
+      setEditing(null);
+      setForm({ title: "", artist: "VOODOO808", bpm: 140, key: "C", price: 0, previewUrl: "", fileUrl: "", artworkUrl: "", tags: [], isPublished: false, isHighlighted: false });
+      loadData();
+    } else {
+      const errorData = await res.json();
+      alert(`Chyba: ${errorData.error || "Došlo k chybě při ukládání"}`);
+    }
   };
 
   const handleDelete = async (id: number) => {
