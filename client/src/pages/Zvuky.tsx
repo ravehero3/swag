@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useApp } from "../App";
 import ProductsGrid from "../components/ProductsGrid";
+import { useScrollAnimation } from "../hooks/useScrollAnimation";
 
 interface SoundKit {
   id: number;
@@ -176,7 +177,7 @@ function Zvuky() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [savedKits, setSavedKits] = useState<Set<number>>(new Set());
   const audioRef = useRef<HTMLAudioElement>(null);
-  const { user, addToCart } = useApp();
+  const { user, addToCart, settings } = useApp();
 
   useEffect(() => {
     fetch("/api/sound-kits")
@@ -301,12 +302,53 @@ function Zvuky() {
   }));
 
   return (
-    <div className="fade-in">
+    <div className="fade-in-section delay-1">
       <audio
         ref={audioRef}
         src={currentKit?.preview_url}
         onEnded={() => setIsPlaying(false)}
       />
+      
+      <style>{`
+        .zvuky-video-container {
+          width: 100vw;
+          margin-left: calc(-50vw + 50%);
+          margin-top: -42px;
+          margin-bottom: 32px;
+          overflow: hidden;
+          position: relative;
+          min-height: 300px;
+          background: #000;
+        }
+        .zvuky-video-overlay-fade {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          height: 147px;
+          background: linear-gradient(to bottom, transparent calc(100% - 147px), black 100%);
+          pointer-events: none;
+          z-index: 10;
+        }
+      `}</style>
+      
+      <div className="zvuky-video-container">
+        <video
+          key={settings.zvuky_video}
+          src={settings.zvuky_video || "/uploads/hrad-na-web.mov"}
+          autoPlay
+          muted
+          loop
+          playsInline
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            display: "block"
+          }}
+        />
+        <div className="zvuky-video-overlay-fade" />
+      </div>
       
       <div style={{ textAlign: "center", marginBottom: "48px", padding: "0 20px" }}>
         <h2 style={{ fontSize: "18px", fontWeight: "bold" }}>ZVUKY</h2>
