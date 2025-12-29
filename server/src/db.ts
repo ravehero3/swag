@@ -89,6 +89,16 @@ export async function initDatabase() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
 
+      CREATE TABLE IF NOT EXISTS assets (
+        id SERIAL PRIMARY KEY,
+        type VARCHAR(50) NOT NULL, -- 'dock_icon', 'carousel_desktop', 'carousel_mobile'
+        url TEXT NOT NULL,
+        title VARCHAR(255),
+        link VARCHAR(500),
+        order_index INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
       CREATE TABLE IF NOT EXISTS settings (
         key VARCHAR(255) PRIMARY KEY,
         value TEXT NOT NULL,

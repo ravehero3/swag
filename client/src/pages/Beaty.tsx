@@ -157,12 +157,24 @@ function Beaty() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [showTitle, setShowTitle] = useState(false);
+  const [assets, setAssets] = useState<any[]>([]);
   const audioRef = useRef<HTMLAudioElement>(null);
   const beatsListRef = useScrollAnimation();
   const soundKitsRef = useScrollAnimation();
   const artistCarouselRef = useScrollAnimation();
   const { user, addToCart, cart, currentBeat, setCurrentBeat, isPlaying, setIsPlaying, isLooping, setIsLooping, isShuffling, setIsShuffling, settings } = useApp();
   
+  const dockIcons = assets.filter((a: any) => a.type === "dock_icon");
+  const desktopCarousel = assets.filter((a: any) => a.type === "carousel_desktop");
+  const mobileCarousel = assets.filter((a: any) => a.type === "carousel_mobile");
+
+  useEffect(() => {
+    fetch("/api/assets")
+      .then(res => res.json())
+      .then(setAssets)
+      .catch(console.error);
+  }, []);
+
   // Determine if we're on home page or beaty page
   const isHomePage = location === "/" || location === "";
   const beatLimit = isHomePage ? 10 : undefined;
@@ -1724,7 +1736,7 @@ function Beaty() {
               style={{ marginTop: "64px", position: "relative", zIndex: 10000 }} 
               className="mobile-carousel-wrapper"
             >
-              <MobileCarousel />
+              <MobileCarousel images={mobileCarousel.length > 0 ? mobileCarousel.map((a: any) => a.url) : undefined} />
             </div>
 
             <div ref={artistCarouselRef} className="fade-in-section delay-3 scroll-fade-section artist-carousel-section-mobile" style={{ marginTop: "-300px", marginBottom: "0px", position: "relative", zIndex: 999999, overflow: "visible" }}>
@@ -1762,7 +1774,7 @@ function Beaty() {
               <div 
                 style={{ marginTop: "0px", position: "relative", zIndex: 999999, overflow: "visible", background: "transparent", width: "100%" }}
               >
-                <ArtistCarousel />
+                <ArtistCarousel images={desktopCarousel.length > 0 ? desktopCarousel.map((a: any) => a.url) : undefined} />
               </div>
             </div>
 
@@ -1998,6 +2010,7 @@ function Beaty() {
                 overflow: "visible",
               }}>
                 <SoundKitsDock
+                  icons={dockIcons.length > 0 ? dockIcons : undefined}
                   items={testSoundKits.map((kit) => ({
                     id: kit.id,
                     name: kit.title,

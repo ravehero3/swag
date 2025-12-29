@@ -67,6 +67,44 @@ app.use("/api/saved", savedRoutes);
 app.use("/api/licenses", licensesRoutes);
 app.use("/api/admin", adminLicensesRoutes);
 
+app.get("/api/assets", async (req, res) => {
+  try {
+    const { type } = req.query;
+    let query = "SELECT * FROM assets ORDER BY order_index ASC";
+    let params: any[] = [];
+    if (type) {
+      query = "SELECT * FROM assets WHERE type = $1 ORDER BY order_index ASC";
+      params = [type];
+    }
+    const result = await pool.query(query, params);
+    res.json(result.rows);
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při načítání assetů" });
+  }
+});
+
+app.post("/api/admin/assets", requireAdmin, async (req, res) => {
+  try {
+    const { type, url, title, link, orderIndex } = req.body;
+    const result = await pool.query(
+      "INSERT INTO assets (type, url, title, link, order_index) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+      [type, url, title, link, orderIndex || 0]
+    );
+    res.json(result.rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při ukládání assetu" });
+  }
+});
+
+app.delete("/api/admin/assets/:id", requireAdmin, async (req, res) => {
+  try {
+    await pool.query("DELETE FROM assets WHERE id = $1", [req.params.id]);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při mazání assetu" });
+  }
+});
+
 app.get("/api/settings", async (_req, res) => {
   try {
     const result = await pool.query("SELECT key, value FROM settings");

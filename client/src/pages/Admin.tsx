@@ -59,7 +59,7 @@ interface BeatLicenseFile {
 function Admin() {
   const { user, settings, refreshSettings } = useApp();
   const [, navigate] = useLocation();
-  const [tab, setTab] = useState<"beats" | "kits" | "orders" | "licenses" | "settings">("beats");
+  const [tab, setTab] = useState<"beats" | "kits" | "orders" | "licenses" | "settings" | "assets">("beats");
   const [beats, setBeats] = useState<Beat[]>([]);
   const [kits, setKits] = useState<SoundKit[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
@@ -114,14 +114,14 @@ function Admin() {
     <div className="fade-in">
       <h1 style={{ marginBottom: "24px" }}>Admin Panel</h1>
 
-      <div style={{ display: "flex", gap: "12px", marginBottom: "24px" }}>
-        {["beats", "kits", "orders", "licenses", "settings"].map((t) => (
+      <div style={{ display: "flex", gap: "12px", marginBottom: "24px", flexWrap: "wrap" }}>
+        {["beats", "kits", "orders", "licenses", "settings", "assets"].map((t) => (
           <button
             key={t}
             className={tab === t ? "btn btn-filled" : "btn"}
             onClick={() => setTab(t as any)}
           >
-            {t === "beats" ? "Beaty" : t === "kits" ? "Zvuky" : t === "orders" ? "Objednávky" : t === "licenses" ? "Licence" : "Nastavení"}
+            {t === "beats" ? "Beaty" : t === "kits" ? "Zvuky" : t === "orders" ? "Objednávky" : t === "licenses" ? "Licence" : t === "settings" ? "Nastavení" : "Assety (Ikony/Carousel)"}
           </button>
         ))}
       </div>
@@ -155,6 +155,8 @@ function Admin() {
       {tab === "licenses" && <LicensesTab licenses={licenses} onRefresh={loadData} />}
 
       {tab === "settings" && <SettingsTab settings={settings} onRefresh={refreshSettings} />}
+
+      {tab === "assets" && <AssetsTab />}
     </div>
   );
 }
@@ -659,6 +661,90 @@ function LicensesTab({ licenses, onRefresh }: any) {
           </tbody>
         </table>
       )}
+    </div>
+  );
+}
+
+function AssetsTab() {
+  const [assets, setAssets] = useState<any[]>([]);
+  const [type, setType] = useState("dock_icon");
+  const [form, setForm] = useState({ title: "", link: "", url: "" });
+
+  const loadAssets = async () => {
+    const res = await fetch("/api/assets");
+    const data = await res.json();
+    setAssets(data);
+  };
+
+  useEffect(() => { loadAssets(); }, []);
+
+  const uploadFile = async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await fetch("/api/upload?type=artwork", {
+      method: "POST",
+      credentials: "include",
+      body: formData,
+    });
+    const data = await res.json();
+    setForm({ ...form, url: data.url });
+  };
+
+  const handleSubmit = async (e: any) => {
+    e.preventDefault();
+    await fetch("/api/admin/assets", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ ...form, type }),
+    });
+    setForm({ title: "", link: "", url: "" });
+    loadAssets();
+  };
+
+  const handleDelete = async (id: number) => {
+    await fetch(`/api/admin/assets/${id}`, { method: "DELETE", credentials: "include" });
+    loadAssets();
+  };
+
+  return (
+    <div style={{ padding: "16px", border: "1px solid #333" }}>
+      <h2 style={{ marginBottom: "24px" }}>Správa assetů</h2>
+      <form onSubmit={handleSubmit} style={{ marginBottom: "32px", display: "grid", gap: "16px" }}>
+        <div>
+          <label style={{ display: "block", marginBottom: "8px" }}>Typ assetu</label>
+          <select value={type} onChange={(e) => setType(e.target.value)} style={{ width: "100%", padding: "12px" }}>
+            <option value="dock_icon">Dock Ikona</option>
+            <option value="carousel_desktop">Carousel Desktop</option>
+            <option value="carousel_mobile">Carousel Mobile</option>
+          </select>
+        </div>
+        <div>
+          <label style={{ display: "block", marginBottom: "8px" }}>Soubor</label>
+          <input type="file" onChange={(e) => e.target.files?.[0] && uploadFile(e.target.files[0])} />
+          {form.url && <p style={{ fontSize: "12px", color: "#666" }}>Nahráno: {form.url}</p>}
+        </div>
+        <div>
+          <label style={{ display: "block", marginBottom: "8px" }}>Název (volitelné)</label>
+          <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} style={{ width: "100%" }} />
+        </div>
+        <div>
+          <label style={{ display: "block", marginBottom: "8px" }}>Odkaz (volitelné)</label>
+          <input value={form.link} onChange={(e) => setForm({ ...form, link: e.target.value })} style={{ width: "100%" }} />
+        </div>
+        <button type="submit" className="btn btn-filled">Přidat asset</button>
+      </form>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "16px" }}>
+        {assets.map((asset) => (
+          <div key={asset.id} style={{ border: "1px solid #333", padding: "8px" }}>
+            <img src={asset.url} alt="" style={{ width: "100%", height: "100px", objectFit: "contain", marginBottom: "8px" }} />
+            <div style={{ fontSize: "12px", color: "#999" }}>{asset.type}</div>
+            <div style={{ fontWeight: "bold" }}>{asset.title}</div>
+            <button onClick={() => handleDelete(asset.id)} style={{ color: "#ff4444", marginTop: "8px", background: "none", border: "none", cursor: "pointer" }}>Smazat</button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
