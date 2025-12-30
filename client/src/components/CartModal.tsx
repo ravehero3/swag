@@ -69,7 +69,7 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
               boxShadow: "-10px 0 40px rgba(0, 0, 0, 0.8)",
               display: "flex",
               flexDirection: "column",
-              animation: "slideInRight 1s ease-out",
+              animation: "slideInRight 0.3s ease-out",
               zIndex: 9999,
               borderLeft: "1px solid #333",
             }}
