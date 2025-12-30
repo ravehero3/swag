@@ -98,9 +98,10 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
           borderLeft: '1px solid #333',
           zIndex: 9999,
           transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
-          transition: 'transform 0.3s ease-in-out',
+          transition: 'transform 1s ease-out, opacity 1s ease-out',
           display: 'flex',
           flexDirection: 'column',
+          opacity: isOpen ? 1 : 0,
         }}
       >
         {/* Header */}
