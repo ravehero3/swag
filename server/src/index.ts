@@ -67,6 +67,25 @@ app.use("/api/saved", savedRoutes);
 app.use("/api/licenses", licensesRoutes);
 app.use("/api/admin", adminLicensesRoutes);
 
+// Auto-seed admin user
+import bcrypt from "bcryptjs";
+async function seedAdmin() {
+  try {
+    const email = 'admin@voodoo808.com';
+    const password = 'admin123';
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const existing = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
+    if (existing.rows.length === 0) {
+      await pool.query('INSERT INTO users (email, password, is_admin) VALUES ($1, $2, true)', [email, hashedPassword]);
+    } else {
+      await pool.query('UPDATE users SET is_admin = true WHERE email = $1', [email]);
+    }
+  } catch (e) {
+    console.error("Admin seed failed:", e);
+  }
+}
+seedAdmin();
+
 app.get("/api/promo-codes", requireAdmin, async (_req, res) => {
   try {
     const result = await pool.query("SELECT * FROM promo_codes ORDER BY created_at DESC");
