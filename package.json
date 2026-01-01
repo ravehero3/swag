@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "tsx server/src/index.ts",
     "build": "vite build && tsc --project server/tsconfig.json",
+    "seed-admin": "tsx server/src/seed-admin.ts",
     "start": "node dist/server/index.js",
     "vercel-build": "vite build && tsc --project server/tsconfig.json"
   },
