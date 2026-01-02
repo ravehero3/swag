@@ -211,7 +211,7 @@ function App() {
     <AppContext.Provider value={{ user, setUser, cart, addToCart, removeFromCart, clearCart, isCartOpen, setIsCartOpen, isNewsletterOpen, setIsNewsletterOpen, currentBeat, setCurrentBeat, isPlaying, setIsPlaying, isLooping, setIsLooping, isShuffling, setIsShuffling, audioRef, allBeats: [], playBeat: () => {}, handlePrevious: () => {}, handleNext: () => {}, settings, refreshSettings }}>
       <div style={{ minHeight: "100vh", background: "#000", display: "flex", flexDirection: "column" }}>
         <Header />
-        <main style={{ flex: 1 }} className="fade-in">
+        <main className="fade-in">
           <Switch>
             <Route path="/" component={Beaty} />
             <Route path="/beaty" component={Beaty} />

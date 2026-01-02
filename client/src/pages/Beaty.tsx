@@ -448,7 +448,7 @@ function Beaty() {
           }
         }
       `}</style>
-      <div className="video-container" style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative", minHeight: "300px", background: "#000" }}>
+      <div className="video-container" style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", overflow: "hidden", position: "relative", minHeight: "300px", background: "#000" }}>
         <video
           key={isHomePage ? "analog7" : "beaty_video"}
           src={isHomePage ? (settings.beaty_video_main || "/uploads/artwork/voodoo808-video.mp4") : (settings.beaty_video_main || "/uploads/artwork/voodoo808-video.mp4")}
@@ -472,11 +472,11 @@ function Beaty() {
         />
         <style>{`
           .video-overlay-fade {
-            background: linear-gradient(to bottom, transparent calc(100% - 147px), black 100%);
+            background: linear-gradient(to bottom, transparent 0%, black 100%);
           }
           @media (max-width: 768px) {
             .video-overlay-fade {
-              background: linear-gradient(to bottom, transparent calc(100% - 147px), black 100%);
+              background: linear-gradient(to bottom, transparent 0%, black 100%);
             }
           }
         `}</style>
