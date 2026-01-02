@@ -238,8 +238,6 @@ function App() {
             </Route>
           </Switch>
         </main>
-        <ExtendedFooter />
-        <Footer />
         <div style={{
           width: '100%',
           height: '1000px',
@@ -267,6 +265,8 @@ function App() {
             background: 'linear-gradient(to bottom, transparent, black)'
           }} />
         </div>
+        <ExtendedFooter />
+        <Footer />
         <CartModal isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
         {isNewsletterOpen && (
           <NewsletterWindow isOpen={isNewsletterOpen} onClose={() => setIsNewsletterOpen(false)} />
