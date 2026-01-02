@@ -500,7 +500,7 @@ function Beaty() {
               left: 0,
               width: "100%",
               height: "1000px",
-              zIndex: -1,
+              zIndex: 1,
               overflow: "hidden"
             }}>
               <img 
