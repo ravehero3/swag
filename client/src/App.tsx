@@ -121,7 +121,21 @@ function App() {
 
   return (
     <AppContext.Provider value={{ user, setUser, cart, addToCart, removeFromCart, clearCart, isCartOpen, setIsCartOpen }}>
-      <div style={{ minHeight: "100vh", background: "#000", display: "flex", flexDirection: "column" }}>
+      <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", position: "relative" }}>
+        <div 
+          style={{ 
+            position: "fixed", 
+            top: 0, 
+            left: 0, 
+            right: 0, 
+            bottom: 0, 
+            backgroundImage: "url(/uploads/artwork/dock-bg-computer.jpg)", 
+            backgroundSize: "cover", 
+            backgroundPosition: "center", 
+            backgroundAttachment: "fixed",
+            zIndex: -1 
+          }} 
+        />
         <Header />
         <main style={{ flex: 1 }} className="fade-in">
           <Switch>
