@@ -183,7 +183,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
         );
       })}
 
-      <div className="dock-container-mobile" style={{ width: '100%', display: 'flex', justifyContent: 'center', overflowX: 'visible', overflowY: 'visible', padding: '20px 0', marginTop: '200px', position: 'relative' }}>
+      <div className="dock-container-mobile" style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflowX: 'visible', overflowY: 'visible', padding: '20px 0', marginTop: '200px', position: 'relative', zIndex: 150 }}>
         <div
           ref={dockRef}
           onMouseLeave={handleMouseLeave}
@@ -201,6 +201,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
             overflow: 'visible',
             position: 'relative',
             minWidth: 'fit-content',
+            zIndex: 151,
           }}
         >
           {items.map((item, index) => {
@@ -292,88 +293,90 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
             );
           })}
         </div>
-      </div>
+        
+        {/* Mirrored Reflection moved inside the same container to stay below dock */}
+        <div className="reflection-container-mobile" style={{ 
+          width: '100%', 
+          display: 'flex', 
+          justifyContent: 'center', 
+          overflowX: 'auto', 
+          overflowY: 'visible',
+          opacity: 0.3,
+          pointerEvents: 'none',
+          maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1), rgba(0,0,0,0))',
+          WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1), rgba(0,0,0,0))',
+          position: 'relative',
+          marginTop: '0px',
+          zIndex: 149,
+        }}>
+          <div
+            className="dock-reflection-container"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '12px',
+              height: '64px',
+              borderRadius: '12px',
+              backgroundColor: 'rgba(31, 41, 55, 0.8)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(107, 114, 128, 0.5)',
+              overflow: 'visible',
+              position: 'relative',
+              minWidth: 'fit-content',
+              transform: 'scaleY(-1)',
+            }}
+          >
+            {items.map((item, index) => {
+              const scale = getScale(index);
+              const baseSize = 56;
+              const size = baseSize * scale;
+              const translateY = -(size - baseSize) / 2;
 
-      {/* Mirrored Reflection */}
-      <div className="reflection-container-mobile" style={{ 
-        width: '100%', 
-        display: 'flex', 
-        justifyContent: 'center', 
-        overflowX: 'auto', 
-        overflowY: 'visible',
-        opacity: 0.3,
-        pointerEvents: 'none',
-        maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1), rgba(0,0,0,0))',
-        WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1), rgba(0,0,0,0))',
-        position: 'relative',
-      }}>
-        <div
-          className="dock-reflection-container"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '12px',
-            height: '64px',
-            borderRadius: '12px',
-            backgroundColor: 'rgba(31, 41, 55, 0.8)',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(107, 114, 128, 0.5)',
-            overflow: 'visible',
-            position: 'relative',
-            minWidth: 'fit-content',
-            transform: 'scaleY(-1)',
-          }}
-        >
-          {items.map((item, index) => {
-            const scale = getScale(index);
-            const baseSize = 56;
-            const size = baseSize * scale;
-            const translateY = -(size - baseSize) / 2;
-
-            return (
-              <div
-                key={`mirror-${item.id}`}
-                className="dock-icon-wrapper"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: `${size}px`,
-                  height: `${size}px`,
-                  transform: `translateY(${translateY}px)`,
-                  transition: 'transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), height 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                  flexShrink: 0,
-                }}
-              >
+              return (
                 <div
-                  className="dock-icon-button"
+                  key={`mirror-${item.id}`}
+                  className="dock-icon-wrapper"
                   style={{
-                    width: `${size}px`,
-                    height: `${size}px`,
-                    borderRadius: '8px',
-                    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-                    overflow: 'hidden',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    width: `${size}px`,
+                    height: `${size}px`,
+                    transform: `translateY(${translateY}px)`,
+                    transition: 'transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), height 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                    flexShrink: 0,
                   }}
                 >
-                  <img 
-                    src={item.image} 
-                    alt=""
-                    style={{ 
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'contain',
-                      display: 'block',
-                      padding: '4px',
-                    }} 
-                  />
+                  <div
+                    className="dock-icon-button"
+                    style={{
+                      width: `${size}px`,
+                      height: `${size}px`,
+                      borderRadius: '8px',
+                      backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                      overflow: 'hidden',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <img 
+                      src={item.image} 
+                      alt=""
+                      style={{ 
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain',
+                        display: 'block',
+                        padding: '4px',
+                      }} 
+                    />
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>
