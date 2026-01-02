@@ -1165,10 +1165,11 @@ function Home() {
         {isHomePage && (
           <div style={{ 
             backgroundImage: "url(/uploads/artwork/dock-bg-computer.jpg)", 
-            backgroundSize: "cover", 
+            backgroundSize: "100% 100%", 
             backgroundPosition: "bottom center", 
             backgroundRepeat: "no-repeat",
-            width: "100%",
+            width: "100vw",
+            marginLeft: "calc(-50vw + 50%)",
             display: "flex",
             flexDirection: "column",
             alignItems: "center"
@@ -1179,7 +1180,7 @@ function Home() {
               </div>
             </div>
 
-            <div ref={soundKitsRef} className="fade-in-section delay-4 scroll-fade-section" style={{ marginTop: "100px", marginBottom: "0px", width: "100%", display: "flex", justifyContent: "center", position: "relative", zIndex: 5 }}>
+            <div ref={soundKitsRef} className="fade-in-section delay-4 scroll-fade-section" style={{ marginTop: "110px", marginBottom: "0px", width: "100%", display: "flex", justifyContent: "center", position: "relative", zIndex: 5 }}>
               <div style={{ 
                 width: "100%", 
                 height: "800px", 
