@@ -1180,26 +1180,14 @@ function Home() {
               </div>
             </div>
 
-            <div ref={soundKitsRef} className="fade-in-section delay-4 scroll-fade-section" style={{ marginTop: "920px", marginBottom: "0px", width: "100%", display: "flex", justifyContent: "center", position: "relative", zIndex: 5 }}>
-              <div style={{ 
-                width: "100%", 
-                height: "1000px", 
-                position: "relative",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "flex-end",
-                alignItems: "center",
-                paddingBottom: "60px"
-              }}>
             <div style={{
-                  width: "100%",
-                  textAlign: "center",
-                  zIndex: 20,
-                  opacity: showTitle ? 1 : 0,
-                  transition: "opacity 0.5s ease-in-out",
-                  marginBottom: "40px",
-                  marginTop: "-1000px"
-                }}>
+              width: "100%",
+              textAlign: "center",
+              zIndex: 20,
+              opacity: showTitle ? 1 : 0,
+              transition: "opacity 0.5s ease-in-out",
+              marginTop: "200px"
+            }}>
                   <h2 style={{
                     color: "#fff",
                     fontSize: "60px",
@@ -1221,24 +1209,37 @@ function Home() {
                   </h2>
                 </div>
 
-                <div style={{ 
-                  display: "flex", 
-                  justifyContent: "center",
-                  width: "100%",
-                  padding: "0 20px"
-                }}>
-                  <SoundKitsDock
-                    items={testSoundKits.map((kit) => ({
-                      id: kit.id,
-                      name: kit.title,
-                      image: kit.artwork_url,
-                      price: kit.price,
-                      isFree: kit.is_free,
-                      onClick: () => {
-                        setLocation("/zvuky");
-                      },
-                    }))}
-                  />
+                <div ref={soundKitsRef} className="fade-in-section delay-4 scroll-fade-section" style={{ marginTop: "920px", marginBottom: "0px", width: "100%", display: "flex", justifyContent: "center", position: "relative", zIndex: 5 }}>
+                  <div style={{ 
+                    width: "100%", 
+                    height: "1000px", 
+                    position: "relative",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "flex-end",
+                    alignItems: "center",
+                    paddingBottom: "60px"
+                  }}>
+                    <div style={{ 
+                      display: "flex", 
+                      justifyContent: "center",
+                      width: "100%",
+                      padding: "0 20px"
+                    }}>
+                      <SoundKitsDock
+                        items={testSoundKits.map((kit) => ({
+                          id: kit.id,
+                          name: kit.title,
+                          image: kit.artwork_url,
+                          price: kit.price,
+                          isFree: kit.is_free,
+                          onClick: () => {
+                            setLocation("/zvuky");
+                          },
+                        }))}
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
