@@ -1203,7 +1203,7 @@ function Home() {
                   <h2 style={{
                     color: "#fff",
                     fontSize: "60px",
-                    fontFamily: "'BB Condensed Regular', 'Roboto Condensed', sans-serif",
+                    fontFamily: "'Saint Regular', sans-serif",
                     fontWeight: "400",
                     letterSpacing: "0",
                     margin: 0,
