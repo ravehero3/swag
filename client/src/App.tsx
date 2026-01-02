@@ -262,13 +262,27 @@ function App() {
           />
           <div style={{
             position: 'absolute',
-            bottom: 0,
+            top: 0,
             left: 0,
             right: 0,
             height: '200px',
             background: 'linear-gradient(to bottom, transparent, black)',
             zIndex: 1
           }} />
+          <div style={{
+            position: 'absolute',
+            bottom: '200px',
+            left: 0,
+            right: 0,
+            display: 'flex',
+            justifyContent: 'center',
+            zIndex: 9999,
+            pointerEvents: 'none'
+          }}>
+            <div style={{ pointerEvents: 'auto' }}>
+              <Beaty showOnlyDock={true} />
+            </div>
+          </div>
         </div>
         <ExtendedFooter />
         <Footer />

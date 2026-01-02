@@ -145,7 +145,7 @@ const testSoundKits: SoundKit[] = [
 ];
 
 
-function Beaty() {
+function Beaty({ showOnlyDock = false }: { showOnlyDock?: boolean }) {
   const [location, setLocation] = useLocation();
   const [beats, setBeats] = useState<Beat[]>([]);
   const [highlightedBeat, setHighlightedBeat] = useState<Beat | null>(null);
@@ -363,6 +363,25 @@ function Beaty() {
 
   const filteredBeats = beatLimit ? beats.slice(0, beatLimit) : beats;
   const otherBeats = filteredBeats.filter((b) => b.id !== highlightedBeat?.id);
+
+  if (showOnlyDock) {
+    return (
+      <div className="sound-kits-dock-wrapper" style={{ width: "100%", display: "flex", justifyContent: "center" }}>
+        {dockIcons.length > 0 && (
+          <SoundKitsDock 
+            items={dockIcons.map(icon => ({
+              id: icon.id,
+              name: icon.name,
+              image: icon.url,
+              price: 0,
+              isFree: true,
+              onClick: () => {}
+            }))} 
+          />
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="fade-in-section delay-1">
