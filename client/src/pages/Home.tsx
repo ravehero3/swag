@@ -1180,7 +1180,7 @@ function Home() {
               </div>
             </div>
 
-            <div ref={soundKitsRef} className="fade-in-section delay-4 scroll-fade-section" style={{ marginTop: "880px", marginBottom: "0px", width: "100%", display: "flex", justifyContent: "center", position: "relative", zIndex: 5 }}>
+            <div ref={soundKitsRef} className="fade-in-section delay-4 scroll-fade-section" style={{ marginTop: "920px", marginBottom: "0px", width: "100%", display: "flex", justifyContent: "center", position: "relative", zIndex: 5 }}>
               <div style={{ 
                 width: "100%", 
                 height: "1000px", 
@@ -1191,13 +1191,14 @@ function Home() {
                 alignItems: "center",
                 paddingBottom: "60px"
               }}>
-                <div style={{
+            <div style={{
                   width: "100%",
                   textAlign: "center",
                   zIndex: 20,
                   opacity: showTitle ? 1 : 0,
                   transition: "opacity 0.5s ease-in-out",
-                  marginBottom: "40px"
+                  marginBottom: "40px",
+                  marginTop: "-1000px"
                 }}>
                   <h2 style={{
                     color: "#fff",
