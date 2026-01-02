@@ -195,7 +195,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
             padding: '12px',
             height: '64px',
             borderRadius: '12px',
-            backgroundColor: '#111827', // Use solid dark background for better visibility
+            background: 'url(/uploads/artwork/metallic-logo.png) center/cover no-repeat', // Using the computer/metallic image asset
             backdropFilter: 'blur(20px)',
             border: '1px solid rgba(255, 255, 255, 0.1)',
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.8)',
@@ -309,25 +309,25 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
         WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1), rgba(0,0,0,0))',
         position: 'relative',
       }}>
-        <div
-          className="dock-reflection-container"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '12px',
-            height: '64px',
-            borderRadius: '12px',
-            backgroundColor: '#111827', // Use solid dark background for better visibility
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.8)',
-            overflow: 'visible',
-            position: 'relative',
-            minWidth: 'fit-content',
-            transform: 'scaleY(-1)',
-          }}
-        >
+          <div
+            className="dock-reflection-container"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '12px',
+              height: '64px',
+              borderRadius: '12px',
+              background: 'url(/uploads/artwork/metallic-logo.png) center/cover no-repeat',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.8)',
+              overflow: 'visible',
+              position: 'relative',
+              minWidth: 'fit-content',
+              transform: 'scaleY(-1)',
+            }}
+          >
           {items.map((item, index) => {
             const scale = getScale(index);
             const baseSize = 56;
