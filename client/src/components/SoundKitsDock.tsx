@@ -183,7 +183,24 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
         );
       })}
 
-      <div className="dock-container-mobile" style={{ width: '100%', display: 'flex', justifyContent: 'center', overflowX: 'visible', overflowY: 'visible', padding: '20px 0', marginTop: '200px', position: 'relative', zIndex: 99999 }}>
+      <div className="dock-container-mobile" style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflowX: 'visible', overflowY: 'visible', padding: '20px 0', marginTop: '200px', position: 'relative', zIndex: 99999 }}>
+        {/* Background Computer Image */}
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '400px', // Adjust size as needed
+          height: '400px',
+          backgroundImage: 'url(/uploads/artwork/metallic-logo.png)',
+          backgroundSize: 'contain',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          opacity: 0.8,
+          zIndex: -1,
+          pointerEvents: 'none'
+        }} />
+        
         <div
           ref={dockRef}
           onMouseLeave={handleMouseLeave}
@@ -195,7 +212,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
             padding: '12px',
             height: '64px',
             borderRadius: '12px',
-            background: 'url(/uploads/artwork/metallic-logo.png) center/cover no-repeat', // Using the computer/metallic image asset
+            backgroundColor: '#111827', // Reset to solid background
             backdropFilter: 'blur(20px)',
             border: '1px solid rgba(255, 255, 255, 0.1)',
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.8)',
@@ -318,7 +335,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
               padding: '12px',
               height: '64px',
               borderRadius: '12px',
-              background: 'url(/uploads/artwork/metallic-logo.png) center/cover no-repeat',
+              backgroundColor: '#111827',
               backdropFilter: 'blur(20px)',
               border: '1px solid rgba(255, 255, 255, 0.1)',
               boxShadow: '0 8px 32px rgba(0, 0, 0, 0.8)',

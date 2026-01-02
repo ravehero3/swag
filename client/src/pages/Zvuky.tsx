@@ -352,6 +352,16 @@ function Zvuky() {
       
       <div style={{ textAlign: "center", marginBottom: "48px", padding: "0 20px" }}>
         <h2 style={{ fontSize: "18px", fontWeight: "bold" }}>ZVUKY</h2>
+        <p style={{ 
+          fontSize: "14px", 
+          color: "#999", 
+          marginTop: "12px", 
+          fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+          textTransform: "uppercase",
+          letterSpacing: "1px"
+        }}>
+          Pro všechny co se chtěj děláním BEATS živit
+        </p>
       </div>
 
       {kits.length > 0 ? (
