@@ -148,6 +148,7 @@ function App() {
             </Route>
           </Switch>
         </main>
+        <ExtendedFooter />
         <Footer />
         <CartModal isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
       </div>
