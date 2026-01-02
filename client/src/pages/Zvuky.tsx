@@ -333,13 +333,9 @@ function Zvuky() {
       `}</style>
       
       <div className="zvuky-video-container" style={{ marginTop: "-242px" }}>
-        <video
-          key={settings.zvuky_video}
-          src={settings.zvuky_video || "/uploads/hrad-na-web.mov"}
-          autoPlay
-          muted
-          loop
-          playsInline
+        <img
+          src="/attached_assets/computer_with_sound_kits_image_1767351142964.jpg"
+          alt="Sound Kits Hero"
           style={{
             width: "100%",
             height: "100%",
