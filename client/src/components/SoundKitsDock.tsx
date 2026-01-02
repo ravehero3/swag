@@ -187,11 +187,11 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
         {/* Background Computer Image */}
         <div style={{
           position: 'absolute',
-          top: '-600px', // Shifted up further to blend with ArtistCarousel
+          top: '-1200px', // Adjusted to cover full height from top to bottom
           left: '50%',
           transform: 'translateX(-50%)',
           width: '100vw',
-          height: '1600px', // Increased height to ensure overlap
+          height: '2400px', // Increased to fill entire page
           backgroundImage: 'url(/uploads/artwork/dock-bg-computer.jpg)',
           backgroundSize: 'cover',
           backgroundPosition: 'top center',
@@ -199,9 +199,6 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
           opacity: 1,
           zIndex: -1,
           pointerEvents: 'none',
-          maskImage: 'linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)',
-          WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)',
-          transform: 'translateY(300px)'
         }} />
         
         <div

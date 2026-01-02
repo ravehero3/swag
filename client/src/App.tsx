@@ -238,7 +238,7 @@ function App() {
             </Route>
           </Switch>
         </main>
-        <div style={{ marginTop: "400px", position: "relative", zIndex: 9999, background: "#000" }}>
+        <div style={{ marginTop: "0", position: "relative", zIndex: 9999, background: "#000" }}>
           <ExtendedFooter />
           <Footer />
         </div>
