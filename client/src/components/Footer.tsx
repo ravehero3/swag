@@ -27,30 +27,6 @@ function Footer() {
       >
         © 2026 VOODOO808
       </span>
-      <button
-        onClick={() => setIsNewsletterOpen(true)}
-        style={{
-          fontSize: "14px",
-          fontFamily: "'Helvetica Neue Condensed', 'Helvetica Neue', Helvetica, Arial, sans-serif",
-          fontWeight: 300,
-          fontStretch: "condensed",
-          color: "#666",
-          background: "none",
-          border: "none",
-          cursor: "pointer",
-          padding: "0",
-          textDecoration: "underline",
-          transition: "color 0.2s ease",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.color = "#999";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.color = "#666";
-        }}
-      >
-        Přihlaste se k odběru novinek
-      </button>
     </footer>
   );
 }
