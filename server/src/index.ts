@@ -13,7 +13,9 @@ import uploadRoutes from "./routes/upload.js";
 import savedRoutes from "./routes/saved.js";
 import licensesRoutes from "./routes/licenses.js";
 import adminLicensesRoutes from "./routes/adminLicenses.js";
+import { requireAuth, requireAdmin } from "./middleware/auth.js";
 import { createServer as createViteServer } from "vite";
+import bcrypt from "bcryptjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -40,12 +42,10 @@ if (isProduction) {
   app.set("trust proxy", 1);
 }
 
+const sessionSecret = process.env.SESSION_SECRET || "voodoo808_stable_secret_12345";
+
 app.use(session({
-  store: new PgStore({
-    pool,
-    tableName: "session",
-  }),
-  secret: process.env.SESSION_SECRET || "voodoo808-dev-secret-key-change-in-production",
+  secret: sessionSecret,
   resave: false,
   saveUninitialized: false,
   cookie: {
@@ -67,8 +67,122 @@ app.use("/api/saved", savedRoutes);
 app.use("/api/licenses", licensesRoutes);
 app.use("/api/admin", adminLicensesRoutes);
 
+async function seedAdmin() {
+  try {
+    const email = 'admin@voodoo808.com';
+    const password = 'admin123';
+    console.log(`Checking for admin user: ${email}...`);
+    const existing = await pool.query('SELECT id, is_admin FROM users WHERE email = $1', [email]);
+    
+    if (existing.rows.length === 0) {
+      console.log('Admin user not found, creating...');
+      const hashedPassword = await bcrypt.hash(password, 10);
+      await pool.query('INSERT INTO users (email, password, is_admin) VALUES ($1, $2, true)', [email, hashedPassword]);
+      console.log('Admin user created successfully.');
+    } else {
+      console.log('Admin user exists, ensuring admin privileges...');
+      await pool.query('UPDATE users SET is_admin = true WHERE email = $1', [email]);
+    }
+  } catch (e) {
+    console.error("Admin seed failed:", e);
+  }
+}
+
+app.get("/api/promo-codes", requireAdmin, async (_req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM promo_codes ORDER BY created_at DESC");
+    res.json(result.rows);
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při načítání promo kódů" });
+  }
+});
+
+app.post("/api/admin/promo-codes", requireAdmin, async (req, res) => {
+  try {
+    const { code, discountPercent, isActive } = req.body;
+    const result = await pool.query(
+      "INSERT INTO promo_codes (code, discount_percent, is_active) VALUES ($1, $2, $3) RETURNING *",
+      [code.toUpperCase(), discountPercent, isActive ?? true]
+    );
+    res.json(result.rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při ukládání promo kódu" });
+  }
+});
+
+app.delete("/api/admin/promo-codes/:id", requireAdmin, async (req, res) => {
+  try {
+    await pool.query("DELETE FROM promo_codes WHERE id = $1", [req.params.id]);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při mazání promo kódu" });
+  }
+});
+
+app.get("/api/assets", async (req, res) => {
+  try {
+    const { type } = req.query;
+    let query = "SELECT * FROM assets ORDER BY order_index ASC";
+    let params: any[] = [];
+    if (type) {
+      query = "SELECT * FROM assets WHERE type = $1 ORDER BY order_index ASC";
+      params = [type];
+    }
+    const result = await pool.query(query, params);
+    res.json(result.rows);
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při načítání assetů" });
+  }
+});
+
+app.post("/api/admin/assets", requireAdmin, async (req, res) => {
+  try {
+    const { type, url, title, link, orderIndex } = req.body;
+    const result = await pool.query(
+      "INSERT INTO assets (type, url, title, link, order_index) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+      [type, url, title, link, orderIndex || 0]
+    );
+    res.json(result.rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při ukládání assetu" });
+  }
+});
+
+app.delete("/api/admin/assets/:id", requireAdmin, async (req, res) => {
+  try {
+    await pool.query("DELETE FROM assets WHERE id = $1", [req.params.id]);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při mazání assetu" });
+  }
+});
+
+app.get("/api/settings", async (_req, res) => {
+  try {
+    const result = await pool.query("SELECT key, value FROM settings");
+    const settings = result.rows.reduce((acc, row) => ({ ...acc, [row.key]: row.value }), {});
+    res.json(settings);
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při načítání nastavení" });
+  }
+});
+
+app.post("/api/admin/settings", requireAdmin, async (req, res) => {
+  try {
+    const { key, value } = req.body;
+    await pool.query(
+      "INSERT INTO settings (key, value, updated_at) VALUES ($1, $2, CURRENT_TIMESTAMP) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = CURRENT_TIMESTAMP",
+      [key, value]
+    );
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při ukládání nastavení" });
+  }
+});
+
 async function startServer() {
   await initDatabase();
+  await seedAdmin();
 
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
@@ -78,9 +192,16 @@ async function startServer() {
     });
     app.use(vite.middlewares);
   } else {
-    app.use(express.static(path.join(__dirname, "../public")));
-    app.get("*", (_req, res) => {
-      res.sendFile(path.join(__dirname, "../public/index.html"));
+    const publicPath = path.join(__dirname, "../../dist/public");
+    app.use(express.static(publicPath));
+    
+    // API routes are already handled above by app.use("/api/...", ...)
+    // This catch-all should only handle frontend routing
+    app.get("*", (req, res, next) => {
+      if (req.path.startsWith('/api/') || req.path.startsWith('/uploads/')) {
+        return res.status(404).json({ error: "API endpoint nenalezen" });
+      }
+      res.sendFile(path.join(publicPath, "index.html"));
     });
   }
 

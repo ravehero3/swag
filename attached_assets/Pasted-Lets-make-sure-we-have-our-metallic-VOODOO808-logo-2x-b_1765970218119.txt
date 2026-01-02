@@ -1,21 +1,0 @@
-Lets make sure we have  our metallic VOODOO808 logo 2x bigger than it currently is.   lets also place the featured track below the logo. The featured track shows the cover photo of the beat with a play button centered to the middle of the cover.  the cover photo is alligned to the left and to the right of the cover photo we see the title of the beat in 16px font „Work Sans“  above the beat title of the featured track we see little text alligned to the left edge of the beat title and this text says „Featured Track“ and 16px from that is 144BPM (or the beats BPM) both of these have font: work sans in this size: 13px  below the beat title of the featured track, we should see a button with add to cart symbol which is the shopping cart with + symbol in the top right corner of the cart symbol.  The button also shows the price of the beat in CZK   Clicking on this button opens a pop up window with choose a contract type with all of these options:   MP3 Lease
-MP3
-Show usage terms
-WAV Lease
-WAV & MP3
-Show usage terms
-Track Stems
-WAV, MP3 & STEMS
-Show usage terms
-Mp3 Unlimited Lease
-MP3
-Show usage terms
-WAV Unlimited + Stems (Premium)
-MP3, WAV & STEMS
-Show usage terms
-EXCLUSIVE RIGHTS
-NEGOTIATE
-Show usage terms
- each of these can be edited in the contracts and admin has to upload certain files for all of these to be available.   The pop up window also shows the beat cover photo with a play button in the middle which can be pressed to play the beat.  When the user first visits the website, the music player should not be visible, but when user clicks on play button, a new element comes in from the bottom edge of the page. It has the same height as the header height and it shows the cover of the beat in the bottom left corner of this player panel  with 16px padding from this beat photo, we have the beat name and below it the name of the author of this beat. The name is always VOODOO808, but the admin can add more authors which should then be shown here as well.  to the right side of the beat title, we have a share button that opens up a pop up window that shows the FULL URL of the beat with copy button and it also has the option to share to Instagram stories.   located to the right side of the share button in the player panel, we want to have the buy button, this time in a less tall button that shows the same symbols and price as it does on the other buttons.  clicking on this button should also open up the Choose contract type pop up window as we talked about before.   when this Choose contract type pop up window is loading, it should show quickly turning loading circle and „Načítá se“  centered in the middle of the player panel we should have a play button. To the left side of the play button we want to have the „previous beat“ button which should look like these buttons always look like   to the right side of the play button we want to have the „next beat“ button which should look like these buttons always look like   to the left of the previous beat button in the player panel, we want to have a small icon that lets us loop the beat (it restart plays the beat when it ends)  to the right side of the next beat button we want to see the small icon that lets us shuffle listen  to the right side of the player panel we want to see the volume bar and left to it there should be the volume symbol which shows with 1,2 or 3 sound lines depending on which percentage of volume is selected (we dont see the percentage, just the volume line)  below the featured track, as soon as the user plays a beat (even when its stopped) A SOUND WAVE should appear below the featured track. This sound wave shows movement of the current eq as well as the sound wave of the whole beat , does this make sense? This wave should be the same width as two thirds of the whole width of the page.  below the sound wave we want to see the playlist of the beats. If its empty, just show empty places (so we can test it)  this playlist shows: name of the beat, time, bpm, tags, download button, share button and the buy button with the cart and + symbol and the price in CZK. The tracks in the playlist are separated  by 1px line
-
-          

@@ -18,6 +18,7 @@ function Login() {
 
     try {
       const endpoint = isLogin ? "/api/auth/login" : "/api/auth/register";
+      console.log("Attempting login to:", endpoint);
       const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -25,7 +26,16 @@ function Login() {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      console.log("Response text:", text);
+      
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (parseErr) {
+        console.error("Failed to parse JSON:", parseErr);
+        throw new Error("Server vrátil neplatný formát dat (HTML místo JSON). Pravděpodobně chyba v routování na Vercelu.");
+      }
 
       if (!res.ok) {
         throw new Error(data.error || "Chyba");
@@ -101,7 +111,7 @@ function Login() {
   }
 
   return (
-    <div className="fade-in" style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "60vh", padding: "40px 20px" }}>
+    <div className="fade-in" style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh", padding: "40px 20px" }}>
       <div
         style={{
           maxWidth: "400px",
@@ -136,7 +146,7 @@ function Login() {
             />
           </div>
 
-          <div style={{ marginBottom: "24px" }}>
+          <div style={{ marginBottom: "8px" }}>
             <label style={labelStyle}>Heslo</label>
             <input
               type="password"
@@ -151,7 +161,7 @@ function Login() {
             type="submit"
             className="btn btn-filled btn-bounce"
             disabled={loading}
-            style={{ width: "100%", marginBottom: "16px", borderRadius: "4px" }}
+            style={{ width: "100%", marginBottom: "16px", marginTop: "0px", borderRadius: "4px" }}
           >
             {loading ? "..." : isLogin ? "Přihlásit se" : "Registrovat"}
           </button>
@@ -165,10 +175,22 @@ function Login() {
               color: "#666",
               width: "100%",
               textDecoration: "underline",
+              padding: "8px 0",
+              borderRadius: "4px",
+              cursor: "pointer",
+              fontSize: "14px",
             }}
           >
             {isLogin ? "Nemáte účet? Registrujte se" : "Už máte účet? Přihlaste se"}
           </button>
+
+          <style>{`
+            @media (max-width: 768px) {
+              form {
+                width: 100%;
+              }
+            }
+          `}</style>
         </form>
       </div>
     </div>
