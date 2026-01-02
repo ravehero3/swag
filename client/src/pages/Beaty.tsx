@@ -496,7 +496,7 @@ function Beaty() {
           }}>
             <div style={{
               position: "absolute",
-              top: "1000px",
+              top: "2000px",
               left: 0,
               width: "100%",
               height: "1000px",
