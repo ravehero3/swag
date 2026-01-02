@@ -522,7 +522,7 @@ function Beaty() {
                 background: "linear-gradient(to bottom, transparent, black)"
               }} />
             </div>
-            <div style={{ display: "flex", gap: "48px", alignItems: "flex-start", marginBottom: "1032px", width: "100%", maxWidth: "1000px", position: "relative", zIndex: 50, padding: "0 18px" }}>
+            <div style={{ display: "flex", gap: "48px", alignItems: "flex-start", marginBottom: "32px", width: "100%", maxWidth: "1000px", position: "relative", zIndex: 50, padding: "0 18px" }}>
               <div style={{ position: "relative", flexShrink: 0 }}>
                 <img
                   className="featured-beat-image"
