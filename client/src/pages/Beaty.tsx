@@ -494,34 +494,6 @@ function Beaty() {
             width: "100vw",
             marginLeft: "calc(-50vw + 50%)"
           }}>
-            <div style={{
-              position: "absolute",
-              top: "2000px",
-              left: 0,
-              width: "100%",
-              height: "1000px",
-              zIndex: -1,
-              overflow: "hidden"
-            }}>
-              <img 
-                src="/7.jpg" 
-                alt="Background" 
-                style={{ 
-                  width: "100%", 
-                  height: "100%", 
-                  objectFit: "cover",
-                  opacity: 0.6
-                }} 
-              />
-              <div style={{
-                position: "absolute",
-                bottom: 0,
-                left: 0,
-                right: 0,
-                height: "200px",
-                background: "linear-gradient(to bottom, transparent, black)"
-              }} />
-            </div>
             <div style={{ display: "flex", gap: "48px", alignItems: "flex-start", marginBottom: "32px", width: "100%", maxWidth: "1000px", position: "relative", zIndex: 50, padding: "0 18px" }}>
               <div style={{ position: "relative", flexShrink: 0 }}>
                 <img
