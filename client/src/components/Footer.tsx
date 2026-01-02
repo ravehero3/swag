@@ -10,7 +10,7 @@ function Footer() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        marginTop: "-100px",
+        marginTop: "-124px",
         position: "relative",
         zIndex: 5000,
         gap: "16px",
