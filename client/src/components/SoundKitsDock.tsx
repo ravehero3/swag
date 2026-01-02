@@ -186,20 +186,23 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
       <div className="dock-container-mobile" style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflowX: 'visible', overflowY: 'visible', padding: '0', marginTop: '0', position: 'relative', zIndex: 99999 }}>
         {/* Background Computer Image */}
         <div style={{
-          position: 'absolute',
-          top: '-1200px',
-          left: '50%',
-          transform: 'translateX(-50%)',
+          position: 'relative',
           width: '100vw',
-          height: '4000px', // Restored fixed large height to ensure visibility
-          backgroundImage: 'url(/uploads/artwork/dock-bg-computer.jpg)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'top center',
-          backgroundRepeat: 'no-repeat',
-          opacity: 1,
+          marginLeft: 'calc(-50vw + 50%)',
+          display: 'block',
           zIndex: -1,
           pointerEvents: 'none',
-        }} />
+        }}>
+          <img 
+            src="/uploads/artwork/dock-bg-computer.jpg" 
+            alt="background"
+            style={{
+              width: '100%',
+              height: 'auto',
+              display: 'block',
+            }}
+          />
+        </div>
         
         <div
           ref={dockRef}
