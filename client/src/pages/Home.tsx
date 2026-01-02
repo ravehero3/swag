@@ -1325,7 +1325,7 @@ function Home() {
         onBuyClick={openContractModal}
         audioRef={audioRef}
       />
-      <div style={{ height: "1000px" }} />
+      <div style={{ height: "100px" }} />
     </div>
   );
 }
