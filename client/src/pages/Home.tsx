@@ -1163,8 +1163,17 @@ function Home() {
         </div>
 
         {isHomePage && (
-          <>
-            <div ref={artistCarouselRef} className="fade-in-section delay-3 scroll-fade-section" style={{ marginTop: "-100px", marginBottom: "0px", position: "relative", zIndex: 10 }}>
+          <div style={{ 
+            backgroundImage: "url(/uploads/artwork/dock-bg-computer.jpg)", 
+            backgroundSize: "cover", 
+            backgroundPosition: "bottom center", 
+            backgroundRepeat: "no-repeat",
+            width: "100%",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center"
+          }}>
+            <div ref={artistCarouselRef} className="fade-in-section delay-3 scroll-fade-section" style={{ marginTop: "-100px", marginBottom: "0px", position: "relative", zIndex: 10, width: "100%" }}>
               <div style={{ marginTop: "0px" }}>
                 <ArtistCarousel />
               </div>
@@ -1174,10 +1183,6 @@ function Home() {
               <div style={{ 
                 width: "100%", 
                 height: "800px", 
-                backgroundImage: "url(/uploads/artwork/dock-bg-computer.jpg)", 
-                backgroundSize: "cover", 
-                backgroundPosition: "bottom center", 
-                backgroundRepeat: "no-repeat",
                 position: "relative",
                 display: "flex",
                 flexDirection: "column",
@@ -1235,7 +1240,7 @@ function Home() {
                 </div>
               </div>
             </div>
-          </>
+          </div>
         )}
 
       </div>
