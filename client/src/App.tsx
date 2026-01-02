@@ -242,7 +242,7 @@ function App() {
           width: '100%',
           height: '1000px',
           position: 'relative',
-          zIndex: 1,
+          zIndex: 0,
           overflow: 'visible',
           background: '#000',
           marginTop: '-400px'
@@ -257,7 +257,7 @@ function App() {
               objectPosition: 'bottom',
               opacity: 0.6,
               position: 'relative',
-              zIndex: 1
+              zIndex: 0
             }} 
           />
           <div style={{
@@ -267,7 +267,7 @@ function App() {
             right: 0,
             height: '200px',
             background: 'linear-gradient(to bottom, transparent, black)',
-            zIndex: 2
+            zIndex: 1
           }} />
         </div>
         <ExtendedFooter />
