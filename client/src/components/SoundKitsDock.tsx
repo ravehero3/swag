@@ -183,7 +183,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
         );
       })}
 
-      <div className="dock-container-mobile" style={{ width: '100%', display: 'flex', justifyContent: 'center', overflowX: 'visible', overflowY: 'visible', padding: '20px 0', marginTop: '1000px', position: 'relative', marginBottom: '1200px', zIndex: 50 }}>
+      <div className="dock-container-mobile" style={{ width: '100%', display: 'flex', justifyContent: 'center', overflowX: 'visible', overflowY: 'visible', padding: '20px 0', marginTop: '200px', position: 'relative' }}>
         <div
           ref={dockRef}
           onMouseLeave={handleMouseLeave}

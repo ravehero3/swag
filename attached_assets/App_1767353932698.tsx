@@ -240,33 +240,6 @@ function App() {
         </main>
         <ExtendedFooter />
         <Footer />
-        <div style={{
-          width: '100%',
-          height: '1000px',
-          position: 'relative',
-          zIndex: 1,
-          overflow: 'hidden',
-          background: '#000'
-        }}>
-          <img 
-            src="/assets/sound_kits_hero.jpg" 
-            alt="Computer Background" 
-            style={{ 
-              width: '100%', 
-              height: '100%', 
-              objectFit: 'cover',
-              opacity: 0.6
-            }} 
-          />
-          <div style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: '200px',
-            background: 'linear-gradient(to bottom, transparent, black)'
-          }} />
-        </div>
         <CartModal isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
         {isNewsletterOpen && (
           <NewsletterWindow isOpen={isNewsletterOpen} onClose={() => setIsNewsletterOpen(false)} />
