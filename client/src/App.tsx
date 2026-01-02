@@ -238,8 +238,10 @@ function App() {
             </Route>
           </Switch>
         </main>
-        <ExtendedFooter />
-        <Footer />
+        <div style={{ marginTop: "auto" }}>
+          <ExtendedFooter />
+          <Footer />
+        </div>
         <CartModal isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
         {isNewsletterOpen && (
           <NewsletterWindow isOpen={isNewsletterOpen} onClose={() => setIsNewsletterOpen(false)} />

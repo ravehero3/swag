@@ -481,8 +481,8 @@ function Beaty() {
           }
         `}</style>
       </div>
-      
-      <div style={{ padding: "0 2px" }} className="fade-in-grid">
+
+      <div style={{ padding: "0 2px", position: "relative", zIndex: 10 }} className="fade-in-grid">
         {highlightedBeat && (
           <div className="fade-in-section delay-2 featured-track-container" style={{ marginBottom: "48px", display: "flex", justifyContent: "center", position: "relative", zIndex: 50 }}>
             <div style={{ display: "flex", gap: "48px", alignItems: "flex-start", marginBottom: "32px", width: "100%", maxWidth: "1000px", position: "relative", zIndex: 50, padding: "0 18px" }}>
