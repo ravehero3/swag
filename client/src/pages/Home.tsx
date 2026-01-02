@@ -1170,122 +1170,70 @@ function Home() {
               </div>
             </div>
 
-            <div ref={soundKitsRef} className="fade-in-section delay-4 scroll-fade-section" style={{ marginTop: "0px", marginBottom: "0px" }}>
-            {/* Background with computer image and dock */}
-            <div style={{
-              width: "100vw",
-              marginLeft: "calc(-50vw + 50%)",
-              overflow: "hidden",
-              position: "relative",
-              background: "#000",
-            }}>
-              <img
-                src="/uploads/zvuky-computer-background.jpg"
-                alt="Computer with sound kits"
-                style={{
-                  width: "100%",
-                  height: "auto",
-                  display: "block",
-                  objectFit: "cover",
-                }}
-              />
-              <div
-                style={{
-                  position: "absolute",
-                  bottom: 0,
-                  left: 0,
-                  width: "100%",
-                  height: "100px",
-                  background: "linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 100%)",
-                  pointerEvents: "none",
-                }}
-              />
-              
-              {/* Title text */}
-              <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700;900&display=swap');
-                @font-face {
-                  font-family: 'Old London';
-                  src: url('/uploads/OldLondon.ttf') format('truetype');
-                }
-                .co-se-text {
-                  display: inline-block;
-                  white-space: nowrap;
-                  font-size: 60px;
-                  height: 60px;
-                  line-height: 60px;
-                }
-                .beats-word {
-                  display: inline-block;
-                  transition: font-family 0.3s ease;
-                  white-space: nowrap;
-                  font-size: 60px;
-                  width: 150px;
-                  text-align: center;
-                  height: 60px;
-                  line-height: 60px;
-                  vertical-align: baseline;
-                }
-                .beats-word:hover {
-                  font-family: 'Old London', serif;
-                }
-              `}</style>
-              <div style={{
-                position: "absolute",
-                top: "692px",
-                left: "50%",
-                transform: "translateX(-50%)",
-                width: "100%",
-                textAlign: "center",
-                zIndex: 20,
-                opacity: showTitle ? 1 : 0,
-                transition: "opacity 0.5s ease-in-out",
-              }}>
-                <h2 style={{
-                  color: "#fff",
-                  fontSize: "60px",
-                  fontFamily: "'BB Condensed Regular', 'Roboto Condensed', sans-serif",
-                  fontWeight: "400",
-                  letterSpacing: "0",
-                  margin: 0,
-                  lineHeight: "1.0",
-                  textTransform: "uppercase",
-                  transition: "all 0.3s ease",
-                }}>
-                  PRO VŠECHNY<br />
-                  HUDEBNÍ PRODUCENTY<br />
-                  <div style={{ display: "flex", gap: "0.3em", justifyContent: "center", alignItems: "center" }}>
-                    <span className="co-se-text">CO SE DĚLÁNÍM</span>
-                    <span className="beats-word">BEATS</span>
-                  </div>
-                  CHTĚJ ŽIVIT
-                </h2>
-              </div>
-
-              {/* Dock positioned at bottom */}
-              <div style={{
-                position: "absolute",
-                bottom: "-4px",
-                left: "50%",
-                transform: "translateX(-50%)",
-                width: "100%",
+            <div ref={soundKitsRef} className="fade-in-section delay-4 scroll-fade-section" style={{ marginTop: "100px", marginBottom: "100px", display: "flex", justifyContent: "center" }}>
+              <div style={{ 
+                width: "1200px", 
+                height: "800px", 
+                backgroundImage: "url(/uploads/artwork/dock-bg-computer.jpg)", 
+                backgroundSize: "contain", 
+                backgroundPosition: "center", 
+                backgroundRepeat: "no-repeat",
+                position: "relative",
+                borderRadius: "24px",
                 display: "flex",
-                justifyContent: "center",
-                zIndex: 10,
-                overflow: "visible", // Added to ensure children aren't clipped
+                flexDirection: "column",
+                justifyContent: "flex-end",
+                alignItems: "center",
+                paddingBottom: "100px"
               }}>
-                <SoundKitsDock
-                  items={testSoundKits.map((kit) => ({
-                    id: kit.id,
-                    name: kit.title,
-                    image: kit.artwork_url,
-                    price: kit.price,
-                    isFree: kit.is_free,
-                    onClick: () => {
-                      setLocation("/zvuky");
-                    },
-                  }))}
-                />
+                <div style={{
+                  width: "100%",
+                  textAlign: "center",
+                  zIndex: 20,
+                  opacity: showTitle ? 1 : 0,
+                  transition: "opacity 0.5s ease-in-out",
+                  marginBottom: "40px"
+                }}>
+                  <h2 style={{
+                    color: "#fff",
+                    fontSize: "60px",
+                    fontFamily: "'BB Condensed Regular', 'Roboto Condensed', sans-serif",
+                    fontWeight: "400",
+                    letterSpacing: "0",
+                    margin: 0,
+                    lineHeight: "1.0",
+                    textTransform: "uppercase",
+                    transition: "all 0.3s ease",
+                  }}>
+                    PRO VŠECHNY<br />
+                    HUDEBNÍ PRODUCENTY<br />
+                    <div style={{ display: "flex", gap: "0.3em", justifyContent: "center", alignItems: "center" }}>
+                      <span className="co-se-text">CO SE DĚLÁNÍM</span>
+                      <span className="beats-word">BEATS</span>
+                    </div>
+                    CHTĚJ ŽIVIT
+                  </h2>
+                </div>
+
+                <div style={{ 
+                  display: "flex", 
+                  justifyContent: "center",
+                  width: "100%",
+                  padding: "0 20px"
+                }}>
+                  <SoundKitsDock
+                    items={testSoundKits.map((kit) => ({
+                      id: kit.id,
+                      name: kit.title,
+                      image: kit.artwork_url,
+                      price: kit.price,
+                      isFree: kit.is_free,
+                      onClick: () => {
+                        setLocation("/zvuky");
+                      },
+                    }))}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -1325,7 +1273,7 @@ function Home() {
         onBuyClick={openContractModal}
         audioRef={audioRef}
       />
-      <div style={{ height: "200px" }} />
+      <div style={{ height: "100px" }} />
     </div>
   );
 }
