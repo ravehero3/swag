@@ -3,7 +3,7 @@ import { useApp } from "../App";
 import { useState, useEffect } from "react";
 
 function Header() {
-  const { user, cart, setIsCartOpen, settings } = useApp();
+  const { user, cart, setIsCartOpen } = useApp();
   const [location] = useLocation();
   const [hoveredLink, setHoveredLink] = useState<string | null>(null);
   const [hoveredIcon, setHoveredIcon] = useState<string | null>(null);
@@ -69,7 +69,7 @@ function Header() {
 
       <Link href="/" style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%, -50%)", zIndex: 5 }}>
         <img
-          src={settings.header_logo || "/uploads/artwork/voodoo808-logo.png"}
+          src="/uploads/artwork/voodoo808-logo.png"
           alt="VOODOO808"
           style={{
             height: "24px",

@@ -341,7 +341,7 @@ function Home() {
   const otherBeats = filteredBeats.filter((b) => b.id !== highlightedBeat?.id);
 
   return (
-    <div className="fade-in-section delay-1">
+    <div className="fade-in-section delay-1" style={{ background: "#000", minHeight: "100vh" }}>
       <audio
         ref={audioRef}
         src={currentBeat?.preview_url}
@@ -349,14 +349,14 @@ function Home() {
         crossOrigin="anonymous"
       />
 
-      <div style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative" }}>
+      <div style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative", background: "#000" }}>
         <video
-          src="/uploads/voodoo808-video.mov"
+          src="/uploads/voodoo808-video.mp4"
           autoPlay
           loop
           muted
           playsInline
-          style={{ width: "100%", height: "auto", display: "block" }}
+          style={{ width: "100%", height: "auto", display: "block", minHeight: "400px", background: "#000" }}
         />
         <div
           style={{
