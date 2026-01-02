@@ -144,7 +144,7 @@ const testSoundKits: SoundKit[] = [
 ];
 
 
-function Beaty() {
+function Home() {
   const [location, setLocation] = useLocation();
   const [beats, setBeats] = useState<Beat[]>([]);
   const [highlightedBeat, setHighlightedBeat] = useState<Beat | null>(null);
