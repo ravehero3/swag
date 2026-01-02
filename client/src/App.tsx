@@ -4,6 +4,7 @@ import Header from "./components/Header";
 import ExtendedFooter from "./components/ExtendedFooter";
 import Footer from "./components/Footer";
 import CartModal from "./components/CartModal";
+import Home from "./pages/Home";
 import Beaty from "./pages/Beaty";
 import Zvuky from "./pages/Zvuky";
 import Login from "./pages/Login";
@@ -124,7 +125,7 @@ function App() {
         <Header />
         <main style={{ flex: 1 }} className="fade-in">
           <Switch>
-            <Route path="/" component={Beaty} />
+            <Route path="/" component={Home} />
             <Route path="/beaty" component={Beaty} />
             <Route path="/zvuky" component={Zvuky} />
             <Route path="/prihlasit-se" component={Login} />

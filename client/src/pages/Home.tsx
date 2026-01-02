@@ -167,8 +167,8 @@ function Beaty() {
   const { user, addToCart } = useApp();
   
   // Determine if we're on home page or beaty page
-  const isHomePage = false;
-  const beatLimit = undefined;
+  const isHomePage = location === "/" || location === "";
+  const beatLimit = isHomePage ? 10 : undefined;
 
   // Parse URL parameters on mount and when location changes
   useEffect(() => {
@@ -1329,4 +1329,4 @@ function Beaty() {
   );
 }
 
-export default Beaty;
+export default Home;
