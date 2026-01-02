@@ -334,7 +334,7 @@ function Zvuky() {
       
       <div className="zvuky-video-container" style={{ marginTop: "-242px" }}>
         <img
-          src="/attached_assets/computer_with_sound_kits_image_1767351142964.jpg"
+          src="/assets/sound_kits_hero.jpg"
           alt="Sound Kits Hero"
           style={{
             width: "100%",
