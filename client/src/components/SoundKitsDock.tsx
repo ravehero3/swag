@@ -190,10 +190,10 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          width: '800px', // Larger size for the full laptop image
-          height: '600px',
+          width: '100vw',
+          height: '100%',
           backgroundImage: 'url(/uploads/artwork/dock-bg-computer.jpg)',
-          backgroundSize: 'contain',
+          backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
           opacity: 1,
