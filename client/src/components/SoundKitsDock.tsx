@@ -111,7 +111,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
             width: 100% !important;
             display: flex !important;
             justify-content: center !important;
-            z-index: 100 !important;
+            z-index: 9999 !important;
             pointer-events: none !important;
             margin-top: 40px !important;
             transform: translateY(56px);
@@ -141,7 +141,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
             width: 100% !important;
             display: flex !important;
             justify-content: center !important;
-            z-index: 50 !important;
+            z-index: 9998 !important;
             pointer-events: none !important;
           }
           .dock-reflection-container {
@@ -183,7 +183,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
         );
       })}
 
-      <div className="dock-container-mobile" style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflowX: 'visible', overflowY: 'visible', padding: '20px 0', marginTop: '200px', position: 'relative', zIndex: 150 }}>
+      <div className="dock-container-mobile" style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflowX: 'visible', overflowY: 'visible', padding: '20px 0', marginTop: '200px', position: 'relative', zIndex: 9999 }}>
         <div
           ref={dockRef}
           onMouseLeave={handleMouseLeave}
@@ -201,7 +201,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
             overflow: 'visible',
             position: 'relative',
             minWidth: 'fit-content',
-            zIndex: 151,
+            zIndex: 9999,
           }}
         >
           {items.map((item, index) => {
@@ -307,7 +307,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
           WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1), rgba(0,0,0,0))',
           position: 'relative',
           marginTop: '0px',
-          zIndex: 149,
+          zIndex: 9998,
         }}>
           <div
             className="dock-reflection-container"
