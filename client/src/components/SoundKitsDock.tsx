@@ -191,7 +191,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
           left: '50%',
           transform: 'translateX(-50%)',
           width: '100vw',
-          height: '100%', // Changed from fixed height to 100%
+          height: '4000px', // Restored fixed large height to ensure visibility
           backgroundImage: 'url(/uploads/artwork/dock-bg-computer.jpg)',
           backgroundSize: 'cover',
           backgroundPosition: 'top center',
