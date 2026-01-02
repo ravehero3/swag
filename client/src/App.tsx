@@ -213,8 +213,12 @@ function App() {
         <Header />
         <main style={{ flex: 1 }} className="fade-in">
           <Switch>
-            <Route path="/" component={Beaty} />
-            <Route path="/beaty" component={Beaty} />
+            <Route path="/">
+              {(props) => <Beaty {...props} />}
+            </Route>
+            <Route path="/beaty">
+              {(props) => <Beaty {...props} />}
+            </Route>
             <Route path="/zvuky" component={Zvuky} />
             <Route path="/prihlasit-se" component={Login} />
             <Route path="/ucet" component={Ucet} />

@@ -183,7 +183,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
         );
       })}
 
-      <div className="dock-container-mobile" style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflowX: 'visible', overflowY: 'visible', padding: '20px 0', marginTop: '0px', position: 'relative', zIndex: 9999 }}>
+      <div className="dock-container-mobile" style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflowX: 'visible', overflowY: 'visible', padding: '20px 0', marginTop: '0px', position: 'relative', zIndex: 99999 }}>
         <div
           ref={dockRef}
           onMouseLeave={handleMouseLeave}
@@ -201,7 +201,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
             overflow: 'visible',
             position: 'relative',
             minWidth: 'fit-content',
-            zIndex: 9999,
+            zIndex: 99999,
           }}
         >
           {items.map((item, index) => {
@@ -307,7 +307,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
           WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1), rgba(0,0,0,0))',
           position: 'relative',
           marginTop: '0px',
-          zIndex: 9998,
+          zIndex: 99998,
         }}>
           <div
             className="dock-reflection-container"
