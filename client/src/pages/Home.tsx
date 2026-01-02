@@ -349,14 +349,14 @@ function Home() {
         crossOrigin="anonymous"
       />
 
-      <div style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative", background: "#000" }}>
+      <div style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative", background: "#000", minHeight: "600px" }}>
         <video
-          src="/uploads/voodoo808-video.mp4"
+          src="/uploads/artwork/voodoo808-video.mp4"
           autoPlay
           loop
           muted
           playsInline
-          style={{ width: "100%", height: "auto", display: "block", minHeight: "400px", background: "#000" }}
+          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", background: "#000" }}
         />
         <div
           style={{
