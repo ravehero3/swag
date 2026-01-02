@@ -183,7 +183,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
         );
       })}
 
-      <div className="dock-container-mobile" style={{ width: '100%', display: 'flex', justifyContent: 'center', overflowX: 'visible', overflowY: 'visible', padding: '20px 0', marginTop: '200px', position: 'relative' }}>
+      <div className="dock-container-mobile" style={{ width: '100%', display: 'flex', justifyContent: 'center', overflowX: 'visible', overflowY: 'visible', padding: '20px 0', marginTop: '200px', position: 'relative', zIndex: 99999 }}>
         <div
           ref={dockRef}
           onMouseLeave={handleMouseLeave}
@@ -202,7 +202,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
             overflow: 'visible',
             position: 'relative',
             minWidth: 'fit-content',
-            zIndex: 100, // Added z-index to ensure visibility
+            zIndex: 100000,
           }}
         >
           {items.map((item, index) => {

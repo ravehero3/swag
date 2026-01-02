@@ -71,11 +71,16 @@ async function seedAdmin() {
   try {
     const email = 'admin@voodoo808.com';
     const password = 'admin123';
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const existing = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
+    console.log(`Checking for admin user: ${email}...`);
+    const existing = await pool.query('SELECT id, is_admin FROM users WHERE email = $1', [email]);
+    
     if (existing.rows.length === 0) {
+      console.log('Admin user not found, creating...');
+      const hashedPassword = await bcrypt.hash(password, 10);
       await pool.query('INSERT INTO users (email, password, is_admin) VALUES ($1, $2, true)', [email, hashedPassword]);
+      console.log('Admin user created successfully.');
     } else {
+      console.log('Admin user exists, ensuring admin privileges...');
       await pool.query('UPDATE users SET is_admin = true WHERE email = $1', [email]);
     }
   } catch (e) {
@@ -189,8 +194,13 @@ async function startServer() {
   } else {
     const publicPath = path.join(__dirname, "../../dist/public");
     app.use(express.static(publicPath));
+    
+    // API routes are already handled above by app.use("/api/...", ...)
+    // This catch-all should only handle frontend routing
     app.get("*", (req, res, next) => {
-      if (req.path.startsWith('/api')) return next();
+      if (req.path.startsWith('/api/') || req.path.startsWith('/uploads/')) {
+        return res.status(404).json({ error: "API endpoint nenalezen" });
+      }
       res.sendFile(path.join(publicPath, "index.html"));
     });
   }

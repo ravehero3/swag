@@ -18,6 +18,7 @@ function Login() {
 
     try {
       const endpoint = isLogin ? "/api/auth/login" : "/api/auth/register";
+      console.log("Attempting login to:", endpoint);
       const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -25,7 +26,16 @@ function Login() {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      console.log("Response text:", text);
+      
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (parseErr) {
+        console.error("Failed to parse JSON:", parseErr);
+        throw new Error("Server vrátil neplatný formát dat (HTML místo JSON). Pravděpodobně chyba v routování na Vercelu.");
+      }
 
       if (!res.ok) {
         throw new Error(data.error || "Chyba");
