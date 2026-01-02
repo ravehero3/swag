@@ -499,7 +499,7 @@ function Beaty() {
               top: "1000px",
               left: 0,
               width: "100%",
-              height: "600px",
+              height: "1000px",
               zIndex: -1,
               overflow: "hidden"
             }}>
