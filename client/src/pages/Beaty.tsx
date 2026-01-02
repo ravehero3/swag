@@ -495,12 +495,13 @@ function Beaty() {
             marginLeft: "calc(-50vw + 50%)"
           }}>
             <div style={{
-              position: "relative",
+              position: "absolute",
+              top: "2000px",
+              left: 0,
               width: "100%",
               height: "1000px",
-              zIndex: 100,
-              overflow: "hidden",
-              marginTop: "1000px"
+              zIndex: 1,
+              overflow: "hidden"
             }}>
               <img 
                 src="/7.jpg" 
