@@ -183,22 +183,24 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
         );
       })}
 
-      <div className="dock-container-mobile" style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflowX: 'visible', overflowY: 'visible', padding: '20px 0', marginTop: '200px', position: 'relative', zIndex: 99999 }}>
+      <div className="dock-container-mobile" style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflowX: 'visible', overflowY: 'visible', padding: '20px 0', marginTop: '0', position: 'relative', zIndex: 99999 }}>
         {/* Background Computer Image */}
         <div style={{
           position: 'absolute',
-          top: '50%',
+          top: '-600px', // Shifted up further to blend with ArtistCarousel
           left: '50%',
-          transform: 'translate(-50%, -50%)',
+          transform: 'translateX(-50%)',
           width: '100vw',
-          height: '100%',
+          height: '1600px', // Increased height to ensure overlap
           backgroundImage: 'url(/uploads/artwork/dock-bg-computer.jpg)',
           backgroundSize: 'cover',
-          backgroundPosition: 'center',
+          backgroundPosition: 'top center',
           backgroundRepeat: 'no-repeat',
           opacity: 1,
           zIndex: -1,
-          pointerEvents: 'none'
+          pointerEvents: 'none',
+          maskImage: 'linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)',
+          WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)'
         }} />
         
         <div
