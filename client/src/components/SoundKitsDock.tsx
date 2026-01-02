@@ -200,7 +200,8 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
           zIndex: -1,
           pointerEvents: 'none',
           maskImage: 'linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)',
-          WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)'
+          WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 10%, black 90%, transparent)',
+          transform: 'translateY(300px)'
         }} />
         
         <div

@@ -473,14 +473,10 @@ function Beaty() {
         <style>{`
           .video-overlay-fade {
             background: linear-gradient(to bottom, transparent 0%, black 100%);
-            height: 300px;
-            bottom: -300px;
           }
           @media (max-width: 768px) {
             .video-overlay-fade {
               background: linear-gradient(to bottom, transparent 0%, black 100%);
-              height: 300px;
-              bottom: -300px;
             }
           }
         `}</style>
