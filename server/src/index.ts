@@ -15,6 +15,7 @@ import licensesRoutes from "./routes/licenses.js";
 import adminLicensesRoutes from "./routes/adminLicenses.js";
 import { requireAuth, requireAdmin } from "./middleware/auth.js";
 import { createServer as createViteServer } from "vite";
+import bcrypt from "bcryptjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -41,7 +42,6 @@ if (isProduction) {
   app.set("trust proxy", 1);
 }
 
-// Temporarily use memory store for sessions (development only)
 const sessionSecret = process.env.SESSION_SECRET || "voodoo808_stable_secret_12345";
 
 app.use(session({
@@ -67,8 +67,6 @@ app.use("/api/saved", savedRoutes);
 app.use("/api/licenses", licensesRoutes);
 app.use("/api/admin", adminLicensesRoutes);
 
-// Auto-seed admin user
-import bcrypt from "bcryptjs";
 async function seedAdmin() {
   try {
     const email = 'admin@voodoo808.com';
@@ -84,7 +82,6 @@ async function seedAdmin() {
     console.error("Admin seed failed:", e);
   }
 }
-seedAdmin();
 
 app.get("/api/promo-codes", requireAdmin, async (_req, res) => {
   try {
@@ -179,8 +176,8 @@ app.post("/api/admin/settings", requireAdmin, async (req, res) => {
 });
 
 async function startServer() {
-  // Initialize database tables
   await initDatabase();
+  await seedAdmin();
 
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
@@ -190,9 +187,11 @@ async function startServer() {
     });
     app.use(vite.middlewares);
   } else {
-    app.use(express.static(path.join(__dirname, "../../dist/public")));
-    app.get("*", (_req, res) => {
-      res.sendFile(path.join(__dirname, "../../dist/public/index.html"));
+    const publicPath = path.join(__dirname, "../../dist/public");
+    app.use(express.static(publicPath));
+    app.get("*", (req, res, next) => {
+      if (req.path.startsWith('/api')) return next();
+      res.sendFile(path.join(publicPath, "index.html"));
     });
   }
 

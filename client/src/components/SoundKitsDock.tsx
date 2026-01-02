@@ -202,6 +202,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
             overflow: 'visible',
             position: 'relative',
             minWidth: 'fit-content',
+            zIndex: 100, // Added z-index to ensure visibility
           }}
         >
           {items.map((item, index) => {
