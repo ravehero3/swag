@@ -244,7 +244,8 @@ function App() {
           position: 'relative',
           zIndex: 1,
           overflow: 'hidden',
-          background: '#000'
+          background: '#000',
+          marginTop: '-400px'
         }}>
           <img 
             src="/assets/sound_kits_hero.jpg" 
@@ -253,6 +254,7 @@ function App() {
               width: '100%', 
               height: '100%', 
               objectFit: 'cover',
+              objectPosition: 'bottom',
               opacity: 0.6
             }} 
           />
