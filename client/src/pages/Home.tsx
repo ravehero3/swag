@@ -1170,20 +1170,20 @@ function Home() {
               </div>
             </div>
 
-            <div ref={soundKitsRef} className="fade-in-section delay-4 scroll-fade-section" style={{ marginTop: "100px", marginBottom: "100px", width: "100%", display: "flex", justifyContent: "center" }}>
+            <div ref={soundKitsRef} className="fade-in-section delay-4 scroll-fade-section" style={{ marginTop: "100px", marginBottom: "0px", width: "100%", display: "flex", justifyContent: "center" }}>
               <div style={{ 
                 width: "100%", 
                 height: "800px", 
                 backgroundImage: "url(/uploads/artwork/dock-bg-computer.jpg)", 
                 backgroundSize: "cover", 
-                backgroundPosition: "center", 
+                backgroundPosition: "bottom center", 
                 backgroundRepeat: "no-repeat",
                 position: "relative",
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "flex-end",
                 alignItems: "center",
-                paddingBottom: "100px"
+                paddingBottom: "60px"
               }}>
                 <div style={{
                   width: "100%",
