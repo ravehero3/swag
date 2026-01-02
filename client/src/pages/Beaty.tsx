@@ -448,7 +448,7 @@ function Beaty() {
           }
         }
       `}</style>
-      <div className="video-container" style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", overflow: "hidden", position: "relative", minHeight: "300px", background: "#000" }}>
+      <div className="video-container" style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", overflow: "hidden", position: "relative", minHeight: "300px", background: "#000", zIndex: 1 }}>
         <video
           key={isHomePage ? "analog7" : "beaty_video"}
           src={isHomePage ? (settings.beaty_video_main || "/uploads/artwork/voodoo808-video.mp4") : (settings.beaty_video_main || "/uploads/artwork/voodoo808-video.mp4")}
@@ -467,7 +467,7 @@ function Beaty() {
             right: 0,
             bottom: 0,
             pointerEvents: "none",
-            zIndex: 5,
+            zIndex: 2,
           }}
         />
         <style>{`
