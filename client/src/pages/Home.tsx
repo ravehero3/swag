@@ -1218,7 +1218,7 @@ function Home() {
                     flexDirection: "column",
                     justifyContent: "flex-end",
                     alignItems: "center",
-                    paddingBottom: "100px"
+                    paddingBottom: "20px"
                   }}>
                     <div style={{ 
                       display: "flex", 
