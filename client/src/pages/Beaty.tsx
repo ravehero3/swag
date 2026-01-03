@@ -884,11 +884,11 @@ function Beaty() {
                     }}
                     className="mobile-only"
                     style={{
+                      display: "none",
                       background: "transparent",
                       border: "none",
                       cursor: "pointer",
                       padding: "4px",
-                      display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                     }}
