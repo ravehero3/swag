@@ -827,55 +827,32 @@ function Home() {
                   style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "4px" }}
                 />
               </div>
-              <div style={{ width: "240px", marginRight: "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
-                <div style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "20px" }}>{beat.title}</div>
-              </div>
-              <div className="desktop-only" style={{ width: "80px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", color: "#666", fontSize: "16px" }}>
-                {beat.bpm}
-              </div>
-              <div className="desktop-only" style={{ width: "80px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", color: "#666", fontSize: "16px" }}>
-                {beat.key}
-              </div>
-
-              {beat.tags && beat.tags.length > 0 && (
-                <div className="desktop-only" style={{ display: "flex", gap: "4px", flexWrap: "wrap", marginLeft: "12px", alignItems: "center" }}>
-                  {beat.tags.map((tag) => (
-                    <button
-                      key={tag}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setLocation(`/beaty?tag=${encodeURIComponent(tag)}`);
-                      }}
-                      style={{
-                        padding: "3px 8px",
-                        background: "#0d0d0d",
-                        color: "#666",
-                        border: "1px solid #333",
-                        borderRadius: "20px",
-                        fontSize: "10px",
-                        fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
-                        cursor: "pointer",
-                        transition: "transform 0.15s ease, border-color 0.15s ease",
-                        whiteSpace: "nowrap",
-                      }}
-                      onMouseEnter={(e) => {
-                        const btn = e.currentTarget as HTMLButtonElement;
-                        btn.style.transform = "scale(1.02)";
-                        btn.style.borderColor = "#555";
-                      }}
-                      onMouseLeave={(e) => {
-                        const btn = e.currentTarget as HTMLButtonElement;
-                        btn.style.transform = "scale(1)";
-                        btn.style.borderColor = "#333";
-                      }}
-                    >
-                      {tag}
-                    </button>
-                  ))}
+              <div style={{ flex: "1", minWidth: 0, paddingRight: "16px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                  <div
+                    style={{
+                      fontSize: "14px",
+                      fontWeight: 500,
+                      color: "#fff",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.5px",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      width: "100%",
+                    }}
+                  >
+                    {beat.title}
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span style={{ fontSize: "12px", color: "#888", textTransform: "uppercase" }}>{beat.bpm} BPM</span>
+                    <span style={{ width: "4px", height: "4px", background: "#444", borderRadius: "50%" }}></span>
+                    <span style={{ fontSize: "12px", color: "#888", textTransform: "uppercase" }}>{beat.key}</span>
+                  </div>
                 </div>
-              )}
+              </div>
 
-              <div style={{ display: "flex", alignItems: "flex-end", gap: "2px", marginLeft: "auto", marginRight: "16px", height: "48px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "2px", marginLeft: "auto", marginRight: "16px" }}>
                 {/* Mobile Actions Stack */}
                 <div className="mobile-only" style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "2px" }}>
                   <button
