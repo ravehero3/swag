@@ -739,6 +739,7 @@ function Beaty() {
             <div
               key={beat.id}
               onClick={() => playBeat(beat)}
+              className="beat-row"
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -820,15 +821,167 @@ function Beaty() {
                   style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "4px", flexShrink: 0 }}
                 />
               </div>
-              <div className="mobile-only" style={{ flexShrink: 0 }}>
+              <div className="beat-image-container mobile-only" style={{ flexShrink: 0 }}>
                 <img
                   src={beat.artwork_url || "/uploads/artwork/metallic-logo.png"}
                   alt={beat.title}
                   style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "4px" }}
                 />
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    playBeat(beat);
+                  }}
+                  style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
+                    width: "40px",
+                    height: "40px",
+                    borderRadius: "50%",
+                    border: "2px solid #fff",
+                    background: currentBeat?.id === beat.id && isPlaying ? "#fff" : "rgba(0,0,0,0.7)",
+                    color: currentBeat?.id === beat.id && isPlaying ? "#000" : "#fff",
+                    fontSize: "16px",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    zIndex: 1,
+                    padding: "8px",
+                  }}
+                >
+                  {currentBeat?.id === beat.id && isPlaying ? "⏸" : "▶"}
+                </button>
               </div>
-              <div style={{ width: "240px", marginRight: "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
-                <div style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "20px" }}>{beat.title}</div>
+              <div className="beat-info-container" style={{ width: "240px", marginRight: "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                <div className="beat-meta mobile-only" style={{ display: "none", gap: "8px", alignItems: "center", marginBottom: "6px" }}>
+                  <span style={{ fontSize: "12px", fontFamily: "Work Sans, sans-serif", color: "#666" }}>
+                    {beat.bpm}BPM
+                  </span>
+                </div>
+                <div className="beat-title" style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "20px" }}>{beat.title}</div>
+                
+                <div className="beat-buttons-container mobile-only" style={{ display: "none", alignItems: "center", gap: "12px", marginTop: "16px" }}>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openContractModal(beat);
+                    }}
+                    className="btn-bounce"
+                    style={{
+                      padding: "8px 8px 8px 16px",
+                      background: "#000",
+                      color: "#fff",
+                      border: "none",
+                      fontSize: "12px",
+                      fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+                      fontWeight: 400,
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      borderRadius: "4px",
+                      position: "relative",
+                      minWidth: "120px",
+                      height: "32px",
+                      transition: "background 0.2s, color 0.2s, box-shadow 0.2s",
+                      boxShadow: "inset 0 0 0 0.5px #fff",
+                    }}
+                  >
+                    <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, marginLeft: "-8px" }}>
+                        <rect x="3" y="6" width="18" height="15" rx="2" />
+                        <path d="M8 6V4a4 4 0 0 1 8 0v2" />
+                      </svg>
+                      <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "#fff", lineHeight: "1", right: "-10px", top: "-5px" }}>+</span>
+                    </div>
+                    <span style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "8px" }}>{Math.floor(beat.price)} CZK</span>
+                  </button>
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDownloadingBeat(beat);
+                    }}
+                    style={{
+                      padding: "8px",
+                      background: "#000",
+                      border: "1px solid #666",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                      width: "32px",
+                      height: "32px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                    title="Download"
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="7 10 12 15 17 10" />
+                      <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                  </button>
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                    }}
+                    style={{
+                      padding: "8px",
+                      background: "#000",
+                      border: "1px solid #666",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                      width: "32px",
+                      height: "32px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                    title="Share"
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
+                      <circle cx="18" cy="5" r="3" />
+                      <circle cx="6" cy="12" r="3" />
+                      <circle cx="18" cy="19" r="3" />
+                      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                      <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                    </svg>
+                  </button>
+
+                  {user && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleSave(beat);
+                      }}
+                      style={{
+                        background: "transparent",
+                        border: "none",
+                        cursor: "pointer",
+                        padding: "8px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <svg
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill={savedBeats.has(beat.id) ? "#ff4444" : "none"}
+                        stroke={savedBeats.has(beat.id) ? "#ff4444" : "#fff"}
+                        strokeWidth="2"
+                      >
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
               </div>
               <div className="desktop-only" style={{ width: "80px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", color: "#666", fontSize: "16px" }}>
                 {beat.bpm}
