@@ -1186,12 +1186,12 @@ function Home() {
               zIndex: 20,
               opacity: showTitle ? 1 : 0,
               transition: "opacity 0.5s ease-in-out",
-              marginTop: "100px"
+              marginTop: "0px"
             }}>
                   <h2 style={{
                     color: "#fff",
                     fontSize: "60px",
-                    fontFamily: "'Saint Regular', sans-serif",
+                    fontFamily: "'Ouroboros', sans-serif",
                     fontWeight: "400",
                     letterSpacing: "0",
                     margin: 0,
