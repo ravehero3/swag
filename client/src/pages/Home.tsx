@@ -585,7 +585,7 @@ function Home() {
                       </svg>
                     </button>
                     {highlightedBeat.tags && highlightedBeat.tags.length > 0 && (
-                      <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                      <div className="desktop-only" style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
                         {highlightedBeat.tags.map((tag) => (
                           <button
                             key={tag}
