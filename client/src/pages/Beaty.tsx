@@ -876,19 +876,19 @@ function Beaty() {
               )}
 
               <div style={{ display: "flex", alignItems: "center", gap: "8px", marginLeft: "auto", marginRight: "16px" }}>
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
+                {/* Mobile Actions Stack */}
+                <div className="mobile-only" style={{ display: "none", flexDirection: "column", alignItems: "center", gap: "4px" }}>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       toggleSave(beat);
                     }}
-                    className="mobile-only"
                     style={{
-                      display: "none",
                       background: "transparent",
                       border: "none",
                       cursor: "pointer",
                       padding: "4px",
+                      display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                     }}
@@ -909,6 +909,31 @@ function Beaty() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
+                    }}
+                    style={{
+                      background: "#0d0d0d",
+                      border: "1px solid #333",
+                      cursor: "pointer",
+                      padding: "6px",
+                      color: "#666",
+                      borderRadius: "2px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                    title="Share"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="18" cy="5" r="3" />
+                      <circle cx="6" cy="12" r="3" />
+                      <circle cx="18" cy="19" r="3" />
+                      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                      <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
                       setDownloadingBeat(beat);
                     }}
                     style={{
@@ -917,26 +942,43 @@ function Beaty() {
                       cursor: "pointer",
                       padding: "6px",
                       color: "#666",
-                      transition: "all 0.2s ease, border-color 0.2s ease",
+                      borderRadius: "2px",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      borderRadius: "2px",
-                    }}
-                    onMouseEnter={(e) => {
-                      const btn = e.currentTarget as HTMLButtonElement;
-                      btn.style.borderColor = "#555";
-                    }}
-                    onMouseLeave={(e) => {
-                      const btn = e.currentTarget as HTMLButtonElement;
-                      btn.style.borderColor = "#333";
                     }}
                     title="Download"
                   >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                       <polyline points="7 10 12 15 17 10" />
                       <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openContractModal(beat);
+                    }}
+                    style={{
+                      background: "#fff",
+                      border: "none",
+                      cursor: "pointer",
+                      padding: "6px",
+                      color: "#000",
+                      borderRadius: "2px",
+                      fontWeight: "bold",
+                      fontSize: "12px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                    title="Add to cart"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+                      <path d="M3 6h18" />
+                      <path d="M16 10a4 4 0 0 1-8 0" />
                     </svg>
                   </button>
                 </div>
@@ -1008,50 +1050,72 @@ function Beaty() {
                     </svg>
                   </button>
                 </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                  }}
-                  style={{
-                    background: "#0d0d0d",
-                    border: "1px solid #333",
-                    cursor: "pointer",
-                    padding: "6px",
-                    color: "#666",
-                    transition: "all 0.2s ease, border-color 0.2s ease",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    borderRadius: "2px",
-                  }}
-                  onMouseEnter={(e) => {
-                    const btn = e.currentTarget as HTMLButtonElement;
-                    btn.style.borderColor = "#555";
-                  }}
-                  onMouseLeave={(e) => {
-                    const btn = e.currentTarget as HTMLButtonElement;
-                    btn.style.borderColor = "#333";
-                  }}
-                  title="Share"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}>
-                    <circle cx="18" cy="5" r="3" />
-                    <circle cx="6" cy="12" r="3" />
-                    <circle cx="18" cy="19" r="3" />
-                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-                  </svg>
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    openContractModal(beat);
-                  }}
-                  className="btn-bounce"
-                  style={{
-                    padding: "8px 8px 8px 16px",
-                    background: "#000",
-                    color: "#fff",
+                <div className="mobile-hide" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                    }}
+                    style={{
+                      background: "#0d0d0d",
+                      border: "1px solid #333",
+                      cursor: "pointer",
+                      padding: "6px",
+                      color: "#666",
+                      transition: "all 0.2s ease, border-color 0.2s ease",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      borderRadius: "2px",
+                    }}
+                    onMouseEnter={(e) => {
+                      const btn = e.currentTarget as HTMLButtonElement;
+                      btn.style.borderColor = "#555";
+                    }}
+                    onMouseLeave={(e) => {
+                      const btn = e.currentTarget as HTMLButtonElement;
+                      btn.style.borderColor = "#333";
+                    }}
+                    title="Share"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}>
+                      <circle cx="18" cy="5" r="3" />
+                      <circle cx="6" cy="12" r="3" />
+                      <circle cx="18" cy="19" r="3" />
+                      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                      <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openContractModal(beat);
+                    }}
+                    className="btn-bounce"
+                    style={{
+                      padding: "8px 8px 8px 16px",
+                      background: "#000",
+                      color: "#fff",
+                      border: "none",
+                      fontSize: "12px",
+                      fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+                      fontWeight: 400,
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      borderRadius: "4px",
+                      position: "relative",
+                      minWidth: "120px",
+                      height: "32px",
+                      transition: "background 0.2s, color 0.2s, box-shadow 0.2s",
+                      overflow: "visible",
+                      boxShadow: "inset 0 0 0 0.5px #fff",
+                    }}
+                  >
+                    {Math.floor(beat.price)} CZK +
+                  </button>
+                </div>
+              </div>
                     border: "none",
                     fontSize: "12px",
                     fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
