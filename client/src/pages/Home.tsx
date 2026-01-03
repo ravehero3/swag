@@ -1191,8 +1191,8 @@ function Home() {
                   <h2 style={{
                     color: "#fff",
                     fontSize: "60px",
-                    fontFamily: "'Ouroboros', sans-serif",
-                    fontWeight: "400",
+                    fontFamily: "'Clash Display', sans-serif",
+                    fontWeight: "600",
                     letterSpacing: "0",
                     margin: 0,
                     lineHeight: "1.0",
