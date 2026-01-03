@@ -1190,12 +1190,12 @@ function Home() {
             }}>
                   <h2 style={{
                     color: "#fff",
-                    fontSize: "60px",
+                    fontSize: "42px",
                     fontFamily: "'Clash Display', sans-serif",
                     fontWeight: "600",
                     letterSpacing: "0",
                     margin: 0,
-                    lineHeight: "1.0",
+                    lineHeight: "1.1",
                     textTransform: "uppercase",
                     transition: "all 0.3s ease",
                   }}>
