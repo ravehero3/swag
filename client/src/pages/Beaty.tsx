@@ -985,7 +985,7 @@ function Beaty() {
                   )}
                 </div>
               </div>
-              <div style={{ flex: "1", minWidth: 0, paddingRight: "8px", display: "flex", flexDirection: "column", justifyContent: "center", overflow: "hidden" }}>
+              <div style={{ flex: "1", minWidth: 0, paddingRight: "8px", display: "flex", flexDirection: "column", justifyContent: "flex-start", overflow: "hidden", paddingTop: "4px" }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: "2px", minWidth: 0, width: "100%" }}>
                   <div
                     style={{
@@ -1011,7 +1011,7 @@ function Beaty() {
                 </div>
               </div>
 
-              <div style={{ display: "flex", alignItems: "center", gap: "2px", marginLeft: "auto", marginRight: "16px" }}>
+              <div style={{ display: "flex", alignItems: "flex-end", gap: "2px", marginLeft: "auto", marginRight: "16px", paddingBottom: "4px" }}>
                 {/* Mobile Actions Stack */}
                 <div className="mobile-only" style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "2px" }}>
                   <button
