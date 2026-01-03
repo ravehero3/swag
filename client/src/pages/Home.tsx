@@ -1186,7 +1186,7 @@ function Home() {
               zIndex: 20,
               opacity: showTitle ? 1 : 0,
               transition: "opacity 0.5s ease-in-out",
-              marginTop: "0px"
+              marginTop: "-10px"
             }}>
                   <h2 style={{
                     color: "#fff",
