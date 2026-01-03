@@ -1165,7 +1165,7 @@ function Home() {
         {isHomePage && (
           <div style={{ 
             backgroundImage: "url(/uploads/artwork/dock-bg-computer.jpg)", 
-            backgroundSize: "cover", 
+            backgroundSize: "100% auto", 
             backgroundPosition: "bottom center", 
             backgroundRepeat: "no-repeat",
             width: "100vw",
