@@ -985,8 +985,8 @@ function Beaty() {
                   )}
                 </div>
               </div>
-              <div style={{ flex: "1", minWidth: 0, paddingRight: "16px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+              <div style={{ flex: "1", minWidth: 0, paddingRight: "8px", display: "flex", flexDirection: "column", justifyContent: "center", overflow: "hidden" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "2px", minWidth: 0, width: "100%" }}>
                   <div
                     style={{
                       fontSize: "14px",
@@ -998,11 +998,12 @@ function Beaty() {
                       overflow: "hidden",
                       textOverflow: "ellipsis",
                       width: "100%",
+                      display: "block"
                     }}
                   >
                     {beat.title}
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", whiteSpace: "nowrap" }}>
                     <span style={{ fontSize: "12px", color: "#888", textTransform: "uppercase" }}>{beat.bpm} BPM</span>
                     <span style={{ width: "4px", height: "4px", background: "#444", borderRadius: "50%" }}></span>
                     <span style={{ fontSize: "12px", color: "#888", textTransform: "uppercase" }}>{beat.key}</span>
