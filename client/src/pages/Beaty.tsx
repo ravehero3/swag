@@ -773,7 +773,7 @@ function Beaty() {
               }}
             >
               <div data-separator style={{ position: "absolute", bottom: 0, left: "80px", right: "16px", height: "1px", background: "#333", opacity: 1, transition: "opacity 0.15s ease" }} />
-              <div style={{ position: "relative", display: "flex", alignItems: "center", gap: "16px", marginRight: "-4px" }}>
+              <div className="mobile-hide" style={{ position: "relative", display: "flex", alignItems: "center", gap: "16px", marginRight: "-4px" }}>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -818,6 +818,13 @@ function Beaty() {
                   src={beat.artwork_url || "/uploads/artwork/metallic-logo.png"}
                   alt={beat.title}
                   style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "4px", flexShrink: 0 }}
+                />
+              </div>
+              <div className="mobile-only" style={{ flexShrink: 0 }}>
+                <img
+                  src={beat.artwork_url || "/uploads/artwork/metallic-logo.png"}
+                  alt={beat.title}
+                  style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "4px" }}
                 />
               </div>
               <div style={{ width: "240px", marginRight: "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
@@ -869,18 +876,18 @@ function Beaty() {
               )}
 
               <div style={{ display: "flex", alignItems: "center", gap: "8px", marginLeft: "auto", marginRight: "16px" }}>
-                {user && (
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       toggleSave(beat);
                     }}
+                    className="mobile-only"
                     style={{
                       background: "transparent",
                       border: "none",
                       cursor: "pointer",
-                      padding: "8px",
-                      marginRight: "8px",
+                      padding: "4px",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -899,41 +906,108 @@ function Beaty() {
                       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                     </svg>
                   </button>
-                )}
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setDownloadingBeat(beat);
-                  }}
-                  style={{
-                    background: "#0d0d0d",
-                    border: "1px solid #333",
-                    cursor: "pointer",
-                    padding: "6px",
-                    color: "#666",
-                    transition: "all 0.2s ease, border-color 0.2s ease",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    marginLeft: "8px",
-                    borderRadius: "2px",
-                  }}
-                  onMouseEnter={(e) => {
-                    const btn = e.currentTarget as HTMLButtonElement;
-                    btn.style.borderColor = "#555";
-                  }}
-                  onMouseLeave={(e) => {
-                    const btn = e.currentTarget as HTMLButtonElement;
-                    btn.style.borderColor = "#333";
-                  }}
-                  title="Download"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}>
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                    <polyline points="7 10 12 15 17 10" />
-                    <line x1="12" y1="15" x2="12" y2="3" />
-                  </svg>
-                </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDownloadingBeat(beat);
+                    }}
+                    style={{
+                      background: "#0d0d0d",
+                      border: "1px solid #333",
+                      cursor: "pointer",
+                      padding: "6px",
+                      color: "#666",
+                      transition: "all 0.2s ease, border-color 0.2s ease",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      borderRadius: "2px",
+                    }}
+                    onMouseEnter={(e) => {
+                      const btn = e.currentTarget as HTMLButtonElement;
+                      btn.style.borderColor = "#555";
+                    }}
+                    onMouseLeave={(e) => {
+                      const btn = e.currentTarget as HTMLButtonElement;
+                      btn.style.borderColor = "#333";
+                    }}
+                    title="Download"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}>
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="7 10 12 15 17 10" />
+                      <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                  </button>
+                </div>
+
+                <div className="mobile-hide" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  {user && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleSave(beat);
+                      }}
+                      style={{
+                        background: "transparent",
+                        border: "none",
+                        cursor: "pointer",
+                        padding: "8px",
+                        marginRight: "8px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                      title={savedBeats.has(beat.id) ? "Remove from favorites" : "Add to favorites"}
+                    >
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill={savedBeats.has(beat.id) ? "#ff4444" : "none"}
+                        stroke={savedBeats.has(beat.id) ? "#ff4444" : "#888"}
+                        strokeWidth="2"
+                        style={{ transition: "all 0.3s ease" }}
+                      >
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                      </svg>
+                    </button>
+                  )}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDownloadingBeat(beat);
+                    }}
+                    style={{
+                      background: "#0d0d0d",
+                      border: "1px solid #333",
+                      cursor: "pointer",
+                      padding: "6px",
+                      color: "#666",
+                      transition: "all 0.2s ease, border-color 0.2s ease",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginLeft: "8px",
+                      borderRadius: "2px",
+                    }}
+                    onMouseEnter={(e) => {
+                      const btn = e.currentTarget as HTMLButtonElement;
+                      btn.style.borderColor = "#555";
+                    }}
+                    onMouseLeave={(e) => {
+                      const btn = e.currentTarget as HTMLButtonElement;
+                      btn.style.borderColor = "#333";
+                    }}
+                    title="Download"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}>
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="7 10 12 15 17 10" />
+                      <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                  </button>
+                </div>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
