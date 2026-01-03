@@ -863,7 +863,7 @@ function Beaty() {
                 </div>
                 <div className="beat-title" style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "20px" }}>{beat.title}</div>
                 
-                <div className="beat-buttons-container mobile-only" style={{ display: "none", alignItems: "center", gap: "12px", marginTop: "16px" }}>
+                <div className="beat-buttons-container mobile-only" style={{ display: "none", alignItems: "center", gap: "8px", marginTop: "16px" }}>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -900,58 +900,60 @@ function Beaty() {
                     <span style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "8px" }}>{Math.floor(beat.price)} CZK</span>
                   </button>
 
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setDownloadingBeat(beat);
-                    }}
-                    style={{
-                      padding: "8px",
-                      background: "#000",
-                      border: "1px solid #666",
-                      borderRadius: "4px",
-                      cursor: "pointer",
-                      width: "32px",
-                      height: "32px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                    title="Download"
-                  >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                      <polyline points="7 10 12 15 17 10" />
-                      <line x1="12" y1="15" x2="12" y2="3" />
-                    </svg>
-                  </button>
+                  <div style={{ display: "flex", gap: "2px" }}>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDownloadingBeat(beat);
+                      }}
+                      style={{
+                        padding: "8px",
+                        background: "#000",
+                        border: "1px solid #666",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        width: "32px",
+                        height: "32px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                      title="Download"
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="7 10 12 15 17 10" />
+                        <line x1="12" y1="15" x2="12" y2="3" />
+                      </svg>
+                    </button>
 
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                    }}
-                    style={{
-                      padding: "8px",
-                      background: "#000",
-                      border: "1px solid #666",
-                      borderRadius: "4px",
-                      cursor: "pointer",
-                      width: "32px",
-                      height: "32px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                    title="Share"
-                  >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
-                      <circle cx="18" cy="5" r="3" />
-                      <circle cx="6" cy="12" r="3" />
-                      <circle cx="18" cy="19" r="3" />
-                      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-                      <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-                    </svg>
-                  </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                      }}
+                      style={{
+                        padding: "8px",
+                        background: "#000",
+                        border: "1px solid #666",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        width: "32px",
+                        height: "32px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                      title="Share"
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
+                        <circle cx="18" cy="5" r="3" />
+                        <circle cx="6" cy="12" r="3" />
+                        <circle cx="18" cy="19" r="3" />
+                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                      </svg>
+                    </button>
+                  </div>
 
                   {user && (
                     <button
@@ -1030,110 +1032,118 @@ function Beaty() {
 
               <div style={{ display: "flex", alignItems: "center", gap: "8px", marginLeft: "auto", marginRight: "16px" }}>
                 {/* Mobile Actions Stack */}
-                <div className="mobile-only" style={{ display: "none", flexDirection: "column", alignItems: "center", gap: "4px" }}>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleSave(beat);
-                    }}
-                    style={{
-                      background: "transparent",
-                      border: "none",
-                      cursor: "pointer",
-                      padding: "4px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                    title={savedBeats.has(beat.id) ? "Remove from favorites" : "Add to favorites"}
-                  >
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill={savedBeats.has(beat.id) ? "#ff4444" : "none"}
-                      stroke={savedBeats.has(beat.id) ? "#ff4444" : "#888"}
-                      strokeWidth="2"
-                      style={{ transition: "all 0.3s ease" }}
-                    >
-                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                    }}
-                    style={{
-                      background: "#0d0d0d",
-                      border: "1px solid #333",
-                      cursor: "pointer",
-                      padding: "6px",
-                      color: "#666",
-                      borderRadius: "2px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                    title="Share"
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <circle cx="18" cy="5" r="3" />
-                      <circle cx="6" cy="12" r="3" />
-                      <circle cx="18" cy="19" r="3" />
-                      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-                      <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setDownloadingBeat(beat);
-                    }}
-                    style={{
-                      background: "#0d0d0d",
-                      border: "1px solid #333",
-                      cursor: "pointer",
-                      padding: "6px",
-                      color: "#666",
-                      borderRadius: "2px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                    title="Download"
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                      <polyline points="7 10 12 15 17 10" />
-                      <line x1="12" y1="15" x2="12" y2="3" />
-                    </svg>
-                  </button>
+                <div className="mobile-only" style={{ display: "none", flexDirection: "row", alignItems: "center", gap: "8px" }}>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       openContractModal(beat);
                     }}
+                    className="btn-bounce"
                     style={{
-                      background: "#fff",
+                      padding: "8px 8px 8px 16px",
+                      background: "#000",
+                      color: "#fff",
                       border: "none",
-                      cursor: "pointer",
-                      padding: "6px",
-                      color: "#000",
-                      borderRadius: "2px",
-                      fontWeight: "bold",
                       fontSize: "12px",
+                      fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+                      fontWeight: 400,
+                      cursor: "pointer",
                       display: "flex",
                       alignItems: "center",
-                      justifyContent: "center",
+                      gap: "6px",
+                      borderRadius: "4px",
+                      position: "relative",
+                      minWidth: "120px",
+                      height: "32px",
+                      transition: "background 0.2s, color 0.2s, box-shadow 0.2s",
+                      overflow: "visible",
+                      boxShadow: "inset 0 0 0 0.5px #fff",
                     }}
-                    title="Add to cart"
+                    onMouseEnter={(e) => {
+                      const btn = e.currentTarget as HTMLButtonElement;
+                      btn.style.background = "#fff";
+                      btn.style.color = "#000";
+                      btn.style.boxShadow = "0 0 20px rgba(255, 255, 255, 0.8), inset 0 0 0 0.5px #000, inset 0 0 10px rgba(255, 255, 255, 0.3)";
+                      const plusSymbol = btn.querySelector("span[style*='position: absolute']") as HTMLElement;
+                      if (plusSymbol) plusSymbol.style.color = "#000";
+                    }}
+                    onMouseLeave={(e) => {
+                      const btn = e.currentTarget as HTMLButtonElement;
+                      btn.style.background = "#000";
+                      btn.style.color = "#fff";
+                      btn.style.boxShadow = "inset 0 0 0 0.5px #fff";
+                      const plusSymbol = btn.querySelector("span[style*='position: absolute']") as HTMLElement;
+                      if (plusSymbol) plusSymbol.style.color = "#fff";
+                    }}
                   >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
-                      <path d="M3 6h18" />
-                      <path d="M16 10a4 4 0 0 1-8 0" />
-                    </svg>
+                    <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, marginLeft: "-8px" }}>
+                        <rect x="3" y="6" width="18" height="15" rx="2" />
+                        <path d="M8 6V4a4 4 0 0 1 8 0v2" />
+                      </svg>
+                      <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "#fff", lineHeight: "1", right: "-10px", top: "-5px" }}>+</span>
+                    </div>
+                    <span style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "8px" }}>{Math.floor(beat.price)} CZK</span>
                   </button>
+                  <div style={{ display: "flex", gap: "2px" }}>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDownloadingBeat(beat);
+                      }}
+                      style={{
+                        padding: "8px",
+                        background: "#000",
+                        border: "1px solid #666",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        width: "32px",
+                        height: "32px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        transition: "background 0.2s",
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = "#1a1a1a")}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = "#000")}
+                      title="Download"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="7 10 12 15 17 10" />
+                        <line x1="12" y1="15" x2="12" y2="3" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                      }}
+                      style={{
+                        padding: "8px",
+                        background: "#000",
+                        border: "1px solid #666",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        width: "32px",
+                        height: "32px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        transition: "background 0.2s",
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = "#1a1a1a")}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = "#000")}
+                      title="Share"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="18" cy="5" r="3" />
+                        <circle cx="6" cy="12" r="3" />
+                        <circle cx="18" cy="19" r="3" />
+                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
 
                 <div className="mobile-hide" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
