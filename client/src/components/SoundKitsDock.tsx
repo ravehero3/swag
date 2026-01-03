@@ -306,7 +306,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
           maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1), rgba(0,0,0,0))',
           WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1), rgba(0,0,0,0))',
           position: 'relative',
-          marginTop: '80px',
+          marginTop: '120px',
           zIndex: 99998,
         }}>
           <div
