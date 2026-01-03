@@ -1282,7 +1282,6 @@ function Beaty() {
               </div>
             </div>
             ))}
-            </>
           )}
           
           <div className="fade-in-section delay-3" style={{ display: "flex", justifyContent: "center", gap: "16px", marginTop: "16px", marginBottom: "32px", marginLeft: "568px", position: "relative", zIndex: 9999, alignItems: "center", pointerEvents: "auto" }}>
