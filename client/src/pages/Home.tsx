@@ -875,9 +875,38 @@ function Home() {
                 </div>
               )}
 
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginLeft: "auto", marginRight: "16px" }}>
+              <div style={{ display: "flex", alignItems: "flex-end", gap: "8px", marginLeft: "auto", marginRight: "16px", height: "48px" }}>
                 {/* Mobile Actions Stack */}
                 <div className="mobile-only" style={{ display: "none", flexDirection: "row", alignItems: "center", gap: "8px" }}>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (user) toggleSave(beat);
+                    }}
+                    style={{
+                      background: "transparent",
+                      border: "none",
+                      cursor: "pointer",
+                      padding: "4px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: "32px",
+                      height: "32px",
+                    }}
+                    title={user ? (savedBeats.has(beat.id) ? "Remove from favorites" : "Add to favorites") : "Log in to save"}
+                  >
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill={user && savedBeats.has(beat.id) ? "#ff4444" : "none"}
+                      stroke={user && savedBeats.has(beat.id) ? "#ff4444" : "#888"}
+                      strokeWidth="2"
+                    >
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                    </svg>
+                  </button>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -903,22 +932,6 @@ function Home() {
                       transition: "background 0.2s, color 0.2s, box-shadow 0.2s",
                       overflow: "visible",
                       boxShadow: "inset 0 0 0 0.5px #fff",
-                    }}
-                    onMouseEnter={(e) => {
-                      const btn = e.currentTarget as HTMLButtonElement;
-                      btn.style.background = "#fff";
-                      btn.style.color = "#000";
-                      btn.style.boxShadow = "0 0 20px rgba(255, 255, 255, 0.8), inset 0 0 0 0.5px #000, inset 0 0 10px rgba(255, 255, 255, 0.3)";
-                      const plusSymbol = btn.querySelector("span[style*='position: absolute']") as HTMLElement;
-                      if (plusSymbol) plusSymbol.style.color = "#000";
-                    }}
-                    onMouseLeave={(e) => {
-                      const btn = e.currentTarget as HTMLButtonElement;
-                      btn.style.background = "#000";
-                      btn.style.color = "#fff";
-                      btn.style.boxShadow = "inset 0 0 0 0.5px #fff";
-                      const plusSymbol = btn.querySelector("span[style*='position: absolute']") as HTMLElement;
-                      if (plusSymbol) plusSymbol.style.color = "#fff";
                     }}
                   >
                     <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -947,13 +960,9 @@ function Home() {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        transition: "background 0.2s",
                       }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = "#1a1a1a")}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = "#000")}
-                      title="Download"
                     >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                         <polyline points="7 10 12 15 17 10" />
                         <line x1="12" y1="15" x2="12" y2="3" />
@@ -974,13 +983,9 @@ function Home() {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        transition: "background 0.2s",
                       }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = "#1a1a1a")}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = "#000")}
-                      title="Share"
                     >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
                         <circle cx="18" cy="5" r="3" />
                         <circle cx="6" cy="12" r="3" />
                         <circle cx="18" cy="19" r="3" />
