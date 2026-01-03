@@ -827,7 +827,8 @@ function Home() {
                   style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "4px" }}
                 />
               </div>
-              <div style={{ flex: "1", minWidth: 0, paddingRight: "8px", display: "flex", flexDirection: "column", justifyContent: "flex-start", overflow: "hidden", paddingTop: "4px" }}>
+            <div style={{ display: "flex", flex: "1", padding: "12px 0", position: "relative", minWidth: 0, flexDirection: "column", gap: "8px" }}>
+              <div style={{ flex: "1", minWidth: 0, paddingRight: "8px", display: "flex", flexDirection: "column", overflow: "hidden" }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: "2px", minWidth: 0, width: "100%" }}>
                   <div
                     style={{
@@ -853,7 +854,7 @@ function Home() {
                 </div>
               </div>
 
-              <div style={{ display: "flex", alignItems: "flex-end", gap: "2px", marginLeft: "auto", marginRight: "16px", paddingBottom: "4px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "2px", marginLeft: "0", marginRight: "16px" }}>
                 {/* Mobile Actions Stack */}
                 <div className="mobile-only" style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "2px" }}>
                   <button
