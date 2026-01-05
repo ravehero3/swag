@@ -164,7 +164,7 @@ function Beaty() {
   const beatsListRef = useScrollAnimation();
   const soundKitsRef = useScrollAnimation();
   const artistCarouselRef = useScrollAnimation();
-  const { user, addToCart } = useApp();
+  const { user, addToCart, settings } = useApp();
   
   // Determine if we're on home page or beaty page
   const isHomePage = false;
