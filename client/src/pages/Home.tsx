@@ -351,13 +351,16 @@ function Home() {
 
       <div style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative", background: "#000", minHeight: "600px" }}>
         <video
-          src="/attached_assets/ANALOG_7_1767596221156.mov"
           autoPlay
           loop
           muted
           playsInline
           style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", background: "#000" }}
-        />
+        >
+          <source src="/ANALOG.mp4" type="video/mp4" />
+          <source src="/ANALOG.mov" type="video/quicktime" />
+          Your browser does not support the video tag.
+        </video>
         <div
           style={{
             position: "absolute",

@@ -351,13 +351,15 @@ function Beaty() {
 
       <div style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative" }}>
         <video
-          src="/uploads/artwork/voodoo808-video.mp4"
           autoPlay
           loop
           muted
           playsInline
           style={{ width: "100%", height: "auto", display: "block" }}
-        />
+        >
+          <source src="/voodoo808-video.mp4" type="video/mp4" />
+          <source src="/voodoo808-video.mov" type="video/quicktime" />
+        </video>
         <div
           style={{
             position: "absolute",
