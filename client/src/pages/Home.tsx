@@ -351,7 +351,7 @@ function Home() {
 
       <div style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative", background: "#000", minHeight: "600px" }}>
         <video
-          src="/uploads/artwork/voodoo808-video.mp4"
+          src="/attached_assets/ANALOG_7_1767596221156.mov"
           autoPlay
           loop
           muted
