@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useApp } from "../App";
 import ProductsGrid from "../components/ProductsGrid";
-import { useScrollAnimation } from "../hooks/useScrollAnimation";
 
 interface SoundKit {
   id: number;
@@ -334,8 +333,8 @@ function Zvuky() {
       
       <div className="zvuky-video-container" style={{ marginTop: "-242px" }}>
         <video
-          key={settings.zvuky_video}
-          src={settings.zvuky_video || "/uploads/hrad-na-web.mov"}
+          key={settings?.zvuky_video}
+          src={settings?.zvuky_video || "/uploads/hrad-na-web.mov"}
           autoPlay
           muted
           loop
@@ -346,7 +345,9 @@ function Zvuky() {
             objectFit: "cover",
             display: "block"
           }}
-        />
+        >
+          Your browser does not support the video tag.
+        </video>
         <div className="zvuky-video-overlay-fade" />
       </div>
       

@@ -44,6 +44,7 @@ interface AppContextType {
   clearCart: () => void;
   isCartOpen: boolean;
   setIsCartOpen: (open: boolean) => void;
+  settings: Record<string, string>;
 }
 
 export const AppContext = createContext<AppContextType>({
@@ -55,6 +56,7 @@ export const AppContext = createContext<AppContextType>({
   clearCart: () => {},
   isCartOpen: false,
   setIsCartOpen: () => {},
+  settings: {},
 });
 
 export const useApp = () => useContext(AppContext);
@@ -64,6 +66,7 @@ function App() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [settings, setSettings] = useState<Record<string, string>>({});
 
   // Add padding to body for fixed header
   useEffect(() => {
@@ -74,14 +77,30 @@ function App() {
   }, []);
 
   useEffect(() => {
-    fetch("/api/auth/me", { credentials: "include" })
-      .then((res) => {
-        if (res.ok) return res.json();
-        throw new Error("Not logged in");
-      })
-      .then((data) => setUser(data.user))
-      .catch(() => setUser(null))
-      .finally(() => setLoading(false));
+    const init = async () => {
+      try {
+        const [authRes, settingsRes] = await Promise.all([
+          fetch("/api/auth/me", { credentials: "include" }),
+          fetch("/api/settings")
+        ]);
+
+        if (authRes.ok) {
+          const authData = await authRes.json();
+          setUser(authData.user);
+        }
+
+        if (settingsRes.ok) {
+          const settingsData = await settingsRes.json();
+          setSettings(settingsData);
+        }
+      } catch (error) {
+        console.error("Initialization error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    init();
   }, []);
 
   useEffect(() => {
@@ -120,7 +139,7 @@ function App() {
   }
 
   return (
-    <AppContext.Provider value={{ user, setUser, cart, addToCart, removeFromCart, clearCart, isCartOpen, setIsCartOpen }}>
+    <AppContext.Provider value={{ user, setUser, cart, addToCart, removeFromCart, clearCart, isCartOpen, setIsCartOpen, settings }}>
       <div style={{ minHeight: "100vh", background: "#000", display: "flex", flexDirection: "column" }}>
         <Header />
         <main style={{ flex: 1 }} className="fade-in">
