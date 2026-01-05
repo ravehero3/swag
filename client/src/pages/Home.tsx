@@ -780,7 +780,7 @@ function Home() {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (user) toggleSave(beat);
+                    toggleSave(beat);
                   }}
                   style={{
                     background: "transparent",
