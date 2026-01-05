@@ -349,16 +349,16 @@ function Beaty() {
         crossOrigin="anonymous"
       />
 
-      <div style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative" }}>
+      <div style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative", background: "#000", minHeight: "600px" }}>
         <video
           autoPlay
           loop
           muted
           playsInline
-          style={{ width: "100%", height: "auto", display: "block" }}
+          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", background: "#000" }}
         >
-          <source src="/voodoo808-video.mp4" type="video/mp4" />
           <source src="/voodoo808-video.mov" type="video/quicktime" />
+          Your browser does not support the video tag.
         </video>
         <div
           style={{

@@ -357,7 +357,6 @@ function Home() {
           playsInline
           style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", background: "#000" }}
         >
-          <source src="/ANALOG.mp4" type="video/mp4" />
           <source src="/ANALOG.mov" type="video/quicktime" />
           Your browser does not support the video tag.
         </video>
