@@ -1,0 +1,28 @@
+  Try `npm i --save-dev @types/express` if it exists or add a new declaration (.d.ts) file containing `declare module 'express';`
+server/src/routes/licenses.ts(1,43): error TS7016: Could not find a declaration file for module 'express'. '/vercel/path0/node_modules/express/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/express` if it exists or add a new declaration (.d.ts) file containing `declare module 'express';`
+server/src/routes/orders.ts(1,43): error TS7016: Could not find a declaration file for module 'express'. '/vercel/path0/node_modules/express/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/express` if it exists or add a new declaration (.d.ts) file containing `declare module 'express';`
+server/src/routes/saved.ts(1,24): error TS7016: Could not find a declaration file for module 'express'. '/vercel/path0/node_modules/express/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/express` if it exists or add a new declaration (.d.ts) file containing `declare module 'express';`
+server/src/routes/saved.ts(6,24): error TS7006: Parameter 'req' implicitly has an 'any' type.
+server/src/routes/saved.ts(6,29): error TS7006: Parameter 'res' implicitly has an 'any' type.
+server/src/routes/saved.ts(30,25): error TS7006: Parameter 'req' implicitly has an 'any' type.
+server/src/routes/saved.ts(30,30): error TS7006: Parameter 'res' implicitly has an 'any' type.
+server/src/routes/saved.ts(55,44): error TS7006: Parameter 'req' implicitly has an 'any' type.
+server/src/routes/saved.ts(55,49): error TS7006: Parameter 'res' implicitly has an 'any' type.
+server/src/routes/saved.ts(74,47): error TS7006: Parameter 'req' implicitly has an 'any' type.
+server/src/routes/saved.ts(74,52): error TS7006: Parameter 'res' implicitly has an 'any' type.
+server/src/routes/soundKits.ts(1,43): error TS7016: Could not find a declaration file for module 'express'. '/vercel/path0/node_modules/express/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/express` if it exists or add a new declaration (.d.ts) file containing `declare module 'express';`
+server/src/routes/upload.ts(1,43): error TS7016: Could not find a declaration file for module 'express'. '/vercel/path0/node_modules/express/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/express` if it exists or add a new declaration (.d.ts) file containing `declare module 'express';`
+server/src/routes/upload.ts(2,20): error TS7016: Could not find a declaration file for module 'multer'. '/vercel/path0/node_modules/multer/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/multer` if it exists or add a new declaration (.d.ts) file containing `declare module 'multer';`
+server/src/routes/upload.ts(12,17): error TS7006: Parameter 'req' implicitly has an 'any' type.
+server/src/routes/upload.ts(12,22): error TS7006: Parameter '_file' implicitly has an 'any' type.
+server/src/routes/upload.ts(12,29): error TS7006: Parameter 'cb' implicitly has an 'any' type.
+server/src/routes/upload.ts(22,14): error TS7006: Parameter '_req' implicitly has an 'any' type.
+server/src/routes/upload.ts(22,20): error TS7006: Parameter 'file' implicitly has an 'any' type.
+server/src/routes/upload.ts(22,26): error TS7006: Parameter 'cb' implicitly has an 'any' type.
+Error: Command "npm run build" exited with 2
