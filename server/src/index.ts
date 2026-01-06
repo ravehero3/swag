@@ -261,7 +261,11 @@ async function startServer() {
 }
 
 // Standard Vercel Node handler export
-export default (req: any, res: any) => {
+export default async (req: any, res: any) => {
+  if (process.env.NODE_ENV === "production") {
+    await initDatabase();
+    await seedAdmin();
+  }
   return app(req, res);
 };
 

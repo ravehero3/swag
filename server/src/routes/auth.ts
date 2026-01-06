@@ -10,8 +10,10 @@ router.get("/google", passport.authenticate("google", { scope: ["profile", "emai
 
 router.get(
   "/google/callback",
-  passport.authenticate("google", { failureRedirect: "/prihlasit-se" }),
+  passport.authenticate("google", { failureRedirect: "/prihlasit-se", session: true }),
   (req: Request, res: Response) => {
+    // If we have a user from passport, we should sync it with our custom session if needed
+    // but passport already handles it via serialize/deserialize
     res.redirect("/");
   }
 );
