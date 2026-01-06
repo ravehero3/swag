@@ -11,7 +11,8 @@
     "seed-admin": "tsx server/src/seed-admin.ts",
     "start": "node dist/server/index.js",
     "vercel-build": "vite build --base / && tsc --project server/tsconfig.json --skipLibCheck",
-    "db:push": "drizzle-kit push"
+    "db:push": "drizzle-kit push",
+    "postinstall": "npm rebuild rollup"
   },
   "dependencies": {
     "@types/bcryptjs": "^2.4.6",
