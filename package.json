@@ -10,7 +10,7 @@
     "build": "vite build && tsc --project server/tsconfig.json",
     "seed-admin": "tsx server/src/seed-admin.ts",
     "start": "node dist/server/index.js",
-    "vercel-build": "vite build --base / && tsc --project server/tsconfig.json"
+    "vercel-build": "vite build --base /"
   },
   "dependencies": {
     "@types/bcryptjs": "^2.4.6",
