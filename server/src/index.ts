@@ -210,7 +210,10 @@ async function startServer() {
   });
 }
 
-export default app;
+// Standard Vercel Node handler export
+export default (req: any, res: any) => {
+  return app(req, res);
+};
 
 if (process.env.NODE_ENV !== "production") {
   startServer().catch(console.error);
