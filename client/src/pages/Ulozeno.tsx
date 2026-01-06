@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useApp } from "../App";
+import { useApp } from "../App.js";
 import { Link, useLocation } from "wouter";
 
 interface SavedItem {

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { useApp } from "../App";
-import ProductsGrid from "../components/ProductsGrid";
+import { useApp } from "../App.js";
+import ProductsGrid from "../components/ProductsGrid.js";
 
 interface SoundKit {
   id: number;
