@@ -262,11 +262,19 @@ async function startServer() {
 
 // Standard Vercel Node handler export
 export default async (req: any, res: any) => {
-  if (process.env.NODE_ENV === "production") {
-    await initDatabase();
-    await seedAdmin();
+  try {
+    if (process.env.NODE_ENV === "production") {
+      await initDatabase();
+      await seedAdmin();
+    }
+    return app(req, res);
+  } catch (error) {
+    console.error("Vercel handler error:", error);
+    res.status(500).json({ 
+      error: "Internal Server Error", 
+      message: error instanceof Error ? error.message : String(error) 
+    });
   }
-  return app(req, res);
 };
 
 if (process.env.NODE_ENV !== "production") {
