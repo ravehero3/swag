@@ -12,7 +12,7 @@
     "start": "node dist/server/index.js",
     "vercel-build": "vite build --base / && tsc --project server/tsconfig.json --skipLibCheck",
     "db:push": "drizzle-kit push",
-    "postinstall": "npm rebuild rollup"
+    "postinstall": "npm rebuild rollup && npm install @rollup/rollup-linux-x64-gnu"
   },
   "dependencies": {
     "@types/bcryptjs": "^2.4.6",
