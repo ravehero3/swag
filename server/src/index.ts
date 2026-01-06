@@ -23,7 +23,54 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = 5000;
 
+import passport from "passport";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+
 const PgStore = pgSession(session);
+
+// Passport Google Strategy
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID || "",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+      callbackURL: "/api/auth/google/callback",
+      proxy: true,
+    },
+    async (_accessToken, _refreshToken, profile, done) => {
+      try {
+        const email = profile.emails?.[0].value;
+        if (!email) return done(new Error("No email found from Google profile"));
+
+        // Find or create user
+        const res = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+        let user = res.rows[0];
+
+        if (!user) {
+          const insertRes = await pool.query(
+            "INSERT INTO users (email, password, is_admin) VALUES ($1, $2, $3) RETURNING *",
+            [email, "google-auth-no-password", false]
+          );
+          user = insertRes.rows[0];
+        }
+
+        return done(null, user);
+      } catch (err) {
+        return done(err as Error);
+      }
+    }
+  )
+);
+
+passport.serializeUser((user: any, done) => done(null, user.id));
+passport.deserializeUser(async (id: number, done) => {
+  try {
+    const res = await pool.query("SELECT id, email, is_admin FROM users WHERE id = $1", [id]);
+    done(null, res.rows[0]);
+  } catch (err) {
+    done(err);
+  }
+});
 
 app.use(cors({
   origin: true,
@@ -51,10 +98,13 @@ app.use(session({
   cookie: {
     secure: isProduction,
     httpOnly: true,
-    sameSite: isProduction ? "strict" : "lax",
+    sameSite: isProduction ? "none" : "lax",
     maxAge: 30 * 24 * 60 * 60 * 1000,
   },
 }));
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use("/uploads", express.static(path.join(__dirname, "../../public/uploads")));
 
