@@ -43,3 +43,9 @@ externalPort = 3000
 deploymentTarget = "autoscale"
 run = ["node", "dist/server/index.js"]
 build = ["npm", "run", "build"]
+
+[userenv]
+
+[userenv.shared]
+GOOGLE_CLIENT_ID = "64636004330-m3fjv7koavrhqhjjv0grgaqu5gndq5sr.apps.googleusercontent.com"
+GOOGLE_CLIENT_SECRET = "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"

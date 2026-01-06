@@ -1,8 +1,20 @@
 import { Router, Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import { pool } from "../db.js";
+import passport from "passport";
 
 const router = Router();
+
+// Google Auth Routes
+router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+
+router.get(
+  "/google/callback",
+  passport.authenticate("google", { failureRedirect: "/prihlasit-se" }),
+  (req: Request, res: Response) => {
+    res.redirect("/");
+  }
+);
 
 declare module "express-session" {
   interface SessionData {
