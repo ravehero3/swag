@@ -352,7 +352,7 @@ function Home() {
       <div style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative", background: "#000", minHeight: "600px" }}>
         <video
           key={settings?.home_video}
-          src={settings?.home_video || "/ANALOG.mov"}
+          src={settings?.home_video || "/uploads/voodoo808-video.mov"}
           autoPlay
           loop
           muted
