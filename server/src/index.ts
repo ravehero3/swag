@@ -210,4 +210,8 @@ async function startServer() {
   });
 }
 
-startServer().catch(console.error);
+export default app;
+
+if (process.env.NODE_ENV !== "production") {
+  startServer().catch(console.error);
+}

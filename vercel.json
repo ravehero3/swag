@@ -8,12 +8,16 @@
       "config": {
         "distDir": "dist/public"
       }
+    },
+    {
+      "src": "server/src/index.ts",
+      "use": "@vercel/node"
     }
   ],
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "/api/$1"
+      "destination": "server/src/index.ts"
     },
     {
       "source": "/(.*)",
