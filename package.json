@@ -12,7 +12,7 @@
     "start": "node dist/server/index.js",
     "vercel-build": "vite build --base / && tsc --project server/tsconfig.json --skipLibCheck",
     "db:push": "drizzle-kit push",
-    "postinstall": "npm rebuild rollup && npm install @rollup/rollup-linux-x64-gnu"
+    "postinstall": "npm rebuild rollup"
   },
   "dependencies": {
     "@rollup/rollup-linux-x64-gnu": "^4.55.1",
