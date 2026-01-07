@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { useApp } from '../App';
+import { useApp } from '../App.js';
 
 const styles = `
   @media (min-width: 1024px) {
@@ -103,7 +103,7 @@ function FooterAccordionItem({ title, children, isOpen, onToggle }: FooterAccord
 export default function ExtendedFooter() {
   const [openSection, setOpenSection] = useState<string | null>(null);
 
-  const { setIsNewsletterOpen } = useApp();
+  const { setIsNewsletterOpen } = useApp() as any;
 
   const toggleSection = (section: string) => {
     setOpenSection(openSection === section ? null : section);

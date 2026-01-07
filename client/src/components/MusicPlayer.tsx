@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import ShareModal from "./ShareModal";
+import ShareModal from "./ShareModal.js";
 
 interface Beat {
   id: number;

@@ -1,4 +1,4 @@
-import ProductCard from './ProductCard';
+import ProductCard from './ProductCard.js';
 
 interface Product {
   id: string | number;

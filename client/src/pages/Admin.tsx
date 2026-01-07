@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useApp } from "../App";
+import { useApp } from "../App.js";
 import { useLocation } from "wouter";
 
 interface Beat {
@@ -57,7 +57,7 @@ interface BeatLicenseFile {
 }
 
 function Admin() {
-  const { user, settings, refreshSettings } = useApp();
+  const { user, settings, refreshSettings } = useApp() as any;
   const [, navigate] = useLocation();
   const [tab, setTab] = useState<"beats" | "kits" | "orders" | "licenses" | "settings" | "assets" | "promo">("beats");
   const [beats, setBeats] = useState<Beat[]>([]);

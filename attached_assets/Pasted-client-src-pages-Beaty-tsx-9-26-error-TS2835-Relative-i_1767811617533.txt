@@ -1,0 +1,13 @@
+client/src/pages/Beaty.tsx(9,26): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../components/ProductsGrid.js'?
+client/src/pages/Beaty.tsx(10,27): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../components/SoundKitsDock.js'?
+client/src/pages/Beaty.tsx(11,28): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../components/ArtistCarousel.js'?
+client/src/pages/Admin.tsx(2,24): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../App.js'?
+client/src/components/ProductsGrid.tsx(1,25): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './ProductCard.js'?
+client/src/components/MusicPlayer.tsx(2,24): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean './ShareModal.js'?
+client/src/components/Header.tsx(2,24): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../App.js'?
+client/src/components/Footer.tsx(1,24): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../App.js'?
+client/src/components/ExtendedFooter.tsx(5,24): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../App.js'?
+client/src/components/CartModal.tsx(1,24): error TS2835: Relative import paths need explicit file extensions in ECMAScript imports when '--moduleResolution' is 'node16' or 'nodenext'. Did you mean '../App.js'?
+client/src/components/CartModal.tsx(234,30): error TS7006: Parameter 'item' implicitly has an 'any' type.
+client/src/components/CartModal.tsx(311,35): error TS7006: Parameter 'sum' implicitly has an 'any' type.
+client/src/components/CartModal.tsx(311,40): error TS7006: Parameter 'item' implicitly has an 'any' type.

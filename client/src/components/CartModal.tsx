@@ -1,5 +1,13 @@
-import { useApp } from "../App";
+import { useApp } from "../App.js";
 import { useEffect, useState } from "react";
+
+interface CartItem {
+  productId: number;
+  productType: string;
+  title: string;
+  price: number;
+  artworkUrl: string;
+}
 
 interface CartModalProps {
   isOpen: boolean;
@@ -231,7 +239,7 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                 </p>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                  {cart.map((item) => (
+                  {cart.map((item: CartItem) => (
                     <div
                       key={`${item.productId}-${item.productType}`}
                       style={{
@@ -308,7 +316,7 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                 >
                   <span>Celkem:</span>
                   <span style={{ color: "#fff" }}>
-                    {cart.reduce((sum, item) => sum + item.price, 0)} CZK
+                    {cart.reduce((sum: number, item: CartItem) => sum + item.price, 0)} CZK
                   </span>
                 </div>
                 <button

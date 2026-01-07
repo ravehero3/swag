@@ -1,14 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, Link } from "wouter";
-import { useApp } from "../App";
-import { useScrollAnimation } from "../hooks/useScrollAnimation";
-import ContractModal from "../components/ContractModal";
-import DownloadModal from "../components/DownloadModal";
-import MusicPlayer from "../components/MusicPlayer";
-import SoundWave from "../components/SoundWave";
-import ProductsGrid from "../components/ProductsGrid";
-import SoundKitsDock from "../components/SoundKitsDock";
-import ArtistCarousel from "../components/ArtistCarousel";
+import { useApp } from "../App.js";
+import { useScrollAnimation } from "../hooks/useScrollAnimation.js";
+import ContractModal from "../components/ContractModal.js";
+import DownloadModal from "../components/DownloadModal.js";
+import MusicPlayer from "../components/MusicPlayer.js";
+import SoundWave from "../components/SoundWave.js";
+import ProductsGrid from "../components/ProductsGrid.js";
+import SoundKitsDock from "../components/SoundKitsDock.js";
+import ArtistCarousel from "../components/ArtistCarousel.js";
 
 interface Beat {
   id: number;
@@ -164,7 +164,7 @@ function Beaty() {
   const beatsListRef = useScrollAnimation();
   const soundKitsRef = useScrollAnimation();
   const artistCarouselRef = useScrollAnimation();
-  const { user, addToCart, settings } = useApp();
+  const { user, addToCart, settings } = useApp() as any;
   
   // Determine if we're on home page or beaty page
   const isHomePage = false;

@@ -1,9 +1,9 @@
 import { Link, useLocation } from "wouter";
-import { useApp } from "../App";
+import { useApp } from "../App.js";
 import { useState, useEffect } from "react";
 
 function Header() {
-  const { user, cart, setIsCartOpen } = useApp();
+  const { user, cart, setIsCartOpen } = useApp() as any;
   const [location] = useLocation();
   const [hoveredLink, setHoveredLink] = useState<string | null>(null);
   const [hoveredIcon, setHoveredIcon] = useState<string | null>(null);

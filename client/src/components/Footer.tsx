@@ -1,7 +1,7 @@
-import { useApp } from "../App";
+import { useApp } from "../App.js";
 
 function Footer() {
-  const { setIsNewsletterOpen } = useApp();
+  const { setIsNewsletterOpen } = useApp() as any;
 
   return (
     <footer
