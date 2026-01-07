@@ -15,7 +15,6 @@
     "postinstall": "npm rebuild rollup"
   },
   "dependencies": {
-    "@rollup/rollup-linux-x64-gnu": "^4.55.1",
     "@types/bcryptjs": "^2.4.6",
     "@types/connect-pg-simple": "^7.0.3",
     "@types/cors": "^2.8.17",
