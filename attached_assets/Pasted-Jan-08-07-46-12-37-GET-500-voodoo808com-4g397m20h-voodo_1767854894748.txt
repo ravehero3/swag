@@ -1,0 +1,52 @@
+Jan 08 07:46:12.37
+GET
+500
+voodoo808com-4g397m20h-voodoo808s-projects.vercel.app
+/api/beats/highlighted
+2
+Vercel handler error: Error: getaddrinfo ENOTFOUND db.coqomscjsdzdmsrlfahg.supabase.co at /var/task/node_modules/pg-pool/index.js:45:11 at process.processTicksAndRejections (node:internal/process/task_queues:105:5) at async initDatabase (/vercel/path0/server/src/db.ts:9:18) at async Object.default (/vercel/path0/server/src/index.ts:271:7) at async r (/opt/rust/nodejs.js:2:15572) at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594) at async Server.<anonymous> (/opt/rust/nodejs.js:17:9988) { errno: -3008, code: 'ENOTFOUND', syscall: 'getaddrinfo', hostname: 'db.coqomscjsdzdmsrlfahg.supabase.co' }
+Jan 08 07:46:12.37
+GET
+500
+voodoo808com-4g397m20h-voodoo808s-projects.vercel.app
+/api/beats
+2
+Vercel handler error: Error: getaddrinfo ENOTFOUND db.coqomscjsdzdmsrlfahg.supabase.co at /var/task/node_modules/pg-pool/index.js:45:11 at process.processTicksAndRejections (node:internal/process/task_queues:105:5) at async initDatabase (/vercel/path0/server/src/db.ts:9:18) at async Object.default (/vercel/path0/server/src/index.ts:271:7) at async r (/opt/rust/nodejs.js:2:15572) at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594) at async Server.<anonymous> (/opt/rust/nodejs.js:17:9988) { errno: -3008, code: 'ENOTFOUND', syscall: 'getaddrinfo', hostname: 'db.coqomscjsdzdmsrlfahg.supabase.co' }
+Jan 08 07:46:12.37
+GET
+---
+voodoo808com-4g397m20h-voodoo808s-projects.vercel.app
+/api/beats
+Vercel handler error: Error: getaddrinfo ENOTFOUND db.coqomscjsdzdmsrlfahg.supabase.co at /var/task/node_modules/pg-pool/index.js:45:11 at process.processTicksAndRejections (node:internal/process/task_queues:105:5) at async initDatabase (/vercel/path0/server/src/db.ts:9:18) at async Object.default (/vercel/path0/server/src/index.ts:271:7) at async r (/opt/rust/nodejs.js:2:15572) at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594) at async Server.<anonymous> (/opt/rust/nodejs.js:17:9988) { errno: -3008, code: 'ENOTFOUND', syscall: 'getaddrinfo', hostname: 'db.coqomscjsdzdmsrlfahg.supabase.co' }
+Jan 08 07:46:12.37
+GET
+500
+voodoo808com-4g397m20h-voodoo808s-projects.vercel.app
+/api/beats/highlighted
+2
+Vercel handler error: Error: getaddrinfo ENOTFOUND db.coqomscjsdzdmsrlfahg.supabase.co at /var/task/node_modules/pg-pool/index.js:45:11 at process.processTicksAndRejections (node:internal/process/task_queues:105:5) at async initDatabase (/vercel/path0/server/src/db.ts:9:18) at async Object.default (/vercel/path0/server/src/index.ts:271:7) at async r (/opt/rust/nodejs.js:2:15572) at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594) at async Server.<anonymous> (/opt/rust/nodejs.js:17:9988) { errno: -3008, code: 'ENOTFOUND', syscall: 'getaddrinfo', hostname: 'db.coqomscjsdzdmsrlfahg.supabase.co' }
+Jan 08 07:46:11.98
+GET
+500
+voodoo808com-4g397m20h-voodoo808s-projects.vercel.app
+/api/settings
+Vercel handler error: Error: getaddrinfo ENOTFOUND db.coqomscjsdzdmsrlfahg.supabase.co at /var/task/node_modules/pg-pool/index.js:45:11 at process.processTicksAndRejections (node:internal/process/task_queues:105:5) at async initDatabase (/vercel/path0/server/src/db.ts:9:18) at async Object.default (/vercel/path0/server/src/index.ts:271:7) at async r (/opt/rust/nodejs.js:2:15572) at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594) at async Server.<anonymous> (/opt/rust/nodejs.js:17:9988) { errno: -3008, code: 'ENOTFOUND', syscall: 'getaddrinfo', hostname: 'db.coqomscjsdzdmsrlfahg.supabase.co' }
+Jan 08 07:46:11.98
+GET
+500
+voodoo808com-4g397m20h-voodoo808s-projects.vercel.app
+/api/auth/me
+Vercel handler error: Error: getaddrinfo ENOTFOUND db.coqomscjsdzdmsrlfahg.supabase.co at /var/task/node_modules/pg-pool/index.js:45:11 at process.processTicksAndRejections (node:internal/process/task_queues:105:5) at async initDatabase (/vercel/path0/server/src/db.ts:9:18) at async Object.default (/vercel/path0/server/src/index.ts:271:7) at async r (/opt/rust/nodejs.js:2:15572) at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594) at async Server.<anonymous> (/opt/rust/nodejs.js:17:9988) { errno: -3008, code: 'ENOTFOUND', syscall: 'getaddrinfo', hostname: 'db.coqomscjsdzdmsrlfahg.supabase.co' }
+Jan 08 07:46:11.97
+GET
+500
+voodoo808com-4g397m20h-voodoo808s-projects.vercel.app
+/api/auth/me
+2
+Vercel handler error: Error: getaddrinfo ENOTFOUND db.coqomscjsdzdmsrlfahg.supabase.co at /var/task/node_modules/pg-pool/index.js:45:11 at process.processTicksAndRejections (node:internal/process/task_queues:105:5) at async initDatabase (/vercel/path0/server/src/db.ts:9:18) at async Object.default (/vercel/path0/server/src/index.ts:271:7) at async r (/opt/rust/nodejs.js:2:15572) at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594) at async Server.<anonymous> (/opt/rust/nodejs.js:17:9988) { errno: -3008, code: 'ENOTFOUND', syscall: 'getaddrinfo', hostname: 'db.coqomscjsdzdmsrlfahg.supabase.co' }
+Jan 08 07:46:11.97
+GET
+500
+voodoo808com-4g397m20h-voodoo808s-projects.vercel.app
+/api/settings
+Vercel handler error: Error: getaddrinfo ENOTFOUND db.coqomscjsdzdmsrlfahg.supabase.co at /var/task/node_modules/pg-pool/index.js:45:11 at process.processTicksAndRejections (node:internal/process/task_queues:105:5) at async initDatabase (/vercel/path0/server/src/db.ts:9:18) at async Object.default (/vercel/path0/server/src/index.ts:271:7) at async r (/opt/rust/nodejs.js:2:15572) at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594) at async Server.<anonymous> (/opt/rust/nodejs.js:17:9988) { errno: -3008, code: 'ENOTFOUND', syscall: 'getaddrinfo', hostname: 'db.coqomscjsdzdmsrlfahg.supabase.co' }
