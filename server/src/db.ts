@@ -1,7 +1,7 @@
 import pg from "pg";
 
 const pool = new pg.Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: process.env.DATABASE_URL?.replace(/%25/g, "%"),
   ssl: process.env.DATABASE_URL?.includes("supabase.com") || process.env.DATABASE_URL?.includes("supabase.co") || process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
 });
 
