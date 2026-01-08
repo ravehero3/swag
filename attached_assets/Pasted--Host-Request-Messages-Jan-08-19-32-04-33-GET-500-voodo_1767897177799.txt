@@ -1,0 +1,37 @@
+
+Host
+Request
+Messages
+Jan 08 19:32:04.33
+GET
+500
+voodoo808com-alpha.vercel.app
+/api/auth/google
+Vercel handler error: error: password authentication failed for user "postgres" at /var/task/node_modules/pg-pool/index.js:45:11 at process.processTicksAndRejections (node:internal/process/task_queues:105:5) at async initDatabase (/vercel/path0/server/src/db.ts:9:18) at async Object.default (/vercel/path0/server/src/index.ts:271:7) at async r (/opt/rust/nodejs.js:2:15572) at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594) at async Server.<anonymous> (/opt/rust/nodejs.js:17:9988) { length: 78, severity: 'FATAL', code: '28P01', detail: undefined, hint: undefined, position: undefined, internalPosition: undefined, internalQuery: undefined, where: undefined, schema: undefined, table: undefined, column: undefined, dataType: undefined, constraint: undefined, file: undefined, line: undefined, routine: undefined }
+Jan 08 19:31:59.08
+GET
+500
+voodoo808com-alpha.vercel.app
+/api/beats/highlighted
+Vercel handler error: error: password authentication failed for user "postgres" at /var/task/node_modules/pg-pool/index.js:45:11 at process.processTicksAndRejections (node:internal/process/task_queues:105:5) at async initDatabase (/vercel/path0/server/src/db.ts:9:18) at async Object.default (/vercel/path0/server/src/index.ts:271:7) at async r (/opt/rust/nodejs.js:2:15572) at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594) at async Server.<anonymous> (/opt/rust/nodejs.js:17:9988) { length: 78, severity: 'FATAL', code: '28P01', detail: undefined, hint: undefined, position: undefined, internalPosition: undefined, internalQuery: undefined, where: undefined, schema: undefined, table: undefined, column: undefined, dataType: undefined, constraint: undefined, file: undefined, line: undefined, routine: undefined }
+Jan 08 19:31:59.07
+GET
+500
+voodoo808com-alpha.vercel.app
+/api/beats
+Vercel handler error: error: password authentication failed for user "postgres" at /var/task/node_modules/pg-pool/index.js:45:11 at process.processTicksAndRejections (node:internal/process/task_queues:105:5) at async initDatabase (/vercel/path0/server/src/db.ts:9:18) at async Object.default (/vercel/path0/server/src/index.ts:271:7) at async r (/opt/rust/nodejs.js:2:15572) at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594) at async Server.<anonymous> (/opt/rust/nodejs.js:17:9988) { length: 78, severity: 'FATAL', code: '28P01', detail: undefined, hint: undefined, position: undefined, internalPosition: undefined, internalQuery: undefined, where: undefined, schema: undefined, table: undefined, column: undefined, dataType: undefined, constraint: undefined, file: undefined, line: undefined, routine: undefined }
+Jan 08 19:31:56.40
+GET
+500
+voodoo808com-alpha.vercel.app
+/api/settings
+2
+Vercel handler error: error: password authentication failed for user "postgres" at /var/task/node_modules/pg-pool/index.js:45:11 at process.processTicksAndRejections (node:internal/process/task_queues:105:5) at async initDatabase (/vercel/path0/server/src/db.ts:9:18) at async Object.default (/vercel/path0/server/src/index.ts:271:7) at async r (/opt/rust/nodejs.js:2:15572) at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594) at async Server.<anonymous> (/opt/rust/nodejs.js:17:9988) { length: 78, severity: 'FATAL', code: '28P01', detail: undefined, hint: undefined, position: undefined, internalPosition: undefined, internalQuery: undefined, where: undefined, schema: undefined, table: undefined, column: undefined, dataType: undefined, constraint: undefined, file: undefined, line: undefined, routine: undefined }
+Jan 08 19:31:56.40
+GET
+500
+voodoo808com-alpha.vercel.app
+/api/auth/me
+2
+Vercel handler error: error: password authentication failed for user "postgres" at /var/task/node_modules/pg-pool/index.js:45:11 at process.processTicksAndRejections (node:internal/process/task_queues:105:5) at async initDatabase (/vercel/path0/server/src/db.ts:9:18) at async Object.default (/vercel/path0/server/src/index.ts:271:7) at async r (/opt/rust/nodejs.js:2:15572) at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594) at async Server.<anonymous> (/opt/rust/nodejs.js:17:9988) { length: 78, severity: 'FATAL', code: '28P01', detail: undefined, hint: undefined, position: undefined, internalPosition: undefined, internalQuery: undefined, where: undefined, schema: undefined, table: undefined, column: undefined, dataType: undefined, constraint: undefined, file: undefined, line: undefined, routine: undefined }
+No more logs to show within selected timeline

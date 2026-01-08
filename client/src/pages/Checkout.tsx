@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { useApp } from "../App";
+import { useApp } from "../App.js";
 import { useLocation } from "wouter";
 
 function Checkout() {
-  const { cart, user, clearCart } = useApp();
+  const { cart, user, clearCart } = useApp() as any;
   const [email, setEmail] = useState(user?.email || "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -31,7 +31,7 @@ function Checkout() {
     }
   };
 
-  const total = cart.reduce((sum, item) => sum + item.price, 0);
+  const total = cart.reduce((sum: number, item: any) => sum + item.price, 0);
   const finalTotal = total * (1 - discount / 100);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,7 +40,7 @@ function Checkout() {
     setError("");
 
     try {
-      const items = cart.map((item) => ({
+      const items = cart.map((item: any) => ({
         productId: item.productId,
         productType: item.productType,
         title: item.title,
@@ -95,7 +95,7 @@ function Checkout() {
 
       <div style={{ marginBottom: "24px", padding: "16px", border: "1px solid #333", borderRadius: "4px" }}>
         <h3 style={{ marginBottom: "12px" }}>Shrnutí objednávky</h3>
-        {cart.map((item) => (
+        {cart.map((item: any) => (
           <div
             key={`${item.productType}-${item.productId}`}
             style={{

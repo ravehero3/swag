@@ -1,10 +1,10 @@
-import { useApp } from "../App";
+import { useApp } from "../App.js";
 import { Link, useLocation } from "wouter";
 
 function Cart() {
-  const { cart, removeFromCart, user } = useApp();
+  const { cart, removeFromCart } = useApp() as any;
   const [location] = useLocation();
-  const total = cart.reduce((sum, item) => sum + item.price, 0);
+  const total = cart.reduce((sum: number, item: any) => sum + item.price, 0);
 
   const sectionStyle: React.CSSProperties = {
     width: "100%",
@@ -100,7 +100,7 @@ function Cart() {
           <>
             <section style={{ ...sectionStyle, minHeight: "224px", padding: "40px 20px" }}>
               <div style={{ width: "100%", maxWidth: "500px" }}>
-                {cart.map((item) => (
+                {cart.map((item: any) => (
                   <div
                     key={`${item.productType}-${item.productId}`}
                     className="cart-item-row"

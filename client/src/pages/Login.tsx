@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { useApp } from "../App";
+import { useApp } from "../App.js";
 
 function Login() {
   const [isLogin, setIsLogin] = useState(true);
@@ -8,7 +8,7 @@ function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { user, setUser } = useApp();
+  const { user, setUser } = useApp() as any;
   const [, navigate] = useLocation();
 
   const handleSubmit = async (e: React.FormEvent) => {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRoute, useLocation } from "wouter";
-import { useApp } from "../App";
+import { useApp } from "../App.js";
 
 interface ProductData {
   id: number;
@@ -17,9 +17,9 @@ interface ProductData {
 }
 
 function ProductDetail() {
-  const [match, params] = useRoute("/produkt/:type/:id");
+  const [, params] = useRoute("/produkt/:type/:id");
   const [, setLocation] = useLocation();
-  const { addToCart } = useApp();
+  const { addToCart } = useApp() as any;
   const [product, setProduct] = useState<ProductData | null>(null);
   const [loading, setLoading] = useState(true);
 

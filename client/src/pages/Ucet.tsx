@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useApp } from "../App";
+import { useApp } from "../App.js";
 import { useLocation } from "wouter";
 
 interface OrderItem {
@@ -18,7 +18,7 @@ interface Order {
 }
 
 export default function Ucet() {
-  const { user } = useApp();
+  const { user } = useApp() as any;
   const [, setLocation] = useLocation();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
