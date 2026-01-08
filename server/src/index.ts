@@ -14,7 +14,8 @@ import savedRoutes from "./routes/saved.js";
 import licensesRoutes from "./routes/licenses.js";
 import adminLicensesRoutes from "./routes/adminLicenses.js";
 import { requireAuth, requireAdmin } from "./middleware/auth.js";
-import { createServer as createViteServer } from "vite";
+// Vite is only used in non-production environments
+// import { createServer as createViteServer } from "vite";
 import bcrypt from "bcryptjs";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -237,6 +238,7 @@ async function startServer() {
   await seedAdmin();
 
   if (process.env.NODE_ENV !== "production") {
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true, allowedHosts: true },
       appType: "spa",
