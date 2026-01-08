@@ -1,9 +1,32 @@
 import pg from "pg";
 
-const pool = new pg.Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_URL?.includes("supabase.com") || process.env.DATABASE_URL?.includes("supabase.co") || process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
-});
+function getDatabaseConfig() {
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) return { connectionString };
+
+  // If the connection string is already encoded or has issues, we try to fix the password part
+  // especially for Supabase passwords with special characters like %
+  try {
+    const url = new URL(connectionString);
+    if (url.password) {
+      // Ensure password is correctly encoded for the driver
+      url.password = encodeURIComponent(decodeURIComponent(url.password));
+    }
+    return {
+      connectionString: url.toString(),
+      ssl: connectionString.includes("supabase.com") || connectionString.includes("supabase.co") || process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
+    };
+  } catch (e) {
+    // Fallback to original if URL parsing fails
+    return {
+      connectionString,
+      ssl: connectionString.includes("supabase.com") || connectionString.includes("supabase.co") || process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
+    };
+  }
+}
+
+const config = getDatabaseConfig();
+const pool = new pg.Pool(config);
 
 export async function initDatabase() {
   const client = await pool.connect();
