@@ -18,7 +18,7 @@ function Header() {
     }
   }, [user]);
 
-  const navLinkStyle = (path: string, isActive: boolean) => ({
+  const navLinkStyle = (path: string) => ({
     cursor: "pointer",
     fontSize: "12px",
     fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
@@ -49,7 +49,7 @@ function Header() {
       <div style={{ display: "flex", alignItems: "center", gap: "12px", position: "relative", zIndex: 10, padding: "0 8px" }}>
         <Link href="/beaty">
           <span
-            style={navLinkStyle("/beaty", location === "/beaty" || location === "/")}
+            style={navLinkStyle("/beaty")}
             onMouseEnter={() => setHoveredLink("/beaty")}
             onMouseLeave={() => setHoveredLink(null)}
           >
@@ -58,7 +58,7 @@ function Header() {
         </Link>
         <Link href="/zvuky">
           <span
-            style={navLinkStyle("/zvuky", location === "/zvuky")}
+            style={navLinkStyle("/zvuky")}
             onMouseEnter={() => setHoveredLink("/zvuky")}
             onMouseLeave={() => setHoveredLink(null)}
           >

@@ -12,6 +12,7 @@ import Admin from "./pages/Admin.js";
 import Cart from "./pages/Cart.js";
 import Checkout from "./pages/Checkout.js";
 import Ulozeno from "./pages/Ulozeno.js";
+import Ucet from "./pages/Ucet.js";
 import FAQ from "./pages/FAQ.js";
 import Delivery from "./pages/Delivery.js";
 import Payment from "./pages/Payment.js";
@@ -151,6 +152,7 @@ function App() {
             <Route path="/kosik" component={Cart} />
             <Route path="/checkout" component={Checkout} />
             <Route path="/ulozeno" component={Ulozeno} />
+            <Route path="/ucet" component={Ucet} />
             <Route path="/admin" component={Admin} />
             <Route path="/faq" component={FAQ} />
             <Route path="/doruceni" component={Delivery} />
