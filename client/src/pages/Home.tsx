@@ -816,13 +816,8 @@ function Home() {
                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                   </svg>
                 </button>
-                <img
-                  src={beat.artwork_url || "/uploads/artwork/metallic-logo.png"}
-                  alt={beat.title}
-                  style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "4px", flexShrink: 0 }}
-                />
               </div>
-              <div className="mobile-only" style={{ flexShrink: 0 }}>
+              <div style={{ flexShrink: 0 }}>
                 <img
                   src={beat.artwork_url || "/uploads/artwork/metallic-logo.png"}
                   alt={beat.title}
