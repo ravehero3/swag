@@ -1,28 +1,32 @@
 import pg from "pg";
 
 function getDatabaseConfig() {
-  const connectionString = process.env.DATABASE_URL;
+  let connectionString = process.env.DATABASE_URL;
   if (!connectionString) return { connectionString };
 
-  // If the connection string is already encoded or has issues, we try to fix the password part
-  // especially for Supabase passwords with special characters like %
+  // For Supabase connection strings, we need to handle SSL
+  const isSupabase = connectionString.includes("supabase.com") || connectionString.includes("supabase.co");
+  
+  // If the password contains special characters like %, they MUST be encoded.
+  // We'll try to manually encode the password part if it looks unencoded.
   try {
-    const url = new URL(connectionString);
-    if (url.password) {
-      // Ensure password is correctly encoded for the driver
-      url.password = encodeURIComponent(decodeURIComponent(url.password));
+    // A simple regex to find the password part: postgresql://user:password@host...
+    const match = connectionString.match(/^(postgresql:\/\/)([^:]+):(.+)(@.+)$/);
+    if (match) {
+      const [ , protocol, user, password, rest] = match;
+      // If password contains % but it's not followed by two hex digits, it's probably unencoded
+      if (password.includes('%') && !/%[0-9a-fA-F]{2}/.test(password)) {
+        connectionString = `${protocol}${user}:${encodeURIComponent(password)}${rest}`;
+      }
     }
-    return {
-      connectionString: url.toString(),
-      ssl: connectionString.includes("supabase.com") || connectionString.includes("supabase.co") || process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
-    };
   } catch (e) {
-    // Fallback to original if URL parsing fails
-    return {
-      connectionString,
-      ssl: connectionString.includes("supabase.com") || connectionString.includes("supabase.co") || process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
-    };
+    console.error("Error processing connection string:", e);
   }
+
+  return {
+    connectionString,
+    ssl: isSupabase || process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
+  };
 }
 
 const config = getDatabaseConfig();
