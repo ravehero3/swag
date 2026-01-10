@@ -1,5 +1,5 @@
 import { useState, useEffect, createContext, useContext } from "react";
-import { Route, Switch } from "wouter";
+import { Route, Switch, useLocation } from "wouter";
 import Header from "./components/Header.js";
 import ExtendedFooter from "./components/ExtendedFooter.js";
 import Footer from "./components/Footer.js";
