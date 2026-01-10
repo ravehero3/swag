@@ -345,6 +345,7 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                     onClose();
                     window.location.href = "/platba";
                   }}
+                  className="login-glow-button"
                   style={{
                     width: "100%",
                     padding: "12px",
@@ -356,21 +357,17 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                     fontWeight: "bold",
                     cursor: "pointer",
                     marginBottom: "8px",
-                    transition: "all 0.15s ease",
-                    overflow: "hidden",
-                    position: "relative",
-                  }}
-                  onMouseEnter={(e) => {
-                    const btn = e.currentTarget as HTMLButtonElement;
-                    btn.style.backgroundColor = "#e8e8e8";
-                  }}
-                  onMouseLeave={(e) => {
-                    const btn = e.currentTarget as HTMLButtonElement;
-                    btn.style.backgroundColor = "#fff";
+                    transition: "all 0.3s ease",
                   }}
                 >
                   Pokračovat na platbu
                 </button>
+                <style dangerouslySetInnerHTML={{ __html: `
+                  .login-glow-button:hover {
+                    box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+                    transform: translateY(-1px);
+                  }
+                `}} />
               </div>
             )}
 
