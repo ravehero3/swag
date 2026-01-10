@@ -181,10 +181,10 @@ function App() {
           </Switch>
         </main>
         {!isAdminPage && !isPokladnaPage && (
-          <>
-            <ExtendedFooter />
-            <Footer />
-          </>
+          <ExtendedFooter />
+        )}
+        {!isAdminPage && (
+          <Footer />
         )}
         <CartModal isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
         <NewsletterWindow isOpen={isNewsletterOpen} onClose={() => setIsNewsletterOpen(false)} />

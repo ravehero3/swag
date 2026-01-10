@@ -69,29 +69,53 @@ function Checkout() {
 
   if (success) {
     return (
-      <div className="fade-in" style={{ maxWidth: "500px", margin: "0 auto", textAlign: "center", padding: "40px" }}>
-        <h1 style={{ marginBottom: "24px", textAlign: "center" }}>Objednávka vytvořena!</h1>
-        <p style={{ color: "#666", marginBottom: "24px" }}>
-          Děkujeme za vaši objednávku. Na email {email} vám zašleme pokyny k platbě a po jejím přijetí odkaz ke stažení.
-        </p>
-        <button className="btn btn-bounce" onClick={() => navigate("/")} style={{ borderRadius: "4px" }}>
-          Zpět na hlavní stránku
-        </button>
+      <div className="fade-in" style={{ 
+        minHeight: "calc(100vh - 42px)", 
+        display: "flex", 
+        flexDirection: "column", 
+        justifyContent: "center", 
+        alignItems: "center",
+        padding: "20px"
+      }}>
+        <div style={{ maxWidth: "500px", width: "100%", textAlign: "center" }}>
+          <h1 style={{ marginBottom: "24px" }}>Objednávka vytvořena!</h1>
+          <p style={{ color: "#666", marginBottom: "24px" }}>
+            Děkujeme za vaši objednávku. Na email {email} vám zašleme pokyny k platbě a po jejím přijetí odkaz ke stažení.
+          </p>
+          <button className="btn btn-bounce" onClick={() => navigate("/")} style={{ borderRadius: "4px" }}>
+            Zpět na hlavní stránku
+          </button>
+        </div>
       </div>
     );
   }
 
   if (cart.length === 0) {
     return (
-      <div className="fade-in" style={{ textAlign: "center", padding: "40px" }}>
+      <div className="fade-in" style={{ 
+        minHeight: "calc(100vh - 42px)", 
+        display: "flex", 
+        flexDirection: "column", 
+        justifyContent: "center", 
+        alignItems: "center",
+        padding: "20px"
+      }}>
         <p style={{ color: "#666" }}>Váš košík je prázdný</p>
       </div>
     );
   }
 
   return (
-    <div className="fade-in" style={{ maxWidth: "500px", margin: "0 auto" }}>
-      <h1 style={{ marginBottom: "24px", textAlign: "center" }}>Dokončení objednávky</h1>
+    <div className="fade-in" style={{ 
+      minHeight: "calc(100vh - 42px)", 
+      display: "flex", 
+      flexDirection: "column", 
+      justifyContent: "center", 
+      alignItems: "center",
+      padding: "20px"
+    }}>
+      <div style={{ maxWidth: "500px", width: "100%" }}>
+        <h1 style={{ marginBottom: "24px", textAlign: "center" }}>Dokončení objednávky</h1>
 
       <div style={{ marginBottom: "24px", padding: "16px", border: "1px solid #333", borderRadius: "4px" }}>
         <h3 style={{ marginBottom: "12px" }}>Shrnutí objednávky</h3>
@@ -172,6 +196,7 @@ function Checkout() {
           {loading ? "Zpracování..." : `Zaplatit ${finalTotal} CZK`}
         </button>
       </form>
+      </div>
     </div>
   );
 }
