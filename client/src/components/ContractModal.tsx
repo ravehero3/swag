@@ -98,6 +98,14 @@ function ContractModal({ beat, isOpen, onClose, onAddToCart, onPlay, isPlaying }
           from { opacity: 0; }
           to { opacity: 1; }
         }
+        .license-option:hover {
+          transform: scale(1.02);
+          background: rgba(255, 255, 255, 0.08) !important;
+          border-color: #666 !important;
+        }
+        .modal-play-button:hover {
+          transform: translate(-50%, -50%) scale(1.1) !important;
+        }
       `}</style>
       <div
         style={{
@@ -150,6 +158,7 @@ function ContractModal({ beat, isOpen, onClose, onAddToCart, onPlay, isPlaying }
                   />
                   <button
                     onClick={onPlay}
+                    className="modal-play-button"
                     style={{
                       position: "absolute",
                       top: "50%",
@@ -166,6 +175,7 @@ function ContractModal({ beat, isOpen, onClose, onAddToCart, onPlay, isPlaying }
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
+                      transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
                     }}
                   >
                     {isPlaying ? "⏸" : "▶"}
@@ -206,13 +216,14 @@ function ContractModal({ beat, isOpen, onClose, onAddToCart, onPlay, isPlaying }
                   <div
                     key={option.id}
                     onClick={() => setSelectedLicense(option)}
+                    className="license-option"
                     style={{
                       padding: "16px",
                       border: selectedLicense?.id === option.id ? "1px solid #fff" : "1px solid #333",
                       borderRadius: "4px",
                       background: selectedLicense?.id === option.id ? "rgba(255,255,255,0.05)" : "transparent",
                       cursor: "pointer",
-                      transition: "all 0.2s",
+                      transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
                     }}
                   >
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
