@@ -148,6 +148,7 @@ function App() {
   }
 
   const isAdminPage = location === "/admin";
+  const isPokladnaPage = location === "/pokladna";
 
   return (
     <AppContext.Provider value={{ user, setUser, cart, addToCart, removeFromCart, clearCart, isCartOpen, setIsCartOpen, isNewsletterOpen, setIsNewsletterOpen, settings }}>
@@ -179,7 +180,7 @@ function App() {
             </Route>
           </Switch>
         </main>
-        {!isAdminPage && (
+        {!isAdminPage && !isPokladnaPage && (
           <>
             <ExtendedFooter />
             <Footer />
