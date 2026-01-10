@@ -55,35 +55,51 @@ function ContractModal({ beat, isOpen, onClose, onAddToCart, onPlay, isPlaying }
     }
   };
 
-  return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(0, 0, 0, 0.95)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 100000,
-        padding: "20px",
-        overflowY: "auto",
-      }}
-      onClick={onClose}
-    >
+    @keyframes modalFadeIn {
+      from { transform: translate(-50%, -48%) scale(0.95); opacity: 0; }
+      to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    return (
       <div
         style={{
-          background: "#000",
-          border: "0.5px solid #333",
-          borderRadius: "4px",
-          maxWidth: "600px",
-          width: "100%",
-          maxHeight: "90vh",
-          margin: "auto",
-          position: "relative",
-          zIndex: 100001,
+          position: "fixed",
+          inset: 0,
+          background: "rgba(0, 0, 0, 0.75)",
+          backdropFilter: "blur(4px)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 100000,
+          padding: "20px",
+          animation: "fadeIn 0.2s ease-out",
         }}
-        onClick={(e) => e.stopPropagation()}
+        onClick={onClose}
       >
+        <div
+          style={{
+            background: "#000",
+            border: "1px solid #333",
+            borderRadius: "8px",
+            maxWidth: "600px",
+            width: "min(95%, 600px)",
+            maxHeight: "90vh",
+            position: "fixed",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            zIndex: 100001,
+            display: "flex",
+            flexDirection: "column",
+            animation: "modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+            overflow: "hidden",
+            boxShadow: "0 20px 50px rgba(0, 0, 0, 0.9)",
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
         {loading ? (
           <div
             style={{
@@ -163,7 +179,7 @@ function ContractModal({ beat, isOpen, onClose, onAddToCart, onPlay, isPlaying }
               </div>
             </div>
 
-            <div style={{ padding: "16px 24px" }}>
+            <div style={{ padding: "16px 24px", flex: 1, overflowY: "auto" }}>
               <p style={{ fontSize: "13px", color: "#999", marginBottom: "16px" }}>
                 Vyberte typ licence
               </p>

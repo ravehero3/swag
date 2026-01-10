@@ -38,9 +38,13 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
   return (
     <>
       <style>{`
-        @keyframes modalFadeIn {
-          from { transform: translate(-50%, -48%) scale(0.95); opacity: 0; }
-          to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        @keyframes slideInRight {
+          from { transform: translateX(100%); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOutRight {
+          from { transform: translateX(0); }
+          to { transform: translateX(100%); }
         }
         @keyframes fadeIn {
           from { opacity: 0; }
@@ -55,10 +59,9 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.75)",
-            backdropFilter: "blur(4px)",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
             zIndex: 9998,
-            animation: "fadeIn 0.2s ease-out",
+            animation: "fadeIn 0.3s ease-out",
           }}
           onClick={onClose}
         >
@@ -66,28 +69,24 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
             className="cart-modal-panel"
             style={{
               position: "fixed",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              maxHeight: "90vh",
-              width: "min(95%, 450px)",
+              top: 0,
+              right: 0,
+              height: "100vh",
+              width: "min(100%, 33.333%)",
               backgroundColor: "#000",
-              boxShadow: "0 20px 50px rgba(0, 0, 0, 0.9)",
+              boxShadow: "-10px 0 40px rgba(0, 0, 0, 0.8)",
               display: "flex",
               flexDirection: "column",
-              animation: "modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+              animation: "slideInRight 0.3s ease-out",
               zIndex: 9999,
-              border: "1px solid #333",
-              borderRadius: "8px",
-              overflow: "hidden"
+              borderLeft: "1px solid #333",
             }}
             onClick={(e) => e.stopPropagation()}
           >
             <style>{`
               @media (max-width: 768px) {
                 .cart-modal-panel {
-                  width: 95% !important;
-                  max-height: 80vh !important;
+                  width: 100% !important;
                 }
               }
             `}</style>
@@ -138,32 +137,37 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
               </button>
             </div>
 
-            {/* Horizontal lines - Hidden in centered modal layout as they might clash */}
-            {/* <div style={{
+            {/* Horizontal lines */}
+            <div style={{
               position: 'absolute',
-              top: '242px', 
+              top: '242px', // 42px header + 200px
               left: 0,
               right: 0,
               height: '0.5px',
               backgroundColor: '#333',
               zIndex: 10,
               pointerEvents: 'none'
-            }} /> */}
-            {/* <div style={{
+            }} />
+            <div style={{
               position: 'absolute',
-              top: '702px',
+              top: '702px', // 602px + 100px
               left: 0,
               right: 0,
               height: '0.5px',
               backgroundColor: '#333',
               zIndex: 10,
               pointerEvents: 'none'
-            }} /> */}
+            }} />
 
             {/* Middle Section: Recently Viewed */}
             <div
               style={{
-                padding: '16px',
+                position: 'absolute',
+                top: '242px',
+                left: 0,
+                right: 0,
+                height: '460px',
+                padding: '20px',
                 borderBottom: '0.5px solid #333',
                 backgroundColor: '#050505',
                 display: 'flex',
@@ -221,16 +225,21 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
 
             {cart.length === 0 && (
               <div style={{
+                position: 'absolute',
+                top: '712px', // 612px + 100px
+                left: 0,
+                right: 0,
                 display: 'flex',
                 justifyContent: 'center',
-                padding: '16px',
-                borderTop: '1px solid #333'
+                padding: '0 20px',
+                zIndex: 10,
+                pointerEvents: 'none'
               }}>
                 <img 
                   src="/payment-methods.jpg" 
                   alt="Payment Methods" 
                   style={{ 
-                    maxWidth: '120px', 
+                    maxWidth: '50%', 
                     height: 'auto',
                     opacity: 0.8
                   }} 
