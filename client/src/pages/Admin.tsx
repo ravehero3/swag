@@ -505,10 +505,6 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
               <label style={{ display: "block", marginBottom: "8px" }}>Počet zvuků</label>
               <input type="number" value={form.numberOfSounds} onChange={(e) => setForm({ ...form, numberOfSounds: Number(e.target.value) })} style={{ width: "100%" }} />
             </div>
-            <div>
-              <label style={{ display: "block", marginBottom: "8px" }}>Publikovat</label>
-              <input type="checkbox" checked={form.isPublished} onChange={(e) => setForm({ ...form, isPublished: e.target.checked })} />
-            </div>
             <div style={{ gridColumn: "1 / -1" }}>
               <label style={{ display: "block", marginBottom: "8px" }}>Tagy (max 10)</label>
               <div style={{ display: "flex", gap: "8px" }}>
@@ -559,9 +555,15 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
               <textarea value={form.authorInfo} onChange={(e) => setForm({ ...form, authorInfo: e.target.value })} rows={2} style={{ width: "100%" }} />
             </div>
           </div>
-          <button type="submit" className="btn btn-filled" style={{ marginTop: "16px" }}>
-            {editing ? "Uložit změny" : "Přidat kit"}
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "16px" }}>
+            <button type="submit" className="btn btn-filled">
+              {editing ? "Uložit změny" : "Přidat kit"}
+            </button>
+            <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
+              <input type="checkbox" checked={form.isPublished} onChange={(e) => setForm({ ...form, isPublished: e.target.checked })} />
+              <span>Publikovat</span>
+            </label>
+          </div>
         </form>
       )}
 
