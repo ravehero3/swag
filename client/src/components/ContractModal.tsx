@@ -296,34 +296,37 @@ function ContractModal({ beat, isOpen, onClose, onAddToCart, onPlay, isPlaying }
                   const plusSymbol = btn.querySelector("span[style*='position: absolute']") as HTMLElement;
                   if (plusSymbol) plusSymbol.style.color = "#000";
                   
-                  for (let i = 0; i < 7; i++) {
+                  // More particles, flying from the whole width
+                  for (let i = 0; i < 20; i++) {
                     const particle = document.createElement("div");
                     particle.setAttribute("data-particle", "true");
-                    const angle = (i / 7) * Math.PI * 2;
+                    
+                    const rect = btn.getBoundingClientRect();
+                    const randomX = Math.random() * rect.width;
+                    
                     particle.style.position = "absolute";
-                    particle.style.width = "4px";
-                    particle.style.height = "4px";
+                    particle.style.width = `${Math.random() * 3 + 1}px`;
+                    particle.style.height = particle.style.width;
                     particle.style.background = "#fff";
                     particle.style.borderRadius = "50%";
-                    particle.style.left = "50%";
+                    particle.style.left = `${randomX}px`;
                     particle.style.top = "50%";
                     particle.style.pointerEvents = "none";
                     particle.style.transform = "translate(-50%, -50%)";
-                    particle.style.opacity = "0.8";
+                    particle.style.opacity = `${Math.random() * 0.5 + 0.5}`;
                     
-                    const distance = 35;
-                    const startX = Math.cos(angle) * distance;
-                    const startY = Math.sin(angle) * distance;
-                    const endX = Math.cos(angle) * (distance + 40);
-                    const endY = Math.sin(angle) * (distance + 40);
+                    const angle = (Math.random() * Math.PI * 2);
+                    const distance = Math.random() * 40 + 30;
+                    const endX = Math.cos(angle) * distance;
+                    const endY = Math.sin(angle) * distance;
                     
-                    particle.style.animation = `particleFloat-${i} 3s ease-out forwards`;
+                    particle.style.animation = `particleFloatWide-${i} ${Math.random() * 1.5 + 1}s ease-out forwards`;
                     btn.appendChild(particle);
                     
                     const style = document.createElement("style");
                     style.textContent = `
-                      @keyframes particleFloat-${i} {
-                        0% { transform: translate(calc(-50% + ${startX}px), calc(-50% + ${startY}px)); opacity: 0.8; }
+                      @keyframes particleFloatWide-${i} {
+                        0% { transform: translate(-50%, -50%); opacity: 0.8; }
                         100% { transform: translate(calc(-50% + ${endX}px), calc(-50% + ${endY}px)); opacity: 0; }
                       }
                     `;
