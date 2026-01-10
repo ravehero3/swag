@@ -167,7 +167,7 @@ function Cart() {
                   <span style={{ ...titleFont, fontSize: "20px" }}>{total} CZK</span>
                 </div>
 
-                <Link href="/platba">
+                <Link href="/pokladna">
                   <button 
                     className="login-glow-button"
                     style={{ 

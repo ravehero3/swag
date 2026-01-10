@@ -343,7 +343,7 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                 <button
                   onClick={() => {
                     onClose();
-                    window.location.href = "/platba";
+                    window.location.href = "/pokladna";
                   }}
                   className="login-glow-button"
                   style={{

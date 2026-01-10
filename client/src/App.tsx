@@ -153,7 +153,7 @@ function App() {
             <Route path="/zvuky" component={Zvuky} />
             <Route path="/prihlasit-se" component={Login} />
             <Route path="/kosik" component={Cart} />
-            <Route path="/checkout" component={Checkout} />
+            <Route path="/pokladna" component={Checkout} />
             <Route path="/ulozeno" component={Ulozeno} />
             <Route path="/ucet" component={Ucet} />
             <Route path="/admin" component={Admin} />
