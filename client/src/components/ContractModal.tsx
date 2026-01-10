@@ -41,14 +41,21 @@ function ContractModal({ beat, isOpen, onClose, onAddToCart, onPlay, isPlaying }
     if (isOpen) {
       setLoading(true);
       setSelectedLicense(null);
+      // More aggressive body scroll lock
+      const originalStyle = window.getComputedStyle(document.body).overflow;
       document.body.style.overflow = "hidden";
+      document.body.style.height = "100vh";
+      document.body.style.position = "fixed";
+      document.body.style.width = "100%";
+      
       const timer = setTimeout(() => setLoading(false), 800);
       return () => {
         clearTimeout(timer);
-        document.body.style.overflow = "";
+        document.body.style.overflow = originalStyle;
+        document.body.style.height = "";
+        document.body.style.position = "";
+        document.body.style.width = "";
       };
-    } else {
-      document.body.style.overflow = "";
     }
   }, [isOpen]);
 
@@ -69,22 +76,23 @@ function ContractModal({ beat, isOpen, onClose, onAddToCart, onPlay, isPlaying }
         left: 0,
         width: "100vw",
         height: "100vh",
-        background: "rgba(0, 0, 0, 0.85)",
-        backdropFilter: "blur(10px)",
+        background: "rgba(0, 0, 0, 0.9)",
+        backdropFilter: "blur(15px)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        zIndex: 999999,
+        zIndex: 9999999,
         padding: "20px",
         animation: "fadeIn 0.2s ease-out",
         overflow: "hidden",
+        touchAction: "none", // Prevent touch scrolling
       }}
       onClick={onClose}
     >
       <style>{`
         @keyframes modalFadeIn {
-          from { transform: scale(0.95); opacity: 0; }
-          to { transform: scale(1); opacity: 1; }
+          from { transform: scale(0.95) translateY(10px); opacity: 0; }
+          to { transform: scale(1) translateY(0); opacity: 1; }
         }
         @keyframes fadeIn {
           from { opacity: 0; }
@@ -95,16 +103,16 @@ function ContractModal({ beat, isOpen, onClose, onAddToCart, onPlay, isPlaying }
         style={{
           background: "#000",
           border: "1px solid #333",
-          borderRadius: "8px",
+          borderRadius: "12px",
           maxWidth: "600px",
           width: "min(95%, 600px)",
-          maxHeight: "90vh",
-          zIndex: 1000000,
+          maxHeight: "85vh",
+          zIndex: 10000000,
           display: "flex",
           flexDirection: "column",
           animation: "modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
           overflow: "hidden",
-          boxShadow: "0 20px 50px rgba(0, 0, 0, 0.9)",
+          boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
           position: "relative",
         }}
         onClick={(e) => e.stopPropagation()}
