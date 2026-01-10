@@ -165,16 +165,51 @@ button {
 
 input, textarea, select {
   font-family: inherit;
-  border: 1px solid #fff;
+  border: 0.4px solid #333;
   background: transparent;
-  color: #fff;
+  color: #666;
   padding: 12px;
   outline: none;
 }
 
+input:focus, textarea:focus, select:focus {
+  border-color: #666;
+}
+
 input::placeholder, textarea::placeholder {
+  color: #333;
+}
+
+.btn-admin {
+  background: transparent;
+  border: 0.4px solid #333;
   color: #666;
 }
+
+.btn-admin:hover {
+  border-color: #666;
+  color: #999;
+  background: transparent;
+}
+
+.admin-container label {
+  color: #666;
+}
+
+.admin-container table {
+  border-collapse: collapse;
+}
+
+.admin-container th {
+  color: #444;
+  border-bottom: 0.4px solid #333;
+}
+
+.admin-container td {
+  color: #666;
+  border-bottom: 0.4px solid #222;
+}
+
 
 .btn {
   background: transparent;

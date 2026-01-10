@@ -112,54 +112,57 @@ function Admin() {
   if (!user?.isAdmin) return null;
 
   return (
-    <div className="fade-in">
-      <h1 style={{ marginBottom: "24px" }}>Admin Panel</h1>
+    <div className="fade-in admin-container" style={{ maxWidth: "800px", margin: "0 auto", textAlign: "center" }}>
+      <h1 style={{ marginBottom: "24px", color: "#666" }}>Admin Panel</h1>
 
-      <div style={{ display: "flex", gap: "12px", marginBottom: "24px", flexWrap: "wrap" }}>
+      <div style={{ display: "flex", gap: "12px", marginBottom: "24px", flexWrap: "wrap", justifyContent: "center" }}>
         {["beats", "kits", "orders", "licenses", "settings", "assets", "promo"].map((t) => (
           <button
             key={t}
-            className={tab === t ? "btn btn-filled" : "btn"}
+            className={tab === t ? "btn btn-filled" : "btn btn-admin"}
             onClick={() => setTab(t as any)}
+            style={tab !== t ? { borderColor: "#333", color: "#666" } : {}}
           >
             {t === "beats" ? "Beaty" : t === "kits" ? "Zvuky" : t === "orders" ? "Objednávky" : t === "licenses" ? "Licence" : t === "settings" ? "Nastavení" : t === "assets" ? "Assety (Ikony/Carousel)" : "Promo kódy"}
           </button>
         ))}
       </div>
 
-      {tab === "beats" && (
-        <BeatsTab
-          beats={beats}
-          licenses={licenses}
-          showForm={showBeatForm}
-          setShowForm={setShowBeatForm}
-          editing={editingBeat}
-          setEditing={setEditingBeat}
-          onRefresh={loadData}
-          loadData={loadData}
-        />
-      )}
+      <div style={{ textAlign: "left" }}>
+        {tab === "beats" && (
+          <BeatsTab
+            beats={beats}
+            licenses={licenses}
+            showForm={showBeatForm}
+            setShowForm={setShowBeatForm}
+            editing={editingBeat}
+            setEditing={setEditingBeat}
+            onRefresh={loadData}
+            loadData={loadData}
+          />
+        )}
 
-      {tab === "kits" && (
-        <KitsTab
-          kits={kits}
-          showForm={showKitForm}
-          setShowForm={setShowKitForm}
-          editing={editingKit}
-          setEditing={setEditingKit}
-          onRefresh={loadData}
-        />
-      )}
+        {tab === "kits" && (
+          <KitsTab
+            kits={kits}
+            showForm={showKitForm}
+            setShowForm={setShowKitForm}
+            editing={editingKit}
+            setEditing={setEditingKit}
+            onRefresh={loadData}
+          />
+        )}
 
-      {tab === "orders" && <OrdersTab orders={orders} onRefresh={loadData} />}
+        {tab === "orders" && <OrdersTab orders={orders} onRefresh={loadData} />}
 
-      {tab === "licenses" && <LicensesTab licenses={licenses} onRefresh={loadData} />}
+        {tab === "licenses" && <LicensesTab licenses={licenses} onRefresh={loadData} />}
 
-      {tab === "settings" && <SettingsTab settings={settings} onRefresh={refreshSettings} />}
+        {tab === "settings" && <SettingsTab settings={settings} onRefresh={refreshSettings} />}
 
-      {tab === "assets" && <AssetsTab />}
+        {tab === "assets" && <AssetsTab />}
 
-      {tab === "promo" && <PromoCodesTab />}
+        {tab === "promo" && <PromoCodesTab />}
+      </div>
     </div>
   );
 }
@@ -251,7 +254,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
 
   return (
     <div>
-      <button className="btn" onClick={() => { setShowForm(!showForm); setEditing(null); }} style={{ marginBottom: "16px" }}>
+      <button className="btn btn-admin" onClick={() => { setShowForm(!showForm); setEditing(null); }} style={{ marginBottom: "16px" }}>
         {showForm ? "Zrušit" : "Přidat beat"}
       </button>
 
@@ -373,8 +376,8 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
               <td style={{ padding: "12px" }}>{beat.is_published ? "✓ Publikováno" : "Skryto"}</td>
               <td style={{ padding: "12px" }}>{beat.is_highlighted ? "⭐" : ""}</td>
               <td style={{ padding: "12px", textAlign: "right" }}>
-                <button className="btn" onClick={() => setEditing(beat)} style={{ marginRight: "8px" }}>Upravit</button>
-                <button className="btn" onClick={() => handleDelete(beat.id)} style={{ color: "#ff4444" }}>Smazat</button>
+                <button className="btn btn-admin" onClick={() => setEditing(beat)} style={{ marginRight: "8px" }}>Upravit</button>
+                <button className="btn btn-admin" onClick={() => handleDelete(beat.id)} style={{ color: "#441111" }}>Smazat</button>
               </td>
             </tr>
           ))}
@@ -467,7 +470,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
 
   return (
     <div>
-      <button className="btn" onClick={() => { setShowForm(!showForm); setEditing(null); }} style={{ marginBottom: "16px" }}>
+      <button className="btn btn-admin" onClick={() => { setShowForm(!showForm); setEditing(null); }} style={{ marginBottom: "16px" }}>
         {showForm ? "Zrušit" : "Přidat zvukový kit"}
       </button>
 
@@ -585,8 +588,8 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
               <td style={{ padding: "12px" }}>{kit.is_free ? "Zdarma" : `${kit.price} CZK`}</td>
               <td style={{ padding: "12px" }}>{kit.is_published ? "✓ Publikováno" : "Skryto"}</td>
               <td style={{ padding: "12px", textAlign: "right" }}>
-                <button className="btn" onClick={() => setEditing(kit)} style={{ marginRight: "8px" }}>Upravit</button>
-                <button className="btn" onClick={() => handleDelete(kit.id)} style={{ color: "#ff4444" }}>Smazat</button>
+                <button className="btn btn-admin" onClick={() => setEditing(kit)} style={{ marginRight: "8px" }}>Upravit</button>
+                <button className="btn btn-admin" onClick={() => handleDelete(kit.id)} style={{ color: "#441111" }}>Smazat</button>
               </td>
             </tr>
           ))}
