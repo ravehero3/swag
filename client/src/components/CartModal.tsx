@@ -15,7 +15,7 @@ interface CartModalProps {
 }
 
 function CartModal({ isOpen, onClose }: CartModalProps) {
-  const { cart, removeFromCart, clearCart } = useApp();
+  const { cart, removeFromCart } = useApp();
   const [recentlyViewed, setRecentlyViewed] = useState<any[]>([]);
 
   useEffect(() => {
@@ -100,6 +100,7 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                position: "relative",
               }}
             >
               <h2
@@ -114,6 +115,26 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
               >
                 NÁKUPNÍ KOŠÍK
               </h2>
+              <button
+                onClick={onClose}
+                style={{
+                  position: "absolute",
+                  right: "12px",
+                  background: "transparent",
+                  border: "none",
+                  color: "#000",
+                  fontSize: "18px",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "4px",
+                  fontWeight: "bold",
+                }}
+                aria-label="Zavřít"
+              >
+                ✕
+              </button>
             </div>
 
             {/* Horizontal lines */}
@@ -320,6 +341,10 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                   </span>
                 </div>
                 <button
+                  onClick={() => {
+                    onClose();
+                    window.location.href = "/platba";
+                  }}
                   style={{
                     width: "100%",
                     padding: "12px",
@@ -345,34 +370,6 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                   }}
                 >
                   Pokračovat na platbu
-                </button>
-                <button
-                  onClick={() => clearCart()}
-                  style={{
-                    width: "100%",
-                    padding: "12px",
-                    backgroundColor: "transparent",
-                    color: "#fff",
-                    border: "1px solid #666",
-                    borderRadius: "4px",
-                    fontSize: "14px",
-                    cursor: "pointer",
-                    transition: "all 0.15s ease",
-                    overflow: "hidden",
-                    position: "relative",
-                  }}
-                  onMouseEnter={(e) => {
-                    const btn = e.currentTarget as HTMLButtonElement;
-                    btn.style.borderColor = "#fff";
-                    btn.style.color = "#fff";
-                  }}
-                  onMouseLeave={(e) => {
-                    const btn = e.currentTarget as HTMLButtonElement;
-                    btn.style.borderColor = "#666";
-                    btn.style.color = "#fff";
-                  }}
-                >
-                  Vymazat košík
                 </button>
               </div>
             )}
