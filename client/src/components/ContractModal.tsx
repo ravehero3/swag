@@ -55,51 +55,53 @@ function ContractModal({ beat, isOpen, onClose, onAddToCart, onPlay, isPlaying }
     }
   };
 
-    @keyframes modalFadeIn {
-      from { transform: translate(-50%, -48%) scale(0.95); opacity: 0; }
-      to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    return (
+  return (
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0, 0, 0, 0.75)",
+        backdropFilter: "blur(4px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 100000,
+        padding: "20px",
+        animation: "fadeIn 0.2s ease-out",
+      }}
+      onClick={onClose}
+    >
+      <style>{`
+        @keyframes modalFadeIn {
+          from { transform: translate(-50%, -48%) scale(0.95); opacity: 0; }
+          to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+      `}</style>
       <div
         style={{
+          background: "#000",
+          border: "1px solid #333",
+          borderRadius: "8px",
+          maxWidth: "600px",
+          width: "min(95%, 600px)",
+          maxHeight: "90vh",
           position: "fixed",
-          inset: 0,
-          background: "rgba(0, 0, 0, 0.75)",
-          backdropFilter: "blur(4px)",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          zIndex: 100001,
           display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          zIndex: 100000,
-          padding: "20px",
-          animation: "fadeIn 0.2s ease-out",
+          flexDirection: "column",
+          animation: "modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+          overflow: "hidden",
+          boxShadow: "0 20px 50px rgba(0, 0, 0, 0.9)",
         }}
-        onClick={onClose}
+        onClick={(e) => e.stopPropagation()}
       >
-        <div
-          style={{
-            background: "#000",
-            border: "1px solid #333",
-            borderRadius: "8px",
-            maxWidth: "600px",
-            width: "min(95%, 600px)",
-            maxHeight: "90vh",
-            position: "fixed",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            zIndex: 100001,
-            display: "flex",
-            flexDirection: "column",
-            animation: "modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
-            overflow: "hidden",
-            boxShadow: "0 20px 50px rgba(0, 0, 0, 0.9)",
-          }}
-          onClick={(e) => e.stopPropagation()}
-        >
         {loading ? (
           <div
             style={{
