@@ -59,22 +59,26 @@ function ContractModal({ beat, isOpen, onClose, onAddToCart, onPlay, isPlaying }
     <div
       style={{
         position: "fixed",
-        inset: 0,
-        background: "rgba(0, 0, 0, 0.75)",
-        backdropFilter: "blur(4px)",
+        top: 0,
+        left: 0,
+        width: "100vw",
+        height: "100vh",
+        background: "rgba(0, 0, 0, 0.85)",
+        backdropFilter: "blur(10px)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        zIndex: 100000,
+        zIndex: 999999,
         padding: "20px",
         animation: "fadeIn 0.2s ease-out",
+        overflow: "hidden",
       }}
       onClick={onClose}
     >
       <style>{`
         @keyframes modalFadeIn {
-          from { transform: translate(-50%, -48%) scale(0.95); opacity: 0; }
-          to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+          from { transform: scale(0.95); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
         }
         @keyframes fadeIn {
           from { opacity: 0; }
@@ -89,16 +93,13 @@ function ContractModal({ beat, isOpen, onClose, onAddToCart, onPlay, isPlaying }
           maxWidth: "600px",
           width: "min(95%, 600px)",
           maxHeight: "90vh",
-          position: "fixed",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          zIndex: 100001,
+          zIndex: 1000000,
           display: "flex",
           flexDirection: "column",
           animation: "modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
           overflow: "hidden",
           boxShadow: "0 20px 50px rgba(0, 0, 0, 0.9)",
+          position: "relative",
         }}
         onClick={(e) => e.stopPropagation()}
       >
