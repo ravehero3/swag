@@ -170,6 +170,7 @@ input, textarea, select {
   color: #666;
   padding: 12px;
   outline: none;
+  border-radius: 3px;
 }
 
 input:focus, textarea:focus, select:focus {
@@ -184,6 +185,7 @@ input::placeholder, textarea::placeholder {
   background: transparent;
   border: 0.4px solid #333;
   color: #666;
+  border-radius: 3px;
 }
 
 .btn-admin:hover {

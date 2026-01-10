@@ -259,7 +259,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
       </button>
 
       {showForm && (
-        <form onSubmit={handleSubmit} style={{ marginBottom: "24px", padding: "16px", border: "1px solid #333" }}>
+        <form onSubmit={handleSubmit} style={{ marginBottom: "24px", padding: "16px", border: "1px solid #333", borderRadius: "3px" }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
             <div>
               <label style={{ display: "block", marginBottom: "8px" }}>Název</label>
@@ -475,7 +475,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
       </button>
 
       {showForm && (
-        <form onSubmit={handleSubmit} style={{ marginBottom: "24px", padding: "16px", border: "1px solid #333" }}>
+        <form onSubmit={handleSubmit} style={{ marginBottom: "24px", padding: "16px", border: "1px solid #333", borderRadius: "3px" }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
             <div>
               <label style={{ display: "block", marginBottom: "8px" }}>Název</label>
