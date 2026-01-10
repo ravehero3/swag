@@ -282,6 +282,71 @@ function ContractModal({ beat, isOpen, onClose, onAddToCart, onPlay, isPlaying }
                   alignItems: "center",
                   justifyContent: "center",
                   gap: "8px",
+                  position: "relative",
+                  transition: "background 0.2s, color 0.2s, box-shadow 0.2s",
+                  overflow: "visible",
+                }}
+                onMouseEnter={(e) => {
+                  if (!selectedLicense || selectedLicense.price === "NEGOTIATE") return;
+                  const btn = e.currentTarget as HTMLButtonElement;
+                  btn.style.background = "#fff";
+                  btn.style.color = "#000";
+                  btn.style.boxShadow = "0 0 20px rgba(255, 255, 255, 0.8), inset 0 0 0 0.5px #000, inset 0 0 10px rgba(255, 255, 255, 0.3)";
+                  
+                  const plusSymbol = btn.querySelector("span[style*='position: absolute']") as HTMLElement;
+                  if (plusSymbol) plusSymbol.style.color = "#000";
+                  
+                  for (let i = 0; i < 7; i++) {
+                    const particle = document.createElement("div");
+                    particle.setAttribute("data-particle", "true");
+                    const angle = (i / 7) * Math.PI * 2;
+                    particle.style.position = "absolute";
+                    particle.style.width = "4px";
+                    particle.style.height = "4px";
+                    particle.style.background = "#fff";
+                    particle.style.borderRadius = "50%";
+                    particle.style.left = "50%";
+                    particle.style.top = "50%";
+                    particle.style.pointerEvents = "none";
+                    particle.style.transform = "translate(-50%, -50%)";
+                    particle.style.opacity = "0.8";
+                    
+                    const distance = 35;
+                    const startX = Math.cos(angle) * distance;
+                    const startY = Math.sin(angle) * distance;
+                    const endX = Math.cos(angle) * (distance + 40);
+                    const endY = Math.sin(angle) * (distance + 40);
+                    
+                    particle.style.animation = `particleFloat-${i} 3s ease-out forwards`;
+                    btn.appendChild(particle);
+                    
+                    const style = document.createElement("style");
+                    style.textContent = `
+                      @keyframes particleFloat-${i} {
+                        0% { transform: translate(calc(-50% + ${startX}px), calc(-50% + ${startY}px)); opacity: 0.8; }
+                        100% { transform: translate(calc(-50% + ${endX}px), calc(-50% + ${endY}px)); opacity: 0; }
+                      }
+                    `;
+                    document.head.appendChild(style);
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  const btn = e.currentTarget as HTMLButtonElement;
+                  if (selectedLicense && selectedLicense.price !== "NEGOTIATE") {
+                    btn.style.background = "#fff";
+                    btn.style.color = "#000";
+                    btn.style.boxShadow = "none";
+                    const plusSymbol = btn.querySelector("span[style*='position: absolute']") as HTMLElement;
+                    if (plusSymbol) plusSymbol.style.color = "#000";
+                  } else {
+                    btn.style.background = "#333";
+                    btn.style.color = "#666";
+                    const plusSymbol = btn.querySelector("span[style*='position: absolute']") as HTMLElement;
+                    if (plusSymbol) plusSymbol.style.color = "#666";
+                  }
+                  
+                  const particles = btn.querySelectorAll("div[data-particle='true']");
+                  particles.forEach((p) => p.remove());
                 }}
               >
                 <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
