@@ -90,7 +90,7 @@ function Admin() {
       }
     };
     checkAdmin();
-  }, []);
+  }, [navigate]); // Added navigate to dependency array
 
   const loadData = async () => {
     try {

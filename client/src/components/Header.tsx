@@ -86,22 +86,32 @@ function Header() {
 
       <div style={{ display: "flex", alignItems: "center", gap: "12px", position: "relative", zIndex: 10, paddingRight: "12px" }}>
         <Link href={user ? "/ucet" : "/prihlasit-se"}>
-          <span
+          <div
             style={{
               cursor: "pointer",
-              fontSize: "12px",
-              fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
-              fontWeight: 400,
               transition: "transform 0.2s ease",
               transform: hoveredIcon === "account" ? "scale(1.02)" : "scale(1)",
-              display: "inline-block",
+              display: "flex",
+              alignItems: "center",
               padding: "8px 0",
             }}
             onMouseEnter={() => setHoveredIcon("account")}
             onMouseLeave={() => setHoveredIcon(null)}
           >
-            ÚČET
-          </span>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#fff"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+          </div>
         </Link>
 
         {user?.isAdmin && (
