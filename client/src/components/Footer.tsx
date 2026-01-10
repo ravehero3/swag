@@ -17,15 +17,30 @@ function Footer() {
       }}
     >
       <span
+        onClick={() => setIsNewsletterOpen(true)}
         style={{
           fontSize: "14px",
           fontFamily: "'Helvetica Neue Condensed', 'Helvetica Neue', Helvetica, Arial, sans-serif",
           fontWeight: 300,
           fontStretch: "condensed",
           color: "#666",
+          cursor: "pointer",
         }}
       >
         © 2026 VOODOO808
+      </span>
+      <span
+        onClick={() => setIsNewsletterOpen(true)}
+        style={{
+          fontSize: "14px",
+          fontFamily: "'Helvetica Neue Condensed', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+          fontWeight: 300,
+          fontStretch: "condensed",
+          color: "#666",
+          cursor: "pointer",
+        }}
+      >
+        PŘIHLÁŠENÍ K NEWSLETTERU
       </span>
     </footer>
   );

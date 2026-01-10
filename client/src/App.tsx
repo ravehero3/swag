@@ -36,6 +36,8 @@ interface CartItem {
   artworkUrl: string;
 }
 
+import NewsletterWindow from "./components/NewsletterWindow.js";
+
 interface AppContextType {
   user: User | null;
   setUser: (user: User | null) => void;
@@ -45,6 +47,8 @@ interface AppContextType {
   clearCart: () => void;
   isCartOpen: boolean;
   setIsCartOpen: (open: boolean) => void;
+  isNewsletterOpen: boolean;
+  setIsNewsletterOpen: (open: boolean) => void;
   settings: Record<string, string>;
 }
 
@@ -57,6 +61,8 @@ export const AppContext = createContext<AppContextType>({
   clearCart: () => {},
   isCartOpen: false,
   setIsCartOpen: () => {},
+  isNewsletterOpen: false,
+  setIsNewsletterOpen: () => {},
   settings: {},
 });
 
@@ -67,6 +73,7 @@ function App() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isNewsletterOpen, setIsNewsletterOpen] = useState(false);
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [location] = useLocation();
 
@@ -143,7 +150,7 @@ function App() {
   const isAdminPage = location === "/admin";
 
   return (
-    <AppContext.Provider value={{ user, setUser, cart, addToCart, removeFromCart, clearCart, isCartOpen, setIsCartOpen, settings }}>
+    <AppContext.Provider value={{ user, setUser, cart, addToCart, removeFromCart, clearCart, isCartOpen, setIsCartOpen, isNewsletterOpen, setIsNewsletterOpen, settings }}>
       <div style={{ minHeight: "100vh", background: "#000", display: "flex", flexDirection: "column" }}>
         <Header />
         <main style={{ flex: 1 }} className="fade-in">
@@ -179,6 +186,7 @@ function App() {
           </>
         )}
         <CartModal isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
+        <NewsletterWindow isOpen={isNewsletterOpen} onClose={() => setIsNewsletterOpen(false)} />
       </div>
     </AppContext.Provider>
   );
