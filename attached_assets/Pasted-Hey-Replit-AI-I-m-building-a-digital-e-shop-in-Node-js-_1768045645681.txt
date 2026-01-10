@@ -1,0 +1,34 @@
+Hey Replit AI, I'm building a digital e-shop in Node.js that sells beats as ZIP files and MP3 previews to rappers. My current code is already working: it has a frontend for browsing/buying, backend for handling Stripe payments, and deploys to Vercel. After a customer buys a beat (ZIP file), I need to automatically send them an email with a secure, time-limited download link to the ZIP file stored in Backblaze B2. MP3 previews can be publicly accessible for streaming on the site.
+Please implement this fully into my existing code. Assume my project structure is standard: index.js or app.js as main file, maybe routes for shop items, a Stripe webhook for post-payment handling. If my code doesn't have certain parts, add them logically.
+First, guide me to set up Backblaze B2:
+
+Tell me to sign up for a free Backblaze B2 account at backblaze.com/b2.
+Create two buckets: one called "beats-previews" (public for MP3s) and one called "beats-zips" (private for ZIPs).
+Get the S3-compatible credentials: Application Key ID and Application Key (master key is fine for now).
+In Replit, add these as secrets/environment variables: B2_ENDPOINT='s3.us-west-000.backblaze.com', B2_KEY_ID='your-key-id', B2_KEY_SECRET='your-key-secret', B2_PREVIEW_BUCKET='beats-previews', B2_ZIP_BUCKET='beats-zips'.
+
+Now, update my code to integrate Backblaze B2 using the AWS SDK (since B2 is S3-compatible):
+
+Install the necessary package: Add "aws-sdk" to package.json and run npm install.
+Create a helper file like utils/storage.js with functions to:
+Initialize the S3 client: Use AWS.S3 with custom endpoint, accessKeyId, and secretAccessKey from environment variables.
+Upload files: Function to upload MP3 previews to the public bucket (make them public with ACL: 'public-read') and ZIPs to the private bucket.
+Generate signed URL: For ZIP downloads, create a function that takes file key and returns a signed URL expiring in 7 days (Expires: 604800 seconds).
+
+
+For the shop logic:
+
+Assume I have a database or way to list beats (e.g., JSON file or MongoDB). Each beat has an ID, preview MP3 path, and ZIP path.
+Add an admin route or function to upload new beats: Allow uploading MP3 and ZIP, store them in B2, and save the keys (e.g., 'beat-123-preview.mp3' and 'beat-123.zip') in my data.
+For payments: In the Stripe webhook handler (e.g., /webhook for checkout.session.completed), verify the event, get the purchased beat ID from metadata, generate signed URL for the ZIP using the storage helper, then send an email with the link.
+For email: Use SendGrid (free tier). Install "@sendgrid/mail". Add SENDGRID_API_KEY as a secret. Create a function in utils/email.js to send transactional email: From your shop email, to customer email (from Stripe session), subject "Your Beat Download", HTML body with the signed URL link (e.g., "Download here: Link - expires in 7 days").
+
+Make sure:
+
+All code is secure: Use environment variables for keys, don't hardcode.
+Handle errors: Log them, send failure responses if needed.
+Vercel compatibility: Use serverless functions (e.g., API routes in /api).
+Testing: Add console logs and a test route to generate a sample signed URL.
+Full code examples: Provide updated files or snippets for app.js, storage.js, email.js, and webhook handler.
+
+Finally, tell me how to deploy the changes to Vercel and test a purchase end-to-end. Make it work out of the box!
