@@ -54,6 +54,7 @@ export async function initDatabase() {
         preview_url VARCHAR(500),
         file_url VARCHAR(500),
         artwork_url VARCHAR(500),
+        trackout_url VARCHAR(500),
         tags TEXT[] DEFAULT ARRAY[]::TEXT[],
         is_published BOOLEAN DEFAULT FALSE,
         is_highlighted BOOLEAN DEFAULT FALSE,

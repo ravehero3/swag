@@ -12,6 +12,7 @@ interface Beat {
   preview_url: string;
   file_url: string;
   artwork_url: string;
+  trackout_url?: string;
   tags: string[];
   is_published: boolean;
   is_highlighted: boolean;
@@ -173,6 +174,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     previewUrl: "",
     fileUrl: "",
     artworkUrl: "",
+    trackoutUrl: "",
     tags: [] as string[],
     isPublished: false,
     isHighlighted: false,
@@ -190,6 +192,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
         previewUrl: editing.preview_url || "",
         fileUrl: editing.file_url || "",
         artworkUrl: editing.artwork_url || "",
+        trackoutUrl: editing.trackout_url || "",
         tags: editing.tags || [],
         isPublished: editing.is_published,
         isHighlighted: editing.is_highlighted || false,
@@ -220,7 +223,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     if (res.ok) {
       setShowForm(false);
       setEditing(null);
-      setForm({ title: "", artist: "VOODOO808", bpm: 140, key: "C", price: 0, previewUrl: "", fileUrl: "", artworkUrl: "", tags: [], isPublished: false, isHighlighted: false });
+      setForm({ title: "", artist: "VOODOO808", bpm: 140, key: "C", price: 0, previewUrl: "", fileUrl: "", artworkUrl: "", trackoutUrl: "", tags: [], isPublished: false, isHighlighted: false });
       loadData();
     } else {
       const errorData = await res.json();
@@ -332,6 +335,16 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                 }
               }} style={{ width: "100%" }} />
               {form.artworkUrl && <span style={{ fontSize: "12px", color: "#666" }}>Nahráno</span>}
+            </div>
+            <div>
+              <label style={{ display: "block", marginBottom: "8px" }}>Trackout (ZIP)</label>
+              <input type="file" accept=".zip" onChange={async (e) => {
+                if (e.target.files?.[0]) {
+                  const url = await uploadFile(e.target.files[0], "trackout");
+                  setForm({ ...form, trackoutUrl: url });
+                }
+              }} style={{ width: "100%" }} />
+              {form.trackoutUrl && <span style={{ fontSize: "12px", color: "#666" }}>Nahráno</span>}
             </div>
           </div>
           <button type="submit" className="btn btn-filled" style={{ marginTop: "16px" }}>

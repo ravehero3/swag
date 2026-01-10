@@ -13,6 +13,7 @@ const storage = multer.diskStorage({
     const type = req.query.type as string;
     let folder = "uploads";
     if (type === "beat") folder = "uploads/beats";
+    else if (type === "trackout") folder = "uploads/trackouts";
     else if (type === "kit") folder = "uploads/kits";
     else if (type === "artwork") folder = "uploads/artwork";
     else if (type === "preview") folder = "uploads/previews";
@@ -40,6 +41,7 @@ router.post("/", requireAdmin, upload.single("file"), (req: Request, res: Respon
   const type = req.query.type as string;
   let folder = "uploads";
   if (type === "beat") folder = "uploads/beats";
+  else if (type === "trackout") folder = "uploads/trackouts";
   else if (type === "kit") folder = "uploads/kits";
   else if (type === "artwork") folder = "uploads/artwork";
   else if (type === "preview") folder = "uploads/previews";
