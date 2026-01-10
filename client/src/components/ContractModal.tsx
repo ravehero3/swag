@@ -41,8 +41,14 @@ function ContractModal({ beat, isOpen, onClose, onAddToCart, onPlay, isPlaying }
     if (isOpen) {
       setLoading(true);
       setSelectedLicense(null);
+      document.body.style.overflow = "hidden";
       const timer = setTimeout(() => setLoading(false), 800);
-      return () => clearTimeout(timer);
+      return () => {
+        clearTimeout(timer);
+        document.body.style.overflow = "";
+      };
+    } else {
+      document.body.style.overflow = "";
     }
   }, [isOpen]);
 
