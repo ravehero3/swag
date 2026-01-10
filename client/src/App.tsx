@@ -68,6 +68,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [settings, setSettings] = useState<Record<string, string>>({});
+  const [location] = useLocation();
 
   // Add padding to body for fixed header
   useEffect(() => {
@@ -139,6 +140,8 @@ function App() {
     return <div style={{ background: "#000", minHeight: "100vh" }} />;
   }
 
+  const isAdminPage = location === "/admin";
+
   return (
     <AppContext.Provider value={{ user, setUser, cart, addToCart, removeFromCart, clearCart, isCartOpen, setIsCartOpen, settings }}>
       <div style={{ minHeight: "100vh", background: "#000", display: "flex", flexDirection: "column" }}>
@@ -169,8 +172,12 @@ function App() {
             </Route>
           </Switch>
         </main>
-        <ExtendedFooter />
-        <Footer />
+        {!isAdminPage && (
+          <>
+            <ExtendedFooter />
+            <Footer />
+          </>
+        )}
         <CartModal isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
       </div>
     </AppContext.Provider>
