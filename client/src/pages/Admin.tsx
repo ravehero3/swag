@@ -377,7 +377,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
               <td style={{ padding: "12px" }}>{beat.is_highlighted ? "⭐" : ""}</td>
               <td style={{ padding: "12px", textAlign: "right" }}>
                 <button className="btn btn-admin" onClick={() => setEditing(beat)} style={{ marginRight: "8px" }}>Upravit</button>
-                <button className="btn btn-admin" onClick={() => handleDelete(beat.id)} style={{ color: "#441111" }}>Smazat</button>
+                <button className="btn btn-admin" onClick={() => handleDelete(beat.id)} style={{ color: "#333", borderColor: "#333" }}>Smazat</button>
               </td>
             </tr>
           ))}
@@ -589,7 +589,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
               <td style={{ padding: "12px" }}>{kit.is_published ? "✓ Publikováno" : "Skryto"}</td>
               <td style={{ padding: "12px", textAlign: "right" }}>
                 <button className="btn btn-admin" onClick={() => setEditing(kit)} style={{ marginRight: "8px" }}>Upravit</button>
-                <button className="btn btn-admin" onClick={() => handleDelete(kit.id)} style={{ color: "#441111" }}>Smazat</button>
+                <button className="btn btn-admin" onClick={() => handleDelete(kit.id)} style={{ color: "#333", borderColor: "#333" }}>Smazat</button>
               </td>
             </tr>
           ))}
