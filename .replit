@@ -49,3 +49,8 @@ build = ["npm", "run", "build"]
 [userenv.shared]
 GOOGLE_CLIENT_ID = "64636004330-m3fjv7koavrhqhjjv0grgaqu5gndq5sr.apps.googleusercontent.com"
 GOOGLE_CLIENT_SECRET = "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"
+B2_ENDPOINT = "s3.us-east-005.backblaze.com"
+B2_PREVIEW_BUCKET = "beats-previews"
+B2_KEY_ID = "003b09e916418fa0000000001"
+B2_ZIP_BUCKET = "beats-zips"
+B2_KEY_SECRET = "K003/nVpwGkmnxkNSV6BmGQ7aDZnH58"
