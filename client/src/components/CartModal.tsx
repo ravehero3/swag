@@ -17,6 +17,7 @@ interface CartModalProps {
 function CartModal({ isOpen, onClose }: CartModalProps) {
   const { cart, removeFromCart } = useApp();
   const [recentlyViewed, setRecentlyViewed] = useState<any[]>([]);
+  const [itemToRemove, setItemToRemove] = useState<CartItem | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -302,7 +303,7 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                           {item.price} CZK
                         </div>
                         <button
-                          onClick={() => removeFromCart(item.productId, item.productType)}
+                          onClick={() => setItemToRemove(item)}
                           style={{
                             background: "transparent",
                             border: "1px solid #666",
@@ -409,6 +410,88 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
             >
               Zavřít
             </button>
+          </div>
+        </div>
+      )}
+
+      {itemToRemove && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.8)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 10000,
+            animation: "fadeIn 0.2s ease-out",
+          }}
+          onClick={() => setItemToRemove(null)}
+        >
+          <div
+            style={{
+              backgroundColor: "#111",
+              padding: "32px",
+              borderRadius: "8px",
+              maxWidth: "400px",
+              width: "90%",
+              border: "1px solid #333",
+              textAlign: "center",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 style={{ color: "#fff", fontSize: "18px", marginBottom: "16px", fontWeight: "bold" }}>
+              Odstranit položku z košíku
+            </h3>
+            <p style={{ color: "#999", fontSize: "14px", marginBottom: "32px", lineHeight: "1.5" }}>
+              Opravdu chcete odstranit "{itemToRemove.title}" z košíku?
+            </p>
+            <div style={{ display: "flex", gap: "12px" }}>
+              <button
+                onClick={() => setItemToRemove(null)}
+                style={{
+                  flex: 1,
+                  padding: "16px",
+                  backgroundColor: "#000",
+                  color: "#fff",
+                  border: "1px solid #333",
+                  borderRadius: "4px",
+                  fontSize: "14px",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#666")}
+                onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#333")}
+              >
+                Zrušit
+              </button>
+              <button
+                onClick={() => {
+                  removeFromCart(itemToRemove.productId, itemToRemove.productType);
+                  setItemToRemove(null);
+                }}
+                style={{
+                  flex: 1,
+                  padding: "16px",
+                  backgroundColor: "#fff",
+                  color: "#000",
+                  border: "none",
+                  borderRadius: "4px",
+                  fontSize: "14px",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e0e0e0")}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#fff")}
+              >
+                Ano
+              </button>
+            </div>
           </div>
         </div>
       )}
