@@ -383,33 +383,46 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
               </div>
             )}
 
-            <button
-              onClick={onClose}
-              style={{
-                padding: "12px",
-                backgroundColor: "transparent",
-                border: "none",
-                color: "#fff",
-                cursor: "pointer",
-                fontSize: "12px",
-                borderTop: "1px solid #333",
-                transition: "all 0.15s ease",
-                overflow: "hidden",
-                position: "relative",
-              }}
-              onMouseEnter={(e) => {
-                const btn = e.currentTarget as HTMLButtonElement;
-                btn.style.backgroundColor = "#fff";
-                btn.style.color = "#000";
-              }}
-              onMouseLeave={(e) => {
-                const btn = e.currentTarget as HTMLButtonElement;
-                btn.style.backgroundColor = "transparent";
-                btn.style.color = "#fff";
-              }}
-            >
-              Zavřít
-            </button>
+            <div style={{ padding: "16px", borderTop: "1px solid #333", display: "flex", gap: "16px" }}>
+              <button
+                onClick={onClose}
+                style={{
+                  flex: 1,
+                  padding: "12px",
+                  backgroundColor: "#fff",
+                  color: "#000",
+                  border: "none",
+                  borderRadius: "4px",
+                  fontSize: "14px",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                  transition: "all 0.3s ease",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e0e0e0")}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#fff")}
+              >
+                Zavřít
+              </button>
+              <button
+                onClick={onClose}
+                style={{
+                  flex: 1,
+                  padding: "12px",
+                  backgroundColor: "#000",
+                  color: "#fff",
+                  border: "1px solid #333",
+                  borderRadius: "4px",
+                  fontSize: "14px",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                  transition: "all 0.3s ease",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#666")}
+                onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#333")}
+              >
+                Zavřít
+              </button>
+            </div>
           </div>
         </div>
       )}
