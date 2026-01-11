@@ -106,9 +106,11 @@ export default function ProductCard({
       <div
         style={{
           aspectRatio: "1",
-          background: "#111",
+          background: "transparent",
           position: "relative",
-          overflow: "hidden",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         }}
       >
         <img
@@ -117,7 +119,7 @@ export default function ProductCard({
           style={{
             width: "100%",
             height: "100%",
-            objectFit: "cover",
+            objectFit: "contain",
           }}
         />
         {onPlayClick && (
