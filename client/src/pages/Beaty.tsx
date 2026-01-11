@@ -733,6 +733,7 @@ function Beaty() {
             <>
               <div style={{ display: "flex", alignItems: "center", padding: "16px 16px 8px 16px", gap: "16px", marginTop: "16px", position: "relative" }}>
                 <div style={{ width: "48px", height: "48px", flexShrink: 0 }} />
+                <div style={{ width: "28px", flexShrink: 0 }} /> {/* Spacer matching heart icon row */}
                 <div className="mobile-hide" style={{ width: "240px", marginRight: "12px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666" }}>NÁZEV</div>
                 <div style={{ position: "absolute", bottom: 0, left: "80px", right: "16px", height: "1px", background: "#333" }} />
                 <div className="desktop-only" style={{ width: "80px" }}><button onClick={() => { setSortBy(sortBy === "bpm" ? "bpm" : "bpm"); setSortAsc(sortBy === "bpm" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0 }}>BPM {sortBy === "bpm" && (sortAsc ? "↑" : "↓")}</button></div>
