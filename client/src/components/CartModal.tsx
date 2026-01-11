@@ -230,11 +230,20 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                 left: 0,
                 right: 0,
                 display: 'flex',
-                justifyContent: 'center',
+                flexDirection: 'column',
+                alignItems: 'center',
                 padding: '0 20px',
                 zIndex: 10,
                 pointerEvents: 'none'
               }}>
+                <div style={{
+                  color: '#666',
+                  fontSize: '11px',
+                  marginBottom: '8px',
+                  fontFamily: 'Helvetica Neue Condensed, Helvetica, Arial, sans-serif'
+                }}>
+                  Soubory obdržíte na email během pár vteřin
+                </div>
                 <img 
                   src="/payment-methods.jpg" 
                   alt="Payment Methods" 
