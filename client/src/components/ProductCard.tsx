@@ -68,7 +68,7 @@ export default function ProductCard({
       className="product-card-container"
       style={{
         border: "1px solid transparent",
-        overflow: "hidden",
+        overflow: "visible",
         position: "relative",
         backgroundColor: "transparent",
         transition: "all 0.2s ease",
@@ -78,11 +78,56 @@ export default function ProductCard({
         const target = e.currentTarget as HTMLDivElement;
         target.style.borderColor = "#333";
         target.style.backgroundColor = "#0a0a0a";
+        
+        // Find the image container and apply glow
+        const imgContainer = target.querySelector('.product-image-container') as HTMLDivElement;
+        if (imgContainer) {
+          imgContainer.style.boxShadow = "0 0 30px 5px rgba(255, 255, 255, 0.4)";
+          imgContainer.style.filter = "drop-shadow(0 0 10px rgba(255, 255, 255, 0.2))";
+        }
+
+        // Create particles from beneath the image
+        for (let i = 0; i < 12; i++) {
+          const particle = document.createElement("div");
+          particle.setAttribute("data-product-particle", "true");
+          particle.style.position = "absolute";
+          particle.style.width = "3px";
+          particle.style.height = "3px";
+          particle.style.background = "rgba(255, 255, 255, 0.8)";
+          particle.style.borderRadius = "50%";
+          particle.style.left = `${20 + Math.random() * 60}%`;
+          particle.style.top = "70%";
+          particle.style.pointerEvents = "none";
+          particle.style.zIndex = "5";
+          
+          const duration = 1 + Math.random() * 2;
+          const xOffset = (Math.random() - 0.5) * 100;
+          const yOffset = -150 - Math.random() * 100;
+          
+          particle.style.transition = `all ${duration}s ease-out`;
+          target.appendChild(particle);
+          
+          setTimeout(() => {
+            particle.style.transform = `translate(${xOffset}px, ${yOffset}px)`;
+            particle.style.opacity = "0";
+          }, 10);
+          
+          setTimeout(() => particle.remove(), duration * 1000);
+        }
       }}
       onMouseLeave={(e) => {
         const target = e.currentTarget as HTMLDivElement;
         target.style.borderColor = "transparent";
         target.style.backgroundColor = "transparent";
+        
+        const imgContainer = target.querySelector('.product-image-container') as HTMLDivElement;
+        if (imgContainer) {
+          imgContainer.style.boxShadow = "none";
+          imgContainer.style.filter = "none";
+        }
+        
+        const particles = target.querySelectorAll('div[data-product-particle="true"]');
+        particles.forEach(p => p.remove());
       }}
     >
       <style>{`
@@ -114,6 +159,7 @@ export default function ProductCard({
       {/* Top heart icon removed - only one heart at the bottom now */}
 
       <div
+        className="product-image-container"
         style={{
           aspectRatio: "1",
           background: "transparent",
@@ -121,6 +167,7 @@ export default function ProductCard({
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          transition: "all 0.3s ease",
         }}
       >
         <img
