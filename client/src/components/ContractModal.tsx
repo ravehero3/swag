@@ -242,7 +242,7 @@ function ContractModal({ beat, isOpen, onClose, onAddToCart, onPlay, isPlaying }
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            alert("Usage terms would be shown here");
+                            alert("Podmínky užití budou zobrazeny zde");
                           }}
                           style={{
                             background: "transparent",
@@ -254,7 +254,7 @@ function ContractModal({ beat, isOpen, onClose, onAddToCart, onPlay, isPlaying }
                             padding: 0,
                           }}
                         >
-                          Show usage terms
+                          Zobrazit podmínky užití
                         </button>
                       </div>
                     </div>
