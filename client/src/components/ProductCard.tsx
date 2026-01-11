@@ -65,19 +65,17 @@ export default function ProductCard({
   return (
     <div
       onClick={handleProductClick}
-      className="product-card-container"
+      className="product-card-container group"
       style={{
-        border: "1px solid transparent",
         overflow: "visible",
         position: "relative",
         backgroundColor: "transparent",
         transition: "all 0.2s ease",
         cursor: "pointer",
+        padding: "8px",
       }}
       onMouseEnter={(e) => {
         const target = e.currentTarget as HTMLDivElement;
-        target.style.borderColor = "#333";
-        target.style.backgroundColor = "#0a0a0a";
         
         // Find the image container and apply glow
         const imgContainer = target.querySelector('.product-image-container') as HTMLDivElement;
@@ -117,8 +115,6 @@ export default function ProductCard({
       }}
       onMouseLeave={(e) => {
         const target = e.currentTarget as HTMLDivElement;
-        target.style.borderColor = "transparent";
-        target.style.backgroundColor = "transparent";
         
         const imgContainer = target.querySelector('.product-image-container') as HTMLDivElement;
         if (imgContainer) {
@@ -150,9 +146,27 @@ export default function ProductCard({
         .product-card-container:hover .play-button-overlay {
           opacity: 1;
         }
+        .product-info-pill {
+          opacity: 0;
+          transition: all 0.3s ease;
+          transform: translateY(10px);
+        }
+        .product-card-container:hover .product-info-pill {
+          opacity: 1;
+          transform: translateY(0);
+          background: rgba(10, 10, 10, 0.9);
+          backdrop-filter: blur(8px);
+          border: 1px solid #333;
+        }
         @media (max-width: 768px) {
           .play-button-overlay {
             opacity: 1;
+          }
+          .product-info-pill {
+            opacity: 1;
+            transform: none;
+            background: transparent;
+            border: none;
           }
         }
       `}</style>
@@ -206,7 +220,7 @@ export default function ProductCard({
         )}
       </div>
 
-      <div style={{ padding: "16px" }}>
+      <div className="product-info-pill" style={{ padding: "16px", borderRadius: "8px", marginTop: "12px" }}>
         {typeLabel && (
           <div style={{ fontSize: "12px", color: "#666", marginBottom: "4px" }}>
             {typeLabel}
