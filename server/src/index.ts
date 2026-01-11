@@ -110,6 +110,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use("/uploads", express.static(path.join(__dirname, "../../public/uploads")));
+app.use(express.static(path.join(__dirname, "../../public")));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/beats", beatsRoutes);
