@@ -828,7 +828,7 @@ function Beaty() {
               <div style={{ width: "240px", marginRight: "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
                 <div style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "20px" }}>{beat.title}</div>
               </div>
-              <div className="desktop-only" style={{ width: "80px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", color: "#666", fontSize: "16px" }}>
+              <div className="desktop-only" style={{ width: "80px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", color: "#666", fontSize: "16px", textAlign: "left" }}>
                 {beat.bpm}
               </div>
               <div className="desktop-only" style={{ width: "80px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", color: "#666", fontSize: "16px" }}>
