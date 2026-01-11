@@ -34,7 +34,7 @@ const testKits: SoundKit[] = [
     number_of_sounds: 25,
     tags: ["drums", "analog", "vintage"],
     preview_url: "",
-    artwork_url: "/uploads/artwork/metallic-logo.png",
+    artwork_url: "/assets/sound_kits/friendly_aliens_1.png",
   },
   {
     id: 2,
@@ -46,7 +46,7 @@ const testKits: SoundKit[] = [
     number_of_sounds: 45,
     tags: ["urban", "hip-hop", "beats"],
     preview_url: "",
-    artwork_url: "/uploads/artwork/metallic-logo.png",
+    artwork_url: "/assets/sound_kits/friendly_ghosts_1.png",
   },
   {
     id: 3,
@@ -58,7 +58,7 @@ const testKits: SoundKit[] = [
     number_of_sounds: 30,
     tags: ["cinematic", "loops", "film"],
     preview_url: "",
-    artwork_url: "/uploads/artwork/metallic-logo.png",
+    artwork_url: "/assets/sound_kits/one_shot_kit_1.png",
   },
   {
     id: 4,
@@ -70,7 +70,7 @@ const testKits: SoundKit[] = [
     number_of_sounds: 20,
     tags: ["free", "starter", "samples"],
     preview_url: "",
-    artwork_url: "/uploads/artwork/metallic-logo.png",
+    artwork_url: "/assets/sound_kits/friendly_aliens_3.png",
   },
   {
     id: 5,
@@ -82,7 +82,7 @@ const testKits: SoundKit[] = [
     number_of_sounds: 35,
     tags: ["synth", "electronic", "future"],
     preview_url: "",
-    artwork_url: "/uploads/artwork/metallic-logo.png",
+    artwork_url: "/assets/sound_kits/white_magic_3.png",
   },
   {
     id: 6,
@@ -94,7 +94,7 @@ const testKits: SoundKit[] = [
     number_of_sounds: 60,
     tags: ["jazz", "drums", "professional"],
     preview_url: "",
-    artwork_url: "/uploads/artwork/metallic-logo.png",
+    artwork_url: "/assets/sound_kits/friendly_aliens_cover.png",
   },
   {
     id: 7,
@@ -106,7 +106,7 @@ const testKits: SoundKit[] = [
     number_of_sounds: 18,
     tags: ["ambient", "atmosphere", "sfx"],
     preview_url: "",
-    artwork_url: "/uploads/artwork/metallic-logo.png",
+    artwork_url: "/assets/sound_kits/friendly_ghosts_2.png",
   },
   {
     id: 8,
@@ -118,7 +118,7 @@ const testKits: SoundKit[] = [
     number_of_sounds: 50,
     tags: ["trap", "hip-hop", "production"],
     preview_url: "",
-    artwork_url: "/uploads/artwork/metallic-logo.png",
+    artwork_url: "/assets/sound_kits/friendly_ghosts_3.png",
   },
   {
     id: 9,
@@ -130,7 +130,7 @@ const testKits: SoundKit[] = [
     number_of_sounds: 28,
     tags: ["vintage", "vinyl", "loops"],
     preview_url: "",
-    artwork_url: "/uploads/artwork/metallic-logo.png",
+    artwork_url: "/assets/sound_kits/friendly_aliens_4.png",
   },
   {
     id: 10,
@@ -142,7 +142,7 @@ const testKits: SoundKit[] = [
     number_of_sounds: 22,
     tags: ["house", "deep", "electronic"],
     preview_url: "",
-    artwork_url: "/uploads/artwork/metallic-logo.png",
+    artwork_url: "/assets/sound_kits/friendly_aliens_2.png",
   },
   {
     id: 11,
@@ -154,7 +154,7 @@ const testKits: SoundKit[] = [
     number_of_sounds: 55,
     tags: ["percussion", "world", "drums"],
     preview_url: "",
-    artwork_url: "/uploads/artwork/metallic-logo.png",
+    artwork_url: "/assets/sound_kits/friendly_ghosts_main.png",
   },
   {
     id: 12,
@@ -166,7 +166,7 @@ const testKits: SoundKit[] = [
     number_of_sounds: 48,
     tags: ["retro", "80s", "synth"],
     preview_url: "",
-    artwork_url: "/uploads/artwork/metallic-logo.png",
+    artwork_url: "/assets/sound_kits/friendly_aliens_1.png",
   },
 ];
 
