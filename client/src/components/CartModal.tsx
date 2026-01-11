@@ -236,7 +236,7 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                 pointerEvents: 'none'
               }}>
                 <img 
-                  src="/uploads/artwork/metallic-logo.png" 
+                  src="/payment-methods.jpg" 
                   alt="Payment Methods" 
                   style={{ 
                     maxWidth: '50%', 
