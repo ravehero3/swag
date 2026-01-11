@@ -43,25 +43,25 @@ function ProductDetail() {
   if (!product) return <div className="min-h-screen bg-black flex items-center justify-center text-white">Product not found</div>;
 
   return (
-    <div className="min-h-screen bg-black text-white p-4 md:p-8 flex flex-col items-center justify-center">
-      <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-12">
+    <div className="min-h-screen bg-black text-white p-4 flex flex-col items-center justify-center">
+      <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8 items-center px-4">
         {/* Left: Product Image */}
-        <div className="border border-[#333] p-8 bg-[#000] flex items-center justify-center aspect-square overflow-hidden relative">
+        <div className="border border-[#333] p-4 bg-[#000] flex items-center justify-center aspect-square overflow-hidden relative">
           <img 
             src={product.artwork_url || "/uploads/artwork/metallic-logo.png"} 
             alt={product.title} 
             className="w-full h-full object-contain"
-            style={{ maxWidth: '80%', maxHeight: '80%' }}
+            style={{ maxWidth: '90%', maxHeight: '90%' }}
           />
         </div>
 
         {/* Right: Product Info */}
-        <div className="flex flex-col justify-center">
-          <h1 className="text-2xl md:text-3xl font-bold uppercase tracking-widest mb-4">
+        <div className="flex flex-col justify-center space-y-4 p-4">
+          <h1 className="text-2xl md:text-3xl font-bold uppercase tracking-widest">
             {product.title}
           </h1>
           
-          <div className="text-[#666] text-sm mb-6 flex flex-wrap gap-4 uppercase">
+          <div className="text-[#666] text-xs flex flex-wrap gap-4 uppercase">
             {product.artist && <span>Artist: {product.artist}</span>}
             {product.bpm && <span>BPM: {product.bpm}</span>}
             {product.key && <span>Key: {product.key}</span>}
@@ -69,8 +69,8 @@ function ProductDetail() {
             {product.type && <span>Type: {product.type.replace('_', ' ')}</span>}
           </div>
 
-          <div className="border-t border-b border-[#333] py-8 my-6">
-             <div className="text-3xl font-bold mb-8">{product.price} CZK</div>
+          <div className="border-t border-b border-[#333] py-6">
+             <div className="text-3xl font-bold mb-6">{product.price} CZK</div>
              
              <button
                onClick={() => addToCart({
@@ -92,7 +92,7 @@ function ProductDetail() {
           
           <button 
             onClick={() => setLocation(params?.type === 'beat' ? '/beaty' : '/zvuky')}
-            className="mt-12 text-xs uppercase tracking-widest text-[#666] hover:text-white transition-colors self-start"
+            className="text-xs uppercase tracking-widest text-[#666] hover:text-white transition-colors self-start"
           >
             ← Zpět do obchodu
           </button>
