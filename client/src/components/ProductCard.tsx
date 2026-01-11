@@ -80,8 +80,8 @@ export default function ProductCard({
         // Find the image container and apply glow
         const imgContainer = target.querySelector('.product-image-container') as HTMLDivElement;
         if (imgContainer) {
-          imgContainer.style.boxShadow = "0 15px 30px 5px rgba(255, 255, 255, 0.4)";
-          imgContainer.style.filter = "drop-shadow(0 10px 10px rgba(255, 255, 255, 0.2))";
+          imgContainer.style.boxShadow = "none";
+          imgContainer.style.filter = "drop-shadow(0 20px 20px rgba(255, 255, 255, 0.4))";
         }
 
         // Create particles from beneath the image
