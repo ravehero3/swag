@@ -385,42 +385,50 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
 
             <div style={{ padding: "16px", borderTop: "1px solid #333", display: "flex", gap: "16px" }}>
               <button
-                onClick={onClose}
+                onClick={() => {
+                  onClose();
+                  window.location.href = "/pokladna";
+                }}
                 style={{
                   flex: 1,
-                  padding: "12px",
+                  padding: "8px",
                   backgroundColor: "#fff",
                   color: "#000",
                   border: "none",
                   borderRadius: "4px",
-                  fontSize: "14px",
+                  fontSize: "12px",
                   fontWeight: "bold",
                   cursor: "pointer",
                   transition: "all 0.3s ease",
+                  textTransform: "uppercase",
                 }}
                 onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e0e0e0")}
                 onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#fff")}
               >
-                Zavřít
+                PŘEJÍT K POKLADNĚ ({cart.length})
               </button>
               <button
-                onClick={onClose}
+                onClick={() => {
+                  onClose();
+                  window.location.href = "/kosik";
+                }}
                 style={{
                   flex: 1,
-                  padding: "12px",
+                  padding: "8px",
                   backgroundColor: "#000",
                   color: "#fff",
                   border: "1px solid #333",
                   borderRadius: "4px",
-                  fontSize: "14px",
+                  fontSize: "12px",
                   fontWeight: "bold",
                   cursor: "pointer",
                   transition: "all 0.3s ease",
+                  textTransform: "uppercase",
                 }}
                 onMouseEnter={(e) => (e.currentTarget.style.borderColor = "#666")}
                 onMouseLeave={(e) => (e.currentTarget.style.borderColor = "#333")}
               >
-                Zavřít
+                ZOBRAZIT KOŠÍK
               </button>
             </div>
           </div>
