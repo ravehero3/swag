@@ -301,12 +301,12 @@ function Zvuky() {
   }));
 
   return (
-    <div className="fade-in-section delay-1 relative">
+    <div className="fade-in-section delay-1 relative min-h-screen">
       {/* Background Wall with Vignette */}
       <div 
-        className="fixed inset-0 pointer-events-none z-[-1]"
+        className="fixed inset-0 pointer-events-none z-[-1] opacity-60"
         style={{
-          backgroundImage: `url(/attached_assets/wall_background_1768155050336.webp)`,
+          backgroundImage: `url(/attached_assets/wall_background.webp)`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
@@ -315,8 +315,7 @@ function Zvuky() {
         <div 
           className="absolute inset-0"
           style={{
-            background: 'radial-gradient(circle, transparent 20%, black 100%)',
-            opacity: 0.8
+            background: 'radial-gradient(circle at center, transparent 0%, black 100%)',
           }}
         />
       </div>
