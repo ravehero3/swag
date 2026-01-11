@@ -7,6 +7,7 @@ import CartModal from "./components/CartModal.js";
 import Home from "./pages/Home.js";
 import Beaty from "./pages/Beaty.js";
 import Zvuky from "./pages/Zvuky.js";
+import ProductDetail from "./pages/ProductDetail.js";
 import Login from "./pages/Login.js";
 import Admin from "./pages/Admin.js";
 import Cart from "./pages/Cart.js";
@@ -159,6 +160,7 @@ function App() {
             <Route path="/" component={Home} />
             <Route path="/beaty" component={Beaty} />
             <Route path="/zvuky" component={Zvuky} />
+            <Route path="/produkt/:type/:id" component={ProductDetail} />
             <Route path="/prihlasit-se" component={Login} />
             <Route path="/kosik" component={Cart} />
             <Route path="/pokladna" component={Checkout} />
