@@ -67,12 +67,22 @@ export default function ProductCard({
       onClick={handleProductClick}
       className="product-card-container"
       style={{
-        border: "1px solid #333",
+        border: "1px solid transparent",
         overflow: "hidden",
         position: "relative",
-        backgroundColor: "#0a0a0a",
+        backgroundColor: "transparent",
         transition: "all 0.2s ease",
         cursor: "pointer",
+      }}
+      onMouseEnter={(e) => {
+        const target = e.currentTarget as HTMLDivElement;
+        target.style.borderColor = "#333";
+        target.style.backgroundColor = "#0a0a0a";
+      }}
+      onMouseLeave={(e) => {
+        const target = e.currentTarget as HTMLDivElement;
+        target.style.borderColor = "transparent";
+        target.style.backgroundColor = "transparent";
       }}
     >
       <style>{`
