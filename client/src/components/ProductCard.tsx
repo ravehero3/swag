@@ -80,8 +80,8 @@ export default function ProductCard({
         // Find the image container and apply glow
         const imgContainer = target.querySelector('.product-image-container') as HTMLDivElement;
         if (imgContainer) {
-          imgContainer.style.boxShadow = "0 0 30px 5px rgba(255, 255, 255, 0.4)";
-          imgContainer.style.filter = "drop-shadow(0 0 10px rgba(255, 255, 255, 0.2))";
+          imgContainer.style.boxShadow = "0 15px 30px 5px rgba(255, 255, 255, 0.4)";
+          imgContainer.style.filter = "drop-shadow(0 10px 10px rgba(255, 255, 255, 0.2))";
         }
 
         // Create particles from beneath the image
@@ -150,6 +150,23 @@ export default function ProductCard({
           opacity: 0;
           transition: all 0.3s ease;
           transform: translateY(10px);
+          position: relative;
+        }
+        .product-info-pill::before {
+          content: "";
+          position: absolute;
+          top: -7px;
+          left: 50%;
+          transform: translateX(-50%) rotate(45deg);
+          width: 14px;
+          height: 14px;
+          background: rgba(10, 10, 10, 0.95);
+          backdrop-filter: blur(8px);
+          border-left: 1px solid #333;
+          border-top: 1px solid #333;
+          opacity: 0;
+          transition: all 0.3s ease;
+          z-index: -1;
         }
         .product-card-container:hover .product-info-pill {
           opacity: 1;
@@ -157,6 +174,9 @@ export default function ProductCard({
           background: rgba(10, 10, 10, 0.9);
           backdrop-filter: blur(8px);
           border: 1px solid #333;
+        }
+        .product-card-container:hover .product-info-pill::before {
+          opacity: 1;
         }
         @media (max-width: 768px) {
           .play-button-overlay {
