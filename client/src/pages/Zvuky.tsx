@@ -301,22 +301,21 @@ function Zvuky() {
   }));
 
   return (
-    <div className="fade-in-section delay-1 relative min-h-screen">
+    <div className="fade-in-section delay-1 relative min-h-screen bg-black">
       {/* Background Wall with Vignette */}
       <div 
-        className="fixed inset-0 pointer-events-none z-[-1]"
+        className="fixed inset-0 pointer-events-none z-0"
         style={{
-          backgroundImage: `url(/attached_assets/wall_background.webp)`,
+          backgroundImage: `url(/attached_assets/wall_background_1768155050336.webp)`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
-          backgroundColor: 'black'
         }}
       >
         <div 
           className="absolute inset-0"
           style={{
-            background: 'radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.8) 70%, black 100%)',
+            background: 'radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.4) 40%, rgba(0,0,0,0.9) 85%, black 100%)',
           }}
         />
       </div>
@@ -337,103 +336,110 @@ function Zvuky() {
           position: relative;
           min-height: 300px;
           background: transparent;
+          z-index: 1;
         }
         .zvuky-video-overlay-fade {
           position: absolute;
           bottom: 0;
           left: 0;
           right: 0;
-          height: 250px;
+          height: 300px;
           background: linear-gradient(to bottom, transparent, black);
           pointer-events: none;
-          z-index: -1;
+          z-index: 2;
+        }
+        .zvuky-content-wrapper {
+          position: relative;
+          z-index: 10;
         }
       `}</style>
       
-      <div className="zvuky-video-container" style={{ marginTop: "-242px" }}>
-        <video
-          key={settings?.zvuky_video}
-          src={settings?.zvuky_video || "/uploads/hrad-na-web.mov"}
-          autoPlay
-          muted
-          loop
-          playsInline
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            display: "block"
-          }}
-        >
-          Your browser does not support the video tag.
-        </video>
-        <div className="zvuky-video-overlay-fade" />
-      </div>
-      
-      <div style={{ textAlign: "center", marginBottom: "48px", padding: "0 20px" }}>
-        <h2 style={{ fontSize: "18px", fontWeight: "bold" }}>ZVUKY</h2>
-        <p style={{ 
-          fontSize: "14px", 
-          color: "#999", 
-          marginTop: "12px", 
-          fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
-          textTransform: "uppercase",
-          letterSpacing: "1px"
-        }}>
-          Pro všechny co se chtěj děláním BEATS živit
-        </p>
-      </div>
+      <div className="zvuky-content-wrapper">
+        <div className="zvuky-video-container" style={{ marginTop: "-242px" }}>
+          <video
+            key={settings?.zvuky_video}
+            src={settings?.zvuky_video || "/uploads/hrad-na-web.mov"}
+            autoPlay
+            muted
+            loop
+            playsInline
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              display: "block"
+            }}
+          >
+            Your browser does not support the video tag.
+          </video>
+          <div className="zvuky-video-overlay-fade" />
+        </div>
+        
+        <div style={{ textAlign: "center", marginBottom: "48px", padding: "0 20px" }}>
+          <h2 style={{ fontSize: "18px", fontWeight: "bold" }}>ZVUKY</h2>
+          <p style={{ 
+            fontSize: "14px", 
+            color: "#999", 
+            marginTop: "12px", 
+            fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+            textTransform: "uppercase",
+            letterSpacing: "1px"
+          }}>
+            Pro všechny co se chtěj děláním BEATS živit
+          </p>
+        </div>
 
-      {kits.length > 0 ? (
-        <div style={{ width: "100%", marginBottom: "48px", marginTop: "-200px" }}>
-          <ProductsGrid
-            products={products}
-            savedProducts={Array.from(savedKits)}
-            onToggleSave={(id) => toggleSave(kits.find((k) => k.id === id)!)}
-            onPlayClick={(id) => playPreview(kits.find((k) => k.id === id)!)}
-            isPlaying={isPlaying}
-            currentPlayingId={currentKit?.id}
-            onAddToCart={(id) => handleAddToCart(kits.find((k) => k.id === id)!)}
-          />
-        </div>
-      ) : (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-            gap: "24px",
-            padding: "0 20px",
-          }}
-        >
-          {Array(6).fill(null).map((_, index) => (
-            <div
-              key={index}
-              style={{
-                border: "1px solid #333",
-                overflow: "hidden",
-                position: "relative",
-                background: "#0a0a0a",
-                animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
-                borderRadius: "4px",
-              }}
-            >
+        {kits.length > 0 ? (
+          <div style={{ width: "100%", marginBottom: "48px", marginTop: "-200px" }}>
+            <ProductsGrid
+              products={products}
+              savedProducts={Array.from(savedKits)}
+              onToggleSave={(id) => toggleSave(kits.find((k) => k.id === id)!)}
+              onPlayClick={(id) => playPreview(kits.find((k) => k.id === id)!)}
+              isPlaying={isPlaying}
+              currentPlayingId={currentKit?.id}
+              onAddToCart={(id) => handleAddToCart(kits.find((k) => k.id === id)!)}
+            />
+          </div>
+        ) : (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+              gap: "24px",
+              padding: "0 20px",
+            }}
+          >
+            {Array(6).fill(null).map((_, index) => (
               <div
+                key={index}
                 style={{
-                  aspectRatio: "1",
-                  background: "#111",
+                  border: "1px solid #333",
+                  overflow: "hidden",
                   position: "relative",
+                  background: "#0a0a0a",
+                  animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+                  borderRadius: "4px",
                 }}
-              />
-              <div style={{ padding: "16px", height: "160px", display: "flex", flexDirection: "column", gap: "8px" }}>
-                <div style={{ height: "12px", background: "#222", width: "60%", borderRadius: "2px" }} />
-                <div style={{ height: "20px", background: "#222", width: "80%", borderRadius: "2px" }} />
-                <div style={{ height: "12px", background: "#222", width: "40%", borderRadius: "2px" }} />
-                <div style={{ marginTop: "auto", height: "40px", background: "#222", borderRadius: "2px" }} />
+              >
+                <div
+                  style={{
+                    aspectRatio: "1",
+                    background: "#111",
+                    position: "relative",
+                  }}
+                />
+                <div style={{ padding: "16px", height: "160px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <div style={{ height: "12px", background: "#222", width: "60%", borderRadius: "2px" }} />
+                  <div style={{ height: "20px", background: "#222", width: "80%", borderRadius: "2px" }} />
+                  <div style={{ height: "12px", background: "#222", width: "40%", borderRadius: "2px" }} />
+                  <div style={{ marginTop: "auto", height: "40px", background: "#222", borderRadius: "2px" }} />
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
