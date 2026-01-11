@@ -304,18 +304,19 @@ function Zvuky() {
     <div className="fade-in-section delay-1 relative min-h-screen">
       {/* Background Wall with Vignette */}
       <div 
-        className="fixed inset-0 pointer-events-none z-[-1] opacity-60"
+        className="fixed inset-0 pointer-events-none z-[-1]"
         style={{
           backgroundImage: `url(/attached_assets/wall_background.webp)`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
+          backgroundColor: 'black'
         }}
       >
         <div 
           className="absolute inset-0"
           style={{
-            background: 'radial-gradient(circle at center, transparent 0%, black 100%)',
+            background: 'radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.8) 70%, black 100%)',
           }}
         />
       </div>
@@ -335,17 +336,17 @@ function Zvuky() {
           overflow: hidden;
           position: relative;
           min-height: 300px;
-          background: #000;
+          background: transparent;
         }
         .zvuky-video-overlay-fade {
           position: absolute;
           bottom: 0;
           left: 0;
           right: 0;
-          height: 147px;
-          background: linear-gradient(to bottom, transparent calc(100% - 147px), black 100%);
+          height: 250px;
+          background: linear-gradient(to bottom, transparent, black);
           pointer-events: none;
-          z-index: 10;
+          z-index: -1;
         }
       `}</style>
       
