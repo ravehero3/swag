@@ -231,8 +231,8 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                 right: 0,
                 display: 'flex',
                 flexDirection: 'column',
-                alignItems: 'center',
-                padding: '0 20px',
+                alignItems: 'flex-start',
+                padding: '0 16px',
                 zIndex: 10,
                 pointerEvents: 'none'
               }}>
@@ -244,15 +244,17 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                 }}>
                   Soubory obdržíte na email během pár vteřin
                 </div>
-                <img 
-                  src="/payment-methods.jpg" 
-                  alt="Payment Methods" 
-                  style={{ 
-                    maxWidth: '50%', 
-                    height: 'auto',
-                    opacity: 0.8
-                  }} 
-                />
+                <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                  <img 
+                    src="/payment-methods.jpg" 
+                    alt="Payment Methods" 
+                    style={{ 
+                      maxWidth: '50%', 
+                      height: 'auto',
+                      opacity: 0.8
+                    }} 
+                  />
+                </div>
               </div>
             )}
 
