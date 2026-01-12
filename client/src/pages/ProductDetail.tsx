@@ -68,7 +68,7 @@ function ProductDetail() {
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center relative overflow-hidden p-4">
-      <div className="w-full max-w-4xl flex flex-col items-center px-4 text-center relative z-10" style={{ paddingTop: '64px', paddingBottom: '64px' }}>
+      <div className="w-full max-w-4xl flex flex-col items-center justify-center px-4 text-center relative z-10" style={{ minHeight: 'calc(100vh - 84px)' }}>
         {/* Product Image - Centered and large */}
         <div className="flex items-center justify-center relative mb-[64px]" style={{ width: '600px', height: '600px', maxWidth: '100%' }}>
           <img 
