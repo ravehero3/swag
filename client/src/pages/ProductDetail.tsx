@@ -51,6 +51,11 @@ function ProductDetail() {
             src={product.artwork_url || "/uploads/artwork/metallic-logo.png"} 
             alt={product.title} 
             className="w-full h-full object-contain drop-shadow-[0_0_30px_rgba(255,255,255,0.2)]"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.onerror = null;
+              target.src = "/uploads/artwork/metallic-logo.png";
+            }}
           />
         </div>
 
