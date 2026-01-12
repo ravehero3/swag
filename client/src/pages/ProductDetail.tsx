@@ -67,14 +67,15 @@ function ProductDetail() {
   if (!product) return <div className="min-h-screen bg-black flex items-center justify-center text-white">Product not found</div>;
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center relative overflow-hidden">
-      <div className="w-full max-w-4xl flex flex-col items-center px-4 text-center relative z-10" style={{ paddingTop: '64px', paddingBottom: '120px' }}>
+    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center relative overflow-hidden">
+      <div className="w-full max-w-4xl flex flex-col items-center px-4 text-center relative z-10" style={{ paddingTop: '64px', paddingBottom: '64px' }}>
         {/* Product Image - Centered and large */}
-        <div className="p-4 flex items-center justify-center relative mb-[64px]" style={{ width: '200px', height: '200px', maxWidth: '100%' }}>
+        <div className="flex items-center justify-center relative mb-[64px]" style={{ width: '200px', height: '200px' }}>
           <img 
             src={product.artwork_url || "/uploads/artwork/metallic-logo.png"} 
             alt={product.title} 
             className="w-full h-full object-contain relative z-20"
+            style={{ maxHeight: '200px', maxWidth: '200px' }}
             onError={(e) => {
               const target = e.target as HTMLImageElement;
               target.onerror = null;
@@ -86,12 +87,12 @@ function ProductDetail() {
         </div>
 
         {/* Product Info - Centered */}
-        <div className="flex flex-col items-center space-y-4 max-w-lg mb-[64px]">
-          <h1 className="text-2xl md:text-3xl font-bold uppercase tracking-widest">
+        <div className="flex flex-col items-center space-y-4 w-full max-w-lg">
+          <h1 className="text-2xl md:text-3xl font-bold uppercase tracking-widest w-full">
             {product.title}
           </h1>
           
-          <div className="text-[#666] text-xs flex flex-wrap justify-center gap-4 uppercase">
+          <div className="text-[#666] text-xs flex flex-wrap justify-center gap-4 uppercase w-full">
             {product.artist && <span>Artist: {product.artist}</span>}
             {product.bpm && <span>BPM: {product.bpm}</span>}
             {product.key && <span>Key: {product.key}</span>}
@@ -99,8 +100,8 @@ function ProductDetail() {
             {product.type && <span>Type: {product.type.replace('_', ' ')}</span>}
           </div>
 
-          <div className="border-t border-b border-[#333] py-6 w-full">
-             <div className="text-3xl font-bold mb-6">{product.price} CZK</div>
+          <div className="border-t border-b border-[#333] py-6 w-full flex flex-col items-center">
+             <div className="text-3xl font-bold mb-6 w-full">{product.price} CZK</div>
              
              <button
                onClick={() => addToCart({
@@ -116,13 +117,13 @@ function ProductDetail() {
              </button>
           </div>
 
-          <div className="text-gray-400 text-sm leading-relaxed">
+          <div className="text-gray-400 text-sm leading-relaxed w-full">
             {product.description || "Tento digitální produkt je připraven k okamžitému stažení po zakoupení. Obsahuje vysoce kvalitní audio soubory pro vaši hudební produkci."}
           </div>
           
           <button 
             onClick={() => setLocation(params?.type === 'beat' ? '/beaty' : '/zvuky')}
-            className="text-xs uppercase tracking-widest text-[#666] hover:text-white transition-colors"
+            className="text-xs uppercase tracking-widest text-[#666] hover:text-white transition-colors mt-8"
           >
             ← Zpět do obchodu
           </button>
