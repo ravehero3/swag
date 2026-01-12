@@ -70,7 +70,7 @@ function ProductDetail() {
     <div className="min-h-screen bg-black text-white flex flex-col items-center relative overflow-hidden">
       <div className="w-full max-w-4xl flex flex-col items-center px-4 text-center relative z-10" style={{ paddingTop: '64px', paddingBottom: '120px' }}>
         {/* Product Image - Centered and large */}
-        <div className="p-4 flex items-center justify-center relative mb-[64px]" style={{ width: '400px', height: '400px', maxWidth: '100%' }}>
+        <div className="p-4 flex items-center justify-center relative mb-[64px]" style={{ width: '200px', height: '200px', maxWidth: '100%' }}>
           <img 
             src={product.artwork_url || "/uploads/artwork/metallic-logo.png"} 
             alt={product.title} 
