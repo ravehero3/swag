@@ -74,7 +74,7 @@ function ProductDetail() {
           <img 
             src={product.artwork_url || "/uploads/artwork/metallic-logo.png"} 
             alt={product.title} 
-            className="w-full h-full object-contain relative z-20"
+            className="w-full h-full object-contain relative z-20 mx-auto"
             style={{ maxHeight: '600px', maxWidth: '600px' }}
             onError={(e) => {
               const target = e.target as HTMLImageElement;
@@ -87,12 +87,12 @@ function ProductDetail() {
         </div>
 
         {/* Product Info - Centered */}
-        <div className="flex flex-col items-center space-y-4 w-full max-w-lg px-4">
-          <h1 className="text-2xl md:text-3xl font-bold uppercase tracking-widest w-full px-4">
+        <div className="flex flex-col items-center justify-center space-y-4 w-full max-w-lg px-4 mx-auto">
+          <h1 className="text-2xl md:text-3xl font-bold uppercase tracking-widest w-full px-4 text-center">
             {product.title}
           </h1>
           
-          <div className="text-[#666] text-xs flex flex-wrap justify-center gap-4 uppercase w-full px-4">
+          <div className="text-[#666] text-xs flex flex-wrap justify-center items-center gap-4 uppercase w-full px-4 text-center">
             {product.artist && <span>Artist: {product.artist}</span>}
             {product.bpm && <span>BPM: {product.bpm}</span>}
             {product.key && <span>Key: {product.key}</span>}
@@ -100,8 +100,8 @@ function ProductDetail() {
             {product.type && <span>Type: {product.type.replace('_', ' ')}</span>}
           </div>
 
-          <div className="border-t border-b border-[#333] py-6 w-full flex flex-col items-center px-4">
-             <div className="text-3xl font-bold mb-6 w-full px-4">{product.price} CZK</div>
+          <div className="border-t border-b border-[#333] py-6 w-full flex flex-col items-center justify-center px-4">
+             <div className="text-3xl font-bold mb-6 w-full text-center">{product.price} CZK</div>
              
              <button
                onClick={() => addToCart({
@@ -111,19 +111,19 @@ function ProductDetail() {
                  price: product.price,
                  artworkUrl: product.artwork_url || "/uploads/artwork/metallic-logo.png"
                })}
-               className="w-full py-4 bg-white text-black font-bold uppercase tracking-wider rounded-sm hover:bg-gray-200 transition-colors"
+               className="w-full py-4 bg-white text-black font-bold uppercase tracking-wider rounded-sm hover:bg-gray-200 transition-colors mx-auto block"
              >
                DO KOŠÍKU
              </button>
           </div>
 
-          <div className="text-gray-400 text-sm leading-relaxed w-full px-4">
+          <div className="text-gray-400 text-sm leading-relaxed w-full px-4 text-center">
             {product.description || "Tento digitální produkt je připraven k okamžitému stažení po zakoupení. Obsahuje vysoce kvalitní audio soubory pro vaši hudební produkci."}
           </div>
           
           <button 
             onClick={() => setLocation(params?.type === 'beat' ? '/beaty' : '/zvuky')}
-            className="text-xs uppercase tracking-widest text-[#666] hover:text-white transition-colors mt-8 px-4"
+            className="text-xs uppercase tracking-widest text-[#666] hover:text-white transition-colors mt-8 px-4 mx-auto block"
           >
             ← Zpět do obchodu
           </button>
