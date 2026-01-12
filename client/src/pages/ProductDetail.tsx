@@ -67,10 +67,10 @@ function ProductDetail() {
   if (!product) return <div className="min-h-screen bg-black flex items-center justify-center text-white">Product not found</div>;
 
   return (
-    <div className="min-h-screen bg-black text-white p-4 flex flex-col items-center justify-center relative overflow-hidden">
-      <div className="w-full max-w-4xl flex flex-col items-center space-y-8 px-4 text-center relative z-10">
+    <div className="min-h-screen bg-black text-white flex flex-col items-center relative overflow-hidden">
+      <div className="w-full max-w-4xl flex flex-col items-center px-4 text-center relative z-10" style={{ paddingTop: '64px', paddingBottom: '120px' }}>
         {/* Product Image - Centered and large */}
-        <div className="p-4 flex items-center justify-center relative" style={{ width: '400px', height: '400px', maxWidth: '100%' }}>
+        <div className="p-4 flex items-center justify-center relative mb-[64px]" style={{ width: '400px', height: '400px', maxWidth: '100%' }}>
           <img 
             src={product.artwork_url || "/uploads/artwork/metallic-logo.png"} 
             alt={product.title} 
@@ -86,7 +86,7 @@ function ProductDetail() {
         </div>
 
         {/* Product Info - Centered */}
-        <div className="flex flex-col items-center space-y-4 max-w-lg">
+        <div className="flex flex-col items-center space-y-4 max-w-lg mb-[64px]">
           <h1 className="text-2xl md:text-3xl font-bold uppercase tracking-widest">
             {product.title}
           </h1>
