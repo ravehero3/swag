@@ -67,15 +67,15 @@ function ProductDetail() {
   if (!product) return <div className="min-h-screen bg-black flex items-center justify-center text-white">Product not found</div>;
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center relative overflow-hidden">
+    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center relative overflow-hidden p-4">
       <div className="w-full max-w-4xl flex flex-col items-center px-4 text-center relative z-10" style={{ paddingTop: '64px', paddingBottom: '64px' }}>
         {/* Product Image - Centered and large */}
-        <div className="flex items-center justify-center relative mb-[64px]" style={{ width: '200px', height: '200px' }}>
+        <div className="flex items-center justify-center relative mb-[64px]" style={{ width: '600px', height: '600px', maxWidth: '100%' }}>
           <img 
             src={product.artwork_url || "/uploads/artwork/metallic-logo.png"} 
             alt={product.title} 
             className="w-full h-full object-contain relative z-20"
-            style={{ maxHeight: '200px', maxWidth: '200px' }}
+            style={{ maxHeight: '600px', maxWidth: '600px' }}
             onError={(e) => {
               const target = e.target as HTMLImageElement;
               target.onerror = null;
@@ -83,16 +83,16 @@ function ProductDetail() {
             }}
           />
           {/* Subtle Glow underneath the image */}
-          <div className="absolute inset-0 bg-white/10 blur-[60px] rounded-full z-0 pointer-events-none transform translate-y-10" />
+          <div className="absolute inset-0 bg-white/10 blur-[80px] rounded-full z-0 pointer-events-none transform translate-y-12" />
         </div>
 
         {/* Product Info - Centered */}
-        <div className="flex flex-col items-center space-y-4 w-full max-w-lg">
-          <h1 className="text-2xl md:text-3xl font-bold uppercase tracking-widest w-full">
+        <div className="flex flex-col items-center space-y-4 w-full max-w-lg px-4">
+          <h1 className="text-2xl md:text-3xl font-bold uppercase tracking-widest w-full px-4">
             {product.title}
           </h1>
           
-          <div className="text-[#666] text-xs flex flex-wrap justify-center gap-4 uppercase w-full">
+          <div className="text-[#666] text-xs flex flex-wrap justify-center gap-4 uppercase w-full px-4">
             {product.artist && <span>Artist: {product.artist}</span>}
             {product.bpm && <span>BPM: {product.bpm}</span>}
             {product.key && <span>Key: {product.key}</span>}
@@ -100,8 +100,8 @@ function ProductDetail() {
             {product.type && <span>Type: {product.type.replace('_', ' ')}</span>}
           </div>
 
-          <div className="border-t border-b border-[#333] py-6 w-full flex flex-col items-center">
-             <div className="text-3xl font-bold mb-6 w-full">{product.price} CZK</div>
+          <div className="border-t border-b border-[#333] py-6 w-full flex flex-col items-center px-4">
+             <div className="text-3xl font-bold mb-6 w-full px-4">{product.price} CZK</div>
              
              <button
                onClick={() => addToCart({
@@ -117,13 +117,13 @@ function ProductDetail() {
              </button>
           </div>
 
-          <div className="text-gray-400 text-sm leading-relaxed w-full">
+          <div className="text-gray-400 text-sm leading-relaxed w-full px-4">
             {product.description || "Tento digitální produkt je připraven k okamžitému stažení po zakoupení. Obsahuje vysoce kvalitní audio soubory pro vaši hudební produkci."}
           </div>
           
           <button 
             onClick={() => setLocation(params?.type === 'beat' ? '/beaty' : '/zvuky')}
-            className="text-xs uppercase tracking-widest text-[#666] hover:text-white transition-colors mt-8"
+            className="text-xs uppercase tracking-widest text-[#666] hover:text-white transition-colors mt-8 px-4"
           >
             ← Zpět do obchodu
           </button>
