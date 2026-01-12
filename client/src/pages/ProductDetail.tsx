@@ -45,12 +45,12 @@ function ProductDetail() {
   return (
     <div className="min-h-screen bg-black text-white p-4 flex flex-col items-center justify-center">
       <div className="w-full max-w-4xl flex flex-col items-center space-y-8 px-4 text-center">
-        {/* Product Image - Fixed at 200x200 */}
-        <div className="p-4 flex items-center justify-center relative" style={{ width: '200px', height: '200px' }}>
+        {/* Product Image - Fixed at 400x400 for better visibility */}
+        <div className="p-4 flex items-center justify-center relative" style={{ width: '400px', height: '400px', maxWidth: '100%' }}>
           <img 
             src={product.artwork_url || "/uploads/artwork/metallic-logo.png"} 
             alt={product.title} 
-            className="w-full h-full object-contain"
+            className="w-full h-full object-contain drop-shadow-[0_0_30px_rgba(255,255,255,0.2)]"
           />
         </div>
 
