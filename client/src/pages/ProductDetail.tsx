@@ -67,10 +67,10 @@ function ProductDetail() {
   if (!product) return <div className="min-h-screen bg-black flex items-center justify-center text-white">Product not found</div>;
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-start relative overflow-x-hidden p-0 m-0">
-      <div className="w-full max-w-4xl flex flex-col items-center justify-center px-4 text-center relative z-10 mx-auto" style={{ minHeight: '100vh' }}>
+    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-start relative overflow-x-hidden p-0 m-0 w-full">
+      <div className="w-full flex flex-col items-center justify-center text-center relative z-10 mx-auto" style={{ minHeight: '100vh', maxWidth: '1200px' }}>
         {/* Product Image - Centered and large with 64px padding */}
-        <div className="flex items-center justify-center relative p-[64px] mb-[32px] mx-auto w-full" style={{ maxWidth: '600px' }}>
+        <div className="flex items-center justify-center relative p-[64px] mb-[32px] mx-auto w-full max-w-[600px]">
           <div className="relative aspect-square w-full flex items-center justify-center">
             <img 
               src={product.artwork_url || "/uploads/artwork/metallic-logo.png"} 
@@ -89,7 +89,7 @@ function ProductDetail() {
         </div>
 
         {/* Product Info - Centered with 4px padding between text elements */}
-        <div className="flex flex-col items-center justify-center space-y-[4px] w-full max-w-lg px-4 mx-auto text-center">
+        <div className="flex flex-col items-center justify-center space-y-[4px] w-full max-w-lg px-4 mx-auto text-center pb-20">
           <h1 className="text-2xl md:text-3xl font-bold uppercase tracking-widest w-full text-center py-[2px]">
             {product.title}
           </h1>
