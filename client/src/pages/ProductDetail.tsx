@@ -69,8 +69,8 @@ function ProductDetail() {
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center relative overflow-hidden p-4">
       <div className="w-full max-w-4xl flex flex-col items-center justify-center px-4 text-center relative z-10" style={{ minHeight: 'calc(100vh - 84px)' }}>
-        {/* Product Image - Centered and large */}
-        <div className="flex items-center justify-center relative mb-[64px]" style={{ width: '600px', height: '600px', maxWidth: '100%' }}>
+        {/* Product Image - Centered and large with 64px padding */}
+        <div className="flex items-center justify-center relative p-[64px] mb-[64px]" style={{ width: '600px', height: '600px', maxWidth: '100%' }}>
           <img 
             src={product.artwork_url || "/uploads/artwork/metallic-logo.png"} 
             alt={product.title} 
@@ -86,13 +86,13 @@ function ProductDetail() {
           <div className="absolute inset-0 bg-white/10 blur-[80px] rounded-full z-0 pointer-events-none transform translate-y-12" />
         </div>
 
-        {/* Product Info - Centered */}
-        <div className="flex flex-col items-center justify-center space-y-4 w-full max-w-lg px-4 mx-auto">
-          <h1 className="text-2xl md:text-3xl font-bold uppercase tracking-widest w-full px-4 text-center">
+        {/* Product Info - Centered with 4px padding between text elements */}
+        <div className="flex flex-col items-center justify-center space-y-[4px] w-full max-w-lg px-4 mx-auto">
+          <h1 className="text-2xl md:text-3xl font-bold uppercase tracking-widest w-full px-4 text-center py-[2px]">
             {product.title}
           </h1>
           
-          <div className="text-[#666] text-xs flex flex-wrap justify-center items-center gap-4 uppercase w-full px-4 text-center">
+          <div className="text-[#666] text-xs flex flex-wrap justify-center items-center gap-4 uppercase w-full px-4 text-center py-[2px]">
             {product.artist && <span>Artist: {product.artist}</span>}
             {product.bpm && <span>BPM: {product.bpm}</span>}
             {product.key && <span>Key: {product.key}</span>}
@@ -100,8 +100,8 @@ function ProductDetail() {
             {product.type && <span>Type: {product.type.replace('_', ' ')}</span>}
           </div>
 
-          <div className="border-t border-b border-[#333] py-6 w-full flex flex-col items-center justify-center px-4">
-             <div className="text-3xl font-bold mb-6 w-full text-center">{product.price} CZK</div>
+          <div className="border-t border-b border-[#333] py-6 w-full flex flex-col items-center justify-center px-4 space-y-[4px]">
+             <div className="text-3xl font-bold mb-6 w-full text-center py-[2px]">{product.price} CZK</div>
              
              <button
                onClick={() => addToCart({
@@ -117,13 +117,13 @@ function ProductDetail() {
              </button>
           </div>
 
-          <div className="text-gray-400 text-sm leading-relaxed w-full px-4 text-center">
+          <div className="text-gray-400 text-sm leading-relaxed w-full px-4 text-center py-[2px]">
             {product.description || "Tento digitální produkt je připraven k okamžitému stažení po zakoupení. Obsahuje vysoce kvalitní audio soubory pro vaši hudební produkci."}
           </div>
           
           <button 
             onClick={() => setLocation(params?.type === 'beat' ? '/beaty' : '/zvuky')}
-            className="text-xs uppercase tracking-widest text-[#666] hover:text-white transition-colors mt-8 px-4 mx-auto block"
+            className="text-xs uppercase tracking-widest text-[#666] hover:text-white transition-colors mt-8 px-4 mx-auto block py-[2px]"
           >
             ← Zpět do obchodu
           </button>
