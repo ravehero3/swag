@@ -67,11 +67,11 @@ function ProductDetail() {
   if (!product) return <div className="min-h-screen bg-black flex items-center justify-center text-white">Product not found</div>;
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center relative overflow-hidden p-0 m-0 w-full">
+    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center relative overflow-hidden p-4 m-0 w-full">
       {/* Container with pill shape around all content */}
-      <div className="flex flex-col items-center justify-center text-center relative z-10 mx-auto px-12 py-16 border border-white/20 rounded-[100px] bg-white/5 backdrop-blur-sm" style={{ minWidth: '800px', maxWidth: '1000px' }}>
+      <div className="flex flex-col items-center justify-center text-center relative z-10 mx-auto px-12 py-16 border border-white/20 rounded-[100px] bg-white/5 backdrop-blur-sm w-full max-w-[800px]">
         {/* Product Image - Centered and 400px tall */}
-        <div className="flex items-center justify-center relative mb-[32px] w-full max-w-[500px]">
+        <div className="flex items-center justify-center relative mb-[32px] w-full">
           <div className="relative w-full flex items-center justify-center" style={{ height: '400px' }}>
             <img 
               src={product.artwork_url || "/uploads/artwork/metallic-logo.png"} 
@@ -90,7 +90,7 @@ function ProductDetail() {
         </div>
 
         {/* Product Info - Centered with 4px padding between text elements */}
-        <div className="flex flex-col items-center justify-center space-y-[4px] w-full max-w-lg text-center pb-8">
+        <div className="flex flex-col items-center justify-center space-y-[4px] w-full text-center">
           <h1 className="text-2xl md:text-3xl font-bold uppercase tracking-widest w-full text-center py-[2px]">
             {product.title}
           </h1>
@@ -104,48 +104,6 @@ function ProductDetail() {
           </div>
 
           <div className="border-t border-b border-white/10 py-6 w-full flex flex-col items-center justify-center px-4 space-y-[4px] my-4">
-             <div className="text-3xl font-bold mb-6 w-full text-center py-[2px]">{product.price} CZK</div>
-             
-             <button
-               onClick={() => addToCart({
-                 productId: product.id,
-                 productType: params?.type as any,
-                 title: product.title,
-                 price: product.price,
-                 artworkUrl: product.artwork_url || "/uploads/artwork/metallic-logo.png"
-               })}
-               className="w-full py-4 bg-white text-black font-bold uppercase tracking-wider rounded-sm hover:bg-gray-200 transition-colors mx-auto block"
-             >
-               DO KOŠÍKU
-             </button>
-          </div>
-
-          <div className="text-gray-400 text-sm leading-relaxed w-full text-center py-[2px]">
-            {product.description || "Tento digitální produkt je připraven k okamžitému stažení po zakoupení. Obsahuje vysoce kvalitní audio soubory pro vaši hudební produkci."}
-          </div>
-          
-          <button 
-            onClick={() => setLocation(params?.type === 'beat' ? '/beaty' : '/zvuky')}
-            className="text-xs uppercase tracking-widest text-[#666] hover:text-white transition-colors mt-8 block py-[2px] mx-auto"
-          >
-            ← Zpět do obchodu
-          </button>
-        </div>
-      </div>
-    </div>
-          <h1 className="text-2xl md:text-3xl font-bold uppercase tracking-widest w-full text-center py-[2px]">
-            {product.title}
-          </h1>
-          
-          <div className="text-[#666] text-xs flex flex-wrap justify-center items-center gap-4 uppercase w-full text-center py-[2px]">
-            {product.artist && <span>Artist: {product.artist}</span>}
-            {product.bpm && <span>BPM: {product.bpm}</span>}
-            {product.key && <span>Key: {product.key}</span>}
-            {product.number_of_sounds && <span>Sounds: {product.number_of_sounds}</span>}
-            {product.type && <span>Type: {product.type.replace('_', ' ')}</span>}
-          </div>
-
-          <div className="border-t border-b border-[#333] py-6 w-full flex flex-col items-center justify-center px-4 space-y-[4px] my-4">
              <div className="text-3xl font-bold mb-6 w-full text-center py-[2px]">{product.price} CZK</div>
              
              <button
