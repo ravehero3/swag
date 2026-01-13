@@ -67,32 +67,34 @@ function ProductDetail() {
   if (!product) return <div className="min-h-screen bg-black flex items-center justify-center text-white">Product not found</div>;
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center relative overflow-hidden p-4">
-      <div className="w-full max-w-4xl flex flex-col items-center justify-center px-4 text-center relative z-10" style={{ minHeight: 'calc(100vh - 84px)' }}>
+    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-start relative overflow-x-hidden p-0 m-0">
+      <div className="w-full max-w-4xl flex flex-col items-center justify-center px-4 text-center relative z-10 mx-auto" style={{ minHeight: '100vh' }}>
         {/* Product Image - Centered and large with 64px padding */}
-        <div className="flex items-center justify-center relative p-[64px] mb-[64px]" style={{ width: '600px', height: '600px', maxWidth: '100%' }}>
-          <img 
-            src={product.artwork_url || "/uploads/artwork/metallic-logo.png"} 
-            alt={product.title} 
-            className="w-full h-full object-contain relative z-20 mx-auto"
-            style={{ maxHeight: '600px', maxWidth: '600px' }}
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.onerror = null;
-              target.src = "/uploads/artwork/metallic-logo.png";
-            }}
-          />
-          {/* Subtle Glow underneath the image */}
-          <div className="absolute inset-0 bg-white/10 blur-[80px] rounded-full z-0 pointer-events-none transform translate-y-12" />
+        <div className="flex items-center justify-center relative p-[64px] mb-[32px] mx-auto w-full" style={{ maxWidth: '600px' }}>
+          <div className="relative aspect-square w-full flex items-center justify-center">
+            <img 
+              src={product.artwork_url || "/uploads/artwork/metallic-logo.png"} 
+              alt={product.title} 
+              className="w-full h-full object-contain relative z-20 mx-auto"
+              style={{ maxHeight: '100%', maxWidth: '100%' }}
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.onerror = null;
+                target.src = "/uploads/artwork/metallic-logo.png";
+              }}
+            />
+            {/* Subtle Glow underneath the image */}
+            <div className="absolute inset-0 bg-white/10 blur-[80px] rounded-full z-0 pointer-events-none transform translate-y-12" />
+          </div>
         </div>
 
         {/* Product Info - Centered with 4px padding between text elements */}
-        <div className="flex flex-col items-center justify-center space-y-[4px] w-full max-w-lg px-4 mx-auto">
-          <h1 className="text-2xl md:text-3xl font-bold uppercase tracking-widest w-full px-4 text-center py-[2px]">
+        <div className="flex flex-col items-center justify-center space-y-[4px] w-full max-w-lg px-4 mx-auto text-center">
+          <h1 className="text-2xl md:text-3xl font-bold uppercase tracking-widest w-full text-center py-[2px]">
             {product.title}
           </h1>
           
-          <div className="text-[#666] text-xs flex flex-wrap justify-center items-center gap-4 uppercase w-full px-4 text-center py-[2px]">
+          <div className="text-[#666] text-xs flex flex-wrap justify-center items-center gap-4 uppercase w-full text-center py-[2px]">
             {product.artist && <span>Artist: {product.artist}</span>}
             {product.bpm && <span>BPM: {product.bpm}</span>}
             {product.key && <span>Key: {product.key}</span>}
@@ -100,7 +102,7 @@ function ProductDetail() {
             {product.type && <span>Type: {product.type.replace('_', ' ')}</span>}
           </div>
 
-          <div className="border-t border-b border-[#333] py-6 w-full flex flex-col items-center justify-center px-4 space-y-[4px]">
+          <div className="border-t border-b border-[#333] py-6 w-full flex flex-col items-center justify-center px-4 space-y-[4px] my-4">
              <div className="text-3xl font-bold mb-6 w-full text-center py-[2px]">{product.price} CZK</div>
              
              <button
@@ -117,13 +119,13 @@ function ProductDetail() {
              </button>
           </div>
 
-          <div className="text-gray-400 text-sm leading-relaxed w-full px-4 text-center py-[2px]">
+          <div className="text-gray-400 text-sm leading-relaxed w-full text-center py-[2px]">
             {product.description || "Tento digitální produkt je připraven k okamžitému stažení po zakoupení. Obsahuje vysoce kvalitní audio soubory pro vaši hudební produkci."}
           </div>
           
           <button 
             onClick={() => setLocation(params?.type === 'beat' ? '/beaty' : '/zvuky')}
-            className="text-xs uppercase tracking-widest text-[#666] hover:text-white transition-colors mt-8 px-4 mx-auto block py-[2px]"
+            className="text-xs uppercase tracking-widest text-[#666] hover:text-white transition-colors mt-8 block py-[2px] mx-auto"
           >
             ← Zpět do obchodu
           </button>
