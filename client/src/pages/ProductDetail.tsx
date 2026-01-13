@@ -67,16 +67,16 @@ function ProductDetail() {
   if (!product) return <div className="min-h-screen bg-black flex items-center justify-center text-white">Product not found</div>;
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-start relative overflow-x-hidden p-0 m-0 w-full pt-[64px]">
-      <div className="w-full flex flex-col items-center justify-start text-center relative z-10 mx-auto px-4" style={{ minHeight: 'calc(100vh - 64px)', maxWidth: '1200px' }}>
-        {/* Product Image - Centered and 200px tall with padding */}
-        <div className="flex items-center justify-center relative mb-[32px] mx-auto w-full max-w-[600px] mt-[64px]">
-          <div className="relative w-full flex items-center justify-center" style={{ height: '200px' }}>
+    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-start relative overflow-x-auto p-0 m-0 w-full pt-[64px]">
+      <div className="w-full flex flex-col items-center justify-start text-center relative z-10 pl-[800px]" style={{ minHeight: 'calc(100vh - 64px)', width: '2000px' }}>
+        {/* Product Image - Centered and 400px tall with padding */}
+        <div className="flex items-center justify-center relative mb-[32px] w-full max-w-[600px] mt-[64px]">
+          <div className="relative w-full flex items-center justify-center" style={{ height: '400px' }}>
             <img 
               src={product.artwork_url || "/uploads/artwork/metallic-logo.png"} 
               alt={product.title} 
               className="h-full w-auto object-contain relative z-20 mx-auto"
-              style={{ maxHeight: '200px' }}
+              style={{ maxHeight: '400px' }}
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
                 target.onerror = null;
@@ -84,12 +84,12 @@ function ProductDetail() {
               }}
             />
             {/* Subtle Glow underneath the image */}
-            <div className="absolute inset-0 bg-white/10 blur-[40px] rounded-full z-0 pointer-events-none transform translate-y-4" />
+            <div className="absolute inset-0 bg-white/10 blur-[60px] rounded-full z-0 pointer-events-none transform translate-y-8" />
           </div>
         </div>
 
         {/* Product Info - Centered with 4px padding between text elements */}
-        <div className="flex flex-col items-center justify-center space-y-[4px] w-full max-w-lg mx-auto text-center pb-20">
+        <div className="flex flex-col items-center justify-center space-y-[4px] w-full max-w-lg text-center pb-20">
           <h1 className="text-2xl md:text-3xl font-bold uppercase tracking-widest w-full text-center py-[2px]">
             {product.title}
           </h1>
