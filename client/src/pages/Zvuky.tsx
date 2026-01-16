@@ -375,9 +375,6 @@ function Zvuky() {
           <div className="zvuky-video-overlay-fade" />
         </div>
         
-        <div style={{ textAlign: "center", marginBottom: "48px", padding: "0 20px" }}>
-          <h2 style={{ fontSize: "18px", fontWeight: "bold" }}>ZVUKY</h2>
-        </div>
 
         {kits.length > 0 ? (
           <div style={{ width: "100%", marginBottom: "48px", marginTop: "-100px" }}>
