@@ -1273,66 +1273,6 @@ function Beaty() {
                 }}
               />
               
-              {/* Title text */}
-              <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700;900&display=swap');
-                @font-face {
-                  font-family: 'Old London';
-                  src: url('/uploads/OldLondon.ttf') format('truetype');
-                }
-                .co-se-text {
-                  display: inline-block;
-                  white-space: nowrap;
-                  font-size: 60px;
-                  height: 60px;
-                  line-height: 60px;
-                }
-                .beats-word {
-                  display: inline-block;
-                  transition: font-family 0.3s ease;
-                  white-space: nowrap;
-                  font-size: 60px;
-                  width: 150px;
-                  text-align: center;
-                  height: 60px;
-                  line-height: 60px;
-                  vertical-align: baseline;
-                }
-                .beats-word:hover {
-                  font-family: 'Old London', serif;
-                }
-              `}</style>
-              <div style={{
-                position: "absolute",
-                top: "692px",
-                left: "50%",
-                transform: "translateX(-50%)",
-                width: "100%",
-                textAlign: "center",
-                zIndex: 20,
-                opacity: showTitle ? 1 : 0,
-                transition: "opacity 0.5s ease-in-out",
-              }}>
-                <h2 style={{
-                  color: "#fff",
-                  fontSize: "60px",
-                  fontFamily: "'BB Condensed Regular', 'Roboto Condensed', sans-serif",
-                  fontWeight: "400",
-                  letterSpacing: "0",
-                  margin: 0,
-                  lineHeight: "1.0",
-                  textTransform: "uppercase",
-                  transition: "all 0.3s ease",
-                }}>
-                  PRO VŠECHNY<br />
-                  HUDEBNÍ PRODUCENTY<br />
-                  <div style={{ display: "flex", gap: "0.3em", justifyContent: "center", alignItems: "center" }}>
-                    <span className="co-se-text">CO SE DĚLÁNÍM</span>
-                    <span className="beats-word">BEATS</span>
-                  </div>
-                  CHTĚJ ŽIVIT
-                </h2>
-              </div>
 
               {/* Dock positioned at bottom */}
               <div style={{

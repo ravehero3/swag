@@ -1272,11 +1272,6 @@ function Home() {
                   }}>
                     PRO VŠECHNY<br />
                     HUDEBNÍ PRODUCENTY<br />
-                    <div style={{ display: "flex", gap: "0.3em", justifyContent: "center", alignItems: "center" }}>
-                      <span className="co-se-text">CO SE DĚLÁNÍM</span>
-                      <span className="beats-word">BEATS</span>
-                    </div>
-                    CHTĚJ ŽIVIT
                   </h2>
                 </div>
 
