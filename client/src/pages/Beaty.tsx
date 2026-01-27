@@ -1145,7 +1145,12 @@ function Beaty() {
           
           <div className="fade-in-section delay-3" style={{ display: "flex", justifyContent: "center", gap: "16px", marginTop: "16px", marginBottom: "32px", marginLeft: "568px", position: "relative", zIndex: 9999, alignItems: "center", pointerEvents: "auto" }}>
               <button
-                onClick={() => setLocation("/beaty")}
+                data-testid="button-listen-more-beats"
+                onClick={() => {
+                  if (beatsListRef.current) {
+                    beatsListRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }
+                }}
                 style={{
                   padding: "8px 20px",
                   background: "rgba(0, 0, 0, 0.7)",

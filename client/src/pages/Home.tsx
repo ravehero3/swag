@@ -1077,6 +1077,7 @@ function Home() {
           
           <div className="fade-in-section delay-3" style={{ display: "flex", justifyContent: "center", gap: "16px", marginTop: "16px", marginBottom: "32px", marginLeft: "568px", position: "relative", zIndex: 9999, alignItems: "center", pointerEvents: "auto" }}>
               <button
+                data-testid="button-listen-more-beats"
                 onClick={() => setLocation("/beaty")}
                 style={{
                   padding: "8px 20px",
