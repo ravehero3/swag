@@ -266,8 +266,8 @@ export default function ProductCard({
               style={{
                 padding: "8px 8px 8px 16px",
                 background: "#000",
-                color: "#fff",
-                border: "1px solid #fff",
+                color: "#666",
+                border: "1px solid #666",
                 fontSize: "12px",
                 fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
                 fontWeight: 400,
@@ -336,8 +336,8 @@ export default function ProductCard({
               onMouseLeave={(e) => {
                 const btn = e.currentTarget as HTMLButtonElement;
                 btn.style.background = "#000";
-                btn.style.color = "#fff";
-                btn.style.borderColor = "#fff";
+                btn.style.color = "#666";
+                btn.style.borderColor = "#666";
                 btn.style.boxShadow = "none";
                 
                 // Clean up particles
