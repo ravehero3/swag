@@ -1177,9 +1177,10 @@ function Home() {
             marginLeft: "calc(-50vw + 50%)",
             display: "flex",
             flexDirection: "column",
-            alignItems: "center"
+            alignItems: "center",
+            pointerEvents: "none"
           }}>
-            <div ref={artistCarouselRef} className="fade-in-section delay-3 scroll-fade-section" style={{ marginTop: "-100px", marginBottom: "0px", position: "relative", zIndex: 10, width: "100%" }}>
+            <div ref={artistCarouselRef} className="fade-in-section delay-3 scroll-fade-section" style={{ marginTop: "-100px", marginBottom: "0px", position: "relative", zIndex: 10, width: "100%", pointerEvents: "auto" }}>
               <div style={{ marginTop: "0px" }}>
                 <ArtistCarousel />
               </div>
@@ -1209,7 +1210,7 @@ function Home() {
                   </h2>
                 </div>
 
-                <div ref={soundKitsRef} className="fade-in-section delay-4 scroll-fade-section" style={{ marginTop: "42px", marginBottom: "0px", width: "100%", display: "flex", justifyContent: "center", position: "relative", zIndex: 5 }}>
+                <div ref={soundKitsRef} className="fade-in-section delay-4 scroll-fade-section" style={{ marginTop: "42px", marginBottom: "0px", width: "100%", display: "flex", justifyContent: "center", position: "relative", zIndex: 5, pointerEvents: "auto" }}>
                   <div style={{ 
                     width: "100%", 
                     height: "1000px", 
