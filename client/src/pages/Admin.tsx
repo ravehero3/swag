@@ -168,6 +168,40 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     isHighlighted: false,
   });
   const [tagInput, setTagInput] = useState("");
+  const [selectedBeats, setSelectedBeats] = useState<number[]>([]);
+
+  const handleSelectAll = () => {
+    if (selectedBeats.length === beats.length) {
+      setSelectedBeats([]);
+    } else {
+      setSelectedBeats(beats.map((b: Beat) => b.id));
+    }
+  };
+
+  const handleSelectBeat = (id: number) => {
+    setSelectedBeats(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedBeats.length === 0) return;
+    if (!confirm(`Opravdu smazat ${selectedBeats.length} vybraných beatů?`)) return;
+    
+    const res = await fetch("/api/beats/bulk-delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ ids: selectedBeats }),
+    });
+    
+    if (res.ok) {
+      setSelectedBeats([]);
+      onRefresh();
+    } else {
+      alert("Chyba při mazání beatů");
+    }
+  };
 
   useEffect(() => {
     if (editing) {
@@ -305,9 +339,38 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
         </form>
       )}
 
+      {selectedBeats.length > 0 && (
+        <div style={{ marginBottom: "16px", padding: "12px", background: "#1a1a1a", borderRadius: "3px", display: "flex", alignItems: "center", gap: "16px" }}>
+          <span data-testid="text-selected-count">{selectedBeats.length} vybráno</span>
+          <button 
+            className="btn btn-admin" 
+            onClick={handleBulkDelete} 
+            style={{ color: "#ff4444", borderColor: "#ff4444" }}
+            data-testid="button-bulk-delete-beats"
+          >
+            Smazat vybrané
+          </button>
+          <button 
+            className="btn btn-admin" 
+            onClick={() => setSelectedBeats([])}
+            data-testid="button-clear-selection"
+          >
+            Zrušit výběr
+          </button>
+        </div>
+      )}
+
       <table style={{ width: "100%", borderCollapse: "collapse" }}>
         <thead>
           <tr style={{ borderBottom: "1px solid #333" }}>
+            <th style={{ textAlign: "left", padding: "12px", width: "40px" }}>
+              <input 
+                type="checkbox" 
+                checked={beats.length > 0 && selectedBeats.length === beats.length}
+                onChange={handleSelectAll}
+                data-testid="checkbox-select-all-beats"
+              />
+            </th>
             <th style={{ textAlign: "left", padding: "12px" }}>Název</th>
             <th style={{ textAlign: "left", padding: "12px" }}>BPM</th>
             <th style={{ textAlign: "left", padding: "12px" }}>Cena</th>
@@ -319,14 +382,22 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
         <tbody>
           {beats.map((beat: Beat) => (
             <tr key={beat.id} style={{ borderBottom: "1px solid #222" }}>
+              <td style={{ padding: "12px" }}>
+                <input 
+                  type="checkbox" 
+                  checked={selectedBeats.includes(beat.id)}
+                  onChange={() => handleSelectBeat(beat.id)}
+                  data-testid={`checkbox-beat-${beat.id}`}
+                />
+              </td>
               <td style={{ padding: "12px" }}>{beat.title}</td>
               <td style={{ padding: "12px" }}>{beat.bpm}</td>
               <td style={{ padding: "12px" }}>{beat.price} CZK</td>
-              <td style={{ padding: "12px" }}>{beat.is_published ? "✓ Publikováno" : "Skryto"}</td>
-              <td style={{ padding: "12px" }}>{beat.is_highlighted ? "⭐" : ""}</td>
+              <td style={{ padding: "12px" }}>{beat.is_published ? "Publikováno" : "Skryto"}</td>
+              <td style={{ padding: "12px" }}>{beat.is_highlighted ? "Featured" : ""}</td>
               <td style={{ padding: "12px", textAlign: "right" }}>
-                <button className="btn btn-admin" onClick={() => setEditing(beat)} style={{ marginRight: "8px" }}>Upravit</button>
-                <button className="btn btn-admin" onClick={() => handleDelete(beat.id)} style={{ color: "#333", borderColor: "#333" }}>Smazat</button>
+                <button className="btn btn-admin" onClick={() => setEditing(beat)} style={{ marginRight: "8px" }} data-testid={`button-edit-beat-${beat.id}`}>Upravit</button>
+                <button className="btn btn-admin" onClick={() => handleDelete(beat.id)} style={{ color: "#333", borderColor: "#333" }} data-testid={`button-delete-beat-${beat.id}`}>Smazat</button>
               </td>
             </tr>
           ))}
@@ -353,6 +424,40 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
     isPublished: false,
   });
   const [tagInput, setTagInput] = useState("");
+  const [selectedKits, setSelectedKits] = useState<number[]>([]);
+
+  const handleSelectAll = () => {
+    if (selectedKits.length === kits.length) {
+      setSelectedKits([]);
+    } else {
+      setSelectedKits(kits.map((k: SoundKit) => k.id));
+    }
+  };
+
+  const handleSelectKit = (id: number) => {
+    setSelectedKits(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedKits.length === 0) return;
+    if (!confirm(`Opravdu smazat ${selectedKits.length} vybraných kitů?`)) return;
+    
+    const res = await fetch("/api/sound-kits/bulk-delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ ids: selectedKits }),
+    });
+    
+    if (res.ok) {
+      setSelectedKits([]);
+      onRefresh();
+    } else {
+      alert("Chyba při mazání kitů");
+    }
+  };
 
   useEffect(() => {
     if (editing) {
@@ -471,9 +576,38 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
         </form>
       )}
 
+      {selectedKits.length > 0 && (
+        <div style={{ marginBottom: "16px", padding: "12px", background: "#1a1a1a", borderRadius: "3px", display: "flex", alignItems: "center", gap: "16px" }}>
+          <span data-testid="text-selected-kits-count">{selectedKits.length} vybráno</span>
+          <button 
+            className="btn btn-admin" 
+            onClick={handleBulkDelete} 
+            style={{ color: "#ff4444", borderColor: "#ff4444" }}
+            data-testid="button-bulk-delete-kits"
+          >
+            Smazat vybrané
+          </button>
+          <button 
+            className="btn btn-admin" 
+            onClick={() => setSelectedKits([])}
+            data-testid="button-clear-kits-selection"
+          >
+            Zrušit výběr
+          </button>
+        </div>
+      )}
+
       <table style={{ width: "100%", borderCollapse: "collapse" }}>
         <thead>
           <tr style={{ borderBottom: "1px solid #333" }}>
+            <th style={{ textAlign: "left", padding: "12px", width: "40px" }}>
+              <input 
+                type="checkbox" 
+                checked={kits.length > 0 && selectedKits.length === kits.length}
+                onChange={handleSelectAll}
+                data-testid="checkbox-select-all-kits"
+              />
+            </th>
             <th style={{ textAlign: "left", padding: "12px" }}>Název</th>
             <th style={{ textAlign: "left", padding: "12px" }}>Typ</th>
             <th style={{ textAlign: "left", padding: "12px" }}>Cena</th>
@@ -484,13 +618,21 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
         <tbody>
           {kits.map((kit: SoundKit) => (
             <tr key={kit.id} style={{ borderBottom: "1px solid #222" }}>
+              <td style={{ padding: "12px" }}>
+                <input 
+                  type="checkbox" 
+                  checked={selectedKits.includes(kit.id)}
+                  onChange={() => handleSelectKit(kit.id)}
+                  data-testid={`checkbox-kit-${kit.id}`}
+                />
+              </td>
               <td style={{ padding: "12px" }}>{kit.title}</td>
               <td style={{ padding: "12px" }}>{kit.type}</td>
               <td style={{ padding: "12px" }}>{kit.is_free ? "Zdarma" : `${kit.price} CZK`}</td>
-              <td style={{ padding: "12px" }}>{kit.is_published ? "✓ Publikováno" : "Skryto"}</td>
+              <td style={{ padding: "12px" }}>{kit.is_published ? "Publikováno" : "Skryto"}</td>
               <td style={{ padding: "12px", textAlign: "right" }}>
-                <button className="btn btn-admin" onClick={() => setEditing(kit)} style={{ marginRight: "8px" }}>Upravit</button>
-                <button className="btn btn-admin" onClick={() => handleDelete(kit.id)} style={{ color: "#333", borderColor: "#333" }}>Smazat</button>
+                <button className="btn btn-admin" onClick={() => setEditing(kit)} style={{ marginRight: "8px" }} data-testid={`button-edit-kit-${kit.id}`}>Upravit</button>
+                <button className="btn btn-admin" onClick={() => handleDelete(kit.id)} style={{ color: "#333", borderColor: "#333" }} data-testid={`button-delete-kit-${kit.id}`}>Smazat</button>
               </td>
             </tr>
           ))}

@@ -136,6 +136,19 @@ router.delete("/:id", requireAdmin, async (req: Request, res: Response) => {
   }
 });
 
+router.post("/bulk-delete", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { ids } = req.body;
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ error: "Musíte vybrat alespoň jeden beat" });
+    }
+    await pool.query("DELETE FROM beats WHERE id = ANY($1)", [ids]);
+    res.json({ message: `${ids.length} beatů smazáno` });
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při mazání beatů" });
+  }
+});
+
 router.get("/:id/download", async (req: Request, res: Response) => {
   try {
     const result = await pool.query("SELECT file_url FROM beats WHERE id = $1", [req.params.id]);

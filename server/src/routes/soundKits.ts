@@ -87,4 +87,17 @@ router.delete("/:id", requireAdmin, async (req: Request, res: Response) => {
   }
 });
 
+router.post("/bulk-delete", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { ids } = req.body;
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ error: "Musíte vybrat alespoň jeden kit" });
+    }
+    await pool.query("DELETE FROM sound_kits WHERE id = ANY($1)", [ids]);
+    res.json({ message: `${ids.length} kitů smazáno` });
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při mazání kitů" });
+  }
+});
+
 export default router;
