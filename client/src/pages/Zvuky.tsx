@@ -185,10 +185,10 @@ function Zvuky() {
         if (data && data.length > 0) {
           setKits(data);
         } else {
-          setKits(testKits);
+          setKits([]); // Changed from testKits to empty array for production
         }
       })
-      .catch(() => setKits(testKits));
+      .catch(() => setKits([])); // Changed from testKits to empty array for production
   }, []);
 
   useEffect(() => {
@@ -389,41 +389,8 @@ function Zvuky() {
             />
           </div>
         ) : (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-              gap: "24px",
-              padding: "0 20px",
-            }}
-          >
-            {Array(6).fill(null).map((_, index) => (
-              <div
-                key={index}
-                style={{
-                  border: "1px solid #333",
-                  overflow: "hidden",
-                  position: "relative",
-                  background: "#0a0a0a",
-                  animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
-                  borderRadius: "4px",
-                }}
-              >
-                <div
-                  style={{
-                    aspectRatio: "1",
-                    background: "#111",
-                    position: "relative",
-                  }}
-                />
-                <div style={{ padding: "16px", height: "160px", display: "flex", flexDirection: "column", gap: "8px" }}>
-                  <div style={{ height: "12px", background: "#222", width: "60%", borderRadius: "2px" }} />
-                  <div style={{ height: "20px", background: "#222", width: "80%", borderRadius: "2px" }} />
-                  <div style={{ height: "12px", background: "#222", width: "40%", borderRadius: "2px" }} />
-                  <div style={{ marginTop: "auto", height: "40px", background: "#222", borderRadius: "2px" }} />
-                </div>
-              </div>
-            ))}
+          <div style={{ textAlign: "center", padding: "100px 20px", color: "#fff" }}>
+             <p style={{ opacity: 0.6, fontSize: "14px", letterSpacing: "1px" }}>Žádné zvukové kity nebyly nalezeny.</p>
           </div>
         )}
       </div>

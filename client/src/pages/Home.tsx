@@ -339,6 +339,16 @@ function Home() {
   const filteredBeats = beatLimit ? beats.slice(0, beatLimit) : beats;
   const otherBeats = filteredBeats.filter((b) => b.id !== highlightedBeat?.id);
 
+  if (beats.length === 0 && !highlightedBeat) {
+    return (
+      <div style={{ background: "#000", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff" }}>
+        <div className="fade-in" style={{ textAlign: "center", padding: "100px 20px" }}>
+          <p style={{ opacity: 0.6, fontSize: "14px", letterSpacing: "1px" }}>Žádné beaty nebyly nalezeny.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="fade-in-section delay-1" style={{ background: "#000", minHeight: "100vh" }}>
       <audio
