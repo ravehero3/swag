@@ -145,7 +145,21 @@ function App() {
   };
 
   if (loading) {
-    return <div style={{ background: "#000", minHeight: "100vh" }} />;
+    return (
+      <div style={{ 
+        background: "#000", 
+        minHeight: "100vh", 
+        display: "flex", 
+        alignItems: "center", 
+        justifyContent: "center",
+        color: "#fff",
+        fontFamily: "Helvetica Neue, sans-serif"
+      }}>
+        <div className="fade-in" style={{ fontSize: "14px", letterSpacing: "2px" }}>
+          VOODOO808
+        </div>
+      </div>
+    );
   }
 
   const isAdminPage = location === "/admin";

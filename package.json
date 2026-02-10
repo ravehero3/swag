@@ -10,6 +10,7 @@
     "build": "vite build && tsc --project server/tsconfig.json --skipLibCheck",
     "seed-admin": "npx tsx server/src/seed-admin.ts",
     "start": "node dist/server/index.js",
+    "vercel-build": "vite build && tsc --project server/tsconfig.json --skipLibCheck",
     "db:push": "drizzle-kit push"
   },
   "dependencies": {
