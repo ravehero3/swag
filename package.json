@@ -6,9 +6,9 @@
     "node": ">=20"
   },
   "scripts": {
-    "dev": "npx tsx server/src/index.ts",
+    "dev": "tsx server/src/index.ts",
     "build": "vite build && tsc --project server/tsconfig.json --skipLibCheck",
-    "seed-admin": "npx tsx server/src/seed-admin.ts",
+    "seed-admin": "tsx server/src/seed-admin.ts",
     "start": "node dist/server/index.js",
     "vercel-build": "vite build && tsc --project server/tsconfig.json --skipLibCheck",
     "db:push": "drizzle-kit push"
