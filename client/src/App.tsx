@@ -88,10 +88,12 @@ function App() {
 
   useEffect(() => {
     const init = async () => {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 8000);
       try {
         const [authRes, settingsRes] = await Promise.all([
-          fetch("/api/auth/me", { credentials: "include" }),
-          fetch("/api/settings")
+          fetch("/api/auth/me", { credentials: "include", signal: controller.signal }),
+          fetch("/api/settings", { signal: controller.signal })
         ]);
 
         if (authRes.ok) {
@@ -106,6 +108,7 @@ function App() {
       } catch (error) {
         console.error("Initialization error:", error);
       } finally {
+        clearTimeout(timeout);
         setLoading(false);
       }
     };

@@ -2,10 +2,19 @@ import pg from "pg";
 
 function getDatabaseConfig() {
   const connectionString = process.env.DATABASE_URL;
-  if (!connectionString) return { connectionString };
+  if (!connectionString) {
+    return {
+      connectionString: undefined,
+      connectionTimeoutMillis: 5000,
+    };
+  }
+
+  const isExternal = !connectionString.includes("localhost") && !connectionString.includes("127.0.0.1") && !connectionString.includes("helium");
 
   return {
     connectionString,
+    connectionTimeoutMillis: 5000,
+    ssl: isExternal ? { rejectUnauthorized: false } : undefined,
   };
 }
 
@@ -108,7 +117,7 @@ export async function initDatabase() {
 
       CREATE TABLE IF NOT EXISTS assets (
         id SERIAL PRIMARY KEY,
-        type VARCHAR(50) NOT NULL, -- 'dock_icon', 'carousel_desktop', 'carousel_mobile'
+        type VARCHAR(50) NOT NULL,
         url TEXT NOT NULL,
         title VARCHAR(255),
         link VARCHAR(500),
@@ -129,10 +138,8 @@ export async function initDatabase() {
       ON CONFLICT (key) DO NOTHING;
     `);
     
-    // Add test data
     const beatCount = await client.query("SELECT COUNT(*) FROM beats");
     if (beatCount.rows[0].count === "0") {
-      // Add 20 test beats
       const beatInserts = [];
       const tagSets = [
         "ARRAY['Trap', 'Dark', 'Hard']",

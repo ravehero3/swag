@@ -267,12 +267,26 @@ async function startServer() {
   });
 }
 
+// Initialize DB once for Vercel (not on every request)
+let dbInitialized = false;
+let dbInitPromise: Promise<void> | null = null;
+
+async function ensureDbInitialized() {
+  if (dbInitialized) return;
+  if (dbInitPromise) return dbInitPromise;
+  dbInitPromise = (async () => {
+    await initDatabase();
+    await seedAdmin();
+    dbInitialized = true;
+  })();
+  return dbInitPromise;
+}
+
 // Standard Vercel Node handler export
 export default async (req: any, res: any) => {
   try {
     if (process.env.NODE_ENV === "production") {
-      await initDatabase();
-      await seedAdmin();
+      await ensureDbInitialized();
     }
     return app(req, res);
   } catch (error) {
