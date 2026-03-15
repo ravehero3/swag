@@ -148,6 +148,7 @@ function Beaty() {
   const [location, setLocation] = useLocation();
   const [beats, setBeats] = useState<Beat[]>([]);
   const [highlightedBeat, setHighlightedBeat] = useState<Beat | null>(null);
+  const [beatsLoading, setBeatsLoading] = useState(true);
   const [currentBeat, setCurrentBeat] = useState<Beat | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLooping, setIsLooping] = useState(false);
@@ -195,17 +196,16 @@ function Beaty() {
     if (searchQuery) params.append("search", searchQuery);
     if (params.toString()) url += "?" + params.toString();
     
-    fetch(url)
-      .then((res) => res.json())
-      .then(setBeats)
-      .catch(console.error);
+    setBeatsLoading(true);
 
-    fetch("/api/beats/highlighted")
-      .then((res) => res.json())
-      .then((beat) => {
-        if (beat) setHighlightedBeat(beat);
-      })
-      .catch(console.error);
+    Promise.all([
+      fetch(url).then((res) => res.json()).catch(() => []),
+      fetch("/api/beats/highlighted").then((res) => res.json()).catch(() => null),
+    ]).then(([beatsData, highlightedData]) => {
+      if (Array.isArray(beatsData)) setBeats(beatsData);
+      if (highlightedData && !highlightedData.error) setHighlightedBeat(highlightedData);
+      setBeatsLoading(false);
+    });
   }, [selectedTag, searchQuery]);
 
   useEffect(() => {
@@ -340,6 +340,12 @@ function Beaty() {
   const filteredBeats = beatLimit ? beats.slice(0, beatLimit) : beats;
   const otherBeats = filteredBeats.filter((b) => b.id !== highlightedBeat?.id);
 
+  if (beatsLoading) {
+    return (
+      <div style={{ background: "#000", minHeight: "100vh" }} />
+    );
+  }
+
   if (beats.length === 0 && !highlightedBeat) {
     return (
       <div style={{ background: "#000", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff" }}>
@@ -351,7 +357,7 @@ function Beaty() {
   }
 
   return (
-    <div className="fade-in-section delay-1">
+    <div style={{ background: "#000", minHeight: "100vh" }}>
       <audio
         ref={audioRef}
         src={currentBeat?.preview_url}

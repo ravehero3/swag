@@ -301,7 +301,7 @@ function Zvuky() {
   }));
 
   return (
-    <div className="fade-in-section delay-1 relative min-h-screen bg-black">
+    <div className="relative min-h-screen bg-black">
       {/* Background Wall with Vignette */}
       <div 
         className="fixed inset-0 pointer-events-none z-0"
