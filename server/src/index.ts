@@ -85,18 +85,19 @@ app.use(express.json());
 
 const isProduction = process.env.NODE_ENV === "production";
 
-if (isProduction && !process.env.SESSION_SECRET) {
-  console.error("SESSION_SECRET environment variable is required in production");
-  process.exit(1);
-}
-
 if (isProduction) {
   app.set("trust proxy", 1);
 }
 
 const sessionSecret = process.env.SESSION_SECRET || "voodoo808_stable_secret_12345";
 
+const PgSessionStore = new PgStore({
+  pool,
+  createTableIfMissing: true,
+});
+
 app.use(session({
+  store: PgSessionStore,
   secret: sessionSecret,
   resave: false,
   saveUninitialized: false,
@@ -275,9 +276,14 @@ async function ensureDbInitialized() {
   if (dbInitialized) return;
   if (dbInitPromise) return dbInitPromise;
   dbInitPromise = (async () => {
-    await initDatabase();
-    await seedAdmin();
-    dbInitialized = true;
+    try {
+      await initDatabase();
+      await seedAdmin();
+      dbInitialized = true;
+    } catch (err) {
+      dbInitPromise = null;
+      throw err;
+    }
   })();
   return dbInitPromise;
 }

@@ -5,7 +5,7 @@ function getDatabaseConfig() {
   if (!connectionString) {
     return {
       connectionString: undefined,
-      connectionTimeoutMillis: 5000,
+      connectionTimeoutMillis: 15000,
     };
   }
 
@@ -13,7 +13,7 @@ function getDatabaseConfig() {
 
   return {
     connectionString,
-    connectionTimeoutMillis: 5000,
+    connectionTimeoutMillis: 15000,
     ssl: isExternal ? { rejectUnauthorized: false } : undefined,
   };
 }
