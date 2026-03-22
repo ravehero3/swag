@@ -362,7 +362,6 @@ function Beaty() {
         ref={audioRef}
         src={currentBeat?.preview_url}
         onEnded={handleAudioEnded}
-        crossOrigin="anonymous"
       />
 
       <div style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative", background: "#000", minHeight: "600px" }}>

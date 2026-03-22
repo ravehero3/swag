@@ -11,6 +11,15 @@ const upload = multer({
 
 const router = Router();
 
+function getPublicUrl(key: string): string {
+  if (process.env.B2_PUBLIC_BASE_URL) {
+    return `${process.env.B2_PUBLIC_BASE_URL}/${key}`;
+  }
+  const endpoint = process.env.B2_ENDPOINT || "";
+  const bucket = process.env.B2_PREVIEW_BUCKET || "";
+  return `https://${bucket}.${endpoint}/${key}`;
+}
+
 router.post("/", requireAdmin, upload.single("file"), async (req: Request, res: Response) => {
   if (!req.file) {
     return res.status(400).json({ error: "No file uploaded" });
@@ -19,8 +28,9 @@ router.post("/", requireAdmin, upload.single("file"), async (req: Request, res: 
   const type = req.query.type as string;
   const ext = req.file.originalname.split('.').pop();
   const key = `${uuidv4()}.${ext}`;
-  const isPreview = type === "preview";
-  const bucket = isPreview ? STORAGE_BUCKETS.PREVIEWS : STORAGE_BUCKETS.ZIPS;
+
+  const isPublic = type === "preview" || type === "artwork";
+  const bucket = isPublic ? STORAGE_BUCKETS.PREVIEWS : STORAGE_BUCKETS.ZIPS;
   
   try {
     await uploadFile(
@@ -28,10 +38,11 @@ router.post("/", requireAdmin, upload.single("file"), async (req: Request, res: 
       key,
       req.file.buffer,
       req.file.mimetype,
-      isPreview
+      isPublic
     );
     
-    res.json({ url: key, key: key });
+    const url = isPublic ? getPublicUrl(key) : key;
+    res.json({ url, key });
   } catch (error) {
     console.error("B2 Upload error:", error);
     res.status(500).json({ error: "Failed to upload to cloud storage" });
