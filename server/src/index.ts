@@ -288,18 +288,14 @@ async function ensureDbInitialized() {
 
 // Standard Vercel Node handler export
 export default async (req: any, res: any) => {
-  try {
-    if (process.env.NODE_ENV === "production") {
+  if (process.env.NODE_ENV === "production") {
+    try {
       await ensureDbInitialized();
+    } catch (error) {
+      console.error("DB init error:", error instanceof Error ? error.message : String(error));
     }
-    return app(req, res);
-  } catch (error) {
-    console.error("Vercel handler error:", error);
-    res.status(500).json({ 
-      error: "Internal Server Error", 
-      message: error instanceof Error ? error.message : String(error) 
-    });
   }
+  return app(req, res);
 };
 
 if (process.env.NODE_ENV !== "production") {
