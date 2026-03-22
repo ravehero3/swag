@@ -35,10 +35,8 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID || "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
-      callbackURL: process.env.NODE_ENV === "production" 
-        ? (process.env.VERCEL_URL 
-            ? `https://${process.env.VERCEL_URL}/api/auth/google/callback` 
-            : `https://${process.env.REPLIT_DEV_DOMAIN}/api/auth/google/callback`)
+      callbackURL: process.env.NODE_ENV === "production"
+        ? `${process.env.APP_URL || `https://${process.env.VERCEL_URL}`}/api/auth/google/callback`
         : "/api/auth/google/callback",
       proxy: true,
     },
