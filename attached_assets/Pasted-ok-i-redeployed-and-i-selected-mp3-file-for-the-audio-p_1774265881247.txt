@@ -1,0 +1,72 @@
+ok i redeployed and i selected mp3 file for the audio preview but i got this message: "upload se nezdařil"
+
+i then went on backblaze and checked the buckets and i think selected everything so you can check if everything is setup correctly and here it is:
+
+r
+ravehero3
+B2 Cloud Storage
+Buckets
+Browse Files
+Snapshots
+Application Keys
+Reports
+Caps & Alerts
+Fireball
+Cloud Replication
+B2 Cloud Storage Buckets
+
+With Backblaze B2 Cloud Storage you can store data in the Backblaze Cloud. Any size, file type or number of files. New to B2 Cloud Storage? Check out the B2 Starter Guide .
+
+Create a Bucket
+beats-previewsCreated:January 10, 2026
+Bucket ID:5b6099ee39d1a68491b80f1a
+Type:Public
+File Lifecycle:Keep all versions
+Snapshots:0
+Current Files:0
+Current Size:0 bytes
+Endpoint:s3.eu-central-003.backblazeb2.com
+Encryption:Enabled
+Upload/Download
+Bucket Settings Bucket Settings
+Lifecycle Settings Lifecycle Settings
+CORS Rules CORS Rules
+Object Lock Object Lock: disabled
+Access Logs Access Logs
+Event Notifications Event Notifications
+beats-zipsCreated:January 10, 2026
+Bucket ID:fb4069ae39e1a68491b80f1a
+Type:Private
+File Lifecycle:Keep all versions
+Snapshots:0
+Current Files:0
+Current Size:0 bytes
+Endpoint:s3.eu-central-003.backblazeb2.com
+Encryption:Enabled
+Upload/Download
+Bucket Settings Bucket Settings
+Lifecycle Settings Lifecycle Settings
+CORS Rules CORS Rules
+Object Lock Object Lock: disabled
+Access Logs Access Logs
+Event Notifications Event Notifications
+Backblaze
+A Publicly Traded Company (BLZE)
+Company
+Contact
+Feedback
+Terms & Privacy
+© 2026
+language
+
+How to connect to this bucket
+
+Resource Center
+
+Here are a few on-demand resources like in-app tutorials, help articles, and how-to videos.
+
+×
+
+Let me check the logs and the storage library to find the exact error:
+
+Found it immediately. Backblaze B2 does not support object-level ACLs (like ACL: "public-read") in its S3-compatible API — that's an AWS-only feature. When the code tries to set it, B2 rejects the entire upload request. Since your beats-previews bucket is already set to Public (visible from your Backblaze screenshot), every file uploaded there is automatically public. We just need to remove the ACL line:

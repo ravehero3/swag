@@ -22,7 +22,6 @@ export async function uploadFile(
     Key: key,
     Body: body,
     ContentType: contentType,
-    ACL: isPublic ? "public-read" : "private",
   });
 
   return s3Client.send(command);
