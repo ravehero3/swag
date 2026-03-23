@@ -169,6 +169,9 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   });
   const [tagInput, setTagInput] = useState("");
   const [selectedBeats, setSelectedBeats] = useState<number[]>([]);
+  const [uploading, setUploading] = useState<Record<string, boolean>>({});
+  const [uploadedNames, setUploadedNames] = useState<Record<string, string>>({});
+  const [uploadError, setUploadError] = useState<Record<string, string>>({});
 
   const handleSelectAll = () => {
     if (selectedBeats.length === beats.length) {
@@ -254,11 +257,29 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   };
 
   const uploadFile = async (file: File, type: string) => {
-    const formData = new FormData();
-    formData.append("file", file);
-    const res = await fetch(`/api/upload?type=${type}`, { method: "POST", credentials: "include", body: formData });
-    const data = await res.json();
-    return data.url;
+    setUploading(prev => ({ ...prev, [type]: true }));
+    setUploadError(prev => ({ ...prev, [type]: "" }));
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch(`/api/upload?type=${type}`, { method: "POST", credentials: "include", body: formData });
+      if (!res.ok) throw new Error("Upload selhal");
+      const data = await res.json();
+      setUploadedNames(prev => ({ ...prev, [type]: file.name }));
+      return data.url as string;
+    } catch (err) {
+      setUploadError(prev => ({ ...prev, [type]: "Upload se nezdařil" }));
+      return "";
+    } finally {
+      setUploading(prev => ({ ...prev, [type]: false }));
+    }
+  };
+
+  const UploadStatus = ({ type, url }: { type: string; url: string }) => {
+    if (uploading[type]) return <span style={{ fontSize: "12px", color: "#888" }}>⏳ Nahrávám...</span>;
+    if (uploadError[type]) return <span style={{ fontSize: "12px", color: "#ff4444" }}>✗ {uploadError[type]}</span>;
+    if (url) return <span style={{ fontSize: "12px", color: "#4caf50" }}>✓ {uploadedNames[type] || "Nahráno"}</span>;
+    return null;
   };
 
   return (
@@ -312,30 +333,92 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                 ))}
               </div>
             </div>
-            <div>
+
+            <div style={{ gridColumn: "1 / -1" }}>
               <label style={{ display: "block", marginBottom: "8px" }}>Preview Audio</label>
-              <input type="file" accept="audio/*" onChange={async (e) => { if (e.target.files?.[0]) { const url = await uploadFile(e.target.files[0], "preview"); setForm({ ...form, previewUrl: url }); } }} style={{ width: "100%" }} />
-              {form.previewUrl && <span style={{ fontSize: "12px", color: "#666" }}>Nahráno</span>}
+              <input
+                type="file"
+                accept="audio/*"
+                disabled={uploading["preview"]}
+                onChange={async (e) => {
+                  if (e.target.files?.[0]) {
+                    const url = await uploadFile(e.target.files[0], "preview");
+                    if (url) setForm(f => ({ ...f, previewUrl: url }));
+                  }
+                }}
+                style={{ width: "100%" }}
+              />
+              <div style={{ marginTop: "6px" }}><UploadStatus type="preview" url={form.previewUrl} /></div>
+              {form.previewUrl && !uploading["preview"] && (
+                <audio controls src={form.previewUrl} style={{ width: "100%", marginTop: "8px", height: "36px" }} />
+              )}
             </div>
-            <div>
-              <label style={{ display: "block", marginBottom: "8px" }}>Beat File</label>
-              <input type="file" accept="audio/*,.zip,.rar" onChange={async (e) => { if (e.target.files?.[0]) { const url = await uploadFile(e.target.files[0], "beat"); setForm({ ...form, fileUrl: url }); } }} style={{ width: "100%" }} />
-              {form.fileUrl && <span style={{ fontSize: "12px", color: "#666" }}>Nahráno</span>}
+
+            <div style={{ gridColumn: "1 / -1" }}>
+              <label style={{ display: "block", marginBottom: "8px" }}>Beat File (ZIP / WAV / MP3)</label>
+              <input
+                type="file"
+                accept="audio/*,.zip,.rar"
+                disabled={uploading["beat"]}
+                onChange={async (e) => {
+                  if (e.target.files?.[0]) {
+                    const url = await uploadFile(e.target.files[0], "beat");
+                    if (url) setForm(f => ({ ...f, fileUrl: url }));
+                  }
+                }}
+                style={{ width: "100%" }}
+              />
+              <div style={{ marginTop: "6px" }}><UploadStatus type="beat" url={form.fileUrl} /></div>
             </div>
+
             <div>
               <label style={{ display: "block", marginBottom: "8px" }}>Artwork</label>
-              <input type="file" accept="image/*" onChange={async (e) => { if (e.target.files?.[0]) { const url = await uploadFile(e.target.files[0], "artwork"); setForm({ ...form, artworkUrl: url }); } }} style={{ width: "100%" }} />
-              {form.artworkUrl && <span style={{ fontSize: "12px", color: "#666" }}>Nahráno</span>}
+              <input
+                type="file"
+                accept="image/*"
+                disabled={uploading["artwork"]}
+                onChange={async (e) => {
+                  if (e.target.files?.[0]) {
+                    const url = await uploadFile(e.target.files[0], "artwork");
+                    if (url) setForm(f => ({ ...f, artworkUrl: url }));
+                  }
+                }}
+                style={{ width: "100%" }}
+              />
+              <div style={{ marginTop: "6px" }}><UploadStatus type="artwork" url={form.artworkUrl} /></div>
+              {form.artworkUrl && !uploading["artwork"] && (
+                <img src={form.artworkUrl} alt="artwork preview" style={{ width: "80px", height: "80px", objectFit: "cover", marginTop: "8px", borderRadius: "3px" }} />
+              )}
             </div>
+
             <div>
               <label style={{ display: "block", marginBottom: "8px" }}>Trackout (ZIP)</label>
-              <input type="file" accept=".zip" onChange={async (e) => { if (e.target.files?.[0]) { const url = await uploadFile(e.target.files[0], "trackout"); setForm({ ...form, trackoutUrl: url }); } }} style={{ width: "100%" }} />
-              {form.trackoutUrl && <span style={{ fontSize: "12px", color: "#666" }}>Nahráno</span>}
+              <input
+                type="file"
+                accept=".zip"
+                disabled={uploading["trackout"]}
+                onChange={async (e) => {
+                  if (e.target.files?.[0]) {
+                    const url = await uploadFile(e.target.files[0], "trackout");
+                    if (url) setForm(f => ({ ...f, trackoutUrl: url }));
+                  }
+                }}
+                style={{ width: "100%" }}
+              />
+              <div style={{ marginTop: "6px" }}><UploadStatus type="trackout" url={form.trackoutUrl} /></div>
             </div>
           </div>
-          <button type="submit" className="btn btn-filled" style={{ marginTop: "16px" }}>
+          <button
+            type="submit"
+            className="btn btn-filled"
+            style={{ marginTop: "16px" }}
+            disabled={Object.values(uploading).some(Boolean)}
+          >
             {editing ? "Uložit změny" : "Přidat beat"}
           </button>
+          {Object.values(uploading).some(Boolean) && (
+            <span style={{ marginLeft: "12px", fontSize: "13px", color: "#888" }}>Čekám na dokončení nahrávání...</span>
+          )}
         </form>
       )}
 

@@ -244,13 +244,17 @@ function Home() {
         audioRef.current?.pause();
         setIsPlaying(false);
       } else {
-        audioRef.current?.play();
+        audioRef.current?.play().catch(console.error);
         setIsPlaying(true);
       }
     } else {
       setCurrentBeat(beat);
       setIsPlaying(true);
-      setTimeout(() => audioRef.current?.play(), 100);
+      if (audioRef.current) {
+        audioRef.current.src = beat.preview_url;
+        audioRef.current.load();
+        audioRef.current.play().catch(console.error);
+      }
     }
   };
 
