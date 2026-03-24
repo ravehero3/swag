@@ -260,13 +260,21 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     setUploading(prev => ({ ...prev, [type]: true }));
     setUploadError(prev => ({ ...prev, [type]: "" }));
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      const res = await fetch(`/api/upload?type=${type}`, { method: "POST", credentials: "include", body: formData });
-      if (!res.ok) throw new Error("Upload selhal");
-      const data = await res.json();
+      const ext = file.name.split('.').pop() || '';
+      const presignRes = await fetch(
+        `/api/upload/presign?type=${type}&ext=${encodeURIComponent(ext)}&contentType=${encodeURIComponent(file.type)}`,
+        { credentials: "include" }
+      );
+      if (!presignRes.ok) throw new Error("Presign selhal");
+      const { presignedUrl, publicUrl } = await presignRes.json();
+      const uploadRes = await fetch(presignedUrl, {
+        method: "PUT",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+      if (!uploadRes.ok) throw new Error("Upload selhal");
       setUploadedNames(prev => ({ ...prev, [type]: file.name }));
-      return data.url as string;
+      return publicUrl as string;
     } catch (err) {
       setUploadError(prev => ({ ...prev, [type]: "Upload se nezdařil" }));
       return "";
@@ -580,11 +588,20 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
   };
 
   const uploadFile = async (file: File, type: string) => {
-    const formData = new FormData();
-    formData.append("file", file);
-    const res = await fetch(`/api/upload?type=${type}`, { method: "POST", credentials: "include", body: formData });
-    const data = await res.json();
-    return data.url;
+    const ext = file.name.split('.').pop() || '';
+    const presignRes = await fetch(
+      `/api/upload/presign?type=${type}&ext=${encodeURIComponent(ext)}&contentType=${encodeURIComponent(file.type)}`,
+      { credentials: "include" }
+    );
+    if (!presignRes.ok) throw new Error("Presign selhal");
+    const { presignedUrl, publicUrl } = await presignRes.json();
+    const uploadRes = await fetch(presignedUrl, {
+      method: "PUT",
+      headers: { "Content-Type": file.type },
+      body: file,
+    });
+    if (!uploadRes.ok) throw new Error("Upload selhal");
+    return publicUrl as string;
   };
 
   return (
