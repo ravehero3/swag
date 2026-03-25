@@ -9,6 +9,8 @@ const s3Client = new S3Client({
     secretAccessKey: process.env.B2_KEY_SECRET!,
   },
   forcePathStyle: true,
+  requestChecksumCalculation: "WHEN_REQUIRED",
+  responseChecksumValidation: "WHEN_REQUIRED",
 });
 
 export async function uploadFile(

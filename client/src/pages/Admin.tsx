@@ -265,17 +265,28 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
         `/api/upload/presign?type=${type}&ext=${encodeURIComponent(ext)}&contentType=${encodeURIComponent(file.type)}`,
         { credentials: "include" }
       );
-      if (!presignRes.ok) throw new Error("Presign selhal");
+      if (!presignRes.ok) {
+        const err = await presignRes.json().catch(() => ({}));
+        console.error("Presign failed:", presignRes.status, err);
+        setUploadError(prev => ({ ...prev, [type]: `Chyba serveru (${presignRes.status})` }));
+        return "";
+      }
       const { presignedUrl, publicUrl } = await presignRes.json();
       const uploadRes = await fetch(presignedUrl, {
         method: "PUT",
         headers: { "Content-Type": file.type },
         body: file,
       });
-      if (!uploadRes.ok) throw new Error("Upload selhal");
+      if (!uploadRes.ok) {
+        const body = await uploadRes.text();
+        console.error("B2 upload failed:", uploadRes.status, body);
+        setUploadError(prev => ({ ...prev, [type]: `B2 chyba (${uploadRes.status})` }));
+        return "";
+      }
       setUploadedNames(prev => ({ ...prev, [type]: file.name }));
       return publicUrl as string;
     } catch (err) {
+      console.error("Upload exception:", err);
       setUploadError(prev => ({ ...prev, [type]: "Upload se nezdařil" }));
       return "";
     } finally {
