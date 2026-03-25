@@ -16,7 +16,7 @@ function getPublicUrl(bucket: string, key: string): string {
     return `${process.env.B2_PUBLIC_BASE_URL}/${key}`;
   }
   const endpoint = process.env.B2_ENDPOINT || "";
-  return `https://${endpoint}/${bucket}/${key}`;
+  return `https://${bucket}.${endpoint}/${key}`;
 }
 
 router.get("/presign", requireAdmin, async (req: Request, res: Response) => {

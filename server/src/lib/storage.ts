@@ -8,7 +8,6 @@ const s3Client = new S3Client({
     accessKeyId: process.env.B2_KEY_ID!,
     secretAccessKey: process.env.B2_KEY_SECRET!,
   },
-  forcePathStyle: true,
   requestChecksumCalculation: "WHEN_REQUIRED",
   responseChecksumValidation: "WHEN_REQUIRED",
 });
