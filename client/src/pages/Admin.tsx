@@ -260,36 +260,39 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     setUploading(prev => ({ ...prev, [type]: true }));
     setUploadError(prev => ({ ...prev, [type]: "" }));
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      
-      console.log(`Uploading ${type}: ${file.name} (${file.size} bytes)`);
-      
-      // Use server-side upload endpoint (more reliable than presigned URLs)
-      const uploadRes = await fetch(`/api/upload?type=${encodeURIComponent(type)}`, {
-        method: "POST",
-        credentials: "include",
-        body: formData,
+      const ext = file.name.split('.').pop() || 'zip';
+      const contentType = file.type || 'application/zip';
+
+      const presignRes = await fetch(
+        `/api/upload/presign?type=${encodeURIComponent(type)}&ext=${encodeURIComponent(ext)}&contentType=${encodeURIComponent(contentType)}`,
+        { credentials: 'include' }
+      );
+
+      if (!presignRes.ok) {
+        const err = await presignRes.json().catch(() => ({}));
+        throw new Error(err.error || `Presign failed (${presignRes.status})`);
+      }
+
+      const { presignedUrl, publicUrl } = await presignRes.json();
+
+      const uploadRes = await fetch(presignedUrl, {
+        method: 'PUT',
+        headers: { 'Content-Type': contentType },
+        body: file,
       });
 
       if (!uploadRes.ok) {
-        const errorData = await uploadRes.json().catch(() => ({}));
-        const errorMsg = errorData.error || `Upload failed (${uploadRes.status})`;
-        const errorDetail = errorData.detail || "";
-        console.error("Upload failed:", uploadRes.status, errorMsg, errorDetail);
-        setUploadError(prev => ({ ...prev, [type]: `${errorMsg}${errorDetail ? ': ' + errorDetail : ''}` }));
-        return "";
+        const body = await uploadRes.text().catch(() => '');
+        throw new Error(`B2 upload failed ${uploadRes.status} ${body}`);
       }
 
-      const result = await uploadRes.json();
-      console.log(`Upload successful: ${type} -> ${result.url || result.key}`);
       setUploadedNames(prev => ({ ...prev, [type]: file.name }));
-      return result.url || result.key;
+      return publicUrl || '';
     } catch (err) {
-      console.error("Upload exception:", err);
-      const errorMsg = err instanceof Error ? err.message : "Upload se nezdařil";
+      console.error('Upload exception:', err);
+      const errorMsg = err instanceof Error ? err.message : 'Upload se nezdařil';
       setUploadError(prev => ({ ...prev, [type]: errorMsg }));
-      return "";
+      return '';
     } finally {
       setUploading(prev => ({ ...prev, [type]: false }));
     }
@@ -601,28 +604,35 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
 
   const uploadFile = async (file: File, type: string) => {
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      
-      console.log(`Uploading ${type}: ${file.name}`);
-      
-      // Use server-side upload endpoint (more reliable than presigned URLs)
-      const uploadRes = await fetch(`/api/upload?type=${encodeURIComponent(type)}`, {
-        method: "POST",
-        credentials: "include",
-        body: formData,
-      });
-      
-      if (!uploadRes.ok) {
-        const errorData = await uploadRes.json().catch(() => ({}));
-        const errorMsg = errorData.error || `Upload selhal (${uploadRes.status})`;
-        throw new Error(errorMsg);
+      const ext = file.name.split('.').pop() || 'zip';
+      const contentType = file.type || 'application/zip';
+
+      const presignRes = await fetch(
+        `/api/upload/presign?type=${encodeURIComponent(type)}&ext=${encodeURIComponent(ext)}&contentType=${encodeURIComponent(contentType)}`,
+        { credentials: 'include' }
+      );
+
+      if (!presignRes.ok) {
+        const err = await presignRes.json().catch(() => ({}));
+        throw new Error(err.error || `Presign failed (${presignRes.status})`);
       }
-      
-      const result = await uploadRes.json();
-      return result.url || result.key;
+
+      const { presignedUrl, publicUrl } = await presignRes.json();
+
+      const uploadRes = await fetch(presignedUrl, {
+        method: 'PUT',
+        headers: { 'Content-Type': contentType },
+        body: file,
+      });
+
+      if (!uploadRes.ok) {
+        const body = await uploadRes.text().catch(() => '');
+        throw new Error(`B2 upload failed ${uploadRes.status}: ${body}`);
+      }
+
+      return publicUrl || '';
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : "Upload selhal";
+      const errorMsg = err instanceof Error ? err.message : 'Upload selhal';
       throw new Error(errorMsg);
     }
   };
