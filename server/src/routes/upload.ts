@@ -23,10 +23,11 @@ function getPublicUrl(bucket: string, key: string): string {
 router.get("/presign", requireAdmin, async (req: Request, res: Response) => {
   const type = req.query.type as string;
   const ext = req.query.ext as string;
-  const contentType = req.query.contentType as string;
+  // contentType is optional; see storage.ts note about signing ContentType
+  const contentType = (req.query.contentType as string) || "";
 
-  if (!type || !ext || !contentType) {
-    return res.status(400).json({ error: "Missing type, ext, or contentType" });
+  if (!type || !ext) {
+    return res.status(400).json({ error: "Missing type or ext" });
   }
 
   const key = `${uuidv4()}.${ext}`;
@@ -34,7 +35,7 @@ router.get("/presign", requireAdmin, async (req: Request, res: Response) => {
   const bucket = isPublic ? STORAGE_BUCKETS.PREVIEWS : STORAGE_BUCKETS.ZIPS;
 
   try {
-    const presignedUrl = await generatePresignedUploadUrl(bucket, key, contentType);
+    const presignedUrl = await generatePresignedUploadUrl(bucket, key, contentType || undefined);
     const publicUrl = isPublic ? getPublicUrl(bucket, key) : key;
     res.json({ presignedUrl, publicUrl, key });
   } catch (error) {

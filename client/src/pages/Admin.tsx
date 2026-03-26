@@ -172,6 +172,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   const [uploading, setUploading] = useState<Record<string, boolean>>({});
   const [uploadedNames, setUploadedNames] = useState<Record<string, string>>({});
   const [uploadError, setUploadError] = useState<Record<string, string>>({});
+  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
 
   const handleSelectAll = () => {
     if (selectedBeats.length === beats.length) {
@@ -259,9 +260,10 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   const uploadFile = async (file: File, type: string) => {
     setUploading(prev => ({ ...prev, [type]: true }));
     setUploadError(prev => ({ ...prev, [type]: "" }));
+    setUploadProgress(prev => ({ ...prev, [type]: 0 }));
     try {
       const ext = file.name.split('.').pop() || 'zip';
-      const contentType = file.type || 'application/zip';
+      const contentType = file.type || '';
 
       const presignRes = await fetch(
         `/api/upload/presign?type=${encodeURIComponent(type)}&ext=${encodeURIComponent(ext)}&contentType=${encodeURIComponent(contentType)}`,
@@ -275,16 +277,34 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
 
       const { presignedUrl, publicUrl } = await presignRes.json();
 
-      const uploadRes = await fetch(presignedUrl, {
-        method: 'PUT',
-        headers: { 'Content-Type': contentType },
-        body: file,
-      });
+      // Use XHR for real upload progress. fetch() does not expose upload progress in browsers.
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", presignedUrl, true);
+        if (contentType) xhr.setRequestHeader("Content-Type", contentType);
 
-      if (!uploadRes.ok) {
-        const body = await uploadRes.text().catch(() => '');
-        throw new Error(`B2 upload failed ${uploadRes.status} ${body}`);
-      }
+        xhr.upload.onprogress = (evt) => {
+          if (!evt.lengthComputable) return;
+          const pct = Math.max(0, Math.min(100, Math.round((evt.loaded / evt.total) * 100)));
+          setUploadProgress(prev => ({ ...prev, [type]: pct }));
+        };
+
+        xhr.onerror = () => {
+          // Most common cause in production: CORS blocks the PUT to Backblaze, which surfaces as a network error.
+          reject(new Error("Upload failed (network/CORS). If you're on production, Backblaze B2 bucket CORS must allow PUT from your domain."));
+        };
+
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            setUploadProgress(prev => ({ ...prev, [type]: 100 }));
+            resolve();
+            return;
+          }
+          reject(new Error(`B2 upload failed ${xhr.status}: ${xhr.responseText || xhr.statusText}`));
+        };
+
+        xhr.send(file);
+      });
 
       setUploadedNames(prev => ({ ...prev, [type]: file.name }));
       return publicUrl || '';
@@ -303,6 +323,29 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     if (uploadError[type]) return <span style={{ fontSize: "12px", color: "#ff4444" }}>✗ {uploadError[type]}</span>;
     if (url) return <span style={{ fontSize: "12px", color: "#4caf50" }}>✓ {uploadedNames[type] || "Nahráno"}</span>;
     return null;
+  };
+
+  const UploadProgressBar = ({ type }: { type: string }) => {
+    if (!uploading[type]) return null;
+    const pct = uploadProgress[type] ?? 0;
+    return (
+      <div style={{ marginTop: "8px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+          <span style={{ fontSize: "12px", color: "#aaa" }}>Nahrávám…</span>
+          <span style={{ fontSize: "12px", color: "#aaa" }}>{pct}%</span>
+        </div>
+        <div style={{ height: "10px", background: "#1b1b1b", borderRadius: "999px", overflow: "hidden", border: "1px solid #2a2a2a" }}>
+          <div
+            style={{
+              height: "100%",
+              width: `${pct}%`,
+              background: "linear-gradient(90deg, #0B99FC, #4cc3ff)",
+              transition: "width 200ms ease",
+            }}
+          />
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -371,6 +414,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                 }}
                 style={{ width: "100%" }}
               />
+              <UploadProgressBar type="preview" />
               <div style={{ marginTop: "6px" }}><UploadStatus type="preview" url={form.previewUrl} /></div>
               {form.previewUrl && !uploading["preview"] && (
                 <audio controls src={form.previewUrl} style={{ width: "100%", marginTop: "8px", height: "36px" }} />
@@ -391,6 +435,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                 }}
                 style={{ width: "100%" }}
               />
+              <UploadProgressBar type="beat" />
               <div style={{ marginTop: "6px" }}><UploadStatus type="beat" url={form.fileUrl} /></div>
             </div>
 
@@ -408,6 +453,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                 }}
                 style={{ width: "100%" }}
               />
+              <UploadProgressBar type="artwork" />
               <div style={{ marginTop: "6px" }}><UploadStatus type="artwork" url={form.artworkUrl} /></div>
               {form.artworkUrl && !uploading["artwork"] && (
                 <img src={form.artworkUrl} alt="artwork preview" style={{ width: "80px", height: "80px", objectFit: "cover", marginTop: "8px", borderRadius: "3px" }} />
@@ -428,6 +474,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                 }}
                 style={{ width: "100%" }}
               />
+              <UploadProgressBar type="trackout" />
               <div style={{ marginTop: "6px" }}><UploadStatus type="trackout" url={form.trackoutUrl} /></div>
             </div>
           </div>
@@ -531,6 +578,9 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
   });
   const [tagInput, setTagInput] = useState("");
   const [selectedKits, setSelectedKits] = useState<number[]>([]);
+  const [uploading, setUploading] = useState<Record<string, boolean>>({});
+  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
+  const [uploadError, setUploadError] = useState<Record<string, string>>({});
 
   const handleSelectAll = () => {
     if (selectedKits.length === kits.length) {
@@ -603,9 +653,12 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
   };
 
   const uploadFile = async (file: File, type: string) => {
+    setUploading(prev => ({ ...prev, [type]: true }));
+    setUploadError(prev => ({ ...prev, [type]: "" }));
+    setUploadProgress(prev => ({ ...prev, [type]: 0 }));
     try {
       const ext = file.name.split('.').pop() || 'zip';
-      const contentType = file.type || 'application/zip';
+      const contentType = file.type || '';
 
       const presignRes = await fetch(
         `/api/upload/presign?type=${encodeURIComponent(type)}&ext=${encodeURIComponent(ext)}&contentType=${encodeURIComponent(contentType)}`,
@@ -619,22 +672,63 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
 
       const { presignedUrl, publicUrl } = await presignRes.json();
 
-      const uploadRes = await fetch(presignedUrl, {
-        method: 'PUT',
-        headers: { 'Content-Type': contentType },
-        body: file,
-      });
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", presignedUrl, true);
+        if (contentType) xhr.setRequestHeader("Content-Type", contentType);
 
-      if (!uploadRes.ok) {
-        const body = await uploadRes.text().catch(() => '');
-        throw new Error(`B2 upload failed ${uploadRes.status}: ${body}`);
-      }
+        xhr.upload.onprogress = (evt) => {
+          if (!evt.lengthComputable) return;
+          const pct = Math.max(0, Math.min(100, Math.round((evt.loaded / evt.total) * 100)));
+          setUploadProgress(prev => ({ ...prev, [type]: pct }));
+        };
+
+        xhr.onerror = () => reject(new Error("Upload failed (network/CORS)"));
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            setUploadProgress(prev => ({ ...prev, [type]: 100 }));
+            resolve();
+            return;
+          }
+          reject(new Error(`B2 upload failed ${xhr.status}: ${xhr.responseText || xhr.statusText}`));
+        };
+        xhr.send(file);
+      });
 
       return publicUrl || '';
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Upload selhal';
+      setUploadError(prev => ({ ...prev, [type]: errorMsg }));
       throw new Error(errorMsg);
+    } finally {
+      setUploading(prev => ({ ...prev, [type]: false }));
     }
+  };
+
+  const UploadProgressBar = ({ type }: { type: string }) => {
+    if (!uploading[type]) return null;
+    const pct = uploadProgress[type] ?? 0;
+    return (
+      <div style={{ marginTop: "8px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+          <span style={{ fontSize: "12px", color: "#aaa" }}>Nahrávám…</span>
+          <span style={{ fontSize: "12px", color: "#aaa" }}>{pct}%</span>
+        </div>
+        <div style={{ height: "10px", background: "#1b1b1b", borderRadius: "999px", overflow: "hidden", border: "1px solid #2a2a2a" }}>
+          <div
+            style={{
+              height: "100%",
+              width: `${pct}%`,
+              background: "linear-gradient(90deg, #0B99FC, #4cc3ff)",
+              transition: "width 200ms ease",
+            }}
+          />
+        </div>
+        {uploadError[type] && (
+          <div style={{ marginTop: "6px", color: "#ff4444", fontSize: "12px" }}>✗ {uploadError[type]}</div>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -692,14 +786,17 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
             <div>
               <label style={{ display: "block", marginBottom: "8px" }}>Preview Audio</label>
               <input type="file" accept="audio/*" onChange={async (e) => { if (e.target.files?.[0]) { const url = await uploadFile(e.target.files[0], "preview"); setForm({ ...form, previewUrl: url }); } }} style={{ width: "100%" }} />
+              <UploadProgressBar type="preview" />
             </div>
             <div>
               <label style={{ display: "block", marginBottom: "8px" }}>ZIP/RAR soubor</label>
               <input type="file" accept=".zip,.rar" onChange={async (e) => { if (e.target.files?.[0]) { const url = await uploadFile(e.target.files[0], "kit"); setForm({ ...form, fileUrl: url }); } }} style={{ width: "100%" }} />
+              <UploadProgressBar type="kit" />
             </div>
             <div>
               <label style={{ display: "block", marginBottom: "8px" }}>Artwork</label>
               <input type="file" accept="image/*" onChange={async (e) => { if (e.target.files?.[0]) { const url = await uploadFile(e.target.files[0], "artwork"); setForm({ ...form, artworkUrl: url }); } }} style={{ width: "100%" }} />
+              <UploadProgressBar type="artwork" />
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "16px" }}>

@@ -103,7 +103,33 @@ router.post("/bulk-delete", requireAdmin, async (req: Request, res: Response) =>
 
 router.get("/:id/download", requireAuth, async (req: Request, res: Response) => {
   try {
-    const result = await pool.query("SELECT file_url FROM sound_kits WHERE id = $1", [req.params.id]);
+    const kitId = req.params.id;
+    const userId = req.session.userId;
+    const isAdmin = req.session.isAdmin;
+
+    // Only admins or users with a completed purchase can download the asset.
+    if (!isAdmin) {
+      const purchaseCheck = await pool.query(
+        `SELECT 1
+         FROM orders o
+         WHERE o.user_id = $1
+           AND o.status = 'completed'
+           AND EXISTS (
+             SELECT 1
+             FROM jsonb_array_elements(o.items) AS item
+             WHERE item->>'productType' = 'sound_kit'
+               AND item->>'productId' = $2
+           )
+         LIMIT 1`,
+        [userId, kitId]
+      );
+
+      if (purchaseCheck.rows.length === 0) {
+        return res.status(403).json({ error: "Produkt nebyl zakoupen nebo objednávka není dokončena" });
+      }
+    }
+
+    const result = await pool.query("SELECT file_url FROM sound_kits WHERE id = $1", [kitId]);
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "Sound kit nenalezen" });
     }

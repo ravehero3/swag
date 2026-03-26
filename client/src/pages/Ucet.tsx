@@ -33,7 +33,7 @@ export default function Ucet() {
     const fetchData = async () => {
       try {
         const [ordersRes, savedRes] = await Promise.all([
-          fetch("/api/orders", { credentials: "include" }),
+          fetch("/api/orders/my", { credentials: "include" }),
           fetch("/api/saved", { credentials: "include" })
         ]);
 

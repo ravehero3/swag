@@ -41,14 +41,18 @@ export async function uploadFile(
 export async function generatePresignedUploadUrl(
   bucket: string,
   key: string,
-  contentType: string,
+  contentType?: string,
   expiresIn: number = 3600
 ) {
   try {
     const command = new PutObjectCommand({
       Bucket: bucket,
       Key: key,
-      ContentType: contentType,
+      // IMPORTANT:
+      // Do NOT always sign ContentType. Browsers sometimes send a slightly different
+      // Content-Type than what we expect (or omit it), which can invalidate the signature.
+      // Leaving it unsigned makes uploads more reliable.
+      ...(contentType ? { ContentType: contentType } : {}),
     });
     const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn });
     console.log(`Presigned URL generated for ${bucket}/${key}`);
