@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import { pool } from "../db.js";
-import { requireAdmin } from "../middleware/auth.js";
+import { requireAdmin, requireAuth } from "../middleware/auth.js";
 import { generateDownloadUrl, STORAGE_BUCKETS } from "../lib/storage.js";
 
 const router = Router();
@@ -149,19 +149,19 @@ router.post("/bulk-delete", requireAdmin, async (req: Request, res: Response) =>
   }
 });
 
-router.get("/:id/download", async (req: Request, res: Response) => {
+router.get("/:id/download", requireAuth, async (req: Request, res: Response) => {
   try {
     const result = await pool.query("SELECT file_url FROM beats WHERE id = $1", [req.params.id]);
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: "Beat not found" });
+      return res.status(404).json({ error: "Beat nenalezen" });
     }
-    
-    // For now, this is a test route to generate a signed URL
-    // In production, this would be triggered after payment
+    if (!result.rows[0].file_url) {
+      return res.status(404).json({ error: "Soubor není dostupný" });
+    }
     const url = await generateDownloadUrl(STORAGE_BUCKETS.ZIPS, result.rows[0].file_url);
     res.json({ downloadUrl: url });
   } catch (error) {
-    res.status(500).json({ error: "Failed to generate download link" });
+    res.status(500).json({ error: "Chyba při generování odkazu ke stažení" });
   }
 });
 

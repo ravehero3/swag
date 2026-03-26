@@ -39,16 +39,20 @@ function DownloadModal({ item, isOpen, onClose, user }: DownloadModalProps) {
       });
 
       if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `${item.title}.${isSoundKit ? 'zip' : 'mp3'}`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-        onClose();
+        const data = await response.json();
+        if (data.downloadUrl) {
+          const a = document.createElement("a");
+          a.href = data.downloadUrl;
+          a.target = "_blank";
+          a.rel = "noopener noreferrer";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          onClose();
+        }
+      } else {
+        const err = await response.json().catch(() => ({}));
+        console.error("Download error:", err);
       }
     } catch (error) {
       console.error("Download error:", error);
