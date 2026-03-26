@@ -19,7 +19,14 @@ function getDatabaseConfig() {
 }
 
 const config = getDatabaseConfig();
-const pool = new pg.Pool(config);
+
+const maxDbClients = Number(process.env.DB_MAX_CLIENTS || 10);
+const pool = new pg.Pool({
+  ...config,
+  max: maxDbClients,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 20000,
+});
 
 pool.on('error', (err) => {
   console.error('Database pool error (non-fatal):', err.message);
