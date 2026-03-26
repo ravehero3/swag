@@ -21,6 +21,10 @@ function getDatabaseConfig() {
 const config = getDatabaseConfig();
 const pool = new pg.Pool(config);
 
+pool.on('error', (err) => {
+  console.error('Database pool error (non-fatal):', err.message);
+});
+
 export async function initDatabase() {
   const client = await pool.connect();
   try {

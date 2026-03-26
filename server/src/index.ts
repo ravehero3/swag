@@ -235,6 +235,17 @@ app.post("/api/admin/settings", requireAdmin, async (req, res) => {
   }
 });
 
+// JSON error handler — ensures API routes always return JSON, never HTML
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error("Express error on", req.method, req.path, ":", err.message);
+  if (req.path.startsWith('/api/') || req.path.startsWith('/uploads/')) {
+    return res.status(err.status || 500).json({
+      error: err.message || "Chyba serveru",
+    });
+  }
+  next(err);
+});
+
 async function startServer() {
   await initDatabase();
   await seedAdmin();
