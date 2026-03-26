@@ -261,8 +261,9 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     setUploadError(prev => ({ ...prev, [type]: "" }));
     try {
       const ext = file.name.split('.').pop() || '';
+      const contentType = file.type || 'application/octet-stream';
       const presignRes = await fetch(
-        `/api/upload/presign?type=${type}&ext=${encodeURIComponent(ext)}&contentType=${encodeURIComponent(file.type)}`,
+        `/api/upload/presign?type=${type}&ext=${encodeURIComponent(ext)}&contentType=${encodeURIComponent(contentType)}`,
         { credentials: "include" }
       );
       if (!presignRes.ok) {
@@ -274,7 +275,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
       const { presignedUrl, publicUrl } = await presignRes.json();
       const uploadRes = await fetch(presignedUrl, {
         method: "PUT",
-        headers: { "Content-Type": file.type },
+        headers: { "Content-Type": contentType },
         body: file,
       });
       if (!uploadRes.ok) {
@@ -600,15 +601,16 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
 
   const uploadFile = async (file: File, type: string) => {
     const ext = file.name.split('.').pop() || '';
+    const contentType = file.type || 'application/octet-stream';
     const presignRes = await fetch(
-      `/api/upload/presign?type=${type}&ext=${encodeURIComponent(ext)}&contentType=${encodeURIComponent(file.type)}`,
+      `/api/upload/presign?type=${type}&ext=${encodeURIComponent(ext)}&contentType=${encodeURIComponent(contentType)}`,
       { credentials: "include" }
     );
     if (!presignRes.ok) throw new Error("Presign selhal");
     const { presignedUrl, publicUrl } = await presignRes.json();
     const uploadRes = await fetch(presignedUrl, {
       method: "PUT",
-      headers: { "Content-Type": file.type },
+      headers: { "Content-Type": contentType },
       body: file,
     });
     if (!uploadRes.ok) throw new Error("Upload selhal");
