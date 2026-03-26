@@ -19,6 +19,7 @@ function getPublicUrl(bucket: string, key: string): string {
   return `https://${bucket}.${endpoint}/${key}`;
 }
 
+// Generate presigned URL for direct browser uploads (fallback)
 router.get("/presign", requireAdmin, async (req: Request, res: Response) => {
   const type = req.query.type as string;
   const ext = req.query.ext as string;
@@ -42,25 +43,39 @@ router.get("/presign", requireAdmin, async (req: Request, res: Response) => {
   }
 });
 
+// Server-side upload endpoint (PRIMARY METHOD - more reliable)
 router.post("/", requireAdmin, upload.single("file"), async (req: Request, res: Response) => {
   if (!req.file) {
     return res.status(400).json({ error: "No file uploaded" });
   }
   
   const type = req.query.type as string;
-  const ext = req.file.originalname.split('.').pop();
+  if (!type) {
+    return res.status(400).json({ error: "Missing type parameter" });
+  }
+
+  const ext = req.file.originalname.split('.').pop() || '';
   const key = `${uuidv4()}.${ext}`;
 
   const isPublic = type === "preview" || type === "artwork";
   const bucket = isPublic ? STORAGE_BUCKETS.PREVIEWS : STORAGE_BUCKETS.ZIPS;
   
   try {
+    console.log(`Starting upload: file=${req.file.originalname}, type=${type}, size=${req.file.size} bytes, bucket=${bucket}`);
+    
     await uploadFile(bucket, key, req.file.buffer, req.file.mimetype);
+    
     const url = isPublic ? getPublicUrl(bucket, key) : key;
-    res.json({ url, key });
+    console.log(`Upload successful: ${bucket}/${key}`);
+    res.json({ url, key, bucket });
   } catch (error) {
     console.error("B2 Upload error:", error);
-    res.status(500).json({ error: "Failed to upload to cloud storage", detail: String(error) });
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    res.status(500).json({ 
+      error: "Failed to upload to cloud storage", 
+      detail: errorMessage,
+      hint: "Make sure the Backblaze bucket is public and credentials are correct"
+    });
   }
 });
 

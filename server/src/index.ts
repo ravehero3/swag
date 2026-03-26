@@ -79,7 +79,8 @@ app.use(cors({
   origin: true,
   credentials: true,
 }));
-app.use(express.json());
+app.use(express.json({ limit: '500mb' }));
+app.use(express.urlencoded({ limit: '500mb', extended: true }));
 
 const isProduction = process.env.NODE_ENV === "production";
 

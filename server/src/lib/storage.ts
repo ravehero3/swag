@@ -10,6 +10,7 @@ const s3Client = new S3Client({
   },
   requestChecksumCalculation: "WHEN_REQUIRED",
   responseChecksumValidation: "WHEN_REQUIRED",
+  forcePathStyle: true,
 });
 
 export async function uploadFile(
@@ -18,14 +19,23 @@ export async function uploadFile(
   body: Buffer | string,
   contentType: string,
 ) {
-  const command = new PutObjectCommand({
-    Bucket: bucket,
-    Key: key,
-    Body: body,
-    ContentType: contentType,
-  });
+  try {
+    const command = new PutObjectCommand({
+      Bucket: bucket,
+      Key: key,
+      Body: body,
+      ContentType: contentType,
+      // Note: For public buckets, ACL is not needed, but for direct browser uploads,
+      // the bucket needs CORS configured in Backblaze
+    });
 
-  return s3Client.send(command);
+    const response = await s3Client.send(command);
+    console.log(`File uploaded successfully: ${bucket}/${key}`);
+    return response;
+  } catch (error) {
+    console.error(`Upload error for ${bucket}/${key}:`, error);
+    throw error;
+  }
 }
 
 export async function generatePresignedUploadUrl(
@@ -34,21 +44,34 @@ export async function generatePresignedUploadUrl(
   contentType: string,
   expiresIn: number = 3600
 ) {
-  const command = new PutObjectCommand({
-    Bucket: bucket,
-    Key: key,
-    ContentType: contentType,
-  });
-  return getSignedUrl(s3Client, command, { expiresIn });
+  try {
+    const command = new PutObjectCommand({
+      Bucket: bucket,
+      Key: key,
+      ContentType: contentType,
+    });
+    const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn });
+    console.log(`Presigned URL generated for ${bucket}/${key}`);
+    return presignedUrl;
+  } catch (error) {
+    console.error(`Presign error for ${bucket}/${key}:`, error);
+    throw error;
+  }
 }
 
 export async function generateDownloadUrl(bucket: string, key: string, expiresIn: number = 604800) {
-  const command = new GetObjectCommand({
-    Bucket: bucket,
-    Key: key,
-  });
+  try {
+    const command = new GetObjectCommand({
+      Bucket: bucket,
+      Key: key,
+    });
 
-  return getSignedUrl(s3Client, command, { expiresIn });
+    const url = await getSignedUrl(s3Client, command, { expiresIn });
+    return url;
+  } catch (error) {
+    console.error(`Download URL generation error for ${bucket}/${key}:`, error);
+    throw error;
+  }
 }
 
 export const STORAGE_BUCKETS = {
