@@ -152,6 +152,23 @@ app.get("/api/promo-codes", requireAdmin, async (_req, res) => {
   }
 });
 
+app.post("/api/promo-codes/validate", async (req, res) => {
+  try {
+    const { code } = req.body;
+    if (!code) return res.status(400).json({ error: "Kód je povinný" });
+    const result = await pool.query(
+      "SELECT discount_percent FROM promo_codes WHERE code = $1 AND is_active = true",
+      [code.toUpperCase()]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Neplatný nebo neaktivní kód" });
+    }
+    res.json({ discountPercent: result.rows[0].discount_percent });
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při ověřování kódu" });
+  }
+});
+
 app.post("/api/admin/promo-codes", requireAdmin, async (req, res) => {
   try {
     const { code, discountPercent, isActive } = req.body;

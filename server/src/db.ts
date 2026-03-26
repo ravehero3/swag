@@ -111,6 +111,15 @@ export async function initDatabase() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
 
+      CREATE TABLE IF NOT EXISTS beat_license_files (
+        id SERIAL PRIMARY KEY,
+        beat_id INTEGER REFERENCES beats(id) ON DELETE CASCADE,
+        license_type_id INTEGER REFERENCES license_types(id) ON DELETE CASCADE,
+        file_url TEXT NOT NULL,
+        uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(beat_id, license_type_id)
+      );
+
       CREATE TABLE IF NOT EXISTS promo_codes (
         id SERIAL PRIMARY KEY,
         code VARCHAR(50) UNIQUE NOT NULL,

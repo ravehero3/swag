@@ -51,6 +51,7 @@ interface AppContextType {
   isNewsletterOpen: boolean;
   setIsNewsletterOpen: (open: boolean) => void;
   settings: Record<string, string>;
+  refreshSettings: () => Promise<void>;
 }
 
 export const AppContext = createContext<AppContextType>({
@@ -65,6 +66,7 @@ export const AppContext = createContext<AppContextType>({
   isNewsletterOpen: false,
   setIsNewsletterOpen: () => {},
   settings: {},
+  refreshSettings: async () => {},
 });
 
 export const useApp = () => useContext(AppContext);
@@ -147,6 +149,18 @@ function App() {
     localStorage.removeItem("voodoo808_cart");
   };
 
+  const refreshSettings = async () => {
+    try {
+      const res = await fetch("/api/settings");
+      if (res.ok) {
+        const data = await res.json();
+        setSettings(data);
+      }
+    } catch (error) {
+      console.error("Failed to refresh settings:", error);
+    }
+  };
+
   if (loading) {
     return (
       <div style={{ 
@@ -169,7 +183,7 @@ function App() {
   const isPokladnaPage = location === "/pokladna";
 
   return (
-    <AppContext.Provider value={{ user, setUser, cart, addToCart, removeFromCart, clearCart, isCartOpen, setIsCartOpen, isNewsletterOpen, setIsNewsletterOpen, settings }}>
+    <AppContext.Provider value={{ user, setUser, cart, addToCart, removeFromCart, clearCart, isCartOpen, setIsCartOpen, isNewsletterOpen, setIsNewsletterOpen, settings, refreshSettings }}>
       <div style={{ minHeight: "100vh", background: "#000", display: "flex", flexDirection: "column" }}>
         <Header />
         <main style={{ flex: 1 }} className="fade-in">

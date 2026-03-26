@@ -16,14 +16,17 @@ function Checkout() {
 
   const applyPromoCode = async () => {
     try {
-      const res = await fetch("/api/promo-codes", { credentials: "include" });
-      const codes = await res.json();
-      const code = codes.find((c: any) => c.code === promoCode.toUpperCase() && c.is_active);
-      if (code) {
-        setDiscount(code.discount_percent);
+      const res = await fetch("/api/promo-codes/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: promoCode }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setDiscount(data.discountPercent);
         setPromoError("");
       } else {
-        setPromoError("Neplatný kód");
+        setPromoError(data.error || "Neplatný kód");
         setDiscount(0);
       }
     } catch (err) {
