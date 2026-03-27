@@ -27,7 +27,9 @@ const upload = multer({
   }
 });
 
+const router = Router();
 
+router.get("/b2-credentials", requireAdmin, (req: Request, res: Response) => {
   if (!process.env.B2_KEY_ID || !process.env.B2_KEY_SECRET || !process.env.B2_ENDPOINT) {
     return res.status(500).json({ error: "B2 config missing" });
   }
