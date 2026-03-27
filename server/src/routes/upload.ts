@@ -7,7 +7,15 @@ import { requireAdmin } from "../middleware/auth.js";
 import { uploadFile, generatePresignedUploadUrl, STORAGE_BUCKETS } from "../lib/storage.js";
 import stream from "stream";
 import { pool } from "../db.js";
-import type { PendingUpload } from "../../shared/types";
+interface PendingUpload {
+  id: number;
+  key: string;
+  bucket: string;
+  filename: string;
+  size: number;
+  uploaded_at: string;
+  linked: boolean;
+}
 
 const uploadDir = path.join(process.cwd(), "tmp/uploads");
 if (!fs.existsSync(uploadDir)) {
