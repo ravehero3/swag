@@ -75,6 +75,16 @@ export interface LicenseType {
   createdAt: Date;
 }
 
+export interface PendingUpload {
+  id: number;
+  key: string;
+  bucket: string;
+  filename: string;
+  size: number;
+  uploadedAt: Date;
+  linked: boolean;
+}
+
 export interface BeatLicenseFile {
   id: number;
   beatId: number;

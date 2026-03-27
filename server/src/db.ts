@@ -127,6 +127,16 @@ export async function initDatabase() {
         UNIQUE(beat_id, license_type_id)
       );
 
+      CREATE TABLE IF NOT EXISTS pending_uploads (
+        id SERIAL PRIMARY KEY,
+        key TEXT NOT NULL,
+        bucket TEXT NOT NULL,
+        filename TEXT NOT NULL,
+        size BIGINT,
+        uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        linked BOOLEAN DEFAULT FALSE
+      );
+
       CREATE TABLE IF NOT EXISTS promo_codes (
         id SERIAL PRIMARY KEY,
         code VARCHAR(50) UNIQUE NOT NULL,

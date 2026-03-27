@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+ like yoimport { useState, useEffect } from "react";
 import { useApp } from "../App.js";
 import { useLocation } from "wouter";
 
@@ -51,7 +51,7 @@ function Admin() {
   const { user, settings, refreshSettings } = useApp() as any;
   const [, navigate] = useLocation();
   const [tab, setTab] = useState<"beats" | "kits" | "orders" | "licenses" | "settings" | "assets" | "promo">("beats");
-  const [beats, setBeats] = useState<Beat[]>([]);
+  const [itbeats, setBeats] = useState<Beat[]>([]);
   const [kits, setKits] = useState<SoundKit[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
   const [licenses, setLicenses] = useState<LicenseType[]>([]);
@@ -258,6 +258,98 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   };
 
   const uploadFile = async (file: File, type: string) => {
+  const uploadFile = async (file: File, type: string) => {
+    setUploadError(prev => ({ ...prev, [type]: "" }));
+    setUploadProgress(prev => ({ ...prev, [type]: 0 }));
+
+    // Large ZIPs > 50MB use server POST (streaming, reliable)
+    // Small previews/art use fast B2 presign
+    const isLargeFile = file.size > 50 * 1024 * 1024;
+    const useServerUpload = isLargeFile || type === "beat" || type === "kit" || type === "trackout";
+
+    try {
+      if (useServerUpload) {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("type", type);
+
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", "/api/upload", true);
+        xhr.timeout = 10 * 60 * 1000; // 10min timeout
+
+        return new Promise((resolve, reject) => {
+          xhr.upload.onprogress = (evt) => {
+            if (!evt.lengthComputable) return;
+            const pct = Math.max(0, Math.min(100, Math.round((evt.loaded / evt.total) * 100)));
+            setUploadProgress(prev => ({ ...prev, [type]: pct }));
+          };
+
+          xhr.onerror = () => reject(new Error("Network error"));
+          xhr.ontimeout = () => reject(new Error("Upload timeout"));
+          xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              try {
+                const data = JSON.parse(xhr.responseText);
+                setUploadProgress(prev => ({ ...prev, [type]: 100 }));
+                setUploadedNames(prev => ({ ...prev, [type]: file.name }));
+                resolve(data.url);
+              } catch (e) {
+                reject(new Error("Invalid response"));
+              }
+            } else {
+              reject(new Error(`Server ${xhr.status}: ${xhr.responseText}`));
+            }
+          };
+          xhr.send(formData);
+        });
+      } else {
+        // Small files: direct B2 presign (existing logic)
+        const ext = file.name.split('.').pop() || 'zip';
+        const contentType = file.type || '';
+
+        const presignRes = await fetch(
+          `/api/upload/presign?type=${encodeURIComponent(type)}&ext=${encodeURIComponent(ext)}&contentType=${encodeURIComponent(contentType)}`,
+          { credentials: 'include' }
+        );
+
+        if (!presignRes.ok) {
+          const err = await presignRes.json().catch(() => ({}));
+          throw new Error(err.error || `Presign failed (${presignRes.status})`);
+        }
+
+        const { presignedUrl, publicUrl } = await presignRes.json();
+
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", presignedUrl, true);
+        if (contentType) xhr.setRequestHeader("Content-Type", contentType);
+
+        return new Promise((resolve, reject) => {
+          xhr.upload.onprogress = (evt) => {
+            if (!evt.lengthComputable) return;
+            const pct = Math.max(0, Math.min(100, Math.round((evt.loaded / evt.total) * 100)));
+            setUploadProgress(prev => ({ ...prev, [type]: pct }));
+          };
+
+          xhr.onerror = () => reject(new Error("Upload failed (B2 CORS?)"));
+          xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              setUploadProgress(prev => ({ ...prev, [type]: 100 }));
+              resolve(publicUrl || '');
+            } else {
+              reject(new Error(`B2 failed ${xhr.status}`));
+            }
+          };
+          xhr.send(file);
+        });
+      }
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Upload failed';
+      setUploadError(prev => ({ ...prev, [type]: errorMsg }));
+      return '';
+    } finally {
+      setUploading(prev => ({ ...prev, [type]: false }));
+    }
+  };
     setUploading(prev => ({ ...prev, [type]: true }));
     setUploadError(prev => ({ ...prev, [type]: "" }));
     setUploadProgress(prev => ({ ...prev, [type]: 0 }));
@@ -656,50 +748,90 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
     setUploading(prev => ({ ...prev, [type]: true }));
     setUploadError(prev => ({ ...prev, [type]: "" }));
     setUploadProgress(prev => ({ ...prev, [type]: 0 }));
+
+    // Large ZIPs > 50MB use server POST (streaming, reliable)
+    // Small previews/art use fast B2 presign
+    const isLargeFile = file.size > 50 * 1024 * 1024;
+    const useServerUpload = isLargeFile || type === "beat" || type === "kit" || type === "trackout";
+
     try {
-      const ext = file.name.split('.').pop() || 'zip';
-      const contentType = file.type || '';
+      if (useServerUpload) {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("type", type);
 
-      const presignRes = await fetch(
-        `/api/upload/presign?type=${encodeURIComponent(type)}&ext=${encodeURIComponent(ext)}&contentType=${encodeURIComponent(contentType)}`,
-        { credentials: 'include' }
-      );
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", "/api/upload", true);
+        xhr.timeout = 10 * 60 * 1000; // 10min timeout
 
-      if (!presignRes.ok) {
-        const err = await presignRes.json().catch(() => ({}));
-        throw new Error(err.error || `Presign failed (${presignRes.status})`);
-      }
+        return new Promise((resolve, reject) => {
+          xhr.upload.onprogress = (evt) => {
+            if (!evt.lengthComputable) return;
+            const pct = Math.max(0, Math.min(100, Math.round((evt.loaded / evt.total) * 100)));
+            setUploadProgress(prev => ({ ...prev, [type]: pct }));
+          };
 
-      const { presignedUrl, publicUrl } = await presignRes.json();
+          xhr.onerror = () => reject(new Error("Network error"));
+          xhr.ontimeout = () => reject(new Error("Upload timeout"));
+          xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              try {
+                const data = JSON.parse(xhr.responseText);
+                setUploadProgress(prev => ({ ...prev, [type]: 100 }));
+                resolve(data.url);
+              } catch (e) {
+                reject(new Error("Invalid response"));
+              }
+            } else {
+              reject(new Error(`Server ${xhr.status}: ${xhr.responseText}`));
+            }
+          };
+          xhr.send(formData);
+        });
+      } else {
+        // Small files: direct B2 presign (existing logic)
+        const ext = file.name.split('.').pop() || 'zip';
+        const contentType = file.type || '';
 
-      await new Promise<void>((resolve, reject) => {
+        const presignRes = await fetch(
+          `/api/upload/presign?type=${encodeURIComponent(type)}&ext=${encodeURIComponent(ext)}&contentType=${encodeURIComponent(contentType)}`,
+          { credentials: 'include' }
+        );
+
+        if (!presignRes.ok) {
+          const err = await presignRes.json().catch(() => ({}));
+          throw new Error(err.error || `Presign failed (${presignRes.status})`);
+        }
+
+        const { presignedUrl, publicUrl } = await presignRes.json();
+
         const xhr = new XMLHttpRequest();
         xhr.open("PUT", presignedUrl, true);
         if (contentType) xhr.setRequestHeader("Content-Type", contentType);
 
-        xhr.upload.onprogress = (evt) => {
-          if (!evt.lengthComputable) return;
-          const pct = Math.max(0, Math.min(100, Math.round((evt.loaded / evt.total) * 100)));
-          setUploadProgress(prev => ({ ...prev, [type]: pct }));
-        };
+        return new Promise((resolve, reject) => {
+          xhr.upload.onprogress = (evt) => {
+            if (!evt.lengthComputable) return;
+            const pct = Math.max(0, Math.min(100, Math.round((evt.loaded / evt.total) * 100)));
+            setUploadProgress(prev => ({ ...prev, [type]: pct }));
+          };
 
-        xhr.onerror = () => reject(new Error("Upload failed (network/CORS)"));
-        xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            setUploadProgress(prev => ({ ...prev, [type]: 100 }));
-            resolve();
-            return;
-          }
-          reject(new Error(`B2 upload failed ${xhr.status}: ${xhr.responseText || xhr.statusText}`));
-        };
-        xhr.send(file);
-      });
-
-      return publicUrl || '';
+          xhr.onerror = () => reject(new Error("Upload failed (B2 CORS?)"));
+          xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              setUploadProgress(prev => ({ ...prev, [type]: 100 }));
+              resolve(publicUrl || '');
+            } else {
+              reject(new Error(`B2 failed ${xhr.status}`));
+            }
+          };
+          xhr.send(file);
+        });
+      }
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Upload selhal';
+      const errorMsg = err instanceof Error ? err.message : 'Upload failed';
       setUploadError(prev => ({ ...prev, [type]: errorMsg }));
-      throw new Error(errorMsg);
+      return '';
     } finally {
       setUploading(prev => ({ ...prev, [type]: false }));
     }

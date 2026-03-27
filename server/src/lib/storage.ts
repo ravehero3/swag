@@ -16,7 +16,7 @@ const s3Client = new S3Client({
 export async function uploadFile(
   bucket: string,
   key: string,
-  body: Buffer | string,
+  body: Buffer | string | NodeJS.ReadableStream,
   contentType: string,
 ) {
   try {
@@ -25,8 +25,6 @@ export async function uploadFile(
       Key: key,
       Body: body,
       ContentType: contentType,
-      // Note: For public buckets, ACL is not needed, but for direct browser uploads,
-      // the bucket needs CORS configured in Backblaze
     });
 
     const response = await s3Client.send(command);
