@@ -1,4 +1,4 @@
- like yoimport { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useApp } from "../App.js";
 import { useLocation } from "wouter";
 
