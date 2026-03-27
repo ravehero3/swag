@@ -27,7 +27,7 @@ const upload = multer({
   }
 });
 
-const router = Router();
+
   if (!process.env.B2_KEY_ID || !process.env.B2_KEY_SECRET || !process.env.B2_ENDPOINT) {
     return res.status(500).json({ error: "B2 config missing" });
   }
