@@ -20,11 +20,12 @@ function getDatabaseConfig() {
 
 const config = getDatabaseConfig();
 
-const maxDbClients = Number(process.env.DB_MAX_CLIENTS || 10);
+const isServerless = process.env.NODE_ENV === "production";
+const maxDbClients = isServerless ? 1 : Number(process.env.DB_MAX_CLIENTS || 10);
 const pool = new pg.Pool({
   ...config,
   max: maxDbClients,
-  idleTimeoutMillis: 30000,
+  idleTimeoutMillis: isServerless ? 5000 : 30000,
   connectionTimeoutMillis: 20000,
 });
 
