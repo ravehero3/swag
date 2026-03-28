@@ -155,7 +155,7 @@ interface LicenseType {
 }
 
 function Admin() {
-  const { user, settings, refreshSettings } = useApp() as any;
+  const { settings, refreshSettings } = useApp() as any;
   const [, navigate] = useLocation();
   const [tab, setTab] = useState<"beats" | "kits" | "orders" | "licenses" | "settings" | "assets" | "promo">("beats");
   const [itbeats, setBeats] = useState<Beat[]>([]);
@@ -166,6 +166,8 @@ function Admin() {
   const [showKitForm, setShowKitForm] = useState(false);
   const [editingBeat, setEditingBeat] = useState<Beat | null>(null);
   const [editingKit, setEditingKit] = useState<SoundKit | null>(null);
+  const [adminChecked, setAdminChecked] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const checkAdmin = async () => {
@@ -174,6 +176,8 @@ function Admin() {
         if (res.ok) {
           const data = await res.json();
           if (data.user?.isAdmin) {
+            setIsAdmin(true);
+            setAdminChecked(true);
             loadData();
           } else {
             navigate("/prihlasit-se");
@@ -205,7 +209,7 @@ function Admin() {
     }
   };
 
-  if (!user?.isAdmin) return null;
+  if (!adminChecked || !isAdmin) return null;
 
   return (
     <div className="fade-in admin-container" style={{ maxWidth: "800px", margin: "0 auto", textAlign: "center" }}>
