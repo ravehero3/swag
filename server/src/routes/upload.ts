@@ -17,14 +17,22 @@ interface PendingUpload {
   linked: boolean;
 }
 
-const uploadDir = path.join(process.cwd(), "tmp/uploads");
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
+const uploadDir = process.env.NODE_ENV === "production"
+  ? "/tmp/uploads"
+  : path.join(process.cwd(), "tmp/uploads");
+
+function ensureUploadDir() {
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
 }
 
 const upload = multer({ 
   storage: multer.diskStorage({
-    destination: uploadDir,
+    destination: (req, file, cb) => {
+      ensureUploadDir();
+      cb(null, uploadDir);
+    },
     filename: (req, file, cb) => {
       cb(null, `${uuidv4()}-${file.originalname}`);
     }

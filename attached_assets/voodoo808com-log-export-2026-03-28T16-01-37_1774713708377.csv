@@ -1,0 +1,359 @@
+TimeUTC,timestampInMs,requestPath,requestMethod,requestQueryString,responseStatusCode,requestId,requestUserAgent,level,environment,branch,vercelCache,type,function,host,deploymentDomain,deploymentId,durationMs,region,maxMemoryUsed,memorySize,message,projectId,traceId,sessionId,invocationId,instanceId,concurrency
+2026-03-28 15:13:02,1774710782913,voodoo808com-alpha.vercel.app/api/auth/login,POST,,500,r7k6s-1774710782193-6a41bb731cca,"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",error,production,main,MISS,function,/server/src/index.ts,voodoo808com-alpha.vercel.app,voodoo808com-alpha.vercel.app,dpl_CLN8uPpnPLdfv1Xh3c6TsQTy5tYt,,,,,"Error: ENOENT: no such file or directory, mkdir '/var/task/tmp/uploads'
+    at Object.mkdirSync (node:fs:1363:26)
+    at <anonymous> (/vercel/path0/server/src/routes/upload.ts:22:6)
+    at ModuleJob.run (node:internal/modules/esm/module_job:413:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)
+    at async d (/opt/rust/nodejs.js:17:25176) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'mkdir',
+  path: '/var/task/tmp/uploads'
+}
+Node.js process exited with exit status: 1. The logs above can help with debugging the issue.",prj_fcPfw5095IALtMk53uzJ5pnG3VKu,,,,,
+2026-03-28 15:13:02,1774710782193,voodoo808com-alpha.vercel.app/api/auth/login,POST,,500,r7k6s-1774710782193-6a41bb731cca,"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",,production,main,MISS,function,/server/src/index.ts,voodoo808com-alpha.vercel.app,voodoo808com-alpha.vercel.app,dpl_CLN8uPpnPLdfv1Xh3c6TsQTy5tYt,640,iad1,-1,2048,,prj_fcPfw5095IALtMk53uzJ5pnG3VKu,,,01KMTG2Y9CGT7ARPV0V4Y3SHYZ,,-1
+2026-03-28 15:04:10,1774710250935,voodoo808com-alpha.vercel.app/api/auth/login,POST,,500,cq9wj-1774710250172-895c21c44c8a,"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",error,production,main,MISS,function,/server/src/index.ts,voodoo808com-alpha.vercel.app,voodoo808com-alpha.vercel.app,dpl_CLN8uPpnPLdfv1Xh3c6TsQTy5tYt,,,,,"Error: ENOENT: no such file or directory, mkdir '/var/task/tmp/uploads'
+    at Object.mkdirSync (node:fs:1363:26)
+    at <anonymous> (/vercel/path0/server/src/routes/upload.ts:22:6)
+    at ModuleJob.run (node:internal/modules/esm/module_job:413:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)
+    at async d (/opt/rust/nodejs.js:17:25176) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'mkdir',
+  path: '/var/task/tmp/uploads'
+}
+Node.js process exited with exit status: 1. The logs above can help with debugging the issue.",prj_fcPfw5095IALtMk53uzJ5pnG3VKu,,,,,
+2026-03-28 15:04:10,1774710250172,voodoo808com-alpha.vercel.app/api/auth/login,POST,,500,cq9wj-1774710250172-895c21c44c8a,"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",,production,main,MISS,function,/server/src/index.ts,voodoo808com-alpha.vercel.app,voodoo808com-alpha.vercel.app,dpl_CLN8uPpnPLdfv1Xh3c6TsQTy5tYt,690,iad1,-1,2048,,prj_fcPfw5095IALtMk53uzJ5pnG3VKu,,,01KMTFJPQQZTHV5RSKAFR2FXC3,,-1
+2026-03-28 15:03:59,1774710239640,voodoo808com-alpha.vercel.app/api/beats/highlighted,GET,,500,tv66t-1774710238745-6ed6f9f779f0,"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",error,production,main,MISS,function,/server/src/index.ts,voodoo808com-alpha.vercel.app,voodoo808com-alpha.vercel.app,dpl_CLN8uPpnPLdfv1Xh3c6TsQTy5tYt,,,,,"Error: ENOENT: no such file or directory, mkdir '/var/task/tmp/uploads'
+    at Object.mkdirSync (node:fs:1363:26)
+    at <anonymous> (/vercel/path0/server/src/routes/upload.ts:22:6)
+    at ModuleJob.run (node:internal/modules/esm/module_job:413:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)
+    at async d (/opt/rust/nodejs.js:17:25176) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'mkdir',
+  path: '/var/task/tmp/uploads'
+}
+Node.js process exited with exit status: 1. The logs above can help with debugging the issue.",prj_fcPfw5095IALtMk53uzJ5pnG3VKu,,,,,
+2026-03-28 15:03:58,1774710238745,voodoo808com-alpha.vercel.app/api/beats/highlighted,GET,,500,tv66t-1774710238745-6ed6f9f779f0,"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",,production,main,MISS,function,/server/src/index.ts,voodoo808com-alpha.vercel.app,voodoo808com-alpha.vercel.app,dpl_CLN8uPpnPLdfv1Xh3c6TsQTy5tYt,688,iad1,-1,2048,,prj_fcPfw5095IALtMk53uzJ5pnG3VKu,,,01KMTFJBPQFYQVD6MPHH4W5Z04,,-1
+2026-03-28 15:03:59,1774710239527,voodoo808com-alpha.vercel.app/api/beats,GET,,500,k2rx7-1774710238745-b699b6a0b813,"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",error,production,main,MISS,function,/server/src/index.ts,voodoo808com-alpha.vercel.app,voodoo808com-alpha.vercel.app,dpl_CLN8uPpnPLdfv1Xh3c6TsQTy5tYt,,,,,"Error: ENOENT: no such file or directory, mkdir '/var/task/tmp/uploads'
+    at Object.mkdirSync (node:fs:1363:26)
+    at <anonymous> (/vercel/path0/server/src/routes/upload.ts:22:6)
+    at ModuleJob.run (node:internal/modules/esm/module_job:413:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)
+    at async d (/opt/rust/nodejs.js:17:25176) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'mkdir',
+  path: '/var/task/tmp/uploads'
+}
+Node.js process exited with exit status: 1. The logs above can help with debugging the issue.",prj_fcPfw5095IALtMk53uzJ5pnG3VKu,,,,,
+2026-03-28 15:03:58,1774710238745,voodoo808com-alpha.vercel.app/api/beats,GET,,500,k2rx7-1774710238745-b699b6a0b813,"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",,production,main,MISS,function,/server/src/index.ts,voodoo808com-alpha.vercel.app,voodoo808com-alpha.vercel.app,dpl_CLN8uPpnPLdfv1Xh3c6TsQTy5tYt,575,iad1,-1,2048,,prj_fcPfw5095IALtMk53uzJ5pnG3VKu,,,01KMTFJBPSASYYZG01Z8Q8H8SP,,-1
+2026-03-28 15:03:58,1774710238553,voodoo808com-alpha.vercel.app/api/auth/me,GET,,500,q997f-1774710237694-7bc5f7d06b45,"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",error,production,main,MISS,function,/server/src/index.ts,voodoo808com-alpha.vercel.app,voodoo808com-alpha.vercel.app,dpl_CLN8uPpnPLdfv1Xh3c6TsQTy5tYt,,,,,"Error: ENOENT: no such file or directory, mkdir '/var/task/tmp/uploads'
+    at Object.mkdirSync (node:fs:1363:26)
+    at <anonymous> (/vercel/path0/server/src/routes/upload.ts:22:6)
+    at ModuleJob.run (node:internal/modules/esm/module_job:413:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)
+    at async d (/opt/rust/nodejs.js:17:25176) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'mkdir',
+  path: '/var/task/tmp/uploads'
+}
+Node.js process exited with exit status: 1. The logs above can help with debugging the issue.",prj_fcPfw5095IALtMk53uzJ5pnG3VKu,,,,,
+2026-03-28 15:03:57,1774710237694,voodoo808com-alpha.vercel.app/api/auth/me,GET,,500,q997f-1774710237694-7bc5f7d06b45,"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",,production,main,MISS,function,/server/src/index.ts,voodoo808com-alpha.vercel.app,voodoo808com-alpha.vercel.app,dpl_CLN8uPpnPLdfv1Xh3c6TsQTy5tYt,633,iad1,-1,2048,,prj_fcPfw5095IALtMk53uzJ5pnG3VKu,,,01KMTFJAPJM5MEWQHWR5N0R9QJ,,-1
+2026-03-28 15:03:58,1774710238629,voodoo808com-alpha.vercel.app/api/settings,GET,,500,dnsrp-1774710237694-8fd76b53b72c,"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",error,production,main,MISS,function,/server/src/index.ts,voodoo808com-alpha.vercel.app,voodoo808com-alpha.vercel.app,dpl_CLN8uPpnPLdfv1Xh3c6TsQTy5tYt,,,,,"Error: ENOENT: no such file or directory, mkdir '/var/task/tmp/uploads'
+    at Object.mkdirSync (node:fs:1363:26)
+    at <anonymous> (/vercel/path0/server/src/routes/upload.ts:22:6)
+    at ModuleJob.run (node:internal/modules/esm/module_job:413:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)
+    at async d (/opt/rust/nodejs.js:17:25176) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'mkdir',
+  path: '/var/task/tmp/uploads'
+}
+Node.js process exited with exit status: 1. The logs above can help with debugging the issue.",prj_fcPfw5095IALtMk53uzJ5pnG3VKu,,,,,
+2026-03-28 15:03:57,1774710237694,voodoo808com-alpha.vercel.app/api/settings,GET,,500,dnsrp-1774710237694-8fd76b53b72c,"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36",,production,main,MISS,function,/server/src/index.ts,voodoo808com-alpha.vercel.app,voodoo808com-alpha.vercel.app,dpl_CLN8uPpnPLdfv1Xh3c6TsQTy5tYt,706,iad1,-1,2048,,prj_fcPfw5095IALtMk53uzJ5pnG3VKu,,,01KMTFJAPNF8AJ6MZ993ABMZQ7,,-1
+2026-03-28 15:03:58,1774710238014,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app/api/beats,GET,,500,wc6hx-1774710237142-45f264dbf74e,"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.7390.0 Safari/537.36",error,production,main,MISS,function,/server/src/index.ts,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,dpl_CLN8uPpnPLdfv1Xh3c6TsQTy5tYt,,,,,"Error: ENOENT: no such file or directory, mkdir '/var/task/tmp/uploads'
+    at Object.mkdirSync (node:fs:1363:26)
+    at <anonymous> (/vercel/path0/server/src/routes/upload.ts:22:6)
+    at ModuleJob.run (node:internal/modules/esm/module_job:413:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)
+    at async d (/opt/rust/nodejs.js:17:25176) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'mkdir',
+  path: '/var/task/tmp/uploads'
+}
+Node.js process exited with exit status: 1. The logs above can help with debugging the issue.",prj_fcPfw5095IALtMk53uzJ5pnG3VKu,,,,,
+2026-03-28 15:03:57,1774710237142,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app/api/beats,GET,,500,wc6hx-1774710237142-45f264dbf74e,"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.7390.0 Safari/537.36",,production,main,MISS,function,/server/src/index.ts,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,dpl_CLN8uPpnPLdfv1Xh3c6TsQTy5tYt,809,iad1,-1,2048,,prj_fcPfw5095IALtMk53uzJ5pnG3VKu,,,01KMTFJA006NRQAK3R1PXA97ZD,,-1
+2026-03-28 15:03:57,1774710237841,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app/api/beats/highlighted,GET,,500,bdwbg-1774710237142-657f72e75908,"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.7390.0 Safari/537.36",error,production,main,MISS,function,/server/src/index.ts,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,dpl_CLN8uPpnPLdfv1Xh3c6TsQTy5tYt,,,,,"Error: ENOENT: no such file or directory, mkdir '/var/task/tmp/uploads'
+    at Object.mkdirSync (node:fs:1363:26)
+    at <anonymous> (/vercel/path0/server/src/routes/upload.ts:22:6)
+    at ModuleJob.run (node:internal/modules/esm/module_job:413:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)
+    at async d (/opt/rust/nodejs.js:17:25176) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'mkdir',
+  path: '/var/task/tmp/uploads'
+}
+Node.js process exited with exit status: 1. The logs above can help with debugging the issue.",prj_fcPfw5095IALtMk53uzJ5pnG3VKu,,,,,
+2026-03-28 15:03:57,1774710237142,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app/api/beats/highlighted,GET,,500,bdwbg-1774710237142-657f72e75908,"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.7390.0 Safari/537.36",,production,main,MISS,function,/server/src/index.ts,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,dpl_CLN8uPpnPLdfv1Xh3c6TsQTy5tYt,637,iad1,-1,2048,,prj_fcPfw5095IALtMk53uzJ5pnG3VKu,,,01KMTFJA02HC9G5T9VB0MPGJ5D,,-1
+2026-03-28 15:03:56,1774710236887,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app/api/settings,GET,,500,n7p8p-1774710236176-de8a6d4a3387,"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.7390.0 Safari/537.36",error,production,main,MISS,function,/server/src/index.ts,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,dpl_CLN8uPpnPLdfv1Xh3c6TsQTy5tYt,,,,,"Error: ENOENT: no such file or directory, mkdir '/var/task/tmp/uploads'
+    at Object.mkdirSync (node:fs:1363:26)
+    at <anonymous> (/vercel/path0/server/src/routes/upload.ts:22:6)
+    at ModuleJob.run (node:internal/modules/esm/module_job:413:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)
+    at async d (/opt/rust/nodejs.js:17:25176) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'mkdir',
+  path: '/var/task/tmp/uploads'
+}
+Node.js process exited with exit status: 1. The logs above can help with debugging the issue.",prj_fcPfw5095IALtMk53uzJ5pnG3VKu,,,,,
+2026-03-28 15:03:56,1774710236176,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app/api/settings,GET,,500,n7p8p-1774710236176-de8a6d4a3387,"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.7390.0 Safari/537.36",,production,main,MISS,function,/server/src/index.ts,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,dpl_CLN8uPpnPLdfv1Xh3c6TsQTy5tYt,647,iad1,-1,2048,,prj_fcPfw5095IALtMk53uzJ5pnG3VKu,,,01KMTFJ91ZHDJN30T1WPVY7GKV,,-1
+2026-03-28 15:03:57,1774710237003,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app/api/auth/me,GET,,500,65t8j-1774710236176-0f91f515ec07,"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.7390.0 Safari/537.36",error,production,main,MISS,function,/server/src/index.ts,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,dpl_CLN8uPpnPLdfv1Xh3c6TsQTy5tYt,,,,,"Error: ENOENT: no such file or directory, mkdir '/var/task/tmp/uploads'
+    at Object.mkdirSync (node:fs:1363:26)
+    at <anonymous> (/vercel/path0/server/src/routes/upload.ts:22:6)
+    at ModuleJob.run (node:internal/modules/esm/module_job:413:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)
+    at async d (/opt/rust/nodejs.js:17:25176) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'mkdir',
+  path: '/var/task/tmp/uploads'
+}
+Node.js process exited with exit status: 1. The logs above can help with debugging the issue.",prj_fcPfw5095IALtMk53uzJ5pnG3VKu,,,,,
+2026-03-28 15:03:56,1774710236176,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app/api/auth/me,GET,,500,65t8j-1774710236176-0f91f515ec07,"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.7390.0 Safari/537.36",,production,main,MISS,function,/server/src/index.ts,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,dpl_CLN8uPpnPLdfv1Xh3c6TsQTy5tYt,774,iad1,-1,2048,,prj_fcPfw5095IALtMk53uzJ5pnG3VKu,,,01KMTFJ91SYA1S69MR81T3ACJG,,-1
+2026-03-28 15:03:56,1774710236650,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app/api/beats/highlighted,GET,,500,n2p6t-1774710235907-053bbe55e08c,"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.7390.0 Safari/537.36",error,production,main,MISS,function,/server/src/index.ts,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,dpl_CLN8uPpnPLdfv1Xh3c6TsQTy5tYt,,,,,"Error: ENOENT: no such file or directory, mkdir '/var/task/tmp/uploads'
+    at Object.mkdirSync (node:fs:1363:26)
+    at <anonymous> (/vercel/path0/server/src/routes/upload.ts:22:6)
+    at ModuleJob.run (node:internal/modules/esm/module_job:413:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)
+    at async d (/opt/rust/nodejs.js:17:25176) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'mkdir',
+  path: '/var/task/tmp/uploads'
+}
+Node.js process exited with exit status: 1. The logs above can help with debugging the issue.",prj_fcPfw5095IALtMk53uzJ5pnG3VKu,,,,,
+2026-03-28 15:03:55,1774710235907,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app/api/beats/highlighted,GET,,500,n2p6t-1774710235907-053bbe55e08c,"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.7390.0 Safari/537.36",,production,main,MISS,function,/server/src/index.ts,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,dpl_CLN8uPpnPLdfv1Xh3c6TsQTy5tYt,685,iad1,-1,2048,,prj_fcPfw5095IALtMk53uzJ5pnG3VKu,,,01KMTFJ8SFHTAHGY677KMQ99QJ,,-1
+2026-03-28 15:03:56,1774710236673,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app/api/beats,GET,,500,5d2mc-1774710235907-06e862906910,"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.7390.0 Safari/537.36",error,production,main,MISS,function,/server/src/index.ts,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,dpl_CLN8uPpnPLdfv1Xh3c6TsQTy5tYt,,,,,"Error: ENOENT: no such file or directory, mkdir '/var/task/tmp/uploads'
+    at Object.mkdirSync (node:fs:1363:26)
+    at <anonymous> (/vercel/path0/server/src/routes/upload.ts:22:6)
+    at ModuleJob.run (node:internal/modules/esm/module_job:413:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)
+    at async d (/opt/rust/nodejs.js:17:25176) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'mkdir',
+  path: '/var/task/tmp/uploads'
+}
+Node.js process exited with exit status: 1. The logs above can help with debugging the issue.",prj_fcPfw5095IALtMk53uzJ5pnG3VKu,,,,,
+2026-03-28 15:03:55,1774710235907,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app/api/beats,GET,,500,5d2mc-1774710235907-06e862906910,"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.7390.0 Safari/537.36",,production,main,MISS,function,/server/src/index.ts,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,dpl_CLN8uPpnPLdfv1Xh3c6TsQTy5tYt,690,iad1,-1,2048,,prj_fcPfw5095IALtMk53uzJ5pnG3VKu,,,01KMTFJ8T4V2TB1BH878AF7BBX,,-1
+2026-03-28 15:03:55,1774710235827,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app/api/settings,GET,,500,47r8x-1774710235033-7ee4150fcb0a,"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.7390.0 Safari/537.36",error,production,main,MISS,function,/server/src/index.ts,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,dpl_CLN8uPpnPLdfv1Xh3c6TsQTy5tYt,,,,,"Error: ENOENT: no such file or directory, mkdir '/var/task/tmp/uploads'
+    at Object.mkdirSync (node:fs:1363:26)
+    at <anonymous> (/vercel/path0/server/src/routes/upload.ts:22:6)
+    at ModuleJob.run (node:internal/modules/esm/module_job:413:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)
+    at async d (/opt/rust/nodejs.js:17:25176) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'mkdir',
+  path: '/var/task/tmp/uploads'
+}
+Node.js process exited with exit status: 1. The logs above can help with debugging the issue.",prj_fcPfw5095IALtMk53uzJ5pnG3VKu,,,,,
+2026-03-28 15:03:55,1774710235033,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app/api/settings,GET,,500,47r8x-1774710235033-7ee4150fcb0a,"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.7390.0 Safari/537.36",,production,main,MISS,function,/server/src/index.ts,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,dpl_CLN8uPpnPLdfv1Xh3c6TsQTy5tYt,735,iad1,-1,2048,,prj_fcPfw5095IALtMk53uzJ5pnG3VKu,,,01KMTFJ7Y5RPZX7ZHFDQFGVAF6,,-1
+2026-03-28 15:03:55,1774710235785,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app/api/auth/me,GET,,500,tqzwn-1774710235031-9ffd37c655fd,"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.7390.0 Safari/537.36",error,production,main,MISS,function,/server/src/index.ts,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,dpl_CLN8uPpnPLdfv1Xh3c6TsQTy5tYt,,,,,"Error: ENOENT: no such file or directory, mkdir '/var/task/tmp/uploads'
+    at Object.mkdirSync (node:fs:1363:26)
+    at <anonymous> (/vercel/path0/server/src/routes/upload.ts:22:6)
+    at ModuleJob.run (node:internal/modules/esm/module_job:413:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)
+    at async d (/opt/rust/nodejs.js:17:25176) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'mkdir',
+  path: '/var/task/tmp/uploads'
+}
+Node.js process exited with exit status: 1. The logs above can help with debugging the issue.",prj_fcPfw5095IALtMk53uzJ5pnG3VKu,,,,,
+2026-03-28 15:03:55,1774710235031,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app/api/auth/me,GET,,500,tqzwn-1774710235031-9ffd37c655fd,"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.7390.0 Safari/537.36",,production,main,MISS,function,/server/src/index.ts,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,dpl_CLN8uPpnPLdfv1Xh3c6TsQTy5tYt,694,iad1,-1,2048,,prj_fcPfw5095IALtMk53uzJ5pnG3VKu,,,01KMTFJ7Y3CWE5PNNFGDS3DVDR,,-1
+2026-03-28 15:03:54,1774710234844,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app/api/auth/me,GET,,500,mrbm4-1774710232683-a30438c1417b,vercel-screenshot/1.0,error,production,main,MISS,function,/server/src/index.ts,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,dpl_CLN8uPpnPLdfv1Xh3c6TsQTy5tYt,,,,,"Error: ENOENT: no such file or directory, mkdir '/var/task/tmp/uploads'
+    at Object.mkdirSync (node:fs:1363:26)
+    at <anonymous> (/vercel/path0/server/src/routes/upload.ts:22:6)
+    at ModuleJob.run (node:internal/modules/esm/module_job:413:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)
+    at async d (/opt/rust/nodejs.js:17:25176) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'mkdir',
+  path: '/var/task/tmp/uploads'
+}
+Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Error: ENOENT: no such file or directory, mkdir '/var/task/tmp/uploads'
+    at Object.mkdirSync (node:fs:1363:26)
+    at <anonymous> (/vercel/path0/server/src/routes/upload.ts:22:6)
+    at ModuleJob.run (node:internal/modules/esm/module_job:413:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)
+    at async d (/opt/rust/nodejs.js:17:25176) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'mkdir',
+  path: '/var/task/tmp/uploads'
+}
+Node.js process exited with exit status: 1. The logs above can help with debugging the issue.",prj_fcPfw5095IALtMk53uzJ5pnG3VKu,,,,,
+2026-03-28 15:03:52,1774710232683,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app/api/auth/me,GET,,500,mrbm4-1774710232683-a30438c1417b,vercel-screenshot/1.0,,production,main,MISS,function,/server/src/index.ts,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,dpl_CLN8uPpnPLdfv1Xh3c6TsQTy5tYt,686,iad1,-1,2048,,prj_fcPfw5095IALtMk53uzJ5pnG3VKu,,,01KMTFJ5P8B30DP6F7WM78P9AF,,-1
+2026-03-28 15:03:54,1774710234527,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app/api/settings,GET,,500,77g7t-1774710232683-4b67b5cbcd31,vercel-screenshot/1.0,error,production,main,MISS,function,/server/src/index.ts,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,dpl_CLN8uPpnPLdfv1Xh3c6TsQTy5tYt,,,,,"Error: ENOENT: no such file or directory, mkdir '/var/task/tmp/uploads'
+    at Object.mkdirSync (node:fs:1363:26)
+    at <anonymous> (/vercel/path0/server/src/routes/upload.ts:22:6)
+    at ModuleJob.run (node:internal/modules/esm/module_job:413:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)
+    at async d (/opt/rust/nodejs.js:17:25176) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'mkdir',
+  path: '/var/task/tmp/uploads'
+}
+Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Error: ENOENT: no such file or directory, mkdir '/var/task/tmp/uploads'
+    at Object.mkdirSync (node:fs:1363:26)
+    at <anonymous> (/vercel/path0/server/src/routes/upload.ts:22:6)
+    at ModuleJob.run (node:internal/modules/esm/module_job:413:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)
+    at async d (/opt/rust/nodejs.js:17:25176) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'mkdir',
+  path: '/var/task/tmp/uploads'
+}
+Node.js process exited with exit status: 1. The logs above can help with debugging the issue.",prj_fcPfw5095IALtMk53uzJ5pnG3VKu,,,,,
+2026-03-28 15:03:52,1774710232683,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app/api/settings,GET,,500,77g7t-1774710232683-4b67b5cbcd31,vercel-screenshot/1.0,,production,main,MISS,function,/server/src/index.ts,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,dpl_CLN8uPpnPLdfv1Xh3c6TsQTy5tYt,595,iad1,-1,2048,,prj_fcPfw5095IALtMk53uzJ5pnG3VKu,,,01KMTFJ5MRWGHNPZ3X71J61DVP,,-1
+2026-03-28 15:03:54,1774710234485,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app/api/settings,GET,,500,gk85v-1774710232429-8dbc7d6e6fb5,vercel-screenshot/1.0,error,production,main,MISS,function,/server/src/index.ts,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,dpl_CLN8uPpnPLdfv1Xh3c6TsQTy5tYt,,,,,"Error: ENOENT: no such file or directory, mkdir '/var/task/tmp/uploads'
+    at Object.mkdirSync (node:fs:1363:26)
+    at <anonymous> (/vercel/path0/server/src/routes/upload.ts:22:6)
+    at ModuleJob.run (node:internal/modules/esm/module_job:413:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)
+    at async d (/opt/rust/nodejs.js:17:25176) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'mkdir',
+  path: '/var/task/tmp/uploads'
+}
+Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Error: ENOENT: no such file or directory, mkdir '/var/task/tmp/uploads'
+    at Object.mkdirSync (node:fs:1363:26)
+    at <anonymous> (/vercel/path0/server/src/routes/upload.ts:22:6)
+    at ModuleJob.run (node:internal/modules/esm/module_job:413:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)
+    at async d (/opt/rust/nodejs.js:17:25176) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'mkdir',
+  path: '/var/task/tmp/uploads'
+}
+Node.js process exited with exit status: 1. The logs above can help with debugging the issue.",prj_fcPfw5095IALtMk53uzJ5pnG3VKu,,,,,
+2026-03-28 15:03:52,1774710232429,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app/api/settings,GET,,500,gk85v-1774710232429-8dbc7d6e6fb5,vercel-screenshot/1.0,,production,main,MISS,function,/server/src/index.ts,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,dpl_CLN8uPpnPLdfv1Xh3c6TsQTy5tYt,715,iad1,-1,2048,,prj_fcPfw5095IALtMk53uzJ5pnG3VKu,,,01KMTFJ5CSKSBHAYVMF8SZCSZ9,,-1
+2026-03-28 15:03:54,1774710234788,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app/api/auth/me,GET,,500,77g7t-1774710232429-53d3c45129e4,vercel-screenshot/1.0,error,production,main,MISS,function,/server/src/index.ts,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,dpl_CLN8uPpnPLdfv1Xh3c6TsQTy5tYt,,,,,"Error: ENOENT: no such file or directory, mkdir '/var/task/tmp/uploads'
+    at Object.mkdirSync (node:fs:1363:26)
+    at <anonymous> (/vercel/path0/server/src/routes/upload.ts:22:6)
+    at ModuleJob.run (node:internal/modules/esm/module_job:413:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)
+    at async d (/opt/rust/nodejs.js:17:25176) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'mkdir',
+  path: '/var/task/tmp/uploads'
+}
+Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Error: ENOENT: no such file or directory, mkdir '/var/task/tmp/uploads'
+    at Object.mkdirSync (node:fs:1363:26)
+    at <anonymous> (/vercel/path0/server/src/routes/upload.ts:22:6)
+    at ModuleJob.run (node:internal/modules/esm/module_job:413:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)
+    at async d (/opt/rust/nodejs.js:17:25176) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'mkdir',
+  path: '/var/task/tmp/uploads'
+}
+Node.js process exited with exit status: 1. The logs above can help with debugging the issue.",prj_fcPfw5095IALtMk53uzJ5pnG3VKu,,,,,
+2026-03-28 15:03:52,1774710232429,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app/api/auth/me,GET,,500,77g7t-1774710232429-53d3c45129e4,vercel-screenshot/1.0,,production,main,MISS,function,/server/src/index.ts,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,dpl_CLN8uPpnPLdfv1Xh3c6TsQTy5tYt,809,iad1,-1,2048,,prj_fcPfw5095IALtMk53uzJ5pnG3VKu,,,01KMTFJ5CW8WK3N2DXYJPMS3WG,,-1
+2026-03-28 15:03:54,1774710234537,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app/api/settings,GET,,500,d22wv-1774710232148-b3da3eb96a18,"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.7390.0 Safari/537.36",error,production,main,MISS,function,/server/src/index.ts,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,dpl_CLN8uPpnPLdfv1Xh3c6TsQTy5tYt,,,,,"Error: ENOENT: no such file or directory, mkdir '/var/task/tmp/uploads'
+    at Object.mkdirSync (node:fs:1363:26)
+    at <anonymous> (/vercel/path0/server/src/routes/upload.ts:22:6)
+    at ModuleJob.run (node:internal/modules/esm/module_job:413:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)
+    at async d (/opt/rust/nodejs.js:17:25176) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'mkdir',
+  path: '/var/task/tmp/uploads'
+}
+Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Error: ENOENT: no such file or directory, mkdir '/var/task/tmp/uploads'
+    at Object.mkdirSync (node:fs:1363:26)
+    at <anonymous> (/vercel/path0/server/src/routes/upload.ts:22:6)
+    at ModuleJob.run (node:internal/modules/esm/module_job:413:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)
+    at async d (/opt/rust/nodejs.js:17:25176) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'mkdir',
+  path: '/var/task/tmp/uploads'
+}
+Node.js process exited with exit status: 1. The logs above can help with debugging the issue.",prj_fcPfw5095IALtMk53uzJ5pnG3VKu,,,,,
+2026-03-28 15:03:52,1774710232148,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app/api/settings,GET,,500,d22wv-1774710232148-b3da3eb96a18,"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.7390.0 Safari/537.36",,production,main,MISS,function,/server/src/index.ts,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,dpl_CLN8uPpnPLdfv1Xh3c6TsQTy5tYt,739,iad1,-1,2048,,prj_fcPfw5095IALtMk53uzJ5pnG3VKu,,,01KMTFJ59C7C704RFVR97AMX64,,-1
+2026-03-28 15:03:54,1774710234305,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app/api/auth/me,GET,,500,758z5-1774710232147-fa7e24540732,"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.7390.0 Safari/537.36",error,production,main,MISS,function,/server/src/index.ts,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,dpl_CLN8uPpnPLdfv1Xh3c6TsQTy5tYt,,,,,"Error: ENOENT: no such file or directory, mkdir '/var/task/tmp/uploads'
+    at Object.mkdirSync (node:fs:1363:26)
+    at <anonymous> (/vercel/path0/server/src/routes/upload.ts:22:6)
+    at ModuleJob.run (node:internal/modules/esm/module_job:413:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)
+    at async d (/opt/rust/nodejs.js:17:25176) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'mkdir',
+  path: '/var/task/tmp/uploads'
+}
+Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Error: ENOENT: no such file or directory, mkdir '/var/task/tmp/uploads'
+    at Object.mkdirSync (node:fs:1363:26)
+    at <anonymous> (/vercel/path0/server/src/routes/upload.ts:22:6)
+    at ModuleJob.run (node:internal/modules/esm/module_job:413:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)
+    at async d (/opt/rust/nodejs.js:17:25176) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'mkdir',
+  path: '/var/task/tmp/uploads'
+}
+Node.js process exited with exit status: 1. The logs above can help with debugging the issue.",prj_fcPfw5095IALtMk53uzJ5pnG3VKu,,,,,
+2026-03-28 15:03:52,1774710232147,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app/api/auth/me,GET,,500,758z5-1774710232147-fa7e24540732,"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/141.0.7390.0 Safari/537.36",,production,main,MISS,function,/server/src/index.ts,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,voodoo808com-dd6j1r5wt-voodoo808s-projects.vercel.app,dpl_CLN8uPpnPLdfv1Xh3c6TsQTy5tYt,627,iad1,-1,2048,,prj_fcPfw5095IALtMk53uzJ5pnG3VKu,,,01KMTFJ592HD859YVADJBZMNHB,,-1
