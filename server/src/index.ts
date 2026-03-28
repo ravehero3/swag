@@ -1,7 +1,6 @@
 import express from "express";
 import cors from "cors";
-import session from "express-session";
-import pgSession from "connect-pg-simple";
+import cookieSession from "cookie-session";
 import path from "path";
 import { fileURLToPath } from "url";
 import { pool, initDatabase } from "./db.js";
@@ -24,8 +23,6 @@ const PORT = 5000;
 
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
-
-const PgStore = pgSession(session);
 
 // Passport Google Strategy
 passport.use(
@@ -88,23 +85,25 @@ if (isProduction) {
 
 const sessionSecret = process.env.SESSION_SECRET || "voodoo808_stable_secret_12345";
 
-const PgSessionStore = new PgStore({
-  pool,
-  createTableIfMissing: true,
-});
-
-app.use(session({
-  store: PgSessionStore,
+app.use(cookieSession({
+  name: "session",
   secret: sessionSecret,
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: isProduction,
-    httpOnly: true,
-    sameSite: isProduction ? "none" : "lax",
-    maxAge: 30 * 24 * 60 * 60 * 1000,
-  },
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: isProduction ? "none" : "lax",
+  maxAge: 30 * 24 * 60 * 60 * 1000,
 }));
+
+// Compatibility shim so passport's req.session.regenerate/save work with cookie-session
+app.use((req: any, _res: any, next: any) => {
+  if (req.session && !req.session.regenerate) {
+    req.session.regenerate = (cb: any) => cb();
+  }
+  if (req.session && !req.session.save) {
+    req.session.save = (cb: any) => cb();
+  }
+  next();
+});
 
 app.use(passport.initialize());
 app.use(passport.session());

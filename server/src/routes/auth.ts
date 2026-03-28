@@ -85,12 +85,8 @@ router.post("/login", async (req: Request, res: Response) => {
 });
 
 router.post("/logout", (req: Request, res: Response) => {
-  req.session.destroy((err) => {
-    if (err) {
-      return res.status(500).json({ error: "Chyba při odhlášení" });
-    }
-    res.json({ message: "Odhlášeno" });
-  });
+  (req.session as any) = null;
+  res.json({ message: "Odhlášeno" });
 });
 
 router.get("/me", async (req: Request, res: Response) => {
