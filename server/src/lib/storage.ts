@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, GetObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import type { Readable } from "stream";
 
@@ -73,6 +73,25 @@ export async function generateDownloadUrl(bucket: string, key: string, expiresIn
     return url;
   } catch (error) {
     console.error(`Download URL generation error for ${bucket}/${key}:`, error);
+    throw error;
+  }
+}
+
+export async function listFiles(bucket: string, prefix?: string): Promise<{ key: string; size: number; lastModified: Date | undefined }[]> {
+  try {
+    const command = new ListObjectsV2Command({
+      Bucket: bucket,
+      Prefix: prefix,
+      MaxKeys: 1000,
+    });
+    const response = await s3Client.send(command);
+    return (response.Contents || []).map(obj => ({
+      key: obj.Key || "",
+      size: obj.Size || 0,
+      lastModified: obj.LastModified,
+    }));
+  } catch (error) {
+    console.error(`List error for ${bucket}:`, error);
     throw error;
   }
 }

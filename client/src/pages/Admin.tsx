@@ -2,6 +2,113 @@ import { useState, useEffect } from "react";
 import { useApp } from "../App.js";
 import { useLocation } from "wouter";
 
+interface B2File {
+  key: string;
+  size: number;
+  lastModified: string | undefined;
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes === 0) return "0 B";
+  const k = 1024;
+  const sizes = ["B", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
+}
+
+function B2FilePicker({ onSelect, onClose }: { onSelect: (key: string) => void; onClose: () => void }) {
+  const [files, setFiles] = useState<B2File[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    fetch("/api/upload/b2-files", { credentials: "include" })
+      .then(r => r.ok ? r.json() : Promise.reject(r.statusText))
+      .then(data => { setFiles(data); setLoading(false); })
+      .catch(err => { setError(String(err)); setLoading(false); });
+  }, []);
+
+  const filtered = files.filter(f => f.key.toLowerCase().includes(search.toLowerCase()));
+
+  return (
+    <div
+      style={{
+        position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)",
+        zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center",
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          background: "#111", border: "1px solid #333", borderRadius: "6px",
+          padding: "24px", width: "640px", maxHeight: "80vh", display: "flex",
+          flexDirection: "column", gap: "16px",
+        }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <h3 style={{ margin: 0, fontSize: "16px" }}>Vybrat soubor z Backblaze</h3>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "#888", cursor: "pointer", fontSize: "20px" }}>×</button>
+        </div>
+
+        <input
+          autoFocus
+          placeholder="Hledat soubor..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          style={{ width: "100%", padding: "10px 12px", background: "#1a1a1a", border: "1px solid #333", color: "#fff", borderRadius: "4px" }}
+        />
+
+        <div style={{ overflowY: "auto", flex: 1, border: "1px solid #222", borderRadius: "4px" }}>
+          {loading && (
+            <div style={{ padding: "24px", textAlign: "center", color: "#888" }}>Načítám soubory z B2...</div>
+          )}
+          {error && (
+            <div style={{ padding: "24px", textAlign: "center", color: "#ff4444" }}>Chyba: {error}</div>
+          )}
+          {!loading && !error && filtered.length === 0 && (
+            <div style={{ padding: "24px", textAlign: "center", color: "#888" }}>
+              {files.length === 0 ? "V bucketu nejsou žádné soubory. Nahrajte ZIP přímo do Backblaze." : "Žádné výsledky."}
+            </div>
+          )}
+          {!loading && !error && filtered.map(file => (
+            <div
+              key={file.key}
+              onClick={() => { onSelect(file.key); onClose(); }}
+              style={{
+                display: "flex", justifyContent: "space-between", alignItems: "center",
+                padding: "12px 16px", borderBottom: "1px solid #1e1e1e",
+                cursor: "pointer", transition: "background 150ms",
+              }}
+              onMouseEnter={e => (e.currentTarget.style.background = "#1a1a1a")}
+              onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+            >
+              <div style={{ flex: 1, overflow: "hidden" }}>
+                <div style={{ fontSize: "13px", color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {file.key}
+                </div>
+                {file.lastModified && (
+                  <div style={{ fontSize: "11px", color: "#666", marginTop: "2px" }}>
+                    {new Date(file.lastModified).toLocaleString("cs-CZ")}
+                  </div>
+                )}
+              </div>
+              <div style={{ fontSize: "12px", color: "#888", marginLeft: "16px", whiteSpace: "nowrap" }}>
+                {formatBytes(file.size)}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ fontSize: "12px", color: "#555" }}>
+          {!loading && !error && `${filtered.length} / ${files.length} souborů`}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 interface Beat {
   id: number;
   title: string;
@@ -173,6 +280,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   const [uploadedNames, setUploadedNames] = useState<Record<string, string>>({});
   const [uploadError, setUploadError] = useState<Record<string, string>>({});
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
+  const [b2PickerFor, setB2PickerFor] = useState<string | null>(null);
 
   const handleSelectAll = () => {
     if (selectedBeats.length === beats.length) {
@@ -515,20 +623,36 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
 
             <div style={{ gridColumn: "1 / -1" }}>
               <label style={{ display: "block", marginBottom: "8px" }}>Beat File (ZIP / WAV / MP3)</label>
-              <input
-                type="file"
-                accept="audio/*,.zip,.rar"
-                disabled={uploading["beat"]}
-                onChange={async (e) => {
-                  if (e.target.files?.[0]) {
-                    const url = await uploadFile(e.target.files[0], "beat");
-                    if (url) setForm(f => ({ ...f, fileUrl: url }));
-                  }
-                }}
-                style={{ width: "100%" }}
-              />
+              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                <input
+                  type="file"
+                  accept="audio/*,.zip,.rar"
+                  disabled={uploading["beat"]}
+                  onChange={async (e) => {
+                    if (e.target.files?.[0]) {
+                      const url = await uploadFile(e.target.files[0], "beat");
+                      if (url) setForm(f => ({ ...f, fileUrl: url }));
+                    }
+                  }}
+                  style={{ flex: 1 }}
+                />
+                <button
+                  type="button"
+                  className="btn btn-admin"
+                  onClick={() => setB2PickerFor("beat")}
+                  style={{ whiteSpace: "nowrap", fontSize: "12px" }}
+                  data-testid="button-browse-b2-beat"
+                >
+                  Browse B2
+                </button>
+              </div>
               <UploadProgressBar type="beat" />
-              <div style={{ marginTop: "6px" }}><UploadStatus type="beat" url={form.fileUrl} /></div>
+              <div style={{ marginTop: "6px" }}>
+                {form.fileUrl && !uploading["beat"] && (
+                  <span style={{ fontSize: "12px", color: "#4caf50" }}>✓ {uploadedNames["beat"] || form.fileUrl}</span>
+                )}
+                {!form.fileUrl && <UploadStatus type="beat" url={form.fileUrl} />}
+              </div>
             </div>
 
             <div>
@@ -554,20 +678,36 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
 
             <div>
               <label style={{ display: "block", marginBottom: "8px" }}>Trackout (ZIP)</label>
-              <input
-                type="file"
-                accept=".zip"
-                disabled={uploading["trackout"]}
-                onChange={async (e) => {
-                  if (e.target.files?.[0]) {
-                    const url = await uploadFile(e.target.files[0], "trackout");
-                    if (url) setForm(f => ({ ...f, trackoutUrl: url }));
-                  }
-                }}
-                style={{ width: "100%" }}
-              />
+              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                <input
+                  type="file"
+                  accept=".zip"
+                  disabled={uploading["trackout"]}
+                  onChange={async (e) => {
+                    if (e.target.files?.[0]) {
+                      const url = await uploadFile(e.target.files[0], "trackout");
+                      if (url) setForm(f => ({ ...f, trackoutUrl: url }));
+                    }
+                  }}
+                  style={{ flex: 1 }}
+                />
+                <button
+                  type="button"
+                  className="btn btn-admin"
+                  onClick={() => setB2PickerFor("trackout")}
+                  style={{ whiteSpace: "nowrap", fontSize: "12px" }}
+                  data-testid="button-browse-b2-trackout"
+                >
+                  Browse B2
+                </button>
+              </div>
               <UploadProgressBar type="trackout" />
-              <div style={{ marginTop: "6px" }}><UploadStatus type="trackout" url={form.trackoutUrl} /></div>
+              <div style={{ marginTop: "6px" }}>
+                {form.trackoutUrl && !uploading["trackout"] && (
+                  <span style={{ fontSize: "12px", color: "#4caf50" }}>✓ {uploadedNames["trackout"] || form.trackoutUrl}</span>
+                )}
+                {!form.trackoutUrl && <UploadStatus type="trackout" url={form.trackoutUrl} />}
+              </div>
             </div>
           </div>
           <button
@@ -648,6 +788,16 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
           ))}
         </tbody>
       </table>
+
+      {b2PickerFor && (
+        <B2FilePicker
+          onSelect={(key) => {
+            if (b2PickerFor === "beat") setForm(f => ({ ...f, fileUrl: key }));
+            if (b2PickerFor === "trackout") setForm(f => ({ ...f, trackoutUrl: key }));
+          }}
+          onClose={() => setB2PickerFor(null)}
+        />
+      )}
     </div>
   );
 }
@@ -673,6 +823,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
   const [uploading, setUploading] = useState<Record<string, boolean>>({});
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
   const [uploadError, setUploadError] = useState<Record<string, string>>({});
+  const [b2PickerFor, setB2PickerFor] = useState<string | null>(null);
 
   const handleSelectAll = () => {
     if (selectedKits.length === kits.length) {
@@ -922,8 +1073,24 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
             </div>
             <div>
               <label style={{ display: "block", marginBottom: "8px" }}>ZIP/RAR soubor</label>
-              <input type="file" accept=".zip,.rar" onChange={async (e) => { if (e.target.files?.[0]) { const url = await uploadFile(e.target.files[0], "kit"); setForm({ ...form, fileUrl: url }); } }} style={{ width: "100%" }} />
+              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                <input type="file" accept=".zip,.rar" onChange={async (e) => { if (e.target.files?.[0]) { const url = await uploadFile(e.target.files[0], "kit"); setForm({ ...form, fileUrl: url }); } }} style={{ flex: 1 }} />
+                <button
+                  type="button"
+                  className="btn btn-admin"
+                  onClick={() => setB2PickerFor("kit")}
+                  style={{ whiteSpace: "nowrap", fontSize: "12px" }}
+                  data-testid="button-browse-b2-kit"
+                >
+                  Browse B2
+                </button>
+              </div>
               <UploadProgressBar type="kit" />
+              {form.fileUrl && !uploading["kit"] && (
+                <div style={{ marginTop: "6px" }}>
+                  <span style={{ fontSize: "12px", color: "#4caf50" }}>✓ {form.fileUrl}</span>
+                </div>
+              )}
             </div>
             <div>
               <label style={{ display: "block", marginBottom: "8px" }}>Artwork</label>
@@ -1000,6 +1167,15 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
           ))}
         </tbody>
       </table>
+
+      {b2PickerFor && (
+        <B2FilePicker
+          onSelect={(key) => {
+            if (b2PickerFor === "kit") setForm(f => ({ ...f, fileUrl: key }));
+          }}
+          onClose={() => setB2PickerFor(null)}
+        />
+      )}
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import fs from "fs";
 import path from "path";
 import { requireAdmin } from "../middleware/auth.js";
-import { uploadFile, generatePresignedUploadUrl, STORAGE_BUCKETS } from "../lib/storage.js";
+import { uploadFile, generatePresignedUploadUrl, listFiles, STORAGE_BUCKETS } from "../lib/storage.js";
 import stream from "stream";
 import { pool } from "../db.js";
 interface PendingUpload {
@@ -46,6 +46,22 @@ router.get("/b2-credentials", requireAdmin, (req: Request, res: Response) => {
     applicationKey: process.env.B2_KEY_SECRET,
     endpoint: `https://${process.env.B2_ENDPOINT}`,
   });
+});
+
+// List files in the ZIP bucket (for B2 file picker)
+router.get("/b2-files", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const files = await listFiles(STORAGE_BUCKETS.ZIPS);
+    const sorted = files.sort((a, b) => {
+      const aTime = a.lastModified ? a.lastModified.getTime() : 0;
+      const bTime = b.lastModified ? b.lastModified.getTime() : 0;
+      return bTime - aTime;
+    });
+    res.json(sorted);
+  } catch (error) {
+    console.error("B2 list error:", error);
+    res.status(500).json({ error: "Failed to list B2 files", detail: String(error) });
+  }
 });
 
 // Save pending uploads after client direct
