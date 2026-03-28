@@ -168,6 +168,7 @@ function Admin() {
   const [editingKit, setEditingKit] = useState<SoundKit | null>(null);
   const [adminChecked, setAdminChecked] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [adminLoading, setAdminLoading] = useState(true);
 
   useEffect(() => {
     const checkAdmin = async () => {
@@ -178,7 +179,7 @@ function Admin() {
           if (data.user?.isAdmin) {
             setIsAdmin(true);
             setAdminChecked(true);
-            loadData();
+            await loadData();
           } else {
             navigate("/prihlasit-se");
           }
@@ -187,6 +188,8 @@ function Admin() {
         }
       } catch (err) {
         navigate("/prihlasit-se");
+      } finally {
+        setAdminLoading(false);
       }
     };
     checkAdmin();
@@ -209,7 +212,25 @@ function Admin() {
     }
   };
 
-  if (!adminChecked || !isAdmin) return null;
+  if (adminLoading) {
+    return (
+      <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", background: "#000" }}>
+        <div style={{ textAlign: "center", padding: "24px" }}>
+          <p style={{ margin: 0, fontSize: "16px" }}>Kontrola administrátorského přístupu...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!adminChecked || !isAdmin) {
+    return (
+      <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", background: "#000" }}>
+        <div style={{ textAlign: "center", padding: "24px" }}>
+          <p style={{ margin: 0, fontSize: "16px" }}>Probíhá přesměrování na přihlášení...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fade-in admin-container" style={{ maxWidth: "800px", margin: "0 auto", textAlign: "center" }}>
