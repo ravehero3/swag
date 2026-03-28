@@ -9,12 +9,14 @@ function getDatabaseConfig() {
     };
   }
 
-  const isExternal = !connectionString.includes("localhost") && !connectionString.includes("127.0.0.1") && !connectionString.includes("helium");
+  const isLocal = connectionString.includes("localhost") || connectionString.includes("127.0.0.1") || connectionString.includes("helium");
 
   return {
     connectionString,
     connectionTimeoutMillis: 15000,
-    ssl: isExternal ? { rejectUnauthorized: false } : undefined,
+    ssl: isLocal ? undefined : { rejectUnauthorized: false },
+    // Disable prepared statements for pgBouncer transaction mode compatibility
+    statement_timeout: 30000,
   };
 }
 
