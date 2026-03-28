@@ -169,6 +169,7 @@ function Admin() {
   const [adminChecked, setAdminChecked] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminLoading, setAdminLoading] = useState(true);
+  const [adminError, setAdminError] = useState<string | null>(null);
 
   useEffect(() => {
     const checkAdmin = async () => {
@@ -187,6 +188,7 @@ function Admin() {
           navigate("/prihlasit-se");
         }
       } catch (err) {
+        console.error("Admin auth check failed:", err);
         navigate("/prihlasit-se");
       } finally {
         setAdminLoading(false);
@@ -196,6 +198,45 @@ function Admin() {
   }, [navigate]);
 
   const loadData = async () => {
+    setAdminError(null);
+    try {
+      const [beatsRes, kitsRes, ordersRes, licensesRes] = await Promise.all([
+        fetch("/api/beats/all", { credentials: "include" }),
+        fetch("/api/sound-kits/all", { credentials: "include" }),
+        fetch("/api/orders", { credentials: "include" }),
+        fetch("/api/licenses/all", { credentials: "include" }),
+      ]);
+
+      const responses = [beatsRes, kitsRes, ordersRes, licensesRes];
+      for (const res of responses) {
+        if (!res.ok) {
+          if (res.status === 401 || res.status === 403) {
+            navigate("/prihlasit-se");
+            return;
+          }
+          const errorData = await res.json().catch(() => null);
+          const message = errorData?.error || `Chyba serveru (${res.status})`;
+          throw new Error(message);
+        }
+      }
+
+      const [beatsData, kitsData, ordersData, licensesData] = await Promise.all([
+        beatsRes.json(),
+        kitsRes.json(),
+        ordersRes.json(),
+        licensesRes.json(),
+      ]);
+
+      setBeats(Array.isArray(beatsData) ? beatsData : []);
+      setKits(Array.isArray(kitsData) ? kitsData : []);
+      setOrders(Array.isArray(ordersData) ? ordersData : []);
+      setLicenses(Array.isArray(licensesData) ? licensesData : []);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error("Failed to load admin data:", message);
+      setAdminError(message);
+    }
+  };
     try {
       const [beatsRes, kitsRes, ordersRes, licensesRes] = await Promise.all([
         fetch("/api/beats/all", { credentials: "include" }),
@@ -217,6 +258,18 @@ function Admin() {
       <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", background: "#000" }}>
         <div style={{ textAlign: "center", padding: "24px" }}>
           <p style={{ margin: 0, fontSize: "16px" }}>Kontrola administrátorského přístupu...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (adminError) {
+    return (
+      <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", background: "#000", padding: "24px" }}>
+        <div style={{ maxWidth: "640px", textAlign: "center" }}>
+          <h2 style={{ marginBottom: "16px", color: "#fff" }}>Chyba administračního panelu</h2>
+          <p style={{ marginBottom: "16px", color: "#ccc" }}>{adminError}</p>
+          <button className="btn btn-filled" onClick={loadData}>Zkusit znovu</button>
         </div>
       </div>
     );
