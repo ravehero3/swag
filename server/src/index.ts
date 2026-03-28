@@ -14,8 +14,6 @@ import savedRoutes from "./routes/saved.js";
 import licensesRoutes from "./routes/licenses.js";
 import adminLicensesRoutes from "./routes/adminLicenses.js";
 import { requireAuth, requireAdmin } from "./middleware/auth.js";
-// Vite is only used in non-production environments
-// import { createServer as createViteServer } from "vite";
 import bcrypt from "bcryptjs";
 
 const __filename = fileURLToPath(import.meta.url);

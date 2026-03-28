@@ -366,12 +366,10 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   };
 
   const uploadFile = async (file: File, type: string) => {
-  const uploadFile = async (file: File, type: string) => {
+    setUploading(prev => ({ ...prev, [type]: true }));
     setUploadError(prev => ({ ...prev, [type]: "" }));
     setUploadProgress(prev => ({ ...prev, [type]: 0 }));
 
-    // Large ZIPs > 50MB use server POST (streaming, reliable)
-    // Small previews/art use fast B2 presign
     const isLargeFile = file.size > 50 * 1024 * 1024;
     const useServerUpload = isLargeFile || type === "beat" || type === "kit" || type === "trackout";
 
@@ -383,7 +381,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
 
         const xhr = new XMLHttpRequest();
         xhr.open("POST", "/api/upload", true);
-        xhr.timeout = 10 * 60 * 1000; // 10min timeout
+        xhr.timeout = 10 * 60 * 1000;
 
         return new Promise((resolve, reject) => {
           xhr.upload.onprogress = (evt) => {
@@ -411,7 +409,6 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
           xhr.send(formData);
         });
       } else {
-        // Small files: direct B2 presign (existing logic)
         const ext = file.name.split('.').pop() || 'zip';
         const contentType = file.type || '';
 
@@ -442,6 +439,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
           xhr.onload = () => {
             if (xhr.status >= 200 && xhr.status < 300) {
               setUploadProgress(prev => ({ ...prev, [type]: 100 }));
+              setUploadedNames(prev => ({ ...prev, [type]: file.name }));
               resolve(publicUrl || '');
             } else {
               reject(new Error(`B2 failed ${xhr.status}`));
@@ -452,65 +450,6 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
       }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Upload failed';
-      setUploadError(prev => ({ ...prev, [type]: errorMsg }));
-      return '';
-    } finally {
-      setUploading(prev => ({ ...prev, [type]: false }));
-    }
-  };
-    setUploading(prev => ({ ...prev, [type]: true }));
-    setUploadError(prev => ({ ...prev, [type]: "" }));
-    setUploadProgress(prev => ({ ...prev, [type]: 0 }));
-    try {
-      const ext = file.name.split('.').pop() || 'zip';
-      const contentType = file.type || '';
-
-      const presignRes = await fetch(
-        `/api/upload/presign?type=${encodeURIComponent(type)}&ext=${encodeURIComponent(ext)}&contentType=${encodeURIComponent(contentType)}`,
-        { credentials: 'include' }
-      );
-
-      if (!presignRes.ok) {
-        const err = await presignRes.json().catch(() => ({}));
-        throw new Error(err.error || `Presign failed (${presignRes.status})`);
-      }
-
-      const { presignedUrl, publicUrl } = await presignRes.json();
-
-      // Use XHR for real upload progress. fetch() does not expose upload progress in browsers.
-      await new Promise<void>((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open("PUT", presignedUrl, true);
-        if (contentType) xhr.setRequestHeader("Content-Type", contentType);
-
-        xhr.upload.onprogress = (evt) => {
-          if (!evt.lengthComputable) return;
-          const pct = Math.max(0, Math.min(100, Math.round((evt.loaded / evt.total) * 100)));
-          setUploadProgress(prev => ({ ...prev, [type]: pct }));
-        };
-
-        xhr.onerror = () => {
-          // Most common cause in production: CORS blocks the PUT to Backblaze, which surfaces as a network error.
-          reject(new Error("Upload failed (network/CORS). If you're on production, Backblaze B2 bucket CORS must allow PUT from your domain."));
-        };
-
-        xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            setUploadProgress(prev => ({ ...prev, [type]: 100 }));
-            resolve();
-            return;
-          }
-          reject(new Error(`B2 upload failed ${xhr.status}: ${xhr.responseText || xhr.statusText}`));
-        };
-
-        xhr.send(file);
-      });
-
-      setUploadedNames(prev => ({ ...prev, [type]: file.name }));
-      return publicUrl || '';
-    } catch (err) {
-      console.error('Upload exception:', err);
-      const errorMsg = err instanceof Error ? err.message : 'Upload se nezdařil';
       setUploadError(prev => ({ ...prev, [type]: errorMsg }));
       return '';
     } finally {
