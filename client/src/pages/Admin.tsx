@@ -449,16 +449,15 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     setUploadProgress(prev => ({ ...prev, [type]: 0 }));
 
     const isLargeFile = file.size > 50 * 1024 * 1024;
-    const useServerUpload = isLargeFile || type === "beat" || type === "kit" || type === "trackout";
+    const useServerUpload = isLargeFile || type === "beat" || type === "kit" || type === "trackout" || type === "artwork";
 
     try {
       if (useServerUpload) {
         const formData = new FormData();
         formData.append("file", file);
-        formData.append("type", type);
 
         const xhr = new XMLHttpRequest();
-        xhr.open("POST", "/api/upload", true);
+        xhr.open("POST", `/api/upload?type=${encodeURIComponent(type)}`, true);
         xhr.timeout = 10 * 60 * 1000;
 
         return new Promise((resolve, reject) => {
@@ -924,18 +923,17 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
     setUploadProgress(prev => ({ ...prev, [type]: 0 }));
 
     // Large ZIPs > 50MB use server POST (streaming, reliable)
-    // Small previews/art use fast B2 presign
+    // Artwork always uses server upload to save locally (not B2)
     const isLargeFile = file.size > 50 * 1024 * 1024;
-    const useServerUpload = isLargeFile || type === "beat" || type === "kit" || type === "trackout";
+    const useServerUpload = isLargeFile || type === "beat" || type === "kit" || type === "trackout" || type === "artwork";
 
     try {
       if (useServerUpload) {
         const formData = new FormData();
         formData.append("file", file);
-        formData.append("type", type);
 
         const xhr = new XMLHttpRequest();
-        xhr.open("POST", "/api/upload", true);
+        xhr.open("POST", `/api/upload?type=${encodeURIComponent(type)}`, true);
         xhr.timeout = 10 * 60 * 1000; // 10min timeout
 
         return new Promise((resolve, reject) => {

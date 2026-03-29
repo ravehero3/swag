@@ -848,10 +848,10 @@ function Beaty() {
               }}
               onMouseEnter={(e) => {
                 const target = e.currentTarget as HTMLElement;
-                target.style.boxShadow = "0 0 0 1px #3b82f6, 0 0 8px rgba(59, 130, 246, 0.5)";
-                target.style.borderTop = "1px solid #3b82f6";
-                target.style.borderLeft = "1px solid #3b82f6";
-                target.style.borderRight = "1px solid #3b82f6";
+                target.style.boxShadow = "none";
+                target.style.borderTop = "1px solid #1189ff";
+                target.style.borderLeft = "1px solid #1189ff";
+                target.style.borderRight = "1px solid #1189ff";
                 const separator = target.querySelector('[data-separator]') as HTMLElement;
                 if (separator) separator.style.opacity = "0.5";
               }}

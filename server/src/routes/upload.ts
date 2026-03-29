@@ -171,7 +171,27 @@ router.post("/", requireAdmin, upload.single("file"), async (req: Request, res: 
   const ext = req.file.originalname.split('.').pop()?.toLowerCase() || 'zip';
   const key = `${uuidv4()}.${ext}`;
 
-  const isPublic = type === "preview" || type === "artwork";
+  // Artwork: save directly to local public/uploads/artwork/ so it's always accessible
+  if (type === "artwork") {
+    try {
+      const artworkDir = path.join(process.cwd(), "public/uploads/artwork");
+      if (!fs.existsSync(artworkDir)) fs.mkdirSync(artworkDir, { recursive: true });
+      const destPath = path.join(artworkDir, key);
+      fs.copyFileSync(req.file.path, destPath);
+      fs.unlinkSync(req.file.path);
+      const url = `/uploads/artwork/${key}`;
+      res.json({ url, key, bucket: "local", size: req.file.size });
+      console.log(`✅ artwork saved locally: ${url}`);
+      return;
+    } catch (error) {
+      if (req.file.path && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+      console.error("Artwork local save failed:", error);
+      res.status(500).json({ error: "Artwork upload failed", detail: String(error) });
+      return;
+    }
+  }
+
+  const isPublic = type === "preview";
   const bucket = isPublic ? STORAGE_BUCKETS.PREVIEWS : STORAGE_BUCKETS.ZIPS;
   
   try {
