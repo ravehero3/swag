@@ -623,40 +623,6 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
               )}
             </div>
 
-            <div style={{ gridColumn: "1 / -1" }}>
-              <label style={{ display: "block", marginBottom: "8px" }}>Beat File (ZIP / WAV / MP3)</label>
-              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                <input
-                  type="file"
-                  accept="audio/*,.zip,.rar"
-                  disabled={uploading["beat"]}
-                  onChange={async (e) => {
-                    if (e.target.files?.[0]) {
-                      const url = await uploadFile(e.target.files[0], "beat");
-                      if (url) setForm(f => ({ ...f, fileUrl: url as string }));
-                    }
-                  }}
-                  style={{ flex: 1 }}
-                />
-                <button
-                  type="button"
-                  className="btn btn-admin"
-                  onClick={() => setB2PickerFor("beat")}
-                  style={{ whiteSpace: "nowrap", fontSize: "12px" }}
-                  data-testid="button-browse-b2-beat"
-                >
-                  Browse B2
-                </button>
-              </div>
-              <UploadProgressBar type="beat" />
-              <div style={{ marginTop: "6px" }}>
-                {form.fileUrl && !uploading["beat"] && (
-                  <span style={{ fontSize: "12px", color: "#4caf50" }}>✓ {uploadedNames["beat"] || form.fileUrl}</span>
-                )}
-                {!form.fileUrl && <UploadStatus type="beat" url={form.fileUrl} />}
-              </div>
-            </div>
-
             <div>
               <label style={{ display: "block", marginBottom: "8px" }}>Artwork</label>
               <input
@@ -794,7 +760,6 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
       {b2PickerFor && (
         <B2FilePicker
           onSelect={(key) => {
-            if (b2PickerFor === "beat") setForm(f => ({ ...f, fileUrl: key }));
             if (b2PickerFor === "trackout") setForm(f => ({ ...f, trackoutUrl: key }));
           }}
           onClose={() => setB2PickerFor(null)}
