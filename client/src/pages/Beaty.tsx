@@ -311,6 +311,7 @@ function Beaty() {
             resolve();
           }, 3000);
         });
+        audio.volume = Math.max(0.01, audio.volume || 0.8);
         await audio.play();
         setIsPlaying(true);
       } catch (err) {
@@ -852,8 +853,9 @@ function Beaty() {
                 target.style.borderTop = "1px solid #1189ff";
                 target.style.borderLeft = "1px solid #1189ff";
                 target.style.borderRight = "1px solid #1189ff";
+                target.style.borderBottom = "1px solid #1189ff";
                 const separator = target.querySelector('[data-separator]') as HTMLElement;
-                if (separator) separator.style.opacity = "0.5";
+                if (separator) separator.style.opacity = "0";
               }}
               onMouseLeave={(e) => {
                 const target = e.currentTarget as HTMLElement;
@@ -861,6 +863,7 @@ function Beaty() {
                 target.style.borderTop = "1px solid transparent";
                 target.style.borderLeft = "1px solid transparent";
                 target.style.borderRight = "1px solid transparent";
+                target.style.borderBottom = "1px solid transparent";
                 const separator = target.querySelector('[data-separator]') as HTMLElement;
                 if (separator) separator.style.opacity = "1";
               }}

@@ -126,7 +126,7 @@ function MusicPlayer({
             height: "6px",
             background: "#222",
             cursor: "pointer",
-            zIndex: 1,
+            zIndex: 100,
           }}
           onMouseEnter={(e) => {
             (e.currentTarget as HTMLDivElement).style.height = "6px";
