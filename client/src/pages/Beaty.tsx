@@ -277,16 +277,45 @@ function Beaty() {
         }
       }
     } else {
+      const audio = audioRef.current;
+      if (!audio) return;
+
+      const src = beat.preview_url || "";
+      if (!src) {
+        console.error("Beat has no preview_url:", beat.title);
+        return;
+      }
+
       setCurrentBeat(beat);
-      if (audioRef.current) {
-        audioRef.current.src = beat.preview_url || "";
-        try {
-          await audioRef.current.play();
-          setIsPlaying(true);
-        } catch (err) {
-          console.error("Audio play failed:", err);
-          setIsPlaying(false);
-        }
+      audio.src = src;
+      audio.load();
+
+      try {
+        await new Promise<void>((resolve, reject) => {
+          const onCanPlay = () => {
+            audio.removeEventListener("canplay", onCanPlay);
+            audio.removeEventListener("error", onError);
+            resolve();
+          };
+          const onError = () => {
+            audio.removeEventListener("canplay", onCanPlay);
+            audio.removeEventListener("error", onError);
+            reject(new Error(`Failed to load audio: ${src}`));
+          };
+          audio.addEventListener("canplay", onCanPlay, { once: true });
+          audio.addEventListener("error", onError, { once: true });
+          // Timeout fallback — try playing anyway after 3s
+          setTimeout(() => {
+            audio.removeEventListener("canplay", onCanPlay);
+            audio.removeEventListener("error", onError);
+            resolve();
+          }, 3000);
+        });
+        await audio.play();
+        setIsPlaying(true);
+      } catch (err) {
+        console.error("Audio play failed:", err, "| src:", src);
+        setIsPlaying(false);
       }
     }
   };

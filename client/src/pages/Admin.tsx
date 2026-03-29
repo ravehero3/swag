@@ -16,7 +16,7 @@ function formatBytes(bytes: number): string {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
 }
 
-function B2FilePicker({ onSelect, onClose }: { onSelect: (key: string) => void; onClose: () => void }) {
+function B2FilePicker({ onSelect, onClose }: { onSelect: (key: string) => void | Promise<void>; onClose: () => void }) {
   const [files, setFiles] = useState<B2File[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -758,8 +758,16 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
 
       {b2PickerFor && (
         <B2FilePicker
-          onSelect={(key) => {
-            if (b2PickerFor === "preview") setForm(f => ({ ...f, previewUrl: key }));
+          onSelect={async (key) => {
+            if (b2PickerFor === "preview") {
+              try {
+                const res = await fetch(`/api/upload/public-url?key=${encodeURIComponent(key)}&type=preview`, { credentials: "include" });
+                const data = await res.json();
+                setForm(f => ({ ...f, previewUrl: data.url || key }));
+              } catch {
+                setForm(f => ({ ...f, previewUrl: key }));
+              }
+            }
             if (b2PickerFor === "trackout") setForm(f => ({ ...f, trackoutUrl: key }));
           }}
           onClose={() => setB2PickerFor(null)}

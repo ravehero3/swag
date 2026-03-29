@@ -119,6 +119,16 @@ function getPublicUrl(bucket: string, key: string): string {
   return `https://${bucket}.${endpoint}/${key}`;
 }
 
+// Return the full public URL for a given key + bucket type (preview or artwork)
+router.get("/public-url", requireAdmin, (req: Request, res: Response) => {
+  const { key, type } = req.query as { key: string; type: string };
+  if (!key || !type) return res.status(400).json({ error: "Missing key or type" });
+  const isPublic = type === "preview" || type === "artwork";
+  if (!isPublic) return res.status(400).json({ error: "Only preview/artwork types have public URLs" });
+  const bucket = type === "preview" ? STORAGE_BUCKETS.PREVIEWS : STORAGE_BUCKETS.ZIPS;
+  res.json({ url: getPublicUrl(bucket, key) });
+});
+
 // Generate presigned URL for direct browser uploads (fallback)
 router.get("/presign", requireAdmin, async (req: Request, res: Response) => {
   const type = req.query.type as string;
