@@ -171,6 +171,16 @@ export async function initDatabase() {
       ON CONFLICT (key) DO NOTHING;
     `);
     
+    // Safe column migrations — add any columns that may be missing from older deployments
+    await client.query(`
+      ALTER TABLE beats ADD COLUMN IF NOT EXISTS trackout_url VARCHAR(500);
+      ALTER TABLE beats ADD COLUMN IF NOT EXISTS is_highlighted BOOLEAN DEFAULT FALSE;
+      ALTER TABLE sound_kits ADD COLUMN IF NOT EXISTS legal_info TEXT;
+      ALTER TABLE sound_kits ADD COLUMN IF NOT EXISTS author_info TEXT;
+      ALTER TABLE sound_kits ADD COLUMN IF NOT EXISTS is_free BOOLEAN DEFAULT FALSE;
+      ALTER TABLE sound_kits ADD COLUMN IF NOT EXISTS number_of_sounds INTEGER DEFAULT 0;
+    `);
+
     console.log("Database initialized successfully");
   } finally {
     client.release();
