@@ -426,6 +426,7 @@ function Beaty() {
     <div style={{ background: "#000", minHeight: "100vh" }}>
       <audio
         ref={audioRef}
+        crossOrigin="anonymous"
         onEnded={handleAudioEnded}
         onError={() => {
           console.error("Audio error: failed to load", audioRef.current?.src);

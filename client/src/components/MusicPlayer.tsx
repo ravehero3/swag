@@ -44,17 +44,60 @@ function MusicPlayer({
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.8);
-  const [showVolumeLabel, setShowVolumeLabel] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [prevVolume, setPrevVolume] = useState(0.8);
+  const [isDownloading, setIsDownloading] = useState(false);
   const internalAudioRef = useRef<HTMLAudioElement>(null);
   const activeAudioRef = audioRef || internalAudioRef;
 
   const handleVolumeChange = useCallback((newVolume: number) => {
     const clamped = Math.max(0, Math.min(1, newVolume));
     setVolume(clamped);
+    setIsMuted(clamped === 0);
     if (activeAudioRef.current) {
       activeAudioRef.current.volume = clamped;
     }
   }, [activeAudioRef]);
+
+  const handleToggleMute = useCallback(() => {
+    if (isMuted || volume === 0) {
+      const restore = prevVolume > 0 ? prevVolume : 0.8;
+      setVolume(restore);
+      setIsMuted(false);
+      if (activeAudioRef.current) activeAudioRef.current.volume = restore;
+    } else {
+      setPrevVolume(volume);
+      setVolume(0);
+      setIsMuted(true);
+      if (activeAudioRef.current) activeAudioRef.current.volume = 0;
+    }
+  }, [isMuted, volume, prevVolume, activeAudioRef]);
+
+  const handleDownload = useCallback(async () => {
+    if (!currentBeat?.preview_url || isDownloading) return;
+    setIsDownloading(true);
+    try {
+      const response = await fetch(currentBeat.preview_url);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${currentBeat.title}.mp3`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      const a = document.createElement("a");
+      a.href = currentBeat.preview_url;
+      a.download = `${currentBeat.title}.mp3`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } finally {
+      setIsDownloading(false);
+    }
+  }, [currentBeat, isDownloading]);
 
   useEffect(() => {
     if (activeAudioRef.current) {
@@ -102,7 +145,10 @@ function MusicPlayer({
           animation: "slideUp 0.3s ease-out",
         }}
       >
-        <style>{`@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }`}</style>
+        <style>{`
+          @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+          @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        `}</style>
 
         {/* Clickable timeline */}
         <div
@@ -364,19 +410,16 @@ function MusicPlayer({
 
         <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1, justifyContent: "flex-end" }}>
 
-          {/* Volume Slider — appears when playing */}
+          {/* Volume Control */}
           <div
+            className="volume-slider-wrapper"
+            data-testid="volume-slider-container"
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "8px",
-              opacity: isPlaying ? 1 : 0,
-              transform: isPlaying ? "translateX(0)" : "translateX(12px)",
-              transition: "opacity 0.35s ease, transform 0.35s ease",
-              pointerEvents: isPlaying ? "auto" : "none",
+              gap: "6px",
               userSelect: "none",
             }}
-            data-testid="volume-slider-container"
           >
             <style>{`
               @media (max-width: 768px) {
@@ -385,118 +428,118 @@ function MusicPlayer({
               .volume-slider {
                 -webkit-appearance: none;
                 appearance: none;
-                width: 80px;
-                height: 2px;
-                background: linear-gradient(to right, #fff ${volume * 100}%, #333 ${volume * 100}%);
-                border-radius: 1px;
+                width: 90px;
+                height: 3px;
+                background: linear-gradient(to right, #fff ${volume * 100}%, rgba(255,255,255,0.15) ${volume * 100}%);
+                border-radius: 3px;
                 outline: none;
                 cursor: pointer;
-                transition: background 0.05s;
+                transition: height 0.15s ease, background 0.05s;
+              }
+              .volume-slider:hover {
+                height: 4px;
               }
               .volume-slider::-webkit-slider-thumb {
                 -webkit-appearance: none;
                 appearance: none;
-                width: 10px;
-                height: 10px;
+                width: 12px;
+                height: 12px;
                 border-radius: 50%;
                 background: #fff;
                 cursor: pointer;
-                box-shadow: 0 0 4px rgba(255,255,255,0.4);
+                box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+                transition: transform 0.1s ease, box-shadow 0.1s ease;
+              }
+              .volume-slider::-webkit-slider-thumb:hover {
+                transform: scale(1.2);
+                box-shadow: 0 0 8px rgba(255,255,255,0.5);
               }
               .volume-slider::-moz-range-thumb {
-                width: 10px;
-                height: 10px;
+                width: 12px;
+                height: 12px;
                 border-radius: 50%;
                 background: #fff;
                 cursor: pointer;
                 border: none;
-                box-shadow: 0 0 4px rgba(255,255,255,0.4);
-              }
-              .volume-slider::-webkit-slider-runnable-track {
-                height: 2px;
-                border-radius: 1px;
+                box-shadow: 0 1px 4px rgba(0,0,0,0.5);
               }
               .volume-slider::-moz-range-track {
-                height: 2px;
-                border-radius: 1px;
-                background: #333;
+                height: 3px;
+                border-radius: 3px;
+                background: rgba(255,255,255,0.15);
               }
               .volume-slider::-moz-range-progress {
-                height: 2px;
-                border-radius: 1px;
+                height: 3px;
+                border-radius: 3px;
                 background: #fff;
               }
+              .volume-icon-btn {
+                background: transparent;
+                border: none;
+                color: #aaa;
+                cursor: pointer;
+                padding: 4px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 4px;
+                transition: color 0.15s ease;
+                flex-shrink: 0;
+              }
+              .volume-icon-btn:hover {
+                color: #fff;
+              }
             `}</style>
-            <div
-              className="volume-slider-wrapper"
-              style={{ display: "flex", alignItems: "center", gap: "8px", position: "relative" }}
-              onMouseEnter={() => setShowVolumeLabel(true)}
-              onMouseLeave={() => setShowVolumeLabel(false)}
+            {/* Speaker icon — click to mute/unmute */}
+            <button
+              className="volume-icon-btn"
+              onClick={handleToggleMute}
+              title={isMuted ? "Unmute" : "Mute"}
+              data-testid="volume-mute-btn"
             >
-              <span
-                style={{
-                  fontSize: "9px",
-                  color: "#555",
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                  fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
-                }}
-              >
-                VOL
-              </span>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.01"
-                value={volume}
-                onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
-                className="volume-slider"
-                data-testid="volume-slider"
-                style={{
-                  background: `linear-gradient(to right, #fff ${volume * 100}%, #333 ${volume * 100}%)`,
-                }}
-              />
-              {showVolumeLabel && (
-                <div
-                  style={{
-                    position: "absolute",
-                    bottom: "calc(100% + 8px)",
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    background: "#111",
-                    border: "1px solid #333",
-                    color: "#fff",
-                    fontSize: "11px",
-                    fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
-                    padding: "3px 7px",
-                    borderRadius: "4px",
-                    whiteSpace: "nowrap",
-                    pointerEvents: "none",
-                    letterSpacing: "0.02em",
-                  }}
-                >
-                  {Math.round(volume * 100)}%
-                </div>
+              {(isMuted || volume === 0) ? (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                  <line x1="23" y1="9" x2="17" y2="15" />
+                  <line x1="17" y1="9" x2="23" y2="15" />
+                </svg>
+              ) : volume < 0.4 ? (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                  <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                </svg>
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+                  <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+                </svg>
               )}
-            </div>
+            </button>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value={volume}
+              onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
+              className="volume-slider"
+              data-testid="volume-slider"
+              style={{
+                background: `linear-gradient(to right, #fff ${volume * 100}%, rgba(255,255,255,0.15) ${volume * 100}%)`,
+              }}
+            />
           </div>
 
           <button
-            onClick={() => {
-              const element = document.createElement('a');
-              element.href = currentBeat.preview_url;
-              element.download = `${currentBeat.title}.mp3`;
-              document.body.appendChild(element);
-              element.click();
-              document.body.removeChild(element);
-            }}
+            onClick={handleDownload}
+            disabled={isDownloading}
             className="btn-bounce download-btn-player"
             style={{
               background: "transparent",
               border: "none",
-              color: "#fff",
-              cursor: "pointer",
+              color: isDownloading ? "#555" : "#fff",
+              cursor: isDownloading ? "default" : "pointer",
               padding: "8px",
               borderRadius: "4px",
               transition: "all 0.2s",
@@ -504,21 +547,28 @@ function MusicPlayer({
               position: "relative",
               display: "flex",
               alignItems: "center",
-              justifyContent: "center"
+              justifyContent: "center",
+              opacity: isDownloading ? 0.5 : 1,
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.boxShadow = "0 0 20px rgba(255, 255, 255, 0.8), inset 0 0 10px rgba(255, 255, 255, 0.3)";
+              if (!isDownloading) e.currentTarget.style.boxShadow = "0 0 20px rgba(255, 255, 255, 0.8), inset 0 0 10px rgba(255, 255, 255, 0.3)";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.boxShadow = "none";
             }}
-            title="Download"
+            title="Download preview"
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="7 10 12 15 17 10" />
-              <line x1="12" y1="15" x2="12" y2="3" />
-            </svg>
+            {isDownloading ? (
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: "spin 1s linear infinite" }}>
+                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+              </svg>
+            ) : (
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+            )}
           </button>
 
           <button

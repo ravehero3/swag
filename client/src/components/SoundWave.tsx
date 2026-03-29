@@ -10,28 +10,40 @@ function SoundWave({ audioRef, isPlaying }: SoundWaveProps) {
   const analyserRef = useRef<AnalyserNode | null>(null);
   const animationRef = useRef<number | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
+  const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
+  const setupFailedRef = useRef(false);
 
   useEffect(() => {
     if (!audioRef.current) return;
 
     const setupAudioContext = async () => {
+      if (setupFailedRef.current) return;
       try {
         if (!audioContextRef.current) {
           const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)() as AudioContext;
-          const source = audioContext.createMediaElementSource(audioRef.current!);
-          const analyser = audioContext.createAnalyser();
-          analyser.fftSize = 256;
-          source.connect(analyser);
-          analyser.connect(audioContext.destination);
-          analyserRef.current = analyser;
           audioContextRef.current = audioContext;
         }
-        // Always resume — browsers suspend AudioContext outside direct user gestures
+
+        if (!sourceRef.current) {
+          const source = audioContextRef.current.createMediaElementSource(audioRef.current!);
+          const analyser = audioContextRef.current.createAnalyser();
+          analyser.fftSize = 256;
+          source.connect(analyser);
+          analyser.connect(audioContextRef.current.destination);
+          analyserRef.current = analyser;
+          sourceRef.current = source;
+        }
+
         if (audioContextRef.current.state === "suspended") {
           await audioContextRef.current.resume();
         }
       } catch (error) {
-        console.error("Error setting up audio context:", error);
+        console.warn("SoundWave: audio context setup failed, waveform disabled:", error);
+        setupFailedRef.current = true;
+        if (audioContextRef.current) {
+          try { audioContextRef.current.close(); } catch (_) {}
+          audioContextRef.current = null;
+        }
       }
     };
 
@@ -48,7 +60,11 @@ function SoundWave({ audioRef, isPlaying }: SoundWaveProps) {
     };
 
     if (isPlaying) {
-      setupAudioContext().then(() => updateWaveform());
+      setupAudioContext().then(() => {
+        if (!setupFailedRef.current) updateWaveform();
+      });
+    } else {
+      setFrequencyData(null);
     }
 
     return () => {
