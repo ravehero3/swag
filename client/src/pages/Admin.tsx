@@ -604,15 +604,30 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
 
             <div style={{ gridColumn: "1 / -1" }}>
               <label style={{ display: "block", marginBottom: "8px" }}>Preview Audio</label>
-              <button
-                type="button"
-                className="btn btn-admin"
-                onClick={() => setB2PickerFor("preview")}
-                style={{ whiteSpace: "nowrap", fontSize: "12px" }}
-                data-testid="button-browse-b2-preview"
-              >
-                Browse B2
-              </button>
+              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                <input
+                  type="file"
+                  accept="audio/*"
+                  disabled={uploading["preview"]}
+                  onChange={async (e) => {
+                    if (e.target.files?.[0]) {
+                      const url = await uploadFile(e.target.files[0], "preview");
+                      if (url) setForm(f => ({ ...f, previewUrl: url as string }));
+                    }
+                  }}
+                  style={{ flex: 1 }}
+                />
+                <button
+                  type="button"
+                  className="btn btn-admin"
+                  onClick={() => setB2PickerFor("preview")}
+                  style={{ whiteSpace: "nowrap", fontSize: "12px" }}
+                  data-testid="button-browse-b2-preview"
+                >
+                  Browse B2
+                </button>
+              </div>
+              <UploadProgressBar type="preview" />
               <div style={{ marginTop: "6px" }}><UploadStatus type="preview" url={form.previewUrl} /></div>
               {form.previewUrl && (
                 <audio controls src={form.previewUrl} style={{ width: "100%", marginTop: "8px", height: "36px" }} />
