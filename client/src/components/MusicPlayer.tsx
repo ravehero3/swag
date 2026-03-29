@@ -135,13 +135,61 @@ function MusicPlayer({
       >
         <style>{`@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }`}</style>
 
-        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: "#222" }}>
+        {/* Clickable timeline */}
+        <div
+          data-testid="timeline-bar"
+          onClick={(e) => {
+            const bar = e.currentTarget as HTMLDivElement;
+            const rect = bar.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const pct = clickX / rect.width;
+            const audio = activeAudioRef.current;
+            if (audio && audio.duration) {
+              audio.currentTime = pct * audio.duration;
+              setCurrentTime(audio.currentTime);
+            }
+          }}
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            height: "6px",
+            background: "#222",
+            cursor: "pointer",
+            zIndex: 1,
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLDivElement).style.height = "6px";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLDivElement).style.height = "6px";
+          }}
+        >
           <div
             style={{
               height: "100%",
               background: "#fff",
               width: `${progressPercent}%`,
               transition: isPlaying ? "none" : "width 0.1s linear",
+              pointerEvents: "none",
+            }}
+          />
+          {/* Scrubber thumb */}
+          <div
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: `${progressPercent}%`,
+              transform: "translate(-50%, -50%)",
+              width: "10px",
+              height: "10px",
+              borderRadius: "50%",
+              background: "#fff",
+              pointerEvents: "none",
+              opacity: progressPercent > 0 ? 1 : 0,
+              transition: isPlaying ? "none" : "left 0.1s linear",
+              boxShadow: "0 0 4px rgba(255,255,255,0.6)",
             }}
           />
         </div>
