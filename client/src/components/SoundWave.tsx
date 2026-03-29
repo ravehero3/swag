@@ -14,19 +14,22 @@ function SoundWave({ audioRef, isPlaying }: SoundWaveProps) {
   useEffect(() => {
     if (!audioRef.current) return;
 
-    const setupAudioContext = () => {
-      if (audioContextRef.current) return;
-
+    const setupAudioContext = async () => {
       try {
-        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)() as AudioContext;
-        const source = audioContext.createMediaElementSource(audioRef.current!);
-        const analyser = audioContext.createAnalyser();
-        analyser.fftSize = 256;
-        source.connect(analyser);
-        analyser.connect(audioContext.destination);
-        
-        analyserRef.current = analyser;
-        audioContextRef.current = audioContext;
+        if (!audioContextRef.current) {
+          const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)() as AudioContext;
+          const source = audioContext.createMediaElementSource(audioRef.current!);
+          const analyser = audioContext.createAnalyser();
+          analyser.fftSize = 256;
+          source.connect(analyser);
+          analyser.connect(audioContext.destination);
+          analyserRef.current = analyser;
+          audioContextRef.current = audioContext;
+        }
+        // Always resume — browsers suspend AudioContext outside direct user gestures
+        if (audioContextRef.current.state === "suspended") {
+          await audioContextRef.current.resume();
+        }
       } catch (error) {
         console.error("Error setting up audio context:", error);
       }
@@ -45,8 +48,7 @@ function SoundWave({ audioRef, isPlaying }: SoundWaveProps) {
     };
 
     if (isPlaying) {
-      setupAudioContext();
-      updateWaveform();
+      setupAudioContext().then(() => updateWaveform());
     }
 
     return () => {
