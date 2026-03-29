@@ -171,22 +171,22 @@ router.post("/", requireAdmin, upload.single("file"), async (req: Request, res: 
   const ext = req.file.originalname.split('.').pop()?.toLowerCase() || 'zip';
   const key = `${uuidv4()}.${ext}`;
 
-  // Artwork: save directly to local public/uploads/artwork/ so it's always accessible
-  if (type === "artwork") {
+  // Artwork + preview: save directly to local public/uploads/ so they are always accessible
+  if (type === "artwork" || type === "preview") {
     try {
-      const artworkDir = path.join(process.cwd(), "public/uploads/artwork");
-      if (!fs.existsSync(artworkDir)) fs.mkdirSync(artworkDir, { recursive: true });
-      const destPath = path.join(artworkDir, key);
+      const dir = path.join(process.cwd(), `public/uploads/${type}`);
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      const destPath = path.join(dir, key);
       fs.copyFileSync(req.file.path, destPath);
       fs.unlinkSync(req.file.path);
-      const url = `/uploads/artwork/${key}`;
+      const url = `/uploads/${type}/${key}`;
       res.json({ url, key, bucket: "local", size: req.file.size });
-      console.log(`✅ artwork saved locally: ${url}`);
+      console.log(`✅ ${type} saved locally: ${url}`);
       return;
     } catch (error) {
       if (req.file.path && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
-      console.error("Artwork local save failed:", error);
-      res.status(500).json({ error: "Artwork upload failed", detail: String(error) });
+      console.error(`${type} local save failed:`, error);
+      res.status(500).json({ error: `${type} upload failed`, detail: String(error) });
       return;
     }
   }
