@@ -821,12 +821,12 @@ function Beaty() {
                 {/* matches artwork image */}
                 <div style={{ width: "48px", flexShrink: 0 }} />
                 {/* NÁZEV — matches title column */}
-                <div style={{ width: "240px", marginRight: "12px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666" }}>NÁZEV</div>
+                <div style={{ width: "240px", minWidth: "240px", maxWidth: "240px", flexShrink: 0, marginRight: "12px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666" }}>NÁZEV</div>
                 <div style={{ position: "absolute", bottom: 0, left: "80px", right: "16px", height: "1px", background: "#333" }} />
                 {/* BPM — matches beat bpm column */}
-                <div className="desktop-only" style={{ width: "100px" }}><button onClick={() => { setSortBy("bpm"); setSortAsc(sortBy === "bpm" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0, textAlign: "left", width: "100%" }}>BPM {sortBy === "bpm" && (sortAsc ? "↑" : "↓")}</button></div>
+                <div className="desktop-only" style={{ width: "100px", flexShrink: 0 }}><button onClick={() => { setSortBy("bpm"); setSortAsc(sortBy === "bpm" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0, textAlign: "left", width: "100%" }}>BPM {sortBy === "bpm" && (sortAsc ? "↑" : "↓")}</button></div>
                 {/* KEY — matches beat key column */}
-                <div className="desktop-only" style={{ width: "100px" }}><button onClick={() => { setSortBy("key"); setSortAsc(sortBy === "key" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0, textAlign: "left", width: "100%" }}>KEY {sortBy === "key" && (sortAsc ? "↑" : "↓")}</button></div>
+                <div className="desktop-only" style={{ width: "100px", flexShrink: 0 }}><button onClick={() => { setSortBy("key"); setSortAsc(sortBy === "key" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0, textAlign: "left", width: "100%" }}>KEY {sortBy === "key" && (sortAsc ? "↑" : "↓")}</button></div>
               </div>
               {(sortBy && sortBy === "bpm" ? [...otherBeats].sort((a, b) => sortAsc ? a.bpm - b.bpm : b.bpm - a.bpm) : sortBy && sortBy === "key" ? [...otherBeats].sort((a, b) => sortAsc ? a.key.localeCompare(b.key) : b.key.localeCompare(a.key)) : otherBeats).map((beat) => (
             <div
@@ -915,13 +915,13 @@ function Beaty() {
                   style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "4px" }}
                 />
               </div>
-              <div style={{ width: "240px", marginRight: "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
-                <div style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "20px" }}>{beat.title}</div>
+              <div style={{ width: "240px", minWidth: "240px", maxWidth: "240px", flexShrink: 0, marginRight: "12px", display: "flex", flexDirection: "column", gap: "8px", overflow: "hidden" }}>
+                <div style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "20px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{beat.title}</div>
               </div>
-              <div className="desktop-only" style={{ width: "100px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", color: "#666", fontSize: "16px", textAlign: "left" }}>
+              <div className="desktop-only" style={{ width: "100px", flexShrink: 0, fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", color: "#666", fontSize: "16px", textAlign: "left" }}>
                 {beat.bpm}
               </div>
-              <div className="desktop-only" style={{ width: "100px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", color: "#666", fontSize: "16px", textAlign: "left" }}>
+              <div className="desktop-only" style={{ width: "100px", flexShrink: 0, fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", color: "#666", fontSize: "16px", textAlign: "left" }}>
                 {beat.key}
               </div>
 
