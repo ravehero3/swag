@@ -156,6 +156,29 @@ function Beaty() {
   const [savedBeats, setSavedBeats] = useState<Set<number>>(new Set());
   const [contractModalBeat, setContractModalBeat] = useState<Beat | null>(null);
   const [downloadingBeat, setDownloadingBeat] = useState<Beat | null>(null);
+
+  const downloadPreview = async (beat: Beat) => {
+    if (!beat.preview_url) return;
+    try {
+      const response = await fetch(beat.preview_url);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${beat.title}.mp3`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      const a = document.createElement("a");
+      a.href = beat.preview_url;
+      a.download = `${beat.title}.mp3`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+  };
   const [sortBy, setSortBy] = useState<"bpm" | "key" | null>(null);
   const [sortAsc, setSortAsc] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -570,6 +593,7 @@ function Beaty() {
                       }}
                       onMouseEnter={(e) => (e.currentTarget.style.background = "#1a1a1a")}
                       onMouseLeave={(e) => (e.currentTarget.style.background = "#000")}
+                      onClick={() => downloadPreview(highlightedBeat)}
                       title="Download"
                     >
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
@@ -926,7 +950,7 @@ function Beaty() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      setDownloadingBeat(beat);
+                      downloadPreview(beat);
                     }}
                     style={{
                       background: "#0d0d0d",
@@ -993,7 +1017,7 @@ function Beaty() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      setDownloadingBeat(beat);
+                      downloadPreview(beat);
                     }}
                     style={{
                       background: "#0d0d0d",
