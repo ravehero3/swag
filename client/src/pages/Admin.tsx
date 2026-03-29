@@ -237,21 +237,6 @@ function Admin() {
       setAdminError(message);
     }
   };
-    try {
-      const [beatsRes, kitsRes, ordersRes, licensesRes] = await Promise.all([
-        fetch("/api/beats/all", { credentials: "include" }),
-        fetch("/api/sound-kits/all", { credentials: "include" }),
-        fetch("/api/orders", { credentials: "include" }),
-        fetch("/api/licenses/all", { credentials: "include" }),
-      ]);
-      setBeats(await beatsRes.json());
-      setKits(await kitsRes.json());
-      setOrders(await ordersRes.json());
-      setLicenses(await licensesRes.json());
-    } catch (err) {
-      console.error(err);
-    }
-  };
 
   if (adminLoading) {
     return (
