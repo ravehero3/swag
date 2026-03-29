@@ -79,10 +79,12 @@ router.post("/pending", requireAdmin, async (req: Request, res: Response) => {
     return res.status(400).json({ error: "No files" });
   }
   try {
-    const values = files.map(f => `('${f.key}', '${f.bucket}', '${f.filename}', ${f.size})`).join(',');
-    await pool.query(`
-      INSERT INTO pending_uploads (key, bucket, filename, size) VALUES ${values}
-    `);
+    for (const f of files) {
+      await pool.query(
+        "INSERT INTO pending_uploads (key, bucket, filename, size) VALUES ($1, $2, $3, $4)",
+        [f.key, f.bucket, f.filename, f.size]
+      );
+    }
     res.json({ success: true, count: files.length });
   } catch (error) {
     console.error("Pending save error:", error);

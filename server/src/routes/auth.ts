@@ -12,8 +12,11 @@ router.get(
   "/google/callback",
   passport.authenticate("google", { failureRedirect: "/prihlasit-se", session: true }),
   (req: Request, res: Response) => {
-    // If we have a user from passport, we should sync it with our custom session if needed
-    // but passport already handles it via serialize/deserialize
+    const user = req.user as any;
+    if (user) {
+      req.session.userId = user.id;
+      req.session.isAdmin = user.is_admin;
+    }
     res.redirect("/");
   }
 );
