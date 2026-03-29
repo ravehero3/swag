@@ -114,7 +114,7 @@ function Header() {
         </Link>
 
         {user?.isAdmin && (
-          <Link href="/admin">
+          <Link href="/admin?tab=orders">
             <span
               style={{
                 cursor: "pointer",

@@ -157,7 +157,12 @@ interface LicenseType {
 function Admin() {
   const { settings, refreshSettings } = useApp() as any;
   const [, navigate] = useLocation();
-  const [tab, setTab] = useState<"beats" | "kits" | "orders" | "licenses" | "settings" | "assets" | "promo">("beats");
+  const initialTab = (() => {
+    const p = new URLSearchParams(window.location.search).get("tab");
+    const valid = ["beats", "kits", "orders", "licenses", "settings", "assets", "promo"];
+    return (valid.includes(p || "") ? p : "orders") as "beats" | "kits" | "orders" | "licenses" | "settings" | "assets" | "promo";
+  })();
+  const [tab, setTab] = useState<"beats" | "kits" | "orders" | "licenses" | "settings" | "assets" | "promo">(initialTab);
   const [beats, setBeats] = useState<Beat[]>([]);
   const [kits, setKits] = useState<SoundKit[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
@@ -1220,30 +1225,175 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
   );
 }
 
-function OrdersTab({ orders }: any) {
+function RevenueChart({ orders }: { orders: any[] }) {
+  const DAYS = 30;
+  const W = 700, H = 220, PAD_L = 64, PAD_R = 16, PAD_T = 16, PAD_B = 48;
+  const chartW = W - PAD_L - PAD_R;
+  const chartH = H - PAD_T - PAD_B;
+
+  // Build day buckets for last N days
+  const today = new Date();
+  today.setHours(23, 59, 59, 999);
+  const days: { label: string; date: string; revenue: number; count: number }[] = [];
+  for (let i = DAYS - 1; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const key = d.toISOString().slice(0, 10);
+    days.push({ label: i % 5 === 0 ? `${d.getDate()}.${d.getMonth() + 1}.` : "", date: key, revenue: 0, count: 0 });
+  }
+
+  for (const o of orders) {
+    const key = new Date(o.created_at).toISOString().slice(0, 10);
+    const slot = days.find(d => d.date === key);
+    if (slot) { slot.revenue += Number(o.total) || 0; slot.count += 1; }
+  }
+
+  const maxRev = Math.max(...days.map(d => d.revenue), 1);
+  const maxCount = Math.max(...days.map(d => d.count), 1);
+
+  // Revenue line points
+  const revPoints = days.map((d, i) => {
+    const x = PAD_L + (i / (DAYS - 1)) * chartW;
+    const y = PAD_T + chartH - (d.revenue / maxRev) * chartH;
+    return `${x},${y}`;
+  }).join(" ");
+
+  // Order count bars
+  const barW = chartW / DAYS * 0.55;
+
+  // Y axis ticks (revenue)
+  const yTicks = [0, 0.25, 0.5, 0.75, 1].map(f => ({ y: PAD_T + chartH - f * chartH, val: Math.round(f * maxRev) }));
+
   return (
-    <table style={{ width: "100%", borderCollapse: "collapse" }}>
-      <thead>
-        <tr style={{ borderBottom: "1px solid #333" }}>
-          <th style={{ textAlign: "left", padding: "12px" }}>ID</th>
-          <th style={{ textAlign: "left", padding: "12px" }}>Email</th>
-          <th style={{ textAlign: "left", padding: "12px" }}>Total</th>
-          <th style={{ textAlign: "left", padding: "12px" }}>Status</th>
-          <th style={{ textAlign: "left", padding: "12px" }}>Datum</th>
-        </tr>
-      </thead>
-      <tbody>
-        {orders.map((order: any) => (
-          <tr key={order.id} style={{ borderBottom: "1px solid #222" }}>
-            <td style={{ padding: "12px" }}>#{order.id}</td>
-            <td style={{ padding: "12px" }}>{order.email}</td>
-            <td style={{ padding: "12px" }}>{order.total} CZK</td>
-            <td style={{ padding: "12px" }}>{order.status}</td>
-            <td style={{ padding: "12px" }}>{new Date(order.created_at).toLocaleDateString()}</td>
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto", display: "block" }}>
+      {/* Grid lines */}
+      {yTicks.map((t, i) => (
+        <line key={i} x1={PAD_L} y1={t.y} x2={W - PAD_R} y2={t.y} stroke="#222" strokeWidth="1" />
+      ))}
+      {/* Y axis labels */}
+      {yTicks.map((t, i) => (
+        <text key={i} x={PAD_L - 6} y={t.y + 4} textAnchor="end" fill="#666" fontSize="10" fontFamily="Helvetica Neue, sans-serif">
+          {t.val >= 1000 ? `${Math.round(t.val / 1000)}k` : t.val}
+        </text>
+      ))}
+      {/* Count bars (light grey, behind) */}
+      {days.map((d, i) => {
+        const x = PAD_L + (i / (DAYS - 1)) * chartW;
+        const barH = (d.count / maxCount) * chartH;
+        return <rect key={i} x={x - barW / 2} y={PAD_T + chartH - barH} width={barW} height={barH} fill="#1a1a1a" rx="1" />;
+      })}
+      {/* Revenue area fill */}
+      <polyline
+        points={`${PAD_L},${PAD_T + chartH} ${revPoints} ${W - PAD_R},${PAD_T + chartH}`}
+        fill="rgba(255,255,255,0.04)"
+        stroke="none"
+      />
+      {/* Revenue line */}
+      <polyline points={revPoints} fill="none" stroke="#fff" strokeWidth="1.5" strokeLinejoin="round" />
+      {/* Data point dots */}
+      {days.map((d, i) => {
+        if (d.revenue === 0) return null;
+        const x = PAD_L + (i / (DAYS - 1)) * chartW;
+        const y = PAD_T + chartH - (d.revenue / maxRev) * chartH;
+        return <circle key={i} cx={x} cy={y} r="3" fill="#fff" />;
+      })}
+      {/* X axis labels */}
+      {days.map((d, i) => d.label ? (
+        <text key={i} x={PAD_L + (i / (DAYS - 1)) * chartW} y={H - 8} textAnchor="middle" fill="#555" fontSize="9" fontFamily="Helvetica Neue, sans-serif">
+          {d.label}
+        </text>
+      ) : null)}
+      {/* Axes */}
+      <line x1={PAD_L} y1={PAD_T} x2={PAD_L} y2={PAD_T + chartH} stroke="#333" strokeWidth="1" />
+      <line x1={PAD_L} y1={PAD_T + chartH} x2={W - PAD_R} y2={PAD_T + chartH} stroke="#333" strokeWidth="1" />
+    </svg>
+  );
+}
+
+function OrdersTab({ orders }: any) {
+  const totalRevenue = orders.reduce((s: number, o: any) => s + (Number(o.total) || 0), 0);
+  const paidOrders = orders.filter((o: any) => o.status === "paid" || o.status === "completed");
+  const avgOrder = paidOrders.length > 0 ? Math.round(totalRevenue / paidOrders.length) : 0;
+
+  const statCard = (label: string, value: string, sub?: string) => (
+    <div style={{ flex: 1, padding: "20px", border: "1px solid #222", borderRadius: "4px", textAlign: "left", minWidth: 0 }}>
+      <div style={{ fontSize: "11px", color: "#666", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "8px" }}>{label}</div>
+      <div style={{ fontSize: "28px", fontWeight: 700, color: "#fff", letterSpacing: "-0.02em", lineHeight: 1 }}>{value}</div>
+      {sub && <div style={{ fontSize: "11px", color: "#555", marginTop: "6px" }}>{sub}</div>}
+    </div>
+  );
+
+  return (
+    <div>
+      {/* Summary stats */}
+      <div style={{ display: "flex", gap: "12px", marginBottom: "24px" }}>
+        {statCard("Celkové tržby", `${totalRevenue.toLocaleString("cs-CZ")} Kč`, `${orders.length} objednávek celkem`)}
+        {statCard("Zaplaceno", `${paidOrders.length}`, `z ${orders.length} objednávek`)}
+        {statCard("Průměrná objednávka", avgOrder > 0 ? `${avgOrder.toLocaleString("cs-CZ")} Kč` : "—", "zaplacené objednávky")}
+      </div>
+
+      {/* Chart */}
+      <div style={{ border: "1px solid #222", borderRadius: "4px", padding: "20px 12px 8px", marginBottom: "24px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", paddingLeft: "52px" }}>
+          <span style={{ fontSize: "12px", color: "#666", textTransform: "uppercase", letterSpacing: "0.08em" }}>Tržby – posledních 30 dní (Kč)</span>
+          <div style={{ display: "flex", gap: "16px" }}>
+            <span style={{ fontSize: "11px", color: "#555", display: "flex", alignItems: "center", gap: "6px" }}>
+              <span style={{ display: "inline-block", width: 20, height: 2, background: "#fff", borderRadius: 1 }} />
+              Tržby
+            </span>
+            <span style={{ fontSize: "11px", color: "#555", display: "flex", alignItems: "center", gap: "6px" }}>
+              <span style={{ display: "inline-block", width: 10, height: 10, background: "#1a1a1a", border: "1px solid #333", borderRadius: 2 }} />
+              Objednávky
+            </span>
+          </div>
+        </div>
+        {orders.length === 0 ? (
+          <div style={{ height: 120, display: "flex", alignItems: "center", justifyContent: "center", color: "#444", fontSize: "13px" }}>
+            Zatím žádné objednávky
+          </div>
+        ) : (
+          <RevenueChart orders={orders} />
+        )}
+      </div>
+
+      {/* Orders table */}
+      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <thead>
+          <tr style={{ borderBottom: "1px solid #333" }}>
+            <th style={{ textAlign: "left", padding: "12px 8px", fontSize: "11px", color: "#666", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 400 }}>ID</th>
+            <th style={{ textAlign: "left", padding: "12px 8px", fontSize: "11px", color: "#666", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 400 }}>Email</th>
+            <th style={{ textAlign: "left", padding: "12px 8px", fontSize: "11px", color: "#666", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 400 }}>Celkem</th>
+            <th style={{ textAlign: "left", padding: "12px 8px", fontSize: "11px", color: "#666", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 400 }}>Status</th>
+            <th style={{ textAlign: "left", padding: "12px 8px", fontSize: "11px", color: "#666", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 400 }}>Datum</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {orders.length === 0 && (
+            <tr><td colSpan={5} style={{ padding: "32px 8px", color: "#444", fontSize: "13px", textAlign: "center" }}>Žádné objednávky</td></tr>
+          )}
+          {orders.map((order: any) => (
+            <tr key={order.id} style={{ borderBottom: "1px solid #1a1a1a" }}>
+              <td style={{ padding: "12px 8px", color: "#666", fontSize: "13px" }}>#{order.id}</td>
+              <td style={{ padding: "12px 8px", fontSize: "13px" }}>{order.email}</td>
+              <td style={{ padding: "12px 8px", fontSize: "13px", fontWeight: 600 }}>{Number(order.total).toLocaleString("cs-CZ")} Kč</td>
+              <td style={{ padding: "12px 8px" }}>
+                <span style={{
+                  fontSize: "11px",
+                  padding: "3px 8px",
+                  borderRadius: "3px",
+                  background: order.status === "paid" || order.status === "completed" ? "rgba(36,224,83,0.12)" : "rgba(255,255,255,0.06)",
+                  color: order.status === "paid" || order.status === "completed" ? "#24e053" : "#888",
+                  border: `1px solid ${order.status === "paid" || order.status === "completed" ? "rgba(36,224,83,0.3)" : "#333"}`,
+                }}>
+                  {order.status}
+                </span>
+              </td>
+              <td style={{ padding: "12px 8px", fontSize: "13px", color: "#888" }}>{new Date(order.created_at).toLocaleDateString("cs-CZ")}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
