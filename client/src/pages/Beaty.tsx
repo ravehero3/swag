@@ -387,7 +387,6 @@ function Beaty() {
     <div style={{ background: "#000", minHeight: "100vh" }}>
       <audio
         ref={audioRef}
-        src={currentBeat?.preview_url}
         onEnded={handleAudioEnded}
       />
 
