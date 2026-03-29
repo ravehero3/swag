@@ -158,7 +158,7 @@ function Admin() {
   const { settings, refreshSettings } = useApp() as any;
   const [, navigate] = useLocation();
   const [tab, setTab] = useState<"beats" | "kits" | "orders" | "licenses" | "settings" | "assets" | "promo">("beats");
-  const [itbeats, setBeats] = useState<Beat[]>([]);
+  const [beats, setBeats] = useState<Beat[]>([]);
   const [kits, setKits] = useState<SoundKit[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
   const [licenses, setLicenses] = useState<LicenseType[]>([]);
@@ -626,7 +626,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                 onChange={async (e) => {
                   if (e.target.files?.[0]) {
                     const url = await uploadFile(e.target.files[0], "preview");
-                    if (url) setForm(f => ({ ...f, previewUrl: url }));
+                    if (url) setForm(f => ({ ...f, previewUrl: url as string }));
                   }
                 }}
                 style={{ width: "100%" }}
@@ -648,7 +648,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                   onChange={async (e) => {
                     if (e.target.files?.[0]) {
                       const url = await uploadFile(e.target.files[0], "beat");
-                      if (url) setForm(f => ({ ...f, fileUrl: url }));
+                      if (url) setForm(f => ({ ...f, fileUrl: url as string }));
                     }
                   }}
                   style={{ flex: 1 }}
@@ -681,7 +681,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                 onChange={async (e) => {
                   if (e.target.files?.[0]) {
                     const url = await uploadFile(e.target.files[0], "artwork");
-                    if (url) setForm(f => ({ ...f, artworkUrl: url }));
+                    if (url) setForm(f => ({ ...f, artworkUrl: url as string }));
                   }
                 }}
                 style={{ width: "100%" }}
@@ -703,7 +703,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                   onChange={async (e) => {
                     if (e.target.files?.[0]) {
                       const url = await uploadFile(e.target.files[0], "trackout");
-                      if (url) setForm(f => ({ ...f, trackoutUrl: url }));
+                      if (url) setForm(f => ({ ...f, trackoutUrl: url as string }));
                     }
                   }}
                   style={{ flex: 1 }}
@@ -1085,13 +1085,13 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
             </div>
             <div>
               <label style={{ display: "block", marginBottom: "8px" }}>Preview Audio</label>
-              <input type="file" accept="audio/*" onChange={async (e) => { if (e.target.files?.[0]) { const url = await uploadFile(e.target.files[0], "preview"); setForm({ ...form, previewUrl: url }); } }} style={{ width: "100%" }} />
+              <input type="file" accept="audio/*" onChange={async (e) => { if (e.target.files?.[0]) { const url = await uploadFile(e.target.files[0], "preview"); setForm({ ...form, previewUrl: url as string }); } }} style={{ width: "100%" }} />
               <UploadProgressBar type="preview" />
             </div>
             <div>
               <label style={{ display: "block", marginBottom: "8px" }}>ZIP/RAR soubor</label>
               <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                <input type="file" accept=".zip,.rar" onChange={async (e) => { if (e.target.files?.[0]) { const url = await uploadFile(e.target.files[0], "kit"); setForm({ ...form, fileUrl: url }); } }} style={{ flex: 1 }} />
+                <input type="file" accept=".zip,.rar" onChange={async (e) => { if (e.target.files?.[0]) { const url = await uploadFile(e.target.files[0], "kit"); setForm({ ...form, fileUrl: url as string }); } }} style={{ flex: 1 }} />
                 <button
                   type="button"
                   className="btn btn-admin"
@@ -1111,7 +1111,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
             </div>
             <div>
               <label style={{ display: "block", marginBottom: "8px" }}>Artwork</label>
-              <input type="file" accept="image/*" onChange={async (e) => { if (e.target.files?.[0]) { const url = await uploadFile(e.target.files[0], "artwork"); setForm({ ...form, artworkUrl: url }); } }} style={{ width: "100%" }} />
+              <input type="file" accept="image/*" onChange={async (e) => { if (e.target.files?.[0]) { const url = await uploadFile(e.target.files[0], "artwork"); setForm({ ...form, artworkUrl: url as string }); } }} style={{ width: "100%" }} />
               <UploadProgressBar type="artwork" />
             </div>
           </div>
