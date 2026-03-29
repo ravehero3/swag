@@ -328,7 +328,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     artist: "VOODOO808",
     bpm: 140,
     key: "C",
-    price: 0,
+    price: 5000,
     previewUrl: "",
     fileUrl: "",
     artworkUrl: "",
@@ -414,7 +414,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     if (res.ok) {
       setShowForm(false);
       setEditing(null);
-      setForm({ title: "", artist: "VOODOO808", bpm: 140, key: "C", price: 0, previewUrl: "", fileUrl: "", artworkUrl: "", trackoutUrl: "", tags: [], isPublished: false, isHighlighted: false });
+      setForm({ title: "", artist: "VOODOO808", bpm: 140, key: "C", price: 5000, previewUrl: "", fileUrl: "", artworkUrl: "", trackoutUrl: "", tags: [], isPublished: false, isHighlighted: false });
       loadData();
     } else {
       const errorData = await res.json();
@@ -577,7 +577,10 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
             </div>
             <div>
               <label style={{ display: "block", marginBottom: "8px" }}>Cena (CZK)</label>
-              <input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} style={{ width: "100%" }} />
+              <select value={form.price} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} style={{ width: "100%" }}>
+                <option value={5000}>5 000 CZK</option>
+                <option value={10000}>10 000 CZK</option>
+              </select>
             </div>
             <div>
               <label style={{ display: "block", marginBottom: "8px" }}>Publikovat</label>
