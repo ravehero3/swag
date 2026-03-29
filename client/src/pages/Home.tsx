@@ -238,22 +238,31 @@ function Home() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const playBeat = (beat: Beat) => {
+  const playBeat = async (beat: Beat) => {
     if (currentBeat?.id === beat.id) {
       if (isPlaying) {
         audioRef.current?.pause();
         setIsPlaying(false);
       } else {
-        audioRef.current?.play().catch(console.error);
-        setIsPlaying(true);
+        try {
+          await audioRef.current?.play();
+          setIsPlaying(true);
+        } catch (err) {
+          console.error("Audio resume failed:", err);
+          setIsPlaying(false);
+        }
       }
     } else {
       setCurrentBeat(beat);
-      setIsPlaying(true);
       if (audioRef.current) {
-        audioRef.current.src = beat.preview_url;
-        audioRef.current.load();
-        audioRef.current.play().catch(console.error);
+        audioRef.current.src = beat.preview_url || "";
+        try {
+          await audioRef.current.play();
+          setIsPlaying(true);
+        } catch (err) {
+          console.error("Audio play failed:", err);
+          setIsPlaying(false);
+        }
       }
     }
   };
@@ -363,8 +372,11 @@ function Home() {
     <div style={{ background: "#000", minHeight: "100vh" }}>
       <audio
         ref={audioRef}
-        src={currentBeat?.preview_url}
         onEnded={handleAudioEnded}
+        onError={() => {
+          console.error("Audio error: failed to load", audioRef.current?.src);
+          setIsPlaying(false);
+        }}
       />
 
       <div style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative", background: "#000", minHeight: "600px" }}>
