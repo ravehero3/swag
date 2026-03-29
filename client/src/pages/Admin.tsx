@@ -604,21 +604,17 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
 
             <div style={{ gridColumn: "1 / -1" }}>
               <label style={{ display: "block", marginBottom: "8px" }}>Preview Audio</label>
-              <input
-                type="file"
-                accept="audio/*"
-                disabled={uploading["preview"]}
-                onChange={async (e) => {
-                  if (e.target.files?.[0]) {
-                    const url = await uploadFile(e.target.files[0], "preview");
-                    if (url) setForm(f => ({ ...f, previewUrl: url as string }));
-                  }
-                }}
-                style={{ width: "100%" }}
-              />
-              <UploadProgressBar type="preview" />
+              <button
+                type="button"
+                className="btn btn-admin"
+                onClick={() => setB2PickerFor("preview")}
+                style={{ whiteSpace: "nowrap", fontSize: "12px" }}
+                data-testid="button-browse-b2-preview"
+              >
+                Browse B2
+              </button>
               <div style={{ marginTop: "6px" }}><UploadStatus type="preview" url={form.previewUrl} /></div>
-              {form.previewUrl && !uploading["preview"] && (
+              {form.previewUrl && (
                 <audio controls src={form.previewUrl} style={{ width: "100%", marginTop: "8px", height: "36px" }} />
               )}
             </div>
@@ -646,32 +642,17 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
 
             <div>
               <label style={{ display: "block", marginBottom: "8px" }}>Trackout (ZIP)</label>
-              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                <input
-                  type="file"
-                  accept=".zip"
-                  disabled={uploading["trackout"]}
-                  onChange={async (e) => {
-                    if (e.target.files?.[0]) {
-                      const url = await uploadFile(e.target.files[0], "trackout");
-                      if (url) setForm(f => ({ ...f, trackoutUrl: url as string }));
-                    }
-                  }}
-                  style={{ flex: 1 }}
-                />
-                <button
-                  type="button"
-                  className="btn btn-admin"
-                  onClick={() => setB2PickerFor("trackout")}
-                  style={{ whiteSpace: "nowrap", fontSize: "12px" }}
-                  data-testid="button-browse-b2-trackout"
-                >
-                  Browse B2
-                </button>
-              </div>
-              <UploadProgressBar type="trackout" />
+              <button
+                type="button"
+                className="btn btn-admin"
+                onClick={() => setB2PickerFor("trackout")}
+                style={{ whiteSpace: "nowrap", fontSize: "12px" }}
+                data-testid="button-browse-b2-trackout"
+              >
+                Browse B2
+              </button>
               <div style={{ marginTop: "6px" }}>
-                {form.trackoutUrl && !uploading["trackout"] && (
+                {form.trackoutUrl && (
                   <span style={{ fontSize: "12px", color: "#4caf50" }}>✓ {uploadedNames["trackout"] || form.trackoutUrl}</span>
                 )}
                 {!form.trackoutUrl && <UploadStatus type="trackout" url={form.trackoutUrl} />}
@@ -760,6 +741,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
       {b2PickerFor && (
         <B2FilePicker
           onSelect={(key) => {
+            if (b2PickerFor === "preview") setForm(f => ({ ...f, previewUrl: key }));
             if (b2PickerFor === "trackout") setForm(f => ({ ...f, trackoutUrl: key }));
           }}
           onClose={() => setB2PickerFor(null)}
