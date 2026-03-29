@@ -171,35 +171,6 @@ export async function initDatabase() {
       ON CONFLICT (key) DO NOTHING;
     `);
     
-    const beatCount = await client.query("SELECT COUNT(*) FROM beats");
-    if (beatCount.rows[0].count === "0") {
-      const beatInserts = [];
-      const tagSets = [
-        "ARRAY['Trap', 'Dark', 'Hard']",
-        "ARRAY['Hip-Hop', 'Smooth', 'Boom-Bap']",
-        "ARRAY['Drill', 'Aggressive', 'Street']",
-        "ARRAY['Chill', 'Lofi', 'Ambient']",
-        "ARRAY['Electronic', 'Synth', 'Futuristic']",
-        "ARRAY['Reggae', 'Dub', 'Roots']",
-        "ARRAY['Jazz', 'Smooth', 'Uplifting']",
-        "ARRAY['Rock', 'Heavy', 'Energetic']",
-        "ARRAY['Pop', 'Catchy', 'Commercial']",
-        "ARRAY['Soul', 'Soulful', 'Groovy']"
-      ];
-      
-      for (let i = 1; i <= 20; i++) {
-        const tags = tagSets[(i - 1) % tagSets.length];
-        beatInserts.push(`
-          ('Test Beat ${i}', 'VOODOO808', ${80 + i}, 'C', 5000, '/uploads/preview/beat${i}.mp3', '/uploads/beat${i}.wav', '/uploads/artwork/beat${i}.jpg', ${tags}, true, ${i === 1 ? 'true' : 'false'})
-        `);
-      }
-      
-      await client.query(`
-        INSERT INTO beats (title, artist, bpm, key, price, preview_url, file_url, artwork_url, tags, is_published, is_highlighted) VALUES
-        ${beatInserts.join(',')}
-      `);
-    }
-    
     console.log("Database initialized successfully");
   } finally {
     client.release();
