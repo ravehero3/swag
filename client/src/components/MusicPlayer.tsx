@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import ShareModal from "./ShareModal.js";
 
 interface Beat {
@@ -43,8 +43,52 @@ function MusicPlayer({
   const [showShareModal, setShowShareModal] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(0.8);
+  const [showVolumeLabel, setShowVolumeLabel] = useState(false);
   const internalAudioRef = useRef<HTMLAudioElement>(null);
   const activeAudioRef = audioRef || internalAudioRef;
+
+  const knobDragRef = useRef<{ dragging: boolean; startY: number; startVolume: number }>({
+    dragging: false,
+    startY: 0,
+    startVolume: 0.8,
+  });
+
+  const handleVolumeChange = useCallback((newVolume: number) => {
+    const clamped = Math.max(0, Math.min(1, newVolume));
+    setVolume(clamped);
+    if (activeAudioRef.current) {
+      activeAudioRef.current.volume = clamped;
+    }
+  }, [activeAudioRef]);
+
+  const onKnobMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    knobDragRef.current = { dragging: true, startY: e.clientY, startVolume: volume };
+    setShowVolumeLabel(true);
+
+    const onMouseMove = (ev: MouseEvent) => {
+      if (!knobDragRef.current.dragging) return;
+      const delta = (knobDragRef.current.startY - ev.clientY) / 120;
+      handleVolumeChange(knobDragRef.current.startVolume + delta);
+    };
+
+    const onMouseUp = () => {
+      knobDragRef.current.dragging = false;
+      setShowVolumeLabel(false);
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+  }, [volume, handleVolumeChange]);
+
+  useEffect(() => {
+    if (activeAudioRef.current) {
+      activeAudioRef.current.volume = volume;
+    }
+  }, [activeAudioRef]);
 
   useEffect(() => {
     const audio = activeAudioRef.current;
@@ -63,6 +107,9 @@ function MusicPlayer({
   }, [activeAudioRef, currentBeat]);
 
   if (!currentBeat) return null;
+
+  // Knob: map volume 0–1 to rotation -135° to +135°
+  const knobRotation = -135 + volume * 270;
 
   const progressPercent = duration ? (currentTime / duration) * 100 : 0;
 
@@ -299,6 +346,163 @@ function MusicPlayer({
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1, justifyContent: "flex-end" }}>
+
+          {/* Volume Knob — appears when playing */}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "4px",
+              opacity: isPlaying ? 1 : 0,
+              transform: isPlaying ? "translateX(0) scale(1)" : "translateX(16px) scale(0.85)",
+              transition: "opacity 0.35s ease, transform 0.35s ease",
+              pointerEvents: isPlaying ? "auto" : "none",
+              userSelect: "none",
+            }}
+            data-testid="volume-knob-container"
+          >
+            <style>{`
+              @keyframes knobAppear {
+                from { opacity: 0; transform: scale(0.7); }
+                to { opacity: 1; transform: scale(1); }
+              }
+              .volume-knob-ring {
+                position: absolute;
+                inset: -3px;
+                border-radius: 50%;
+                border: 1.5px solid #333;
+              }
+              .volume-knob-arc {
+                position: absolute;
+                inset: -3px;
+                border-radius: 50%;
+                border: 1.5px solid transparent;
+                border-top-color: #fff;
+                border-right-color: #fff;
+              }
+              @media (max-width: 768px) {
+                .volume-knob-container-outer { display: none !important; }
+              }
+            `}</style>
+
+            <div
+              className="volume-knob-container-outer"
+              style={{ position: "relative", width: "44px", height: "44px" }}
+              onMouseEnter={() => setShowVolumeLabel(true)}
+              onMouseLeave={() => !knobDragRef.current.dragging && setShowVolumeLabel(false)}
+            >
+              {/* Arc track */}
+              <svg
+                width="44"
+                height="44"
+                viewBox="0 0 44 44"
+                style={{ position: "absolute", top: 0, left: 0 }}
+              >
+                {/* Background arc */}
+                <circle
+                  cx="22" cy="22" r="18"
+                  fill="none"
+                  stroke="#2a2a2a"
+                  strokeWidth="2"
+                  strokeDasharray={`${(270 / 360) * 2 * Math.PI * 18} ${2 * Math.PI * 18}`}
+                  strokeDashoffset={`${-(45 / 360) * 2 * Math.PI * 18}`}
+                  strokeLinecap="round"
+                  style={{ transform: "rotate(90deg)", transformOrigin: "22px 22px" }}
+                />
+                {/* Volume fill arc */}
+                <circle
+                  cx="22" cy="22" r="18"
+                  fill="none"
+                  stroke="#fff"
+                  strokeWidth="2"
+                  strokeDasharray={`${volume * (270 / 360) * 2 * Math.PI * 18} ${2 * Math.PI * 18}`}
+                  strokeDashoffset={`${-(45 / 360) * 2 * Math.PI * 18}`}
+                  strokeLinecap="round"
+                  style={{ transform: "rotate(90deg)", transformOrigin: "22px 22px", transition: "stroke-dasharray 0.05s" }}
+                />
+              </svg>
+
+              {/* Knob body */}
+              <div
+                onMouseDown={onKnobMouseDown}
+                data-testid="volume-knob"
+                style={{
+                  position: "absolute",
+                  inset: "5px",
+                  borderRadius: "50%",
+                  background: "radial-gradient(circle at 35% 35%, #3a3a3a, #111)",
+                  border: "1px solid #444",
+                  cursor: "ns-resize",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.08)",
+                }}
+              >
+                {/* Tick indicator */}
+                <div
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    position: "relative",
+                    transform: `rotate(${knobRotation}deg)`,
+                    transition: "transform 0.05s",
+                  }}
+                >
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "3px",
+                      left: "50%",
+                      transform: "translateX(-50%)",
+                      width: "2px",
+                      height: "6px",
+                      background: "#fff",
+                      borderRadius: "1px",
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Volume % tooltip */}
+              {showVolumeLabel && (
+                <div
+                  style={{
+                    position: "absolute",
+                    bottom: "calc(100% + 8px)",
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    background: "#111",
+                    border: "1px solid #333",
+                    color: "#fff",
+                    fontSize: "11px",
+                    fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+                    padding: "3px 7px",
+                    borderRadius: "4px",
+                    whiteSpace: "nowrap",
+                    pointerEvents: "none",
+                    letterSpacing: "0.02em",
+                  }}
+                >
+                  {Math.round(volume * 100)}%
+                </div>
+              )}
+            </div>
+
+            <span
+              style={{
+                fontSize: "9px",
+                color: "#555",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+              }}
+            >
+              VOL
+            </span>
+          </div>
+
           <button
             onClick={() => {
               const element = document.createElement('a');
