@@ -322,6 +322,13 @@ function Admin() {
   );
 }
 
+const PRICE_TYPES_BEAT = [
+  { id: "beat", label: "Beat", sublabel: "5 000 – 10 000 Kč", price: 5000 },
+  { id: "promo", label: "Promo", sublabel: "Zdarma", price: 0 },
+] as const;
+
+type BeatPriceType = typeof PRICE_TYPES_BEAT[number]["id"];
+
 function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh, loadData }: any) {
   const [form, setForm] = useState({
     title: "",
@@ -329,6 +336,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     bpm: 140,
     key: "C",
     price: 5000,
+    priceType: "beat" as BeatPriceType,
     previewUrl: "",
     fileUrl: "",
     artworkUrl: "",
@@ -380,12 +388,14 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
 
   useEffect(() => {
     if (editing) {
+      const priceType: BeatPriceType = editing.price === 0 ? "promo" : "beat";
       setForm({
         title: editing.title,
         artist: editing.artist,
         bpm: editing.bpm,
         key: editing.key,
         price: editing.price,
+        priceType,
         previewUrl: editing.preview_url || "",
         fileUrl: editing.file_url || "",
         artworkUrl: editing.artwork_url || "",
@@ -414,7 +424,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     if (res.ok) {
       setShowForm(false);
       setEditing(null);
-      setForm({ title: "", artist: "VOODOO808", bpm: 140, key: "C", price: 5000, previewUrl: "", fileUrl: "", artworkUrl: "", trackoutUrl: "", tags: [], isPublished: false, isHighlighted: false });
+      setForm({ title: "", artist: "VOODOO808", bpm: 140, key: "C", price: 5000, priceType: "beat", previewUrl: "", fileUrl: "", artworkUrl: "", trackoutUrl: "", tags: [], isPublished: false, isHighlighted: false });
       loadData();
     } else {
       const errorData = await res.json();
@@ -576,11 +586,33 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
               <input value={form.key} onChange={(e) => setForm({ ...form, key: e.target.value })} style={{ width: "100%" }} />
             </div>
             <div>
-              <label style={{ display: "block", marginBottom: "8px" }}>Cena (CZK)</label>
-              <select value={form.price} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} style={{ width: "100%" }}>
-                <option value={5000}>5 000 CZK</option>
-                <option value={10000}>10 000 CZK</option>
-              </select>
+              <label style={{ display: "block", marginBottom: "8px" }}>Typ / Cena</label>
+              <div style={{ display: "flex", gap: "8px" }}>
+                {PRICE_TYPES_BEAT.map((pt) => (
+                  <button
+                    key={pt.id}
+                    type="button"
+                    onClick={() => setForm({ ...form, priceType: pt.id, price: pt.price })}
+                    style={{
+                      flex: 1,
+                      padding: "10px 8px",
+                      background: form.priceType === pt.id ? "#fff" : "#000",
+                      color: form.priceType === pt.id ? "#000" : "#fff",
+                      border: "1px solid #555",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                      fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+                      fontSize: "13px",
+                      fontWeight: form.priceType === pt.id ? 600 : 400,
+                      textAlign: "center",
+                      transition: "background 0.15s, color 0.15s",
+                    }}
+                  >
+                    <div>{pt.label}</div>
+                    <div style={{ fontSize: "11px", opacity: 0.7, marginTop: "2px" }}>{pt.sublabel}</div>
+                  </button>
+                ))}
+              </div>
             </div>
             <div>
               <label style={{ display: "block", marginBottom: "8px" }}>Publikovat</label>
@@ -777,12 +809,20 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   );
 }
 
+const PRICE_TYPES_KIT = [
+  { id: "kit", label: "Kit", sublabel: "899 Kč", price: 899, isFree: false },
+  { id: "promo", label: "Promo", sublabel: "Zdarma", price: 0, isFree: true },
+] as const;
+
+type KitPriceType = typeof PRICE_TYPES_KIT[number]["id"];
+
 function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }: any) {
   const [form, setForm] = useState({
     title: "",
     description: "",
     type: "drum_kit",
-    price: 0,
+    price: 899,
+    priceType: "kit" as KitPriceType,
     isFree: false,
     numberOfSounds: 0,
     tags: [] as string[],
@@ -835,11 +875,13 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
 
   useEffect(() => {
     if (editing) {
+      const priceType: KitPriceType = editing.is_free ? "promo" : "kit";
       setForm({
         title: editing.title,
         description: editing.description || "",
         type: editing.type,
-        price: editing.price,
+        price: editing.is_free ? 0 : (editing.price || 899),
+        priceType,
         isFree: editing.is_free,
         numberOfSounds: editing.number_of_sounds,
         tags: editing.tags || [],
@@ -861,6 +903,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
     await fetch(url, { method, headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(form) });
     setShowForm(false);
     setEditing(null);
+    setForm({ title: "", description: "", type: "drum_kit", price: 899, priceType: "kit", isFree: false, numberOfSounds: 0, tags: [], previewUrl: "", fileUrl: "", artworkUrl: "", legalInfo: "", authorInfo: "", isPublished: false });
     onRefresh();
   };
 
@@ -1017,11 +1060,33 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
               <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} style={{ width: "100%" }} />
             </div>
             <div>
-              <label style={{ display: "block", marginBottom: "8px" }}>Cena (CZK)</label>
-              <input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} disabled={form.isFree} style={{ width: "100%" }} />
-            </div>
-            <div>
-              <label style={{ display: "block", marginBottom: "8px" }}><input type="checkbox" checked={form.isFree} onChange={(e) => setForm({ ...form, isFree: e.target.checked, price: e.target.checked ? 0 : form.price })} /> Zdarma</label>
+              <label style={{ display: "block", marginBottom: "8px" }}>Typ / Cena</label>
+              <div style={{ display: "flex", gap: "8px" }}>
+                {PRICE_TYPES_KIT.map((pt) => (
+                  <button
+                    key={pt.id}
+                    type="button"
+                    onClick={() => setForm({ ...form, priceType: pt.id, price: pt.price, isFree: pt.isFree })}
+                    style={{
+                      flex: 1,
+                      padding: "10px 8px",
+                      background: form.priceType === pt.id ? "#fff" : "#000",
+                      color: form.priceType === pt.id ? "#000" : "#fff",
+                      border: "1px solid #555",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                      fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+                      fontSize: "13px",
+                      fontWeight: form.priceType === pt.id ? 600 : 400,
+                      textAlign: "center",
+                      transition: "background 0.15s, color 0.15s",
+                    }}
+                  >
+                    <div>{pt.label}</div>
+                    <div style={{ fontSize: "11px", opacity: 0.7, marginTop: "2px" }}>{pt.sublabel}</div>
+                  </button>
+                ))}
+              </div>
             </div>
             <div>
               <label style={{ display: "block", marginBottom: "8px" }}>Počet zvuků</label>
