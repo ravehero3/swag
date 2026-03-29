@@ -6,7 +6,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "dev": "tsx server/src/index.ts",
+    "dev": "node_modules/.bin/tsx server/src/index.ts",
     "build": "vite build && tsc --project server/tsconfig.json --skipLibCheck",
     "seed-admin": "tsx server/src/seed-admin.ts",
     "start": "node dist/server/index.js",
