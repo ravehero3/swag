@@ -180,6 +180,25 @@ app.post("/api/admin/promo-codes", requireAdmin, async (req, res) => {
   }
 });
 
+app.patch("/api/admin/promo-codes/:id", requireAdmin, async (req, res) => {
+  try {
+    const { isActive, discountPercent } = req.body;
+    const updates: string[] = [];
+    const params: any[] = [];
+    if (isActive !== undefined) { updates.push(`is_active = $${params.length + 1}`); params.push(isActive); }
+    if (discountPercent !== undefined) { updates.push(`discount_percent = $${params.length + 1}`); params.push(discountPercent); }
+    if (updates.length === 0) return res.status(400).json({ error: "Žádná pole k aktualizaci" });
+    params.push(req.params.id);
+    const result = await pool.query(
+      `UPDATE promo_codes SET ${updates.join(", ")} WHERE id = $${params.length} RETURNING *`,
+      params
+    );
+    res.json(result.rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při aktualizaci promo kódu" });
+  }
+});
+
 app.delete("/api/admin/promo-codes/:id", requireAdmin, async (req, res) => {
   try {
     await pool.query("DELETE FROM promo_codes WHERE id = $1", [req.params.id]);

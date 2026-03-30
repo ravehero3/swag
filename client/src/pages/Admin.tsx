@@ -1479,6 +1479,192 @@ function SettingsTab({ settings, onRefresh }: any) {
 }
 
 function AssetsTab() { return <div style={{ color: "#666" }}>Asset management integration in progress...</div>; }
-function PromoCodesTab() { return <div style={{ color: "#666" }}>Promo codes management integration in progress...</div>; }
+function PromoCodesTab() {
+  const [codes, setCodes] = useState<{ id: number; code: string; discount_percent: number; is_active: boolean; created_at: string }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [form, setForm] = useState({ code: "", discountPercent: 10, isActive: true });
+  const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState("");
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/promo-codes", { credentials: "include" });
+      if (!res.ok) throw new Error();
+      setCodes(await res.json());
+    } catch {
+      setError("Nepodařilo se načíst promo kódy.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const handleAdd = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormError("");
+    if (!form.code.trim()) { setFormError("Kód je povinný."); return; }
+    if (form.discountPercent < 1 || form.discountPercent > 100) { setFormError("Sleva musí být 1–100 %."); return; }
+    setSaving(true);
+    try {
+      const res = await fetch("/api/admin/promo-codes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ code: form.code.trim().toUpperCase(), discountPercent: form.discountPercent, isActive: form.isActive }),
+      });
+      if (!res.ok) { const d = await res.json(); setFormError(d.error || "Chyba při ukládání."); return; }
+      setForm({ code: "", discountPercent: 10, isActive: true });
+      await load();
+    } catch {
+      setFormError("Chyba při ukládání.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const toggleActive = async (id: number, current: boolean) => {
+    try {
+      const res = await fetch(`/api/admin/promo-codes/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ isActive: !current }),
+      });
+      if (!res.ok) throw new Error();
+      setCodes(prev => prev.map(c => c.id === id ? { ...c, is_active: !current } : c));
+    } catch {
+      alert("Nepodařilo se aktualizovat stav.");
+    }
+  };
+
+  const handleDelete = async (id: number, code: string) => {
+    if (!confirm(`Smazat kód „${code}"?`)) return;
+    try {
+      await fetch(`/api/admin/promo-codes/${id}`, { method: "DELETE", credentials: "include" });
+      setCodes(prev => prev.filter(c => c.id !== id));
+    } catch {
+      alert("Nepodařilo se smazat kód.");
+    }
+  };
+
+  const cellStyle: React.CSSProperties = { padding: "10px 14px", borderBottom: "1px solid #1a1a1a", fontSize: "13px", verticalAlign: "middle" };
+  const headStyle: React.CSSProperties = { ...cellStyle, color: "#666", fontWeight: 400, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "1px solid #222" };
+
+  return (
+    <div>
+      {/* Add form */}
+      <form onSubmit={handleAdd} style={{ marginBottom: "28px", padding: "16px", border: "1px solid #222", borderRadius: "3px", background: "#0a0a0a" }}>
+        <div style={{ fontSize: "11px", color: "#666", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: "14px" }}>Nový promo kód</div>
+        <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "flex-end" }}>
+          <div style={{ flex: "1 1 160px" }}>
+            <label style={{ display: "block", fontSize: "11px", color: "#666", marginBottom: "4px" }}>KÓD</label>
+            <input
+              data-testid="input-promo-code"
+              value={form.code}
+              onChange={e => setForm({ ...form, code: e.target.value.toUpperCase() })}
+              placeholder="napr. LETO2025"
+              style={{ width: "100%", background: "#111", border: "1px solid #333", color: "#fff", padding: "8px 10px", fontSize: "13px", borderRadius: "2px", fontFamily: "inherit", textTransform: "uppercase" }}
+            />
+          </div>
+          <div style={{ flex: "0 0 120px" }}>
+            <label style={{ display: "block", fontSize: "11px", color: "#666", marginBottom: "4px" }}>SLEVA (%)</label>
+            <input
+              data-testid="input-promo-discount"
+              type="number"
+              min={1}
+              max={100}
+              value={form.discountPercent}
+              onChange={e => setForm({ ...form, discountPercent: Number(e.target.value) })}
+              style={{ width: "100%", background: "#111", border: "1px solid #333", color: "#fff", padding: "8px 10px", fontSize: "13px", borderRadius: "2px", fontFamily: "inherit" }}
+            />
+          </div>
+          <div style={{ flex: "0 0 auto", display: "flex", alignItems: "center", gap: "8px", paddingBottom: "2px" }}>
+            <input
+              data-testid="checkbox-promo-active"
+              type="checkbox"
+              id="promo-active"
+              checked={form.isActive}
+              onChange={e => setForm({ ...form, isActive: e.target.checked })}
+              style={{ accentColor: "#fff", width: "14px", height: "14px" }}
+            />
+            <label htmlFor="promo-active" style={{ fontSize: "12px", color: "#999", cursor: "pointer" }}>Aktivní</label>
+          </div>
+          <button
+            data-testid="button-add-promo"
+            type="submit"
+            disabled={saving}
+            style={{ flex: "0 0 auto", padding: "8px 20px", background: saving ? "#222" : "#fff", color: saving ? "#666" : "#000", border: "none", borderRadius: "2px", fontSize: "12px", cursor: saving ? "not-allowed" : "pointer", fontFamily: "inherit", letterSpacing: "0.04em" }}
+          >
+            {saving ? "Ukládám…" : "Přidat kód"}
+          </button>
+        </div>
+        {formError && <div style={{ marginTop: "8px", color: "#ff4444", fontSize: "12px" }}>{formError}</div>}
+      </form>
+
+      {/* Table */}
+      {loading ? (
+        <div style={{ color: "#555", fontSize: "13px" }}>Načítám…</div>
+      ) : error ? (
+        <div style={{ color: "#ff4444", fontSize: "13px" }}>{error}</div>
+      ) : codes.length === 0 ? (
+        <div style={{ color: "#555", fontSize: "13px" }}>Žádné promo kódy.</div>
+      ) : (
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr>
+              <th style={{ ...headStyle, textAlign: "left" }}>Kód</th>
+              <th style={{ ...headStyle, textAlign: "left" }}>Sleva</th>
+              <th style={{ ...headStyle, textAlign: "left" }}>Stav</th>
+              <th style={{ ...headStyle, textAlign: "left" }}>Vytvořeno</th>
+              <th style={{ ...headStyle, textAlign: "right" }}>Akce</th>
+            </tr>
+          </thead>
+          <tbody>
+            {codes.map(c => (
+              <tr key={c.id} style={{ background: "transparent" }}>
+                <td style={{ ...cellStyle, fontFamily: "monospace", fontSize: "14px", letterSpacing: "0.06em", color: "#fff" }} data-testid={`text-promo-code-${c.id}`}>{c.code}</td>
+                <td style={{ ...cellStyle, color: "#ccc" }} data-testid={`text-promo-discount-${c.id}`}>{c.discount_percent} %</td>
+                <td style={cellStyle}>
+                  <button
+                    data-testid={`button-toggle-promo-${c.id}`}
+                    onClick={() => toggleActive(c.id, c.is_active)}
+                    style={{
+                      padding: "3px 10px",
+                      fontSize: "11px",
+                      border: `1px solid ${c.is_active ? "#3a3" : "#444"}`,
+                      borderRadius: "2px",
+                      background: c.is_active ? "rgba(50,170,50,0.12)" : "transparent",
+                      color: c.is_active ? "#4d4" : "#666",
+                      cursor: "pointer",
+                      fontFamily: "inherit",
+                      letterSpacing: "0.03em",
+                    }}
+                  >
+                    {c.is_active ? "Aktivní" : "Neaktivní"}
+                  </button>
+                </td>
+                <td style={{ ...cellStyle, color: "#555", fontSize: "12px" }}>
+                  {new Date(c.created_at).toLocaleDateString("cs-CZ")}
+                </td>
+                <td style={{ ...cellStyle, textAlign: "right" }}>
+                  <button
+                    data-testid={`button-delete-promo-${c.id}`}
+                    onClick={() => handleDelete(c.id, c.code)}
+                    style={{ background: "transparent", border: "1px solid #333", color: "#666", padding: "3px 10px", fontSize: "11px", borderRadius: "2px", cursor: "pointer", fontFamily: "inherit" }}
+                  >
+                    Smazat
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+}
 
 export default Admin;
