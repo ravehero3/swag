@@ -1,27 +1,29 @@
-import { useState, useEffect, createContext, useContext } from "react";
+import { lazy, Suspense, useState, useEffect, createContext, useContext } from "react";
 import { Route, Switch, useLocation } from "wouter";
 import Header from "./components/Header.js";
 import ExtendedFooter from "./components/ExtendedFooter.js";
 import Footer from "./components/Footer.js";
 import CartModal from "./components/CartModal.js";
-import Home from "./pages/Home.js";
-import Beaty from "./pages/Beaty.js";
-import Zvuky from "./pages/Zvuky.js";
-import ProductDetail from "./pages/ProductDetail.js";
-import Login from "./pages/Login.js";
-import Admin from "./pages/Admin.js";
-import Cart from "./pages/Cart.js";
-import Checkout from "./pages/Checkout.js";
-import Ulozeno from "./pages/Ulozeno.js";
-import Ucet from "./pages/Ucet.js";
-import FAQ from "./pages/FAQ.js";
-import Delivery from "./pages/Delivery.js";
-import Payment from "./pages/Payment.js";
-import LegalInfo from "./pages/LegalInfo.js";
-import PrivacyPolicy from "./pages/PrivacyPolicy.js";
-import CookiePolicy from "./pages/CookiePolicy.js";
-import CookieSettings from "./pages/CookieSettings.js";
+import NewsletterWindow from "./components/NewsletterWindow.js";
 import "./styles/global.css";
+
+const Home = lazy(() => import("./pages/Home.js"));
+const Beaty = lazy(() => import("./pages/Beaty.js"));
+const Zvuky = lazy(() => import("./pages/Zvuky.js"));
+const ProductDetail = lazy(() => import("./pages/ProductDetail.js"));
+const Login = lazy(() => import("./pages/Login.js"));
+const Admin = lazy(() => import("./pages/Admin.js"));
+const Cart = lazy(() => import("./pages/Cart.js"));
+const Checkout = lazy(() => import("./pages/Checkout.js"));
+const Ulozeno = lazy(() => import("./pages/Ulozeno.js"));
+const Ucet = lazy(() => import("./pages/Ucet.js"));
+const FAQ = lazy(() => import("./pages/FAQ.js"));
+const Delivery = lazy(() => import("./pages/Delivery.js"));
+const Payment = lazy(() => import("./pages/Payment.js"));
+const LegalInfo = lazy(() => import("./pages/LegalInfo.js"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy.js"));
+const CookiePolicy = lazy(() => import("./pages/CookiePolicy.js"));
+const CookieSettings = lazy(() => import("./pages/CookieSettings.js"));
 
 interface User {
   id: number;
@@ -36,8 +38,6 @@ interface CartItem {
   price: number;
   artworkUrl: string;
 }
-
-import NewsletterWindow from "./components/NewsletterWindow.js";
 
 interface AppContextType {
   user: User | null;
@@ -71,16 +71,51 @@ export const AppContext = createContext<AppContextType>({
 
 export const useApp = () => useContext(AppContext);
 
+const PageLoader = () => (
+  <div style={{
+    background: "#000",
+    minHeight: "60vh",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  }}>
+    <style>{`
+      @keyframes vu33-dot-bounce {
+        0%, 80%, 100% { transform: translateY(0); opacity: 0.3; }
+        40% { transform: translateY(-6px); opacity: 1; }
+      }
+      .vu33-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #fff;
+        animation: vu33-dot-bounce 1.2s ease-in-out infinite;
+      }
+      .vu33-dot:nth-child(2) { animation-delay: 0.2s; }
+      .vu33-dot:nth-child(3) { animation-delay: 0.4s; }
+    `}</style>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
+      <div style={{ display: "flex", gap: "8px" }}>
+        <div className="vu33-dot" />
+        <div className="vu33-dot" />
+        <div className="vu33-dot" />
+      </div>
+      <span style={{ fontSize: "12px", letterSpacing: "2px", color: "#666", textTransform: "uppercase" }}>
+        načítá se
+      </span>
+    </div>
+  </div>
+);
+
 function App() {
   const [user, setUser] = useState<User | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isNewsletterOpen, setIsNewsletterOpen] = useState(false);
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [location] = useLocation();
 
-  // Add padding to body for fixed header
   useEffect(() => {
     document.body.style.paddingTop = "42px";
     return () => {
@@ -163,40 +198,16 @@ function App() {
 
   if (loading) {
     return (
-      <div style={{ 
-        background: "#000", 
-        minHeight: "100vh", 
-        display: "flex", 
-        alignItems: "center", 
+      <div style={{
+        background: "#000",
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
         justifyContent: "center",
         color: "#fff",
         fontFamily: "Helvetica Neue, sans-serif"
       }}>
-        <style>{`
-          @keyframes vu33-dot-bounce {
-            0%, 80%, 100% { transform: translateY(0); opacity: 0.3; }
-            40% { transform: translateY(-6px); opacity: 1; }
-          }
-          .vu33-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: #fff;
-            animation: vu33-dot-bounce 1.2s ease-in-out infinite;
-          }
-          .vu33-dot:nth-child(2) { animation-delay: 0.2s; }
-          .vu33-dot:nth-child(3) { animation-delay: 0.4s; }
-        `}</style>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
-          <div style={{ display: "flex", gap: "8px" }}>
-            <div className="vu33-dot" />
-            <div className="vu33-dot" />
-            <div className="vu33-dot" />
-          </div>
-          <span style={{ fontSize: "12px", letterSpacing: "2px", color: "#666", textTransform: "uppercase" }}>
-            načítá se
-          </span>
-        </div>
+        <PageLoader />
       </div>
     );
   }
@@ -209,31 +220,33 @@ function App() {
       <div style={{ minHeight: "100vh", background: "#000", display: "flex", flexDirection: "column" }}>
         <Header />
         <main style={{ flex: 1 }} className="fade-in">
-          <Switch>
-            <Route path="/" component={Home} />
-            <Route path="/beaty" component={Beaty} />
-            <Route path="/zvuky" component={Zvuky} />
-            <Route path="/produkt/:type/:id" component={ProductDetail} />
-            <Route path="/prihlasit-se" component={Login} />
-            <Route path="/kosik" component={Cart} />
-            <Route path="/pokladna" component={Checkout} />
-            <Route path="/ulozeno" component={Ulozeno} />
-            <Route path="/ucet" component={Ucet} />
-            <Route path="/admin" component={Admin} />
-            <Route path="/faq" component={FAQ} />
-            <Route path="/doruceni" component={Delivery} />
-            <Route path="/platba" component={Payment} />
-            <Route path="/pravni-informace" component={LegalInfo} />
-            <Route path="/ochrana-osobnich-udaju" component={PrivacyPolicy} />
-            <Route path="/cookies" component={CookiePolicy} />
-            <Route path="/nastaveni-cookies" component={CookieSettings} />
-            <Route>
-              <div className="fade-in" style={{ textAlign: "center", padding: "100px 20px" }}>
-                <h1>404</h1>
-                <p>Stránka nenalezena</p>
-              </div>
-            </Route>
-          </Switch>
+          <Suspense fallback={<PageLoader />}>
+            <Switch>
+              <Route path="/" component={Home} />
+              <Route path="/beaty" component={Beaty} />
+              <Route path="/zvuky" component={Zvuky} />
+              <Route path="/produkt/:type/:id" component={ProductDetail} />
+              <Route path="/prihlasit-se" component={Login} />
+              <Route path="/kosik" component={Cart} />
+              <Route path="/pokladna" component={Checkout} />
+              <Route path="/ulozeno" component={Ulozeno} />
+              <Route path="/ucet" component={Ucet} />
+              <Route path="/admin" component={Admin} />
+              <Route path="/faq" component={FAQ} />
+              <Route path="/doruceni" component={Delivery} />
+              <Route path="/platba" component={Payment} />
+              <Route path="/pravni-informace" component={LegalInfo} />
+              <Route path="/ochrana-osobnich-udaju" component={PrivacyPolicy} />
+              <Route path="/cookies" component={CookiePolicy} />
+              <Route path="/nastaveni-cookies" component={CookieSettings} />
+              <Route>
+                <div className="fade-in" style={{ textAlign: "center", padding: "100px 20px" }}>
+                  <h1>404</h1>
+                  <p>Stránka nenalezena</p>
+                </div>
+              </Route>
+            </Switch>
+          </Suspense>
         </main>
         {!isAdminPage && !isPokladnaPage && (
           <ExtendedFooter />

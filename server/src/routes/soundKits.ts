@@ -10,6 +10,7 @@ router.get("/", async (_req: Request, res: Response) => {
     const result = await pool.query(
       "SELECT * FROM sound_kits WHERE is_published = true ORDER BY created_at DESC"
     );
+    res.set("Cache-Control", "public, max-age=300, stale-while-revalidate=60");
     res.json(result.rows);
   } catch (error) {
     res.status(500).json({ error: "Chyba při načítání zvukových kitů" });
