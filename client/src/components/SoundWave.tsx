@@ -27,7 +27,8 @@ function SoundWave({ audioRef, isPlaying }: SoundWaveProps) {
         if (!sourceRef.current) {
           const source = audioContextRef.current.createMediaElementSource(audioRef.current!);
           const analyser = audioContextRef.current.createAnalyser();
-          analyser.fftSize = 256;
+          analyser.fftSize = 512;
+          analyser.smoothingTimeConstant = 0.78;
           source.connect(analyser);
           analyser.connect(audioContextRef.current.destination);
           analyserRef.current = analyser;
@@ -49,11 +50,9 @@ function SoundWave({ audioRef, isPlaying }: SoundWaveProps) {
 
     const updateWaveform = () => {
       if (!analyserRef.current) return;
-
       const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
       analyserRef.current.getByteFrequencyData(dataArray);
       setFrequencyData(new Uint8Array(dataArray));
-
       if (isPlaying) {
         animationRef.current = requestAnimationFrame(updateWaveform);
       }
@@ -68,50 +67,91 @@ function SoundWave({ audioRef, isPlaying }: SoundWaveProps) {
     }
 
     return () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
     };
   }, [isPlaying, audioRef]);
 
   if (!isPlaying || !frequencyData) return null;
 
-  const bars = 120;
+  const bars = 80;
   const step = Math.floor(frequencyData.length / bars);
+  const maxBarHalf = 44;
 
   return (
-    <div style={{ display: "flex", justifyContent: "center", margin: "24px auto", maxWidth: "1200px", padding: "0 16px" }}>
-      <div
-        style={{
-          width: "100%",
-          height: "80px",
-          backgroundColor: "#0a0a0a",
-          border: "1px solid #262626",
-          borderRadius: "4px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-around",
-          padding: "0 4px",
-          gap: "1px",
-        }}
-      >
+    <div style={{
+      display: "flex",
+      justifyContent: "center",
+      margin: "20px auto 4px",
+      maxWidth: "1200px",
+      padding: "0 16px",
+    }}>
+      <div style={{
+        width: "100%",
+        height: `${maxBarHalf * 2 + 2}px`,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "0 8px",
+        gap: "2px",
+        position: "relative",
+      }}>
+        {/* Center line */}
+        <div style={{
+          position: "absolute",
+          left: 8,
+          right: 8,
+          top: "50%",
+          height: "1px",
+          background: "rgba(255,255,255,0.06)",
+          pointerEvents: "none",
+        }} />
+
         {Array.from({ length: bars }).map((_, i) => {
           const dataIndex = i * step;
           const value = frequencyData[dataIndex] || 0;
-          const height = (value / 255) * 100;
-          
+          const intensity = value / 255;
+
+          const upHeight = Math.max(1, intensity * maxBarHalf);
+          const downHeight = Math.max(1, upHeight * 0.55);
+
+          const r = Math.round(11 + (255 - 11) * Math.min(1, intensity * 1.4));
+          const g = Math.round(153 + (255 - 153) * Math.min(1, intensity * 1.2));
+          const bVal = 252;
+          const baseColor = `rgb(${r}, ${g}, ${bVal})`;
+          const glowColor = `rgba(${r}, ${g}, ${bVal}, 0.6)`;
+          const glow = intensity > 0.55 ? `0 0 ${Math.round(intensity * 8)}px ${glowColor}` : "none";
+
           return (
             <div
               key={i}
               style={{
                 flex: 1,
-                height: `${height}%`,
-                backgroundColor: "#fff",
-                opacity: Math.max(0.2, height / 100),
-                transition: "all 0.05s linear",
-                minWidth: "1px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                height: "100%",
+                minWidth: 0,
               }}
-            />
+            >
+              <div style={{
+                width: "100%",
+                height: `${upHeight}px`,
+                background: baseColor,
+                borderRadius: "2px 2px 0 0",
+                boxShadow: glow,
+                alignSelf: "flex-end",
+                flexShrink: 0,
+              }} />
+              <div style={{
+                width: "100%",
+                height: `${downHeight}px`,
+                background: `rgba(${r}, ${g}, ${bVal}, 0.35)`,
+                borderRadius: "0 0 2px 2px",
+                alignSelf: "flex-start",
+                flexShrink: 0,
+              }} />
+            </div>
           );
         })}
       </div>
