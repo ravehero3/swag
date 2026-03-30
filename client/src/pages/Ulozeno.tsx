@@ -255,6 +255,15 @@ function Ulozeno() {
           </section>
         )}
 
+        <style dangerouslySetInnerHTML={{ __html: `
+          .saved-item-hover {
+            transition: transform 0.2s ease;
+          }
+          .saved-item-hover:hover {
+            transform: scale(1.02);
+          }
+        `}} />
+
         {/* Section 4: How to Save */}
         <section style={{ ...sectionStyle, borderBottom: "none", height: "150px" }}>
           <h2 style={{ ...titleFont, fontSize: "14px", letterSpacing: "0.05em", marginBottom: "8px" }}>
@@ -275,6 +284,7 @@ function Ulozeno() {
                   {beats.map((item) => (
                     <div
                       key={item.id}
+                      className="saved-item-hover"
                       style={{
                         display: "flex",
                         flexDirection: "column",
@@ -372,6 +382,7 @@ function Ulozeno() {
                   {soundKits.map((item) => (
                     <div
                       key={item.id}
+                      className="saved-item-hover"
                       style={{
                         border: "0.5px solid #333",
                         overflow: "hidden",
