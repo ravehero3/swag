@@ -9,26 +9,6 @@ interface SoundWaveProps {
 const BAR_COUNT = 480;
 const FETCH_TIMEOUT_MS = 8000;
 
-function seededFakeWaveform(seed: string, count: number): number[] {
-  let h = 0;
-  for (let i = 0; i < seed.length; i++) {
-    h = (Math.imul(31, h) + seed.charCodeAt(i)) | 0;
-  }
-  const rand = () => {
-    h ^= h << 13;
-    h ^= h >> 17;
-    h ^= h << 5;
-    return (h >>> 0) / 0xffffffff;
-  };
-  const raw = Array.from({ length: count }, (_, i) => {
-    const f = i / count;
-    const envelope = Math.pow(Math.sin(f * Math.PI), 0.35);
-    return (0.15 + rand() * 0.75) * envelope + rand() * 0.06;
-  });
-  const max = Math.max(...raw, 0.001);
-  return raw.map((v) => v / max);
-}
-
 async function extractWaveform(url: string, count: number): Promise<number[] | null> {
   try {
     const controller = new AbortController();
@@ -49,7 +29,6 @@ async function extractWaveform(url: string, count: number): Promise<number[] | n
     const length = channels[0].length;
     const samplesPerBin = Math.floor(length / count);
 
-    // One-pole low-pass filter ~100 Hz — captures 808 / sub-bass energy envelope
     const alpha = 1 - Math.exp(-2 * Math.PI * 100 / sampleRate);
 
     const rawPeaks = new Float32Array(count);
@@ -67,7 +46,6 @@ async function extractWaveform(url: string, count: number): Promise<number[] | n
           const abs = Math.abs(ch[j]);
           if (abs > s) s = abs;
         }
-        // Run LPF continuously across the whole signal so the state carries over bins
         lpState = lpState * (1 - alpha) + s * alpha;
         if (s > maxRaw) maxRaw = s;
         if (lpState > maxBass) maxBass = lpState;
@@ -76,15 +54,12 @@ async function extractWaveform(url: string, count: number): Promise<number[] | n
       bassPeaks[i] = maxBass;
     }
 
-    // Normalise both series independently
     let maxR = 0.001, maxB = 0.001;
     for (let i = 0; i < count; i++) {
       if (rawPeaks[i] > maxR) maxR = rawPeaks[i];
       if (bassPeaks[i] > maxB) maxB = bassPeaks[i];
     }
 
-    // Blend: 60% raw transient + 55% bass envelope (clamped to 1)
-    // Bass adds extra height to 808-heavy bars without drowning out mid/hi detail
     return Array.from({ length: count }, (_, i) =>
       Math.min(1, (rawPeaks[i] / maxR) * 0.60 + (bassPeaks[i] / maxB) * 0.55)
     );
@@ -99,16 +74,20 @@ function SoundWave({ audioRef, isPlaying, audioUrl }: SoundWaveProps) {
   const progressRef = useRef<number>(0);
   const peaksRef = useRef<number[]>([]);
   const lastUrlRef = useRef<string>("");
+  const isLoadingRef = useRef<boolean>(false);
 
   const loadWaveform = useCallback(async (url: string) => {
     if (!url || url === lastUrlRef.current) return;
     lastUrlRef.current = url;
-
-    peaksRef.current = seededFakeWaveform(url, BAR_COUNT);
+    peaksRef.current = [];
+    isLoadingRef.current = true;
 
     const real = await extractWaveform(url, BAR_COUNT);
-    if (real && lastUrlRef.current === url) {
-      peaksRef.current = real;
+    if (lastUrlRef.current === url) {
+      isLoadingRef.current = false;
+      if (real) {
+        peaksRef.current = real;
+      }
     }
   }, []);
 
@@ -145,18 +124,53 @@ function SoundWave({ audioRef, isPlaying, audioUrl }: SoundWaveProps) {
 
     cx.clearRect(0, 0, W, H);
 
-    const peaks = peaksRef.current;
-    if (peaks.length === 0) return;
-
-    const prog = progressRef.current;
-    const count = peaks.length;
     const midY = H / 2;
     const maxAmp = midY * 0.92;
-
+    const count = BAR_COUNT;
     const slotW = W / count;
     const barW = Math.max(1, slotW * 0.55);
     const gap = slotW - barW;
 
+    if (isLoadingRef.current) {
+      // Animated loading: flowing sine-wave bars with a shimmer sweep
+      const t = Date.now() / 1000;
+      const shimmerPos = ((t * 0.5) % 1.3) - 0.15;
+
+      for (let i = 0; i < count; i++) {
+        const x = i * slotW + gap / 2;
+        const f = i / count;
+
+        // Layered sine waves for organic pulsing shape
+        const wave =
+          Math.sin(t * 1.8 + f * Math.PI * 6) * 0.30 +
+          Math.sin(t * 2.9 + f * Math.PI * 10) * 0.15 +
+          Math.sin(t * 0.9 + f * Math.PI * 3) * 0.20;
+        const amp = Math.max((0.28 + wave) * maxAmp, 1.5);
+
+        // Shimmer: a bright band sweeping left to right
+        const distFromShimmer = Math.abs(f - shimmerPos);
+        const shimmer = Math.max(0, 1 - distFromShimmer * 28) * 0.45;
+
+        cx.fillStyle = `rgba(255,255,255,${0.10 + shimmer})`;
+
+        const barH = amp * 2;
+        const barY = midY - amp;
+        const radius = Math.min(barW / 2, 1.5);
+        cx.beginPath();
+        if (cx.roundRect) {
+          cx.roundRect(x, barY, barW, barH, radius);
+        } else {
+          cx.rect(x, barY, barW, barH);
+        }
+        cx.fill();
+      }
+      return;
+    }
+
+    const peaks = peaksRef.current;
+    if (peaks.length === 0) return;
+
+    const prog = progressRef.current;
     const playheadBar = prog * count;
 
     for (let i = 0; i < count; i++) {
