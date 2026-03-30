@@ -357,6 +357,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   const [uploadError, setUploadError] = useState<Record<string, string>>({});
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
   const [b2PickerFor, setB2PickerFor] = useState<string | null>(null);
+  const [hoveredBeatId, setHoveredBeatId] = useState<number | null>(null);
 
   const handleSelectAll = () => {
     if (selectedBeats.length === beats.length) {
@@ -770,8 +771,20 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
         </thead>
         <tbody>
           {beats.map((beat: Beat) => (
-            <tr key={beat.id} style={{ borderBottom: "1px solid #222" }}>
-              <td style={{ padding: "12px" }}>
+            <tr
+              key={beat.id}
+              style={{
+                borderBottom: "1px solid #222",
+                background: hoveredBeatId === beat.id ? "#111" : "transparent",
+                cursor: "pointer",
+                transition: "background 150ms",
+              }}
+              onMouseEnter={() => setHoveredBeatId(beat.id)}
+              onMouseLeave={() => setHoveredBeatId(null)}
+              onClick={() => { setEditing(beat); setShowForm(true); }}
+              data-testid={`row-beat-${beat.id}`}
+            >
+              <td style={{ padding: "12px" }} onClick={(e) => e.stopPropagation()}>
                 <input 
                   type="checkbox" 
                   checked={selectedBeats.includes(beat.id)}
@@ -785,6 +798,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                     src={beat.artwork_url}
                     alt={beat.title}
                     style={{ width: "40px", height: "40px", objectFit: "cover", borderRadius: "3px", display: "block" }}
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
                   />
                 ) : (
                   <div style={{ width: "40px", height: "40px", background: "#222", borderRadius: "3px", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -797,8 +811,8 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
               <td style={{ padding: "12px" }}>{beat.price} CZK</td>
               <td style={{ padding: "12px" }}>{beat.is_published ? "Publikováno" : "Skryto"}</td>
               <td style={{ padding: "12px" }}>{beat.is_highlighted ? "Featured" : ""}</td>
-              <td style={{ padding: "12px", textAlign: "right" }}>
-                <button className="btn btn-admin" onClick={() => setEditing(beat)} style={{ marginRight: "8px" }} data-testid={`button-edit-beat-${beat.id}`}>Upravit</button>
+              <td style={{ padding: "12px", textAlign: "right" }} onClick={(e) => e.stopPropagation()}>
+                <button className="btn btn-admin" onClick={() => { setEditing(beat); setShowForm(true); }} style={{ marginRight: "8px" }} data-testid={`button-edit-beat-${beat.id}`}>Upravit</button>
                 <button className="btn btn-admin" onClick={() => handleDelete(beat.id)} style={{ color: "#333", borderColor: "#333" }} data-testid={`button-delete-beat-${beat.id}`}>Smazat</button>
               </td>
             </tr>
