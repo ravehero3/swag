@@ -6,7 +6,7 @@ interface SoundWaveProps {
   audioUrl?: string;
 }
 
-const SAMPLE_COUNT = 300;
+const BAR_COUNT = 160;
 const FETCH_TIMEOUT_MS = 6000;
 
 function seededFakeWaveform(seed: string, count: number): number[] {
@@ -22,8 +22,8 @@ function seededFakeWaveform(seed: string, count: number): number[] {
   };
   const raw = Array.from({ length: count }, (_, i) => {
     const f = i / count;
-    const envelope = Math.pow(Math.sin(f * Math.PI), 0.4);
-    return (0.2 + rand() * 0.7) * envelope + rand() * 0.08;
+    const envelope = Math.pow(Math.sin(f * Math.PI), 0.35);
+    return (0.15 + rand() * 0.75) * envelope + rand() * 0.06;
   });
   const max = Math.max(...raw, 0.001);
   return raw.map((v) => v / max);
@@ -40,35 +40,33 @@ async function extractWaveform(url: string, count: number): Promise<number[] | n
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
     const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
     await audioContext.close();
-    const channelData = audioBuffer.getChannelData(0);
-    const samplesPerBin = Math.floor(channelData.length / count);
+
+    // Use both channels if available for a more accurate reading
+    const channels = [];
+    for (let c = 0; c < Math.min(audioBuffer.numberOfChannels, 2); c++) {
+      channels.push(audioBuffer.getChannelData(c));
+    }
+    const length = channels[0].length;
+    const samplesPerBin = Math.floor(length / count);
+
     const peaks = Array.from({ length: count }, (_, i) => {
       const start = i * samplesPerBin;
-      const end = Math.min(start + samplesPerBin, channelData.length);
+      const end = Math.min(start + samplesPerBin, length);
       let max = 0;
       for (let j = start; j < end; j++) {
-        const abs = Math.abs(channelData[j]);
-        if (abs > max) max = abs;
+        for (const ch of channels) {
+          const abs = Math.abs(ch[j]);
+          if (abs > max) max = abs;
+        }
       }
       return max;
     });
+
     const maxPeak = Math.max(...peaks, 0.001);
     return peaks.map((p) => p / maxPeak);
   } catch {
     return null;
   }
-}
-
-function buildPath(cx: CanvasRenderingContext2D, xs: number[], ys: number[]) {
-  if (xs.length === 0) return;
-  cx.moveTo(xs[0], ys[0]);
-  for (let i = 1; i < xs.length - 1; i++) {
-    const cpx = (xs[i] + xs[i + 1]) / 2;
-    const cpy = (ys[i] + ys[i + 1]) / 2;
-    cx.quadraticCurveTo(xs[i], ys[i], cpx, cpy);
-  }
-  const last = xs.length - 1;
-  cx.lineTo(xs[last], ys[last]);
 }
 
 function SoundWave({ audioRef, isPlaying, audioUrl }: SoundWaveProps) {
@@ -82,22 +80,18 @@ function SoundWave({ audioRef, isPlaying, audioUrl }: SoundWaveProps) {
     if (!url || url === lastUrlRef.current) return;
     lastUrlRef.current = url;
 
-    // Show seeded waveform immediately so there's never a blank state
-    peaksRef.current = seededFakeWaveform(url, SAMPLE_COUNT);
+    peaksRef.current = seededFakeWaveform(url, BAR_COUNT);
 
-    // Silently try to upgrade to real audio data in the background
-    const real = await extractWaveform(url, SAMPLE_COUNT);
+    const real = await extractWaveform(url, BAR_COUNT);
     if (real && lastUrlRef.current === url) {
       peaksRef.current = real;
     }
   }, []);
 
-  // Load whenever audioUrl prop changes
   useEffect(() => {
     if (audioUrl) loadWaveform(audioUrl);
   }, [audioUrl, loadWaveform]);
 
-  // Also listen to loadstart on the audio element as a fallback
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -107,7 +101,6 @@ function SoundWave({ audioRef, isPlaying, audioUrl }: SoundWaveProps) {
     };
     audio.addEventListener("loadstart", onLoadStart);
     audio.addEventListener("timeupdate", onTimeUpdate);
-    // Seed from current src if already set and we haven't loaded yet
     if (audio.src && !audioUrl && audio.src !== lastUrlRef.current) {
       loadWaveform(audio.src);
     }
@@ -126,90 +119,54 @@ function SoundWave({ audioRef, isPlaying, audioUrl }: SoundWaveProps) {
     const cx = canvas.getContext("2d");
     if (!cx) return;
 
-    cx.clearRect(0, 0, W, H);
+    cx.clearRect(0, 0, canvas.width / dpr * dpr, canvas.height / dpr * dpr);
 
     const peaks = peaksRef.current;
     if (peaks.length === 0) return;
 
     const prog = progressRef.current;
-    const playheadX = prog * W;
+    const count = peaks.length;
     const midY = H / 2;
-    const maxAmp = midY * 0.9;
+    const maxAmp = midY * 0.92;
 
-    const xAt = (i: number) => (i / (peaks.length - 1)) * W;
-    const ampAt = (i: number) => peaks[i] * maxAmp;
+    // Bar geometry: thin bars with small gap between them
+    const slotW = W / count;
+    const barW = Math.max(1.5, slotW * 0.52);
+    const gap = slotW - barW;
 
-    const playedEndIdx = Math.min(
-      peaks.length - 1,
-      Math.ceil(prog * (peaks.length - 1))
-    );
+    const playheadBar = prog * count;
 
-    // Played: solid filled envelope
-    if (playedEndIdx >= 1) {
-      const pxs: number[] = [];
-      const tops: number[] = [];
-      const bots: number[] = [];
-      for (let i = 0; i <= playedEndIdx; i++) {
-        const x = Math.min(xAt(i), playheadX);
-        pxs.push(x);
-        tops.push(midY - ampAt(i));
-        bots.push(midY + ampAt(i));
+    for (let i = 0; i < count; i++) {
+      const x = i * slotW + gap / 2;
+      const amp = Math.max(peaks[i] * maxAmp, 1.5);
+
+      const isPlayed = i < playheadBar;
+      const isHead = Math.abs(i - playheadBar) < 1.0;
+
+      if (isHead) {
+        // Playhead bar — bright white
+        cx.fillStyle = "rgba(255,255,255,1)";
+      } else if (isPlayed) {
+        // Played bars — solid white
+        cx.fillStyle = "rgba(255,255,255,0.85)";
+      } else {
+        // Unplayed bars — dim
+        cx.fillStyle = "rgba(255,255,255,0.18)";
       }
+
+      // Draw bar symmetrically from center
+      const barH = amp * 2;
+      const barY = midY - amp;
+
+      // Rounded bar using rounded rect
+      const radius = Math.min(barW / 2, 2);
       cx.beginPath();
-      cx.moveTo(pxs[0], midY);
-      buildPath(cx, pxs, tops);
-      cx.lineTo(playheadX, midY);
-      const rxs = [...pxs].reverse();
-      const rbots = [...bots].reverse();
-      buildPath(cx, rxs, rbots);
-      cx.closePath();
-      cx.fillStyle = "rgba(255,255,255,0.88)";
+      if (cx.roundRect) {
+        cx.roundRect(x, barY, barW, barH, radius);
+      } else {
+        cx.rect(x, barY, barW, barH);
+      }
       cx.fill();
-    }
-
-    // Unplayed: dim outline (top + bottom mirror)
-    const upxs: number[] = [];
-    const utops: number[] = [];
-    const ubots: number[] = [];
-    for (let i = playedEndIdx; i < peaks.length; i++) {
-      const x = Math.max(xAt(i), playheadX);
-      upxs.push(x);
-      utops.push(midY - ampAt(i));
-      ubots.push(midY + ampAt(i));
-    }
-    if (upxs.length >= 2) {
-      cx.beginPath();
-      buildPath(cx, upxs, utops);
-      cx.strokeStyle = "rgba(255,255,255,0.28)";
-      cx.lineWidth = 1.2;
-      cx.lineJoin = "round";
-      cx.lineCap = "round";
-      cx.stroke();
-
-      cx.beginPath();
-      buildPath(cx, upxs, ubots);
-      cx.strokeStyle = "rgba(255,255,255,0.28)";
-      cx.lineWidth = 1.2;
-      cx.lineJoin = "round";
-      cx.lineCap = "round";
-      cx.stroke();
-
-      cx.beginPath();
-      cx.moveTo(playheadX, midY);
-      cx.lineTo(W, midY);
-      cx.strokeStyle = "rgba(255,255,255,0.07)";
-      cx.lineWidth = 0.5;
-      cx.stroke();
-    }
-
-    // Playhead
-    if (prog > 0 && prog < 1) {
-      cx.beginPath();
-      cx.moveTo(playheadX, 0);
-      cx.lineTo(playheadX, H);
-      cx.strokeStyle = "rgba(255,255,255,0.9)";
-      cx.lineWidth = 1.5;
-      cx.stroke();
     }
   }, []);
 
@@ -231,8 +188,8 @@ function SoundWave({ audioRef, isPlaying, audioUrl }: SoundWaveProps) {
       if (!wrap) return;
       canvas.width = wrap.clientWidth * dpr;
       canvas.height = wrap.clientHeight * dpr;
-      const cx = canvas.getContext("2d");
-      if (cx) cx.scale(dpr, dpr);
+      const ctx = canvas.getContext("2d");
+      if (ctx) ctx.scale(dpr, dpr);
     };
     resize();
     const ro = new ResizeObserver(resize);
