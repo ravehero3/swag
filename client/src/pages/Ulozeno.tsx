@@ -127,9 +127,6 @@ function Ulozeno() {
     });
   };
 
-  const beats = savedItems.filter((item) => item.item_type === "beat");
-  const soundKits = savedItems.filter((item) => item.item_type === "sound_kit");
-
   const sectionStyle: React.CSSProperties = {
     width: "100%",
     maxWidth: "700px",
@@ -276,238 +273,151 @@ function Ulozeno() {
           </section>
         )}
 
-        <style dangerouslySetInnerHTML={{ __html: `
-          .saved-item-hover {
-            transition: transform 0.2s ease;
-          }
-          .saved-item-hover:hover {
-            transform: scale(1.02);
-          }
-        `}} />
+        {/* Section 4: How to Save — only when no saved items */}
+        {savedItems.length === 0 && (
+          <section style={{ ...sectionStyle, borderBottom: "none", height: "150px" }}>
+            <h2 style={{ ...titleFont, fontSize: "14px", letterSpacing: "0.05em", marginBottom: "8px" }}>
+              ULOŽTE SI VAŠE OBLÍBENÉ POLOŽKY
+            </h2>
+            <p style={{ ...regularFont, fontSize: "12px", color: "#888" }}>
+              Klikněte na ikonu srdce a uložte si položky na tuto stránku
+            </p>
+          </section>
+        )}
 
-        {/* Section 4: How to Save */}
-        <section style={{ ...sectionStyle, borderBottom: "none", height: "150px" }}>
-          <h2 style={{ ...titleFont, fontSize: "14px", letterSpacing: "0.05em", marginBottom: "8px" }}>
-            ULOŽTE SI VAŠE OBLÍBENÉ POLOŽKY
-          </h2>
-          <p style={{ ...regularFont, fontSize: "12px", color: "#888" }}>
-            Klikněte na ikonu srdce a uložte si položky na tuto stránku
-          </p>
-        </section>
-
-        {/* Items List (only shown if there are items) */}
+        {/* Items Grid — shown when there are saved items */}
         {savedItems.length > 0 && (
-          <div style={{ width: "100%", margin: "0 auto", padding: "40px 0" }}>
-            {beats.length > 0 && (
-              <div style={{ marginBottom: "60px", width: "100%" }}>
-                <h2 style={{ ...titleFont, fontSize: "14px", color: "#999", marginBottom: "32px", padding: "0 20px" }}>BEATY</h2>
-                <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
-                  {beats.map((item) => (
-                    <div
-                      key={item.id}
-                      className="saved-item-hover"
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        padding: "24px 20px",
-                        borderBottom: "0.5px solid #333",
-                        width: "100%",
-                        gap: "20px",
-                      }}
-                    >
-                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
-                        <button
-                          onClick={() => playPreview(item)}
-                          style={{
-                            width: "48px",
-                            height: "48px",
-                            borderRadius: "50%",
-                            border: "1px solid #fff",
-                            background: currentItem?.id === item.id && isPlaying ? "#fff" : "transparent",
-                            color: currentItem?.id === item.id && isPlaying ? "#000" : "#fff",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            cursor: "pointer",
-                            transition: "all 0.2s ease"
-                          }}
-                        >
-                          {currentItem?.id === item.id && isPlaying ? (
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-                          ) : (
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: "2px" }}><path d="M5 3l14 9-14 9V3z"/></svg>
-                          )}
-                        </button>
-                        <div style={{ textAlign: "center" }}>
-                          <div style={{ ...titleFont, fontSize: "16px", letterSpacing: "0.05em" }}>{item.item_data.title}</div>
-                          <div style={{ ...regularFont, fontSize: "12px", color: "#666", marginTop: "4px" }}>
-                            {item.item_data.artist} • {item.item_data.bpm} BPM • {item.item_data.key}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
-                        <span style={{ ...titleFont, fontSize: "14px" }}>{item.item_data.price} CZK</span>
-                        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                          <button
-                            onClick={() => handleRemove(item)}
-                            style={{
-                              background: "transparent",
-                              border: "none",
-                              cursor: "pointer",
-                              padding: "8px",
-                              color: "#ff4444"
-                            }}
-                          >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                            </svg>
-                          </button>
-                          <button
-                            onClick={() => handleAddToCart(item)}
-                            style={{
-                              padding: "10px 20px",
-                              background: "#fff",
-                              color: "#000",
-                              border: "none",
-                              fontSize: "12px",
-                              ...titleFont,
-                              cursor: "pointer",
-                              borderRadius: "4px",
-                            }}
-                          >
-                            DO KOŠÍKU
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {soundKits.length > 0 && (
-              <div style={{ width: "100%" }}>
-                <h2 style={{ ...titleFont, fontSize: "14px", color: "#999", marginBottom: "32px", padding: "0 20px" }}>ZVUKOVÉ KITY</h2>
+          <div style={{ maxWidth: "1000px", margin: "0 auto", padding: "40px 20px" }}>
+            <style dangerouslySetInnerHTML={{ __html: `
+              .ulozeno-card {
+                transition: transform 0.2s ease;
+                cursor: default;
+              }
+              .ulozeno-card:hover {
+                transform: scale(1.02);
+              }
+              .ulozeno-play-btn {
+                transition: opacity 0.2s ease, transform 0.15s ease;
+              }
+            `}} />
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "20px" }}>
+              {savedItems.map((item) => (
                 <div
+                  key={item.id}
+                  className="ulozeno-card"
                   style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr",
-                    width: "100%",
-                    maxWidth: "700px",
-                    margin: "0 auto",
-                    padding: "0 20px",
+                    padding: "16px",
+                    background: "#0a0a0a",
+                    border: "1px solid #333",
+                    borderRadius: "8px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "0",
                   }}
                 >
-                  {soundKits.map((item) => (
-                    <div
-                      key={item.id}
-                      className="saved-item-hover"
+                  {/* Artwork with play + remove overlaid */}
+                  <div style={{ position: "relative", width: "100%", aspectRatio: "1/1", marginBottom: "12px" }}>
+                    <img
+                      src={item.item_data.artwork_url || "/uploads/artwork/metallic-logo.png"}
+                      alt={item.item_data.title}
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
+                      style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "4px", display: "block" }}
+                    />
+                    {/* Play button — centre of artwork */}
+                    {item.item_data.preview_url && (
+                      <button
+                        onClick={() => playPreview(item)}
+                        className="ulozeno-play-btn"
+                        style={{
+                          position: "absolute",
+                          inset: 0,
+                          margin: "auto",
+                          width: "44px",
+                          height: "44px",
+                          borderRadius: "50%",
+                          border: "1.5px solid #fff",
+                          background: currentItem?.id === item.id && isPlaying ? "#fff" : "rgba(0,0,0,0.55)",
+                          color: currentItem?.id === item.id && isPlaying ? "#000" : "#fff",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          cursor: "pointer",
+                        }}
+                      >
+                        {currentItem?.id === item.id && isPlaying ? (
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                        ) : (
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: "2px" }}><path d="M5 3l14 9-14 9V3z"/></svg>
+                        )}
+                      </button>
+                    )}
+                    {/* Remove (heart) button — top right */}
+                    <button
+                      onClick={() => handleRemove(item)}
                       style={{
-                        border: "0.5px solid #333",
-                        overflow: "hidden",
-                        position: "relative",
+                        position: "absolute",
+                        top: "8px",
+                        right: "8px",
+                        background: "rgba(0,0,0,0.6)",
+                        border: "none",
+                        borderRadius: "50%",
+                        width: "30px",
+                        height: "30px",
                         display: "flex",
-                        flexDirection: "column",
                         alignItems: "center",
-                        textAlign: "center",
+                        justifyContent: "center",
+                        cursor: "pointer",
+                        color: "#ff4444",
                       }}
                     >
-                      <div style={{ width: "100%", aspectRatio: "1", background: "#111", position: "relative" }}>
-                        <img
-                          src={item.item_data.artwork_url || "/uploads/artwork/metallic-logo.png"}
-                          alt={item.item_data.title}
-                          onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
-                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                        />
-                        <button
-                          onClick={() => handleRemove(item)}
-                          style={{
-                            position: "absolute",
-                            top: "12px",
-                            right: "12px",
-                            background: "rgba(0,0,0,0.6)",
-                            border: "none",
-                            borderRadius: "50%",
-                            width: "36px",
-                            height: "36px",
-                            cursor: "pointer",
-                            zIndex: 10,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            color: "#ff4444"
-                          }}
-                        >
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                          </svg>
-                        </button>
-                        {item.item_data.preview_url && (
-                          <button
-                            onClick={() => playPreview(item)}
-                            style={{
-                              position: "absolute",
-                              bottom: "12px",
-                              right: "12px",
-                              width: "48px",
-                              height: "48px",
-                              borderRadius: "50%",
-                              border: "1px solid #fff",
-                              background: currentItem?.id === item.id && isPlaying ? "#fff" : "rgba(0,0,0,0.6)",
-                              color: currentItem?.id === item.id && isPlaying ? "#000" : "#fff",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              cursor: "pointer"
-                            }}
-                          >
-                            {currentItem?.id === item.id && isPlaying ? (
-                              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-                            ) : (
-                              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: "2px" }}><path d="M5 3l14 9-14 9V3z"/></svg>
-                            )}
-                          </button>
-                        )}
-                      </div>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                      </svg>
+                    </button>
+                  </div>
 
-                      <div style={{ padding: "24px", width: "100%" }}>
-                        <div style={{ ...regularFont, fontSize: "10px", color: "#666", marginBottom: "4px", textTransform: "uppercase" }}>
-                          {typeLabels[item.item_data.type || ""] || item.item_data.type}
-                        </div>
-                        <h3 style={{ ...titleFont, fontSize: "16px", marginBottom: "8px" }}>{item.item_data.title}</h3>
-                        <p style={{ ...regularFont, fontSize: "12px", color: "#888", marginBottom: "16px" }}>
-                          {item.item_data.number_of_sounds} ZVUKŮ
-                        </p>
+                  {/* Title */}
+                  <h3 style={{ ...titleFont, fontSize: "14px", margin: "0 0 4px 0", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    {item.item_data.title}
+                  </h3>
 
-                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
-                          <span style={{ ...titleFont, fontSize: "14px" }}>
-                            {item.item_data.is_free ? "ZDARMA" : `${item.item_data.price} CZK`}
-                          </span>
-                          <button
-                            onClick={() => handleAddToCart(item)}
-                            style={{
-                              padding: "10px 20px",
-                              background: "#fff",
-                              color: "#000",
-                              border: "none",
-                              fontSize: "12px",
-                              ...titleFont,
-                              cursor: "pointer",
-                              borderRadius: "4px",
-                              width: "100%",
-                            }}
-                          >
-                            {item.item_data.is_free ? "STÁHNOUT" : "DO KOŠÍKU"}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                  {/* Type + detail */}
+                  <p style={{ ...regularFont, fontSize: "12px", color: "#666", margin: "0 0 12px 0", textTransform: "capitalize" }}>
+                    {item.item_type === "beat"
+                      ? `Beat • ${item.item_data.bpm ? item.item_data.bpm + " BPM" : ""}${item.item_data.key ? " • " + item.item_data.key : ""}`
+                      : typeLabels[item.item_data.type || ""] || "Sound Kit"}
+                  </p>
+
+                  {/* Price + cart button */}
+                  <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: "8px" }}>
+                    <span style={{ ...titleFont, fontSize: "13px", color: "#fff" }}>
+                      {item.item_data.is_free ? "ZDARMA" : `${item.item_data.price} CZK`}
+                    </span>
+                    {!item.item_data.is_free && (
+                      <button
+                        onClick={() => handleAddToCart(item)}
+                        style={{
+                          padding: "8px 0",
+                          background: "#fff",
+                          color: "#000",
+                          border: "none",
+                          fontSize: "12px",
+                          fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
+                          fontWeight: 700,
+                          cursor: "pointer",
+                          borderRadius: "4px",
+                          width: "100%",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.05em",
+                        }}
+                      >
+                        DO KOŠÍKU
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              ))}
+            </div>
           </div>
         )}
       </div>
