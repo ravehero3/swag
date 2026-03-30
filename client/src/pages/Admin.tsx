@@ -347,7 +347,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     artworkUrl: "",
     trackoutUrl: "",
     tags: [] as string[],
-    isPublished: false,
+    isPublished: true,
     isHighlighted: false,
   });
   const [tagInput, setTagInput] = useState("");
@@ -429,7 +429,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     if (res.ok) {
       setShowForm(false);
       setEditing(null);
-      setForm({ title: "", artist: "VOODOO808", bpm: 140, key: "C", price: 5000, priceType: "beat", previewUrl: "", fileUrl: "", artworkUrl: "", trackoutUrl: "", tags: [], isPublished: false, isHighlighted: false });
+      setForm({ title: "", artist: "VOODOO808", bpm: 140, key: "C", price: 5000, priceType: "beat", previewUrl: "", fileUrl: "", artworkUrl: "", trackoutUrl: "", tags: [], isPublished: true, isHighlighted: false });
       loadData();
     } else {
       const errorData = await res.json();
@@ -759,6 +759,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                 data-testid="checkbox-select-all-beats"
               />
             </th>
+            <th style={{ textAlign: "left", padding: "12px", width: "56px" }}></th>
             <th style={{ textAlign: "left", padding: "12px" }}>Název</th>
             <th style={{ textAlign: "left", padding: "12px" }}>BPM</th>
             <th style={{ textAlign: "left", padding: "12px" }}>Cena</th>
@@ -777,6 +778,19 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                   onChange={() => handleSelectBeat(beat.id)}
                   data-testid={`checkbox-beat-${beat.id}`}
                 />
+              </td>
+              <td style={{ padding: "8px 12px" }}>
+                {beat.artwork_url ? (
+                  <img
+                    src={beat.artwork_url}
+                    alt={beat.title}
+                    style={{ width: "40px", height: "40px", objectFit: "cover", borderRadius: "3px", display: "block" }}
+                  />
+                ) : (
+                  <div style={{ width: "40px", height: "40px", background: "#222", borderRadius: "3px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <span style={{ fontSize: "18px", color: "#444" }}>♪</span>
+                  </div>
+                )}
               </td>
               <td style={{ padding: "12px" }}>{beat.title}</td>
               <td style={{ padding: "12px" }}>{beat.bpm}</td>
@@ -835,7 +849,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
     artworkUrl: "",
     legalInfo: "",
     authorInfo: "",
-    isPublished: false,
+    isPublished: true,
   });
   const [tagInput, setTagInput] = useState("");
   const [selectedKits, setSelectedKits] = useState<number[]>([]);
@@ -907,7 +921,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
     await fetch(url, { method, headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(form) });
     setShowForm(false);
     setEditing(null);
-    setForm({ title: "", description: "", type: "drum_kit", price: 899, priceType: "kit", isFree: false, numberOfSounds: 0, tags: [], previewUrl: "", fileUrl: "", artworkUrl: "", legalInfo: "", authorInfo: "", isPublished: false });
+    setForm({ title: "", description: "", type: "drum_kit", price: 899, priceType: "kit", isFree: false, numberOfSounds: 0, tags: [], previewUrl: "", fileUrl: "", artworkUrl: "", legalInfo: "", authorInfo: "", isPublished: true });
     onRefresh();
   };
 
