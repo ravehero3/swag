@@ -765,11 +765,17 @@ function Home() {
           ) : (
             <>
               <div style={{ display: "flex", alignItems: "center", padding: "16px 16px 8px 16px", gap: "16px", marginTop: "16px", position: "relative" }}>
-                <div style={{ width: "48px", height: "48px", flexShrink: 0 }} />
-                <div style={{ width: "240px", marginRight: "12px", marginLeft: "100px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666" }}>NÁZEV</div>
-                <div style={{ position: "absolute", bottom: 0, left: "144px", right: "16px", height: "1px", background: "#333" }} />
-                <div className="desktop-only" style={{ width: "100px", marginLeft: "10px" }}><button onClick={() => { setSortBy(sortBy === "bpm" ? "bpm" : "bpm"); setSortAsc(sortBy === "bpm" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0, textAlign: "left", width: "100%" }}>BPM {sortBy === "bpm" && (sortAsc ? "↑" : "↓")}</button></div>
-                <div className="desktop-only" style={{ width: "100px" }}><button onClick={() => { setSortBy(sortBy === "key" ? "key" : "key"); setSortAsc(sortBy === "key" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0, textAlign: "left", width: "100%" }}>KEY {sortBy === "key" && (sortAsc ? "↑" : "↓")}</button></div>
+                {/* matches the mobile-hide heart button wrapper in each row */}
+                <div className="mobile-hide" style={{ width: "28px", flexShrink: 0, marginRight: "-4px" }} />
+                {/* matches artwork image */}
+                <div style={{ width: "48px", flexShrink: 0 }} />
+                {/* NÁZEV — matches title column */}
+                <div style={{ width: "240px", minWidth: "240px", maxWidth: "240px", flexShrink: 0, marginRight: "12px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666" }}>NÁZEV</div>
+                <div style={{ position: "absolute", bottom: 0, left: "80px", right: "16px", height: "1px", background: "#333" }} />
+                {/* BPM — matches beat bpm column */}
+                <div className="desktop-only" style={{ width: "100px", flexShrink: 0 }}><button onClick={() => { setSortBy(sortBy === "bpm" ? "bpm" : "bpm"); setSortAsc(sortBy === "bpm" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0, textAlign: "left", width: "100%" }}>BPM {sortBy === "bpm" && (sortAsc ? "↑" : "↓")}</button></div>
+                {/* KEY — matches beat key column */}
+                <div className="desktop-only" style={{ width: "100px", flexShrink: 0 }}><button onClick={() => { setSortBy(sortBy === "key" ? "key" : "key"); setSortAsc(sortBy === "key" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0, textAlign: "left", width: "100%" }}>KEY {sortBy === "key" && (sortAsc ? "↑" : "↓")}</button></div>
               </div>
               {(sortBy && sortBy === "bpm" ? [...otherBeats].sort((a, b) => sortAsc ? a.bpm - b.bpm : b.bpm - a.bpm) : sortBy && sortBy === "key" ? [...otherBeats].sort((a, b) => sortAsc ? a.key.localeCompare(b.key) : b.key.localeCompare(a.key)) : otherBeats).map((beat) => (
             <div
