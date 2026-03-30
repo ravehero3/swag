@@ -43,7 +43,9 @@ function Ulozeno() {
     if (user) {
       fetch("/api/saved", { credentials: "include" })
         .then((res) => res.json())
-        .then(setSavedItems)
+        .then((data) => {
+          if (Array.isArray(data)) setSavedItems(data);
+        })
         .catch(console.error);
     } else {
       const savedBeatsJson = localStorage.getItem("voodoo808_saved_beats");

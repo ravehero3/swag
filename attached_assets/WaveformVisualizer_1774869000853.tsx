@@ -1,78 +1,40 @@
-import { useRef, useEffect, useCallback, useState } from "react";
+import { useRef, useEffect, useCallback } from 'react';
 
-interface SoundWaveProps {
-  audioRef: React.RefObject<HTMLAudioElement>;
-  isPlaying: boolean;
+interface WaveformVisualizerProps {
+  /** 0–1 playback progress */
+  progress: number;
+  /** Called with 0–1 when user clicks or scrubs */
+  onSeek: (progress: number) => void;
+  /** Optional: live AnalyserNode from Web Audio API.
+   *  If omitted, a simulated wave is drawn (useful for dev/preview). */
+  analyser?: AnalyserNode;
+  height?: number;
+  className?: string;
 }
 
-function SoundWave({ audioRef, isPlaying }: SoundWaveProps) {
+export default function WaveformVisualizer({
+  progress,
+  onSeek,
+  analyser,
+  height = 56,
+  className = '',
+}: WaveformVisualizerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number>(0);
   const tRef = useRef<number>(0);
-  const progressRef = useRef<number>(0);
-  const [progress, setProgress] = useState(0);
+  const progressRef = useRef<number>(progress);
 
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const analyserRef = useRef<AnalyserNode | null>(null);
-  const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
-  const setupFailedRef = useRef(false);
-
+  // Keep progressRef in sync so the draw loop always has the latest value
   useEffect(() => {
     progressRef.current = progress;
   }, [progress]);
 
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    const updateProgress = () => {
-      if (audio.duration) {
-        setProgress(audio.currentTime / audio.duration);
-      }
-    };
-
-    audio.addEventListener("timeupdate", updateProgress);
-    audio.addEventListener("loadedmetadata", updateProgress);
-    return () => {
-      audio.removeEventListener("timeupdate", updateProgress);
-      audio.removeEventListener("loadedmetadata", updateProgress);
-    };
-  }, [audioRef]);
-
-  useEffect(() => {
-    if (!isPlaying || setupFailedRef.current) return;
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    const setup = async () => {
-      try {
-        if (!audioContextRef.current) {
-          audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-        }
-        if (!sourceRef.current) {
-          const src = audioContextRef.current.createMediaElementSource(audio);
-          const analyser = audioContextRef.current.createAnalyser();
-          analyser.fftSize = 512;
-          src.connect(analyser);
-          analyser.connect(audioContextRef.current.destination);
-          analyserRef.current = analyser;
-          sourceRef.current = src;
-        }
-        if (audioContextRef.current.state === "suspended") {
-          await audioContextRef.current.resume();
-        }
-      } catch {
-        setupFailedRef.current = true;
-      }
-    };
-
-    setup();
-  }, [isPlaying, audioRef]);
-
+  // --- Point generation ---
+  // When a real AnalyserNode is provided, sample it directly.
+  // Otherwise fall back to a deterministic sine-based simulation.
   const getPoints = useCallback(
     (W: number, H: number, count: number): { x: number; y: number }[] => {
-      const analyser = analyserRef.current;
-      if (analyser && isPlaying) {
+      if (analyser) {
         const buf = new Float32Array(analyser.fftSize);
         analyser.getFloatTimeDomainData(buf);
         return Array.from({ length: count + 1 }, (_, i) => {
@@ -82,6 +44,7 @@ function SoundWave({ audioRef, isPlaying }: SoundWaveProps) {
         });
       }
 
+      // Simulated wave — replace with real data in production
       const t = tRef.current;
       return Array.from({ length: count + 1 }, (_, i) => {
         const f = i / count;
@@ -93,16 +56,17 @@ function SoundWave({ audioRef, isPlaying }: SoundWaveProps) {
         return { x: f * W, y };
       });
     },
-    [isPlaying]
+    [analyser]
   );
 
+  // --- Draw ---
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const dpr = window.devicePixelRatio || 1;
     const W = canvas.width / dpr;
     const H = canvas.height / dpr;
-    const cx = canvas.getContext("2d");
+    const cx = canvas.getContext('2d');
     if (!cx) return;
 
     cx.clearRect(0, 0, W, H);
@@ -111,18 +75,20 @@ function SoundWave({ audioRef, isPlaying }: SoundWaveProps) {
     const px = prog * W;
     const pts = getPoints(W, H, 200);
 
-    const unplayed = pts.filter((p) => p.x >= px - 1);
+    // --- Unplayed: flat hairline ---
+    const unplayed = pts.filter(p => p.x >= px - 1);
     if (unplayed.length > 1) {
       cx.beginPath();
       unplayed.forEach((p, i) => (i === 0 ? cx.moveTo(p.x, p.y) : cx.lineTo(p.x, p.y)));
-      cx.strokeStyle = "#282828";
+      cx.strokeStyle = '#282828';
       cx.lineWidth = 0.75;
-      cx.lineJoin = "round";
-      cx.lineCap = "round";
+      cx.lineJoin = 'round';
+      cx.lineCap = 'round';
       cx.stroke();
     }
 
-    const played = pts.filter((p) => p.x <= px + 1);
+    // --- Played: tapered stroke — thin at start, thick at playhead ---
+    const played = pts.filter(p => p.x <= px + 1);
     if (played.length >= 2) {
       for (let i = 0; i < played.length - 1; i++) {
         const frac = px > 0 ? played[i].x / px : 0;
@@ -131,23 +97,25 @@ function SoundWave({ audioRef, isPlaying }: SoundWaveProps) {
         cx.lineTo(played[i + 1].x, played[i + 1].y);
         cx.strokeStyle = `rgba(255,255,255,${0.5 + frac * 0.5})`;
         cx.lineWidth = 0.5 + frac * 3.5;
-        cx.lineJoin = "round";
-        cx.lineCap = "round";
+        cx.lineJoin = 'round';
+        cx.lineCap = 'round';
         cx.stroke();
       }
     }
   }, [getPoints]);
 
+  // --- Animation loop ---
   useEffect(() => {
     const loop = () => {
-      if (!analyserRef.current) tRef.current += 0.016;
+      if (!analyser) tRef.current += 0.016; // only advance sim time when no real analyser
       draw();
       rafRef.current = requestAnimationFrame(loop);
     };
     rafRef.current = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(rafRef.current);
-  }, [draw]);
+  }, [draw, analyser]);
 
+  // --- Resize observer ---
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -158,7 +126,7 @@ function SoundWave({ audioRef, isPlaying }: SoundWaveProps) {
       if (!wrap) return;
       canvas.width = wrap.clientWidth * dpr;
       canvas.height = wrap.clientHeight * dpr;
-      const cx = canvas.getContext("2d");
+      const cx = canvas.getContext('2d');
       if (cx) cx.scale(dpr, dpr);
     };
 
@@ -168,61 +136,49 @@ function SoundWave({ audioRef, isPlaying }: SoundWaveProps) {
     return () => ro.disconnect();
   }, []);
 
+  // --- Seek interaction ---
   const handleSeek = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
       const rect = e.currentTarget.getBoundingClientRect();
       const p = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-      const audio = audioRef.current;
-      if (audio && audio.duration) {
-        audio.currentTime = p * audio.duration;
-      }
+      onSeek(p);
     },
-    [audioRef]
+    [onSeek]
   );
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
-      if (e.buttons !== 1) return;
+      if (e.buttons !== 1) return; // only while mouse button held
       const rect = e.currentTarget.getBoundingClientRect();
       const p = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-      const audio = audioRef.current;
-      if (audio && audio.duration) {
-        audio.currentTime = p * audio.duration;
-      }
+      onSeek(p);
     },
-    [audioRef]
+    [onSeek]
   );
-
-  if (!isPlaying) return null;
 
   return (
     <div
       onClick={handleSeek}
       onMouseMove={handleMouseMove}
+      className={className}
       style={{
-        position: "relative",
-        height: 56,
-        cursor: "pointer",
-        overflow: "hidden",
-        margin: "20px auto 4px",
-        maxWidth: "1200px",
-        padding: "0 16px",
-        width: "100%",
+        position: 'relative',
+        height,
+        cursor: 'pointer',
+        overflow: 'hidden',
       }}
     >
       <canvas
         ref={canvasRef}
         style={{
-          position: "absolute",
+          position: 'absolute',
           top: 0,
           left: 0,
-          width: "100%",
-          height: "100%",
-          display: "block",
+          width: '100%',
+          height: '100%',
+          display: 'block',
         }}
       />
     </div>
   );
 }
-
-export default SoundWave;
