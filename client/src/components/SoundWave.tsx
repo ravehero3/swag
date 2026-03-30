@@ -3,9 +3,11 @@ import { useRef, useEffect, useCallback } from "react";
 interface SoundWaveProps {
   audioRef: React.RefObject<HTMLAudioElement>;
   isPlaying: boolean;
+  audioUrl?: string;
 }
 
 const SAMPLE_COUNT = 300;
+const FETCH_TIMEOUT_MS = 6000;
 
 function seededFakeWaveform(seed: string, count: number): number[] {
   let h = 0;
@@ -29,7 +31,10 @@ function seededFakeWaveform(seed: string, count: number): number[] {
 
 async function extractWaveform(url: string, count: number): Promise<number[] | null> {
   try {
-    const response = await fetch(url, { mode: "cors" });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+    const response = await fetch(url, { mode: "cors", signal: controller.signal });
+    clearTimeout(timeout);
     if (!response.ok) return null;
     const arrayBuffer = await response.arrayBuffer();
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -54,11 +59,7 @@ async function extractWaveform(url: string, count: number): Promise<number[] | n
   }
 }
 
-function buildPath(
-  cx: CanvasRenderingContext2D,
-  xs: number[],
-  ys: number[]
-) {
+function buildPath(cx: CanvasRenderingContext2D, xs: number[], ys: number[]) {
   if (xs.length === 0) return;
   cx.moveTo(xs[0], ys[0]);
   for (let i = 1; i < xs.length - 1; i++) {
@@ -70,21 +71,33 @@ function buildPath(
   cx.lineTo(xs[last], ys[last]);
 }
 
-function SoundWave({ audioRef, isPlaying }: SoundWaveProps) {
+function SoundWave({ audioRef, isPlaying, audioUrl }: SoundWaveProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number>(0);
   const progressRef = useRef<number>(0);
   const peaksRef = useRef<number[]>([]);
-  const lastSrcRef = useRef<string>("");
+  const lastUrlRef = useRef<string>("");
 
-  const loadWaveform = useCallback(async (src: string) => {
-    if (!src || src === lastSrcRef.current) return;
-    lastSrcRef.current = src;
-    peaksRef.current = [];
-    const real = await extractWaveform(src, SAMPLE_COUNT);
-    peaksRef.current = real ?? seededFakeWaveform(src, SAMPLE_COUNT);
+  const loadWaveform = useCallback(async (url: string) => {
+    if (!url || url === lastUrlRef.current) return;
+    lastUrlRef.current = url;
+
+    // Show seeded waveform immediately so there's never a blank state
+    peaksRef.current = seededFakeWaveform(url, SAMPLE_COUNT);
+
+    // Silently try to upgrade to real audio data in the background
+    const real = await extractWaveform(url, SAMPLE_COUNT);
+    if (real && lastUrlRef.current === url) {
+      peaksRef.current = real;
+    }
   }, []);
 
+  // Load whenever audioUrl prop changes
+  useEffect(() => {
+    if (audioUrl) loadWaveform(audioUrl);
+  }, [audioUrl, loadWaveform]);
+
+  // Also listen to loadstart on the audio element as a fallback
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -94,12 +107,15 @@ function SoundWave({ audioRef, isPlaying }: SoundWaveProps) {
     };
     audio.addEventListener("loadstart", onLoadStart);
     audio.addEventListener("timeupdate", onTimeUpdate);
-    if (audio.src && audio.src !== lastSrcRef.current) loadWaveform(audio.src);
+    // Seed from current src if already set and we haven't loaded yet
+    if (audio.src && !audioUrl && audio.src !== lastUrlRef.current) {
+      loadWaveform(audio.src);
+    }
     return () => {
       audio.removeEventListener("loadstart", onLoadStart);
       audio.removeEventListener("timeupdate", onTimeUpdate);
     };
-  }, [audioRef, loadWaveform]);
+  }, [audioRef, audioUrl, loadWaveform]);
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
@@ -123,26 +139,22 @@ function SoundWave({ audioRef, isPlaying }: SoundWaveProps) {
     const xAt = (i: number) => (i / (peaks.length - 1)) * W;
     const ampAt = (i: number) => peaks[i] * maxAmp;
 
-    // Split peaks into played and unplayed sets
     const playedEndIdx = Math.min(
       peaks.length - 1,
       Math.ceil(prog * (peaks.length - 1))
     );
 
-    // ── Played: solid filled envelope ──────────────────────────────
+    // Played: solid filled envelope
     if (playedEndIdx >= 1) {
       const pxs: number[] = [];
       const tops: number[] = [];
       const bots: number[] = [];
-
       for (let i = 0; i <= playedEndIdx; i++) {
         const x = Math.min(xAt(i), playheadX);
         pxs.push(x);
         tops.push(midY - ampAt(i));
         bots.push(midY + ampAt(i));
       }
-
-      // Filled shape: top path forward, bottom path reversed
       cx.beginPath();
       cx.moveTo(pxs[0], midY);
       buildPath(cx, pxs, tops);
@@ -155,20 +167,17 @@ function SoundWave({ audioRef, isPlaying }: SoundWaveProps) {
       cx.fill();
     }
 
-    // ── Unplayed: dim outline only ──────────────────────────────────
+    // Unplayed: dim outline (top + bottom mirror)
     const upxs: number[] = [];
     const utops: number[] = [];
     const ubots: number[] = [];
-
     for (let i = playedEndIdx; i < peaks.length; i++) {
       const x = Math.max(xAt(i), playheadX);
       upxs.push(x);
       utops.push(midY - ampAt(i));
       ubots.push(midY + ampAt(i));
     }
-
     if (upxs.length >= 2) {
-      // Top outline
       cx.beginPath();
       buildPath(cx, upxs, utops);
       cx.strokeStyle = "rgba(255,255,255,0.28)";
@@ -177,7 +186,6 @@ function SoundWave({ audioRef, isPlaying }: SoundWaveProps) {
       cx.lineCap = "round";
       cx.stroke();
 
-      // Bottom outline (mirror)
       cx.beginPath();
       buildPath(cx, upxs, ubots);
       cx.strokeStyle = "rgba(255,255,255,0.28)";
@@ -186,7 +194,6 @@ function SoundWave({ audioRef, isPlaying }: SoundWaveProps) {
       cx.lineCap = "round";
       cx.stroke();
 
-      // Centre hairline
       cx.beginPath();
       cx.moveTo(playheadX, midY);
       cx.lineTo(W, midY);
@@ -195,7 +202,7 @@ function SoundWave({ audioRef, isPlaying }: SoundWaveProps) {
       cx.stroke();
     }
 
-    // ── Playhead ────────────────────────────────────────────────────
+    // Playhead
     if (prog > 0 && prog < 1) {
       cx.beginPath();
       cx.moveTo(playheadX, 0);

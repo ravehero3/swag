@@ -685,7 +685,7 @@ function Home() {
         )}
 
         {isPlaying && currentBeat && (
-          <SoundWave audioRef={audioRef} isPlaying={isPlaying} />
+          <SoundWave audioRef={audioRef} isPlaying={isPlaying} audioUrl={currentBeat.preview_url} />
         )}
 
         <div ref={beatsListRef} className="scroll-fade-section" style={{ marginBottom: "48px", maxWidth: "1200px", margin: "0 auto", marginTop: "60px" }}>
