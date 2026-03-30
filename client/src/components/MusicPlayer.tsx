@@ -213,6 +213,7 @@ function MusicPlayer({
           <img
             src={currentBeat.artwork_url || "/uploads/artwork/metallic-logo.png"}
             alt={currentBeat.title}
+            onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
             style={{ width: "84px", height: "84px", objectFit: "cover", borderRadius: "2px", marginLeft: "-16px", marginRight: "0" }}
           />
           <div style={{ flex: 1, display: "flex", alignItems: "center", gap: "12px" }}>

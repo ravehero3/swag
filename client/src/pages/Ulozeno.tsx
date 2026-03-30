@@ -386,6 +386,7 @@ function Ulozeno() {
                         <img
                           src={item.item_data.artwork_url || "/uploads/artwork/metallic-logo.png"}
                           alt={item.item_data.title}
+                          onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
                           style={{ width: "100%", height: "100%", objectFit: "cover" }}
                         />
                         <button

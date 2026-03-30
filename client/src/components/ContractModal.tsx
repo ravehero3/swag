@@ -154,6 +154,7 @@ function ContractModal({ beat, isOpen, onClose, onAddToCart, onPlay, isPlaying }
                   <img
                     src={beat.artwork_url || "/uploads/artwork/metallic-logo.png"}
                     alt={beat.title}
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
                     style={{ width: "100px", height: "100px", objectFit: "cover", borderRadius: "4px" }}
                   />
                   <button

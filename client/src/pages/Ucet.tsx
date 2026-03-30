@@ -147,7 +147,8 @@ export default function Ucet() {
               {savedItems.slice(0, 4).map((item) => (
                 <div key={`${item.item_type}-${item.item_id}`} style={{ padding: "16px", background: "#0a0a0a", border: "1px solid #333", borderRadius: "8px" }}>
                   <img 
-                    src={item.item_data?.artwork_url || "/uploads/artwork/white-cover.png"} 
+                    src={item.item_data?.artwork_url || "/uploads/artwork/metallic-logo.png"}
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
                     alt={item.item_data?.title || "Product"} 
                     style={{ width: "100%", aspectRatio: "1/1", objectFit: "cover", borderRadius: "4px", marginBottom: "12px" }} 
                   />

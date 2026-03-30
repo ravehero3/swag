@@ -259,8 +259,9 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
                   }}
                 >
                   <img 
-                    src={item.image} 
+                    src={item.image || "/uploads/artwork/metallic-logo.png"}
                     alt={item.name}
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
                     style={{ 
                       width: '100%',
                       height: '100%',

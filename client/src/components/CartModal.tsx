@@ -211,8 +211,9 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                       }}
                     >
                       <img 
-                        src={item.artworkUrl || item.images?.[0]} 
+                        src={item.artworkUrl || item.images?.[0] || "/uploads/artwork/metallic-logo.png"} 
                         alt={item.title || item.name} 
+                        onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
                         style={{ width: '100%', aspectRatio: '1', objectFit: 'cover', borderRadius: '2px', opacity: 0.8 }} 
                       />
                       <div style={{ fontSize: '11px', color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

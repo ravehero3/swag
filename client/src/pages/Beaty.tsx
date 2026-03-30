@@ -467,6 +467,7 @@ function Beaty() {
                 <img
                   src={highlightedBeat.artwork_url || "/uploads/artwork/metallic-logo.png"}
                   alt={highlightedBeat.title}
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
                   style={{ width: "200px", height: "200px", objectFit: "cover", border: "1px solid #666", borderRadius: "4px" }}
                 />
                 <div
@@ -916,6 +917,7 @@ function Beaty() {
                 <img
                   src={beat.artwork_url || "/uploads/artwork/metallic-logo.png"}
                   alt={beat.title}
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
                   style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "4px" }}
                 />
               </div>
@@ -1389,7 +1391,7 @@ function Beaty() {
                   items={testSoundKits.map((kit) => ({
                     id: kit.id,
                     name: kit.title,
-                    image: kit.artwork_url,
+                    image: kit.artwork_url || "/uploads/artwork/metallic-logo.png",
                     price: kit.price,
                     isFree: kit.is_free,
                     onClick: () => {

@@ -113,8 +113,9 @@ function Cart() {
                     }}
                   >
                     <img
-                      src={item.artworkUrl}
+                      src={item.artworkUrl || "/uploads/artwork/metallic-logo.png"}
                       alt={item.title}
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
                       style={{ width: "60px", height: "60px", objectFit: "cover", borderRadius: "4px", border: "0.5px solid #333" }}
                     />
                     <div className="cart-item-info" style={{ flex: 1, textAlign: "left" }}>
