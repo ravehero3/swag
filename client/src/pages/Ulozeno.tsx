@@ -34,17 +34,21 @@ function Ulozeno() {
   const [currentItem, setCurrentItem] = useState<SavedItem | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
-  const { user, addToCart, cart } = useApp();
+  const { user, addToCart, cart, authLoading } = useApp();
   const [location] = useLocation();
 
   const cartCount = cart.length;
 
   useEffect(() => {
+    if (authLoading) return;
+
     if (user) {
       fetch("/api/saved", { credentials: "include" })
         .then((res) => res.json())
         .then((data) => {
-          if (Array.isArray(data)) setSavedItems(data);
+          if (Array.isArray(data)) {
+            setSavedItems(data.filter((item: SavedItem) => item.item_data != null));
+          }
         })
         .catch(console.error);
     } else {
@@ -70,7 +74,7 @@ function Ulozeno() {
       ];
       setSavedItems(combined);
     }
-  }, [user]);
+  }, [user, authLoading]);
 
   const playPreview = (item: SavedItem) => {
     if (!item.item_data.preview_url) return;
@@ -152,11 +156,28 @@ function Ulozeno() {
     fontWeight: 400,
   };
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center" style={{ minHeight: 'calc(100vh - 42px)' }}>
+        <style>{`
+          @keyframes vu-dot { 0%,80%,100%{transform:translateY(0);opacity:.3} 40%{transform:translateY(-6px);opacity:1} }
+          .vu-dot{width:6px;height:6px;border-radius:50%;background:#fff;animation:vu-dot 1.2s ease-in-out infinite}
+          .vu-dot:nth-child(2){animation-delay:.2s}.vu-dot:nth-child(3){animation-delay:.4s}
+        `}</style>
+        <div style={{ display: "flex", gap: "8px" }}>
+          <div className="vu-dot" />
+          <div className="vu-dot" />
+          <div className="vu-dot" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-black text-white fade-in overflow-x-hidden relative flex flex-col" style={{ minHeight: 'calc(100vh - 42px)' }}>
       <audio
         ref={audioRef}
-        src={currentItem?.item_data.preview_url}
+        src={currentItem?.item_data?.preview_url}
         onEnded={() => setIsPlaying(false)}
       />
 

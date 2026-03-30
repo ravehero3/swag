@@ -42,6 +42,7 @@ interface CartItem {
 interface AppContextType {
   user: User | null;
   setUser: (user: User | null) => void;
+  authLoading: boolean;
   cart: CartItem[];
   addToCart: (item: CartItem) => void;
   removeFromCart: (productId: number, productType: string) => void;
@@ -57,6 +58,7 @@ interface AppContextType {
 export const AppContext = createContext<AppContextType>({
   user: null,
   setUser: () => {},
+  authLoading: true,
   cart: [],
   addToCart: () => {},
   removeFromCart: () => {},
@@ -109,6 +111,7 @@ const PageLoader = () => (
 
 function App() {
   const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -147,6 +150,7 @@ function App() {
       } finally {
         clearTimeout(timeout);
         setLoading(false);
+        setAuthLoading(false);
       }
     };
 
@@ -216,7 +220,7 @@ function App() {
   const isPokladnaPage = location === "/pokladna";
 
   return (
-    <AppContext.Provider value={{ user, setUser, cart, addToCart, removeFromCart, clearCart, isCartOpen, setIsCartOpen, isNewsletterOpen, setIsNewsletterOpen, settings, refreshSettings }}>
+    <AppContext.Provider value={{ user, setUser, authLoading, cart, addToCart, removeFromCart, clearCart, isCartOpen, setIsCartOpen, isNewsletterOpen, setIsNewsletterOpen, settings, refreshSettings }}>
       <div style={{ minHeight: "100vh", background: "#000", display: "flex", flexDirection: "column" }}>
         <Header />
         <main style={{ flex: 1 }} className="fade-in">
