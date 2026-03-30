@@ -1,9 +1,12 @@
 # VOODOO808.COM - Digital Music Shop
 
-## Recent Changes (December 28, 2025)
-- Migrated from Supabase to Replit's built-in PostgreSQL database
-- Database tables are initialized automatically on server start
-- Using pg library directly for database operations (no Supabase client)
+## Recent Changes
+- Migrated to Replit environment with built-in PostgreSQL database
+- DATABASE_URL and all PGHOST/PGPORT/etc secrets provisioned via Replit
+- Vite config cleaned up: Express owns port 5000 and serves Vite as middleware in dev
+- Workflow configured: `npm run dev` on port 5000 (webview output)
+- Database tables are initialized automatically on server start via `initDatabase()`
+- Admin user auto-seeded on startup (admin@voodoo808.com)
 
 ## Overview
 E-commerce website for selling beats and drum kits to music producers. The site features:
