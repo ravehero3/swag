@@ -136,26 +136,28 @@ function Header() {
         )}
 
         <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#fff"
-            strokeWidth="2"
-            style={{
-              cursor: "pointer",
-              transition: "transform 0.2s ease, filter 0.2s ease",
-              transform: hoveredIcon === "heart" ? "scale(1.02)" : "scale(1)",
-              filter: hoveredIcon === "heart" ? "drop-shadow(0 0 8px rgba(255,0,0,0.5))" : "none",
-              flexShrink: 0,
-            }}
-            onClick={() => window.location.href = "/ulozeno"}
-            onMouseEnter={() => setHoveredIcon("heart")}
-            onMouseLeave={() => setHoveredIcon(null)}
-          >
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-          </svg>
+          <Link href="/ulozeno">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#fff"
+              strokeWidth="2"
+              style={{
+                cursor: "pointer",
+                transition: "transform 0.2s ease, filter 0.2s ease",
+                transform: hoveredIcon === "heart" ? "scale(1.02)" : "scale(1)",
+                filter: hoveredIcon === "heart" ? "drop-shadow(0 0 8px rgba(255,0,0,0.5))" : "none",
+                flexShrink: 0,
+                display: "block",
+              }}
+              onMouseEnter={() => setHoveredIcon("heart")}
+              onMouseLeave={() => setHoveredIcon(null)}
+            >
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+            </svg>
+          </Link>
           {savedCount > 0 && (
             <div
               style={{
