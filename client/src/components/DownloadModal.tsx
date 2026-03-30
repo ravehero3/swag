@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useLocation } from "wouter";
 
 interface Item {
@@ -16,10 +17,11 @@ interface DownloadModalProps {
 
 function DownloadModal({ item, isOpen, onClose, user }: DownloadModalProps) {
   const [, setLocation] = useLocation();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (!isOpen || !item) return null;
 
-  // Determine if this is a beat or sound kit based on available properties
   const isSoundKit = 'number_of_sounds' in item;
 
   const handleDownload = async () => {
@@ -29,11 +31,14 @@ function DownloadModal({ item, isOpen, onClose, user }: DownloadModalProps) {
       return;
     }
 
+    setIsLoading(true);
+    setError(null);
+
     try {
-      const endpoint = isSoundKit 
+      const endpoint = isSoundKit
         ? `/api/sound-kits/${item.id}/download`
         : `/api/beats/${item.id}/download`;
-        
+
       const response = await fetch(endpoint, {
         credentials: "include",
       });
@@ -43,6 +48,7 @@ function DownloadModal({ item, isOpen, onClose, user }: DownloadModalProps) {
         if (data.downloadUrl) {
           const a = document.createElement("a");
           a.href = data.downloadUrl;
+          a.download = item.title;
           a.target = "_blank";
           a.rel = "noopener noreferrer";
           document.body.appendChild(a);
@@ -52,10 +58,12 @@ function DownloadModal({ item, isOpen, onClose, user }: DownloadModalProps) {
         }
       } else {
         const err = await response.json().catch(() => ({}));
-        console.error("Download error:", err);
+        setError(err.error || "Stažení se nezdařilo. Zkuste to znovu.");
       }
-    } catch (error) {
-      console.error("Download error:", error);
+    } catch {
+      setError("Stažení se nezdařilo. Zkuste to znovu.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -113,22 +121,31 @@ function DownloadModal({ item, isOpen, onClose, user }: DownloadModalProps) {
             </h2>
           </div>
 
+          {error && (
+            <p style={{ fontSize: "12px", color: "#ff6b6b", marginBottom: "12px" }}>
+              {error}
+            </p>
+          )}
+
           <button
             onClick={handleDownload}
+            disabled={isLoading}
+            data-testid="button-download-free"
             className="btn-bounce"
             style={{
               padding: "14px 32px",
-              background: "#fff",
+              background: isLoading ? "#ccc" : "#fff",
               color: "#000",
               border: "none",
               borderRadius: "4px",
               fontSize: "13px",
               fontWeight: "bold",
-              cursor: "pointer",
+              cursor: isLoading ? "not-allowed" : "pointer",
               marginTop: "auto",
+              opacity: isLoading ? 0.7 : 1,
             }}
           >
-            STÁHNOUT ZDARMA
+            {isLoading ? "STAHOVÁNÍ..." : "STÁHNOUT ZDARMA"}
           </button>
 
           <button

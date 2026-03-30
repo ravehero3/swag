@@ -154,40 +154,16 @@ router.post("/bulk-delete", requireAdmin, async (req: Request, res: Response) =>
 router.get("/:id/download", requireAuth, async (req: Request, res: Response) => {
   try {
     const beatId = req.params.id;
-    const userId = req.session.userId;
-    const isAdmin = req.session.isAdmin;
 
-    // Only admins or users with a completed purchase can download the asset.
-    if (!isAdmin) {
-      const purchaseCheck = await pool.query(
-        `SELECT 1
-         FROM orders o
-         WHERE o.user_id = $1
-           AND o.status = 'completed'
-           AND EXISTS (
-             SELECT 1
-             FROM jsonb_array_elements(o.items) AS item
-             WHERE item->>'productType' = 'beat'
-               AND item->>'productId' = $2
-           )
-         LIMIT 1`,
-        [userId, beatId]
-      );
-
-      if (purchaseCheck.rows.length === 0) {
-        return res.status(403).json({ error: "Produkt nebyl zakoupen nebo objednávka není dokončena" });
-      }
-    }
-
-    const result = await pool.query("SELECT file_url FROM beats WHERE id = $1", [beatId]);
+    const result = await pool.query("SELECT preview_url FROM beats WHERE id = $1", [beatId]);
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "Beat nenalezen" });
     }
-    if (!result.rows[0].file_url) {
+    if (!result.rows[0].preview_url) {
       return res.status(404).json({ error: "Soubor není dostupný" });
     }
-    const url = await generateDownloadUrl(STORAGE_BUCKETS.ZIPS, result.rows[0].file_url);
-    res.json({ downloadUrl: url });
+
+    res.json({ downloadUrl: result.rows[0].preview_url });
   } catch (error) {
     res.status(500).json({ error: "Chyba při generování odkazu ke stažení" });
   }
