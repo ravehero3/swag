@@ -173,21 +173,20 @@ router.post("/", requireAdmin, upload.single("file"), async (req: Request, res: 
   const ext = req.file.originalname.split('.').pop()?.toLowerCase() || 'zip';
   const key = `${uuidv4()}.${ext}`;
 
-  // Artwork + preview: save directly to local public/uploads/ so they are always accessible
+  // Artwork + preview: upload to B2 (previews bucket) so URLs persist across deployments
   if (type === "artwork" || type === "preview") {
     try {
-      const dir = path.join(process.cwd(), `public/uploads/${type}`);
-      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-      const destPath = path.join(dir, key);
-      fs.copyFileSync(req.file.path, destPath);
+      const bucket = STORAGE_BUCKETS.PREVIEWS;
+      const fileStream = fs.createReadStream(req.file.path);
+      await uploadFile(bucket, key, fileStream, req.file.mimetype);
       fs.unlinkSync(req.file.path);
-      const url = `/uploads/${type}/${key}`;
-      res.json({ url, key, bucket: "local", size: req.file.size });
-      console.log(`✅ ${type} saved locally: ${url}`);
+      const url = getPublicUrl(bucket, key);
+      res.json({ url, key, bucket, size: req.file.size });
+      console.log(`✅ ${type} uploaded to B2: ${url}`);
       return;
     } catch (error) {
       if (req.file.path && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
-      console.error(`${type} local save failed:`, error);
+      console.error(`${type} B2 upload failed:`, error);
       res.status(500).json({ error: `${type} upload failed`, detail: String(error) });
       return;
     }

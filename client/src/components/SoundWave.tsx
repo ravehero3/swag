@@ -6,8 +6,8 @@ interface SoundWaveProps {
   audioUrl?: string;
 }
 
-const BAR_COUNT = 160;
-const FETCH_TIMEOUT_MS = 6000;
+const BAR_COUNT = 480;
+const FETCH_TIMEOUT_MS = 8000;
 
 function seededFakeWaveform(seed: string, count: number): number[] {
   let h = 0;
@@ -41,29 +41,53 @@ async function extractWaveform(url: string, count: number): Promise<number[] | n
     const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
     await audioContext.close();
 
-    // Use both channels if available for a more accurate reading
-    const channels = [];
+    const channels: Float32Array[] = [];
     for (let c = 0; c < Math.min(audioBuffer.numberOfChannels, 2); c++) {
       channels.push(audioBuffer.getChannelData(c));
     }
+    const sampleRate = audioBuffer.sampleRate;
     const length = channels[0].length;
     const samplesPerBin = Math.floor(length / count);
 
-    const peaks = Array.from({ length: count }, (_, i) => {
+    // One-pole low-pass filter ~100 Hz — captures 808 / sub-bass energy envelope
+    const alpha = 1 - Math.exp(-2 * Math.PI * 100 / sampleRate);
+
+    const rawPeaks = new Float32Array(count);
+    const bassPeaks = new Float32Array(count);
+    let lpState = 0;
+
+    for (let i = 0; i < count; i++) {
       const start = i * samplesPerBin;
       const end = Math.min(start + samplesPerBin, length);
-      let max = 0;
+      let maxRaw = 0;
+      let maxBass = 0;
       for (let j = start; j < end; j++) {
+        let s = 0;
         for (const ch of channels) {
           const abs = Math.abs(ch[j]);
-          if (abs > max) max = abs;
+          if (abs > s) s = abs;
         }
+        // Run LPF continuously across the whole signal so the state carries over bins
+        lpState = lpState * (1 - alpha) + s * alpha;
+        if (s > maxRaw) maxRaw = s;
+        if (lpState > maxBass) maxBass = lpState;
       }
-      return max;
-    });
+      rawPeaks[i] = maxRaw;
+      bassPeaks[i] = maxBass;
+    }
 
-    const maxPeak = Math.max(...peaks, 0.001);
-    return peaks.map((p) => p / maxPeak);
+    // Normalise both series independently
+    let maxR = 0.001, maxB = 0.001;
+    for (let i = 0; i < count; i++) {
+      if (rawPeaks[i] > maxR) maxR = rawPeaks[i];
+      if (bassPeaks[i] > maxB) maxB = bassPeaks[i];
+    }
+
+    // Blend: 60% raw transient + 55% bass envelope (clamped to 1)
+    // Bass adds extra height to 808-heavy bars without drowning out mid/hi detail
+    return Array.from({ length: count }, (_, i) =>
+      Math.min(1, (rawPeaks[i] / maxR) * 0.60 + (bassPeaks[i] / maxB) * 0.55)
+    );
   } catch {
     return null;
   }
@@ -119,7 +143,7 @@ function SoundWave({ audioRef, isPlaying, audioUrl }: SoundWaveProps) {
     const cx = canvas.getContext("2d");
     if (!cx) return;
 
-    cx.clearRect(0, 0, canvas.width / dpr * dpr, canvas.height / dpr * dpr);
+    cx.clearRect(0, 0, W, H);
 
     const peaks = peaksRef.current;
     if (peaks.length === 0) return;
@@ -129,37 +153,31 @@ function SoundWave({ audioRef, isPlaying, audioUrl }: SoundWaveProps) {
     const midY = H / 2;
     const maxAmp = midY * 0.92;
 
-    // Bar geometry: thin bars with small gap between them
     const slotW = W / count;
-    const barW = Math.max(1.5, slotW * 0.52);
+    const barW = Math.max(1, slotW * 0.55);
     const gap = slotW - barW;
 
     const playheadBar = prog * count;
 
     for (let i = 0; i < count; i++) {
       const x = i * slotW + gap / 2;
-      const amp = Math.max(peaks[i] * maxAmp, 1.5);
+      const amp = Math.max(peaks[i] * maxAmp, 1.2);
 
       const isPlayed = i < playheadBar;
-      const isHead = Math.abs(i - playheadBar) < 1.0;
+      const isHead = Math.abs(i - playheadBar) < 1.2;
 
       if (isHead) {
-        // Playhead bar — bright white
         cx.fillStyle = "rgba(255,255,255,1)";
       } else if (isPlayed) {
-        // Played bars — solid white
         cx.fillStyle = "rgba(255,255,255,0.85)";
       } else {
-        // Unplayed bars — dim
-        cx.fillStyle = "rgba(255,255,255,0.18)";
+        cx.fillStyle = "rgba(255,255,255,0.09)";
       }
 
-      // Draw bar symmetrically from center
       const barH = amp * 2;
       const barY = midY - amp;
+      const radius = Math.min(barW / 2, 1.5);
 
-      // Rounded bar using rounded rect
-      const radius = Math.min(barW / 2, 2);
       cx.beginPath();
       if (cx.roundRect) {
         cx.roundRect(x, barY, barW, barH, radius);
