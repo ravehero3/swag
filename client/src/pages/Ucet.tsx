@@ -143,9 +143,18 @@ export default function Ucet() {
           {savedItems.length === 0 ? (
             <p style={{ color: "#666" }}>Nemáte žádné uložené produkty.</p>
           ) : (
+            <>
+            <style dangerouslySetInnerHTML={{ __html: `
+              .ucet-saved-item {
+                transition: transform 0.2s ease;
+              }
+              .ucet-saved-item:hover {
+                transform: scale(1.02);
+              }
+            `}} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "20px" }}>
               {savedItems.slice(0, 4).map((item) => (
-                <div key={`${item.item_type}-${item.item_id}`} style={{ padding: "16px", background: "#0a0a0a", border: "1px solid #333", borderRadius: "8px" }}>
+                <div key={`${item.item_type}-${item.item_id}`} className="ucet-saved-item" style={{ padding: "16px", background: "#0a0a0a", border: "1px solid #333", borderRadius: "8px" }}>
                   <img 
                     src={item.item_data?.artwork_url || "/uploads/artwork/metallic-logo.png"}
                     onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
@@ -157,6 +166,7 @@ export default function Ucet() {
                 </div>
               ))}
             </div>
+            </>
           )}
         </section>
       </div>
