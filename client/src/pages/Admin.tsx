@@ -159,10 +159,10 @@ function Admin() {
   const [, navigate] = useLocation();
   const initialTab = (() => {
     const p = new URLSearchParams(window.location.search).get("tab");
-    const valid = ["beats", "kits", "orders", "licenses", "settings", "assets", "promo"];
-    return (valid.includes(p || "") ? p : "orders") as "beats" | "kits" | "orders" | "licenses" | "settings" | "assets" | "promo";
+    const valid = ["beats", "kits", "orders", "licenses", "settings", "assets", "promo", "seo"];
+    return (valid.includes(p || "") ? p : "orders") as "beats" | "kits" | "orders" | "licenses" | "settings" | "assets" | "promo" | "seo";
   })();
-  const [tab, setTab] = useState<"beats" | "kits" | "orders" | "licenses" | "settings" | "assets" | "promo">(initialTab);
+  const [tab, setTab] = useState<"beats" | "kits" | "orders" | "licenses" | "settings" | "assets" | "promo" | "seo">(initialTab);
   const [beats, setBeats] = useState<Beat[]>([]);
   const [kits, setKits] = useState<SoundKit[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
@@ -280,14 +280,14 @@ function Admin() {
       <h1 style={{ marginBottom: "24px", color: "#666" }}>Admin Panel</h1>
 
       <div style={{ display: "flex", gap: "12px", marginBottom: "24px", flexWrap: "wrap", justifyContent: "center" }}>
-        {["beats", "kits", "orders", "licenses", "settings", "assets", "promo"].map((t) => (
+        {["beats", "kits", "orders", "licenses", "settings", "assets", "promo", "seo"].map((t) => (
           <button
             key={t}
             className={tab === t ? "btn btn-filled" : "btn btn-admin"}
             onClick={() => setTab(t as any)}
             style={tab !== t ? { borderColor: "#333", color: "#666" } : {}}
           >
-            {t === "beats" ? "Beaty" : t === "kits" ? "Zvuky" : t === "orders" ? "Objednávky" : t === "licenses" ? "Licence" : t === "settings" ? "Nastavení" : t === "assets" ? "Assety" : "Promo kódy"}
+            {t === "beats" ? "Beaty" : t === "kits" ? "Zvuky" : t === "orders" ? "Objednávky" : t === "licenses" ? "Licence" : t === "settings" ? "Nastavení" : t === "assets" ? "Assety" : t === "promo" ? "Promo kódy" : "SEO"}
           </button>
         ))}
       </div>
@@ -322,6 +322,7 @@ function Admin() {
         {tab === "settings" && <SettingsTab settings={settings} onRefresh={refreshSettings} />}
         {tab === "assets" && <AssetsTab />}
         {tab === "promo" && <PromoCodesTab />}
+        {tab === "seo" && <SEOTab settings={settings} onRefresh={refreshSettings} />}
       </div>
     </div>
   );
@@ -1469,11 +1470,245 @@ function LicensesTab({ licenses, onRefresh }: any) {
   );
 }
 
+function CharCounter({ value, ideal, max }: { value: string; ideal: [number, number]; max: number }) {
+  const len = value.length;
+  const color = len >= ideal[0] && len <= ideal[1] ? "#4caf50" : len > 0 && len <= max ? "#f59e0b" : len > max ? "#ef4444" : "#555";
+  return (
+    <span style={{ fontSize: "11px", color, marginLeft: "6px" }}>
+      {len}/{max}
+    </span>
+  );
+}
+
+function GooglePreview({ title, description, url }: { title: string; description: string; url: string }) {
+  const displayTitle = title.length > 65 ? title.slice(0, 62) + "..." : title;
+  const displayDesc = description.length > 165 ? description.slice(0, 162) + "..." : description;
+  return (
+    <div style={{ background: "#fff", borderRadius: "8px", padding: "16px 20px", maxWidth: "600px", fontFamily: "Arial, sans-serif" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
+        <div style={{ width: "28px", height: "28px", borderRadius: "50%", background: "#222", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <span style={{ fontSize: "12px", color: "#fff", fontWeight: "bold" }}>V</span>
+        </div>
+        <div>
+          <div style={{ fontSize: "14px", color: "#202124", fontWeight: 500 }}>VOODOO808</div>
+          <div style={{ fontSize: "12px", color: "#5f6368" }}>{url}</div>
+        </div>
+      </div>
+      <div style={{ fontSize: "20px", color: "#1a0dab", lineHeight: "1.3", marginBottom: "4px", cursor: "pointer" }}>
+        {displayTitle || <span style={{ color: "#ccc" }}>Nadpis stránky...</span>}
+      </div>
+      <div style={{ fontSize: "14px", color: "#4d5156", lineHeight: "1.5" }}>
+        {displayDesc || <span style={{ color: "#ccc" }}>Popis stránky...</span>}
+      </div>
+    </div>
+  );
+}
+
+function SEOSection({
+  label, url, titleKey, descKey, keywordsKey, values, onChange, onSave, saving, saved,
+}: {
+  label: string; url: string; titleKey: string; descKey: string; keywordsKey: string;
+  values: Record<string, string>;
+  onChange: (key: string, val: string) => void;
+  onSave: () => void;
+  saving: boolean;
+  saved: boolean;
+}) {
+  const title = values[titleKey] || "";
+  const description = values[descKey] || "";
+  const keywords = values[keywordsKey] || "";
+  const fieldStyle: React.CSSProperties = { width: "100%", background: "#0a0a0a", border: "1px solid #2a2a2a", color: "#fff", padding: "8px 10px", fontSize: "13px", borderRadius: "3px", fontFamily: "inherit", boxSizing: "border-box" };
+  const labelStyle: React.CSSProperties = { display: "block", fontSize: "11px", color: "#666", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "5px" };
+
+  return (
+    <div style={{ border: "1px solid #1f1f1f", borderRadius: "4px", padding: "20px", marginBottom: "16px" }}>
+      <div style={{ fontSize: "12px", color: "#888", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "16px", borderBottom: "1px solid #1a1a1a", paddingBottom: "10px" }}>
+        {label}
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+          <div>
+            <label style={labelStyle}>
+              Titulek stránky
+              <CharCounter value={title} ideal={[50, 65]} max={70} />
+            </label>
+            <input
+              value={title}
+              onChange={(e) => onChange(titleKey, e.target.value)}
+              placeholder="Titulek pro Google..."
+              style={fieldStyle}
+              data-testid={`input-seo-title-${titleKey}`}
+            />
+            <div style={{ fontSize: "11px", color: "#444", marginTop: "3px" }}>Ideálně 50–65 znaků</div>
+          </div>
+
+          <div>
+            <label style={labelStyle}>
+              Meta popis
+              <CharCounter value={description} ideal={[140, 165]} max={180} />
+            </label>
+            <textarea
+              value={description}
+              onChange={(e) => onChange(descKey, e.target.value)}
+              placeholder="Krátký popis stránky pro Google..."
+              rows={3}
+              style={{ ...fieldStyle, resize: "vertical", lineHeight: "1.5" }}
+              data-testid={`textarea-seo-desc-${descKey}`}
+            />
+            <div style={{ fontSize: "11px", color: "#444", marginTop: "3px" }}>Ideálně 140–165 znaků</div>
+          </div>
+
+          <div>
+            <label style={labelStyle}>Klíčová slova (oddělená čárkou)</label>
+            <input
+              value={keywords}
+              onChange={(e) => onChange(keywordsKey, e.target.value)}
+              placeholder="slovo, fráze, další slovo..."
+              style={fieldStyle}
+              data-testid={`input-seo-keywords-${keywordsKey}`}
+            />
+          </div>
+
+          <button
+            className="btn btn-filled"
+            onClick={onSave}
+            disabled={saving}
+            style={{ alignSelf: "flex-start", opacity: saving ? 0.6 : 1 }}
+            data-testid={`button-save-seo-${titleKey}`}
+          >
+            {saved ? "✓ Uloženo" : saving ? "Ukládám..." : "Uložit"}
+          </button>
+        </div>
+
+        <div>
+          <label style={{ ...labelStyle, marginBottom: "10px" }}>Náhled ve výsledcích Google</label>
+          <GooglePreview title={title} description={description} url={url} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SEOTab({ settings, onRefresh }: any) {
+  const [values, setValues] = useState<Record<string, string>>({
+    seo_site_name: settings.seo_site_name || "VOODOO808",
+    seo_og_image: settings.seo_og_image || "",
+    seo_home_title: settings.seo_home_title || "",
+    seo_home_description: settings.seo_home_description || "",
+    seo_home_keywords: settings.seo_home_keywords || "",
+    seo_beaty_title: settings.seo_beaty_title || "",
+    seo_beaty_description: settings.seo_beaty_description || "",
+    seo_beaty_keywords: settings.seo_beaty_keywords || "",
+    seo_zvuky_title: settings.seo_zvuky_title || "",
+    seo_zvuky_description: settings.seo_zvuky_description || "",
+    seo_zvuky_keywords: settings.seo_zvuky_keywords || "",
+  });
+  const [saving, setSaving] = useState<Record<string, boolean>>({});
+  const [saved, setSaved] = useState<Record<string, boolean>>({});
+
+  const handleChange = (key: string, val: string) => setValues(prev => ({ ...prev, [key]: val }));
+
+  const saveKeys = async (sectionId: string, keys: string[]) => {
+    setSaving(prev => ({ ...prev, [sectionId]: true }));
+    try {
+      await Promise.all(keys.map(key =>
+        fetch("/api/admin/settings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ key, value: values[key] }),
+        })
+      ));
+      setSaved(prev => ({ ...prev, [sectionId]: true }));
+      setTimeout(() => setSaved(prev => ({ ...prev, [sectionId]: false })), 2500);
+      onRefresh();
+    } finally {
+      setSaving(prev => ({ ...prev, [sectionId]: false }));
+    }
+  };
+
+  const fieldStyle: React.CSSProperties = { width: "100%", background: "#0a0a0a", border: "1px solid #2a2a2a", color: "#fff", padding: "8px 10px", fontSize: "13px", borderRadius: "3px", fontFamily: "inherit", boxSizing: "border-box" };
+  const labelStyle: React.CSSProperties = { display: "block", fontSize: "11px", color: "#666", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "5px" };
+
+  return (
+    <div>
+      <div style={{ fontSize: "12px", color: "#555", lineHeight: "1.7", marginBottom: "24px", padding: "14px", border: "1px solid #1a1a1a", borderRadius: "3px", background: "#0a0a0a" }}>
+        Zde nastavíš, jak se tvůj web zobrazuje ve výsledcích Google. Titulek a popis vidí zákazník dřív než klikne na stránku — dobře napsané SEO přivede víc návštěvníků.
+      </div>
+
+      <div style={{ marginBottom: "24px", padding: "16px", border: "1px solid #1f1f1f", borderRadius: "4px" }}>
+        <div style={{ fontSize: "12px", color: "#888", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "14px", borderBottom: "1px solid #1a1a1a", paddingBottom: "10px" }}>
+          Globální nastavení
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "14px" }}>
+          <div>
+            <label style={labelStyle}>Název webu</label>
+            <input value={values.seo_site_name} onChange={(e) => handleChange("seo_site_name", e.target.value)} style={fieldStyle} data-testid="input-seo-site-name" />
+          </div>
+          <div>
+            <label style={labelStyle}>OG obrázek (URL sdílení na sociálních sítích)</label>
+            <input value={values.seo_og_image} onChange={(e) => handleChange("seo_og_image", e.target.value)} placeholder="https://..." style={fieldStyle} data-testid="input-seo-og-image" />
+          </div>
+        </div>
+        <button
+          className="btn btn-filled"
+          onClick={() => saveKeys("global", ["seo_site_name", "seo_og_image"])}
+          disabled={saving["global"]}
+          style={{ opacity: saving["global"] ? 0.6 : 1 }}
+          data-testid="button-save-seo-global"
+        >
+          {saved["global"] ? "✓ Uloženo" : saving["global"] ? "Ukládám..." : "Uložit"}
+        </button>
+      </div>
+
+      <SEOSection
+        label="Domovská stránka (voodoo808.com/)"
+        url="voodoo808.com"
+        titleKey="seo_home_title"
+        descKey="seo_home_description"
+        keywordsKey="seo_home_keywords"
+        values={values}
+        onChange={handleChange}
+        onSave={() => saveKeys("home", ["seo_home_title", "seo_home_description", "seo_home_keywords"])}
+        saving={!!saving["home"]}
+        saved={!!saved["home"]}
+      />
+
+      <SEOSection
+        label="Beaty (voodoo808.com/beaty)"
+        url="voodoo808.com › beaty"
+        titleKey="seo_beaty_title"
+        descKey="seo_beaty_description"
+        keywordsKey="seo_beaty_keywords"
+        values={values}
+        onChange={handleChange}
+        onSave={() => saveKeys("beaty", ["seo_beaty_title", "seo_beaty_description", "seo_beaty_keywords"])}
+        saving={!!saving["beaty"]}
+        saved={!!saved["beaty"]}
+      />
+
+      <SEOSection
+        label="Zvuky (voodoo808.com/zvuky)"
+        url="voodoo808.com › zvuky"
+        titleKey="seo_zvuky_title"
+        descKey="seo_zvuky_description"
+        keywordsKey="seo_zvuky_keywords"
+        values={values}
+        onChange={handleChange}
+        onSave={() => saveKeys("zvuky", ["seo_zvuky_title", "seo_zvuky_description", "seo_zvuky_keywords"])}
+        saving={!!saving["zvuky"]}
+        saved={!!saved["zvuky"]}
+      />
+    </div>
+  );
+}
+
 function SettingsTab({ settings, onRefresh }: any) {
   const [localSettings, setLocalSettings] = useState(settings);
 
   const handleSave = async (key: string, value: string) => {
-    await fetch("/api/settings", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ key, value }) });
+    await fetch("/api/admin/settings", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ key, value }) });
     onRefresh();
   };
 

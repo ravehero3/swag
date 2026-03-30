@@ -13,9 +13,10 @@ E-commerce website for selling beats and drum kits to music producers. The site 
 - **BEATY page**: Beat player with playlist, preview functionality, and purchasing
 - **ZVUKY page**: Sound kits/drum kits grid with preview audio, artwork, and downloads
 - **User authentication**: Login/register system for customers
-- **Admin panel**: Upload and manage products, artwork, preview audio, ZIP files
+- **Admin panel**: Upload and manage products, artwork, preview audio, ZIP files. Has SEO management tab.
 - **Shopping cart**: Add items and checkout
 - **Order management**: Email delivery of digital files after purchase
+- **SEO management**: Admin panel "SEO" tab lets you edit title, description, keywords and OG image per page (Home, Beaty, Zvuky) with a live Google preview. Settings stored in the `settings` DB table, applied via the `useSEO` hook on each page.
 
 ## Tech Stack
 - **Frontend**: React with TypeScript, Vite, Wouter (routing)

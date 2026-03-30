@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation, Link } from "wouter";
 import { useApp } from "../App.js";
 import { useScrollAnimation } from "../hooks/useScrollAnimation.js";
+import { useSEO } from "../hooks/useSEO.js";
 import ContractModal from "../components/ContractModal.js";
 import DownloadModal from "../components/DownloadModal.js";
 import MusicPlayer from "../components/MusicPlayer.js";
@@ -189,7 +190,8 @@ function Beaty() {
   const soundKitsRef = useScrollAnimation();
   const artistCarouselRef = useScrollAnimation();
   const { user, addToCart, settings } = useApp() as any;
-  
+  useSEO("beaty");
+
   // Determine if we're on home page or beaty page
   const isHomePage = false;
   const beatLimit = undefined;

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useApp } from "../App.js";
 import ProductsGrid from "../components/ProductsGrid.js";
+import { useSEO } from "../hooks/useSEO.js";
 
 interface SoundKit {
   id: number;
@@ -177,6 +178,7 @@ function Zvuky() {
   const [savedKits, setSavedKits] = useState<Set<number>>(new Set());
   const audioRef = useRef<HTMLAudioElement>(null);
   const { user, addToCart, settings } = useApp();
+  useSEO("zvuky");
 
   useEffect(() => {
     fetch("/api/sound-kits")

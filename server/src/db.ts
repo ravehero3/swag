@@ -167,7 +167,18 @@ export async function initDatabase() {
       INSERT INTO settings (key, value) VALUES 
         ('header_logo', '/uploads/artwork/voodoo808-logo.png'),
         ('beaty_video_main', '/uploads/artwork/voodoo808-video.mp4'),
-        ('beaty_video_alt', '/uploads/hrad-na-web.mov')
+        ('beaty_video_alt', '/uploads/hrad-na-web.mov'),
+        ('seo_site_name', 'VOODOO808'),
+        ('seo_og_image', ''),
+        ('seo_home_title', 'VOODOO808 – Beaty a Zvuky pro Hudební Producenty'),
+        ('seo_home_description', 'Nakupte exkluzivní beaty a zvukové sady pro tvorbu hudby. VOODOO808 nabízí prémiové drum kity a beaty pro české hudební producenty.'),
+        ('seo_home_keywords', 'beaty, zvuky, drum kit, hudební producenti, tvorba hudby, VOODOO808'),
+        ('seo_beaty_title', 'Beaty – VOODOO808 | Kup Beat Online'),
+        ('seo_beaty_description', 'Prohlédni si katalog beatů. Stáhni prémiové beaty pro tvorbu hudby. Licence na míru každému producentovi.'),
+        ('seo_beaty_keywords', 'koupit beat, beaty online, trap beaty, hip hop beaty, český beat'),
+        ('seo_zvuky_title', 'Zvuky & Drum Kity – VOODOO808'),
+        ('seo_zvuky_description', 'Prémiové zvukové sady a drum kity pro hudební producenty. One-shot sady, loop kity a více – vše ke stažení.'),
+        ('seo_zvuky_keywords', 'drum kit, zvuky pro producenty, one shot kit, loop kit, sample pack')
       ON CONFLICT (key) DO NOTHING;
     `);
     
