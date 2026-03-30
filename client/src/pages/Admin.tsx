@@ -764,7 +764,6 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
             <th style={{ textAlign: "left", padding: "12px", width: "56px" }}></th>
             <th style={{ textAlign: "left", padding: "12px" }}>Název</th>
             <th style={{ textAlign: "left", padding: "12px" }}>BPM</th>
-            <th style={{ textAlign: "left", padding: "12px" }}>Cena</th>
             <th style={{ textAlign: "left", padding: "12px" }}>Status</th>
             <th style={{ textAlign: "left", padding: "12px" }}>Featured</th>
             <th style={{ textAlign: "right", padding: "12px" }}>Akce</th>
@@ -809,7 +808,6 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
               </td>
               <td style={{ padding: "12px" }}>{beat.title}</td>
               <td style={{ padding: "12px" }}>{beat.bpm}</td>
-              <td style={{ padding: "12px" }}>{beat.price} CZK</td>
               <td style={{ padding: "12px" }}>{beat.is_published ? "Publikováno" : "Skryto"}</td>
               <td style={{ padding: "12px" }}>{beat.is_highlighted ? "Featured" : ""}</td>
               <td style={{ padding: "12px", textAlign: "right" }} onClick={(e) => e.stopPropagation()}>

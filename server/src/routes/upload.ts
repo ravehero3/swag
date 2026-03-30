@@ -118,7 +118,7 @@ function getPublicUrl(bucket: string, key: string): string {
     return `${process.env.B2_PUBLIC_BASE_URL}/${key}`;
   }
   const endpoint = process.env.B2_ENDPOINT || "";
-  return `https://${bucket}.${endpoint}/${key}`;
+  return `https://${endpoint}/${bucket}/${key}`;
 }
 
 // Return the full public URL for a given key + bucket type (preview or artwork)
