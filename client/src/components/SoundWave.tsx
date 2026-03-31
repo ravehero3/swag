@@ -132,35 +132,37 @@ function SoundWave({ audioRef, isPlaying, audioUrl }: SoundWaveProps) {
     const gap = slotW - barW;
 
     if (isLoadingRef.current) {
-      // Animated loading: flowing sine-wave bars with a shimmer sweep
+      // Small pulsing sound wave icon — 7 bars centered on the canvas
       const t = Date.now() / 1000;
-      const shimmerPos = ((t * 0.5) % 1.3) - 0.15;
+      const numBars = 7;
+      const iconBarW = 3;
+      const iconGap = 4;
+      const totalIconW = numBars * iconBarW + (numBars - 1) * iconGap;
+      const startX = (W - totalIconW) / 2;
 
-      for (let i = 0; i < count; i++) {
-        const x = i * slotW + gap / 2;
-        const f = i / count;
+      // Height profile: taller in the middle, shorter on edges
+      const heightProfile = [0.30, 0.55, 0.78, 1.0, 0.78, 0.55, 0.30];
 
-        // Layered sine waves for organic pulsing shape
-        const wave =
-          Math.sin(t * 1.8 + f * Math.PI * 6) * 0.30 +
-          Math.sin(t * 2.9 + f * Math.PI * 10) * 0.15 +
-          Math.sin(t * 0.9 + f * Math.PI * 3) * 0.20;
-        const amp = Math.max((0.28 + wave) * maxAmp, 1.5);
+      // Global pulse envelope — slow breathe in/out
+      const pulse = 0.70 + Math.sin(t * 2.2) * 0.30;
 
-        // Shimmer: a bright band sweeping left to right
-        const distFromShimmer = Math.abs(f - shimmerPos);
-        const shimmer = Math.max(0, 1 - distFromShimmer * 28) * 0.45;
+      for (let i = 0; i < numBars; i++) {
+        // Each bar has its own phase offset for a ripple effect
+        const phase = (i / numBars) * Math.PI * 2;
+        const ripple = 0.85 + Math.sin(t * 3.5 + phase) * 0.15;
+        const amp = heightProfile[i] * maxAmp * 0.62 * pulse * ripple;
 
-        cx.fillStyle = `rgba(255,255,255,${0.10 + shimmer})`;
-
-        const barH = amp * 2;
+        const x = startX + i * (iconBarW + iconGap);
+        const barH = Math.max(amp * 2, 3);
         const barY = midY - amp;
-        const radius = Math.min(barW / 2, 1.5);
+        const radius = iconBarW / 2;
+
+        cx.fillStyle = `rgba(255,255,255,0.70)`;
         cx.beginPath();
         if (cx.roundRect) {
-          cx.roundRect(x, barY, barW, barH, radius);
+          cx.roundRect(x, barY, iconBarW, barH, radius);
         } else {
-          cx.rect(x, barY, barW, barH);
+          cx.rect(x, barY, iconBarW, barH);
         }
         cx.fill();
       }
