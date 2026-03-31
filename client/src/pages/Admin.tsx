@@ -151,6 +151,7 @@ interface LicenseType {
   terms_text: string;
   is_negotiable: boolean;
   is_active: boolean;
+  contract_template: string | null;
   created_at: string;
 }
 
@@ -1335,6 +1336,92 @@ function RevenueChart({ orders }: { orders: any[] }) {
   );
 }
 
+function OrdersList({ orders }: { orders: any[] }) {
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "60px 1fr 120px 90px 100px 100px", gap: "8px", padding: "8px", fontSize: "11px", color: "#555", textTransform: "uppercase", letterSpacing: "0.06em", borderBottom: "1px solid #1a1a1a" }}>
+        <div>ID</div><div>Email / Kupující</div><div>Celkem</div><div>Status</div><div>Datum</div><div>Akce</div>
+      </div>
+      {orders.map((order: any) => {
+        const isPaid = order.status === "paid" || order.status === "completed";
+        const items: any[] = Array.isArray(order.items) ? order.items : [];
+        const beatItems = items.filter((i: any) => i.productType === "beat");
+        const isExpanded = expandedId === order.id;
+        return (
+          <div key={order.id} style={{ border: "1px solid #1a1a1a", borderRadius: "3px", overflow: "hidden" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "60px 1fr 120px 90px 100px 100px", gap: "8px", padding: "10px 8px", alignItems: "center", background: isExpanded ? "#111" : "transparent", cursor: "pointer" }}
+              onClick={() => setExpandedId(isExpanded ? null : order.id)}>
+              <div style={{ fontSize: "12px", color: "#666" }}>#{order.id}</div>
+              <div>
+                <div style={{ fontSize: "13px" }}>{order.email}</div>
+                {order.buyer_legal_name && <div style={{ fontSize: "11px", color: "#777", marginTop: "2px" }}>{order.buyer_legal_name}{order.buyer_artist_name ? ` · ${order.buyer_artist_name}` : ""}</div>}
+              </div>
+              <div style={{ fontSize: "13px", fontWeight: 600 }}>{Number(order.total).toLocaleString("cs-CZ")} Kč</div>
+              <div>
+                <span style={{ fontSize: "11px", padding: "3px 7px", borderRadius: "3px", background: isPaid ? "rgba(36,224,83,0.12)" : "rgba(255,255,255,0.05)", color: isPaid ? "#24e053" : "#888", border: `1px solid ${isPaid ? "rgba(36,224,83,0.3)" : "#2a2a2a"}` }}>
+                  {order.status}
+                </span>
+              </div>
+              <div style={{ fontSize: "12px", color: "#666" }}>{new Date(order.created_at).toLocaleDateString("cs-CZ")}</div>
+              <div style={{ fontSize: "12px", color: "#555" }}>{isExpanded ? "▲" : "▼"}</div>
+            </div>
+            {isExpanded && (
+              <div style={{ borderTop: "1px solid #1a1a1a", padding: "14px 12px", background: "#090909" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px", marginBottom: "14px" }}>
+                  <div>
+                    <div style={{ fontSize: "10px", color: "#555", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>Právní jméno</div>
+                    <div style={{ fontSize: "13px" }}>{order.buyer_legal_name || <span style={{ color: "#444" }}>—</span>}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: "10px", color: "#555", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>Umělecké jméno</div>
+                    <div style={{ fontSize: "13px" }}>{order.buyer_artist_name || <span style={{ color: "#444" }}>—</span>}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: "10px", color: "#555", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>Adresa</div>
+                    <div style={{ fontSize: "13px" }}>{order.buyer_address || <span style={{ color: "#444" }}>—</span>}</div>
+                  </div>
+                </div>
+                <div style={{ marginBottom: "12px" }}>
+                  <div style={{ fontSize: "10px", color: "#555", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "6px" }}>Položky objednávky</div>
+                  {items.map((item: any, idx: number) => (
+                    <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 0", borderBottom: "1px solid #141414", gap: "12px" }}>
+                      <div>
+                        <span style={{ fontSize: "13px" }}>{item.title}</span>
+                        <span style={{ fontSize: "11px", color: "#555", marginLeft: "8px" }}>{item.productType}</span>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                        <span style={{ fontSize: "13px" }}>{Number(item.price).toLocaleString("cs-CZ")} Kč</span>
+                        {item.productType === "beat" && (
+                          <a
+                            href={`/api/admin/orders/${order.id}/contract/${idx}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ fontSize: "11px", color: "#aaa", border: "1px solid #2a2a2a", borderRadius: "3px", padding: "3px 8px", textDecoration: "none", background: "#111" }}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            📄 Smlouva
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {beatItems.length > 0 && !order.buyer_legal_name && (
+                  <div style={{ fontSize: "11px", color: "#f59e0b", background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.2)", borderRadius: "3px", padding: "8px 10px" }}>
+                    ⚠ Kupující nevyplnil právní jméno a adresu — smlouva bude obsahovat pouze email.
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function OrdersTab({ orders }: any) {
   const totalRevenue = orders.reduce((s: number, o: any) => s + (Number(o.total) || 0), 0);
   const paidOrders = orders.filter((o: any) => o.status === "paid" || o.status === "completed");
@@ -1381,89 +1468,409 @@ function OrdersTab({ orders }: any) {
         )}
       </div>
 
-      {/* Orders table */}
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr style={{ borderBottom: "1px solid #333" }}>
-            <th style={{ textAlign: "left", padding: "12px 8px", fontSize: "11px", color: "#666", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 400 }}>ID</th>
-            <th style={{ textAlign: "left", padding: "12px 8px", fontSize: "11px", color: "#666", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 400 }}>Email</th>
-            <th style={{ textAlign: "left", padding: "12px 8px", fontSize: "11px", color: "#666", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 400 }}>Celkem</th>
-            <th style={{ textAlign: "left", padding: "12px 8px", fontSize: "11px", color: "#666", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 400 }}>Status</th>
-            <th style={{ textAlign: "left", padding: "12px 8px", fontSize: "11px", color: "#666", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 400 }}>Datum</th>
-          </tr>
-        </thead>
-        <tbody>
-          {orders.length === 0 && (
-            <tr><td colSpan={5} style={{ padding: "32px 8px", color: "#444", fontSize: "13px", textAlign: "center" }}>Žádné objednávky</td></tr>
-          )}
-          {orders.map((order: any) => (
-            <tr key={order.id} style={{ borderBottom: "1px solid #1a1a1a" }}>
-              <td style={{ padding: "12px 8px", color: "#666", fontSize: "13px" }}>#{order.id}</td>
-              <td style={{ padding: "12px 8px", fontSize: "13px" }}>{order.email}</td>
-              <td style={{ padding: "12px 8px", fontSize: "13px", fontWeight: 600 }}>{Number(order.total).toLocaleString("cs-CZ")} Kč</td>
-              <td style={{ padding: "12px 8px" }}>
-                <span style={{
-                  fontSize: "11px",
-                  padding: "3px 8px",
-                  borderRadius: "3px",
-                  background: order.status === "paid" || order.status === "completed" ? "rgba(36,224,83,0.12)" : "rgba(255,255,255,0.06)",
-                  color: order.status === "paid" || order.status === "completed" ? "#24e053" : "#888",
-                  border: `1px solid ${order.status === "paid" || order.status === "completed" ? "rgba(36,224,83,0.3)" : "#333"}`,
-                }}>
-                  {order.status}
-                </span>
-              </td>
-              <td style={{ padding: "12px 8px", fontSize: "13px", color: "#888" }}>{new Date(order.created_at).toLocaleDateString("cs-CZ")}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      {/* Orders list */}
+      {orders.length === 0 ? (
+        <div style={{ textAlign: "center", padding: "40px", color: "#444", fontSize: "13px" }}>Žádné objednávky</div>
+      ) : (
+        <OrdersList orders={orders} />
+      )}
     </div>
   );
 }
 
-function LicensesTab({ licenses, onRefresh }: any) {
-  const [form, setForm] = useState({ name: "", description: "", price: 0, file_types: [] as string[], terms_text: "", is_negotiable: false, is_active: true });
-  const [showForm, setShowForm] = useState(false);
+const DEFAULT_CONTRACT_TEMPLATE = `SMLUVNÍ STRANY
+Tato licenční smlouva (dále jen „Smlouva") je uzavřena dne {{DATUM}} (dále jen „Den účinnosti") mezi těmito stranami:
 
-  const handleSubmit = async (e: React.FormEvent) => {
+Nabyvatel licence: {{PRAVNI_JMENO}}, uměleckým jménem {{UMELECKE_JMENO}}, s bydlištěm na adrese {{ADRESA}}, Česká republika (dále jen „Nabyvatel").
+
+Poskytovatel licence: Vojtěch Vojkovský, uměleckým jménem VOODOO808, s bydlištěm na adrese Bedovická č. 193, Třebechovice pod Orebem, 503 46, Česká republika (dále jen „Poskytovatel").
+
+Tato Smlouva se řídí zákonem č. 89/2012 Sb., občanský zákoník (dále jen „OZ"), a zákonem č. 121/2000 Sb., o právu autorském (dále jen „AZ").
+
+PŘEDMĚT SMLOUVY
+Poskytovatel prohlašuje, že je nositelem majetkových autorských práv k hudebnímu dílu s názvem {{BEAT_NAZEV}} (dále jen „Dílo") ve smyslu § 12 a násl. AZ. Dílo bylo vytvořeno Vojtěchem Vojkovským („Autor") v rámci činnosti Poskytovatele.
+
+Dle § 46 AZ udělá Poskytovatel Nabyvateli níže specifikované oprávnění k výkonu práva Dílo užít.
+
+1. PRÁVO NA POŘÍZENÍ ZVUKOVÉHO ZÁZNAMU
+Poskytovatel udělí Nabyvateli exkluzivní licenci k zaznamenání vokální složky synchronizované s Dílem, zčásti nebo v celém rozsahu a v podstatě v jeho původní formě (dále jen „Zvukový záznam").
+
+2. PRÁVO NA ROZMNOŽOVÁNÍ A ROZŠIŘOVÁNÍ
+Poskytovatel udělí Nabyvateli exkluzivní licenci k užití Zvukového záznamu při rozmnožování, výrobě a rozšiřování ve formě gramofonových desek, kazet, CD, digitálních stažení, jiných zvukových nosičů a digitálních záznamů (souhrnně „Záznamy") po celém světě v neomezeném počtu kopií.
+
+Toto právo odpovídá § 13 a § 14 AZ (právo na rozmnožování a rozšiřování rozmnoženin díla).
+
+3. PRÁVO NA SDĚLOVÁNÍ VEŘEJNOSTI A STREAMOVÁNÍ
+Nabyvateli je uděleno oprávnění ke sdělování Zvukového záznamu veřejnosti prostřednictvím internetu bez omezení počtu stažení či streamů - jak bezplatných, tak pro komerční účely (např. Spotify, Apple Music a podobné platformy).
+
+Toto právo vychází z § 18 AZ (právo na sdělování díla veřejnosti).
+
+4. SYNCHRONIZAČNÍ PRÁVA
+Poskytovatel udělí Nabyvateli neomezená synchronizační práva k užití Díla v hudebních videích šířených online (YouTube, Vimeo apod.) bez omezení počtu přehrání.
+
+Neomezená synchronizační práva jsou rovněž udělena pro distribuci prostřednictvím televizního vysílání, filmů nebo počítačových her.
+
+5. PRÁVO NA VEŘEJNÉ PROVOZOVÁNÍ
+Poskytovatel udělí Nabyvateli exkluzivní licenci k užití Zvukového záznamu při neomezeném počtu nevýdělečných i výdělečných vystoupení, show a koncertů. Nabyvatel je oprávněn přijímat odměnu z vystoupení realizovaných na základě této licence.
+
+Toto právo odpovídá § 20 AZ (provozování díla ze záznamu a přenos provozování díla).
+
+6. PRÁVO NA VYSÍLÁNÍ
+Poskytovatel udělí Nabyvateli právo na vysílání Zvukového záznamu neomezeným počtem rozhlasových stanic.
+
+Toto právo odpovídá § 19 a § 21 AZ (vysílání díla rozhlasem nebo televizí).
+
+7. UVEDENÍ AUTORSTVÍ
+Nabyvatel je povinen v souladu s § 11 odst. 2 AZ uvádět původní autorství Díla přiměřeným způsobem ve všech médiích a formátech pod jménem „VOODOO808" – písemně kde je to možné, jinak ústně.
+
+8. ODMĚNA ZA LICENCI
+Jako protiplnění za práva udělená touto Smlouvou je Nabyvatel povinen zaplatit Poskytovateli jednorázovou odměnu ve výši {{CENA}}, splatnou Vojtěchu Vojkovskému, přičemž převzetí tohoto plnění je tímto potvrzeno.
+
+Pokud Nabyvatel nesplní povinnost platby, nedostojí jiným závazkům dle této Smlouvy nebo bude-li mít nedostatečný zůstatek na bankovním účtu, je Poskytovatel oprávněn Smlouvu vypovědět písemným oznámením doručeným Nabyvateli dle § 2001 a násl. OZ.
+
+Taková výpověď způsobí, že rozmnožování, výroba a/nebo distribuce Záznamů, za něž nebylo zaplaceno, bude posuzována jako porušení autorských práv dle AZ.
+
+Dle § 2 odst. 1 OZ a § 46 odst. 3 AZ musí být výpověď licence provedena písemnou formou. Licence zaniká uplynutím výpovědní doby, která činí 30 dní od doručení výpovědi.
+
+9. PŘEDÁNÍ DÍLA
+Dílo bude Nabyvateli předáno ve formě souboru ve vysoké kvalitě (WAV + stems) prostřednictvím e-mailu na adresu, kterou Nabyvatel Poskytovateli sdělí. Nabyvatel obdrží e-mail s přílohou nebo odkazem ke stažení Díla.
+
+10. ZVUKOVÉ VZORKY (SAMPLESY)
+Zajištění clearance práv třetích stran k případným zvukovým vzorkům obsaženým v Dílu je výlučnou odpovědností Nabyvatele.
+
+11. OMEZENÍ A NEPŘEVODITELNOST
+Tato licence je nepřevoditelná a vztahuje se výhradně na specifikované Dílo. Tato Smlouva představuje úplnou dohodu mezi Poskytovatelem a Nabyvatelem týkající se Díla a je závazná pro obě smluvní strany, jakož i pro jejich právní nástupce a zástupce.
+
+Dle § 48 AZ nelze licenci bez souhlasu autora postoupit třetí osobě, ledaže je licence převedena spolu s podnikem nebo jeho částí.
+
+12. AUTORSKÝ PODÍL A NAKLADATELSKÁ PRÁVA
+Ohledně nakladatelských práv a vlastnictví k podkladovému Dílu vtělenému do Zvukového záznamu smluvní strany sjednávají tento podíl:
+• Poskytovatel vlastní a spravuje 50 % tzv. „autorského podílu" (Writer's Share) podkladového Díla.
+• Poskytovatel vlastní a spravuje 50 % tzv. „nakladatelského podílu" (Publisher's Share) podkladového Díla.
+• Poskytovatel vlastní a spravuje 3 % tzv. „licenčních poplatků z masteru" (Master Royalties), vypočtených z čistého zisku po odečtení všech nákladů Nabyvatele.
+
+Rozdělení autorských podílů je v souladu s § 100 a násl. AZ. Strany mohou smluvně sjednat rozdělení výnosu z kolektivní správy práv (OSA, INTERGRAM apod.).
+
+13. ROZHODNÉ PRÁVO A ŘEŠENÍ SPORŮ
+Tato Smlouva se řídí právním řádem České republiky, zejména zákonem č. 89/2012 Sb., občanský zákoník, a zákonem č. 121/2000 Sb., autorský zákon, v jejich platném znění.
+
+Veškeré spory vzniklé z této Smlouvy budou strany řešit přednostně smírnou cestou. Nebude-li dosaženo dohody, rozhodne věcně a místně příslušný soud České republiky.
+
+PODPISY SMLUVNÍCH STRAN
+Smluvní strany prohlašují, že si tuto Smlouvu přečetly, že odpovídá jejich pravé a svobodné vůli a že ji uzavírají dobrovolně, nikoli v tísni ani za nápadně nevýhodných podmínek.
+
+Nabyvatel licence:
+Jméno: ________________________________
+Datum: ________________________________
+Podpis: ________________________________
+
+Poskytovatel licence:
+Vojtěch Vojkovský (VOODOO808)
+Datum: ________________________________
+Podpis: ________________________________`;
+
+const PLACEHOLDER_GUIDE = [
+  { ph: "{{DATUM}}", desc: "Datum uzavření smlouvy (automaticky)" },
+  { ph: "{{PRAVNI_JMENO}}", desc: "Právní jméno kupujícího" },
+  { ph: "{{UMELECKE_JMENO}}", desc: "Umělecké jméno kupujícího" },
+  { ph: "{{ADRESA}}", desc: "Adresa kupujícího" },
+  { ph: "{{BEAT_NAZEV}}", desc: "Název beatu z objednávky" },
+  { ph: "{{CENA}}", desc: "Cena licence (automaticky)" },
+];
+
+function LicensesTab({ licenses, onRefresh }: any) {
+  const emptyForm = { name: "", description: "", price: 0, file_types: [] as string[], terms_text: "", is_negotiable: false, is_active: true, contract_template: DEFAULT_CONTRACT_TEMPLATE };
+  const [showCreate, setShowCreate] = useState(false);
+  const [createForm, setCreateForm] = useState(emptyForm);
+  const [editId, setEditId] = useState<number | null>(null);
+  const [editForm, setEditForm] = useState<any>(null);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [previewHtml, setPreviewHtml] = useState<string | null>(null);
+
+  const fieldStyle: React.CSSProperties = { width: "100%", background: "#0a0a0a", border: "1px solid #2a2a2a", color: "#fff", padding: "8px 10px", fontSize: "13px", borderRadius: "3px", fontFamily: "inherit", boxSizing: "border-box" };
+  const labelStyle: React.CSSProperties = { display: "block", fontSize: "11px", color: "#666", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "5px" };
+
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    await fetch("/api/licenses", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(form) });
-    setShowForm(false);
+    setSaving(true);
+    try {
+      await fetch("/api/admin/licenses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          name: createForm.name,
+          description: createForm.description,
+          price: createForm.price,
+          fileTypes: createForm.file_types,
+          termsText: createForm.terms_text,
+          isNegotiable: createForm.is_negotiable,
+          isActive: createForm.is_active,
+          contractTemplate: createForm.contract_template,
+        }),
+      });
+      setShowCreate(false);
+      setCreateForm(emptyForm);
+      onRefresh();
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleEdit = (license: LicenseType) => {
+    setEditId(license.id);
+    setEditForm({
+      name: license.name,
+      description: license.description || "",
+      price: license.price,
+      file_types: license.file_types || [],
+      terms_text: license.terms_text || "",
+      is_negotiable: license.is_negotiable,
+      is_active: license.is_active,
+      contract_template: license.contract_template || DEFAULT_CONTRACT_TEMPLATE,
+    });
+  };
+
+  const handleSaveEdit = async (id: number) => {
+    setSaving(true);
+    try {
+      await fetch(`/api/admin/licenses/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          name: editForm.name,
+          description: editForm.description,
+          price: editForm.price,
+          fileTypes: editForm.file_types,
+          termsText: editForm.terms_text,
+          isNegotiable: editForm.is_negotiable,
+          isActive: editForm.is_active,
+          contractTemplate: editForm.contract_template,
+        }),
+      });
+      setEditId(null);
+      setEditForm(null);
+      onRefresh();
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm("Opravdu smazat tuto licenci?")) return;
+    await fetch(`/api/admin/licenses/${id}`, { method: "DELETE", credentials: "include" });
     onRefresh();
   };
 
+  const previewContract = (template: string) => {
+    const today = new Date();
+    const months = ["ledna","února","března","dubna","května","června","července","srpna","září","října","listopadu","prosince"];
+    const datum = `${today.getDate()}. ${months[today.getMonth()]} ${today.getFullYear()}`;
+    const filled = template
+      .replace(/\{\{DATUM\}\}/g, datum)
+      .replace(/\{\{PRAVNI_JMENO\}\}/g, "Jan Novák")
+      .replace(/\{\{UMELECKE_JMENO\}\}/g, "YourArtistName")
+      .replace(/\{\{ADRESA\}\}/g, "Příkladná 1, Praha 1, 110 00")
+      .replace(/\{\{BEAT_NAZEV\}\}/g, "Název Beatu")
+      .replace(/\{\{CENA\}\}/g, "5 000,00 Kč");
+
+    const lines = filled.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").split("\n");
+    const html = `<!DOCTYPE html><html lang="cs"><head><meta charset="UTF-8"><style>body{font-family:'Times New Roman',serif;font-size:11pt;color:#111;background:#fff;margin:0;padding:40px;line-height:1.7}h1{font-size:16pt;text-align:center;border-bottom:2px solid #111;padding-bottom:12px;margin-bottom:8px}h2{font-size:13pt;text-align:center;font-weight:normal;margin-bottom:32px}p{margin:0 0 6px 0}.footer{margin-top:40px;border-top:1px solid #111;padding-top:12px;font-size:9pt;color:#555;text-align:center}</style></head><body><h1>VOODOO808: Smlouva o exkluzivní licenci</h1><h2>Licenční smlouva k hudebnímu dílu</h2>${lines.map(l=>l.trim()===""?"<br/>":"<p>"+l+"</p>").join("")}<div class="footer">VOODOO808 Exkluzivní licenční smlouva — Vyhotoveno: ${datum} — Strana 1/1<br/>Tato smlouva je vyhotovena ve dvou stejnopisích, přičemž každá strana obdrží jeden výtisk.</div></body></html>`;
+    setPreviewHtml(html);
+  };
+
+  const renderContractForm = (form: any, setForm: (f: any) => void) => (
+    <div style={{ marginTop: "20px", borderTop: "1px solid #1f1f1f", paddingTop: "16px" }}>
+      <div style={{ fontSize: "11px", color: "#666", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px" }}>Šablona smlouvy</div>
+      <div style={{ marginBottom: "12px", padding: "12px", background: "#080808", border: "1px solid #1a1a1a", borderRadius: "3px" }}>
+        <div style={{ fontSize: "11px", color: "#555", marginBottom: "8px" }}>Dostupné proměnné (automaticky doplněny při nákupu):</div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+          {PLACEHOLDER_GUIDE.map(({ ph, desc }) => (
+            <div key={ph} style={{ fontSize: "10px", background: "#111", border: "1px solid #222", borderRadius: "3px", padding: "3px 7px" }} title={desc}>
+              <span style={{ color: "#aaa", fontFamily: "monospace" }}>{ph}</span>
+              <span style={{ color: "#555", marginLeft: "6px" }}>{desc}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <textarea
+        value={form.contract_template || ""}
+        onChange={(e) => setForm({ ...form, contract_template: e.target.value })}
+        style={{ ...fieldStyle, minHeight: "320px", resize: "vertical", fontFamily: "monospace", fontSize: "12px", lineHeight: "1.6" }}
+        placeholder="Vložte text smlouvy s proměnnými jako {{DATUM}}, {{PRAVNI_JMENO}} atd."
+      />
+      <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
+        <button type="button" className="btn btn-admin" style={{ fontSize: "12px", padding: "6px 12px" }}
+          onClick={() => setForm({ ...form, contract_template: DEFAULT_CONTRACT_TEMPLATE })}>
+          Načíst výchozí šablonu
+        </button>
+        <button type="button" className="btn btn-admin" style={{ fontSize: "12px", padding: "6px 12px" }}
+          onClick={() => previewContract(form.contract_template || DEFAULT_CONTRACT_TEMPLATE)}>
+          Náhled smlouvy
+        </button>
+      </div>
+    </div>
+  );
+
   return (
     <div>
-      <button className="btn btn-admin" onClick={() => setShowForm(!showForm)} style={{ marginBottom: "16px" }}>{showForm ? "Zrušit" : "Přidat licenci"}</button>
-      {showForm && (
-        <form onSubmit={handleSubmit} style={{ marginBottom: "24px", padding: "16px", border: "1px solid #333", borderRadius: "3px" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-            <div><label>Název</label><input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required style={{ width: "100%" }} /></div>
-            <div><label>Cena (CZK)</label><input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} style={{ width: "100%" }} /></div>
-            <div style={{ gridColumn: "1 / -1" }}><label>Popis</label><textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} style={{ width: "100%" }} /></div>
+      {previewHtml && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 1000, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "20px" }}>
+          <div style={{ background: "#fff", borderRadius: "4px", width: "100%", maxWidth: "820px", maxHeight: "88vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", borderBottom: "1px solid #ddd", background: "#f5f5f5" }}>
+              <span style={{ fontWeight: "bold", color: "#111", fontSize: "14px" }}>Náhled smlouvy (vzorová data)</span>
+              <button onClick={() => setPreviewHtml(null)} style={{ background: "none", border: "none", fontSize: "20px", cursor: "pointer", color: "#333" }}>×</button>
+            </div>
+            <iframe srcDoc={previewHtml} style={{ flex: 1, border: "none", width: "100%" }} title="Náhled smlouvy" />
           </div>
-          <button type="submit" className="btn btn-filled" style={{ marginTop: "16px" }}>Uložit licenci</button>
+        </div>
+      )}
+
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+        <div style={{ fontSize: "13px", color: "#666" }}>Celkem licencí: {licenses.length}</div>
+        <button className="btn btn-admin" data-testid="button-add-license" onClick={() => { setShowCreate(!showCreate); setEditId(null); }}>
+          {showCreate ? "Zrušit" : "+ Přidat licenci"}
+        </button>
+      </div>
+
+      {showCreate && (
+        <form onSubmit={handleCreate} style={{ marginBottom: "24px", padding: "20px", border: "1px solid #2a2a2a", borderRadius: "4px", background: "#0a0a0a" }}>
+          <div style={{ fontSize: "12px", color: "#888", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "16px" }}>Nová licence</div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+            <div>
+              <label style={labelStyle}>Název *</label>
+              <input value={createForm.name} onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })} required style={fieldStyle} placeholder="např. Exkluzivní licence" />
+            </div>
+            <div>
+              <label style={labelStyle}>Cena (CZK) *</label>
+              <input type="number" value={createForm.price} onChange={(e) => setCreateForm({ ...createForm, price: Number(e.target.value) })} style={fieldStyle} />
+            </div>
+            <div style={{ gridColumn: "1 / -1" }}>
+              <label style={labelStyle}>Popis</label>
+              <textarea value={createForm.description} onChange={(e) => setCreateForm({ ...createForm, description: e.target.value })} style={{ ...fieldStyle, minHeight: "64px" }} />
+            </div>
+            <div>
+              <label style={labelStyle}>Typy souborů (oddělte čárkou)</label>
+              <input value={(createForm.file_types || []).join(", ")} onChange={(e) => setCreateForm({ ...createForm, file_types: e.target.value.split(",").map(s => s.trim()).filter(Boolean) })} style={fieldStyle} placeholder="WAV, MP3, Stems" />
+            </div>
+            <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+              <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", cursor: "pointer" }}>
+                <input type="checkbox" checked={createForm.is_active} onChange={(e) => setCreateForm({ ...createForm, is_active: e.target.checked })} /> Aktivní
+              </label>
+              <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", cursor: "pointer" }}>
+                <input type="checkbox" checked={createForm.is_negotiable} onChange={(e) => setCreateForm({ ...createForm, is_negotiable: e.target.checked })} /> Na vyžádání
+              </label>
+            </div>
+          </div>
+          {renderContractForm(createForm, setCreateForm)}
+          <div style={{ display: "flex", gap: "8px", marginTop: "20px" }}>
+            <button type="submit" className="btn btn-filled" disabled={saving}>{saving ? "Ukládám..." : "Uložit licenci"}</button>
+            <button type="button" className="btn btn-admin" onClick={() => setShowCreate(false)}>Zrušit</button>
+          </div>
         </form>
       )}
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr style={{ borderBottom: "1px solid #333" }}>
-            <th style={{ textAlign: "left", padding: "12px" }}>Název</th>
-            <th style={{ textAlign: "left", padding: "12px" }}>Cena</th>
-            <th style={{ textAlign: "left", padding: "12px" }}>Status</th>
-          </tr>
-        </thead>
-        <tbody>
+
+      {licenses.length === 0 ? (
+        <div style={{ textAlign: "center", padding: "40px", color: "#555" }}>Žádné licence. Přidejte první licenci tlačítkem výše.</div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
           {licenses.map((license: LicenseType) => (
-            <tr key={license.id} style={{ borderBottom: "1px solid #222" }}>
-              <td style={{ padding: "12px" }}>{license.name}</td>
-              <td style={{ padding: "12px" }}>{license.price} CZK</td>
-              <td style={{ padding: "12px" }}>{license.is_active ? "Aktivní" : "Neaktivní"}</td>
-            </tr>
+            <div key={license.id} style={{ border: "1px solid #1f1f1f", borderRadius: "4px", overflow: "hidden" }}>
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "12px", padding: "14px 16px", cursor: "pointer", background: expandedId === license.id ? "#111" : "#0a0a0a" }}
+                onClick={() => setExpandedId(expandedId === license.id ? null : license.id)}
+              >
+                <div style={{ flex: 1 }}>
+                  <span style={{ fontWeight: 600, fontSize: "14px" }}>{license.name}</span>
+                  {license.description && <span style={{ color: "#555", fontSize: "12px", marginLeft: "10px" }}>{license.description}</span>}
+                </div>
+                <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                  <span style={{ fontSize: "13px", fontWeight: 500 }}>{Number(license.price).toLocaleString("cs-CZ")} CZK</span>
+                  {(license.file_types || []).map((ft: string) => (
+                    <span key={ft} style={{ fontSize: "10px", background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "3px", padding: "2px 6px", color: "#aaa" }}>{ft.toUpperCase()}</span>
+                  ))}
+                  <span style={{ fontSize: "11px", color: license.is_active ? "#4caf50" : "#888" }}>{license.is_active ? "Aktivní" : "Neaktivní"}</span>
+                  <span style={{ fontSize: "11px", color: license.contract_template ? "#4caf50" : "#ff6b6b" }}>{license.contract_template ? "✓ Smlouva" : "✗ Bez smlouvy"}</span>
+                  <span style={{ color: "#555", fontSize: "16px" }}>{expandedId === license.id ? "▲" : "▼"}</span>
+                </div>
+              </div>
+
+              {expandedId === license.id && (
+                <div style={{ borderTop: "1px solid #1a1a1a", padding: "16px", background: "#080808" }}>
+                  {editId === license.id ? (
+                    <div>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                        <div>
+                          <label style={labelStyle}>Název *</label>
+                          <input value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} style={fieldStyle} />
+                        </div>
+                        <div>
+                          <label style={labelStyle}>Cena (CZK)</label>
+                          <input type="number" value={editForm.price} onChange={(e) => setEditForm({ ...editForm, price: Number(e.target.value) })} style={fieldStyle} />
+                        </div>
+                        <div style={{ gridColumn: "1 / -1" }}>
+                          <label style={labelStyle}>Popis</label>
+                          <textarea value={editForm.description} onChange={(e) => setEditForm({ ...editForm, description: e.target.value })} style={{ ...fieldStyle, minHeight: "56px" }} />
+                        </div>
+                        <div>
+                          <label style={labelStyle}>Typy souborů (oddělte čárkou)</label>
+                          <input value={(editForm.file_types || []).join(", ")} onChange={(e) => setEditForm({ ...editForm, file_types: e.target.value.split(",").map((s: string) => s.trim()).filter(Boolean) })} style={fieldStyle} />
+                        </div>
+                        <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+                          <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", cursor: "pointer" }}>
+                            <input type="checkbox" checked={editForm.is_active} onChange={(e) => setEditForm({ ...editForm, is_active: e.target.checked })} /> Aktivní
+                          </label>
+                          <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", cursor: "pointer" }}>
+                            <input type="checkbox" checked={editForm.is_negotiable} onChange={(e) => setEditForm({ ...editForm, is_negotiable: e.target.checked })} /> Na vyžádání
+                          </label>
+                        </div>
+                      </div>
+                      {renderContractForm(editForm, setEditForm)}
+                      <div style={{ display: "flex", gap: "8px", marginTop: "16px" }}>
+                        <button className="btn btn-filled" onClick={() => handleSaveEdit(license.id)} disabled={saving}>{saving ? "Ukládám..." : "Uložit"}</button>
+                        <button className="btn btn-admin" onClick={() => { setEditId(null); setEditForm(null); }}>Zrušit</button>
+                        <button className="btn" style={{ marginLeft: "auto", color: "#ff4444", border: "1px solid #ff4444" }} onClick={() => handleDelete(license.id)}>Smazat</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px", marginBottom: "16px" }}>
+                        <div>
+                          <div style={{ fontSize: "11px", color: "#555", marginBottom: "4px" }}>Cena</div>
+                          <div style={{ fontSize: "14px", fontWeight: 600 }}>{Number(license.price).toLocaleString("cs-CZ")} CZK</div>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: "11px", color: "#555", marginBottom: "4px" }}>Soubory</div>
+                          <div style={{ fontSize: "13px" }}>{(license.file_types || []).join(", ") || "—"}</div>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: "11px", color: "#555", marginBottom: "4px" }}>Smlouva</div>
+                          <div style={{ fontSize: "13px", color: license.contract_template ? "#4caf50" : "#ff6b6b" }}>
+                            {license.contract_template ? "Šablona nastavena" : "Není nastavena"}
+                          </div>
+                        </div>
+                      </div>
+                      {license.contract_template && (
+                        <div style={{ marginBottom: "12px", padding: "10px 14px", background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: "3px", fontSize: "11px", color: "#555", fontFamily: "monospace", maxHeight: "80px", overflow: "hidden", whiteSpace: "pre-wrap" }}>
+                          {license.contract_template.slice(0, 200)}...
+                        </div>
+                      )}
+                      <div style={{ display: "flex", gap: "8px" }}>
+                        <button className="btn btn-admin" data-testid={`button-edit-license-${license.id}`} onClick={() => handleEdit(license)}>Upravit</button>
+                        {license.contract_template && (
+                          <button className="btn btn-admin" onClick={() => previewContract(license.contract_template!)}>Náhled smlouvy</button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           ))}
-        </tbody>
-      </table>
+        </div>
+      )}
     </div>
   );
 }

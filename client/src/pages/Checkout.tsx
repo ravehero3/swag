@@ -5,6 +5,9 @@ import { useLocation } from "wouter";
 function Checkout() {
   const { cart, user, clearCart } = useApp() as any;
   const [email, setEmail] = useState(user?.email || "");
+  const [buyerLegalName, setBuyerLegalName] = useState("");
+  const [buyerArtistName, setBuyerArtistName] = useState("");
+  const [buyerAddress, setBuyerAddress] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -54,7 +57,15 @@ function Checkout() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ email, items, total: finalTotal, promoCode: discount > 0 ? promoCode : null }),
+        body: JSON.stringify({
+          email,
+          items,
+          total: finalTotal,
+          promoCode: discount > 0 ? promoCode : null,
+          buyerLegalName,
+          buyerArtistName,
+          buyerAddress,
+        }),
       });
 
       if (!res.ok) {
@@ -173,9 +184,9 @@ function Checkout() {
           </div>
         )}
 
-        <div style={{ marginBottom: "24px" }}>
+        <div style={{ marginBottom: "16px" }}>
           <label style={{ display: "block", marginBottom: "4px", fontSize: "12px", color: "#999" }}>
-            Email pro doručení
+            Email pro doručení *
           </label>
           <input
             type="email"
@@ -183,10 +194,62 @@ function Checkout() {
             onChange={(e) => setEmail(e.target.value)}
             required
             placeholder="vas@email.cz"
+            data-testid="input-email"
             style={{ width: "100%", borderRadius: "4px" }}
           />
-          <p style={{ fontSize: "12px", color: "#666", marginTop: "8px" }}>
-            Na tento email vám zašleme odkaz ke stažení po zaplacení
+          <p style={{ fontSize: "12px", color: "#666", marginTop: "6px" }}>
+            Na tento email vám zašleme licenční smlouvu a odkaz ke stažení po zaplacení
+          </p>
+        </div>
+
+        <div style={{ marginBottom: "16px" }}>
+          <label style={{ display: "block", marginBottom: "4px", fontSize: "12px", color: "#999" }}>
+            Právní jméno (celé jméno a příjmení) *
+          </label>
+          <input
+            type="text"
+            value={buyerLegalName}
+            onChange={(e) => setBuyerLegalName(e.target.value)}
+            required
+            placeholder="Jan Novák"
+            data-testid="input-legal-name"
+            style={{ width: "100%", borderRadius: "4px" }}
+          />
+          <p style={{ fontSize: "12px", color: "#666", marginTop: "4px" }}>
+            Vaše skutečné jméno pro licenční smlouvu
+          </p>
+        </div>
+
+        <div style={{ marginBottom: "16px" }}>
+          <label style={{ display: "block", marginBottom: "4px", fontSize: "12px", color: "#999" }}>
+            Umělecké jméno *
+          </label>
+          <input
+            type="text"
+            value={buyerArtistName}
+            onChange={(e) => setBuyerArtistName(e.target.value)}
+            required
+            placeholder="YourArtistName"
+            data-testid="input-artist-name"
+            style={{ width: "100%", borderRadius: "4px" }}
+          />
+        </div>
+
+        <div style={{ marginBottom: "24px" }}>
+          <label style={{ display: "block", marginBottom: "4px", fontSize: "12px", color: "#999" }}>
+            Adresa trvalého bydliště *
+          </label>
+          <input
+            type="text"
+            value={buyerAddress}
+            onChange={(e) => setBuyerAddress(e.target.value)}
+            required
+            placeholder="Ulice 123, Praha 1, 110 00"
+            data-testid="input-address"
+            style={{ width: "100%", borderRadius: "4px" }}
+          />
+          <p style={{ fontSize: "12px", color: "#666", marginTop: "4px" }}>
+            Adresa pro licenční smlouvu
           </p>
         </div>
 
@@ -194,6 +257,7 @@ function Checkout() {
           type="submit"
           className="btn btn-filled btn-bounce"
           disabled={loading}
+          data-testid="button-submit-order"
           style={{ width: "100%", borderRadius: "4px" }}
         >
           {loading ? "Zpracování..." : `Zaplatit ${finalTotal} CZK`}

@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { pool } from "../db.js";
 import { requireAuth, requireAdmin } from "../middleware/auth.js";
+import { sendContractEmail } from "../email.js";
 
 const router = Router();
 
@@ -27,13 +28,13 @@ router.get("/my", requireAuth, async (req: Request, res: Response) => {
 
 router.post("/", async (req: Request, res: Response) => {
   try {
-    const { email, items, total } = req.body;
+    const { email, items, total, buyerLegalName, buyerArtistName, buyerAddress } = req.body;
     const userId = req.session.userId || null;
     
     const result = await pool.query(
-      `INSERT INTO orders (user_id, email, items, total, status)
-       VALUES ($1, $2, $3, $4, 'pending') RETURNING *`,
-      [userId, email, JSON.stringify(items), total]
+      `INSERT INTO orders (user_id, email, items, total, status, buyer_legal_name, buyer_artist_name, buyer_address)
+       VALUES ($1, $2, $3, $4, 'pending', $5, $6, $7) RETURNING *`,
+      [userId, email, JSON.stringify(items), total, buyerLegalName || null, buyerArtistName || null, buyerAddress || null]
     );
     
     res.json(result.rows[0]);
@@ -148,6 +149,9 @@ router.post("/:id/notify", async (req: Request, res: Response) => {
           "UPDATE orders SET status = 'paid' WHERE id = $1",
           [orderId]
         );
+        sendContractEmail(orderId).catch((err) => {
+          console.error("[Email] Contract email error:", err);
+        });
       }
     }
 

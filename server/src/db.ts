@@ -191,6 +191,10 @@ export async function initDatabase() {
       ALTER TABLE sound_kits ADD COLUMN IF NOT EXISTS author_info TEXT;
       ALTER TABLE sound_kits ADD COLUMN IF NOT EXISTS is_free BOOLEAN DEFAULT FALSE;
       ALTER TABLE sound_kits ADD COLUMN IF NOT EXISTS number_of_sounds INTEGER DEFAULT 0;
+      ALTER TABLE orders ADD COLUMN IF NOT EXISTS buyer_legal_name VARCHAR(255);
+      ALTER TABLE orders ADD COLUMN IF NOT EXISTS buyer_artist_name VARCHAR(255);
+      ALTER TABLE orders ADD COLUMN IF NOT EXISTS buyer_address TEXT;
+      ALTER TABLE license_types ADD COLUMN IF NOT EXISTS contract_template TEXT;
     `);
 
     console.log("Database initialized successfully");
