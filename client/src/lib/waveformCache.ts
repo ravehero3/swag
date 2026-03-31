@@ -66,12 +66,24 @@ export function getWaveform(url: string): number[] | null | undefined {
   return cache.has(url) ? cache.get(url)! : undefined;
 }
 
-export async function preloadWaveform(url: string): Promise<void> {
+export function seedWaveformCache(url: string, data: number[]): void {
+  if (!url || cache.has(url)) return;
+  cache.set(url, data);
+}
+
+export async function preloadWaveform(url: string, beatId?: number): Promise<void> {
   if (!url || cache.has(url) || inFlight.has(url)) return;
   inFlight.add(url);
   try {
     const result = await extractWaveform(url);
     cache.set(url, result);
+    if (result && beatId) {
+      fetch(`/api/beats/${beatId}/waveform`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ data: result }),
+      }).catch(() => {});
+    }
   } finally {
     inFlight.delete(url);
   }

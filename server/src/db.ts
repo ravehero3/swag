@@ -186,6 +186,7 @@ export async function initDatabase() {
     await client.query(`
       ALTER TABLE beats ADD COLUMN IF NOT EXISTS trackout_url VARCHAR(500);
       ALTER TABLE beats ADD COLUMN IF NOT EXISTS is_highlighted BOOLEAN DEFAULT FALSE;
+      ALTER TABLE beats ADD COLUMN IF NOT EXISTS waveform_data JSONB;
       ALTER TABLE sound_kits ADD COLUMN IF NOT EXISTS legal_info TEXT;
       ALTER TABLE sound_kits ADD COLUMN IF NOT EXISTS author_info TEXT;
       ALTER TABLE sound_kits ADD COLUMN IF NOT EXISTS is_free BOOLEAN DEFAULT FALSE;

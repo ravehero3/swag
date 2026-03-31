@@ -138,6 +138,22 @@ router.delete("/:id", requireAdmin, async (req: Request, res: Response) => {
   }
 });
 
+router.post("/:id/waveform", async (req: Request, res: Response) => {
+  try {
+    const { data } = req.body;
+    if (!Array.isArray(data) || data.length === 0) {
+      return res.status(400).json({ error: "Invalid waveform data" });
+    }
+    await pool.query(
+      "UPDATE beats SET waveform_data = $1 WHERE id = $2",
+      [JSON.stringify(data), req.params.id]
+    );
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při ukládání waveform dat" });
+  }
+});
+
 router.post("/bulk-delete", requireAdmin, async (req: Request, res: Response) => {
   try {
     const { ids } = req.body;
