@@ -33,6 +33,8 @@ function Ulozeno() {
   const [savedItems, setSavedItems] = useState<SavedItem[]>([]);
   const [currentItem, setCurrentItem] = useState<SavedItem | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [removingItems, setRemovingItems] = useState<Set<number>>(new Set());
+  const [addedItems, setAddedItems] = useState<Set<number>>(new Set());
   const audioRef = useRef<HTMLAudioElement>(null);
   const { user, addToCart, cart, authLoading } = useApp();
   const [location] = useLocation();
@@ -54,10 +56,10 @@ function Ulozeno() {
     } else {
       const savedBeatsJson = localStorage.getItem("voodoo808_saved_beats");
       const savedKitsJson = localStorage.getItem("voodoo808_saved_kits");
-      
+
       const savedBeats = savedBeatsJson ? JSON.parse(savedBeatsJson) : [];
       const savedKits = savedKitsJson ? JSON.parse(savedKitsJson) : [];
-      
+
       const combined = [
         ...savedBeats.map((beat: any, idx: number) => ({
           id: -(idx + 1),
@@ -78,7 +80,7 @@ function Ulozeno() {
 
   const playPreview = (item: SavedItem) => {
     if (!item.item_data.preview_url) return;
-    
+
     if (currentItem?.id === item.id) {
       if (isPlaying) {
         audioRef.current?.pause();
@@ -113,11 +115,13 @@ function Ulozeno() {
         localStorage.setItem("voodoo808_saved_kits", JSON.stringify(filtered));
       }
     }
-    setSavedItems(savedItems.filter((s) => s.id !== item.id));
+    setSavedItems((prev) => prev.filter((s) => s.id !== item.id));
   };
 
   const handleAddToCart = (item: SavedItem) => {
     if (item.item_data.is_free) return;
+    if (removingItems.has(item.id)) return;
+
     addToCart({
       productId: item.item_data.id,
       productType: item.item_type as "beat" | "sound_kit",
@@ -125,6 +129,29 @@ function Ulozeno() {
       price: Number(item.item_data.price),
       artworkUrl: item.item_data.artwork_url || "/uploads/artwork/metallic-logo.png",
     });
+
+    // Phase 1: flash the button green
+    setAddedItems((prev) => new Set(prev).add(item.id));
+
+    // Phase 2: after brief pause, start the card exit animation
+    setTimeout(() => {
+      setRemovingItems((prev) => new Set(prev).add(item.id));
+    }, 320);
+
+    // Phase 3: after animation completes, remove from saved list + server
+    setTimeout(() => {
+      handleRemove(item);
+      setRemovingItems((prev) => {
+        const next = new Set(prev);
+        next.delete(item.id);
+        return next;
+      });
+      setAddedItems((prev) => {
+        const next = new Set(prev);
+        next.delete(item.id);
+        return next;
+      });
+    }, 820);
   };
 
   const sectionStyle: React.CSSProperties = {
@@ -155,7 +182,7 @@ function Ulozeno() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center" style={{ minHeight: 'calc(100vh - 42px)' }}>
+      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center" style={{ minHeight: "calc(100vh - 42px)" }}>
         <style>{`
           @keyframes vu-dot { 0%,80%,100%{transform:translateY(0);opacity:.3} 40%{transform:translateY(-6px);opacity:1} }
           .vu-dot{width:6px;height:6px;border-radius:50%;background:#fff;animation:vu-dot 1.2s ease-in-out infinite}
@@ -171,33 +198,80 @@ function Ulozeno() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white fade-in overflow-x-hidden relative flex flex-col" style={{ minHeight: 'calc(100vh - 42px)' }}>
+    <div
+      className="min-h-screen bg-black text-white fade-in overflow-x-hidden relative flex flex-col"
+      style={{ minHeight: "calc(100vh - 42px)" }}
+    >
       <audio
         ref={audioRef}
         src={currentItem?.item_data?.preview_url}
         onEnded={() => setIsPlaying(false)}
       />
 
-      {/* Vertical lines effect */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes cartOut {
+          0%   { opacity: 1; transform: scale(1) translateY(0); }
+          40%  { opacity: 0.6; transform: scale(0.94) translateY(-6px); }
+          100% { opacity: 0; transform: scale(0.84) translateY(-18px); }
+        }
+        .ulozeno-card {
+          transition: transform 0.2s ease;
+          cursor: default;
+        }
+        .ulozeno-card:hover {
+          transform: scale(1.015);
+        }
+        .ulozeno-card.removing {
+          animation: cartOut 0.48s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+          pointer-events: none;
+        }
+        .ulozeno-cart-btn {
+          padding: 8px 0;
+          border: none;
+          font-size: 12px;
+          font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+          font-weight: 700;
+          cursor: pointer;
+          border-radius: 4px;
+          width: 100%;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          transition: background 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+        }
+        .ulozeno-cart-btn.default {
+          background: #fff;
+          color: #000;
+        }
+        .ulozeno-cart-btn.added {
+          background: #24e053;
+          color: #000;
+          box-shadow: 0 0 14px rgba(36, 224, 83, 0.45);
+        }
+        .ulozeno-play-btn {
+          transition: opacity 0.2s ease, transform 0.15s ease;
+        }
+      `}} />
+
+      {/* Vertical lines */}
       <div className="hidden md:block" style={{
-        position: 'absolute',
-        left: 'calc(50vw - 350px)',
+        position: "absolute",
+        left: "calc(50vw - 350px)",
         top: 0,
         bottom: 0,
-        width: '0.5px',
-        backgroundColor: '#333',
+        width: "0.5px",
+        backgroundColor: "#333",
         zIndex: 5,
-        pointerEvents: 'none'
+        pointerEvents: "none",
       }} />
       <div className="hidden md:block" style={{
-        position: 'absolute',
-        right: 'calc(50vw - 350px)',
+        position: "absolute",
+        right: "calc(50vw - 350px)",
         top: 0,
         bottom: 0,
-        width: '0.5px',
-        backgroundColor: '#333',
+        width: "0.5px",
+        backgroundColor: "#333",
         zIndex: 5,
-        pointerEvents: 'none'
+        pointerEvents: "none",
       }} />
 
       <div style={{ flex: 1 }}>
@@ -209,37 +283,37 @@ function Ulozeno() {
           )}
         </section>
 
-        {/* Section 2: Navigation Buttons */}
+        {/* Section 2: Navigation */}
         <section style={{ ...sectionStyle, height: "44px", flexDirection: "row", gap: "24px" }}>
-              <Link href="/ulozeno">
-                <span style={{ 
-                  ...regularFont, 
-                  fontSize: "14px", 
-                  cursor: "pointer",
-                  color: "white",
-                  padding: "4px 12px",
-                  border: location === "/ulozeno" ? "0.5px solid #333" : "none",
-                  borderRadius: "4px"
-                }}>
-                  ULOŽENÉ PRODUKTY
-                </span>
-              </Link>
-              <Link href="/kosik">
-                <span style={{ 
-                  ...regularFont, 
-                  fontSize: "14px", 
-                  cursor: "pointer",
-                  color: "white",
-                  padding: "4px 12px",
-                  border: location === "/kosik" ? "0.5px solid #333" : "none",
-                  borderRadius: "4px"
-                }}>
-                  KOŠÍK {cartCount > 0 && `(${cartCount})`}
-                </span>
-              </Link>
+          <Link href="/ulozeno">
+            <span style={{
+              ...regularFont,
+              fontSize: "14px",
+              cursor: "pointer",
+              color: "white",
+              padding: "4px 12px",
+              border: location === "/ulozeno" ? "0.5px solid #333" : "none",
+              borderRadius: "4px",
+            }}>
+              ULOŽENÉ PRODUKTY
+            </span>
+          </Link>
+          <Link href="/kosik">
+            <span style={{
+              ...regularFont,
+              fontSize: "14px",
+              cursor: "pointer",
+              color: "white",
+              padding: "4px 12px",
+              border: location === "/kosik" ? "0.5px solid #333" : "none",
+              borderRadius: "4px",
+            }}>
+              KOŠÍK {cartCount > 0 && `(${cartCount})`}
+            </span>
+          </Link>
         </section>
 
-        {/* Login CTA Section */}
+        {/* Login CTA */}
         {!user && (
           <section style={{ ...sectionStyle, height: "224px" }}>
             <h2 style={{ ...titleFont, fontSize: "14px", letterSpacing: "0.05em", marginBottom: "8px" }}>
@@ -266,14 +340,14 @@ function Ulozeno() {
             </Link>
             <style dangerouslySetInnerHTML={{ __html: `
               .login-glow-button:hover {
-                box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+                box-shadow: 0 0 15px rgba(255,255,255,0.8);
                 transform: translateY(-1px);
               }
             `}} />
           </section>
         )}
 
-        {/* Section 4: How to Save — only when no saved items */}
+        {/* Empty state */}
         {savedItems.length === 0 && (
           <section style={{ ...sectionStyle, borderBottom: "none", height: "150px" }}>
             <h2 style={{ ...titleFont, fontSize: "14px", letterSpacing: "0.05em", marginBottom: "8px" }}>
@@ -285,138 +359,122 @@ function Ulozeno() {
           </section>
         )}
 
-        {/* Items Grid — shown when there are saved items */}
+        {/* Items grid — 2 columns, aligned to vertical lines */}
         {savedItems.length > 0 && (
-          <div style={{ maxWidth: "1000px", margin: "0 auto", padding: "40px 20px" }}>
-            <style dangerouslySetInnerHTML={{ __html: `
-              .ulozeno-card {
-                transition: transform 0.2s ease;
-                cursor: default;
-              }
-              .ulozeno-card:hover {
-                transform: scale(1.02);
-              }
-              .ulozeno-play-btn {
-                transition: opacity 0.2s ease, transform 0.15s ease;
-              }
-            `}} />
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "20px" }}>
-              {savedItems.map((item) => (
-                <div
-                  key={item.id}
-                  className="ulozeno-card"
-                  style={{
-                    padding: "16px",
-                    background: "#0a0a0a",
-                    border: "1px solid #333",
-                    borderRadius: "8px",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "0",
-                  }}
-                >
-                  {/* Artwork with play + remove overlaid */}
-                  <div style={{ position: "relative", width: "100%", aspectRatio: "1/1", marginBottom: "12px" }}>
-                    <img
-                      src={item.item_data.artwork_url || "/uploads/artwork/metallic-logo.png"}
-                      alt={item.item_data.title}
-                      onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
-                      style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "4px", display: "block" }}
-                    />
-                    {/* Play button — centre of artwork */}
-                    {item.item_data.preview_url && (
+          <div style={{ maxWidth: "700px", margin: "0 auto", padding: "40px 20px 80px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "20px" }}>
+              {savedItems.map((item) => {
+                const isRemoving = removingItems.has(item.id);
+                const isAdded = addedItems.has(item.id);
+                return (
+                  <div
+                    key={item.id}
+                    className={`ulozeno-card${isRemoving ? " removing" : ""}`}
+                    style={{
+                      padding: "16px",
+                      background: "#0a0a0a",
+                      border: "1px solid #333",
+                      borderRadius: "8px",
+                      display: "flex",
+                      flexDirection: "column",
+                    }}
+                  >
+                    {/* Artwork */}
+                    <div style={{ position: "relative", width: "100%", aspectRatio: "1/1", marginBottom: "12px" }}>
+                      <img
+                        src={item.item_data.artwork_url || "/uploads/artwork/metallic-logo.png"}
+                        alt={item.item_data.title}
+                        onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
+                        style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "4px", display: "block" }}
+                      />
+                      {/* Play button */}
+                      {item.item_data.preview_url && (
+                        <button
+                          onClick={() => playPreview(item)}
+                          className="ulozeno-play-btn"
+                          style={{
+                            position: "absolute",
+                            inset: 0,
+                            margin: "auto",
+                            width: "44px",
+                            height: "44px",
+                            borderRadius: "50%",
+                            border: "1.5px solid #fff",
+                            background: currentItem?.id === item.id && isPlaying ? "#fff" : "rgba(0,0,0,0.55)",
+                            color: currentItem?.id === item.id && isPlaying ? "#000" : "#fff",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            cursor: "pointer",
+                          }}
+                        >
+                          {currentItem?.id === item.id && isPlaying ? (
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                              <rect x="6" y="4" width="4" height="16" />
+                              <rect x="14" y="4" width="4" height="16" />
+                            </svg>
+                          ) : (
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: "2px" }}>
+                              <path d="M5 3l14 9-14 9V3z" />
+                            </svg>
+                          )}
+                        </button>
+                      )}
+                      {/* Remove (heart) button */}
                       <button
-                        onClick={() => playPreview(item)}
-                        className="ulozeno-play-btn"
+                        onClick={() => handleRemove(item)}
                         style={{
                           position: "absolute",
-                          inset: 0,
-                          margin: "auto",
-                          width: "44px",
-                          height: "44px",
+                          top: "8px",
+                          right: "8px",
+                          background: "rgba(0,0,0,0.6)",
+                          border: "none",
                           borderRadius: "50%",
-                          border: "1.5px solid #fff",
-                          background: currentItem?.id === item.id && isPlaying ? "#fff" : "rgba(0,0,0,0.55)",
-                          color: currentItem?.id === item.id && isPlaying ? "#000" : "#fff",
+                          width: "30px",
+                          height: "30px",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
                           cursor: "pointer",
+                          color: "#ff4444",
                         }}
                       >
-                        {currentItem?.id === item.id && isPlaying ? (
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-                        ) : (
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: "2px" }}><path d="M5 3l14 9-14 9V3z"/></svg>
-                        )}
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                        </svg>
                       </button>
-                    )}
-                    {/* Remove (heart) button — top right */}
-                    <button
-                      onClick={() => handleRemove(item)}
-                      style={{
-                        position: "absolute",
-                        top: "8px",
-                        right: "8px",
-                        background: "rgba(0,0,0,0.6)",
-                        border: "none",
-                        borderRadius: "50%",
-                        width: "30px",
-                        height: "30px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        cursor: "pointer",
-                        color: "#ff4444",
-                      }}
-                    >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                      </svg>
-                    </button>
+                    </div>
+
+                    {/* Title */}
+                    <h3 style={{ ...titleFont, fontSize: "14px", margin: "0 0 4px 0", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {item.item_data.title}
+                    </h3>
+
+                    {/* Type + detail */}
+                    <p style={{ ...regularFont, fontSize: "12px", color: "#666", margin: "0 0 12px 0", textTransform: "capitalize" }}>
+                      {item.item_type === "beat"
+                        ? `Beat${item.item_data.bpm ? " • " + item.item_data.bpm + " BPM" : ""}${item.item_data.key ? " • " + item.item_data.key : ""}`
+                        : typeLabels[item.item_data.type || ""] || "Sound Kit"}
+                    </p>
+
+                    {/* Price + cart button */}
+                    <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: "8px" }}>
+                      <span style={{ ...titleFont, fontSize: "13px", color: "#fff" }}>
+                        {item.item_data.is_free ? "ZDARMA" : `${item.item_data.price} CZK`}
+                      </span>
+                      {!item.item_data.is_free && (
+                        <button
+                          onClick={() => handleAddToCart(item)}
+                          className={`ulozeno-cart-btn ${isAdded ? "added" : "default"}`}
+                          data-testid={`button-add-to-cart-${item.item_id}`}
+                        >
+                          {isAdded ? "✓ PŘIDÁNO" : "DO KOŠÍKU"}
+                        </button>
+                      )}
+                    </div>
                   </div>
-
-                  {/* Title */}
-                  <h3 style={{ ...titleFont, fontSize: "14px", margin: "0 0 4px 0", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                    {item.item_data.title}
-                  </h3>
-
-                  {/* Type + detail */}
-                  <p style={{ ...regularFont, fontSize: "12px", color: "#666", margin: "0 0 12px 0", textTransform: "capitalize" }}>
-                    {item.item_type === "beat"
-                      ? `Beat • ${item.item_data.bpm ? item.item_data.bpm + " BPM" : ""}${item.item_data.key ? " • " + item.item_data.key : ""}`
-                      : typeLabels[item.item_data.type || ""] || "Sound Kit"}
-                  </p>
-
-                  {/* Price + cart button */}
-                  <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: "8px" }}>
-                    <span style={{ ...titleFont, fontSize: "13px", color: "#fff" }}>
-                      {item.item_data.is_free ? "ZDARMA" : `${item.item_data.price} CZK`}
-                    </span>
-                    {!item.item_data.is_free && (
-                      <button
-                        onClick={() => handleAddToCart(item)}
-                        style={{
-                          padding: "8px 0",
-                          background: "#fff",
-                          color: "#000",
-                          border: "none",
-                          fontSize: "12px",
-                          fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
-                          fontWeight: 700,
-                          cursor: "pointer",
-                          borderRadius: "4px",
-                          width: "100%",
-                          textTransform: "uppercase",
-                          letterSpacing: "0.05em",
-                        }}
-                      >
-                        DO KOŠÍKU
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
