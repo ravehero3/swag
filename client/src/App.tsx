@@ -77,47 +77,11 @@ export const AppContext = createContext<AppContextType>({
 
 export const useApp = () => useContext(AppContext);
 
-const PageLoader = () => (
-  <div style={{
-    background: "#000",
-    minHeight: "60vh",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  }}>
-    <style>{`
-      @keyframes vu33-dot-bounce {
-        0%, 80%, 100% { transform: translateY(0); opacity: 0.3; }
-        40% { transform: translateY(-6px); opacity: 1; }
-      }
-      .vu33-dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background: #fff;
-        animation: vu33-dot-bounce 1.2s ease-in-out infinite;
-      }
-      .vu33-dot:nth-child(2) { animation-delay: 0.2s; }
-      .vu33-dot:nth-child(3) { animation-delay: 0.4s; }
-    `}</style>
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
-      <div style={{ display: "flex", gap: "8px" }}>
-        <div className="vu33-dot" />
-        <div className="vu33-dot" />
-        <div className="vu33-dot" />
-      </div>
-      <span style={{ fontSize: "12px", letterSpacing: "2px", color: "#666", textTransform: "uppercase" }}>
-        načítá se
-      </span>
-    </div>
-  </div>
-);
 
 function App() {
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [loading, setLoading] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isNewsletterOpen, setIsNewsletterOpen] = useState(false);
   const [settings, setSettings] = useState<Record<string, string>>({});

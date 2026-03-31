@@ -1,4 +1,5 @@
 import { useRef, useEffect, useCallback } from "react";
+import { getWaveform, preloadWaveform } from "../lib/waveformCache.js";
 
 interface SoundWaveProps {
   audioRef: React.RefObject<HTMLAudioElement>;
@@ -7,66 +8,6 @@ interface SoundWaveProps {
 }
 
 const BAR_COUNT = 480;
-const FETCH_TIMEOUT_MS = 8000;
-
-async function extractWaveform(url: string, count: number): Promise<number[] | null> {
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-    const response = await fetch(url, { mode: "cors", signal: controller.signal });
-    clearTimeout(timeout);
-    if (!response.ok) return null;
-    const arrayBuffer = await response.arrayBuffer();
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-    await audioContext.close();
-
-    const channels: Float32Array[] = [];
-    for (let c = 0; c < Math.min(audioBuffer.numberOfChannels, 2); c++) {
-      channels.push(audioBuffer.getChannelData(c));
-    }
-    const sampleRate = audioBuffer.sampleRate;
-    const length = channels[0].length;
-    const samplesPerBin = Math.floor(length / count);
-
-    const alpha = 1 - Math.exp(-2 * Math.PI * 100 / sampleRate);
-
-    const rawPeaks = new Float32Array(count);
-    const bassPeaks = new Float32Array(count);
-    let lpState = 0;
-
-    for (let i = 0; i < count; i++) {
-      const start = i * samplesPerBin;
-      const end = Math.min(start + samplesPerBin, length);
-      let maxRaw = 0;
-      let maxBass = 0;
-      for (let j = start; j < end; j++) {
-        let s = 0;
-        for (const ch of channels) {
-          const abs = Math.abs(ch[j]);
-          if (abs > s) s = abs;
-        }
-        lpState = lpState * (1 - alpha) + s * alpha;
-        if (s > maxRaw) maxRaw = s;
-        if (lpState > maxBass) maxBass = lpState;
-      }
-      rawPeaks[i] = maxRaw;
-      bassPeaks[i] = maxBass;
-    }
-
-    let maxR = 0.001, maxB = 0.001;
-    for (let i = 0; i < count; i++) {
-      if (rawPeaks[i] > maxR) maxR = rawPeaks[i];
-      if (bassPeaks[i] > maxB) maxB = bassPeaks[i];
-    }
-
-    return Array.from({ length: count }, (_, i) =>
-      Math.min(1, (rawPeaks[i] / maxR) * 0.60 + (bassPeaks[i] / maxB) * 0.55)
-    );
-  } catch {
-    return null;
-  }
-}
 
 function SoundWave({ audioRef, isPlaying, audioUrl }: SoundWaveProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -79,15 +20,21 @@ function SoundWave({ audioRef, isPlaying, audioUrl }: SoundWaveProps) {
   const loadWaveform = useCallback(async (url: string) => {
     if (!url || url === lastUrlRef.current) return;
     lastUrlRef.current = url;
+
+    const cached = getWaveform(url);
+    if (cached !== undefined) {
+      peaksRef.current = cached ?? [];
+      isLoadingRef.current = false;
+      return;
+    }
+
     peaksRef.current = [];
     isLoadingRef.current = true;
-
-    const real = await extractWaveform(url, BAR_COUNT);
+    await preloadWaveform(url);
     if (lastUrlRef.current === url) {
       isLoadingRef.current = false;
-      if (real) {
-        peaksRef.current = real;
-      }
+      const result = getWaveform(url);
+      if (result) peaksRef.current = result;
     }
   }, []);
 
@@ -132,31 +79,23 @@ function SoundWave({ audioRef, isPlaying, audioUrl }: SoundWaveProps) {
     const gap = slotW - barW;
 
     if (isLoadingRef.current) {
-      // Small pulsing sound wave icon — 7 bars centered on the canvas
       const t = Date.now() / 1000;
       const numBars = 7;
       const iconBarW = 3;
       const iconGap = 4;
       const totalIconW = numBars * iconBarW + (numBars - 1) * iconGap;
       const startX = (W - totalIconW) / 2;
-
-      // Height profile: taller in the middle, shorter on edges
       const heightProfile = [0.30, 0.55, 0.78, 1.0, 0.78, 0.55, 0.30];
-
-      // Global pulse envelope — slow breathe in/out
       const pulse = 0.70 + Math.sin(t * 2.2) * 0.30;
 
       for (let i = 0; i < numBars; i++) {
-        // Each bar has its own phase offset for a ripple effect
         const phase = (i / numBars) * Math.PI * 2;
         const ripple = 0.85 + Math.sin(t * 3.5 + phase) * 0.15;
         const amp = heightProfile[i] * maxAmp * 0.62 * pulse * ripple;
-
         const x = startX + i * (iconBarW + iconGap);
         const barH = Math.max(amp * 2, 3);
         const barY = midY - amp;
         const radius = iconBarW / 2;
-
         cx.fillStyle = `rgba(255,255,255,0.70)`;
         cx.beginPath();
         if (cx.roundRect) {
@@ -178,7 +117,6 @@ function SoundWave({ audioRef, isPlaying, audioUrl }: SoundWaveProps) {
     for (let i = 0; i < count; i++) {
       const x = i * slotW + gap / 2;
       const amp = Math.max(peaks[i] * maxAmp, 1.2);
-
       const isPlayed = i < playheadBar;
       const isHead = Math.abs(i - playheadBar) < 1.2;
 
@@ -193,7 +131,6 @@ function SoundWave({ audioRef, isPlaying, audioUrl }: SoundWaveProps) {
       const barH = amp * 2;
       const barY = midY - amp;
       const radius = Math.min(barW / 2, 1.5);
-
       cx.beginPath();
       if (cx.roundRect) {
         cx.roundRect(x, barY, barW, barH, radius);
