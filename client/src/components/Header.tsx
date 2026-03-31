@@ -1,21 +1,11 @@
 import { Link, useLocation } from "wouter";
 import { useApp } from "../App.js";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 function Header() {
-  const { user, cart, setIsCartOpen } = useApp() as any;
+  const { user, cart, setIsCartOpen, savedCount } = useApp() as any;
   const [hoveredLink, setHoveredLink] = useState<string | null>(null);
   const [hoveredIcon, setHoveredIcon] = useState<string | null>(null);
-  const [savedCount, setSavedCount] = useState(0);
-
-  useEffect(() => {
-    if (user) {
-      fetch("/api/saved", { credentials: "include" })
-        .then((res) => res.json())
-        .then((items) => setSavedCount(items.length))
-        .catch(() => setSavedCount(0));
-    }
-  }, [user]);
 
   const navLinkStyle = (path: string) => ({
     cursor: "pointer",

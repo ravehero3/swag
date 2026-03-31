@@ -36,7 +36,7 @@ function Ulozeno() {
   const [removingItems, setRemovingItems] = useState<Set<number>>(new Set());
   const [addedItems, setAddedItems] = useState<Set<number>>(new Set());
   const audioRef = useRef<HTMLAudioElement>(null);
-  const { user, addToCart, cart, authLoading } = useApp();
+  const { user, addToCart, cart, authLoading, refreshSavedCount } = useApp() as any;
   const [location] = useLocation();
 
   const cartCount = cart.length;
@@ -116,6 +116,7 @@ function Ulozeno() {
       }
     }
     setSavedItems((prev) => prev.filter((s) => s.id !== item.id));
+    refreshSavedCount();
   };
 
   const handleAddToCart = (item: SavedItem) => {

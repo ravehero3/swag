@@ -53,6 +53,8 @@ interface AppContextType {
   setIsNewsletterOpen: (open: boolean) => void;
   settings: Record<string, string>;
   refreshSettings: () => Promise<void>;
+  savedCount: number;
+  refreshSavedCount: () => Promise<void>;
 }
 
 export const AppContext = createContext<AppContextType>({
@@ -69,6 +71,8 @@ export const AppContext = createContext<AppContextType>({
   setIsNewsletterOpen: () => {},
   settings: {},
   refreshSettings: async () => {},
+  savedCount: 0,
+  refreshSavedCount: async () => {},
 });
 
 export const useApp = () => useContext(AppContext);
@@ -117,6 +121,7 @@ function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isNewsletterOpen, setIsNewsletterOpen] = useState(false);
   const [settings, setSettings] = useState<Record<string, string>>({});
+  const [savedCount, setSavedCount] = useState(0);
   const [location] = useLocation();
 
   useEffect(() => {
@@ -200,6 +205,30 @@ function App() {
     }
   };
 
+  const refreshSavedCount = async () => {
+    if (user) {
+      try {
+        const res = await fetch("/api/saved", { credentials: "include" });
+        if (res.ok) {
+          const data = await res.json();
+          setSavedCount(Array.isArray(data) ? data.filter((i: any) => i.item_data != null).length : 0);
+        }
+      } catch {
+        setSavedCount(0);
+      }
+    } else {
+      const beats = JSON.parse(localStorage.getItem("voodoo808_saved_beats") || "[]");
+      const kits = JSON.parse(localStorage.getItem("voodoo808_saved_kits") || "[]");
+      setSavedCount(beats.length + kits.length);
+    }
+  };
+
+  useEffect(() => {
+    if (!authLoading) {
+      refreshSavedCount();
+    }
+  }, [user, authLoading]);
+
   if (loading) {
     return (
       <div style={{
@@ -220,7 +249,7 @@ function App() {
   const isPokladnaPage = location === "/pokladna";
 
   return (
-    <AppContext.Provider value={{ user, setUser, authLoading, cart, addToCart, removeFromCart, clearCart, isCartOpen, setIsCartOpen, isNewsletterOpen, setIsNewsletterOpen, settings, refreshSettings }}>
+    <AppContext.Provider value={{ user, setUser, authLoading, cart, addToCart, removeFromCart, clearCart, isCartOpen, setIsCartOpen, isNewsletterOpen, setIsNewsletterOpen, settings, refreshSettings, savedCount, refreshSavedCount }}>
       <div style={{ minHeight: "100vh", background: "#000", display: "flex", flexDirection: "column" }}>
         <Header />
         <main style={{ flex: 1 }} className="fade-in">
