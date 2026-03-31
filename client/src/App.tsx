@@ -78,9 +78,25 @@ export const AppContext = createContext<AppContextType>({
 export const useApp = () => useContext(AppContext);
 
 
+function PageLoader() {
+  return (
+    <div style={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      minHeight: "100vh",
+      background: "#000",
+      color: "#fff",
+    }}>
+      <div style={{ fontSize: "1.2rem", letterSpacing: "0.1em" }}>Loading...</div>
+    </div>
+  );
+}
+
 function App() {
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isNewsletterOpen, setIsNewsletterOpen] = useState(false);
