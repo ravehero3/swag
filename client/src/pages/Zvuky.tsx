@@ -177,7 +177,7 @@ function Zvuky() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [savedKits, setSavedKits] = useState<Set<number>>(new Set());
   const audioRef = useRef<HTMLAudioElement>(null);
-  const { user, addToCart, settings } = useApp();
+  const { user, addToCart, settings, refreshSavedCount } = useApp() as any;
   useSEO("zvuky");
 
   useEffect(() => {
@@ -255,6 +255,7 @@ function Zvuky() {
               next.delete(kit.id);
               return next;
             });
+            refreshSavedCount();
           }
         } else {
           const res = await fetch("/api/saved", {
@@ -265,6 +266,7 @@ function Zvuky() {
           });
           if (res.ok) {
             setSavedKits((prev) => new Set([...prev, kit.id]));
+            refreshSavedCount();
           }
         }
       } catch (error) {

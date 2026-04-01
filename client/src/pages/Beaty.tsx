@@ -7,6 +7,7 @@ import ContractModal from "../components/ContractModal.js";
 import DownloadModal from "../components/DownloadModal.js";
 import MusicPlayer from "../components/MusicPlayer.js";
 import SoundWave from "../components/SoundWave.js";
+import { preloadWaveform } from "../lib/waveformCache.js";
 import ProductsGrid from "../components/ProductsGrid.js";
 import SoundKitsDock from "../components/SoundKitsDock.js";
 import ArtistCarousel from "../components/ArtistCarousel.js";
@@ -189,7 +190,7 @@ function Beaty() {
   const beatsListRef = useScrollAnimation();
   const soundKitsRef = useScrollAnimation();
   const artistCarouselRef = useScrollAnimation();
-  const { user, addToCart, settings } = useApp() as any;
+  const { user, addToCart, settings, refreshSavedCount } = useApp() as any;
   useSEO("beaty");
 
   // Determine if we're on home page or beaty page
@@ -230,6 +231,15 @@ function Beaty() {
       if (Array.isArray(beatsData)) setBeats(beatsData);
       if (highlightedData && !highlightedData.error) setHighlightedBeat(highlightedData);
       setBeatsLoading(false);
+
+      const allBeats = [
+        ...(highlightedData && !highlightedData.error ? [highlightedData] : []),
+        ...(Array.isArray(beatsData) ? beatsData : []),
+      ];
+      allBeats.forEach((beat, i) => {
+        if (!beat.preview_url) return;
+        setTimeout(() => preloadWaveform(beat.preview_url, beat.id), i * 120);
+      });
     });
   }, [selectedTag, searchQuery]);
 
@@ -388,6 +398,7 @@ function Beaty() {
             next.delete(beat.id);
             return next;
           });
+          refreshSavedCount();
         }
       } else {
         const res = await fetch("/api/saved", {
@@ -398,6 +409,7 @@ function Beaty() {
         });
         if (res.ok) {
           setSavedBeats((prev) => new Set([...prev, beat.id]));
+          refreshSavedCount();
         }
       }
     } catch (error) {
