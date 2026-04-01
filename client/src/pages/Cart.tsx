@@ -60,9 +60,6 @@ function Cart() {
         {/* Section 1: Title */}
         <section style={{ ...sectionStyle, height: "224px" }}>
           <h1 style={{ ...titleFont, fontSize: "18px", letterSpacing: "0.1em" }}>KOŠÍK</h1>
-          {cart.length === 0 && (
-            <p style={{ ...regularFont, fontSize: "12px", color: "#888", marginTop: "8px" }}>Váš košík je prázdný</p>
-          )}
         </section>
 
         {/* Section 2: Navigation Buttons */}
