@@ -8,7 +8,7 @@ const router = Router();
 router.get("/", async (req: Request, res: Response) => {
   try {
     const { search, tag } = req.query;
-    let query = "SELECT * FROM beats WHERE is_published = true";
+    let query = "SELECT id, title, artist, bpm, key, price, preview_url, artwork_url, trackout_url, tags, is_highlighted, created_at FROM beats WHERE is_published = true";
     const params: any[] = [];
     
     if (tag) {
@@ -33,7 +33,7 @@ router.get("/", async (req: Request, res: Response) => {
 router.get("/highlighted", async (_req: Request, res: Response) => {
   try {
     const result = await pool.query(
-      "SELECT * FROM beats WHERE is_highlighted = true AND is_published = true LIMIT 1"
+      "SELECT id, title, artist, bpm, key, price, preview_url, artwork_url, trackout_url, tags, is_highlighted, created_at FROM beats WHERE is_highlighted = true AND is_published = true LIMIT 1"
     );
     res.set("Cache-Control", "public, max-age=300, stale-while-revalidate=60");
     res.json(result.rows[0] || null);

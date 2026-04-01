@@ -250,6 +250,7 @@ app.get("/api/settings", async (_req, res) => {
   try {
     const result = await pool.query("SELECT key, value FROM settings");
     const settings = result.rows.reduce((acc, row) => ({ ...acc, [row.key]: row.value }), {});
+    res.set("Cache-Control", "public, max-age=3600, stale-while-revalidate=300");
     res.json(settings);
   } catch (error) {
     res.status(500).json({ error: "Chyba při načítání nastavení" });

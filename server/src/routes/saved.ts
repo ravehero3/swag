@@ -10,13 +10,15 @@ router.get("/", async (req, res) => {
 
   try {
     const result = await pool.query(
-      `SELECT si.*, 
-        CASE 
-          WHEN si.item_type = 'beat' THEN (SELECT row_to_json(b.*) FROM beats b WHERE b.id = si.item_id)
-          WHEN si.item_type = 'sound_kit' THEN (SELECT row_to_json(sk.*) FROM sound_kits sk WHERE sk.id = si.item_id)
+      `SELECT si.*,
+        CASE
+          WHEN si.item_type = 'beat' THEN row_to_json(b.*)
+          WHEN si.item_type = 'sound_kit' THEN row_to_json(sk.*)
         END as item_data
-       FROM saved_items si 
-       WHERE si.user_id = $1 
+       FROM saved_items si
+       LEFT JOIN beats b ON si.item_type = 'beat' AND b.id = si.item_id
+       LEFT JOIN sound_kits sk ON si.item_type = 'sound_kit' AND sk.id = si.item_id
+       WHERE si.user_id = $1
        ORDER BY si.created_at DESC`,
       [req.session.userId]
     );

@@ -884,6 +884,7 @@ function Home() {
                 <img
                   src={beat.artwork_url || "/uploads/artwork/metallic-logo.png"}
                   alt={beat.title}
+                  loading="lazy"
                   onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
                   style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "4px" }}
                 />

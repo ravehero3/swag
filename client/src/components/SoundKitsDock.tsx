@@ -261,6 +261,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
                   <img 
                     src={item.image || "/uploads/artwork/metallic-logo.png"}
                     alt={item.name}
+                    loading="lazy"
                     onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
                     style={{ 
                       width: '100%',
@@ -365,6 +366,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
                     <img 
                       src={item.image} 
                       alt=""
+                      loading="lazy"
                       style={{ 
                         width: '100%',
                         height: '100%',

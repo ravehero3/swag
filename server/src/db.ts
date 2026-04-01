@@ -182,6 +182,16 @@ export async function initDatabase() {
       ON CONFLICT (key) DO NOTHING;
     `);
     
+    // Performance indexes
+    await client.query(`
+      CREATE INDEX IF NOT EXISTS idx_beats_is_published ON beats (is_published);
+      CREATE INDEX IF NOT EXISTS idx_beats_is_highlighted ON beats (is_highlighted);
+      CREATE INDEX IF NOT EXISTS idx_beats_created_at ON beats (created_at DESC);
+      CREATE INDEX IF NOT EXISTS idx_sound_kits_is_published ON sound_kits (is_published);
+      CREATE INDEX IF NOT EXISTS idx_sound_kits_created_at ON sound_kits (created_at DESC);
+      CREATE INDEX IF NOT EXISTS idx_saved_items_user_id ON saved_items (user_id);
+    `);
+
     // Safe column migrations — add any columns that may be missing from older deployments
     await client.query(`
       ALTER TABLE beats ADD COLUMN IF NOT EXISTS trackout_url VARCHAR(500);
