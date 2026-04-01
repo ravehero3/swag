@@ -163,7 +163,7 @@ function Home() {
   const beatsListRef = useScrollAnimation();
   const soundKitsRef = useScrollAnimation();
   const artistCarouselRef = useScrollAnimation();
-  const { user, addToCart, settings } = useApp();
+  const { user, addToCart, settings, refreshSavedCount } = useApp() as any;
   useSEO("home");
 
   // Determine if we're on home page or beaty page
@@ -356,6 +356,7 @@ function Home() {
             next.delete(beat.id);
             return next;
           });
+          refreshSavedCount();
         }
       } else {
         const res = await fetch("/api/saved", {
@@ -366,6 +367,7 @@ function Home() {
         });
         if (res.ok) {
           setSavedBeats((prev) => new Set([...prev, beat.id]));
+          refreshSavedCount();
         }
       }
     } catch (error) {
