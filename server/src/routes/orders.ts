@@ -146,7 +146,7 @@ router.post("/:id/notify", async (req: Request, res: Response) => {
 
       if (status && status.state === "PAID") {
         await pool.query(
-          "UPDATE orders SET status = 'paid' WHERE id = $1",
+          "UPDATE orders SET status = 'completed' WHERE id = $1",
           [orderId]
         );
         sendContractEmail(orderId).catch((err) => {

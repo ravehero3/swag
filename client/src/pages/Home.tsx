@@ -313,6 +313,7 @@ function Home() {
         title: `${beat.title} (${license.name})`,
         price: license.price,
         artworkUrl: beat.artwork_url || "/uploads/artwork/metallic-logo.png",
+        licenseTypeId: license.id ? Number(license.id) : null,
       });
     }
   };

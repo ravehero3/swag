@@ -42,6 +42,12 @@ function Checkout() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!user) {
+      setError("Pro dokončení objednávky se musíte přihlásit.");
+      return;
+    }
+
     setLoading(true);
     setError("");
 
@@ -51,9 +57,10 @@ function Checkout() {
         productType: item.productType,
         title: item.title,
         price: item.price,
+        licenseTypeId: item.licenseTypeId || null,
       }));
 
-      const res = await fetch("/api/orders", {
+      const orderRes = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -68,12 +75,31 @@ function Checkout() {
         }),
       });
 
-      if (!res.ok) {
+      if (!orderRes.ok) {
         throw new Error("Chyba při vytváření objednávky");
       }
 
+      const order = await orderRes.json();
+
+      const payRes = await fetch(`/api/orders/${order.id}/pay`, {
+        method: "POST",
+        credentials: "include",
+      });
+
+      if (!payRes.ok) {
+        const payData = await payRes.json();
+        throw new Error(payData.error || "Chyba při zahájení platby");
+      }
+
+      const payData = await payRes.json();
+
       clearCart();
-      setSuccess(true);
+
+      if (payData.gw_url) {
+        window.location.href = payData.gw_url;
+      } else {
+        setSuccess(true);
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {

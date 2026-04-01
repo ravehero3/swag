@@ -37,6 +37,7 @@ interface CartItem {
   title: string;
   price: number;
   artworkUrl: string;
+  licenseTypeId?: number | null;
 }
 
 interface AppContextType {
