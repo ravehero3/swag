@@ -198,7 +198,7 @@ function Checkout() {
             style={{ width: "100%", borderRadius: "4px" }}
           />
           <p style={{ fontSize: "12px", color: "#666", marginTop: "6px" }}>
-            Na tento email vám zašleme licenční smlouvu a odkaz ke stažení po zaplacení
+            Na tento email vám zašleme odkaz ke stažení a kopii licenční smlouvy po zaplacení
           </p>
         </div>
 
@@ -262,6 +262,10 @@ function Checkout() {
         >
           {loading ? "Zpracování..." : `Zaplatit ${finalTotal} CZK`}
         </button>
+        <p style={{ fontSize: "11px", color: "#555", textAlign: "center", marginTop: "12px", lineHeight: "1.5" }}>
+          Dokončením objednávky souhlasíte s licenčními podmínkami VOODOO808.
+          Kopii smlouvy s vašimi údaji obdržíte emailem.
+        </p>
       </form>
       </div>
     </div>

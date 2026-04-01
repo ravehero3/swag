@@ -227,9 +227,9 @@ function buildPurchaseEmailHtml(
                   Licenční smlouva
                 </p>
                 <p style="margin:0;font-size:13px;color:#888;line-height:1.6;">
-                  Licenční smlouvu(y) najdete v příloze tohoto emailu.
-                  Po podepsání ji prosím zašlete zpět na
-                  <a href="mailto:info@voodoo808.com" style="color:#fff;">info@voodoo808.com</a>.
+                  Dokončením nákupu jste odsouhlasili licenční podmínky.
+                  Smlouva s vašimi údaji je přiložena k tomuto emailu pro vaši evidenci.
+                  Žádná další akce z vaší strany není nutná.
                 </p>
               </div>
             </td>
@@ -254,7 +254,7 @@ function buildPurchaseEmailHtml(
 }
 
 export async function sendContractEmail(orderId: number): Promise<void> {
-  const apiKey = process.env.RESEND_API_KEY;
+  const apiKey = process.env.RESEND_API_KEY || process.env.RESEND_API;
   if (!apiKey) {
     console.log(`[Email] RESEND_API_KEY not configured, skipping purchase email for order ${orderId}`);
     return;
