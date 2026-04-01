@@ -96,7 +96,6 @@ function PageLoader() {
 function App() {
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const [loading, setLoading] = useState(true);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isNewsletterOpen, setIsNewsletterOpen] = useState(false);
@@ -134,7 +133,6 @@ function App() {
         console.error("Initialization error:", error);
       } finally {
         clearTimeout(timeout);
-        setLoading(false);
         setAuthLoading(false);
       }
     };
@@ -208,22 +206,6 @@ function App() {
       refreshSavedCount();
     }
   }, [user, authLoading]);
-
-  if (loading) {
-    return (
-      <div style={{
-        background: "#000",
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        color: "#fff",
-        fontFamily: "Helvetica Neue, sans-serif"
-      }}>
-        <PageLoader />
-      </div>
-    );
-  }
 
   const isAdminPage = location === "/admin";
   const isPokladnaPage = location === "/pokladna";
