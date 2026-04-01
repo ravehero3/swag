@@ -4,7 +4,6 @@ import { useApp } from "../App.js";
 import { useScrollAnimation } from "../hooks/useScrollAnimation.js";
 import { useSEO } from "../hooks/useSEO.js";
 import ContractModal from "../components/ContractModal.js";
-import DownloadModal from "../components/DownloadModal.js";
 import MusicPlayer from "../components/MusicPlayer.js";
 import SoundWave from "../components/SoundWave.js";
 import SoundKitsDock from "../components/SoundKitsDock.js";
@@ -155,7 +154,6 @@ function Home() {
   const [isShuffling, setIsShuffling] = useState(false);
   const [savedBeats, setSavedBeats] = useState<Set<number>>(new Set());
   const [contractModalBeat, setContractModalBeat] = useState<Beat | null>(null);
-  const [downloadingBeat, setDownloadingBeat] = useState<Beat | null>(null);
   const [sortBy, setSortBy] = useState<"bpm" | "key" | null>(null);
   const [sortAsc, setSortAsc] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -316,6 +314,29 @@ function Home() {
         price: license.price,
         artworkUrl: beat.artwork_url || "/uploads/artwork/metallic-logo.png",
       });
+    }
+  };
+
+  const downloadPreview = async (beat: Beat) => {
+    if (!beat.preview_url) return;
+    try {
+      const response = await fetch(beat.preview_url);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${beat.title}.mp3`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      const a = document.createElement("a");
+      a.href = beat.preview_url;
+      a.download = `${beat.title}.mp3`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     }
   };
 
@@ -949,7 +970,7 @@ function Home() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      setDownloadingBeat(beat);
+                      downloadPreview(beat);
                     }}
                     style={{
                       background: "#0d0d0d",
@@ -1290,12 +1311,6 @@ function Home() {
 
       </div>
 
-      <DownloadModal
-        item={downloadingBeat}
-        isOpen={!!downloadingBeat}
-        onClose={() => setDownloadingBeat(null)}
-        user={user}
-      />
 
       {contractModalBeat && (
         <ContractModal
