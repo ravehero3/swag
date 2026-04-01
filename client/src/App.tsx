@@ -89,7 +89,7 @@ function PageLoader() {
       background: "#000",
       color: "#fff",
     }}>
-      <div style={{ fontSize: "1.2rem", letterSpacing: "0.1em" }}>Loading...</div>
+      <div />
     </div>
   );
 }

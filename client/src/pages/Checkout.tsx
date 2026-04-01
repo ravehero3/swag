@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useApp } from "../App.js";
 import { useLocation } from "wouter";
 
@@ -16,6 +16,12 @@ function Checkout() {
   const [promoCode, setPromoCode] = useState("");
   const [discount, setDiscount] = useState(0);
   const [promoError, setPromoError] = useState("");
+
+  useEffect(() => {
+    if (cart.length === 0 && !success) {
+      navigate("/kosik");
+    }
+  }, [cart.length, success]);
 
   const applyPromoCode = async () => {
     try {
@@ -126,21 +132,6 @@ function Checkout() {
             Zpět na hlavní stránku
           </button>
         </div>
-      </div>
-    );
-  }
-
-  if (cart.length === 0) {
-    return (
-      <div className="fade-in" style={{ 
-        minHeight: "calc(100vh - 42px)", 
-        display: "flex", 
-        flexDirection: "column", 
-        justifyContent: "center", 
-        alignItems: "center",
-        padding: "20px"
-      }}>
-        <p style={{ color: "#666" }}>Váš košík je prázdný</p>
       </div>
     );
   }
