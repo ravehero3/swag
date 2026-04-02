@@ -292,6 +292,12 @@ input::placeholder, textarea::placeholder {
   cursor: url('/cursors/logo-cursor.cur'), auto !important;
 }
 
+/* Footer underlined links cursor */
+.footer-link,
+.footer-link * {
+  cursor: url('/cursors/footer-link-cursor.cur'), auto !important;
+}
+
 /* Click state — swap to pressed gauntlet instantly on :active */
 *:active,
 *:active::before,
