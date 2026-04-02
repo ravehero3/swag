@@ -365,7 +365,7 @@ body.cursor-clicking *::after {
 .heart-btn,
 .heart-btn *,
 .heart-btn svg {
-  cursor: url('/cursors/heart-cursor.cur'), pointer !important;
+  cursor: url('/cursors/heart-cursor.ani'), url('/cursors/heart-cursor.cur'), pointer !important;
 }
 
 /* 10. SWORD — main nav links (BEATY, ZVUKY) */
