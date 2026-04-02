@@ -151,7 +151,7 @@ export default function ExtendedFooter() {
   };
 
   return (
-    <footer style={{ backgroundColor: "#000", width: "100%", overflow: "hidden", position: "relative", zIndex: 5000, marginTop: "-100px" }}>
+    <footer style={{ backgroundColor: "#000", width: "100%", position: "relative", zIndex: 5000 }}>
       <style>{styles}</style>
       {/* Desktop Footer - 6 columns */}
       <div 
