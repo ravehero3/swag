@@ -18,7 +18,7 @@ interface Order {
 }
 
 export default function Ucet() {
-  const { user } = useApp() as any;
+  const { user, addToCart, cart } = useApp() as any;
   const [, setLocation] = useLocation();
   const [orders, setOrders] = useState<Order[]>([]);
   const [savedItems, setSavedItems] = useState<any[]>([]);
@@ -126,6 +126,17 @@ export default function Ucet() {
     }
   };
 
+  const handleAddToCart = (item: any, e: React.MouseEvent) => {
+    e.stopPropagation();
+    addToCart({
+      id: item.item_id,
+      title: item.item_data?.title,
+      price: item.item_data?.price,
+      type: item.item_type,
+      artwork_url: item.item_data?.artwork_url,
+    });
+  };
+
   if (loading) {
     return (
       <div style={{ padding: "100px 20px", textAlign: "center", color: "#666" }}>
@@ -200,6 +211,34 @@ export default function Ucet() {
           opacity: 0.5;
           cursor: not-allowed;
           transform: none;
+        }
+        .ucet-add-cart-btn {
+          width: 100%;
+          margin-top: 10px;
+          padding: 6px 10px;
+          background: #000;
+          color: #666;
+          border: 1px solid #444;
+          border-radius: 4px;
+          font-size: 11px;
+          font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
+          font-weight: 500;
+          letter-spacing: 0.5px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 5px;
+          transition: background 0.2s, color 0.2s, border-color 0.2s;
+        }
+        .ucet-add-cart-btn:hover {
+          background: #fff;
+          color: #000;
+          border-color: #fff;
+        }
+        .ucet-add-cart-btn.in-cart {
+          background: #24e053;
+          color: #000;
+          border-color: #24e053;
         }
       `}} />
 
@@ -333,7 +372,20 @@ export default function Ucet() {
                       )}
                     </div>
                     <h3 style={{ fontSize: "14px", color: "#fff", margin: "0 0 4px 0", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.item_data?.title}</h3>
-                    <p style={{ fontSize: "12px", color: "#666", margin: 0, textTransform: "capitalize" }}>{item.item_type === 'beat' ? 'Beat' : 'Sound Kit'}</p>
+                    <p style={{ fontSize: "12px", color: "#666", margin: "0 0 8px 0", textTransform: "capitalize" }}>{item.item_type === 'beat' ? 'Beat' : 'Sound Kit'}</p>
+                    {!item.item_data?.is_free && (
+                      <button
+                        className={`ucet-add-cart-btn${cart.some((c: any) => c.id === item.item_id) ? " in-cart" : ""}`}
+                        onClick={(e) => handleAddToCart(item, e)}
+                        data-testid={`button-add-to-cart-saved-${item.item_id}`}
+                      >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <rect x="3" y="6" width="18" height="15" rx="2" />
+                          <path d="M8 6V4a4 4 0 0 1 8 0v2" />
+                        </svg>
+                        {cart.some((c: any) => c.id === item.item_id) ? "✓ V KOŠÍKU" : `${item.item_data?.price} CZK`}
+                      </button>
+                    )}
                   </div>
                 );
               })}
