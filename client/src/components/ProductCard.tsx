@@ -139,20 +139,31 @@ export default function ProductCard({
           transform: scale(1.02);
           z-index: 10;
         }
+        @keyframes liquidShimmer {
+          0% { background-position: -200% center; }
+          100% { background-position: 200% center; }
+        }
+        @keyframes playPulse {
+          0%, 100% { box-shadow: 0 0 0 1px rgba(255,255,255,0.28), 0 8px 32px rgba(0,0,0,0.4), inset 0 1.5px 0 rgba(255,255,255,0.7), inset 0 -1px 0 rgba(0,0,0,0.15), inset 0 0 0 0.5px rgba(255,255,255,0.12); }
+          50% { box-shadow: 0 0 0 1px rgba(255,255,255,0.45), 0 8px 40px rgba(0,0,0,0.5), inset 0 1.5px 0 rgba(255,255,255,0.85), inset 0 -1px 0 rgba(0,0,0,0.15), inset 0 0 0 0.5px rgba(255,255,255,0.2); }
+        }
         .play-button-overlay {
           opacity: 0;
-          transform: translate(-50%, -50%) scale(0.85);
-          transition: opacity 0.25s ease, transform 0.25s ease;
+          transform: translate(-50%, -50%) scale(0.82);
+          transition: opacity 0.28s cubic-bezier(0.34,1.56,0.64,1), transform 0.28s cubic-bezier(0.34,1.56,0.64,1);
         }
         .product-card-container:hover .play-button-overlay {
           opacity: 1;
           transform: translate(-50%, -50%) scale(1);
         }
         .play-button-overlay:hover {
-          transform: translate(-50%, -50%) scale(1.08) !important;
+          transform: translate(-50%, -50%) scale(1.1) !important;
         }
         .play-button-overlay:active {
-          transform: translate(-50%, -50%) scale(0.95) !important;
+          transform: translate(-50%, -50%) scale(0.93) !important;
+        }
+        .play-button-overlay.is-playing {
+          animation: playPulse 2s ease-in-out infinite;
         }
         .product-info-pill {
           opacity: 0;
@@ -188,7 +199,8 @@ export default function ProductCard({
         }
         @media (max-width: 768px) {
           .play-button-overlay {
-            opacity: 1;
+            opacity: 1 !important;
+            transform: translate(-50%, -50%) scale(1) !important;
           }
           .product-info-pill {
             opacity: 1;
@@ -227,21 +239,27 @@ export default function ProductCard({
               e.stopPropagation();
               onPlayClick();
             }}
-            className="play-button-overlay"
+            className={`play-button-overlay${isPlaying ? " is-playing" : ""}`}
             style={{
               position: "absolute",
               top: "50%",
               left: "50%",
-              width: "68px",
-              height: "68px",
+              width: "66px",
+              height: "66px",
               borderRadius: "50%",
-              border: "1px solid rgba(255, 255, 255, 0.55)",
-              background: "rgba(255, 255, 255, 0.08)",
-              backdropFilter: "blur(12px) brightness(1.35) saturate(1.6)",
-              WebkitBackdropFilter: "blur(12px) brightness(1.35) saturate(1.6)",
-              boxShadow: "0 4px 24px rgba(13,13,13,0.25), inset 0 1px 0 rgba(255,255,255,0.25)",
+              border: "none",
+              background: "linear-gradient(145deg, rgba(255,255,255,0.26) 0%, rgba(255,255,255,0.07) 50%, rgba(255,255,255,0.16) 100%)",
+              backdropFilter: "blur(28px) brightness(1.25) saturate(2.8) contrast(1.08)",
+              WebkitBackdropFilter: "blur(28px) brightness(1.25) saturate(2.8) contrast(1.08)",
+              boxShadow: [
+                "0 0 0 1px rgba(255,255,255,0.28)",
+                "0 8px 32px rgba(0,0,0,0.4)",
+                "inset 0 1.5px 0 rgba(255,255,255,0.7)",
+                "inset 0 -1px 0 rgba(0,0,0,0.15)",
+                "inset 0 0 0 0.5px rgba(255,255,255,0.12)",
+              ].join(", "),
               color: "#fff",
-              fontSize: "22px",
+              fontSize: "20px",
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
