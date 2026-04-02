@@ -290,5 +290,5 @@ input::placeholder, textarea::placeholder {
 *:active,
 *:active::before,
 *:active::after {
-  cursor: url('/cursors/v2-press.cur'), auto !important;
+  cursor: url('/cursors/v2-pointer.cur'), auto !important;
 }
