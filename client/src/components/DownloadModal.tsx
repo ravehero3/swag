@@ -72,7 +72,7 @@ function DownloadModal({ item, isOpen, onClose, user }: DownloadModalProps) {
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(0, 0, 0, 0.9)",
+        background: "rgba(13, 13, 13, 0.9)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -103,7 +103,7 @@ function DownloadModal({ item, isOpen, onClose, user }: DownloadModalProps) {
           style={{
             position: "absolute",
             inset: 0,
-            background: "linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.5) 100%)",
+            background: "linear-gradient(135deg, rgba(13,13,13,0.7) 0%, rgba(13,13,13,0.5) 100%)",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
@@ -135,7 +135,7 @@ function DownloadModal({ item, isOpen, onClose, user }: DownloadModalProps) {
             style={{
               padding: "14px 32px",
               background: isLoading ? "#ccc" : "#fff",
-              color: "#000",
+              color: "#0D0D0D",
               border: "none",
               borderRadius: "4px",
               fontSize: "13px",
@@ -154,7 +154,7 @@ function DownloadModal({ item, isOpen, onClose, user }: DownloadModalProps) {
               position: "absolute",
               top: "16px",
               right: "16px",
-              background: "rgba(0,0,0,0.6)",
+              background: "rgba(13,13,13,0.6)",
               border: "none",
               color: "#fff",
               fontSize: "24px",

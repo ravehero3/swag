@@ -238,8 +238,8 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
                     border: 'none',
                     padding: 0,
                     borderRadius: '8px',
-                    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
+                    backgroundColor: 'rgba(13, 13, 13, 0.4)',
+                    boxShadow: '0 4px 12px rgba(13, 13, 13, 0.5)',
                     cursor: 'pointer',
                     overflow: 'hidden',
                     transition: 'box-shadow 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), height 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)',
@@ -250,12 +250,12 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
                     willChange: 'width, height, box-shadow',
                   }}
                   onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.8)';
-                    (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(0, 0, 0, 0.6)';
+                    (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 24px rgba(13, 13, 13, 0.8)';
+                    (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(13, 13, 13, 0.6)';
                   }}
                   onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.5)';
-                    (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(0, 0, 0, 0.4)';
+                    (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 12px rgba(13, 13, 13, 0.5)';
+                    (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(13, 13, 13, 0.4)';
                   }}
                 >
                   <img 
@@ -305,8 +305,8 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
           overflowY: 'visible',
           opacity: 0.3,
           pointerEvents: 'none',
-          maskImage: 'linear-gradient(to bottom, rgba(0,0,0,1), rgba(0,0,0,0))',
-          WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1), rgba(0,0,0,0))',
+          maskImage: 'linear-gradient(to bottom, rgba(13,13,13,1), rgba(13,13,13,0))',
+          WebkitMaskImage: 'linear-gradient(to bottom, rgba(13,13,13,1), rgba(13,13,13,0))',
           position: 'relative',
           marginTop: '120px',
           zIndex: 99998,
@@ -356,7 +356,7 @@ const SoundKitsDock: React.FC<SoundKitsDockProps> = ({ items }) => {
                       width: `${size}px`,
                       height: `${size}px`,
                       borderRadius: '8px',
-                      backgroundColor: 'rgba(0, 0, 0, 0.4)',
+                      backgroundColor: 'rgba(13, 13, 13, 0.4)',
                       overflow: 'hidden',
                       display: 'flex',
                       alignItems: 'center',

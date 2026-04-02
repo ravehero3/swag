@@ -34,7 +34,7 @@ function ShareModal({ beatId, beatTitle, isOpen, onClose }: ShareModalProps) {
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(0, 0, 0, 0.9)",
+        background: "rgba(13, 13, 13, 0.9)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -45,7 +45,7 @@ function ShareModal({ beatId, beatTitle, isOpen, onClose }: ShareModalProps) {
     >
       <div
         style={{
-          background: "#111",
+          background: "#161616",
           border: "1px solid #333",
           borderRadius: "4px",
           maxWidth: "450px",
@@ -83,7 +83,7 @@ function ShareModal({ beatId, beatTitle, isOpen, onClose }: ShareModalProps) {
               style={{
                 flex: 1,
                 padding: "12px",
-                background: "#000",
+                background: "#0D0D0D",
                 border: "1px solid #333",
                 borderRadius: "4px",
                 color: "#fff",
@@ -96,7 +96,7 @@ function ShareModal({ beatId, beatTitle, isOpen, onClose }: ShareModalProps) {
               style={{
                 padding: "12px 20px",
                 background: copied ? "#4CAF50" : "#fff",
-                color: copied ? "#fff" : "#000",
+                color: copied ? "#fff" : "#0D0D0D",
                 border: "none",
                 borderRadius: "4px",
                 fontSize: "13px",

@@ -147,7 +147,7 @@ export default function Ucet() {
         }
         .ucet-order-card:hover {
           transform: scale(1.02);
-          box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+          box-shadow: 0 8px 32px rgba(13,13,13,0.5);
           border-color: #555;
         }
         .ucet-saved-item {
@@ -168,7 +168,7 @@ export default function Ucet() {
           right: 0;
           bottom: 0;
           border-radius: 4px;
-          background: rgba(0,0,0,0.45);
+          background: rgba(13,13,13,0.45);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -206,13 +206,13 @@ export default function Ucet() {
       <h1 style={{ fontSize: "32px", marginBottom: "32px", fontWeight: "400" }}>Můj účet</h1>
       
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px", marginBottom: "48px" }}>
-        <div style={{ padding: "24px", background: "#0a0a0a", border: "1px solid #333", borderRadius: "8px" }}>
+        <div style={{ padding: "24px", background: "#111111", border: "1px solid #333", borderRadius: "8px" }}>
           <h2 style={{ fontSize: "18px", marginBottom: "16px", color: "#999", fontWeight: "400" }}>Osobní údaje</h2>
           <p style={{ color: "#fff", margin: "0 0 8px 0" }}>Email: {user?.email}</p>
           <p style={{ color: "#666", fontSize: "14px", margin: 0 }}>ID uživatele: #{user?.id}</p>
         </div>
 
-        <div style={{ padding: "24px", background: "#0a0a0a", border: "1px solid #333", borderRadius: "8px" }}>
+        <div style={{ padding: "24px", background: "#111111", border: "1px solid #333", borderRadius: "8px" }}>
           <h2 style={{ fontSize: "18px", marginBottom: "16px", color: "#999", fontWeight: "400" }}>Statistiky</h2>
           <p style={{ color: "#fff", margin: "0 0 8px 0" }}>Objednávky: {orders.length}</p>
           <p style={{ color: "#fff", margin: 0 }}>Uložené položky: {savedItems.length}</p>
@@ -307,7 +307,7 @@ export default function Ucet() {
                     key={`${item.item_type}-${item.item_id}`}
                     className={`ucet-saved-item${itemPlaying ? " is-playing" : ""}`}
                     onClick={() => hasAudio && handleSavedItemClick(item)}
-                    style={{ padding: "16px", background: "#0a0a0a", border: "1px solid #333", borderRadius: "8px" }}
+                    style={{ padding: "16px", background: "#111111", border: "1px solid #333", borderRadius: "8px" }}
                     data-testid={`card-saved-${item.item_type}-${item.item_id}`}
                   >
                     <div style={{ position: "relative", marginBottom: "12px" }}>

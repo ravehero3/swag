@@ -60,7 +60,7 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
           style={{
             position: "fixed",
             top: 0, left: 0, right: 0, bottom: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            backgroundColor: "rgba(13, 13, 13, 0.5)",
             zIndex: 9998,
             animation: "fadeIn 0.3s ease-out",
           }}
@@ -73,8 +73,8 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
               top: 0, right: 0,
               height: "100vh",
               width: "min(100%, 33.333%)",
-              backgroundColor: "#000",
-              boxShadow: "-10px 0 40px rgba(0,0,0,0.8)",
+              backgroundColor: "#0D0D0D",
+              boxShadow: "-10px 0 40px rgba(13,13,13,0.8)",
               display: "flex",
               flexDirection: "column",
               animation: "slideInRight 0.3s ease-out",
@@ -103,7 +103,7 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                 fontFamily: "Helvetica Neue Condensed, Helvetica, Arial, sans-serif",
                 fontWeight: "bold",
                 margin: 0,
-                color: "#000",
+                color: "#0D0D0D",
                 letterSpacing: "0.5px",
               }}>
                 NÁKUPNÍ KOŠÍK
@@ -113,7 +113,7 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                 style={{
                   position: "absolute", right: "12px",
                   background: "transparent", border: "none",
-                  color: "#000", fontSize: "18px",
+                  color: "#0D0D0D", fontSize: "18px",
                   cursor: "pointer", display: "flex",
                   alignItems: "center", justifyContent: "center",
                   padding: "4px", fontWeight: "bold",
@@ -160,7 +160,7 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                       style={{
                         display: "flex", gap: "12px",
                         padding: "12px",
-                        backgroundColor: "#0a0a0a",
+                        backgroundColor: "#111111",
                         borderRadius: "4px",
                         border: "1px solid #333",
                       }}
@@ -270,7 +270,7 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                 onClick={() => { onClose(); window.location.href = "/pokladna"; }}
                 style={{
                   flex: 1, padding: "8px",
-                  backgroundColor: "#fff", color: "#000",
+                  backgroundColor: "#fff", color: "#0D0D0D",
                   border: "none", borderRadius: "4px",
                   fontSize: "12px",
                   fontFamily: "BB-Regular, Helvetica, Arial, sans-serif",
@@ -292,7 +292,7 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                 onClick={() => { onClose(); window.location.href = "/kosik"; }}
                 style={{
                   flex: 1, padding: "8px",
-                  backgroundColor: "#000", color: "#fff",
+                  backgroundColor: "#0D0D0D", color: "#fff",
                   border: "1px solid #333", borderRadius: "4px",
                   fontSize: "12px",
                   fontFamily: "BB-Regular, Helvetica, Arial, sans-serif",
@@ -314,7 +314,7 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
         <div
           style={{
             position: "fixed", top: 0, left: 0, right: 0, bottom: 0,
-            backgroundColor: "rgba(0,0,0,0.8)",
+            backgroundColor: "rgba(13,13,13,0.8)",
             display: "flex", alignItems: "center", justifyContent: "center",
             zIndex: 10000, animation: "fadeIn 0.2s ease-out",
           }}
@@ -322,7 +322,7 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
         >
           <div
             style={{
-              backgroundColor: "#111", padding: "32px",
+              backgroundColor: "#161616", padding: "32px",
               borderRadius: "8px", maxWidth: "400px",
               width: "90%", border: "1px solid #333", textAlign: "center",
             }}
@@ -339,7 +339,7 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                 onClick={() => setItemToRemove(null)}
                 style={{
                   flex: 1, padding: "16px",
-                  backgroundColor: "#000", color: "#fff",
+                  backgroundColor: "#0D0D0D", color: "#fff",
                   border: "1px solid #333", borderRadius: "4px",
                   fontSize: "14px", fontWeight: "bold",
                   cursor: "pointer", transition: "all 0.2s ease",
@@ -356,7 +356,7 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                 }}
                 style={{
                   flex: 1, padding: "16px",
-                  backgroundColor: "#fff", color: "#000",
+                  backgroundColor: "#fff", color: "#0D0D0D",
                   border: "none", borderRadius: "4px",
                   fontSize: "14px", fontWeight: "bold",
                   cursor: "pointer", transition: "all 0.2s ease",

@@ -102,7 +102,7 @@ function CookieSettings() {
           marginTop: "32px",
           padding: "12px 24px",
           background: "#fff",
-          color: "#000",
+          color: "#0D0D0D",
           border: "none",
           borderRadius: "4px",
           cursor: "pointer",

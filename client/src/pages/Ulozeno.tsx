@@ -373,7 +373,7 @@ function Ulozeno() {
                     className={`ulozeno-card${isRemoving ? " removing" : ""}`}
                     style={{
                       padding: "16px",
-                      background: "#0a0a0a",
+                      background: "#111111",
                       border: "1px solid #333",
                       borderRadius: "8px",
                       display: "flex",
@@ -401,8 +401,8 @@ function Ulozeno() {
                             height: "44px",
                             borderRadius: "50%",
                             border: "1.5px solid #fff",
-                            background: currentItem?.id === item.id && isPlaying ? "#fff" : "rgba(0,0,0,0.55)",
-                            color: currentItem?.id === item.id && isPlaying ? "#000" : "#fff",
+                            background: currentItem?.id === item.id && isPlaying ? "#fff" : "rgba(13,13,13,0.55)",
+                            color: currentItem?.id === item.id && isPlaying ? "#0D0D0D" : "#fff",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
@@ -428,7 +428,7 @@ function Ulozeno() {
                           position: "absolute",
                           top: "8px",
                           right: "8px",
-                          background: "rgba(0,0,0,0.6)",
+                          background: "rgba(13,13,13,0.6)",
                           border: "none",
                           borderRadius: "50%",
                           width: "30px",

@@ -34,14 +34,14 @@ function B2FilePicker({ onSelect, onClose }: { onSelect: (key: string) => void |
   return (
     <div
       style={{
-        position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)",
+        position: "fixed", inset: 0, background: "rgba(13,13,13,0.85)",
         zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center",
       }}
       onClick={onClose}
     >
       <div
         style={{
-          background: "#111", border: "1px solid #333", borderRadius: "6px",
+          background: "#161616", border: "1px solid #333", borderRadius: "6px",
           padding: "24px", width: "640px", maxHeight: "80vh", display: "flex",
           flexDirection: "column", gap: "16px",
         }}
@@ -247,7 +247,7 @@ function Admin() {
 
   if (adminLoading) {
     return (
-      <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", background: "#000" }}>
+      <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", background: "#0D0D0D" }}>
         <div style={{ textAlign: "center", padding: "24px" }}>
           <p style={{ margin: 0, fontSize: "16px" }}>Kontrola administrátorského přístupu...</p>
         </div>
@@ -257,7 +257,7 @@ function Admin() {
 
   if (adminError) {
     return (
-      <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", background: "#000", padding: "24px" }}>
+      <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", background: "#0D0D0D", padding: "24px" }}>
         <div style={{ maxWidth: "640px", textAlign: "center" }}>
           <h2 style={{ marginBottom: "16px", color: "#fff" }}>Chyba administračního panelu</h2>
           <p style={{ marginBottom: "16px", color: "#ccc" }}>{adminError}</p>
@@ -269,7 +269,7 @@ function Admin() {
 
   if (!adminChecked || !isAdmin) {
     return (
-      <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", background: "#000" }}>
+      <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", background: "#0D0D0D" }}>
         <div style={{ textAlign: "center", padding: "24px" }}>
           <p style={{ margin: 0, fontSize: "16px" }}>Probíhá přesměrování na přihlášení...</p>
         </div>
@@ -605,8 +605,8 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                     style={{
                       flex: 1,
                       padding: "10px 8px",
-                      background: form.priceType === pt.id ? "#fff" : "#000",
-                      color: form.priceType === pt.id ? "#000" : "#fff",
+                      background: form.priceType === pt.id ? "#fff" : "#0D0D0D",
+                      color: form.priceType === pt.id ? "#0D0D0D" : "#fff",
                       border: "1px solid #555",
                       borderRadius: "4px",
                       cursor: "pointer",
@@ -778,7 +778,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
               key={beat.id}
               style={{
                 borderBottom: "1px solid #222",
-                background: hoveredBeatId === beat.id ? "#111" : "transparent",
+                background: hoveredBeatId === beat.id ? "#161616" : "transparent",
                 cursor: "pointer",
                 transition: "background 150ms",
               }}
@@ -1105,8 +1105,8 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
                     style={{
                       flex: 1,
                       padding: "10px 8px",
-                      background: form.priceType === pt.id ? "#fff" : "#000",
-                      color: form.priceType === pt.id ? "#000" : "#fff",
+                      background: form.priceType === pt.id ? "#fff" : "#0D0D0D",
+                      color: form.priceType === pt.id ? "#0D0D0D" : "#fff",
                       border: "1px solid #555",
                       borderRadius: "4px",
                       cursor: "pointer",
@@ -1241,7 +1241,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
               key={kit.id}
               style={{
                 borderBottom: "1px solid #222",
-                background: hoveredKitId === kit.id ? "#111" : "transparent",
+                background: hoveredKitId === kit.id ? "#161616" : "transparent",
                 cursor: "pointer",
                 transition: "background 150ms",
               }}
@@ -1397,7 +1397,7 @@ function OrdersList({ orders }: { orders: any[] }) {
         const isExpanded = expandedId === order.id;
         return (
           <div key={order.id} style={{ border: "1px solid #1a1a1a", borderRadius: "3px", overflow: "hidden" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "60px 1fr 120px 90px 100px 100px", gap: "8px", padding: "10px 8px", alignItems: "center", background: isExpanded ? "#111" : "transparent", cursor: "pointer" }}
+            <div style={{ display: "grid", gridTemplateColumns: "60px 1fr 120px 90px 100px 100px", gap: "8px", padding: "10px 8px", alignItems: "center", background: isExpanded ? "#161616" : "transparent", cursor: "pointer" }}
               onClick={() => setExpandedId(isExpanded ? null : order.id)}>
               <div style={{ fontSize: "12px", color: "#666" }}>#{order.id}</div>
               <div>
@@ -1444,7 +1444,7 @@ function OrdersList({ orders }: { orders: any[] }) {
                             href={`/api/admin/orders/${order.id}/contract/${idx}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            style={{ fontSize: "11px", color: "#aaa", border: "1px solid #2a2a2a", borderRadius: "3px", padding: "3px 8px", textDecoration: "none", background: "#111" }}
+                            style={{ fontSize: "11px", color: "#aaa", border: "1px solid #2a2a2a", borderRadius: "3px", padding: "3px 8px", textDecoration: "none", background: "#161616" }}
                             onClick={(e) => e.stopPropagation()}
                           >
                             📄 Smlouva
@@ -1634,7 +1634,7 @@ function LicensesTab({ licenses, onRefresh }: any) {
   const [saving, setSaving] = useState(false);
   const [previewHtml, setPreviewHtml] = useState<string | null>(null);
 
-  const fieldStyle: React.CSSProperties = { width: "100%", background: "#0a0a0a", border: "1px solid #2a2a2a", color: "#fff", padding: "8px 10px", fontSize: "13px", borderRadius: "3px", fontFamily: "inherit", boxSizing: "border-box" };
+  const fieldStyle: React.CSSProperties = { width: "100%", background: "#111111", border: "1px solid #2a2a2a", color: "#fff", padding: "8px 10px", fontSize: "13px", borderRadius: "3px", fontFamily: "inherit", boxSizing: "border-box" };
   const labelStyle: React.CSSProperties = { display: "block", fontSize: "11px", color: "#666", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "5px" };
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -1732,7 +1732,7 @@ function LicensesTab({ licenses, onRefresh }: any) {
         <div style={{ fontSize: "11px", color: "#555", marginBottom: "8px" }}>Dostupné proměnné (automaticky doplněny při nákupu):</div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
           {PLACEHOLDER_GUIDE.map(({ ph, desc }) => (
-            <div key={ph} style={{ fontSize: "10px", background: "#111", border: "1px solid #222", borderRadius: "3px", padding: "3px 7px" }} title={desc}>
+            <div key={ph} style={{ fontSize: "10px", background: "#161616", border: "1px solid #222", borderRadius: "3px", padding: "3px 7px" }} title={desc}>
               <span style={{ color: "#aaa", fontFamily: "monospace" }}>{ph}</span>
               <span style={{ color: "#555", marginLeft: "6px" }}>{desc}</span>
             </div>
@@ -1761,10 +1761,10 @@ function LicensesTab({ licenses, onRefresh }: any) {
   return (
     <div>
       {previewHtml && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 1000, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "20px" }}>
+        <div style={{ position: "fixed", inset: 0, background: "rgba(13,13,13,0.85)", zIndex: 1000, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "20px" }}>
           <div style={{ background: "#fff", borderRadius: "4px", width: "100%", maxWidth: "820px", maxHeight: "88vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", borderBottom: "1px solid #ddd", background: "#f5f5f5" }}>
-              <span style={{ fontWeight: "bold", color: "#111", fontSize: "14px" }}>Náhled smlouvy (vzorová data)</span>
+              <span style={{ fontWeight: "bold", color: "#161616", fontSize: "14px" }}>Náhled smlouvy (vzorová data)</span>
               <button onClick={() => setPreviewHtml(null)} style={{ background: "none", border: "none", fontSize: "20px", cursor: "pointer", color: "#333" }}>×</button>
             </div>
             <iframe srcDoc={previewHtml} style={{ flex: 1, border: "none", width: "100%" }} title="Náhled smlouvy" />
@@ -1780,7 +1780,7 @@ function LicensesTab({ licenses, onRefresh }: any) {
       </div>
 
       {showCreate && (
-        <form onSubmit={handleCreate} style={{ marginBottom: "24px", padding: "20px", border: "1px solid #2a2a2a", borderRadius: "4px", background: "#0a0a0a" }}>
+        <form onSubmit={handleCreate} style={{ marginBottom: "24px", padding: "20px", border: "1px solid #2a2a2a", borderRadius: "4px", background: "#111111" }}>
           <div style={{ fontSize: "12px", color: "#888", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "16px" }}>Nová licence</div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
             <div>
@@ -1823,7 +1823,7 @@ function LicensesTab({ licenses, onRefresh }: any) {
           {licenses.map((license: LicenseType) => (
             <div key={license.id} style={{ border: "1px solid #1f1f1f", borderRadius: "4px", overflow: "hidden" }}>
               <div
-                style={{ display: "flex", alignItems: "center", gap: "12px", padding: "14px 16px", cursor: "pointer", background: expandedId === license.id ? "#111" : "#0a0a0a" }}
+                style={{ display: "flex", alignItems: "center", gap: "12px", padding: "14px 16px", cursor: "pointer", background: expandedId === license.id ? "#161616" : "#111111" }}
                 onClick={() => setExpandedId(expandedId === license.id ? null : license.id)}
               >
                 <div style={{ flex: 1 }}>
@@ -1897,7 +1897,7 @@ function LicensesTab({ licenses, onRefresh }: any) {
                         </div>
                       </div>
                       {license.contract_template && (
-                        <div style={{ marginBottom: "12px", padding: "10px 14px", background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: "3px", fontSize: "11px", color: "#555", fontFamily: "monospace", maxHeight: "80px", overflow: "hidden", whiteSpace: "pre-wrap" }}>
+                        <div style={{ marginBottom: "12px", padding: "10px 14px", background: "#111111", border: "1px solid #1a1a1a", borderRadius: "3px", fontSize: "11px", color: "#555", fontFamily: "monospace", maxHeight: "80px", overflow: "hidden", whiteSpace: "pre-wrap" }}>
                           {license.contract_template.slice(0, 200)}...
                         </div>
                       )}
@@ -1966,7 +1966,7 @@ function SEOSection({
   const title = values[titleKey] || "";
   const description = values[descKey] || "";
   const keywords = values[keywordsKey] || "";
-  const fieldStyle: React.CSSProperties = { width: "100%", background: "#0a0a0a", border: "1px solid #2a2a2a", color: "#fff", padding: "8px 10px", fontSize: "13px", borderRadius: "3px", fontFamily: "inherit", boxSizing: "border-box" };
+  const fieldStyle: React.CSSProperties = { width: "100%", background: "#111111", border: "1px solid #2a2a2a", color: "#fff", padding: "8px 10px", fontSize: "13px", borderRadius: "3px", fontFamily: "inherit", boxSizing: "border-box" };
   const labelStyle: React.CSSProperties = { display: "block", fontSize: "11px", color: "#666", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "5px" };
 
   return (
@@ -2077,12 +2077,12 @@ function SEOTab({ settings, onRefresh }: any) {
     }
   };
 
-  const fieldStyle: React.CSSProperties = { width: "100%", background: "#0a0a0a", border: "1px solid #2a2a2a", color: "#fff", padding: "8px 10px", fontSize: "13px", borderRadius: "3px", fontFamily: "inherit", boxSizing: "border-box" };
+  const fieldStyle: React.CSSProperties = { width: "100%", background: "#111111", border: "1px solid #2a2a2a", color: "#fff", padding: "8px 10px", fontSize: "13px", borderRadius: "3px", fontFamily: "inherit", boxSizing: "border-box" };
   const labelStyle: React.CSSProperties = { display: "block", fontSize: "11px", color: "#666", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "5px" };
 
   return (
     <div>
-      <div style={{ fontSize: "12px", color: "#555", lineHeight: "1.7", marginBottom: "24px", padding: "14px", border: "1px solid #1a1a1a", borderRadius: "3px", background: "#0a0a0a" }}>
+      <div style={{ fontSize: "12px", color: "#555", lineHeight: "1.7", marginBottom: "24px", padding: "14px", border: "1px solid #1a1a1a", borderRadius: "3px", background: "#111111" }}>
         Zde nastavíš, jak se tvůj web zobrazuje ve výsledcích Google. Titulek a popis vidí zákazník dřív než klikne na stránku — dobře napsané SEO přivede víc návštěvníků.
       </div>
 
@@ -2254,7 +2254,7 @@ function PromoCodesTab() {
   return (
     <div>
       {/* Add form */}
-      <form onSubmit={handleAdd} style={{ marginBottom: "28px", padding: "16px", border: "1px solid #222", borderRadius: "3px", background: "#0a0a0a" }}>
+      <form onSubmit={handleAdd} style={{ marginBottom: "28px", padding: "16px", border: "1px solid #222", borderRadius: "3px", background: "#111111" }}>
         <div style={{ fontSize: "11px", color: "#666", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: "14px" }}>Nový promo kód</div>
         <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "flex-end" }}>
           <div style={{ flex: "1 1 160px" }}>
@@ -2264,7 +2264,7 @@ function PromoCodesTab() {
               value={form.code}
               onChange={e => setForm({ ...form, code: e.target.value.toUpperCase() })}
               placeholder="napr. LETO2025"
-              style={{ width: "100%", background: "#111", border: "1px solid #333", color: "#fff", padding: "8px 10px", fontSize: "13px", borderRadius: "2px", fontFamily: "inherit", textTransform: "uppercase" }}
+              style={{ width: "100%", background: "#161616", border: "1px solid #333", color: "#fff", padding: "8px 10px", fontSize: "13px", borderRadius: "2px", fontFamily: "inherit", textTransform: "uppercase" }}
             />
           </div>
           <div style={{ flex: "0 0 120px" }}>
@@ -2276,7 +2276,7 @@ function PromoCodesTab() {
               max={100}
               value={form.discountPercent}
               onChange={e => setForm({ ...form, discountPercent: Number(e.target.value) })}
-              style={{ width: "100%", background: "#111", border: "1px solid #333", color: "#fff", padding: "8px 10px", fontSize: "13px", borderRadius: "2px", fontFamily: "inherit" }}
+              style={{ width: "100%", background: "#161616", border: "1px solid #333", color: "#fff", padding: "8px 10px", fontSize: "13px", borderRadius: "2px", fontFamily: "inherit" }}
             />
           </div>
           <div style={{ flex: "0 0 auto", display: "flex", alignItems: "center", gap: "8px", paddingBottom: "2px" }}>
@@ -2294,7 +2294,7 @@ function PromoCodesTab() {
             data-testid="button-add-promo"
             type="submit"
             disabled={saving}
-            style={{ flex: "0 0 auto", padding: "8px 20px", background: saving ? "#222" : "#fff", color: saving ? "#666" : "#000", border: "none", borderRadius: "2px", fontSize: "12px", cursor: saving ? "not-allowed" : "pointer", fontFamily: "inherit", letterSpacing: "0.04em" }}
+            style={{ flex: "0 0 auto", padding: "8px 20px", background: saving ? "#222" : "#fff", color: saving ? "#666" : "#0D0D0D", border: "none", borderRadius: "2px", fontSize: "12px", cursor: saving ? "not-allowed" : "pointer", fontFamily: "inherit", letterSpacing: "0.04em" }}
           >
             {saving ? "Ukládám…" : "Přidat kód"}
           </button>

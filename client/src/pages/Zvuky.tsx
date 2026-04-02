@@ -152,7 +152,7 @@ function Zvuky() {
   }));
 
   return (
-    <div style={{ position: "relative", minHeight: "100vh", backgroundColor: "#000" }}>
+    <div style={{ position: "relative", minHeight: "100vh", backgroundColor: "#0D0D0D" }}>
 
       {/* Fixed wall background */}
       <div
@@ -171,7 +171,7 @@ function Zvuky() {
           style={{
             position: "absolute",
             inset: 0,
-            background: "radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.4) 40%, rgba(0,0,0,0.9) 85%, black 100%)",
+            background: "radial-gradient(circle at center, transparent 0%, rgba(13,13,13,0.4) 40%, rgba(13,13,13,0.9) 85%, black 100%)",
           }}
         />
       </div>

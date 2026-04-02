@@ -134,7 +134,7 @@ function MusicPlayer({
           left: 0,
           right: 0,
           height: "84px",
-          backgroundColor: "rgba(0, 0, 0, 0.3)",
+          backgroundColor: "rgba(13, 13, 13, 0.3)",
           backdropFilter: "blur(20px)",
           borderTop: "1px solid #333",
           display: "flex",
@@ -223,7 +223,7 @@ function MusicPlayer({
               className="btn-bounce buy-btn-player"
               style={{
                 padding: "8px 8px 8px 16px",
-                background: "#000",
+                background: "#0D0D0D",
                 color: "#fff",
                 border: "none",
                 fontSize: "12px",
@@ -245,7 +245,7 @@ function MusicPlayer({
               onMouseEnter={(e) => {
                 const btn = e.currentTarget as HTMLButtonElement;
                 btn.style.background = "#fff";
-                btn.style.color = "#000";
+                btn.style.color = "#0D0D0D";
                 btn.style.boxShadow = "0 0 20px rgba(255, 255, 255, 0.8), inset 0 0 0 0.5px #000, inset 0 0 10px rgba(255, 255, 255, 0.3)";
                 
                 // Create particles
@@ -285,11 +285,11 @@ function MusicPlayer({
                 }
                 
                 const plusSymbol = btn.querySelector("span[style*='position: absolute']") as HTMLElement;
-                if (plusSymbol) plusSymbol.style.color = "#000";
+                if (plusSymbol) plusSymbol.style.color = "#0D0D0D";
               }}
               onMouseLeave={(e) => {
                 const btn = e.currentTarget as HTMLButtonElement;
-                btn.style.background = "#000";
+                btn.style.background = "#0D0D0D";
                 btn.style.color = "#fff";
                 btn.style.boxShadow = "inset 0 0 0 0.5px #fff";
                 
@@ -357,7 +357,7 @@ function MusicPlayer({
               borderRadius: "50%",
               border: "2px solid #fff",
               background: isPlaying ? "#fff" : "transparent",
-              color: isPlaying ? "#000" : "#fff",
+              color: isPlaying ? "#0D0D0D" : "#fff",
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
@@ -448,7 +448,7 @@ function MusicPlayer({
                 border-radius: 50%;
                 background: #fff;
                 cursor: pointer;
-                box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+                box-shadow: 0 1px 4px rgba(13,13,13,0.5);
                 transition: transform 0.1s ease, box-shadow 0.1s ease;
               }
               .volume-slider::-webkit-slider-thumb:hover {
@@ -462,7 +462,7 @@ function MusicPlayer({
                 background: #fff;
                 cursor: pointer;
                 border: none;
-                box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+                box-shadow: 0 1px 4px rgba(13,13,13,0.5);
               }
               .volume-slider::-moz-range-track {
                 height: 3px;

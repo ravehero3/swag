@@ -32,7 +32,7 @@ function Header() {
         right: 0,
         zIndex: 100,
         backdropFilter: "blur(20px)",
-        backgroundColor: "rgba(0, 0, 0, 0.3)",
+        backgroundColor: "rgba(13, 13, 13, 0.3)",
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: "12px", position: "relative", zIndex: 10, padding: "0 8px" }}>
@@ -155,7 +155,7 @@ function Header() {
                 top: "-8px",
                 right: "-8px",
                 backgroundColor: "#fff",
-                color: "#000",
+                color: "#0D0D0D",
                 borderRadius: "50%",
                 width: "16px",
                 height: "16px",
@@ -202,7 +202,7 @@ function Header() {
               className="cart-badge"
               style={{
                 background: "#24e053",
-                color: "#000",
+                color: "#0D0D0D",
                 padding: "2px",
                 borderRadius: "4px",
                 fontSize: "12px",

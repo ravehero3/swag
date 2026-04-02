@@ -239,7 +239,7 @@ export default function ProductCard({
               background: "rgba(255, 255, 255, 0.08)",
               backdropFilter: "blur(12px) brightness(1.35) saturate(1.6)",
               WebkitBackdropFilter: "blur(12px) brightness(1.35) saturate(1.6)",
-              boxShadow: "0 4px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.25)",
+              boxShadow: "0 4px 24px rgba(13,13,13,0.25), inset 0 1px 0 rgba(255,255,255,0.25)",
               color: "#fff",
               fontSize: "22px",
               cursor: "pointer",
@@ -279,7 +279,7 @@ export default function ProductCard({
               className="btn-bounce"
               style={{
                 padding: "8px 8px 8px 16px",
-                background: "#000",
+                background: "#0D0D0D",
                 color: "#666",
                 border: "1px solid #666",
                 fontSize: "12px",
@@ -304,9 +304,9 @@ export default function ProductCard({
               onMouseEnter={(e) => {
                 const btn = e.currentTarget as HTMLButtonElement;
                 btn.style.background = "#fff";
-                btn.style.color = "#000";
-                btn.style.borderColor = "#000";
-                btn.style.boxShadow = "0 0 20px rgba(0, 0, 0, 0.8), inset 0 0 0 0.5px #000, inset 0 0 10px rgba(255, 255, 255, 0.3)";
+                btn.style.color = "#0D0D0D";
+                btn.style.borderColor = "#0D0D0D";
+                btn.style.boxShadow = "0 0 20px rgba(13, 13, 13, 0.8), inset 0 0 0 0.5px #000, inset 0 0 10px rgba(255, 255, 255, 0.3)";
                 
                 // Create particles
                 for (let i = 0; i < 7; i++) {
@@ -349,7 +349,7 @@ export default function ProductCard({
               }}
               onMouseLeave={(e) => {
                 const btn = e.currentTarget as HTMLButtonElement;
-                btn.style.background = "#000";
+                btn.style.background = "#0D0D0D";
                 btn.style.color = "#666";
                 btn.style.borderColor = "#666";
                 btn.style.boxShadow = "none";
@@ -384,7 +384,7 @@ export default function ProductCard({
               onClick={handleHeartClick}
               className={isHeartAnimating ? "heart-pulse" : ""}
               style={{
-                background: "#000",
+                background: "#0D0D0D",
                 border: "none",
                 cursor: "pointer",
                 padding: "4px",

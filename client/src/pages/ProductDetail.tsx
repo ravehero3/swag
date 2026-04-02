@@ -86,7 +86,7 @@ function ProductDetail() {
       style={{
         display: "flex",
         height: "calc(100vh - 42px)",
-        backgroundColor: "#000",
+        backgroundColor: "#0D0D0D",
         color: "#fff",
         overflow: "hidden",
       }}
@@ -247,7 +247,7 @@ function ProductDetail() {
               width: "100%",
               padding: "14px",
               backgroundColor: "#24e053",
-              color: "#000",
+              color: "#0D0D0D",
               border: "none",
               borderRadius: "4px",
               fontSize: "12px",
@@ -267,7 +267,7 @@ function ProductDetail() {
               width: "100%",
               padding: "14px",
               backgroundColor: addedToCart ? "#24e053" : "#fff",
-              color: "#000",
+              color: "#0D0D0D",
               border: "none",
               borderRadius: "4px",
               fontSize: "12px",

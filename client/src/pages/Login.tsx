@@ -68,7 +68,7 @@ function Login() {
   const inputStyle = {
     width: "100%",
     borderRadius: "4px",
-    background: "rgba(0, 0, 0, 0.5)",
+    background: "rgba(13, 13, 13, 0.5)",
     border: "1px solid #333",
   };
 
@@ -179,7 +179,7 @@ function Login() {
               justifyContent: "center",
               gap: "10px",
               background: "#fff",
-              color: "#000",
+              color: "#0D0D0D",
               border: "1px solid #fff"
             }}
           >

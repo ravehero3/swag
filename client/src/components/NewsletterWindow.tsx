@@ -78,7 +78,7 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          backgroundColor: 'rgba(13, 13, 13, 0.5)',
           opacity: isOpen ? 1 : 0, 
           pointerEvents: isOpen ? 'auto' : 'none',
           zIndex: 9998,
