@@ -1710,21 +1710,19 @@ function LicensesTab({ licenses, onRefresh }: any) {
     onRefresh();
   };
 
-  const previewContract = (template: string) => {
-    const today = new Date();
-    const months = ["ledna","února","března","dubna","května","června","července","srpna","září","října","listopadu","prosince"];
-    const datum = `${today.getDate()}. ${months[today.getMonth()]} ${today.getFullYear()}`;
-    const filled = template
-      .replace(/\{\{DATUM\}\}/g, datum)
-      .replace(/\{\{PRAVNI_JMENO\}\}/g, "Jan Novák")
-      .replace(/\{\{UMELECKE_JMENO\}\}/g, "YourArtistName")
-      .replace(/\{\{ADRESA\}\}/g, "Příkladná 1, Praha 1, 110 00")
-      .replace(/\{\{BEAT_NAZEV\}\}/g, "Název Beatu")
-      .replace(/\{\{CENA\}\}/g, "5 000,00 Kč");
-
-    const lines = filled.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").split("\n");
-    const html = `<!DOCTYPE html><html lang="cs"><head><meta charset="UTF-8"><style>body{font-family:'Times New Roman',serif;font-size:11pt;color:#111;background:#fff;margin:0;padding:40px;line-height:1.7}h1{font-size:16pt;text-align:center;border-bottom:2px solid #111;padding-bottom:12px;margin-bottom:8px}h2{font-size:13pt;text-align:center;font-weight:normal;margin-bottom:32px}p{margin:0 0 6px 0}.footer{margin-top:40px;border-top:1px solid #111;padding-top:12px;font-size:9pt;color:#555;text-align:center}</style></head><body><h1>VOODOO808: Smlouva o exkluzivní licenci</h1><h2>Licenční smlouva k hudebnímu dílu</h2>${lines.map(l=>l.trim()===""?"<br/>":"<p>"+l+"</p>").join("")}<div class="footer">VOODOO808 Exkluzivní licenční smlouva — Vyhotoveno: ${datum} — Strana 1/1<br/>Tato smlouva je vyhotovena ve dvou stejnopisích, přičemž každá strana obdrží jeden výtisk.</div></body></html>`;
-    setPreviewHtml(html);
+  const previewContract = async (template: string) => {
+    try {
+      const res = await fetch("/api/admin/contracts/preview", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ template }),
+      });
+      const html = await res.text();
+      setPreviewHtml(html);
+    } catch {
+      setPreviewHtml("<p style='padding:40px;color:#666'>Chyba při načítání náhledu.</p>");
+    }
   };
 
   const renderContractForm = (form: any, setForm: (f: any) => void) => (

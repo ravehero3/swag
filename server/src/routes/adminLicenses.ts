@@ -5,6 +5,25 @@ import { generateContractHtml, formatDateCzech, formatPriceCzech } from "../emai
 
 const router = Router();
 
+router.post("/contracts/preview", requireAdmin, (req: Request, res: Response) => {
+  const { template } = req.body;
+  if (!template) return res.status(400).json({ error: "Chybí šablona" });
+
+  const today = new Date();
+  const datum = formatDateCzech(today);
+  const html = generateContractHtml(template, {
+    datum,
+    pravniJmeno: "Jan Novák",
+    umeleckeJmeno: "YourArtistName",
+    adresa: "Příkladná 1, Praha 1, 110 00",
+    beatNazev: "Název Beatu",
+    cena: formatPriceCzech(5000),
+  });
+
+  res.setHeader("Content-Type", "text/html; charset=utf-8");
+  res.send(html);
+});
+
 router.post("/licenses", requireAdmin, async (req: Request, res: Response) => {
   try {
     const { name, description, price, fileTypes, termsText, isNegotiable, isActive, contractTemplate } = req.body;

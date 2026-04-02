@@ -38,41 +38,295 @@ export function fillContractTemplate(
 }
 
 export function contractToHtml(contractText: string, beatTitle: string, datum: string): string {
+  // Escape HTML entities first
   const escaped = contractText
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
 
   const lines = escaped.split("\n");
-  const htmlLines = lines.map(line => {
-    if (line.trim() === "") return "<br/>";
-    return `<p style="margin:0 0 6px 0;">${line}</p>`;
-  }).join("\n");
+  let bodyHtml = "";
+  let inSigBlock = false;
+
+  for (let i = 0; i < lines.length; i++) {
+    const raw = lines[i];
+    const trimmed = raw.trim();
+
+    if (trimmed === "") {
+      bodyHtml += `<div class="spacer"></div>`;
+      continue;
+    }
+
+    // Signature block trigger — "PODPISY" header
+    if (/^PODPISY/i.test(trimmed) && trimmed === trimmed.toUpperCase() && trimmed.length > 2) {
+      inSigBlock = true;
+      bodyHtml += `<div class="section-rule"></div><p class="section-label">${trimmed}</p>`;
+      continue;
+    }
+
+    // ALL-CAPS section label (no leading digit, not a bullet)
+    if (
+      trimmed === trimmed.toUpperCase() &&
+      trimmed.length > 2 &&
+      !/^\d+\./.test(trimmed) &&
+      !trimmed.startsWith("•") &&
+      !trimmed.startsWith("_") &&
+      !/^[A-Z]{1,2}\d/.test(trimmed)
+    ) {
+      bodyHtml += `<div class="section-rule"></div><p class="section-label">${trimmed}</p>`;
+      continue;
+    }
+
+    // Numbered article header "N. SOMETHING IN CAPS"
+    if (/^\d+\.\s+[A-ZÁČĎÉĚÍŇÓŘŠŤŮÚÝŽ]/.test(trimmed)) {
+      const match = trimmed.match(/^(\d+\.\s+)(.+)$/);
+      if (match) {
+        bodyHtml += `<p class="article-heading"><span class="article-num">${match[1]}</span>${match[2]}</p>`;
+        continue;
+      }
+    }
+
+    // Bullet point
+    if (trimmed.startsWith("•")) {
+      bodyHtml += `<p class="bullet">${trimmed.slice(1).trim()}</p>`;
+      continue;
+    }
+
+    // Signature line (contains underscores for filling in)
+    if (trimmed.includes("____") || inSigBlock) {
+      bodyHtml += `<p class="sig-line">${trimmed}</p>`;
+      continue;
+    }
+
+    // Default paragraph
+    bodyHtml += `<p class="body-para">${trimmed}</p>`;
+  }
 
   return `<!DOCTYPE html>
 <html lang="cs">
 <head>
 <meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Licen&#269;n&#237; smlouva &ndash; ${beatTitle}</title>
 <style>
-  body { font-family: 'Times New Roman', serif; font-size: 11pt; color: #111; background: #fff; margin: 0; padding: 40px; }
-  .header { text-align: center; margin-bottom: 32px; border-bottom: 2px solid #111; padding-bottom: 16px; }
-  .header h1 { font-size: 16pt; margin: 0 0 4px 0; letter-spacing: 1px; }
-  .header h2 { font-size: 13pt; margin: 0; font-weight: normal; }
-  .footer { margin-top: 40px; border-top: 1px solid #111; padding-top: 12px; font-size: 9pt; color: #555; text-align: center; }
-  .body { line-height: 1.7; }
+  /* ── Reset ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* ── Page shell ── */
+  html { background: #d6d6d6; min-height: 100%; }
+  body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: 10.5pt;
+    line-height: 1.62;
+    color: #111;
+    background: #d6d6d6;
+    padding: 48px 24px 72px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* ── A4 paper ── */
+  .page {
+    position: relative;
+    width: 794px;
+    min-height: 1123px;
+    margin: 0 auto;
+    padding: 84px 88px 120px;
+    background: #fff;
+    box-shadow:
+      0 2px 8px rgba(0,0,0,0.12),
+      0 12px 40px rgba(0,0,0,0.14),
+      0 32px 64px rgba(0,0,0,0.08);
+  }
+
+  /* ── Document header (top bar) ── */
+  .doc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding-bottom: 18px;
+    border-bottom: 2px solid #111;
+    margin-bottom: 52px;
+  }
+  .doc-wordmark {
+    font-family: 'Georgia', serif;
+    font-size: 10.5pt;
+    font-weight: 700;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: #000;
+  }
+  .doc-meta {
+    text-align: right;
+    font-size: 7.5pt;
+    letter-spacing: 0.08em;
+    color: #888;
+    line-height: 1.7;
+    font-family: 'Georgia', serif;
+  }
+
+  /* ── Title block ── */
+  .title-block {
+    margin-bottom: 52px;
+  }
+  .doc-overline {
+    font-size: 7pt;
+    font-family: 'Georgia', serif;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: #aaa;
+    margin-bottom: 10px;
+    display: block;
+  }
+  .doc-title {
+    font-size: 21pt;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    line-height: 1.1;
+    color: #000;
+    margin-bottom: 8px;
+    font-family: 'Georgia', serif;
+  }
+  .doc-subtitle {
+    font-size: 10pt;
+    color: #777;
+    font-style: italic;
+    font-family: 'Georgia', serif;
+    letter-spacing: 0.01em;
+  }
+
+  /* ── Section rule + label ── */
+  .section-rule {
+    border: none;
+    border-top: 1px solid #ddd;
+    margin: 32px 0 0 0;
+  }
+  .section-label {
+    font-size: 7pt;
+    font-family: 'Georgia', serif;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #aaa;
+    margin: 8px 0 14px 0;
+  }
+
+  /* ── Article heading ── */
+  .article-heading {
+    font-size: 9.5pt;
+    font-weight: 700;
+    font-family: 'Georgia', serif;
+    letter-spacing: 0.01em;
+    color: #111;
+    margin: 22px 0 6px 0;
+    line-height: 1.35;
+  }
+  .article-num {
+    color: #aaa;
+    font-weight: 400;
+    margin-right: 2px;
+  }
+
+  /* ── Body paragraph ── */
+  .body-para {
+    font-size: 10.5pt;
+    line-height: 1.62;
+    color: #222;
+    margin: 0 0 9px 0;
+    text-align: justify;
+    hyphens: auto;
+  }
+
+  /* ── Bullet ── */
+  .bullet {
+    font-size: 10.5pt;
+    line-height: 1.62;
+    color: #222;
+    margin: 0 0 5px 0;
+    padding-left: 18px;
+    position: relative;
+    text-align: justify;
+  }
+  .bullet::before {
+    content: '·';
+    position: absolute;
+    left: 4px;
+    color: #aaa;
+    font-size: 14pt;
+    line-height: 1.2;
+  }
+
+  /* ── Spacer between paragraphs ── */
+  .spacer { height: 8px; }
+
+  /* ── Signature lines ── */
+  .sig-line {
+    font-size: 10pt;
+    color: #333;
+    margin: 4px 0;
+    line-height: 1.8;
+    font-family: 'Georgia', serif;
+  }
+
+  /* ── Footer ── */
+  .doc-footer {
+    position: absolute;
+    bottom: 40px;
+    left: 88px;
+    right: 88px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #e8e8e8;
+    padding-top: 10px;
+  }
+  .doc-footer span {
+    font-size: 7pt;
+    font-family: 'Georgia', serif;
+    letter-spacing: 0.08em;
+    color: #bbb;
+  }
+
+  /* ── Print ── */
+  @media print {
+    html, body { background: #fff; padding: 0; }
+    .page {
+      width: 100%;
+      min-height: auto;
+      box-shadow: none;
+      padding: 0;
+      margin: 0;
+    }
+  }
 </style>
 </head>
 <body>
-<div class="header">
-  <h1>VOODOO808: Smlouva o exkluzivní licenci</h1>
-  <h2>Licenční smlouva k hudebnímu dílu</h2>
-</div>
-<div class="body">
-${htmlLines}
-</div>
-<div class="footer">
-  VOODOO808 Exkluzivní licenční smlouva — Vyhotoveno: ${datum} — Strana 1/1<br/>
-  Tato smlouva je vyhotovena ve dvou stejnopisích, přičemž každá strana obdrží jeden výtisk.
+<div class="page">
+
+  <header class="doc-header">
+    <span class="doc-wordmark">VOODOO808</span>
+    <div class="doc-meta">
+      Exkluzivn&#237; licen&#269;n&#237; smlouva<br/>
+      Vyhotoveno: ${datum}
+    </div>
+  </header>
+
+  <div class="title-block">
+    <span class="doc-overline">Licen&#269;n&#237; smlouva k hudebn&#237;mu d&#237;lu</span>
+    <h1 class="doc-title">${beatTitle}</h1>
+    <p class="doc-subtitle">Smlouva o p&#345;evodu exkluzivn&#237; licence</p>
+  </div>
+
+  <main>
+    ${bodyHtml}
+  </main>
+
+  <footer class="doc-footer">
+    <span>VOODOO808 &copy; ${new Date().getFullYear()}</span>
+    <span>Strana 1 z 1</span>
+    <span>Vyhotoveno dne ${datum}</span>
+  </footer>
+
 </div>
 </body>
 </html>`;
