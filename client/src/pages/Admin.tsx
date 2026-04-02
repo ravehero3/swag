@@ -361,7 +361,6 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
   const [b2PickerFor, setB2PickerFor] = useState<string | null>(null);
   const [hoveredBeatId, setHoveredBeatId] = useState<number | null>(null);
-  const [hoveredKitId, setHoveredKitId] = useState<number | null>(null);
 
   const handleSelectAll = () => {
     if (selectedBeats.length === beats.length) {
@@ -874,6 +873,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
   const [uploadError, setUploadError] = useState<Record<string, string>>({});
   const [b2PickerFor, setB2PickerFor] = useState<string | null>(null);
+  const [hoveredKitId, setHoveredKitId] = useState<number | null>(null);
 
   const handleSelectAll = () => {
     if (selectedKits.length === kits.length) {
