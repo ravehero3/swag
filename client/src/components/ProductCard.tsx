@@ -249,10 +249,9 @@ export default function ProductCard({
               borderRadius: "50%",
               border: "none",
               /* Radial gradient: more opaque at centre, fading toward the rim */
-              background: "radial-gradient(circle at center, rgba(255,255,255,0.30) 0%, rgba(255,255,255,0.22) 40%, rgba(255,255,255,0.06) 100%)",
-              /* Backdrop filter applies to the whole disc */
-              backdropFilter: "blur(28px) brightness(1.2) saturate(2.6) contrast(1.06)",
-              WebkitBackdropFilter: "blur(28px) brightness(1.2) saturate(2.6) contrast(1.06)",
+              background: "radial-gradient(circle at center, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.10) 40%, rgba(255,255,255,0.03) 100%)",
+              backdropFilter: "blur(24px) brightness(1.08) saturate(0) grayscale(1)",
+              WebkitBackdropFilter: "blur(24px) brightness(1.08) saturate(0) grayscale(1)",
               /* Radial mask: full effect at centre (0-40%), fades to 50% opacity at the edge */
               WebkitMaskImage: "radial-gradient(circle at center, black 35%, rgba(0,0,0,0.5) 100%)",
               maskImage: "radial-gradient(circle at center, black 35%, rgba(0,0,0,0.5) 100%)",
