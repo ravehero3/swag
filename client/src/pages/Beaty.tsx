@@ -439,6 +439,22 @@ function Beaty() {
 
   return (
     <div style={{ background: "#000", minHeight: "100vh" }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .beat-row { gap: 8px !important; padding: 6px 8px !important; }
+          .beat-title-col {
+            width: auto !important;
+            min-width: 0 !important;
+            max-width: none !important;
+            flex: 1 !important;
+            margin-right: 0 !important;
+          }
+          .beat-title-col-text { font-size: 14px !important; }
+          .beat-row-actions { margin-right: 4px !important; gap: 4px !important; }
+          .beat-buy-btn { min-width: 70px !important; padding: 8px 4px 8px 8px !important; margin-left: 0 !important; }
+          .beat-buy-price { padding-right: 4px !important; }
+        }
+      `}</style>
       <audio
         ref={audioRef}
         onEnded={handleAudioEnded}
@@ -838,7 +854,7 @@ function Beaty() {
                 {/* matches artwork image */}
                 <div style={{ width: "48px", flexShrink: 0 }} />
                 {/* NÁZEV — matches title column */}
-                <div style={{ width: "240px", minWidth: "240px", maxWidth: "240px", flexShrink: 0, marginRight: "12px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666" }}>NÁZEV</div>
+                <div className="beat-title-col" style={{ width: "240px", minWidth: "240px", maxWidth: "240px", flexShrink: 0, marginRight: "12px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666" }}>NÁZEV</div>
                 <div style={{ position: "absolute", bottom: 0, left: "80px", right: "16px", height: "1px", background: "#333" }} />
                 {/* BPM — matches beat bpm column */}
                 <div className="desktop-only" style={{ width: "100px", flexShrink: 0 }}><button onClick={() => { setSortBy("bpm"); setSortAsc(sortBy === "bpm" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0, textAlign: "left", width: "100%" }}>BPM {sortBy === "bpm" && (sortAsc ? "↑" : "↓")}</button></div>
@@ -848,6 +864,7 @@ function Beaty() {
               {(sortBy && sortBy === "bpm" ? [...otherBeats].sort((a, b) => sortAsc ? a.bpm - b.bpm : b.bpm - a.bpm) : sortBy && sortBy === "key" ? [...otherBeats].sort((a, b) => sortAsc ? a.key.localeCompare(b.key) : b.key.localeCompare(a.key)) : otherBeats).map((beat) => (
             <div
               key={beat.id}
+              className="beat-row"
               onClick={() => playBeat(beat)}
               style={{
                 display: "flex",
@@ -936,8 +953,8 @@ function Beaty() {
                   style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "4px" }}
                 />
               </div>
-              <div style={{ width: "240px", minWidth: "240px", maxWidth: "240px", flexShrink: 0, marginRight: "12px", display: "flex", flexDirection: "column", gap: "8px", overflow: "hidden" }}>
-                <div style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "20px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{beat.title}</div>
+              <div className="beat-title-col" style={{ width: "240px", minWidth: "240px", maxWidth: "240px", flexShrink: 0, marginRight: "12px", display: "flex", flexDirection: "column", gap: "8px", overflow: "hidden" }}>
+                <div className="beat-title-col-text" style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "20px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{beat.title}</div>
               </div>
               <div className="desktop-only" style={{ width: "100px", flexShrink: 0, fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", color: "#666", fontSize: "16px", textAlign: "left" }}>
                 {beat.bpm}
@@ -984,7 +1001,7 @@ function Beaty() {
                 </div>
               )}
 
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginLeft: "auto", marginRight: "16px" }}>
+              <div className="beat-row-actions" style={{ display: "flex", alignItems: "center", gap: "8px", marginLeft: "auto", marginRight: "16px" }}>
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
                   <button
                     onClick={(e) => {
@@ -1156,7 +1173,7 @@ function Beaty() {
                     e.stopPropagation();
                     openContractModal(beat);
                   }}
-                  className="btn-bounce"
+                  className="btn-bounce beat-buy-btn"
                   style={{
                     padding: "8px 8px 8px 16px",
                     background: "#000",
@@ -1246,7 +1263,7 @@ function Beaty() {
                     </svg>
                     <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "#fff", lineHeight: "1", right: "-10px", top: "-5px" }}>+</span>
                   </div>
-                  <span style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "8px" }}>{Math.floor(beat.price)} CZK</span>
+                  <span className="beat-buy-price" style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "8px" }}>{Math.floor(beat.price)} CZK</span>
                 </button>
               </div>
             </div>
