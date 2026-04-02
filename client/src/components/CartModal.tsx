@@ -249,33 +249,18 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
               )}
             </div>
 
-            {/* Total + checkout — only when cart has items */}
+            {/* Total — only when cart has items */}
             {cart.length > 0 && (
               <div style={{ padding: "16px", borderTop: "1px solid #333", flexShrink: 0 }}>
                 <div style={{
                   display: "flex", justifyContent: "space-between",
-                  marginBottom: "16px", fontSize: "16px", fontWeight: "bold",
+                  fontSize: "16px", fontWeight: "bold",
                 }}>
                   <span>Celkem:</span>
                   <span style={{ color: "#fff" }}>
                     {total.toLocaleString("cs-CZ")} CZK
                   </span>
                 </div>
-                <button
-                  onClick={() => { onClose(); window.location.href = "/pokladna"; }}
-                  className="login-glow-button"
-                  style={{
-                    width: "100%", padding: "12px",
-                    backgroundColor: "#fff", color: "#000",
-                    border: "none", borderRadius: "4px",
-                    fontSize: "14px", fontWeight: "bold",
-                    cursor: "pointer", marginBottom: "8px",
-                    transition: "all 0.3s ease",
-                  }}
-                >
-                  Pokračovat na platbu
-                </button>
-                <style dangerouslySetInnerHTML={{ __html: `.login-glow-button:hover { box-shadow: 0 0 15px rgba(255,255,255,0.8); transform: translateY(-1px); }` }} />
               </div>
             )}
 
@@ -292,8 +277,14 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                   fontWeight: "normal", cursor: "pointer",
                   transition: "all 0.3s ease", textTransform: "uppercase",
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e0e0e0")}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#fff")}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.boxShadow = "0 0 15px rgba(255,255,255,0.8)";
+                  e.currentTarget.style.transform = "translateY(-1px)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = "none";
+                  e.currentTarget.style.transform = "translateY(0)";
+                }}
               >
                 PŘEJÍT K POKLADNĚ ({cart.length})
               </button>
