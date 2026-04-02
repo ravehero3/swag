@@ -371,5 +371,5 @@ body.cursor-clicking *::after {
 /* 10. SWORD — main nav links (BEATY, ZVUKY) */
 .nav-sword,
 .nav-sword * {
-  cursor: url('/cursors/sword-cursor.cur'), pointer !important;
+  cursor: url('/cursors/sword-cursor.ani'), pointer !important;
 }
