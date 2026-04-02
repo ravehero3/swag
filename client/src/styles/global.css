@@ -282,12 +282,12 @@ input::placeholder, textarea::placeholder {
 
 /* ─── Custom Black Cursors ─────────────────────────────────────────────────── */
 
-/* Default — everything starts here */
+/* 1. DEFAULT — base cursor for the entire page */
 *, *::before, *::after {
-  cursor: url('/cursors/default.cur'), auto !important;
+  cursor: url('/cursors/v2-default.cur'), auto !important;
 }
 
-/* Pointer — links, buttons, interactive elements */
+/* 2. POINTER — every clickable element */
 a,
 button,
 [role="button"],
@@ -306,10 +306,10 @@ label[for],
 .btn-filled,
 [style*="cursor: pointer"],
 [style*="cursor:pointer"] {
-  cursor: url('/cursors/pointer.cur'), pointer !important;
+  cursor: url('/cursors/v2-pointer.cur'), pointer !important;
 }
 
-/* Text — inputs and editable areas */
+/* 3. TEXT — editable inputs */
 input[type="text"],
 input[type="email"],
 input[type="password"],
@@ -319,71 +319,44 @@ input[type="tel"],
 input[type="url"],
 textarea,
 [contenteditable="true"] {
-  cursor: url('/cursors/text.cur'), text !important;
+  cursor: url('/cursors/v2-default.cur'), text !important;
 }
 
-/* Move */
-[draggable="true"],
-[style*="cursor: move"],
-[style*="cursor:move"] {
-  cursor: url('/cursors/move.cur'), move !important;
-}
-
-/* Unavailable / Not-allowed */
+/* 4. UNAVAILABLE — disabled / locked controls */
 :disabled,
 [disabled],
 [aria-disabled="true"],
 [style*="cursor: not-allowed"],
 [style*="cursor:not-allowed"] {
-  cursor: url('/cursors/unavailable.cur'), not-allowed !important;
+  cursor: url('/cursors/v2-unavailable.cur'), not-allowed !important;
 }
 
-/* Busy / Wait */
+/* 5. BUSY / LOADING */
 [style*="cursor: wait"],
-[style*="cursor:wait"] {
-  cursor: url('/cursors/busy.ani'), url('/cursors/default.cur'), wait !important;
-}
-
-/* Progress / Working in background */
+[style*="cursor:wait"],
 [style*="cursor: progress"],
 [style*="cursor:progress"] {
-  cursor: url('/cursors/working.ani'), url('/cursors/default.cur'), progress !important;
+  cursor: url('/cursors/v2-busy.ani'), url('/cursors/v2-default.cur'), wait !important;
 }
 
-/* Crosshair / Precision */
-[style*="cursor: crosshair"],
-[style*="cursor:crosshair"] {
-  cursor: url('/cursors/crosshair.cur'), crosshair !important;
-}
-
-/* Help */
-[style*="cursor: help"],
-[style*="cursor:help"] {
-  cursor: url('/cursors/help.cur'), help !important;
-}
-
-/* Resize — vertical */
+/* 6. RESIZE — vertical */
 [style*="cursor: ns-resize"],
 [style*="cursor: row-resize"],
 [style*="cursor:ns-resize"] {
-  cursor: url('/cursors/resize-ns.cur'), ns-resize !important;
+  cursor: url('/cursors/v2-resize-ns.cur'), ns-resize !important;
 }
 
-/* Resize — horizontal */
-[style*="cursor: ew-resize"],
-[style*="cursor: col-resize"],
-[style*="cursor:ew-resize"] {
-  cursor: url('/cursors/resize-ew.cur'), ew-resize !important;
-}
-
-/* Resize — diagonal ↘ */
+/* 7. RESIZE — diagonal */
 [style*="cursor: nwse-resize"],
-[style*="cursor:nwse-resize"] {
-  cursor: url('/cursors/resize-nwse.cur'), nwse-resize !important;
+[style*="cursor: nesw-resize"],
+[style*="cursor:nwse-resize"],
+[style*="cursor:nesw-resize"] {
+  cursor: url('/cursors/v2-resize-nwse.cur'), nwse-resize !important;
 }
 
-/* Resize — diagonal ↙ */
-[style*="cursor: nesw-resize"],
-[style*="cursor:nesw-resize"] {
-  cursor: url('/cursors/resize-nesw.cur'), nesw-resize !important;
+/* 8. PRESS — mousedown on anything (JS adds .cursor-clicking to body) */
+body.cursor-clicking *,
+body.cursor-clicking *::before,
+body.cursor-clicking *::after {
+  cursor: url('/cursors/v2-press.cur'), pointer !important;
 }
