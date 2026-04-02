@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRoute, useLocation } from "wouter";
 import { useApp } from "../App.js";
 
@@ -11,9 +11,11 @@ interface ProductData {
   price: number;
   artwork_url: string;
   preview_url?: string;
+  preview_urls?: string[];
   description?: string;
   number_of_sounds?: number;
   type?: string;
+  tags?: string[];
 }
 
 function ProductDetail() {
@@ -22,115 +24,284 @@ function ProductDetail() {
   const { addToCart } = useApp() as any;
   const [product, setProduct] = useState<ProductData | null>(null);
   const [loading, setLoading] = useState(true);
-
-  // Fallback data for test kits if API fails or returns nothing
-  const testKits: Record<number, ProductData> = {
-    1: { id: 1, title: "Analog Drums Vol. 1", price: 2999, artwork_url: "/assets/sound_kits/friendly_aliens_1.png", type: "drum_kit" },
-    2: { id: 2, title: "Urban Beats Collection", price: 1999, artwork_url: "/assets/sound_kits/friendly_ghosts_1.png", type: "one_shot_kit" },
-    3: { id: 3, title: "Cinematic Loops", price: 3499, artwork_url: "/assets/sound_kits/one_shot_kit_1.png", type: "loop_kit" },
-    4: { id: 4, title: "Free Starter Pack", price: 0, artwork_url: "/assets/sound_kits/friendly_aliens_3.png", type: "one_shot_kit" },
-    5: { id: 5, title: "Electronic Synth Sounds", price: 2499, artwork_url: "/assets/sound_kits/white_magic_3.png", type: "drum_kit" },
-    6: { id: 6, title: "Jazz Drums Bundle", price: 4999, artwork_url: "/assets/sound_kits/friendly_aliens_cover.png", type: "drum_kit_bundle" },
-    7: { id: 7, title: "Ambient One Shots", price: 1499, artwork_url: "/assets/sound_kits/friendly_ghosts_2.png", type: "one_shot_kit" },
-    8: { id: 8, title: "Trap Essentials", price: 3299, artwork_url: "/assets/sound_kits/friendly_ghosts_3.png", type: "one_shot_bundle" },
-    9: { id: 9, title: "Vintage Vinyl Loops", price: 2799, artwork_url: "/assets/sound_kits/friendly_aliens_4.png", type: "loop_kit" },
-    10: { id: 10, title: "Deep House Drums", price: 1999, artwork_url: "/assets/sound_kits/friendly_aliens_2.png", type: "drum_kit" },
-    11: { id: 11, title: "Percussion Masters", price: 3799, artwork_url: "/assets/sound_kits/friendly_ghosts_main.png", type: "one_shot_bundle" },
-    12: { id: 12, title: "Retro 80s Pack", price: 4299, artwork_url: "/assets/sound_kits/friendly_aliens_1.png", type: "drum_kit_bundle" },
-  };
+  const [addedToCart, setAddedToCart] = useState(false);
 
   useEffect(() => {
     if (params) {
-      const endpoint = params.type === "beat" ? `/api/beats/${params.id}` : `/api/sound-kits/${params.id}`;
+      const endpoint = params.type === "beat"
+        ? `/api/beats/${params.id}`
+        : `/api/sound-kits/${params.id}`;
       fetch(endpoint)
         .then((res) => res.json())
         .then((data) => {
-          if (data && data.id) {
-            setProduct(data);
-          } else if (params.type === "sound_kit") {
-            // Fallback to test kits for sound kits if API doesn't find the kit
-            setProduct(testKits[Number(params.id)] || null);
-          }
+          if (data && data.id) setProduct(data);
           setLoading(false);
         })
         .catch((err) => {
           console.error(err);
-          if (params.type === "sound_kit") {
-            setProduct(testKits[Number(params.id)] || null);
-          }
           setLoading(false);
         });
     }
   }, [params]);
 
+  const handleAddToCart = () => {
+    if (!product) return;
+    addToCart({
+      productId: product.id,
+      productType: params?.type as any,
+      title: product.title,
+      price: product.price,
+      artworkUrl: product.artwork_url || "/uploads/artwork/metallic-logo.png",
+    });
+    setAddedToCart(true);
+    setTimeout(() => setAddedToCart(false), 2000);
+  };
+
   if (loading) return null;
-  if (!product) return <div className="min-h-screen bg-black flex items-center justify-center text-white">Product not found</div>;
+  if (!product) return (
+    <div style={{ minHeight: "calc(100vh - 42px)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff" }}>
+      Produkt nenalezen
+    </div>
+  );
+
+  // Collect all preview URLs
+  const previews: string[] = [];
+  if (product.preview_urls && product.preview_urls.length > 0) {
+    previews.push(...product.preview_urls);
+  } else if (product.preview_url) {
+    previews.push(product.preview_url);
+  }
+
+  const typeLabels: Record<string, string> = {
+    drum_kit: "Drum Kit",
+    one_shot_kit: "One Shot Kit",
+    loop_kit: "Loop Kit",
+    one_shot_bundle: "One Shot Bundle",
+    drum_kit_bundle: "Drum Kit Bundle",
+    beat: "Beat",
+  };
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center relative overflow-hidden p-4 m-0 w-full">
-      {/* Container with pill shape around all content */}
-      <div className="flex flex-col items-center justify-center text-center relative z-10 mx-auto px-12 py-16 border border-white/20 rounded-[100px] bg-white/5 backdrop-blur-sm w-full max-w-[800px]">
-        {/* Product Image - Centered and 400px tall */}
-        <div className="flex items-center justify-center relative mb-[32px] w-full">
-          <div className="relative w-full flex items-center justify-center" style={{ height: '400px' }}>
-            <img 
-              src={product.artwork_url || "/uploads/artwork/metallic-logo.png"} 
-              alt={product.title} 
-              className="h-full w-auto object-contain relative z-20 mx-auto"
-              style={{ maxHeight: '400px' }}
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.onerror = null;
-                target.src = "/uploads/artwork/metallic-logo.png";
+    <div
+      style={{
+        display: "flex",
+        height: "calc(100vh - 42px)",
+        backgroundColor: "#000",
+        color: "#fff",
+        overflow: "hidden",
+      }}
+    >
+      {/* Left half — artwork */}
+      <div
+        style={{
+          width: "50%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "48px",
+          flexShrink: 0,
+          overflow: "hidden",
+        }}
+      >
+        <img
+          src={product.artwork_url || "/uploads/artwork/metallic-logo.png"}
+          alt={product.title}
+          onError={(e) => {
+            (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png";
+          }}
+          style={{
+            maxWidth: "100%",
+            maxHeight: "100%",
+            objectFit: "contain",
+            borderRadius: "4px",
+          }}
+        />
+      </div>
+
+      {/* Center divider */}
+      <div
+        style={{
+          width: "1px",
+          backgroundColor: "#222",
+          flexShrink: 0,
+          alignSelf: "stretch",
+        }}
+      />
+
+      {/* Right half — info */}
+      <div
+        style={{
+          width: "50%",
+          display: "flex",
+          flexDirection: "column",
+          padding: "48px 40px",
+          overflowY: "auto",
+          gap: "0",
+        }}
+      >
+        {/* Back link */}
+        <button
+          onClick={() => setLocation(params?.type === "beat" ? "/beaty" : "/zvuky")}
+          style={{
+            background: "none",
+            border: "none",
+            color: "#555",
+            fontSize: "11px",
+            letterSpacing: "0.1em",
+            cursor: "pointer",
+            padding: 0,
+            textAlign: "left",
+            textTransform: "uppercase",
+            marginBottom: "32px",
+            transition: "color 0.2s ease",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "#fff")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "#555")}
+        >
+          ← Zpět do obchodu
+        </button>
+
+        {/* Title */}
+        <h1
+          style={{
+            fontSize: "clamp(20px, 3vw, 32px)",
+            fontWeight: "bold",
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            marginBottom: "16px",
+            lineHeight: 1.1,
+          }}
+        >
+          {product.title}
+        </h1>
+
+        {/* Metadata */}
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "16px",
+            color: "#666",
+            fontSize: "11px",
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            marginBottom: "32px",
+          }}
+        >
+          {product.artist && <span>Artist: {product.artist}</span>}
+          {product.bpm && <span>BPM: {product.bpm}</span>}
+          {product.key && <span>Key: {product.key}</span>}
+          {product.number_of_sounds ? <span>Zvuků: {product.number_of_sounds}</span> : null}
+          {product.type && <span>{typeLabels[product.type] || product.type}</span>}
+          {product.tags && product.tags.length > 0 && (
+            <span>{product.tags.join(", ")}</span>
+          )}
+        </div>
+
+        {/* Audio previews */}
+        {previews.length > 0 && (
+          <div style={{ marginBottom: "32px" }}>
+            <div
+              style={{
+                fontSize: "11px",
+                color: "#555",
+                letterSpacing: "0.1em",
+                textTransform: "uppercase",
+                marginBottom: "12px",
               }}
-            />
-            {/* Subtle Glow underneath the image */}
-            <div className="absolute inset-0 bg-white/10 blur-[60px] rounded-full z-0 pointer-events-none transform translate-y-8" />
+            >
+              {previews.length > 1 ? "Ukázky" : "Ukázka"}
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              {previews.map((url, idx) => (
+                <audio
+                  key={idx}
+                  controls
+                  src={url}
+                  style={{ width: "100%", height: "36px" }}
+                />
+              ))}
+            </div>
           </div>
+        )}
+
+        {/* Divider */}
+        <div style={{ height: "1px", backgroundColor: "#222", marginBottom: "28px" }} />
+
+        {/* Price */}
+        <div
+          style={{
+            fontSize: "28px",
+            fontWeight: "bold",
+            marginBottom: "16px",
+            letterSpacing: "0.05em",
+          }}
+        >
+          {Number(product.price).toLocaleString("cs-CZ")} CZK
         </div>
 
-        {/* Product Info - Centered with 4px padding between text elements */}
-        <div className="flex flex-col items-center justify-center space-y-[4px] w-full text-center">
-          <h1 className="text-2xl md:text-3xl font-bold uppercase tracking-widest w-full text-center py-[2px]">
-            {product.title}
-          </h1>
-          
-          <div className="text-[#666] text-xs flex flex-wrap justify-center items-center gap-4 uppercase w-full text-center py-[2px]">
-            {product.artist && <span>Artist: {product.artist}</span>}
-            {product.bpm && <span>BPM: {product.bpm}</span>}
-            {product.key && <span>Key: {product.key}</span>}
-            {product.number_of_sounds && <span>Sounds: {product.number_of_sounds}</span>}
-            {product.type && <span>Type: {product.type.replace('_', ' ')}</span>}
-          </div>
-
-          <div className="border-t border-b border-white/10 py-6 w-full flex flex-col items-center justify-center px-4 space-y-[4px] my-4">
-             <div className="text-3xl font-bold mb-6 w-full text-center py-[2px]">{product.price} CZK</div>
-             
-             <button
-               onClick={() => addToCart({
-                 productId: product.id,
-                 productType: params?.type as any,
-                 title: product.title,
-                 price: product.price,
-                 artworkUrl: product.artwork_url || "/uploads/artwork/metallic-logo.png"
-               })}
-               className="w-full py-4 bg-white text-black font-bold uppercase tracking-wider rounded-sm hover:bg-gray-200 transition-colors mx-auto block"
-             >
-               DO KOŠÍKU
-             </button>
-          </div>
-
-          <div className="text-gray-400 text-sm leading-relaxed w-full text-center py-[2px]">
-            {product.description || "Tento digitální produkt je připraven k okamžitému stažení po zakoupení. Obsahuje vysoce kvalitní audio soubory pro vaši hudební produkci."}
-          </div>
-          
-          <button 
-            onClick={() => setLocation(params?.type === 'beat' ? '/beaty' : '/zvuky')}
-            className="text-xs uppercase tracking-widest text-[#666] hover:text-white transition-colors mt-8 block py-[2px] mx-auto"
+        {/* Add to cart */}
+        {!product.price || product.price === 0 ? (
+          <button
+            style={{
+              width: "100%",
+              padding: "14px",
+              backgroundColor: "#24e053",
+              color: "#000",
+              border: "none",
+              borderRadius: "4px",
+              fontSize: "12px",
+              fontWeight: "bold",
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              cursor: "pointer",
+              marginBottom: "32px",
+            }}
           >
-            ← Zpět do obchodu
+            ZDARMA
           </button>
-        </div>
+        ) : (
+          <button
+            onClick={handleAddToCart}
+            style={{
+              width: "100%",
+              padding: "14px",
+              backgroundColor: addedToCart ? "#24e053" : "#fff",
+              color: "#000",
+              border: "none",
+              borderRadius: "4px",
+              fontSize: "12px",
+              fontWeight: "bold",
+              letterSpacing: "0.1em",
+              textTransform: "uppercase",
+              cursor: "pointer",
+              marginBottom: "32px",
+              transition: "all 0.3s ease",
+            }}
+            onMouseEnter={(e) => {
+              if (!addedToCart) (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#e0e0e0";
+            }}
+            onMouseLeave={(e) => {
+              if (!addedToCart) (e.currentTarget as HTMLButtonElement).style.backgroundColor = "#fff";
+            }}
+          >
+            {addedToCart ? "✓ PŘIDÁNO DO KOŠÍKU" : "DO KOŠÍKU"}
+          </button>
+        )}
+
+        {/* Description */}
+        {product.description && (
+          <p
+            style={{
+              color: "#666",
+              fontSize: "13px",
+              lineHeight: 1.7,
+              margin: 0,
+            }}
+          >
+            {product.description}
+          </p>
+        )}
       </div>
     </div>
   );

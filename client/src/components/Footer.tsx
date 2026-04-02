@@ -7,7 +7,7 @@ function Footer() {
         alignItems: "center",
         justifyContent: "center",
         position: "relative",
-        zIndex: 5000,
+        zIndex: 10,
         borderTop: "1px solid #333",
       }}
     >

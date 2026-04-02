@@ -135,6 +135,7 @@ interface SoundKit {
   number_of_sounds: number;
   tags: string[];
   preview_url: string;
+  preview_urls: string[];
   file_url: string;
   artwork_url: string;
   legal_info: string;
@@ -859,6 +860,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
     numberOfSounds: 0,
     tags: [] as string[],
     previewUrl: "",
+    previewUrls: [] as string[],
     fileUrl: "",
     artworkUrl: "",
     legalInfo: "",
@@ -918,6 +920,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
         numberOfSounds: editing.number_of_sounds,
         tags: editing.tags || [],
         previewUrl: editing.preview_url || "",
+        previewUrls: editing.preview_urls || [],
         fileUrl: editing.file_url || "",
         artworkUrl: editing.artwork_url || "",
         legalInfo: editing.legal_info || "",
@@ -935,7 +938,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
     await fetch(url, { method, headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(form) });
     setShowForm(false);
     setEditing(null);
-    setForm({ title: "", description: "", type: "drum_kit", price: 899, priceType: "kit", isFree: false, numberOfSounds: 0, tags: [], previewUrl: "", fileUrl: "", artworkUrl: "", legalInfo: "", authorInfo: "", isPublished: true });
+    setForm({ title: "", description: "", type: "drum_kit", price: 899, priceType: "kit", isFree: false, numberOfSounds: 0, tags: [], previewUrl: "", previewUrls: [], fileUrl: "", artworkUrl: "", legalInfo: "", authorInfo: "", isPublished: true });
     onRefresh();
   };
 
@@ -1137,9 +1140,24 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
                 ))}
               </div>
             </div>
-            <div>
-              <label style={{ display: "block", marginBottom: "8px" }}>Preview Audio</label>
-              <input type="file" accept="audio/*" onChange={async (e) => { if (e.target.files?.[0]) { const url = await uploadFile(e.target.files[0], "preview"); setForm({ ...form, previewUrl: url as string }); } }} style={{ width: "100%" }} />
+            <div style={{ gridColumn: "1 / -1" }}>
+              <label style={{ display: "block", marginBottom: "8px" }}>Preview Audio (lze přidat více)</label>
+              {form.previewUrls.map((url, idx) => (
+                <div key={idx} style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+                  <audio controls src={url} style={{ flex: 1, height: "36px" }} />
+                  <button
+                    type="button"
+                    onClick={() => setForm(f => ({ ...f, previewUrls: f.previewUrls.filter((_, i) => i !== idx) }))}
+                    style={{ background: "none", border: "1px solid #666", color: "#fff", padding: "4px 10px", cursor: "pointer", borderRadius: "2px", fontSize: "14px" }}
+                  >×</button>
+                </div>
+              ))}
+              <input type="file" accept="audio/*" onChange={async (e) => {
+                if (e.target.files?.[0]) {
+                  const url = await uploadFile(e.target.files[0], "preview");
+                  if (url) setForm(f => ({ ...f, previewUrls: [...f.previewUrls, url as string] }));
+                }
+              }} style={{ width: "100%" }} />
               <UploadProgressBar type="preview" />
             </div>
             <div>
