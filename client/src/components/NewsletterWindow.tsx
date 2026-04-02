@@ -71,6 +71,11 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
 
   return (
     <>
+      <style>{`
+        @media (max-width: 768px) {
+          .newsletter-modal-panel { width: 100% !important; }
+        }
+      `}</style>
       <div 
         style={{ 
           position: 'fixed',
@@ -88,6 +93,7 @@ export default function NewsletterWindow({ isOpen, onClose }: NewsletterWindowPr
       />
       
       <div 
+        className="newsletter-modal-panel"
         style={{
           position: 'fixed',
           top: 0,

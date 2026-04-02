@@ -306,7 +306,7 @@ label[for],
 .btn-filled,
 [style*="cursor: pointer"],
 [style*="cursor:pointer"] {
-  cursor: url('/cursors/v2-pointer.cur'), pointer !important;
+  cursor: url('/cursors/custom-pointer.cur'), pointer !important;
 }
 
 /* 3. TEXT — editable inputs */

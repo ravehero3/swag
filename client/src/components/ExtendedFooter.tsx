@@ -262,14 +262,16 @@ export default function ExtendedFooter() {
           overflowX: "hidden",
         }}
       >
-        <div style={sectionStyle} className="footer-section">
-          <h3 style={titleStyle}>ODBĚR NOVINEK</h3>
-          <ul style={listStyle}>
-            <li style={listItemStyle}>
+        <FooterAccordionItem 
+          title="ODBĚR NOVINEK" 
+          isOpen={openSection === 'newsletter'} 
+          onToggle={() => toggleSection('newsletter')}
+        >
+          <ul style={{...listStyle, marginTop: "8px"}}>
+            <li style={{...listItemStyle, marginBottom: "8px"}}>
               <button 
                 onClick={(e) => { 
                   e.preventDefault(); 
-                  console.log('Opening newsletter drawer (mobile)');
                   setIsNewsletterOpen(true); 
                 }} 
                 style={{
@@ -287,7 +289,7 @@ export default function ExtendedFooter() {
               </button>
             </li>
           </ul>
-        </div>
+        </FooterAccordionItem>
 
         <FooterAccordionItem 
           title="ZÁKAZNICKÝ SERVIS" 
