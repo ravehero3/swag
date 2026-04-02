@@ -784,6 +784,7 @@ function Beaty() {
               {user && (
                 <button
                   onClick={() => toggleSave(highlightedBeat)}
+                  className="heart-btn"
                   style={{
                     background: "transparent",
                     border: "none",
@@ -948,6 +949,7 @@ function Beaty() {
                     e.stopPropagation();
                     toggleSave(beat);
                   }}
+                  className="heart-btn"
                   style={{
                     background: "transparent",
                     border: "none",
@@ -1054,7 +1056,7 @@ function Beaty() {
                       e.stopPropagation();
                       toggleSave(beat);
                     }}
-                    className="mobile-only"
+                    className="mobile-only heart-btn"
                     style={{
                       display: "none",
                       background: "#111111",
@@ -1123,6 +1125,7 @@ function Beaty() {
                         e.stopPropagation();
                         toggleSave(beat);
                       }}
+                      className="heart-btn"
                       style={{
                         background: "transparent",
                         border: "none",

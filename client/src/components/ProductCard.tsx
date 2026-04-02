@@ -398,7 +398,7 @@ export default function ProductCard({
           {onToggleSave && (
             <button
               onClick={handleHeartClick}
-              className={isHeartAnimating ? "heart-pulse" : ""}
+              className={`heart-btn${isHeartAnimating ? " heart-pulse" : ""}`}
               style={{
                 background: "#000",
                 border: "none",

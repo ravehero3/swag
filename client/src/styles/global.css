@@ -360,3 +360,10 @@ body.cursor-clicking *::before,
 body.cursor-clicking *::after {
   cursor: url('/cursors/v2-press.cur'), pointer !important;
 }
+
+/* 9. HEART — save/favourite buttons */
+.heart-btn,
+.heart-btn *,
+.heart-btn svg {
+  cursor: url('/cursors/heart-cursor.cur'), pointer !important;
+}

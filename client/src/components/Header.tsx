@@ -125,7 +125,7 @@ function Header() {
           </Link>
         )}
 
-        <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+        <div className="heart-btn" style={{ position: "relative", display: "flex", alignItems: "center" }}>
           <Link href="/ulozeno">
             <svg
               width="16"
