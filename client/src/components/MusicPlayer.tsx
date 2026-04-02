@@ -223,7 +223,7 @@ function MusicPlayer({
               className="btn-bounce buy-btn-player"
               style={{
                 padding: "8px 8px 8px 16px",
-                background: "#0D0D0D",
+                background: "#000",
                 color: "#fff",
                 border: "none",
                 fontSize: "12px",
@@ -245,7 +245,7 @@ function MusicPlayer({
               onMouseEnter={(e) => {
                 const btn = e.currentTarget as HTMLButtonElement;
                 btn.style.background = "#fff";
-                btn.style.color = "#0D0D0D";
+                btn.style.color = "#000";
                 btn.style.boxShadow = "0 0 20px rgba(255, 255, 255, 0.8), inset 0 0 0 0.5px #000, inset 0 0 10px rgba(255, 255, 255, 0.3)";
                 
                 // Create particles
@@ -285,11 +285,11 @@ function MusicPlayer({
                 }
                 
                 const plusSymbol = btn.querySelector("span[style*='position: absolute']") as HTMLElement;
-                if (plusSymbol) plusSymbol.style.color = "#0D0D0D";
+                if (plusSymbol) plusSymbol.style.color = "#000";
               }}
               onMouseLeave={(e) => {
                 const btn = e.currentTarget as HTMLButtonElement;
-                btn.style.background = "#0D0D0D";
+                btn.style.background = "#000";
                 btn.style.color = "#fff";
                 btn.style.boxShadow = "inset 0 0 0 0.5px #fff";
                 
@@ -357,7 +357,7 @@ function MusicPlayer({
               borderRadius: "50%",
               border: "2px solid #fff",
               background: isPlaying ? "#fff" : "transparent",
-              color: isPlaying ? "#0D0D0D" : "#fff",
+              color: isPlaying ? "#000" : "#fff",
               cursor: "pointer",
               display: "flex",
               alignItems: "center",

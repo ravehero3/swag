@@ -135,7 +135,7 @@ function DownloadModal({ item, isOpen, onClose, user }: DownloadModalProps) {
             style={{
               padding: "14px 32px",
               background: isLoading ? "#ccc" : "#fff",
-              color: "#0D0D0D",
+              color: "#000",
               border: "none",
               borderRadius: "4px",
               fontSize: "13px",

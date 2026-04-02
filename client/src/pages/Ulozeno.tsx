@@ -402,7 +402,7 @@ function Ulozeno() {
                             borderRadius: "50%",
                             border: "1.5px solid #fff",
                             background: currentItem?.id === item.id && isPlaying ? "#fff" : "rgba(13,13,13,0.55)",
-                            color: currentItem?.id === item.id && isPlaying ? "#0D0D0D" : "#fff",
+                            color: currentItem?.id === item.id && isPlaying ? "#000" : "#fff",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",

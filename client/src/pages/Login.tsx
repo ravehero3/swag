@@ -179,7 +179,7 @@ function Login() {
               justifyContent: "center",
               gap: "10px",
               background: "#fff",
-              color: "#0D0D0D",
+              color: "#000",
               border: "1px solid #fff"
             }}
           >

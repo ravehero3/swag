@@ -83,7 +83,7 @@ function ShareModal({ beatId, beatTitle, isOpen, onClose }: ShareModalProps) {
               style={{
                 flex: 1,
                 padding: "12px",
-                background: "#0D0D0D",
+                background: "#000",
                 border: "1px solid #333",
                 borderRadius: "4px",
                 color: "#fff",
@@ -96,7 +96,7 @@ function ShareModal({ beatId, beatTitle, isOpen, onClose }: ShareModalProps) {
               style={{
                 padding: "12px 20px",
                 background: copied ? "#4CAF50" : "#fff",
-                color: copied ? "#fff" : "#0D0D0D",
+                color: copied ? "#fff" : "#000",
                 border: "none",
                 borderRadius: "4px",
                 fontSize: "13px",

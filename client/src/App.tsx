@@ -86,7 +86,7 @@ function PageLoader() {
       alignItems: "center",
       justifyContent: "center",
       minHeight: "100vh",
-      background: "#0D0D0D",
+      background: "#000",
       color: "#fff",
     }}>
       <div />
@@ -213,7 +213,7 @@ function App() {
 
   return (
     <AppContext.Provider value={{ user, setUser, authLoading, cart, addToCart, removeFromCart, clearCart, isCartOpen, setIsCartOpen, isNewsletterOpen, setIsNewsletterOpen, settings, refreshSettings, savedCount, refreshSavedCount }}>
-      <div style={{ minHeight: "100vh", background: "#0D0D0D", display: "flex", flexDirection: "column" }}>
+      <div style={{ minHeight: "100vh", background: "#000", display: "flex", flexDirection: "column" }}>
         <Header />
         <main style={{ flex: 1 }} className="fade-in">
           <Suspense fallback={<PageLoader />}>

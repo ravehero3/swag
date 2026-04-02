@@ -455,13 +455,13 @@ function Beaty() {
 
   if (beatsLoading) {
     return (
-      <div style={{ background: "#0D0D0D", minHeight: "100vh" }} />
+      <div style={{ background: "#000", minHeight: "100vh" }} />
     );
   }
 
   if (beats.length === 0 && !highlightedBeat) {
     return (
-      <div style={{ background: "#0D0D0D", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff" }}>
+      <div style={{ background: "#000", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff" }}>
         <div className="fade-in" style={{ textAlign: "center", padding: "100px 20px" }}>
           <p style={{ opacity: 0.6, fontSize: "14px", letterSpacing: "1px" }}>Žádné beaty nebyly nalezeny.</p>
         </div>
@@ -470,7 +470,7 @@ function Beaty() {
   }
 
   return (
-    <div style={{ background: "#0D0D0D", minHeight: "100vh" }}>
+    <div style={{ background: "#000", minHeight: "100vh" }}>
       <style>{`
         @keyframes heartPop {
           0%   { transform: scale(1); }
@@ -503,7 +503,7 @@ function Beaty() {
         }}
       />
 
-      <div style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative", background: "#0D0D0D", minHeight: "600px" }}>
+      <div style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative", background: "#000", minHeight: "600px" }}>
         <video
           key={settings?.beaty_video}
           src={settings?.beaty_video || "/uploads/beaty-video.mov"}
@@ -511,7 +511,7 @@ function Beaty() {
           loop
           muted
           playsInline
-          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", background: "#0D0D0D" }}
+          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", background: "#000" }}
         >
           Your browser does not support the video tag.
         </video>
@@ -566,7 +566,7 @@ function Beaty() {
                     borderRadius: "50%",
                     border: "2px solid #fff",
                     background: currentBeat?.id === highlightedBeat.id && isPlaying ? "#fff" : "rgba(13,13,13,0.7)",
-                    color: currentBeat?.id === highlightedBeat.id && isPlaying ? "#0D0D0D" : "#fff",
+                    color: currentBeat?.id === highlightedBeat.id && isPlaying ? "#000" : "#fff",
                     fontSize: "16px",
                     cursor: "pointer",
                     display: "flex",
@@ -600,7 +600,7 @@ function Beaty() {
                       className="btn-bounce"
                       style={{
                         padding: "8px 8px 8px 16px",
-                        background: "#0D0D0D",
+                        background: "#000",
                         color: "#fff",
                         border: "none",
                         fontSize: "12px",
@@ -621,12 +621,12 @@ function Beaty() {
                       onMouseEnter={(e) => {
                         const btn = e.currentTarget as HTMLButtonElement;
                         btn.style.background = "#fff";
-                        btn.style.color = "#0D0D0D";
+                        btn.style.color = "#000";
                         btn.style.boxShadow = "0 0 20px rgba(255, 255, 255, 0.8), inset 0 0 0 0.5px #000, inset 0 0 10px rgba(255, 255, 255, 0.3)";
                         
                         // Change + symbol color to black
                         const plusSymbol = btn.querySelector("span[style*='position: absolute']") as HTMLElement;
-                        if (plusSymbol) plusSymbol.style.color = "#0D0D0D";
+                        if (plusSymbol) plusSymbol.style.color = "#000";
                         
                         // Create particles
                         for (let i = 0; i < 7; i++) {
@@ -666,7 +666,7 @@ function Beaty() {
                       }}
                       onMouseLeave={(e) => {
                         const btn = e.currentTarget as HTMLButtonElement;
-                        btn.style.background = "#0D0D0D";
+                        btn.style.background = "#000";
                         btn.style.color = "#fff";
                         btn.style.boxShadow = "inset 0 0 0 0.5px #fff";
                         
@@ -691,7 +691,7 @@ function Beaty() {
                     <button
                       style={{
                         padding: "8px",
-                        background: "#0D0D0D",
+                        background: "#000",
                         border: "1px solid #666",
                         borderRadius: "4px",
                         cursor: "pointer",
@@ -705,7 +705,7 @@ function Beaty() {
                         minHeight: "32px",
                       }}
                       onMouseEnter={(e) => (e.currentTarget.style.background = "#1a1a1a")}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = "#0D0D0D")}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = "#000")}
                       onClick={() => downloadPreview(highlightedBeat)}
                       title="Download"
                     >
@@ -718,7 +718,7 @@ function Beaty() {
                     <button
                       style={{
                         padding: "8px",
-                        background: "#0D0D0D",
+                        background: "#000",
                         border: "1px solid #666",
                         borderRadius: "4px",
                         cursor: "pointer",
@@ -732,7 +732,7 @@ function Beaty() {
                         minHeight: "32px",
                       }}
                       onMouseEnter={(e) => (e.currentTarget.style.background = "#1a1a1a")}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = "#0D0D0D")}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = "#000")}
                       title="Share"
                     >
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
@@ -1219,7 +1219,7 @@ function Beaty() {
                   className="btn-bounce beat-buy-btn"
                   style={{
                     padding: "8px 8px 8px 16px",
-                    background: "#0D0D0D",
+                    background: "#000",
                     color: "#fff",
                     border: "none",
                     fontSize: "12px",
@@ -1241,12 +1241,12 @@ function Beaty() {
                   onMouseEnter={(e) => {
                     const btn = e.currentTarget as HTMLButtonElement;
                     btn.style.background = "#fff";
-                    btn.style.color = "#0D0D0D";
+                    btn.style.color = "#000";
                     btn.style.boxShadow = "0 0 20px rgba(255, 255, 255, 0.8), inset 0 0 0 0.5px #000, inset 0 0 10px rgba(255, 255, 255, 0.3)";
                     
                     // Change + symbol color to black
                     const plusSymbol = btn.querySelector("span[style*='position: absolute']") as HTMLElement;
-                    if (plusSymbol) plusSymbol.style.color = "#0D0D0D";
+                    if (plusSymbol) plusSymbol.style.color = "#000";
                     
                     // Create particles
                     for (let i = 0; i < 7; i++) {
@@ -1286,7 +1286,7 @@ function Beaty() {
                   }}
                   onMouseLeave={(e) => {
                     const btn = e.currentTarget as HTMLButtonElement;
-                    btn.style.background = "#0D0D0D";
+                    btn.style.background = "#000";
                     btn.style.color = "#fff";
                     btn.style.boxShadow = "inset 0 0 0 0.5px #fff";
                     
@@ -1425,7 +1425,7 @@ function Beaty() {
               marginLeft: "calc(-50vw + 50%)",
               overflow: "hidden",
               position: "relative",
-              background: "#0D0D0D",
+              background: "#000",
             }}>
               <img
                 src="/uploads/zvuky-computer-background.jpg"

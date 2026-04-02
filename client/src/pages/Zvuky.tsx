@@ -152,7 +152,7 @@ function Zvuky() {
   }));
 
   return (
-    <div style={{ position: "relative", minHeight: "100vh", backgroundColor: "#0D0D0D" }}>
+    <div style={{ position: "relative", minHeight: "100vh", backgroundColor: "#000" }}>
 
       {/* Fixed wall background */}
       <div

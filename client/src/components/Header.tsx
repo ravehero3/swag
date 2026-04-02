@@ -155,7 +155,7 @@ function Header() {
                 top: "-8px",
                 right: "-8px",
                 backgroundColor: "#fff",
-                color: "#0D0D0D",
+                color: "#000",
                 borderRadius: "50%",
                 width: "16px",
                 height: "16px",
@@ -202,7 +202,7 @@ function Header() {
               className="cart-badge"
               style={{
                 background: "#24e053",
-                color: "#0D0D0D",
+                color: "#000",
                 padding: "2px",
                 borderRadius: "4px",
                 fontSize: "12px",

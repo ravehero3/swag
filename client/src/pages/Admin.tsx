@@ -247,7 +247,7 @@ function Admin() {
 
   if (adminLoading) {
     return (
-      <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", background: "#0D0D0D" }}>
+      <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", background: "#000" }}>
         <div style={{ textAlign: "center", padding: "24px" }}>
           <p style={{ margin: 0, fontSize: "16px" }}>Kontrola administrátorského přístupu...</p>
         </div>
@@ -257,7 +257,7 @@ function Admin() {
 
   if (adminError) {
     return (
-      <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", background: "#0D0D0D", padding: "24px" }}>
+      <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", background: "#000", padding: "24px" }}>
         <div style={{ maxWidth: "640px", textAlign: "center" }}>
           <h2 style={{ marginBottom: "16px", color: "#fff" }}>Chyba administračního panelu</h2>
           <p style={{ marginBottom: "16px", color: "#ccc" }}>{adminError}</p>
@@ -269,7 +269,7 @@ function Admin() {
 
   if (!adminChecked || !isAdmin) {
     return (
-      <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", background: "#0D0D0D" }}>
+      <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", background: "#000" }}>
         <div style={{ textAlign: "center", padding: "24px" }}>
           <p style={{ margin: 0, fontSize: "16px" }}>Probíhá přesměrování na přihlášení...</p>
         </div>
@@ -604,8 +604,8 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                     style={{
                       flex: 1,
                       padding: "10px 8px",
-                      background: form.priceType === pt.id ? "#fff" : "#0D0D0D",
-                      color: form.priceType === pt.id ? "#0D0D0D" : "#fff",
+                      background: form.priceType === pt.id ? "#fff" : "#000",
+                      color: form.priceType === pt.id ? "#000" : "#fff",
                       border: "1px solid #555",
                       borderRadius: "4px",
                       cursor: "pointer",
@@ -1105,8 +1105,8 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
                     style={{
                       flex: 1,
                       padding: "10px 8px",
-                      background: form.priceType === pt.id ? "#fff" : "#0D0D0D",
-                      color: form.priceType === pt.id ? "#0D0D0D" : "#fff",
+                      background: form.priceType === pt.id ? "#fff" : "#000",
+                      color: form.priceType === pt.id ? "#000" : "#fff",
                       border: "1px solid #555",
                       borderRadius: "4px",
                       cursor: "pointer",
@@ -2294,7 +2294,7 @@ function PromoCodesTab() {
             data-testid="button-add-promo"
             type="submit"
             disabled={saving}
-            style={{ flex: "0 0 auto", padding: "8px 20px", background: saving ? "#222" : "#fff", color: saving ? "#666" : "#0D0D0D", border: "none", borderRadius: "2px", fontSize: "12px", cursor: saving ? "not-allowed" : "pointer", fontFamily: "inherit", letterSpacing: "0.04em" }}
+            style={{ flex: "0 0 auto", padding: "8px 20px", background: saving ? "#222" : "#fff", color: saving ? "#666" : "#000", border: "none", borderRadius: "2px", fontSize: "12px", cursor: saving ? "not-allowed" : "pointer", fontFamily: "inherit", letterSpacing: "0.04em" }}
           >
             {saving ? "Ukládám…" : "Přidat kód"}
           </button>

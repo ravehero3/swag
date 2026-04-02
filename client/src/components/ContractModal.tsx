@@ -109,7 +109,7 @@ function ContractModal({ beat, isOpen, onClose, onAddToCart, onPlay, isPlaying }
       `}</style>
       <div
         style={{
-          background: "#0D0D0D",
+          background: "#000",
           border: "1px solid #333",
           borderRadius: "12px",
           maxWidth: "600px",
@@ -170,7 +170,7 @@ function ContractModal({ beat, isOpen, onClose, onAddToCart, onPlay, isPlaying }
                       borderRadius: "50%",
                       border: "2px solid #fff",
                       background: isPlaying ? "#fff" : "rgba(13,13,13,0.7)",
-                      color: isPlaying ? "#0D0D0D" : "#fff",
+                      color: isPlaying ? "#000" : "#fff",
                       fontSize: "14px",
                       cursor: "pointer",
                       display: "flex",
@@ -273,7 +273,7 @@ function ContractModal({ beat, isOpen, onClose, onAddToCart, onPlay, isPlaying }
                   width: "100%",
                   padding: "14px",
                   background: selectedLicense && selectedLicense.price !== "NEGOTIATE" ? "#fff" : "#333",
-                  color: selectedLicense && selectedLicense.price !== "NEGOTIATE" ? "#0D0D0D" : "#666",
+                  color: selectedLicense && selectedLicense.price !== "NEGOTIATE" ? "#000" : "#666",
                   border: "none",
                   borderRadius: "4px",
                   fontSize: "14px",
@@ -291,11 +291,11 @@ function ContractModal({ beat, isOpen, onClose, onAddToCart, onPlay, isPlaying }
                   if (!selectedLicense || selectedLicense.price === "NEGOTIATE") return;
                   const btn = e.currentTarget as HTMLButtonElement;
                   btn.style.background = "#fff";
-                  btn.style.color = "#0D0D0D";
+                  btn.style.color = "#000";
                   btn.style.boxShadow = "0 0 20px rgba(255, 255, 255, 0.8), inset 0 0 0 0.5px #000, inset 0 0 10px rgba(255, 255, 255, 0.3)";
                   
                   const plusSymbol = btn.querySelector("span[style*='position: absolute']") as HTMLElement;
-                  if (plusSymbol) plusSymbol.style.color = "#0D0D0D";
+                  if (plusSymbol) plusSymbol.style.color = "#000";
                   
                   // More particles, flying from the whole width
                   for (let i = 0; i < 20; i++) {
@@ -338,10 +338,10 @@ function ContractModal({ beat, isOpen, onClose, onAddToCart, onPlay, isPlaying }
                   const btn = e.currentTarget as HTMLButtonElement;
                   if (selectedLicense && selectedLicense.price !== "NEGOTIATE") {
                     btn.style.background = "#fff";
-                    btn.style.color = "#0D0D0D";
+                    btn.style.color = "#000";
                     btn.style.boxShadow = "none";
                     const plusSymbol = btn.querySelector("span[style*='position: absolute']") as HTMLElement;
-                    if (plusSymbol) plusSymbol.style.color = "#0D0D0D";
+                    if (plusSymbol) plusSymbol.style.color = "#000";
                   } else {
                     btn.style.background = "#333";
                     btn.style.color = "#666";
@@ -358,7 +358,7 @@ function ContractModal({ beat, isOpen, onClose, onAddToCart, onPlay, isPlaying }
                     <rect x="3" y="6" width="18" height="15" rx="2" />
                     <path d="M8 6V4a4 4 0 0 1 8 0v2" />
                   </svg>
-                  <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: selectedLicense && selectedLicense.price !== "NEGOTIATE" ? "#0D0D0D" : "#666", lineHeight: "1", right: "26px", top: "-8px" }}>+</span>
+                  <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: selectedLicense && selectedLicense.price !== "NEGOTIATE" ? "#000" : "#666", lineHeight: "1", right: "26px", top: "-8px" }}>+</span>
                 </div>
                 {selectedLicense ? (
                   selectedLicense.price === "NEGOTIATE" ? "KONTAKTUJTE NÁS" : `${selectedLicense.price} CZK`
