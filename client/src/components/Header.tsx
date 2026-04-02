@@ -35,7 +35,7 @@ function Header() {
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: "12px", position: "relative", zIndex: 10, padding: "0 8px" }}>
-        <Link href="/beaty" className="nav-sword">
+        <Link href="/beaty" className="header-link">
           <span
             style={navLinkStyle("/beaty")}
             onMouseEnter={() => setHoveredLink("/beaty")}
@@ -44,7 +44,7 @@ function Header() {
             BEATY
           </span>
         </Link>
-        <Link href="/zvuky" className="nav-sword">
+        <Link href="/zvuky" className="header-link">
           <span
             style={navLinkStyle("/zvuky")}
             onMouseEnter={() => setHoveredLink("/zvuky")}
@@ -73,10 +73,9 @@ function Header() {
       </Link>
 
       <div style={{ display: "flex", alignItems: "center", gap: "12px", position: "relative", zIndex: 10, paddingRight: "12px" }}>
-        <Link href={user ? "/ucet" : "/prihlasit-se"}>
+        <Link href={user ? "/ucet" : "/prihlasit-se"} className="header-link">
           <div
             style={{
-              cursor: "pointer",
               transition: "transform 0.2s ease",
               transform: hoveredIcon === "account" ? "scale(1.02)" : "scale(1)",
               display: "flex",
@@ -103,10 +102,9 @@ function Header() {
         </Link>
 
         {user?.isAdmin && (
-          <Link href="/admin?tab=orders">
+          <Link href="/admin?tab=orders" className="header-link">
             <span
               style={{
-                cursor: "pointer",
                 fontSize: "12px",
                 fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
                 fontWeight: 700,
@@ -124,7 +122,7 @@ function Header() {
           </Link>
         )}
 
-        <div className="heart-btn" style={{ position: "relative", display: "flex", alignItems: "center" }}>
+        <div className="heart-btn header-link" style={{ position: "relative", display: "flex", alignItems: "center" }}>
           <Link href="/ulozeno">
             <svg
               width="16"
@@ -134,7 +132,6 @@ function Header() {
               stroke="#fff"
               strokeWidth="2"
               style={{
-                cursor: "pointer",
                 transition: "transform 0.2s ease, filter 0.2s ease",
                 transform: hoveredIcon === "heart" ? "scale(1.02)" : "scale(1)",
                 filter: hoveredIcon === "heart" ? "drop-shadow(0 0 8px rgba(255,0,0,0.5))" : "none",
@@ -172,9 +169,9 @@ function Header() {
         </div>
 
         <div
+          className="header-link"
           style={{
             position: "relative",
-            cursor: "pointer",
             transition: "transform 0.2s ease",
             transform: hoveredIcon === "cart" ? "scale(1.02)" : "scale(1)",
             display: "flex",
@@ -237,4 +234,3 @@ function Header() {
 }
 
 export default Header;
-

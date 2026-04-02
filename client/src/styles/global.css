@@ -368,8 +368,14 @@ body.cursor-clicking *::after {
   cursor: url('/cursors/heart-cursor.ani'), url('/cursors/heart-cursor.cur'), pointer !important;
 }
 
-/* 10. SWORD — main nav links (BEATY, ZVUKY) */
+/* 10. SWORD — main nav links (BEATY, ZVUKY) — kept for legacy */
 .nav-sword,
 .nav-sword * {
   cursor: url('/cursors/sword-cursor.ani'), url('/cursors/sword-cursor.cur'), pointer !important;
+}
+
+/* 11. HEADER — all clickable header elements except the logo */
+.header-link,
+.header-link * {
+  cursor: url('/cursors/header-cursor.ani'), url('/cursors/sword-cursor.cur'), pointer !important;
 }
