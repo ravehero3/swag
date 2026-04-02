@@ -437,7 +437,7 @@ function Ulozeno() {
                           alignItems: "center",
                           justifyContent: "center",
                           cursor: "pointer",
-                          color: "#ff4444",
+                          color: "#fff",
                         }}
                       >
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
