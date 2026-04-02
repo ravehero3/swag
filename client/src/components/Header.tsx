@@ -192,9 +192,6 @@ function Header() {
             .cart-badge:hover {
               border: 1px solid white;
             }
-            header, header * {
-              cursor: url('/cursors/sword-you-chose.cur'), auto !important;
-            }
           `}</style>
           {cart.length > 0 ? (
             <div
