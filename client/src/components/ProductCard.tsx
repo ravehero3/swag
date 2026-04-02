@@ -52,7 +52,7 @@ export default function ProductCard({
     
     // Remove if already exists and add to front
     viewed = viewed.filter((v: any) => v.id !== id);
-    viewed.unshift({ id, name, price, images, typeLabel });
+    viewed.unshift({ id, name, price, images, typeLabel, type });
     
     // Keep last 10
     localStorage.setItem("voodoo808_recently_viewed", JSON.stringify(viewed.slice(0, 10)));
