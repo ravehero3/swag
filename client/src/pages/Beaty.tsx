@@ -994,8 +994,13 @@ function Beaty() {
                   style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "4px" }}
                 />
               </div>
-              <div className="beat-title-col" style={{ width: "240px", minWidth: "240px", maxWidth: "240px", flexShrink: 0, marginRight: "12px", display: "flex", flexDirection: "column", gap: "8px", overflow: "hidden" }}>
+              <div className="beat-title-col" style={{ width: "240px", minWidth: "240px", maxWidth: "240px", flexShrink: 0, marginRight: "12px", display: "flex", flexDirection: "column", gap: "4px", overflow: "hidden" }}>
                 <div className="beat-title-col-text" style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "20px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{beat.title}</div>
+                <div className="mobile-only-flex" style={{ display: "none", gap: "8px", alignItems: "center" }}>
+                  {beat.bpm && <span style={{ fontSize: "11px", color: "#666", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif" }}>{beat.bpm} BPM</span>}
+                  {beat.bpm && beat.key && <span style={{ fontSize: "11px", color: "#444" }}>·</span>}
+                  {beat.key && <span style={{ fontSize: "11px", color: "#666", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif" }}>{beat.key}</span>}
+                </div>
               </div>
               <div className="desktop-only" style={{ width: "100px", flexShrink: 0, fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", color: "#666", fontSize: "16px", textAlign: "left" }}>
                 {beat.bpm}
@@ -1043,7 +1048,7 @@ function Beaty() {
               )}
 
               <div className="beat-row-actions" style={{ display: "flex", alignItems: "center", gap: "8px", marginLeft: "auto", marginRight: "16px" }}>
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
+                <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "4px" }}>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -1052,22 +1057,24 @@ function Beaty() {
                     className="mobile-only"
                     style={{
                       display: "none",
-                      background: "transparent",
-                      border: "none",
+                      background: "#111111",
+                      border: "1px solid #333",
                       cursor: "pointer",
-                      padding: "4px",
+                      padding: "6px",
+                      color: savedBeats.has(beat.id) ? "#fff" : "#666",
                       alignItems: "center",
                       justifyContent: "center",
+                      borderRadius: "2px",
                     }}
                     title={savedBeats.has(beat.id) ? "Remove from favorites" : "Add to favorites"}
                   >
                     <svg
                       className={poppingHearts.has(beat.id) ? "heart-pop" : ""}
-                      width="20"
-                      height="20"
+                      width="16"
+                      height="16"
                       viewBox="0 0 24 24"
                       fill={savedBeats.has(beat.id) ? "#fff" : "none"}
-                      stroke={savedBeats.has(beat.id) ? "#fff" : "#888"}
+                      stroke={savedBeats.has(beat.id) ? "#fff" : "#666"}
                       strokeWidth="2"
                       style={{ transition: "fill 0.2s ease, stroke 0.2s ease" }}
                     >
