@@ -286,9 +286,9 @@ input::placeholder, textarea::placeholder {
   cursor: url('/cursors/v2-default.cur'), auto !important;
 }
 
-/* Click state — swap to pressed gauntlet on mousedown */
-body.cursor-clicking *,
-body.cursor-clicking *::before,
-body.cursor-clicking *::after {
+/* Click state — swap to pressed gauntlet instantly on :active */
+*:active,
+*:active::before,
+*:active::after {
   cursor: url('/cursors/v2-press.cur'), auto !important;
 }
