@@ -361,6 +361,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
   const [b2PickerFor, setB2PickerFor] = useState<string | null>(null);
   const [hoveredBeatId, setHoveredBeatId] = useState<number | null>(null);
+  const [hoveredKitId, setHoveredKitId] = useState<number | null>(null);
 
   const handleSelectAll = () => {
     if (selectedBeats.length === beats.length) {
@@ -1226,6 +1227,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
                 data-testid="checkbox-select-all-kits"
               />
             </th>
+            <th style={{ padding: "12px", width: "56px" }}></th>
             <th style={{ textAlign: "left", padding: "12px" }}>Název</th>
             <th style={{ textAlign: "left", padding: "12px" }}>Typ</th>
             <th style={{ textAlign: "left", padding: "12px" }}>Cena</th>
@@ -1235,8 +1237,20 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
         </thead>
         <tbody>
           {kits.map((kit: SoundKit) => (
-            <tr key={kit.id} style={{ borderBottom: "1px solid #222" }}>
-              <td style={{ padding: "12px" }}>
+            <tr
+              key={kit.id}
+              style={{
+                borderBottom: "1px solid #222",
+                background: hoveredKitId === kit.id ? "#111" : "transparent",
+                cursor: "pointer",
+                transition: "background 150ms",
+              }}
+              onMouseEnter={() => setHoveredKitId(kit.id)}
+              onMouseLeave={() => setHoveredKitId(null)}
+              onClick={() => { setEditing(kit); setShowForm(true); }}
+              data-testid={`row-kit-${kit.id}`}
+            >
+              <td style={{ padding: "12px" }} onClick={(e) => e.stopPropagation()}>
                 <input 
                   type="checkbox" 
                   checked={selectedKits.includes(kit.id)}
@@ -1244,12 +1258,26 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
                   data-testid={`checkbox-kit-${kit.id}`}
                 />
               </td>
+              <td style={{ padding: "8px 12px" }}>
+                {kit.artwork_url ? (
+                  <img
+                    src={kit.artwork_url}
+                    alt={kit.title}
+                    style={{ width: "40px", height: "40px", objectFit: "cover", borderRadius: "3px", display: "block" }}
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
+                  />
+                ) : (
+                  <div style={{ width: "40px", height: "40px", background: "#222", borderRadius: "3px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <span style={{ fontSize: "18px", color: "#444" }}>◈</span>
+                  </div>
+                )}
+              </td>
               <td style={{ padding: "12px" }}>{kit.title}</td>
               <td style={{ padding: "12px" }}>{kit.type}</td>
               <td style={{ padding: "12px" }}>{kit.is_free ? "Zdarma" : `${kit.price} CZK`}</td>
               <td style={{ padding: "12px" }}>{kit.is_published ? "Publikováno" : "Skryto"}</td>
-              <td style={{ padding: "12px", textAlign: "right" }}>
-                <button className="btn btn-admin" onClick={() => setEditing(kit)} style={{ marginRight: "8px" }} data-testid={`button-edit-kit-${kit.id}`}>Upravit</button>
+              <td style={{ padding: "12px", textAlign: "right" }} onClick={(e) => e.stopPropagation()}>
+                <button className="btn btn-admin" onClick={() => { setEditing(kit); setShowForm(true); }} style={{ marginRight: "8px" }} data-testid={`button-edit-kit-${kit.id}`}>Upravit</button>
                 <button className="btn btn-admin" onClick={() => handleDelete(kit.id)} style={{ color: "#333", borderColor: "#333" }} data-testid={`button-delete-kit-${kit.id}`}>Smazat</button>
               </td>
             </tr>
