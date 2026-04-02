@@ -153,6 +153,7 @@ function Home() {
   const [isLooping, setIsLooping] = useState(false);
   const [isShuffling, setIsShuffling] = useState(false);
   const [savedBeats, setSavedBeats] = useState<Set<number>>(new Set());
+  const [poppingHearts, setPoppingHearts] = useState<Set<number>>(new Set());
   const [contractModalBeat, setContractModalBeat] = useState<Beat | null>(null);
   const [sortBy, setSortBy] = useState<"bpm" | "key" | null>(null);
   const [sortAsc, setSortAsc] = useState(false);
@@ -344,18 +345,35 @@ function Home() {
   const toggleSave = async (beat: Beat) => {
     if (!user) return;
 
+    const wasSaved = savedBeats.has(beat.id);
+
+    // Optimistic update — show change instantly
+    setSavedBeats((prev) => {
+      const next = new Set(prev);
+      if (wasSaved) next.delete(beat.id);
+      else next.add(beat.id);
+      return next;
+    });
+
+    // Trigger pop animation
+    setPoppingHearts((prev) => new Set([...prev, beat.id]));
+    setTimeout(() => {
+      setPoppingHearts((prev) => {
+        const next = new Set(prev);
+        next.delete(beat.id);
+        return next;
+      });
+    }, 400);
+
     try {
-      if (savedBeats.has(beat.id)) {
+      if (wasSaved) {
         const res = await fetch(`/api/saved/beat/${beat.id}`, {
           method: "DELETE",
           credentials: "include",
         });
-        if (res.ok) {
-          setSavedBeats((prev) => {
-            const next = new Set(prev);
-            next.delete(beat.id);
-            return next;
-          });
+        if (!res.ok) {
+          setSavedBeats((prev) => new Set([...prev, beat.id]));
+        } else {
           refreshSavedCount();
         }
       } else {
@@ -365,13 +383,24 @@ function Home() {
           credentials: "include",
           body: JSON.stringify({ itemId: beat.id, itemType: "beat" }),
         });
-        if (res.ok) {
-          setSavedBeats((prev) => new Set([...prev, beat.id]));
+        if (!res.ok) {
+          setSavedBeats((prev) => {
+            const next = new Set(prev);
+            next.delete(beat.id);
+            return next;
+          });
+        } else {
           refreshSavedCount();
         }
       }
     } catch (error) {
       console.error("Error toggling save:", error);
+      setSavedBeats((prev) => {
+        const next = new Set(prev);
+        if (wasSaved) next.add(beat.id);
+        else next.delete(beat.id);
+        return next;
+      });
     }
   };
 
@@ -396,6 +425,15 @@ function Home() {
 
   return (
     <div style={{ background: "#000", minHeight: "100vh" }}>
+      <style>{`
+        @keyframes heartPop {
+          0%   { transform: scale(1); }
+          40%  { transform: scale(1.5); }
+          70%  { transform: scale(0.9); }
+          100% { transform: scale(1); }
+        }
+        .heart-pop { animation: heartPop 0.35s ease-out forwards; }
+      `}</style>
       <audio
         ref={audioRef}
         onEnded={handleAudioEnded}
@@ -695,12 +733,14 @@ function Home() {
                   }}
                 >
                   <svg
+                    className={poppingHearts.has(highlightedBeat.id) ? "heart-pop" : ""}
                     width="24"
                     height="24"
                     viewBox="0 0 24 24"
-                    fill={savedBeats.has(highlightedBeat.id) ? "#ff4444" : "none"}
-                    stroke={savedBeats.has(highlightedBeat.id) ? "#ff4444" : "#fff"}
+                    fill={savedBeats.has(highlightedBeat.id) ? "#fff" : "none"}
+                    stroke="#fff"
                     strokeWidth="2"
+                    style={{ transition: "fill 0.2s ease" }}
                   >
                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                   </svg>
@@ -871,13 +911,14 @@ function Home() {
                   title={user ? (savedBeats.has(beat.id) ? "Remove from favorites" : "Add to favorites") : "Log in to save"}
                 >
                   <svg
+                    className={poppingHearts.has(beat.id) ? "heart-pop" : ""}
                     width="18"
                     height="18"
                     viewBox="0 0 24 24"
-                    fill={user && savedBeats.has(beat.id) ? "#ff4444" : "none"}
-                    stroke={user && savedBeats.has(beat.id) ? "#ff4444" : "#666"}
+                    fill={user && savedBeats.has(beat.id) ? "#fff" : "none"}
+                    stroke={user && savedBeats.has(beat.id) ? "#fff" : "#666"}
                     strokeWidth="1"
-                    style={{ transition: "all 0.3s ease" }}
+                    style={{ transition: "fill 0.2s ease, stroke 0.2s ease" }}
                   >
                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                   </svg>
@@ -960,13 +1001,14 @@ function Home() {
                     title={savedBeats.has(beat.id) ? "Remove from favorites" : "Add to favorites"}
                   >
                     <svg
+                      className={poppingHearts.has(beat.id) ? "heart-pop" : ""}
                       width="20"
                       height="20"
                       viewBox="0 0 24 24"
-                      fill={savedBeats.has(beat.id) ? "#ff4444" : "none"}
-                      stroke={savedBeats.has(beat.id) ? "#ff4444" : "#888"}
+                      fill={savedBeats.has(beat.id) ? "#fff" : "none"}
+                      stroke={savedBeats.has(beat.id) ? "#fff" : "#888"}
                       strokeWidth="2"
-                      style={{ transition: "all 0.3s ease" }}
+                      style={{ transition: "fill 0.2s ease, stroke 0.2s ease" }}
                     >
                       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                     </svg>
