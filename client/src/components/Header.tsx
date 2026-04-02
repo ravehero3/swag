@@ -8,7 +8,6 @@ function Header() {
   const [hoveredIcon, setHoveredIcon] = useState<string | null>(null);
 
   const navLinkStyle = (path: string) => ({
-    cursor: "pointer",
     fontSize: "12px",
     fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
     fontWeight: hoveredLink === path ? 700 : 400,
