@@ -55,7 +55,7 @@ function Header() {
         </Link>
       </div>
 
-      <Link href="/" style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%, -50%)", zIndex: 5 }}>
+      <Link href="/" className="logo-link" style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%, -50%)", zIndex: 5 }}>
         <img
           src="/uploads/artwork/voodoo808-logo.png"
           alt="VOODOO808"
