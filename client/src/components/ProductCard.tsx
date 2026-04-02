@@ -129,7 +129,7 @@ export default function ProductCard({
       <style>{`
         @keyframes heartPulse {
           0% { transform: scale(1); }
-          50% { transform: scale(1.03); }
+          50% { transform: scale(1.3); }
           100% { transform: scale(1); }
         }
         .heart-pulse {
@@ -141,10 +141,18 @@ export default function ProductCard({
         }
         .play-button-overlay {
           opacity: 0;
-          transition: opacity 0.2s ease;
+          transform: translate(-50%, -50%) scale(0.85);
+          transition: opacity 0.25s ease, transform 0.25s ease;
         }
         .product-card-container:hover .play-button-overlay {
           opacity: 1;
+          transform: translate(-50%, -50%) scale(1);
+        }
+        .play-button-overlay:hover {
+          transform: translate(-50%, -50%) scale(1.08) !important;
+        }
+        .play-button-overlay:active {
+          transform: translate(-50%, -50%) scale(0.95) !important;
         }
         .product-info-pill {
           opacity: 0;
@@ -222,17 +230,23 @@ export default function ProductCard({
             className="play-button-overlay"
             style={{
               position: "absolute",
-              bottom: "12px",
-              right: "12px",
-              width: "48px",
-              height: "48px",
+              top: "50%",
+              left: "50%",
+              width: "68px",
+              height: "68px",
               borderRadius: "50%",
-              border: "1px solid #fff",
-              background: isPlaying ? "#fff" : "rgba(0,0,0,0.8)",
-              color: isPlaying ? "#000" : "#fff",
-              fontSize: "18px",
+              border: "1px solid rgba(255, 255, 255, 0.55)",
+              background: "rgba(255, 255, 255, 0.08)",
+              backdropFilter: "blur(12px) brightness(1.35) saturate(1.6)",
+              WebkitBackdropFilter: "blur(12px) brightness(1.35) saturate(1.6)",
+              boxShadow: "0 4px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.25)",
+              color: "#fff",
+              fontSize: "22px",
               cursor: "pointer",
-              transition: "all 0.2s ease",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              paddingLeft: isPlaying ? "0" : "3px",
             }}
           >
             {isPlaying ? "⏸" : "▶"}
