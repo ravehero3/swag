@@ -289,7 +289,7 @@ input::placeholder, textarea::placeholder {
 /* Logo cursor */
 .logo-link,
 .logo-link * {
-  cursor: url('/cursors/castle.cur'), auto !important;
+  cursor: url('/cursors/logo-cursor.cur'), auto !important;
 }
 
 /* Click state — swap to pressed gauntlet instantly on :active */
