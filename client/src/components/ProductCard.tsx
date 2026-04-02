@@ -248,15 +248,19 @@ export default function ProductCard({
               height: "66px",
               borderRadius: "50%",
               border: "none",
-              background: "linear-gradient(145deg, rgba(255,255,255,0.26) 0%, rgba(255,255,255,0.07) 50%, rgba(255,255,255,0.16) 100%)",
-              backdropFilter: "blur(28px) brightness(1.25) saturate(2.8) contrast(1.08)",
-              WebkitBackdropFilter: "blur(28px) brightness(1.25) saturate(2.8) contrast(1.08)",
+              /* Radial gradient: more opaque at centre, fading toward the rim */
+              background: "radial-gradient(circle at center, rgba(255,255,255,0.30) 0%, rgba(255,255,255,0.22) 40%, rgba(255,255,255,0.06) 100%)",
+              /* Backdrop filter applies to the whole disc */
+              backdropFilter: "blur(28px) brightness(1.2) saturate(2.6) contrast(1.06)",
+              WebkitBackdropFilter: "blur(28px) brightness(1.2) saturate(2.6) contrast(1.06)",
+              /* Radial mask: full effect at centre (0-40%), fades to 50% opacity at the edge */
+              WebkitMaskImage: "radial-gradient(circle at center, black 35%, rgba(0,0,0,0.5) 100%)",
+              maskImage: "radial-gradient(circle at center, black 35%, rgba(0,0,0,0.5) 100%)",
               boxShadow: [
-                "0 0 0 1px rgba(255,255,255,0.28)",
-                "0 8px 32px rgba(0,0,0,0.4)",
-                "inset 0 1.5px 0 rgba(255,255,255,0.7)",
-                "inset 0 -1px 0 rgba(0,0,0,0.15)",
-                "inset 0 0 0 0.5px rgba(255,255,255,0.12)",
+                "0 0 0 1px rgba(255,255,255,0.22)",
+                "0 8px 32px rgba(0,0,0,0.35)",
+                "inset 0 1.5px 0 rgba(255,255,255,0.65)",
+                "inset 0 -1px 0 rgba(0,0,0,0.12)",
               ].join(", "),
               color: "#fff",
               fontSize: "20px",
