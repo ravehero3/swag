@@ -340,8 +340,8 @@ export default function ProductCard({
               style={{
                 padding: "8px 8px 8px 16px",
                 background: "#000",
-                color: "#666",
-                border: "1px solid #666",
+                color: "#fff",
+                border: "none",
                 fontSize: "12px",
                 fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
                 fontWeight: 400,
@@ -353,10 +353,10 @@ export default function ProductCard({
                 position: "relative",
                 minWidth: "120px",
                 height: "32px",
-                transition: "background 0.2s, color 0.2s, border-color 0.2s",
+                transition: "background 0.2s, color 0.2s, box-shadow 0.2s",
                 overflow: "visible",
                 outline: "none",
-                boxShadow: "none",
+                boxShadow: "inset 0 0 0 0.5px #fff",
                 WebkitAppearance: "none",
                 appearance: "none",
                 boxSizing: "border-box",
@@ -365,8 +365,7 @@ export default function ProductCard({
                 const btn = e.currentTarget as HTMLButtonElement;
                 btn.style.background = "#fff";
                 btn.style.color = "#000";
-                btn.style.borderColor = "#000";
-                btn.style.boxShadow = "0 0 20px rgba(13, 13, 13, 0.8), inset 0 0 0 0.5px #000, inset 0 0 10px rgba(255, 255, 255, 0.3)";
+                btn.style.boxShadow = "0 0 20px rgba(255, 255, 255, 0.8), inset 0 0 0 0.5px #000, inset 0 0 10px rgba(255, 255, 255, 0.3)";
                 
                 // Create particles
                 for (let i = 0; i < 7; i++) {
@@ -410,9 +409,8 @@ export default function ProductCard({
               onMouseLeave={(e) => {
                 const btn = e.currentTarget as HTMLButtonElement;
                 btn.style.background = "#000";
-                btn.style.color = "#666";
-                btn.style.borderColor = "#666";
-                btn.style.boxShadow = "none";
+                btn.style.color = "#fff";
+                btn.style.boxShadow = "inset 0 0 0 0.5px #fff";
                 
                 // Clean up particles
                 const particles = btn.querySelectorAll('div[data-particle="true"]');
