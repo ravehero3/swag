@@ -165,6 +165,43 @@ export default function ProductCard({
         .play-button-overlay.is-playing {
           animation: playPulse 2s ease-in-out infinite;
         }
+        .play-blur-ring {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 160px;
+          height: 160px;
+          border-radius: 50%;
+          transform: translate(-50%, -50%) scale(0.82);
+          pointer-events: none;
+          backdrop-filter: blur(18px);
+          -webkit-backdrop-filter: blur(18px);
+          -webkit-mask-image: radial-gradient(circle at center,
+            transparent 0%,
+            transparent 22%,
+            rgba(0,0,0,0.15) 30%,
+            rgba(0,0,0,0.55) 42%,
+            rgba(0,0,0,0.85) 55%,
+            black 68%,
+            black 100%
+          );
+          mask-image: radial-gradient(circle at center,
+            transparent 0%,
+            transparent 22%,
+            rgba(0,0,0,0.15) 30%,
+            rgba(0,0,0,0.55) 42%,
+            rgba(0,0,0,0.85) 55%,
+            black 68%,
+            black 100%
+          );
+          opacity: 0;
+          transition: opacity 0.28s cubic-bezier(0.34,1.56,0.64,1), transform 0.28s cubic-bezier(0.34,1.56,0.64,1);
+          z-index: 3;
+        }
+        .product-card-container:hover .play-blur-ring {
+          opacity: 1;
+          transform: translate(-50%, -50%) scale(1);
+        }
         .product-info-pill {
           opacity: 0;
           transition: all 0.3s ease;
@@ -202,6 +239,10 @@ export default function ProductCard({
             opacity: 1 !important;
             transform: translate(-50%, -50%) scale(1) !important;
           }
+          .play-blur-ring {
+            opacity: 1 !important;
+            transform: translate(-50%, -50%) scale(1) !important;
+          }
           .product-info-pill {
             opacity: 1;
             transform: none;
@@ -234,35 +275,41 @@ export default function ProductCard({
           }}
         />
         {onPlayClick && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onPlayClick();
-            }}
-            className={`play-button-overlay${isPlaying ? " is-playing" : ""}`}
-            style={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              width: "66px",
-              height: "66px",
-              borderRadius: "50%",
-              border: "none",
-              background: "transparent",
-              backdropFilter: "blur(4px)",
-              WebkitBackdropFilter: "blur(4px)",
-              boxShadow: "0 0 0 1px rgba(255,255,255,0.14)",
-              color: "#fff",
-              fontSize: "20px",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              paddingLeft: isPlaying ? "0" : "3px",
-            }}
-          >
-            {isPlaying ? "⏸" : "▶"}
-          </button>
+          <>
+            {/* Outer blur donut ring — clear in center, blurred on edges */}
+            <div className="play-blur-ring" />
+
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onPlayClick();
+              }}
+              className={`play-button-overlay${isPlaying ? " is-playing" : ""}`}
+              style={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                width: "66px",
+                height: "66px",
+                borderRadius: "50%",
+                border: "none",
+                background: "transparent",
+                backdropFilter: "blur(1px)",
+                WebkitBackdropFilter: "blur(1px)",
+                boxShadow: "0 0 0 1px rgba(255,255,255,0.14)",
+                color: "#fff",
+                fontSize: "20px",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                paddingLeft: isPlaying ? "0" : "3px",
+                zIndex: 4,
+              }}
+            >
+              {isPlaying ? "⏸" : "▶"}
+            </button>
+          </>
         )}
       </div>
 
