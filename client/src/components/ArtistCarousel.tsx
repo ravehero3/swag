@@ -196,7 +196,7 @@ const ArtistCarousel = () => {
             top: 0,
             width: "250px",
             height: "100%",
-            background: "linear-gradient(to right, rgba(13, 13, 13, 1), rgba(13, 13, 13, 0))",
+            background: "linear-gradient(to right, rgba(0, 0, 0, 1), rgba(0, 0, 0, 0))",
             pointerEvents: "none",
             zIndex: 10,
           }}
@@ -211,7 +211,7 @@ const ArtistCarousel = () => {
             top: 0,
             width: "250px",
             height: "100%",
-            background: "linear-gradient(to left, rgba(13, 13, 13, 1), rgba(13, 13, 13, 0))",
+            background: "linear-gradient(to left, rgba(0, 0, 0, 1), rgba(0, 0, 0, 0))",
             pointerEvents: "none",
             zIndex: 10,
           }}

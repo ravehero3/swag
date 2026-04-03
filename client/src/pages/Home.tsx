@@ -462,7 +462,7 @@ function Home() {
             left: 0,
             width: "100%",
             height: "166px",
-            background: "linear-gradient(to bottom, rgba(13, 13, 13, 0) 0%, rgba(13, 13, 13, 1) 100%)",
+            background: "linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 100%)",
             pointerEvents: "none",
           }}
         />
