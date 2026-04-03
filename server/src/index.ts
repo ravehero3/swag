@@ -246,6 +246,31 @@ app.delete("/api/admin/assets/:id", requireAdmin, async (req, res) => {
   }
 });
 
+app.get("/api/admin/email-templates", requireAdmin, async (_req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM email_templates ORDER BY id ASC");
+    res.json(result.rows);
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při načítání šablon" });
+  }
+});
+
+app.patch("/api/admin/email-templates/:key", requireAdmin, async (req, res) => {
+  try {
+    const { subject, intro_text } = req.body;
+    const result = await pool.query(
+      "UPDATE email_templates SET subject = $1, intro_text = $2, updated_at = CURRENT_TIMESTAMP WHERE key = $3 RETURNING *",
+      [subject, intro_text, req.params.key]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Šablona nenalezena" });
+    }
+    res.json(result.rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při ukládání šablony" });
+  }
+});
+
 app.get("/api/settings", async (_req, res) => {
   try {
     const result = await pool.query("SELECT key, value FROM settings");

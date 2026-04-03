@@ -164,6 +164,24 @@ export async function initDatabase() {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
 
+      CREATE TABLE IF NOT EXISTS email_templates (
+        id SERIAL PRIMARY KEY,
+        key VARCHAR(100) UNIQUE NOT NULL,
+        name VARCHAR(255) NOT NULL,
+        subject TEXT NOT NULL,
+        intro_text TEXT NOT NULL,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      INSERT INTO email_templates (key, name, subject, intro_text) VALUES
+        ('beat_single', 'Beat – 1 kus', 'Platba přijata – Objednávka #{id} | VOODOO808', 'Objednávka #{id} ze dne {datum} je potvrzena. Níže najdete odkaz ke stažení vašeho beatu. Odkaz je platný 30 dní.'),
+        ('beats_multiple', 'Beaty – více kusů', 'Platba přijata – Objednávka #{id} | VOODOO808', 'Objednávka #{id} ze dne {datum} je potvrzena. Níže najdete odkazy ke stažení vašich beatů. Každý odkaz je platný 30 dní.'),
+        ('kit_single', 'Sound Kit – 1 kus', 'Platba přijata – Objednávka #{id} | VOODOO808', 'Objednávka #{id} ze dne {datum} je potvrzena. Níže najdete odkaz ke stažení vašeho sound kitu. Odkaz je platný 30 dní.'),
+        ('kits_multiple', 'Sound Kity – více kusů', 'Platba přijata – Objednávka #{id} | VOODOO808', 'Objednávka #{id} ze dne {datum} je potvrzena. Níže najdete odkazy ke stažení vašich sound kitů. Každý odkaz je platný 30 dní.'),
+        ('free_download', 'Stažení zdarma', 'Vaše soubory zdarma – VOODOO808', 'Děkujeme za zájem! Níže najdete přímé odkazy ke stažení vašich souborů. Soubory jsou také dostupné ve vašem účtu.'),
+        ('mixed', 'Beaty + Sound Kity + Zdarma (mix)', 'Platba přijata – Objednávka #{id} | VOODOO808', 'Objednávka #{id} ze dne {datum} je potvrzena. Níže najdete odkazy ke stažení všech zakoupených souborů. Každý odkaz je platný 30 dní.')
+      ON CONFLICT (key) DO NOTHING;
+
       INSERT INTO settings (key, value) VALUES 
         ('header_logo', '/uploads/artwork/voodoo808-logo.png'),
         ('beaty_video_main', '/uploads/artwork/voodoo808-video.mp4'),

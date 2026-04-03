@@ -130,6 +130,41 @@ router.post("/:id/pay", requireAuth, async (req: Request, res: Response) => {
   }
 });
 
+router.post("/:id/claim-free", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const orderId = parseInt(req.params.id, 10);
+
+    const orderResult = await pool.query(
+      "SELECT * FROM orders WHERE id = $1 AND user_id = $2",
+      [orderId, req.session.userId]
+    );
+
+    if (orderResult.rows.length === 0) {
+      return res.status(404).json({ error: "Objednávka nenalezena" });
+    }
+
+    const order = orderResult.rows[0];
+
+    if (Number(order.total) > 0) {
+      return res.status(400).json({ error: "Tato objednávka není zdarma" });
+    }
+
+    await pool.query(
+      "UPDATE orders SET status = 'completed' WHERE id = $1",
+      [orderId]
+    );
+
+    sendContractEmail(orderId).catch((err) => {
+      console.error("[Email] Free download email error:", err);
+    });
+
+    return res.json({ success: true });
+  } catch (error) {
+    console.error("Claim free error:", error);
+    res.status(500).json({ error: "Chyba při zpracování" });
+  }
+});
+
 router.post("/:id/notify", async (req: Request, res: Response) => {
   try {
     const orderId = parseInt(req.params.id, 10);

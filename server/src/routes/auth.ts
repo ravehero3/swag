@@ -113,4 +113,30 @@ router.get("/me", async (req: Request, res: Response) => {
   }
 });
 
+router.get("/profile-info", async (req: Request, res: Response) => {
+  if (!req.session.userId) {
+    return res.status(401).json({ error: "Nepřihlášen" });
+  }
+  try {
+    const result = await pool.query(
+      `SELECT buyer_legal_name, buyer_artist_name, buyer_address
+       FROM orders
+       WHERE user_id = $1 AND buyer_legal_name IS NOT NULL AND total > 0
+       ORDER BY created_at DESC LIMIT 1`,
+      [req.session.userId]
+    );
+    if (result.rows.length === 0) {
+      return res.json({});
+    }
+    const row = result.rows[0];
+    res.json({
+      buyerLegalName: row.buyer_legal_name,
+      buyerArtistName: row.buyer_artist_name,
+      buyerAddress: row.buyer_address,
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Chyba serveru" });
+  }
+});
+
 export default router;

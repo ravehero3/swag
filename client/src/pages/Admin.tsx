@@ -161,10 +161,10 @@ function Admin() {
   const [, navigate] = useLocation();
   const initialTab = (() => {
     const p = new URLSearchParams(window.location.search).get("tab");
-    const valid = ["beats", "kits", "orders", "licenses", "settings", "assets", "promo", "seo"];
-    return (valid.includes(p || "") ? p : "orders") as "beats" | "kits" | "orders" | "licenses" | "settings" | "assets" | "promo" | "seo";
+    const valid = ["beats", "kits", "orders", "licenses", "settings", "emails", "promo", "seo"];
+    return (valid.includes(p || "") ? p : "orders") as "beats" | "kits" | "orders" | "licenses" | "settings" | "emails" | "promo" | "seo";
   })();
-  const [tab, setTab] = useState<"beats" | "kits" | "orders" | "licenses" | "settings" | "assets" | "promo" | "seo">(initialTab);
+  const [tab, setTab] = useState<"beats" | "kits" | "orders" | "licenses" | "settings" | "emails" | "promo" | "seo">(initialTab);
   const [beats, setBeats] = useState<Beat[]>([]);
   const [kits, setKits] = useState<SoundKit[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
@@ -282,14 +282,14 @@ function Admin() {
       <h1 style={{ marginBottom: "24px", color: "#666" }}>Admin Panel</h1>
 
       <div style={{ display: "flex", gap: "12px", marginBottom: "24px", flexWrap: "wrap", justifyContent: "center" }}>
-        {["beats", "kits", "orders", "licenses", "settings", "assets", "promo", "seo"].map((t) => (
+        {["beats", "kits", "orders", "licenses", "settings", "emails", "promo", "seo"].map((t) => (
           <button
             key={t}
             className={tab === t ? "btn btn-filled" : "btn btn-admin"}
             onClick={() => setTab(t as any)}
             style={tab !== t ? { borderColor: "#333", color: "#666" } : {}}
           >
-            {t === "beats" ? "Beaty" : t === "kits" ? "Zvuky" : t === "orders" ? "Objednávky" : t === "licenses" ? "Licence" : t === "settings" ? "Nastavení" : t === "assets" ? "Assety" : t === "promo" ? "Promo kódy" : "SEO"}
+            {t === "beats" ? "Beaty" : t === "kits" ? "Zvuky" : t === "orders" ? "Objednávky" : t === "licenses" ? "Licence" : t === "settings" ? "Nastavení" : t === "emails" ? "Emaily" : t === "promo" ? "Promo kódy" : "SEO"}
           </button>
         ))}
       </div>
@@ -322,7 +322,7 @@ function Admin() {
         {tab === "orders" && <OrdersTab orders={orders} onRefresh={loadData} />}
         {tab === "licenses" && <LicensesTab licenses={licenses} onRefresh={loadData} />}
         {tab === "settings" && <SettingsTab settings={settings} onRefresh={refreshSettings} />}
-        {tab === "assets" && <AssetsTab />}
+        {tab === "emails" && <EmailsTab />}
         {tab === "promo" && <PromoCodesTab />}
         {tab === "seo" && <SEOTab settings={settings} onRefresh={refreshSettings} />}
       </div>
@@ -2241,7 +2241,189 @@ function SettingsTab({ settings, onRefresh }: any) {
   );
 }
 
-function AssetsTab() { return <div style={{ color: "#666" }}>Asset management integration in progress...</div>; }
+const EMAIL_SCENARIOS: { key: string; label: string; description: string }[] = [
+  { key: "beat_single", label: "Beat – 1 kus", description: "Zákazník kupuje jeden beat" },
+  { key: "beats_multiple", label: "Beaty – více kusů", description: "Zákazník kupuje více beatů" },
+  { key: "kit_single", label: "Sound Kit – 1 kus", description: "Zákazník kupuje jeden sound kit" },
+  { key: "kits_multiple", label: "Sound Kity – více kusů", description: "Zákazník kupuje více sound kitů" },
+  { key: "free_download", label: "Stažení zdarma", description: "Zákazník stahuje zdarma (cena = 0 CZK)" },
+  { key: "mixed", label: "Mix (beaty + kity + zdarma)", description: "Zákazník kupuje kombinaci beatů, kitů a/nebo zdarma souborů" },
+];
+
+function EmailsTab() {
+  const [templates, setTemplates] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [editingKey, setEditingKey] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState({ subject: "", intro_text: "" });
+  const [saving, setSaving] = useState(false);
+  const [saveOk, setSaveOk] = useState(false);
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/admin/email-templates", { credentials: "include" });
+      if (!res.ok) throw new Error();
+      setTemplates(await res.json());
+    } catch {
+      setError("Nepodařilo se načíst šablony.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const startEdit = (tpl: any) => {
+    setEditingKey(tpl.key);
+    setEditForm({ subject: tpl.subject, intro_text: tpl.intro_text });
+    setSaveOk(false);
+  };
+
+  const handleSave = async () => {
+    if (!editingKey) return;
+    setSaving(true);
+    setSaveOk(false);
+    try {
+      const res = await fetch(`/api/admin/email-templates/${editingKey}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(editForm),
+      });
+      if (!res.ok) throw new Error();
+      await load();
+      setSaveOk(true);
+      setTimeout(() => { setEditingKey(null); setSaveOk(false); }, 1200);
+    } catch {
+      alert("Chyba při ukládání.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const tplByKey = (key: string) => templates.find(t => t.key === key);
+
+  const cellStyle: any = { padding: "14px 12px", borderBottom: "1px solid #1e1e1e", verticalAlign: "top" };
+
+  if (loading) return <div style={{ color: "#666", padding: "24px" }}>Načítám...</div>;
+  if (error) return <div style={{ color: "#ff4444", padding: "24px" }}>{error}</div>;
+
+  if (editingKey) {
+    const scenario = EMAIL_SCENARIOS.find(s => s.key === editingKey);
+    return (
+      <div style={{ maxWidth: "640px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "24px" }}>
+          <button
+            onClick={() => setEditingKey(null)}
+            style={{ background: "none", border: "1px solid #333", color: "#888", padding: "6px 14px", borderRadius: "4px", cursor: "pointer", fontFamily: "inherit" }}
+          >
+            ← Zpět
+          </button>
+          <div>
+            <h3 style={{ margin: 0, fontSize: "15px" }}>{scenario?.label}</h3>
+            <p style={{ margin: 0, fontSize: "12px", color: "#555" }}>{scenario?.description}</p>
+          </div>
+        </div>
+
+        <div style={{ marginBottom: "20px" }}>
+          <label style={{ display: "block", marginBottom: "6px", fontSize: "12px", color: "#999" }}>Předmět emailu</label>
+          <input
+            value={editForm.subject}
+            onChange={e => setEditForm(f => ({ ...f, subject: e.target.value }))}
+            style={{ width: "100%", padding: "10px 12px", background: "#1a1a1a", border: "1px solid #333", color: "#fff", borderRadius: "4px", fontFamily: "inherit", fontSize: "13px" }}
+          />
+          <p style={{ margin: "6px 0 0", fontSize: "11px", color: "#555" }}>Placeholdery: &#123;id&#125; = číslo objednávky, &#123;datum&#125; = datum</p>
+        </div>
+
+        <div style={{ marginBottom: "24px" }}>
+          <label style={{ display: "block", marginBottom: "6px", fontSize: "12px", color: "#999" }}>Úvodní text emailu</label>
+          <textarea
+            value={editForm.intro_text}
+            onChange={e => setEditForm(f => ({ ...f, intro_text: e.target.value }))}
+            rows={5}
+            style={{ width: "100%", padding: "10px 12px", background: "#1a1a1a", border: "1px solid #333", color: "#fff", borderRadius: "4px", fontFamily: "inherit", fontSize: "13px", resize: "vertical" }}
+          />
+          <p style={{ margin: "6px 0 0", fontSize: "11px", color: "#555" }}>Tento text se zobrazí zákazníkovi hned po pozdravu. Placeholdery: &#123;id&#125;, &#123;datum&#125;</p>
+        </div>
+
+        <div style={{ background: "#111", border: "1px solid #222", borderRadius: "6px", padding: "18px 22px", marginBottom: "24px" }}>
+          <p style={{ margin: "0 0 8px", fontSize: "11px", color: "#555", textTransform: "uppercase", letterSpacing: "1px" }}>Náhled emailu</p>
+          <div style={{ background: "#0a0a0a", padding: "16px", borderRadius: "4px" }}>
+            <p style={{ margin: "0 0 8px", fontSize: "11px", color: "#666" }}>Předmět: <span style={{ color: "#aaa" }}>{editForm.subject.replace("{id}", "1234").replace("{datum}", "1. ledna 2026")}</span></p>
+            <hr style={{ border: "none", borderTop: "1px solid #222", margin: "10px 0" }} />
+            <p style={{ margin: 0, fontSize: "13px", color: "#aaa", lineHeight: "1.6" }}>
+              {editForm.intro_text.replace("{id}", "1234").replace("{datum}", "1. ledna 2026")}
+            </p>
+            <p style={{ margin: "12px 0 0", fontSize: "12px", color: "#555" }}>[... odkaz ke stažení ...]</p>
+          </div>
+        </div>
+
+        <div style={{ display: "flex", gap: "12px" }}>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="btn btn-filled"
+            style={{ borderRadius: "4px" }}
+          >
+            {saving ? "Ukládám..." : saveOk ? "Uloženo ✓" : "Uložit šablonu"}
+          </button>
+          <button
+            onClick={() => setEditingKey(null)}
+            className="btn"
+            style={{ borderRadius: "4px" }}
+          >
+            Zrušit
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <p style={{ color: "#555", fontSize: "13px", marginBottom: "24px" }}>
+        Šablony emailů, které zákazníci obdrží po dokončení objednávky. Předmět a úvodní text lze upravit, zbytek (odkaz ke stažení, smlouva) se generuje automaticky.
+      </p>
+      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <thead>
+          <tr>
+            <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, letterSpacing: "0.08em", textTransform: "uppercase" }}>Scénář</th>
+            <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, letterSpacing: "0.08em", textTransform: "uppercase" }}>Předmět</th>
+            <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, letterSpacing: "0.08em", textTransform: "uppercase", textAlign: "right" }}>Akce</th>
+          </tr>
+        </thead>
+        <tbody>
+          {EMAIL_SCENARIOS.map(scenario => {
+            const tpl = tplByKey(scenario.key);
+            return (
+              <tr key={scenario.key}>
+                <td style={cellStyle}>
+                  <div style={{ fontWeight: 600, fontSize: "14px", color: "#fff", marginBottom: "2px" }}>{scenario.label}</div>
+                  <div style={{ fontSize: "12px", color: "#555" }}>{scenario.description}</div>
+                </td>
+                <td style={{ ...cellStyle, fontSize: "13px", color: "#aaa", maxWidth: "260px" }}>
+                  {tpl ? <span style={{ overflow: "hidden", textOverflow: "ellipsis", display: "block", whiteSpace: "nowrap" }}>{tpl.subject}</span> : <span style={{ color: "#444" }}>Nenačteno</span>}
+                </td>
+                <td style={{ ...cellStyle, textAlign: "right" }}>
+                  {tpl && (
+                    <button
+                      onClick={() => startEdit(tpl)}
+                      style={{ background: "transparent", border: "1px solid #333", color: "#aaa", padding: "4px 14px", fontSize: "12px", borderRadius: "3px", cursor: "pointer", fontFamily: "inherit" }}
+                    >
+                      Upravit
+                    </button>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 function PromoCodesTab() {
   const [codes, setCodes] = useState<{ id: number; code: string; discount_percent: number; is_active: boolean; created_at: string }[]>([]);
   const [loading, setLoading] = useState(true);

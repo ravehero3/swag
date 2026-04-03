@@ -216,7 +216,7 @@ function App() {
     <AppContext.Provider value={{ user, setUser, authLoading, cart, addToCart, removeFromCart, clearCart, isCartOpen, setIsCartOpen, isNewsletterOpen, setIsNewsletterOpen, settings, refreshSettings, savedCount, refreshSavedCount }}>
       <div style={{ minHeight: "100vh", background: "#000", display: "flex", flexDirection: "column" }}>
         <Header />
-        <main style={{ flex: 1, position: "relative", zIndex: 1 }} className="fade-in">
+        <main style={{ flex: 1, position: "relative", zIndex: 20 }} className="fade-in">
           <Suspense fallback={<PageLoader />}>
             <Switch>
               <Route path="/" component={Home} />
