@@ -169,8 +169,8 @@ export default function ProductCard({
           position: absolute;
           top: 50%;
           left: 50%;
-          width: 160px;
-          height: 160px;
+          width: 66px;
+          height: 66px;
           border-radius: 50%;
           transform: translate(-50%, -50%) scale(0.82);
           pointer-events: none;
@@ -178,20 +178,18 @@ export default function ProductCard({
           -webkit-backdrop-filter: blur(18px);
           -webkit-mask-image: radial-gradient(circle at center,
             transparent 0%,
-            transparent 22%,
-            rgba(0,0,0,0.15) 30%,
-            rgba(0,0,0,0.55) 42%,
-            rgba(0,0,0,0.85) 55%,
-            black 68%,
+            transparent 28%,
+            rgba(0,0,0,0.2) 40%,
+            rgba(0,0,0,0.7) 60%,
+            black 78%,
             black 100%
           );
           mask-image: radial-gradient(circle at center,
             transparent 0%,
-            transparent 22%,
-            rgba(0,0,0,0.15) 30%,
-            rgba(0,0,0,0.55) 42%,
-            rgba(0,0,0,0.85) 55%,
-            black 68%,
+            transparent 28%,
+            rgba(0,0,0,0.2) 40%,
+            rgba(0,0,0,0.7) 60%,
+            black 78%,
             black 100%
           );
           opacity: 0;
