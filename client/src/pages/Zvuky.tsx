@@ -25,6 +25,7 @@ const typeLabels: Record<string, string> = {
 
 function Zvuky() {
   const [kits, setKits] = useState<SoundKit[]>([]);
+  const [loading, setLoading] = useState(true);
   const [currentKit, setCurrentKit] = useState<SoundKit | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [savedKits, setSavedKits] = useState<Set<number>>(new Set());
@@ -40,8 +41,9 @@ function Zvuky() {
         } else {
           setKits([]);
         }
+        setLoading(false);
       })
-      .catch(() => setKits([]));
+      .catch(() => { setKits([]); setLoading(false); });
   }, []);
 
   useEffect(() => {
@@ -218,7 +220,7 @@ function Zvuky() {
 
       {/* Content — above video */}
       <div style={{ position: "relative", zIndex: 2, paddingTop: "100px" }}>
-        {kits.length > 0 ? (
+        {loading ? null : kits.length > 0 ? (
           <div style={{ width: "100%", marginBottom: "48px" }}>
             <ProductsGrid
               products={products}
