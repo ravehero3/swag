@@ -408,7 +408,7 @@ function buildPurchaseEmailHtml(
       </tr>`;
   }).join("");
 
-  const hasBeatContracts = downloadItems.some(i => i.productType === "beat");
+  const hasBeatContracts = downloadItems.some(i => i.productType === "beat" || i.productType === "sound_kit");
 
   return `<!DOCTYPE html>
 <html lang="cs">
@@ -537,7 +537,7 @@ export async function sendContractEmail(orderId: number): Promise<void> {
   const emailHtml = buildPurchaseEmailHtml(order, downloadItems, datum, appUrl);
 
   const attachments: { filename: string; content: string; contentType?: string }[] = [];
-  const beatItems = items.filter((i: any) => i.productType === "beat");
+  const beatItems = items.filter((i: any) => i.productType === "beat" || i.productType === "sound_kit");
 
   for (const item of beatItems) {
     const licenseTypeId = item.licenseTypeId;

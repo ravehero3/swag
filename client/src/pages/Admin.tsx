@@ -1620,7 +1620,7 @@ const PLACEHOLDER_GUIDE = [
   { ph: "{{PRAVNI_JMENO}}", desc: "Právní jméno kupujícího" },
   { ph: "{{UMELECKE_JMENO}}", desc: "Umělecké jméno kupujícího" },
   { ph: "{{ADRESA}}", desc: "Adresa kupujícího" },
-  { ph: "{{BEAT_NAZEV}}", desc: "Název beatu z objednávky" },
+  { ph: "{{BEAT_NAZEV}}", desc: "Název beatu nebo sound kitu z objednávky" },
   { ph: "{{CENA}}", desc: "Cena licence (automaticky)" },
 ];
 

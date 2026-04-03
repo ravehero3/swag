@@ -16,7 +16,7 @@ router.post("/contracts/preview", requireAdmin, (req: Request, res: Response) =>
     pravniJmeno: "Jan Novák",
     umeleckeJmeno: "YourArtistName",
     adresa: "Příkladná 1, Praha 1, 110 00",
-    beatNazev: "Název Beatu",
+    beatNazev: "Název díla (ukázka)",
     cena: formatPriceCzech(5000),
   });
 
