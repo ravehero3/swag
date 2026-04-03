@@ -8,7 +8,7 @@ function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { user, setUser } = useApp() as any;
+  const { user, setUser, settings } = useApp() as any;
   const [, navigate] = useLocation();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -111,17 +111,32 @@ function Login() {
   }
 
   return (
-    <div className="fade-in" style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh", padding: "40px 20px" }}>
+    <div className="fade-in" style={{ position: "relative", display: "flex", justifyContent: "center", alignItems: "center", height: "100vh", padding: "40px 20px", overflow: "hidden" }}>
+      {/* Video background */}
+      <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 0, pointerEvents: "none", overflow: "hidden" }}>
+        <video
+          key={settings?.zvuky_video}
+          src={settings?.zvuky_video || "/uploads/hrad-na-web.mov"}
+          autoPlay
+          muted
+          loop
+          playsInline
+          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", opacity: 0.5 }}
+        />
+        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at center, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.7) 100%)" }} />
+      </div>
       <div
         style={{
+          position: "relative",
+          zIndex: 1,
           maxWidth: "400px",
           width: "100%",
           padding: "32px",
-          border: "1px solid #000",
+          border: "1px solid #222",
           borderRadius: "4px",
-          background: "rgba(20, 20, 20, 0.8)",
-          backdropFilter: "blur(50px)",
-          WebkitBackdropFilter: "blur(50px)",
+          background: "rgba(10, 10, 10, 0.75)",
+          backdropFilter: "blur(24px)",
+          WebkitBackdropFilter: "blur(24px)",
         }}
       >
         <h1 style={{ marginBottom: "24px", textAlign: "center" }}>

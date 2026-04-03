@@ -178,40 +178,6 @@ function Zvuky() {
         />
       </div>
 
-      {/* Fixed video background — behind content */}
-      <div
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          height: "70vh",
-          zIndex: 0,
-          pointerEvents: "none",
-          overflow: "hidden",
-        }}
-      >
-        <video
-          key={settings?.zvuky_video}
-          src={settings?.zvuky_video || "/uploads/hrad-na-web.mov"}
-          autoPlay
-          muted
-          loop
-          playsInline
-          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", opacity: 0.7 }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: "60%",
-            background: "linear-gradient(to bottom, transparent, #000)",
-          }}
-        />
-      </div>
-
       <audio
         ref={audioRef}
         src={currentKit?.preview_url}
