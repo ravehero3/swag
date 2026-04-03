@@ -153,7 +153,8 @@ function App() {
       (c) => c.productId === item.productId && c.productType === item.productType
     );
     if (!exists) {
-      const newCart = [...cart, item];
+      const sanitized = { ...item, price: Number(item.price) };
+      const newCart = [...cart, sanitized];
       setCart(newCart);
       localStorage.setItem("voodoo808_cart", JSON.stringify(newCart));
     }

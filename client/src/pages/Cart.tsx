@@ -6,7 +6,7 @@ function Cart() {
   const { cart, removeFromCart } = useApp() as any;
   const [location] = useLocation();
   const [itemToRemove, setItemToRemove] = useState<any | null>(null);
-  const total = cart.reduce((sum: number, item: any) => sum + item.price, 0);
+  const total = cart.reduce((sum: number, item: any) => sum + Number(item.price), 0);
 
   const sectionStyle: React.CSSProperties = {
     width: "100%",
@@ -123,7 +123,7 @@ function Cart() {
                         {item.productType === "beat" ? "Beat" : "Sound Kit"}
                       </div>
                     </div>
-                    <div style={{ ...titleFont, fontSize: "14px", whiteSpace: "nowrap" }}>{item.price} CZK</div>
+                    <div style={{ ...titleFont, fontSize: "14px", whiteSpace: "nowrap" }}>{Number(item.price)} CZK</div>
                     <button
                       onClick={() => setItemToRemove(item)}
                       style={{
