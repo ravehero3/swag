@@ -48,7 +48,7 @@ export default function Ucet() {
 
         if (savedRes.ok) {
           const savedData = await savedRes.json();
-          setSavedItems(savedData);
+          setSavedItems(Array.isArray(savedData) ? savedData.filter((item: any) => item.item_data != null) : []);
         }
       } catch (err) {
         console.error("Error fetching account data:", err);

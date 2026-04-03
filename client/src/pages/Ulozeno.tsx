@@ -90,9 +90,13 @@ function Ulozeno() {
         setIsPlaying(true);
       }
     } else {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = item.item_data.preview_url;
+        audioRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
+      }
       setCurrentItem(item);
       setIsPlaying(true);
-      setTimeout(() => audioRef.current?.play(), 100);
     }
   };
 
@@ -249,7 +253,12 @@ function Ulozeno() {
           box-shadow: 0 0 14px rgba(36, 224, 83, 0.45);
         }
         .ulozeno-play-btn {
+          opacity: 0;
           transition: opacity 0.2s ease, transform 0.15s ease;
+        }
+        .ulozeno-card:hover .ulozeno-play-btn,
+        .ulozeno-play-btn.playing {
+          opacity: 1;
         }
       `}} />
 
@@ -392,7 +401,7 @@ function Ulozeno() {
                       {item.item_data.preview_url && (
                         <button
                           onClick={() => playPreview(item)}
-                          className="ulozeno-play-btn"
+                          className={`ulozeno-play-btn${currentItem?.id === item.id && isPlaying ? " playing" : ""}`}
                           style={{
                             position: "absolute",
                             inset: 0,
