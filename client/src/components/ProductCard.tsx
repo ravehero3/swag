@@ -200,6 +200,9 @@ export default function ProductCard({
           opacity: 1;
           transform: translate(-50%, -50%) scale(1);
         }
+        .product-image-container:has(.play-button-overlay:hover) .play-blur-ring {
+          transform: translate(-50%, -50%) scale(1.1);
+        }
         .product-info-pill {
           opacity: 0;
           transition: all 0.3s ease;
