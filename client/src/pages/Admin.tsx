@@ -1602,18 +1602,18 @@ Tato Smlouva se řídí právním řádem České republiky, zejména zákonem �
 
 Veškeré spory vzniklé z této Smlouvy budou strany řešit přednostně smírnou cestou. Nebude-li dosaženo dohody, rozhodne věcně a místně příslušný soud České republiky.
 
-PODPISY SMLUVNÍCH STRAN
-Smluvní strany prohlašují, že si tuto Smlouvu přečetly, že odpovídá jejich pravé a svobodné vůli a že ji uzavírají dobrovolně, nikoli v tísni ani za nápadně nevýhodných podmínek.
+ELEKTRONICKÉ PŘIJETÍ PODMÍNEK
+Tato Smlouva nabývá platnosti a účinnosti okamžikem dokončení platby za licenci prostřednictvím platformy VOODOO808. Nabyvatel — {{PRAVNI_JMENO}}, uměleckým jménem {{UMELECKE_JMENO}} — dokončením nákupu výslovně potvrzuje, že:
 
-Nabyvatel licence:
-Jméno: ________________________________
-Datum: ________________________________
-Podpis: ________________________________
+• si tuto Smlouvu přečetl/a a porozuměl/a jejímu obsahu v plném rozsahu,
+• souhlasí se všemi podmínkami zde uvedenými,
+• tato Smlouva odpovídá jeho/její pravé a svobodné vůli a je uzavírána dobrovolně, nikoli v tísni ani za nápadně nevýhodných podmínek.
 
-Poskytovatel licence:
-Vojtěch Vojkovský (VOODOO808)
-Datum: ________________________________
-Podpis: ________________________________`;
+Elektronické potvrzení nákupu (platební transakce) nahrazuje vlastnoruční podpis ve smyslu § 562 zákona č. 89/2012 Sb., občanský zákoník, a má stejné právní účinky jako podpis listinný. Datum uzavření Smlouvy je {{DATUM}}.
+
+Tato Smlouva je vyhotovena a doručena Nabyvateli elektronicky prostřednictvím e-mailu. Fyzický výtisk ani vlastnoruční podpisy nejsou k platnosti a účinnosti Smlouvy vyžadovány.
+
+Poskytovatel licence: Vojtěch Vojkovský, uměleckým jménem VOODOO808, potvrzuje uzavření Smlouvy vydáním potvrzení o přijetí platby a odesláním licenčních souborů Nabyvateli.`;
 
 const PLACEHOLDER_GUIDE = [
   { ph: "{{DATUM}}", desc: "Datum uzavření smlouvy (automaticky)" },
