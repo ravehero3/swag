@@ -2,13 +2,28 @@ import { Router, Request, Response } from "express";
 import { pool } from "../db.js";
 import { requireAdmin, requireAuth } from "../middleware/auth.js";
 import { generateDownloadUrl, STORAGE_BUCKETS } from "../lib/storage.js";
+import { computeWaveformFromUrl } from "../lib/waveform.js";
+
+async function triggerWaveformComputation(beatId: number, previewUrl: string) {
+  try {
+    const existing = await pool.query("SELECT waveform_data FROM beats WHERE id = $1", [beatId]);
+    if (existing.rows[0]?.waveform_data) return;
+    const data = await computeWaveformFromUrl(previewUrl);
+    if (data) {
+      await pool.query("UPDATE beats SET waveform_data = $1 WHERE id = $2", [JSON.stringify(data), beatId]);
+      console.log(`Waveform computed for beat ${beatId}`);
+    }
+  } catch (e) {
+    console.error(`Waveform computation failed for beat ${beatId}:`, e);
+  }
+}
 
 const router = Router();
 
 router.get("/", async (req: Request, res: Response) => {
   try {
     const { search, tag } = req.query;
-    let query = "SELECT id, title, artist, bpm, key, price, preview_url, artwork_url, trackout_url, tags, is_highlighted, created_at FROM beats WHERE is_published = true";
+    let query = "SELECT id, title, artist, bpm, key, price, preview_url, artwork_url, trackout_url, tags, is_highlighted, waveform_data, created_at FROM beats WHERE is_published = true";
     const params: any[] = [];
     
     if (tag) {
@@ -33,7 +48,7 @@ router.get("/", async (req: Request, res: Response) => {
 router.get("/highlighted", async (_req: Request, res: Response) => {
   try {
     const result = await pool.query(
-      "SELECT id, title, artist, bpm, key, price, preview_url, artwork_url, trackout_url, tags, is_highlighted, created_at FROM beats WHERE is_highlighted = true AND is_published = true LIMIT 1"
+      "SELECT id, title, artist, bpm, key, price, preview_url, artwork_url, trackout_url, tags, is_highlighted, waveform_data, created_at FROM beats WHERE is_highlighted = true AND is_published = true LIMIT 1"
     );
     res.set("Cache-Control", "public, max-age=300, stale-while-revalidate=60");
     res.json(result.rows[0] || null);
@@ -101,7 +116,11 @@ router.post("/", requireAdmin, async (req: Request, res: Response) => {
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
       [title, artist || "VOODOO808", bpm, key, price, previewUrl, fileUrl, artworkUrl, trackoutUrl || null, beatTags, isPublished || false, isHighlighted || false]
     );
-    res.json(result.rows[0]);
+    const beat = result.rows[0];
+    res.json(beat);
+    if (beat.id && previewUrl) {
+      triggerWaveformComputation(beat.id, previewUrl).catch(() => {});
+    }
   } catch (error) {
     console.error("Error creating beat:", error);
     res.status(500).json({ error: "Chyba při vytváření beatu" });
@@ -119,11 +138,16 @@ router.put("/:id", requireAdmin, async (req: Request, res: Response) => {
     const beatTags = Array.isArray(tags) ? tags.slice(0, 3) : [];
     const result = await pool.query(
       `UPDATE beats SET title = $1, artist = $2, bpm = $3, key = $4, price = $5, 
-       preview_url = $6, file_url = $7, artwork_url = $8, trackout_url = $9, tags = $10, is_published = $11, is_highlighted = $12
+       preview_url = $6, file_url = $7, artwork_url = $8, trackout_url = $9, tags = $10, is_published = $11, is_highlighted = $12,
+       waveform_data = CASE WHEN $6 != preview_url THEN NULL ELSE waveform_data END
        WHERE id = $13 RETURNING *`,
       [title, artist, bpm, key, price, previewUrl, fileUrl, artworkUrl, trackoutUrl || null, beatTags, isPublished, isHighlighted, req.params.id]
     );
-    res.json(result.rows[0]);
+    const beat = result.rows[0];
+    res.json(beat);
+    if (beat.id && previewUrl) {
+      triggerWaveformComputation(beat.id, previewUrl).catch(() => {});
+    }
   } catch (error) {
     res.status(500).json({ error: "Chyba při aktualizaci beatu" });
   }

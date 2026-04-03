@@ -32,6 +32,12 @@ export function useSEO(page: "home" | "beaty" | "zvuky") {
     setMetaTag("property", "og:site_name", siteName);
     setMetaTag("property", "og:type", "website");
     if (description) setMetaTag("property", "og:description", description);
-    if (ogImage) setMetaTag("property", "og:image", ogImage);
+    if (ogImage) {
+      const absoluteOgImage = ogImage.startsWith("http") ? ogImage : `${window.location.origin}${ogImage.startsWith("/") ? "" : "/"}${ogImage}`;
+      setMetaTag("property", "og:image", absoluteOgImage);
+      setMetaTag("property", "og:image:width", "1200");
+      setMetaTag("property", "og:image:height", "630");
+    }
+    setMetaTag("property", "og:url", window.location.href);
   }, [settings, page]);
 }

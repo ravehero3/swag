@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useApp } from "../App.js";
 import { useLocation } from "wouter";
 
@@ -2055,6 +2055,27 @@ function SEOTab({ settings, onRefresh }: any) {
   });
   const [saving, setSaving] = useState<Record<string, boolean>>({});
   const [saved, setSaved] = useState<Record<string, boolean>>({});
+  const [ogImageUploading, setOgImageUploading] = useState(false);
+  const ogImageInputRef = useRef<HTMLInputElement>(null);
+
+  const uploadOgImage = async (file: File) => {
+    setOgImageUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload?type=artwork", {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
+      if (!res.ok) throw new Error("Upload failed");
+      const data = await res.json();
+      handleChange("seo_og_image", data.url);
+    } catch {
+    } finally {
+      setOgImageUploading(false);
+    }
+  };
 
   const handleChange = (key: string, val: string) => setValues(prev => ({ ...prev, [key]: val }));
 
@@ -2097,7 +2118,28 @@ function SEOTab({ settings, onRefresh }: any) {
           </div>
           <div>
             <label style={labelStyle}>OG obrázek (URL sdílení na sociálních sítích)</label>
-            <input value={values.seo_og_image} onChange={(e) => handleChange("seo_og_image", e.target.value)} placeholder="https://..." style={fieldStyle} data-testid="input-seo-og-image" />
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <input value={values.seo_og_image} onChange={(e) => handleChange("seo_og_image", e.target.value)} placeholder="https://..." style={{ ...fieldStyle, flex: 1 }} data-testid="input-seo-og-image" />
+              <input
+                ref={ogImageInputRef}
+                type="file"
+                accept="image/*"
+                style={{ display: "none" }}
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadOgImage(f); }}
+                data-testid="input-seo-og-image-file"
+              />
+              <button
+                onClick={() => ogImageInputRef.current?.click()}
+                disabled={ogImageUploading}
+                style={{ background: "#1a1a1a", border: "1px solid #2a2a2a", color: "#aaa", padding: "8px 12px", fontSize: "12px", cursor: "pointer", borderRadius: "3px", whiteSpace: "nowrap", opacity: ogImageUploading ? 0.6 : 1 }}
+                data-testid="button-upload-og-image"
+              >
+                {ogImageUploading ? "Nahrávám..." : "Nahrát"}
+              </button>
+            </div>
+            {values.seo_og_image && (
+              <img src={values.seo_og_image} alt="OG preview" style={{ marginTop: "8px", maxHeight: "60px", maxWidth: "120px", objectFit: "cover", borderRadius: "3px", border: "1px solid #2a2a2a" }} />
+            )}
           </div>
         </div>
         <button

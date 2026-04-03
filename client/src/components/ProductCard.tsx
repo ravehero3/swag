@@ -248,14 +248,10 @@ export default function ProductCard({
               height: "66px",
               borderRadius: "50%",
               border: "none",
-              background: "rgba(255,255,255,0.06)",
-              backdropFilter: "blur(14px) brightness(1.1)",
-              WebkitBackdropFilter: "blur(14px) brightness(1.1)",
-              boxShadow: [
-                "0 0 0 1px rgba(255,255,255,0.18)",
-                "0 4px 20px rgba(0,0,0,0.2)",
-                "inset 0 1px 0 rgba(255,255,255,0.3)",
-              ].join(", "),
+              background: "transparent",
+              backdropFilter: "blur(4px)",
+              WebkitBackdropFilter: "blur(4px)",
+              boxShadow: "0 0 0 1px rgba(255,255,255,0.14)",
               color: "#fff",
               fontSize: "20px",
               cursor: "pointer",
@@ -400,7 +396,7 @@ export default function ProductCard({
               onClick={handleHeartClick}
               className={`heart-btn${isHeartAnimating ? " heart-pulse" : ""}`}
               style={{
-                background: "#000",
+                background: "transparent",
                 border: "none",
                 cursor: "pointer",
                 padding: "4px",

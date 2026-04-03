@@ -7,7 +7,7 @@ import ContractModal from "../components/ContractModal.js";
 import DownloadModal from "../components/DownloadModal.js";
 import MusicPlayer from "../components/MusicPlayer.js";
 import SoundWave from "../components/SoundWave.js";
-import { preloadWaveform } from "../lib/waveformCache.js";
+import { preloadWaveform, seedWaveformCache } from "../lib/waveformCache.js";
 import ProductsGrid from "../components/ProductsGrid.js";
 import SoundKitsDock from "../components/SoundKitsDock.js";
 import ArtistCarousel from "../components/ArtistCarousel.js";
@@ -23,6 +23,7 @@ interface Beat {
   artwork_url: string;
   tags?: string[];
   is_highlighted?: boolean;
+  waveform_data?: number[];
 }
 
 
@@ -239,7 +240,11 @@ function Beaty() {
       ];
       allBeats.forEach((beat, i) => {
         if (!beat.preview_url) return;
-        setTimeout(() => preloadWaveform(beat.preview_url, beat.id), i * 120);
+        if (beat.waveform_data && Array.isArray(beat.waveform_data)) {
+          seedWaveformCache(beat.preview_url, beat.waveform_data);
+        } else {
+          setTimeout(() => preloadWaveform(beat.preview_url, beat.id), i * 120);
+        }
       });
     });
   }, [selectedTag, searchQuery]);
@@ -811,7 +816,7 @@ function Beaty() {
           </div>
         )}
 
-        {isPlaying && currentBeat && (
+        {currentBeat && (
           <SoundWave audioRef={audioRef} isPlaying={isPlaying} audioUrl={currentBeat.preview_url} />
         )}
 

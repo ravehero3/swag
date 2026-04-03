@@ -186,8 +186,6 @@ function SoundWave({ audioRef, isPlaying, audioUrl }: SoundWaveProps) {
     [seek]
   );
 
-  if (!isPlaying) return null;
-
   return (
     <div
       onClick={seek}
