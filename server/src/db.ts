@@ -200,6 +200,18 @@ export async function initDatabase() {
       ON CONFLICT (key) DO NOTHING;
     `);
     
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS leads (
+        id SERIAL PRIMARY KEY,
+        email VARCHAR(255) NOT NULL,
+        user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        items JSONB NOT NULL DEFAULT '[]',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX IF NOT EXISTS idx_leads_email ON leads (email);
+      CREATE INDEX IF NOT EXISTS idx_leads_created_at ON leads (created_at DESC);
+    `);
+
     // Performance indexes
     await client.query(`
       CREATE INDEX IF NOT EXISTS idx_beats_is_published ON beats (is_published);

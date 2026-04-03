@@ -12,6 +12,7 @@ import uploadRoutes from "./routes/upload.js";
 import savedRoutes from "./routes/saved.js";
 import licensesRoutes from "./routes/licenses.js";
 import adminLicensesRoutes from "./routes/adminLicenses.js";
+import leadsRoutes from "./routes/leads.js";
 import { requireAuth, requireAdmin } from "./middleware/auth.js";
 import bcrypt from "bcryptjs";
 
@@ -112,6 +113,7 @@ app.use("/uploads", express.static(path.join(__dirname, "../../public/uploads"))
 app.use(express.static(path.join(__dirname, "../../public")));
 
 app.use("/api/auth", authRoutes);
+app.use("/api/leads", leadsRoutes);
 app.use("/api/beats", beatsRoutes);
 app.use("/api/sound-kits", soundKitsRoutes);
 app.use("/api/orders", ordersRoutes);

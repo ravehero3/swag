@@ -615,6 +615,120 @@ export async function sendContractEmail(orderId: number): Promise<void> {
   }
 }
 
+export async function sendFreeDownloadEmail(lead: { id: number; email: string; items: any[] }): Promise<void> {
+  const apiKey = process.env.RESEND_API_KEY || process.env.RESEND_API;
+  if (!apiKey) {
+    console.log(`[Email] RESEND_API_KEY not configured, skipping free download email for lead ${lead.id}`);
+    return;
+  }
+
+  const items: any[] = Array.isArray(lead.items) ? lead.items : [];
+  if (items.length === 0) return;
+
+  const appUrl = process.env.APP_URL ||
+    (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : "https://voodoo808.com");
+
+  const downloadItems = await resolveDownloadItems(items);
+  const datum = formatDateCzech(new Date());
+  const resend = new Resend(apiKey);
+  const fromAddress = process.env.RESEND_FROM || "VOODOO808 <info@voodoo808.com>";
+
+  const downloadRows = downloadItems.map(item => {
+    const downloadBtn = item.downloadUrl
+      ? `<a href="${item.downloadUrl}"
+           style="display:inline-block;background:#fff;color:#000;font-weight:700;font-size:13px;
+                  padding:10px 22px;border-radius:4px;text-decoration:none;letter-spacing:0.5px;">
+           STÁHNOUT
+         </a>`
+      : `<span style="color:#888;font-size:13px;">Odkaz nedostupný — přihlaste se na účet</span>`;
+
+    return `
+      <tr>
+        <td style="padding:14px 0;border-bottom:1px solid #222;vertical-align:middle;">
+          <div style="font-weight:600;font-size:15px;color:#fff;margin-bottom:4px;">${item.title}</div>
+          <div style="font-size:12px;color:#888;text-transform:uppercase;letter-spacing:0.5px;">
+            ${item.productType === "beat" ? "Beat" : "Sound Kit"} &bull; Zdarma
+          </div>
+        </td>
+        <td style="padding:14px 0 14px 24px;border-bottom:1px solid #222;text-align:right;vertical-align:middle;white-space:nowrap;">
+          ${downloadBtn}
+        </td>
+      </tr>`;
+  }).join("");
+
+  const emailHtml = `<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+</head>
+<body style="margin:0;padding:0;background:#0a0a0a;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:40px 0;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+          <tr>
+            <td style="padding:0 0 32px 0;text-align:center;border-bottom:1px solid #222;">
+              <span style="font-size:26px;font-weight:900;letter-spacing:3px;color:#fff;text-transform:uppercase;">VOODOO808</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:32px 0 8px 0;">
+              <p style="margin:0 0 12px 0;font-size:22px;font-weight:700;color:#fff;">Vaše soubory jsou připraveny!</p>
+              <p style="margin:0;font-size:15px;color:#aaa;line-height:1.6;">
+                Děkujeme za zájem! Níže najdete přímé odkazy ke stažení vašich souborů zdarma. Každý odkaz je platný <strong style="color:#fff;">30 dní</strong>.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:28px 0 0 0;">
+              <p style="margin:0 0 12px 0;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#666;">Vaše soubory</p>
+              <table width="100%" cellpadding="0" cellspacing="0">${downloadRows}</table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px 0 0 0;">
+              <div style="background:#111;border:1px solid #222;border-radius:6px;padding:18px 22px;">
+                <p style="margin:0 0 6px 0;font-size:13px;font-weight:700;color:#fff;">Přístup kdykoli</p>
+                <p style="margin:0;font-size:13px;color:#888;line-height:1.6;">
+                  Soubory jsou také dostupné ve vašem
+                  <a href="${appUrl}/ucet" style="color:#fff;font-weight:600;">účtu na VOODOO808</a>.
+                </p>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:40px 0 0 0;border-top:1px solid #222;margin-top:32px;">
+              <p style="margin:32px 0 0 0;font-size:12px;color:#444;text-align:center;line-height:1.7;">
+                VOODOO808 &bull; Vojtěch Vojkovský<br/>
+                <a href="mailto:info@voodoo808.com" style="color:#666;text-decoration:none;">info@voodoo808.com</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: fromAddress,
+      to: [lead.email],
+      subject: `Vaše soubory zdarma – VOODOO808`,
+      html: emailHtml,
+    });
+    if (error) {
+      console.error(`[Email] Resend error for lead ${lead.id}:`, error);
+    } else {
+      console.log(`[Email] Free download email sent for lead ${lead.id}, id: ${data?.id}`);
+    }
+  } catch (err) {
+    console.error(`[Email] Failed to send free download email for lead ${lead.id}:`, err);
+  }
+}
+
 export function generateContractHtml(
   template: string,
   data: {

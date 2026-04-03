@@ -161,10 +161,10 @@ function Admin() {
   const [, navigate] = useLocation();
   const initialTab = (() => {
     const p = new URLSearchParams(window.location.search).get("tab");
-    const valid = ["beats", "kits", "orders", "licenses", "settings", "emails", "promo", "seo"];
-    return (valid.includes(p || "") ? p : "orders") as "beats" | "kits" | "orders" | "licenses" | "settings" | "emails" | "promo" | "seo";
+    const valid = ["beats", "kits", "orders", "licenses", "settings", "emails", "promo", "seo", "zakaznici"];
+    return (valid.includes(p || "") ? p : "orders") as "beats" | "kits" | "orders" | "licenses" | "settings" | "emails" | "promo" | "seo" | "zakaznici";
   })();
-  const [tab, setTab] = useState<"beats" | "kits" | "orders" | "licenses" | "settings" | "emails" | "promo" | "seo">(initialTab);
+  const [tab, setTab] = useState<"beats" | "kits" | "orders" | "licenses" | "settings" | "emails" | "promo" | "seo" | "zakaznici">(initialTab);
   const [beats, setBeats] = useState<Beat[]>([]);
   const [kits, setKits] = useState<SoundKit[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
@@ -282,14 +282,14 @@ function Admin() {
       <h1 style={{ marginBottom: "24px", color: "#666" }}>Admin Panel</h1>
 
       <div style={{ display: "flex", gap: "12px", marginBottom: "24px", flexWrap: "wrap", justifyContent: "center" }}>
-        {["beats", "kits", "orders", "licenses", "settings", "emails", "promo", "seo"].map((t) => (
+        {["beats", "kits", "orders", "zakaznici", "licenses", "settings", "emails", "promo", "seo"].map((t) => (
           <button
             key={t}
             className={tab === t ? "btn btn-filled" : "btn btn-admin"}
             onClick={() => setTab(t as any)}
             style={tab !== t ? { borderColor: "#333", color: "#666" } : {}}
           >
-            {t === "beats" ? "Beaty" : t === "kits" ? "Zvuky" : t === "orders" ? "Objednávky" : t === "licenses" ? "Licence" : t === "settings" ? "Nastavení" : t === "emails" ? "Emaily" : t === "promo" ? "Promo kódy" : "SEO"}
+            {t === "beats" ? "Beaty" : t === "kits" ? "Zvuky" : t === "orders" ? "Objednávky" : t === "zakaznici" ? "Zákazníci" : t === "licenses" ? "Licence" : t === "settings" ? "Nastavení" : t === "emails" ? "Emaily" : t === "promo" ? "Promo kódy" : "SEO"}
           </button>
         ))}
       </div>
@@ -320,6 +320,7 @@ function Admin() {
         )}
 
         {tab === "orders" && <OrdersTab orders={orders} onRefresh={loadData} />}
+        {tab === "zakaznici" && <ZakazniciTab />}
         {tab === "licenses" && <LicensesTab licenses={licenses} onRefresh={loadData} />}
         {tab === "settings" && <SettingsTab settings={settings} onRefresh={refreshSettings} />}
         {tab === "emails" && <EmailsTab />}
@@ -2237,6 +2238,158 @@ function SettingsTab({ settings, onRefresh }: any) {
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+function downloadCsv(rows: string[][], filename: string) {
+  const content = rows.map(r => r.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
+  const blob = new Blob(["\uFEFF" + content], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function ZakazniciTab() {
+  const [section, setSection] = useState<"customers" | "leads">("customers");
+  const [customers, setCustomers] = useState<any[]>([]);
+  const [leads, setLeads] = useState<any[]>([]);
+  const [loadingCustomers, setLoadingCustomers] = useState(true);
+  const [loadingLeads, setLoadingLeads] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/leads/admin/customers", { credentials: "include" })
+      .then(r => r.ok ? r.json() : [])
+      .then(data => { setCustomers(data); setLoadingCustomers(false); })
+      .catch(() => setLoadingCustomers(false));
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/leads/admin", { credentials: "include" })
+      .then(r => r.ok ? r.json() : [])
+      .then(data => { setLeads(data); setLoadingLeads(false); })
+      .catch(() => setLoadingLeads(false));
+  }, []);
+
+  const exportCustomerEmails = () => {
+    const rows = [["Email", "ID objednávky", "Datum"]];
+    customers.forEach(c => rows.push([c.email, String(c.id), new Date(c.created_at).toLocaleDateString("cs-CZ")]));
+    downloadCsv(rows, "zakaznici-emaily.csv");
+  };
+
+  const exportLeadEmails = () => {
+    const rows = [["Email", "Soubory", "Datum"]];
+    leads.forEach(l => {
+      const items = Array.isArray(l.items) ? l.items.map((i: any) => i.title).join(", ") : "";
+      rows.push([l.email, items, new Date(l.created_at).toLocaleDateString("cs-CZ")]);
+    });
+    downloadCsv(rows, "zdarma-emaily.csv");
+  };
+
+  const cellStyle: any = { padding: "12px 10px", borderBottom: "1px solid #1e1e1e", verticalAlign: "middle" };
+
+  return (
+    <div>
+      <div style={{ display: "flex", gap: "12px", marginBottom: "24px", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: "8px" }}>
+          <button
+            onClick={() => setSection("customers")}
+            className={section === "customers" ? "btn btn-filled" : "btn"}
+            style={{ borderRadius: "4px", ...(section !== "customers" ? { borderColor: "#333", color: "#666" } : {}) }}
+          >
+            Zákazníci ({customers.length})
+          </button>
+          <button
+            onClick={() => setSection("leads")}
+            className={section === "leads" ? "btn btn-filled" : "btn"}
+            style={{ borderRadius: "4px", ...(section !== "leads" ? { borderColor: "#333", color: "#666" } : {}) }}
+          >
+            Zájemci o free ({leads.length})
+          </button>
+        </div>
+        <button
+          onClick={section === "customers" ? exportCustomerEmails : exportLeadEmails}
+          className="btn"
+          style={{ borderRadius: "4px", borderColor: "#444", color: "#aaa", fontSize: "12px" }}
+          data-testid="button-export-csv"
+        >
+          ↓ Stáhnout CSV
+        </button>
+      </div>
+
+      {section === "customers" && (
+        <div>
+          <p style={{ color: "#555", fontSize: "12px", marginBottom: "16px" }}>
+            Lidé, kteří úspěšně zaplatili alespoň jednu objednávku. Zobrazena poslední objednávka na email.
+          </p>
+          {loadingCustomers ? (
+            <div style={{ color: "#666", padding: "24px" }}>Načítám...</div>
+          ) : customers.length === 0 ? (
+            <div style={{ color: "#444", padding: "24px" }}>Zatím žádní zákazníci.</div>
+          ) : (
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr>
+                  <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", letterSpacing: "0.08em" }}>Email</th>
+                  <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", letterSpacing: "0.08em" }}>Objednávka</th>
+                  <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", letterSpacing: "0.08em" }}>Datum</th>
+                  <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", letterSpacing: "0.08em" }}>Celkem</th>
+                </tr>
+              </thead>
+              <tbody>
+                {customers.map((c, i) => (
+                  <tr key={i}>
+                    <td style={{ ...cellStyle, color: "#fff", fontWeight: 500 }} data-testid={`text-customer-email-${i}`}>{c.email}</td>
+                    <td style={{ ...cellStyle, color: "#888", fontSize: "13px" }}>#{c.id}</td>
+                    <td style={{ ...cellStyle, color: "#666", fontSize: "12px" }}>{new Date(c.created_at).toLocaleDateString("cs-CZ")}</td>
+                    <td style={{ ...cellStyle, color: "#aaa", fontSize: "13px" }}>{Number(c.total).toLocaleString("cs-CZ")} CZK</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      )}
+
+      {section === "leads" && (
+        <div>
+          <p style={{ color: "#555", fontSize: "12px", marginBottom: "16px" }}>
+            Lidé, kteří si stáhli soubory zdarma. Tyto záznamy se nezobrazují v objednávkách.
+          </p>
+          {loadingLeads ? (
+            <div style={{ color: "#666", padding: "24px" }}>Načítám...</div>
+          ) : leads.length === 0 ? (
+            <div style={{ color: "#444", padding: "24px" }}>Zatím žádné free downloady.</div>
+          ) : (
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr>
+                  <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", letterSpacing: "0.08em" }}>Email</th>
+                  <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", letterSpacing: "0.08em" }}>Soubory</th>
+                  <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", letterSpacing: "0.08em" }}>Datum</th>
+                </tr>
+              </thead>
+              <tbody>
+                {leads.map((l, i) => {
+                  const items = Array.isArray(l.items) ? l.items : [];
+                  return (
+                    <tr key={i}>
+                      <td style={{ ...cellStyle, color: "#fff", fontWeight: 500 }} data-testid={`text-lead-email-${i}`}>{l.email}</td>
+                      <td style={{ ...cellStyle, color: "#888", fontSize: "12px" }}>
+                        {items.map((item: any) => item.title).join(", ") || "—"}
+                      </td>
+                      <td style={{ ...cellStyle, color: "#666", fontSize: "12px" }}>{new Date(l.created_at).toLocaleDateString("cs-CZ")}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+      )}
     </div>
   );
 }
