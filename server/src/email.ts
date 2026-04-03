@@ -378,11 +378,99 @@ async function resolveDownloadItems(items: any[]): Promise<DownloadItem[]> {
   return result;
 }
 
+export function buildPreviewEmailHtml(key: string, introText: string, appUrl: string): string {
+  const datum = "3. dubna 2026";
+
+  const isFree = key === "free";
+  const isKit = key.includes("kit") || key.includes("kits");
+
+  const sampleItems: DownloadItem[] = isFree
+    ? [
+        { title: "Dark Trap Vol. 1", productType: "sound_kit", price: 0, downloadUrl: "#" },
+      ]
+    : key === "beats"
+    ? [
+        { title: "Neon Nights", productType: "beat", price: 1490, downloadUrl: "#" },
+        { title: "Midnight Drive", productType: "beat", price: 990, downloadUrl: "#" },
+      ]
+    : key === "kits"
+    ? [
+        { title: "Dark Trap Vol. 1", productType: "sound_kit", price: 890, downloadUrl: "#" },
+        { title: "808 Essentials", productType: "sound_kit", price: 690, downloadUrl: "#" },
+      ]
+    : key === "mixed"
+    ? [
+        { title: "Neon Nights", productType: "beat", price: 1490, downloadUrl: "#" },
+        { title: "Dark Trap Vol. 1", productType: "sound_kit", price: 890, downloadUrl: "#" },
+      ]
+    : [{ title: "Neon Nights", productType: "beat", price: 1490, downloadUrl: "#" }];
+
+  const sampleOrder = { id: 1234, total: sampleItems.reduce((s, i) => s + i.price, 0) };
+
+  if (isFree) {
+    return buildFreePreviewHtml(introText, sampleItems, appUrl);
+  }
+  return buildPurchaseEmailHtml(sampleOrder, sampleItems, datum, appUrl, introText);
+}
+
+function buildFreePreviewHtml(introText: string, items: DownloadItem[], appUrl: string): string {
+  const downloadRows = items.map(item => `
+    <tr>
+      <td style="padding:14px 0;border-bottom:1px solid #222;vertical-align:middle;">
+        <div style="font-weight:600;font-size:15px;color:#fff;margin-bottom:4px;">${item.title}</div>
+        <div style="font-size:12px;color:#888;text-transform:uppercase;letter-spacing:0.5px;">
+          ${item.productType === "beat" ? "Beat" : "Sound Kit"} &bull; Zdarma
+        </div>
+      </td>
+      <td style="padding:14px 0 14px 24px;border-bottom:1px solid #222;text-align:right;vertical-align:middle;white-space:nowrap;">
+        <a href="#" style="display:inline-block;background:#fff;color:#000;font-weight:700;font-size:13px;padding:10px 22px;border-radius:4px;text-decoration:none;letter-spacing:0.5px;">STÁHNOUT</a>
+      </td>
+    </tr>`).join("");
+
+  const displayIntro = introText || "Děkujeme za zájem! Níže najdete přímé odkazy ke stažení vašich souborů zdarma. Každý odkaz je platný 30 dní.";
+
+  return `<!DOCTYPE html><html lang="cs"><head><meta charset="UTF-8"/></head>
+<body style="margin:0;padding:0;background:#0a0a0a;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:40px 0;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+        <tr><td style="padding:0 0 32px 0;text-align:center;border-bottom:1px solid #222;">
+          <span style="font-size:26px;font-weight:900;letter-spacing:3px;color:#fff;text-transform:uppercase;">VOODOO808</span>
+        </td></tr>
+        <tr><td style="padding:32px 0 8px 0;">
+          <p style="margin:0 0 12px 0;font-size:22px;font-weight:700;color:#fff;">Vaše soubory jsou připraveny!</p>
+          <p style="margin:0;font-size:15px;color:#aaa;line-height:1.6;">${displayIntro}</p>
+        </td></tr>
+        <tr><td style="padding:28px 0 0 0;">
+          <p style="margin:0 0 12px 0;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#666;">Vaše soubory</p>
+          <table width="100%" cellpadding="0" cellspacing="0">${downloadRows}</table>
+        </td></tr>
+        <tr><td style="padding:24px 0 0 0;">
+          <div style="background:#111;border:1px solid #222;border-radius:6px;padding:18px 22px;">
+            <p style="margin:0 0 6px 0;font-size:13px;font-weight:700;color:#fff;">Přístup kdykoli</p>
+            <p style="margin:0;font-size:13px;color:#888;line-height:1.6;">
+              Soubory jsou také dostupné ve vašem <a href="${appUrl}/ucet" style="color:#fff;font-weight:600;">účtu na VOODOO808</a>.
+            </p>
+          </div>
+        </td></tr>
+        <tr><td style="padding:40px 0 0 0;border-top:1px solid #222;margin-top:32px;">
+          <p style="margin:32px 0 0 0;font-size:12px;color:#444;text-align:center;line-height:1.7;">
+            VOODOO808 &bull; Vojtěch Vojkovský<br/>
+            <a href="mailto:info@voodoo808.com" style="color:#666;text-decoration:none;">info@voodoo808.com</a>
+          </p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body></html>`;
+}
+
 function buildPurchaseEmailHtml(
   order: any,
   downloadItems: DownloadItem[],
   datum: string,
   appUrl: string,
+  customIntroText?: string,
 ): string {
   const downloadRows = downloadItems.map(item => {
     const priceFormatted = formatPriceCzech(item.price);
