@@ -1388,6 +1388,8 @@ function Home() {
         onToggleShuffle={() => setIsShuffling(!isShuffling)}
         onBuyClick={openContractModal}
         audioRef={audioRef}
+        isSaved={currentBeat ? savedBeats.has(currentBeat.id) : false}
+        onToggleSave={() => currentBeat && toggleSave(currentBeat)}
       />
       <div style={{ height: "100px" }} />
     </div>

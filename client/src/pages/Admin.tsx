@@ -1761,13 +1761,36 @@ function LicensesTab({ licenses, onRefresh }: any) {
   return (
     <div>
       {previewHtml && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(13,13,13,0.85)", zIndex: 1000, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "20px" }}>
-          <div style={{ background: "#fff", borderRadius: "4px", width: "100%", maxWidth: "820px", maxHeight: "88vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", borderBottom: "1px solid #ddd", background: "#f5f5f5" }}>
-              <span style={{ fontWeight: "bold", color: "#161616", fontSize: "14px" }}>Náhled smlouvy (vzorová data)</span>
-              <button onClick={() => setPreviewHtml(null)} style={{ background: "none", border: "none", fontSize: "20px", cursor: "pointer", color: "#333" }}>×</button>
-            </div>
-            <iframe srcDoc={previewHtml} style={{ flex: 1, border: "none", width: "100%" }} title="Náhled smlouvy" />
+        <div
+          onClick={() => setPreviewHtml(null)}
+          style={{ position: "fixed", inset: 0, background: "rgba(30,30,30,0.92)", zIndex: 1000, display: "flex", flexDirection: "column", alignItems: "center", overflowY: "auto", padding: "24px 16px 48px" }}
+        >
+          {/* Toolbar */}
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", maxWidth: "794px", marginBottom: "16px", flexShrink: 0 }}
+          >
+            <span style={{ fontWeight: "600", color: "#ddd", fontSize: "13px", letterSpacing: "0.04em" }}>Náhled smlouvy (vzorová data)</span>
+            <button onClick={() => setPreviewHtml(null)} style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "4px", fontSize: "13px", cursor: "pointer", color: "#ccc", padding: "4px 12px" }}>Zavřít ×</button>
+          </div>
+          {/* A4 paper */}
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "794px",
+              minHeight: "1123px",
+              background: "#fff",
+              boxShadow: "0 8px 40px rgba(0,0,0,0.6)",
+              borderRadius: "2px",
+              overflow: "hidden",
+              flexShrink: 0,
+            }}
+          >
+            <iframe
+              srcDoc={previewHtml}
+              style={{ width: "100%", height: "1123px", border: "none", display: "block" }}
+              title="Náhled smlouvy"
+            />
           </div>
         </div>
       )}

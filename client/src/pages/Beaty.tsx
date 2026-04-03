@@ -1527,6 +1527,8 @@ function Beaty() {
         onToggleShuffle={() => setIsShuffling(!isShuffling)}
         onBuyClick={openContractModal}
         audioRef={audioRef}
+        isSaved={currentBeat ? savedBeats.has(currentBeat.id) : false}
+        onToggleSave={() => currentBeat && toggleSave(currentBeat)}
       />
     </div>
   );
