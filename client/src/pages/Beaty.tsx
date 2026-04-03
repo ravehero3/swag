@@ -10,7 +10,6 @@ import SoundWave from "../components/SoundWave.js";
 import { preloadWaveform, seedWaveformCache } from "../lib/waveformCache.js";
 import ProductsGrid from "../components/ProductsGrid.js";
 import SoundKitsDock from "../components/SoundKitsDock.js";
-import ArtistCarousel from "../components/ArtistCarousel.js";
 
 interface Beat {
   id: number;
@@ -191,7 +190,6 @@ function Beaty() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const beatsListRef = useScrollAnimation();
   const soundKitsRef = useScrollAnimation();
-  const artistCarouselRef = useScrollAnimation();
   const { user, addToCart, settings, refreshSavedCount } = useApp() as any;
   useSEO("beaty");
 
@@ -1427,12 +1425,6 @@ function Beaty() {
 
         {isHomePage && (
           <>
-            <div ref={artistCarouselRef} className="fade-in-section delay-3 scroll-fade-section" style={{ marginTop: "-100px", marginBottom: "0px", position: "relative", zIndex: 10 }}>
-              <div style={{ marginTop: "0px" }}>
-                <ArtistCarousel />
-              </div>
-            </div>
-
             <div ref={soundKitsRef} className="fade-in-section delay-4 scroll-fade-section" style={{ marginTop: "0px", marginBottom: "0px" }}>
             {/* Background with computer image and dock */}
             <div style={{

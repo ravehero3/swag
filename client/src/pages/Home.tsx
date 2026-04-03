@@ -7,7 +7,6 @@ import ContractModal from "../components/ContractModal.js";
 import MusicPlayer from "../components/MusicPlayer.js";
 import SoundWave from "../components/SoundWave.js";
 import SoundKitsDock from "../components/SoundKitsDock.js";
-import ArtistCarousel from "../components/ArtistCarousel.js";
 
 interface Beat {
   id: number;
@@ -163,7 +162,6 @@ function Home() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const beatsListRef = useScrollAnimation();
   const soundKitsRef = useScrollAnimation();
-  const artistCarouselRef = useScrollAnimation();
   const { user, addToCart, settings, refreshSavedCount } = useApp() as any;
   useSEO("home");
 
@@ -1297,12 +1295,6 @@ function Home() {
             alignItems: "center",
             pointerEvents: "none"
           }}>
-            <div ref={artistCarouselRef} className="fade-in-section delay-3 scroll-fade-section" style={{ marginTop: "-100px", marginBottom: "0px", position: "relative", zIndex: 10, width: "100%", pointerEvents: "auto" }}>
-              <div style={{ marginTop: "0px" }}>
-                <ArtistCarousel />
-              </div>
-            </div>
-
             <div style={{
               width: "100%",
               textAlign: "center",
