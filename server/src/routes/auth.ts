@@ -4,34 +4,21 @@ import { pool } from "../db.js";
 import passport from "passport";
 import multer from "multer";
 import path from "path";
-import fs from "fs";
+import { v4 as uuidv4 } from "uuid";
 import { requireAuth } from "../middleware/auth.js";
+import { uploadFile, STORAGE_BUCKETS } from "../lib/storage.js";
 
-const avatarUploadDir = process.env.NODE_ENV === "production"
-  ? "/tmp/avatars"
-  : path.join(process.cwd(), "public/uploads/avatars");
-
-function ensureAvatarDir() {
-  try {
-    if (!fs.existsSync(avatarUploadDir)) {
-      fs.mkdirSync(avatarUploadDir, { recursive: true });
-    }
-  } catch {
-    // Ignore — read-only filesystem in serverless environments
+function getAvatarPublicUrl(key: string): string {
+  if (process.env.B2_PUBLIC_BASE_URL) {
+    return `${process.env.B2_PUBLIC_BASE_URL}/${key}`;
   }
+  const endpoint = process.env.B2_ENDPOINT || "";
+  const bucket = STORAGE_BUCKETS.PREVIEWS;
+  return `https://${endpoint}/${bucket}/${key}`;
 }
 
 const avatarUpload = multer({
-  storage: multer.diskStorage({
-    destination: (_req, _file, cb) => {
-      ensureAvatarDir();
-      cb(null, avatarUploadDir);
-    },
-    filename: (_req, file, cb) => {
-      const ext = path.extname(file.originalname).toLowerCase() || ".jpg";
-      cb(null, `avatar-${Date.now()}${ext}`);
-    },
-  }),
+  storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     if (file.mimetype.startsWith("image/")) cb(null, true);
@@ -152,10 +139,17 @@ router.get("/me", async (req: Request, res: Response) => {
 router.post("/avatar", requireAuth, avatarUpload.single("avatar"), async (req: Request, res: Response) => {
   try {
     if (!req.file) return res.status(400).json({ error: "Žádný soubor" });
-    const url = `/uploads/avatars/${req.file.filename}`;
+
+    const ext = path.extname(req.file.originalname).toLowerCase() || ".jpg";
+    const key = `avatars/${uuidv4()}${ext}`;
+
+    await uploadFile(STORAGE_BUCKETS.PREVIEWS, key, req.file.buffer, req.file.mimetype);
+
+    const url = getAvatarPublicUrl(key);
     await pool.query("UPDATE users SET avatar_url = $1 WHERE id = $2", [url, req.session.userId]);
     res.json({ avatarUrl: url });
   } catch (error) {
+    console.error("Avatar upload error:", error);
     res.status(500).json({ error: "Chyba při nahrávání avataru" });
   }
 });
