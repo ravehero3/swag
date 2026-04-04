@@ -5,11 +5,12 @@ interface SoundWaveProps {
   audioRef: React.RefObject<HTMLAudioElement>;
   isPlaying: boolean;
   audioUrl?: string;
+  children?: React.ReactNode;
 }
 
 const BAR_COUNT = 480;
 
-function SoundWave({ audioRef, isPlaying, audioUrl }: SoundWaveProps) {
+function SoundWave({ audioRef, isPlaying, audioUrl, children }: SoundWaveProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number>(0);
   const progressRef = useRef<number>(0);
@@ -118,6 +119,7 @@ function SoundWave({ audioRef, isPlaying, audioUrl }: SoundWaveProps) {
 
     const prog = progressRef.current;
     const playheadBar = prog * count;
+    const radius = Math.min(barW / 2, 1.5);
 
     for (let i = 0; i < count; i++) {
       const x = i * slotW + gap / 2;
@@ -127,28 +129,48 @@ function SoundWave({ audioRef, isPlaying, audioUrl }: SoundWaveProps) {
       const isPlayed = i < playheadBar;
       const isHead = Math.abs(i - playheadBar) < 1.2;
 
+      const topBarY = divY - topAmp;
+      const botBarY = divY;
+
       if (isHead) {
         cx.fillStyle = "rgba(255,255,255,1)";
-      } else if (isPlayed) {
-        cx.fillStyle = "rgba(255,255,255,0.85)";
+        cx.beginPath();
+        if (cx.roundRect) {
+          cx.roundRect(x, topBarY, barW, topAmp + botAmp, radius);
+        } else {
+          cx.rect(x, topBarY, barW, topAmp + botAmp);
+        }
+        cx.fill();
       } else {
-        cx.fillStyle = "rgba(255,255,255,0.28)";
-      }
+        const topColor = isPlayed ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.28)";
+        const botColor = isPlayed ? "rgba(255,255,255,0.72)" : "rgba(255,255,255,0.15)";
 
-      const barH = topAmp + botAmp;
-      const barY = divY - topAmp;
-      const radius = Math.min(barW / 2, 1.5);
-      cx.beginPath();
-      if (cx.roundRect) {
-        cx.roundRect(x, barY, barW, barH, radius);
-      } else {
-        cx.rect(x, barY, barW, barH);
+        cx.fillStyle = topColor;
+        cx.beginPath();
+        if (cx.roundRect) {
+          cx.roundRect(x, topBarY, barW, topAmp, radius);
+        } else {
+          cx.rect(x, topBarY, barW, topAmp);
+        }
+        cx.fill();
+
+        cx.fillStyle = botColor;
+        cx.beginPath();
+        if (cx.roundRect) {
+          cx.roundRect(x, botBarY, barW, botAmp, radius);
+        } else {
+          cx.rect(x, botBarY, barW, botAmp);
+        }
+        cx.fill();
       }
-      cx.fill();
     }
 
     cx.fillStyle = "#000";
     cx.fillRect(0, divY, W, 1);
+
+    const playheadX = prog * W;
+    cx.fillStyle = "rgba(255,255,255,0.95)";
+    cx.fillRect(playheadX - 0.75, 0, 1.5, H);
   }, []);
 
   useEffect(() => {
@@ -187,10 +209,12 @@ function SoundWave({ audioRef, isPlaying, audioUrl }: SoundWaveProps) {
     (e: React.MouseEvent<HTMLDivElement>) => {
       const rect = e.currentTarget.getBoundingClientRect();
       const p = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      progressRef.current = p;
+      draw();
       const audio = audioRef.current;
       if (audio && audio.duration) audio.currentTime = p * audio.duration;
     },
-    [audioRef]
+    [audioRef, draw]
   );
 
   const scrub = useCallback(
@@ -209,7 +233,6 @@ function SoundWave({ audioRef, isPlaying, audioUrl }: SoundWaveProps) {
         position: "relative",
         height: 72,
         cursor: "pointer",
-        overflow: "hidden",
         margin: "20px auto 4px",
         maxWidth: "1200px",
         padding: "0 16px",
@@ -227,6 +250,7 @@ function SoundWave({ audioRef, isPlaying, audioUrl }: SoundWaveProps) {
           display: "block",
         }}
       />
+      {children}
     </div>
   );
 }
