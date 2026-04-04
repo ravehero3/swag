@@ -207,7 +207,7 @@ function SoundWave({ audioRef, isPlaying, audioUrl, children }: SoundWaveProps) 
     cx.fillStyle = "#000";
     cx.fillRect(0, divY, W, 1);
 
-    const playheadX = prog * W;
+    const playheadX = prog * W + gap / 2;
     cx.fillStyle = "rgba(255,255,255,0.95)";
     cx.fillRect(playheadX - 0.75, 0, 1.5, H);
 
