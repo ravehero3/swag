@@ -17,6 +17,7 @@ function SoundWave({ audioRef, isPlaying, audioUrl, children }: SoundWaveProps) 
   const peaksRef = useRef<number[]>([]);
   const lastUrlRef = useRef<string>("");
   const isLoadingRef = useRef<boolean>(false);
+  const drawRef = useRef<() => void>(() => {});
 
   const loadWaveform = useCallback(async (url: string) => {
     if (!url || url === lastUrlRef.current) return;
@@ -26,6 +27,7 @@ function SoundWave({ audioRef, isPlaying, audioUrl, children }: SoundWaveProps) 
     if (cached !== undefined) {
       peaksRef.current = cached ?? [];
       isLoadingRef.current = false;
+      drawRef.current();
       return;
     }
 
@@ -36,6 +38,7 @@ function SoundWave({ audioRef, isPlaying, audioUrl, children }: SoundWaveProps) 
       isLoadingRef.current = false;
       const result = getWaveform(url);
       if (result) peaksRef.current = result;
+      drawRef.current();
     }
   }, []);
 
@@ -223,6 +226,10 @@ function SoundWave({ audioRef, isPlaying, audioUrl, children }: SoundWaveProps) 
       drawTimePill(cx, formatTime(duration), W - 4, divY, W);
     }
   }, [audioRef]);
+
+  useEffect(() => {
+    drawRef.current = draw;
+  }, [draw]);
 
   useEffect(() => {
     if (isPlaying) {

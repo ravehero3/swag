@@ -2211,6 +2211,8 @@ function SEOTab({ settings, onRefresh }: any) {
     ig_story_accent_color: settings.ig_story_accent_color || "#aaaaaa",
     ig_story_overlay_opacity: settings.ig_story_overlay_opacity || "0.45",
     ig_story_tagline: settings.ig_story_tagline || "",
+    ig_story_listening_text: settings.ig_story_listening_text || "právě poslouchám",
+    ig_story_website_text: settings.ig_story_website_text || "NA VOODOO808.COM",
   });
   const [saving, setSaving] = useState<Record<string, boolean>>({});
   const [saved, setSaved] = useState<Record<string, boolean>>({});
@@ -2462,7 +2464,7 @@ function SEOTab({ settings, onRefresh }: any) {
         saved={!!saved["zvuky"]}
       />
 
-      <InstagramStoryTemplateSection values={values} onChange={handleChange} onSave={() => saveKeys("ig_story", ["ig_story_bg_color", "ig_story_text_color", "ig_story_accent_color", "ig_story_overlay_opacity", "ig_story_tagline"])} saving={!!saving["ig_story"]} saved={!!saved["ig_story"]} />
+      <InstagramStoryTemplateSection values={values} onChange={handleChange} onSave={() => saveKeys("ig_story", ["ig_story_bg_color", "ig_story_text_color", "ig_story_accent_color", "ig_story_overlay_opacity", "ig_story_tagline", "ig_story_listening_text", "ig_story_website_text"])} saving={!!saving["ig_story"]} saved={!!saved["ig_story"]} />
     </div>
   );
 }
@@ -2472,7 +2474,8 @@ function InstagramStoryTemplateSection({ values, onChange, onSave, saving, saved
   const storyTextColor = values.ig_story_text_color || "#ffffff";
   const storyAccentColor = values.ig_story_accent_color || "#aaaaaa";
   const overlayOpacity = parseFloat(values.ig_story_overlay_opacity || "0.45");
-  const tagline = values.ig_story_tagline || "";
+  const listeningText = values.ig_story_listening_text || "právě poslouchám";
+  const websiteText = values.ig_story_website_text || "NA VOODOO808.COM";
 
   const labelStyle = { fontSize: "11px", color: "#666", marginBottom: "6px", display: "block", letterSpacing: "0.05em", textTransform: "uppercase" as const };
   const fieldStyle = { width: "100%", padding: "9px 12px", background: "#0d0d0d", border: "1px solid #2a2a2a", borderRadius: "3px", color: "#fff", fontSize: "13px", fontFamily: "inherit", outline: "none", boxSizing: "border-box" as const };
@@ -2504,26 +2507,17 @@ function InstagramStoryTemplateSection({ values, onChange, onSave, saving, saved
             background: storyBgColor,
           }}
         >
-          <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "55%", background: `linear-gradient(135deg, #333 0%, #111 100%)` }} />
-          <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "55%", background: `rgba(0,0,0,${overlayOpacity})` }} />
-          <div
-            style={{
-              position: "absolute",
-              bottom: 0, left: 0, right: 0,
-              height: "50%",
-              background: `linear-gradient(to bottom, ${storyBgColor}bb, ${storyBgColor})`,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              padding: "8px 6px",
-              gap: "3px",
-            }}
-          >
-            <div style={{ fontSize: "8px", fontWeight: "700", color: storyTextColor, textAlign: "center", letterSpacing: "0.05em" }}>BEAT NÁZEV</div>
-            <div style={{ fontSize: "7px", color: storyAccentColor }}>299 CZK</div>
-            {tagline && <div style={{ fontSize: "6.5px", color: storyTextColor + "88", fontStyle: "italic", textAlign: "center" }}>{tagline}</div>}
-            <div style={{ fontSize: "6px", color: storyTextColor + "44", marginTop: "3px" }}>VOODOO808</div>
+          <div style={{ position: "absolute", inset: 0, background: `linear-gradient(135deg, #333 0%, #111 100%)`, filter: "blur(8px)", transform: "scale(1.1)" }} />
+          <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${overlayOpacity + 0.2})` }} />
+
+          <div style={{ position: "absolute", top: "6px", left: 0, right: 0, textAlign: "center", fontSize: "5.5px", fontWeight: "700", color: storyTextColor, letterSpacing: "1.5px" }}>VOODOO808</div>
+
+          <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -58%)", width: "72%", aspectRatio: "1/1", background: "#333", borderRadius: "2px" }} />
+
+          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "6px 6px 8px", display: "flex", flexDirection: "column", alignItems: "center", gap: "2px" }}>
+            <div style={{ fontSize: "5px", color: storyTextColor + "88", fontStyle: "italic" }}>{listeningText}</div>
+            <div style={{ fontSize: "7.5px", fontWeight: "700", color: storyTextColor, textAlign: "center", letterSpacing: "0.05em" }}>BEAT NÁZEV</div>
+            <div style={{ fontSize: "5px", color: storyTextColor + "66", letterSpacing: "0.5px" }}>{websiteText}</div>
           </div>
         </div>
 
@@ -2544,7 +2538,7 @@ function InstagramStoryTemplateSection({ values, onChange, onSave, saving, saved
               </div>
             </div>
             <div style={{ flex: 1 }}>
-              <label style={labelStyle}>Akcent (cena)</label>
+              <label style={labelStyle}>Akcent</label>
               <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
                 <input type="color" value={storyAccentColor} onChange={(e) => onChange("ig_story_accent_color", e.target.value)} style={{ width: "36px", height: "36px", padding: "2px", background: "#0d0d0d", border: "1px solid #2a2a2a", borderRadius: "3px", cursor: "pointer" }} />
                 <input type="text" value={storyAccentColor} onChange={(e) => onChange("ig_story_accent_color", e.target.value)} style={{ ...fieldStyle, width: "90px" }} />
@@ -2566,12 +2560,23 @@ function InstagramStoryTemplateSection({ values, onChange, onSave, saving, saved
           </div>
 
           <div>
-            <label style={labelStyle}>Tagline (volitelné)</label>
+            <label style={labelStyle}>Text "poslouchám" (nad názvem)</label>
             <input
               type="text"
-              value={tagline}
-              onChange={(e) => onChange("ig_story_tagline", e.target.value)}
-              placeholder="např. Exkluzivní beaty pro producenty"
+              value={listeningText}
+              onChange={(e) => onChange("ig_story_listening_text", e.target.value)}
+              placeholder="právě poslouchám"
+              style={fieldStyle}
+            />
+          </div>
+
+          <div>
+            <label style={labelStyle}>Text webu (pod názvem)</label>
+            <input
+              type="text"
+              value={websiteText}
+              onChange={(e) => onChange("ig_story_website_text", e.target.value)}
+              placeholder="NA VOODOO808.COM"
               style={fieldStyle}
             />
           </div>

@@ -201,7 +201,9 @@ export async function initDatabase() {
         ('ig_story_text_color', '#ffffff'),
         ('ig_story_accent_color', '#aaaaaa'),
         ('ig_story_overlay_opacity', '0.45'),
-        ('ig_story_tagline', '')
+        ('ig_story_tagline', ''),
+        ('ig_story_listening_text', 'právě poslouchám'),
+        ('ig_story_website_text', 'NA VOODOO808.COM')
       ON CONFLICT (key) DO NOTHING;
     `);
     

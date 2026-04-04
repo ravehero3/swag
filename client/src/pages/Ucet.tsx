@@ -349,9 +349,11 @@ export default function Ucet() {
           <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "16px" }}>
             <div
               onClick={() => avatarInputRef.current?.click()}
-              style={{ position: "relative", width: "64px", height: "64px", borderRadius: "50%", overflow: "hidden", background: "#222", border: "1px solid #333", cursor: `url('/cursors/handwriting-custom.cur'), crosshair`, flexShrink: 0 }}
+              style={{ position: "relative", width: "64px", height: "64px", borderRadius: "50%", overflow: "hidden", background: "#222", border: "1px solid #333", cursor: `url('/cursors/handwriting-custom.cur'), crosshair`, flexShrink: 0, transition: "transform 0.2s ease", transform: "scale(1)" }}
               title="Klikněte pro změnu fotky"
               data-testid="button-change-avatar"
+              onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.5)")}
+              onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
             >
               {avatarUrl ? (
                 <img src={avatarUrl} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />

@@ -339,6 +339,10 @@ function Home() {
 
   const handlePrevious = () => {
     if (!currentBeat) return;
+    if (audioRef.current && audioRef.current.currentTime > 3) {
+      audioRef.current.currentTime = 0;
+      return;
+    }
     const allBeats = highlightedBeat ? [highlightedBeat, ...beats.filter(b => b.id !== highlightedBeat.id)] : beats;
     const currentIndex = allBeats.findIndex(b => b.id === currentBeat.id);
     const prevIndex = currentIndex > 0 ? currentIndex - 1 : allBeats.length - 1;
