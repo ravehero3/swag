@@ -871,7 +871,7 @@ function Home() {
               })}
             </SoundWave>
             <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 16px", marginTop: "8px", marginBottom: "8px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "12px" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "16px", marginBottom: "12px" }}>
                 {beatStats && (
                   <>
                     <span style={{ fontSize: "12px", color: "#555", display: "flex", alignItems: "center", gap: "4px" }}>
