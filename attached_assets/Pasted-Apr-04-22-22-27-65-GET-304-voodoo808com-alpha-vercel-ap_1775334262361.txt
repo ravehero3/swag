@@ -1,0 +1,157 @@
+Apr 04 22:22:27.65
+GET
+304
+voodoo808com-alpha.vercel.app
+/api/beats/all
+3
+Admin user exists, ensuring admin privileges...
+Apr 04 22:22:27.65
+GET
+500
+voodoo808com-alpha.vercel.app
+/api/sound-kits/all
+Apr 04 22:22:27.41
+GET
+304
+voodoo808com-alpha.vercel.app
+/api/auth/me
+Apr 04 22:22:23.58
+GET
+304
+voodoo808com-alpha.vercel.app
+/api/saved
+Apr 04 22:22:23.58
+GET
+500
+voodoo808com-alpha.vercel.app
+/api/sound-kits
+Apr 04 22:22:21.38
+GET
+304
+voodoo808com-alpha.vercel.app
+/api/saved
+Apr 04 22:22:21.08
+GET
+304
+voodoo808com-alpha.vercel.app
+/api/saved
+Apr 04 22:22:19.38
+GET
+304
+voodoo808com-alpha.vercel.app
+/api/beats
+Apr 04 22:22:19.37
+GET
+304
+voodoo808com-alpha.vercel.app
+/api/beats/highlighted
+Apr 04 22:22:19.04
+GET
+304
+voodoo808com-alpha.vercel.app
+/api/auth/me
+3
+Admin user exists, ensuring admin privileges...
+Apr 04 22:21:07.42
+GET
+200
+voodoo808com-liespiffk-voodoo808s-projects.vercel.app
+/api/beats
+3
+Admin user exists, ensuring admin privileges...
+Apr 04 22:21:07.42
+GET
+200
+voodoo808com-liespiffk-voodoo808s-projects.vercel.app
+/api/beats/highlighted
+3
+Admin user exists, ensuring admin privileges...
+Apr 04 22:21:07.41
+GET
+200
+voodoo808com-liespiffk-voodoo808s-projects.vercel.app
+/api/beats/highlighted
+3
+Admin user exists, ensuring admin privileges...
+Apr 04 22:21:07.41
+GET
+200
+voodoo808com-liespiffk-voodoo808s-projects.vercel.app
+/api/beats
+3
+Admin user exists, ensuring admin privileges...
+Apr 04 22:21:07.40
+GET
+401
+voodoo808com-liespiffk-voodoo808s-projects.vercel.app
+/api/auth/me
+3
+Admin user exists, ensuring admin privileges...
+Apr 04 22:21:07.40
+GET
+200
+voodoo808com-liespiffk-voodoo808s-projects.vercel.app
+/api/settings
+3
+Admin user exists, ensuring admin privileges...
+Apr 04 22:21:07.40
+GET
+200
+voodoo808com-liespiffk-voodoo808s-projects.vercel.app
+/api/beats/highlighted
+3
+Admin user exists, ensuring admin privileges...
+Apr 04 22:21:07.40
+GET
+200
+voodoo808com-liespiffk-voodoo808s-projects.vercel.app
+/api/beats
+3
+Admin user exists, ensuring admin privileges...
+Apr 04 22:21:07.39
+GET
+401
+voodoo808com-liespiffk-voodoo808s-projects.vercel.app
+/api/auth/me
+3
+Admin user exists, ensuring admin privileges...
+Apr 04 22:21:07.39
+GET
+200
+voodoo808com-liespiffk-voodoo808s-projects.vercel.app
+/api/settings
+3
+Admin user exists, ensuring admin privileges...
+Apr 04 22:21:07.36
+GET
+200
+voodoo808com-liespiffk-voodoo808s-projects.vercel.app
+/api/beats/highlighted
+3
+Admin user exists, ensuring admin privileges...
+Apr 04 22:21:07.36
+GET
+200
+voodoo808com-liespiffk-voodoo808s-projects.vercel.app
+/api/beats
+3
+Admin user exists, ensuring admin privileges...
+Apr 04 22:21:07.36
+GET
+200
+voodoo808com-liespiffk-voodoo808s-projects.vercel.app
+/api/settings
+3
+Admin user exists, ensuring admin privileges...
+Apr 04 22:21:07.36
+GET
+401
+voodoo808com-liespiffk-voodoo808s-projects.vercel.app
+/api/auth/me
+3
+Admin user exists, ensuring admin privileges...
+Apr 04 22:21:07.15
+GET
+401
+voodoo808com-liespiffk-voodoo808s-projects.vercel.app
+/api/auth/me
