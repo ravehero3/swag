@@ -86,7 +86,7 @@ function SoundWave({ audioRef, isPlaying, audioUrl, children }: SoundWaveProps) 
     px = Math.max(margin, Math.min(canvasW - pillW - margin, px));
     const py = baseY - pillH - 4;
 
-    cx.fillStyle = "rgba(255,255,255,0.13)";
+    cx.fillStyle = "#0C0C0C";
     cx.beginPath();
     if (cx.roundRect) {
       cx.roundRect(px, py, pillW, pillH, pillR);
@@ -215,8 +215,8 @@ function SoundWave({ audioRef, isPlaying, audioUrl, children }: SoundWaveProps) 
     const currentTime = audio ? audio.currentTime : 0;
     const duration = audio ? audio.duration : 0;
 
-    if (prog > 0 || currentTime > 0) {
-      drawTimePill(cx, formatTime(currentTime), playheadX, divY, W);
+    if (isFinite(duration) && duration > 0) {
+      drawTimePill(cx, formatTime(currentTime), 0, divY, W);
     }
 
     if (isFinite(duration) && duration > 0) {
