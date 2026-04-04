@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useApp } from "../App.js";
 import { useLocation, Link } from "wouter";
+import AvatarCropModal from "../components/AvatarCropModal.js";
 
 interface OrderItem {
   productId: number;
@@ -28,6 +29,7 @@ export default function Ucet() {
   const [payingOrderId, setPayingOrderId] = useState<number | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -35,26 +37,36 @@ export default function Ucet() {
     if (user?.avatarUrl) setAvatarUrl(user.avatarUrl);
   }, [user]);
 
-  const handleAvatarUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setCropImageSrc(reader.result as string);
+    reader.readAsDataURL(file);
+    if (avatarInputRef.current) avatarInputRef.current.value = "";
+  }, []);
+
+  const handleCropSave = useCallback(async (blob: Blob) => {
     setUploadingAvatar(true);
     try {
       const formData = new FormData();
-      formData.append("avatar", file);
+      formData.append("avatar", blob, "avatar.jpg");
       const res = await fetch("/api/auth/avatar", {
         method: "POST",
         credentials: "include",
         body: formData,
       });
       const data = await res.json();
-      if (res.ok) setAvatarUrl(data.avatarUrl);
-      else alert(data.error || "Chyba při nahrávání");
+      if (res.ok) {
+        setAvatarUrl(data.avatarUrl);
+        setCropImageSrc(null);
+      } else {
+        alert(data.error || "Chyba při nahrávání");
+      }
     } catch {
       alert("Chyba při nahrávání avataru.");
     } finally {
       setUploadingAvatar(false);
-      if (avatarInputRef.current) avatarInputRef.current.value = "";
     }
   }, []);
 
@@ -274,12 +286,21 @@ export default function Ucet() {
 
       <h1 style={{ fontSize: "32px", marginBottom: "32px", fontWeight: "400" }}>Můj účet</h1>
       
+      {cropImageSrc && (
+        <AvatarCropModal
+          imageSrc={cropImageSrc}
+          onClose={() => setCropImageSrc(null)}
+          onSave={handleCropSave}
+          saving={uploadingAvatar}
+        />
+      )}
+
       <input
         ref={avatarInputRef}
         type="file"
         accept="image/*"
         style={{ display: "none" }}
-        onChange={handleAvatarUpload}
+        onChange={handleAvatarFileSelect}
         data-testid="input-avatar-upload"
       />
 
@@ -289,7 +310,7 @@ export default function Ucet() {
           <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "16px" }}>
             <div
               onClick={() => avatarInputRef.current?.click()}
-              style={{ position: "relative", width: "64px", height: "64px", borderRadius: "50%", overflow: "hidden", background: "#222", border: "1px solid #333", cursor: "pointer", flexShrink: 0 }}
+              style={{ position: "relative", width: "64px", height: "64px", borderRadius: "50%", overflow: "hidden", background: "#222", border: "1px solid #333", cursor: `url('/cursors/handwriting-custom.cur'), crosshair`, flexShrink: 0 }}
               title="Klikněte pro změnu fotky"
               data-testid="button-change-avatar"
             >

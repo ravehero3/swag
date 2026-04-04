@@ -191,6 +191,7 @@ function Beaty() {
   const [commentText, setCommentText] = useState("");
   const [submittingComment, setSubmittingComment] = useState(false);
   const [beatStats, setBeatStats] = useState<{ comments: number; saves: number } | null>(null);
+  const [authNudge, setAuthNudge] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const beatsListRef = useScrollAnimation();
   const soundKitsRef = useScrollAnimation();
@@ -430,7 +431,11 @@ function Beaty() {
   };
 
   const toggleSave = async (beat: Beat) => {
-    if (!user) return;
+    if (!user) {
+      setAuthNudge(true);
+      setTimeout(() => setAuthNudge(false), 2500);
+      return;
+    }
 
     const wasSaved = savedBeats.has(beat.id);
 
@@ -538,6 +543,17 @@ function Beaty() {
           .beat-buy-price { padding-right: 4px !important; }
         }
       `}</style>
+      {authNudge && (
+        <div style={{
+          position: "fixed", bottom: "32px", left: "50%", transform: "translateX(-50%)",
+          background: "rgba(30,30,30,0.95)", border: "1px solid #333", color: "#aaa",
+          padding: "10px 20px", borderRadius: "20px", fontSize: "13px", zIndex: 1000,
+          backdropFilter: "blur(8px)", pointerEvents: "none", whiteSpace: "nowrap",
+        }}>
+          Přihlaste se pro ukládání oblíbených
+        </div>
+      )}
+
       <audio
         ref={audioRef}
         onEnded={handleAudioEnded}
@@ -901,8 +917,12 @@ function Beaty() {
               <div style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "6px", maxHeight: "140px", overflowY: "auto" }}>
                 {comments.map((c: any) => (
                   <div key={c.id} data-testid={`comment-item-${c.id}`} style={{ display: "flex", gap: "8px", alignItems: "flex-start" }}>
-                    <div style={{ width: "24px", height: "24px", borderRadius: "50%", background: "#222", border: "1px solid #333", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: "#666" }}>
-                      {c.email?.[0]?.toUpperCase() || "?"}
+                    <div style={{ width: "24px", height: "24px", borderRadius: "50%", background: "#222", border: "1px solid #333", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: "#666", overflow: "hidden" }}>
+                      {c.avatar_url ? (
+                        <img src={c.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      ) : (
+                        c.email?.[0]?.toUpperCase() || "?"
+                      )}
                     </div>
                     <div>
                       <span style={{ fontSize: "11px", color: "#555", marginRight: "8px" }}>{c.email?.split("@")[0]}</span>
