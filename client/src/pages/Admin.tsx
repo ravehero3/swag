@@ -273,10 +273,10 @@ function Admin() {
   const [, navigate] = useLocation();
   const initialTab = (() => {
     const p = new URLSearchParams(window.location.search).get("tab");
-    const valid = ["beats", "kits", "orders", "licenses", "emails", "promo", "seo", "zakaznici", "komentare"];
-    return (valid.includes(p || "") ? p : "orders") as "beats" | "kits" | "orders" | "licenses" | "emails" | "promo" | "seo" | "zakaznici" | "komentare";
+    const valid = ["beats", "kits", "orders", "licenses", "emails", "promo", "seo", "ig_stories", "zakaznici", "komentare"];
+    return (valid.includes(p || "") ? p : "orders") as "beats" | "kits" | "orders" | "licenses" | "emails" | "promo" | "seo" | "ig_stories" | "zakaznici" | "komentare";
   })();
-  const [tab, setTab] = useState<"beats" | "kits" | "orders" | "licenses" | "emails" | "promo" | "seo" | "zakaznici" | "komentare">(initialTab);
+  const [tab, setTab] = useState<"beats" | "kits" | "orders" | "licenses" | "emails" | "promo" | "seo" | "ig_stories" | "zakaznici" | "komentare">(initialTab);
   const [beats, setBeats] = useState<Beat[]>([]);
   const [kits, setKits] = useState<SoundKit[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
@@ -2616,6 +2616,56 @@ function InstagramStoryTemplateSection({ values, onChange, onSave, saving, saved
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+function IGStoriesTab({ settings, onRefresh }: any) {
+  const [values, setValues] = useState<Record<string, string>>({
+    ig_story_bg_color: settings.ig_story_bg_color || "#000000",
+    ig_story_text_color: settings.ig_story_text_color || "#ffffff",
+    ig_story_accent_color: settings.ig_story_accent_color || "#aaaaaa",
+    ig_story_overlay_opacity: settings.ig_story_overlay_opacity || "0.45",
+    ig_story_listening_text: settings.ig_story_listening_text || "právě poslouchám",
+    ig_story_website_text: settings.ig_story_website_text || "NA VOODOO808.COM",
+  });
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const handleChange = (key: string, val: string) => setValues(prev => ({ ...prev, [key]: val }));
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const keys = Object.keys(values);
+      await Promise.all(keys.map(key =>
+        fetch("/api/admin/settings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ key, value: values[key] }),
+        })
+      ));
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+      onRefresh();
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div style={{ padding: "24px 0" }}>
+      <div style={{ fontSize: "12px", color: "#888", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "20px", borderBottom: "1px solid #1a1a1a", paddingBottom: "12px" }}>
+        Instagram Stories šablona
+      </div>
+      <InstagramStoryTemplateSection
+        values={values}
+        onChange={handleChange}
+        onSave={handleSave}
+        saving={saving}
+        saved={saved}
+      />
     </div>
   );
 }
