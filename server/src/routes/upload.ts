@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import fs from "fs";
 import path from "path";
 import { requireAdmin } from "../middleware/auth.js";
-import { uploadFile, generatePresignedUploadUrl, listFiles, STORAGE_BUCKETS } from "../lib/storage.js";
+import { uploadFile, generatePresignedUploadUrl, listFiles, STORAGE_BUCKETS, VIDEO_PREFIX } from "../lib/storage.js";
 import stream from "stream";
 import { pool } from "../db.js";
 interface PendingUpload {
@@ -69,6 +69,28 @@ router.get("/b2-files", requireAdmin, async (req: Request, res: Response) => {
   } catch (error) {
     console.error("B2 list error:", error);
     res.status(500).json({ error: "Failed to list B2 files", detail: String(error) });
+  }
+});
+
+// List video files from B2
+router.get("/b2-videos", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const files = await listFiles(STORAGE_BUCKETS.VIDEOS, VIDEO_PREFIX || undefined);
+    const sorted = files
+      .filter(f => /\.(mp4|mov|webm|avi|mkv)$/i.test(f.key))
+      .sort((a, b) => {
+        const aTime = a.lastModified ? a.lastModified.getTime() : 0;
+        const bTime = b.lastModified ? b.lastModified.getTime() : 0;
+        return bTime - aTime;
+      })
+      .map(f => ({
+        ...f,
+        url: getPublicUrl(STORAGE_BUCKETS.VIDEOS, f.key),
+      }));
+    res.json(sorted);
+  } catch (error) {
+    console.error("B2 video list error:", error);
+    res.status(500).json({ error: "Failed to list videos", detail: String(error) });
   }
 });
 
@@ -188,6 +210,26 @@ router.post("/", requireAdmin, upload.single("file"), async (req: Request, res: 
       if (req.file.path && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
       console.error(`${type} B2 upload failed:`, error);
       res.status(500).json({ error: `${type} upload failed`, detail: String(error) });
+      return;
+    }
+  }
+
+  // Video: upload to B2 videos bucket with prefix
+  if (type === "video") {
+    try {
+      const bucket = STORAGE_BUCKETS.VIDEOS;
+      const videoKey = VIDEO_PREFIX + key;
+      const fileStream = fs.createReadStream(req.file.path);
+      await uploadFile(bucket, videoKey, fileStream, req.file.mimetype || "video/mp4");
+      fs.unlinkSync(req.file.path);
+      const url = getPublicUrl(bucket, videoKey);
+      res.json({ url, key: videoKey, bucket, size: req.file.size });
+      console.log(`✅ video uploaded to B2: ${url}`);
+      return;
+    } catch (error) {
+      if (req.file.path && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+      console.error("Video B2 upload failed:", error);
+      res.status(500).json({ error: "Video upload failed", detail: String(error) });
       return;
     }
   }

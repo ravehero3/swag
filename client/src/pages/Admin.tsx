@@ -109,6 +109,117 @@ function B2FilePicker({ onSelect, onClose }: { onSelect: (key: string) => void |
   );
 }
 
+interface B2VideoFile {
+  key: string;
+  size: number;
+  lastModified: string | undefined;
+  url: string;
+}
+
+function B2VideoPickerModal({ onSelect, onClose }: { onSelect: (url: string, key: string) => void; onClose: () => void }) {
+  const [files, setFiles] = useState<B2VideoFile[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+  const [previewKey, setPreviewKey] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/upload/b2-videos", { credentials: "include" })
+      .then(r => r.ok ? r.json() : Promise.reject(r.statusText))
+      .then(data => { setFiles(data); setLoading(false); })
+      .catch(err => { setError(String(err)); setLoading(false); });
+  }, []);
+
+  const filtered = files.filter(f =>
+    f.key.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const fileName = (key: string) => key.split("/").pop() || key;
+
+  return (
+    <div
+      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center" }}
+      onClick={onClose}
+    >
+      <div
+        style={{ background: "#0e0e0e", border: "1px solid #2a2a2a", borderRadius: "6px", padding: "24px", width: "700px", maxHeight: "85vh", display: "flex", flexDirection: "column", gap: "14px" }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <h3 style={{ margin: 0, fontSize: "15px", color: "#fff" }}>Videa z Backblaze</h3>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "#666", cursor: "pointer", fontSize: "22px", lineHeight: 1 }}>×</button>
+        </div>
+
+        <input
+          autoFocus
+          placeholder="Hledat video..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          style={{ width: "100%", padding: "9px 12px", background: "#1a1a1a", border: "1px solid #2a2a2a", color: "#fff", borderRadius: "4px", fontSize: "13px", boxSizing: "border-box" }}
+        />
+
+        <div style={{ overflowY: "auto", flex: 1, border: "1px solid #1a1a1a", borderRadius: "4px" }}>
+          {loading && <div style={{ padding: "32px", textAlign: "center", color: "#555" }}>Načítám videa z B2...</div>}
+          {error && <div style={{ padding: "32px", textAlign: "center", color: "#ff4444" }}>Chyba: {error}</div>}
+          {!loading && !error && filtered.length === 0 && (
+            <div style={{ padding: "32px", textAlign: "center", color: "#555" }}>
+              {files.length === 0 ? "Žádná videa v bucketu. Nahrajte video přes tlačítko Nahrát video." : "Žádné výsledky."}
+            </div>
+          )}
+          {!loading && !error && filtered.map(file => (
+            <div
+              key={file.key}
+              style={{ borderBottom: "1px solid #181818" }}
+            >
+              <div
+                onClick={() => { onSelect(file.url, file.key); onClose(); }}
+                style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 16px", cursor: "pointer", transition: "background 120ms" }}
+                onMouseEnter={e => (e.currentTarget.style.background = "#161616")}
+                onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+              >
+                <div
+                  style={{ width: "36px", height: "36px", borderRadius: "4px", background: "#1a1a1a", border: "1px solid #2a2a2a", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer" }}
+                  onClick={e => { e.stopPropagation(); setPreviewKey(prev => prev === file.key ? null : file.key); }}
+                  title="Přehrát náhled"
+                >
+                  <span style={{ fontSize: "16px" }}>{previewKey === file.key ? "⏸" : "▶"}</span>
+                </div>
+                <div style={{ flex: 1, overflow: "hidden" }}>
+                  <div style={{ fontSize: "13px", color: "#ddd", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{fileName(file.key)}</div>
+                  {file.lastModified && (
+                    <div style={{ fontSize: "11px", color: "#555", marginTop: "2px" }}>{new Date(file.lastModified).toLocaleString("cs-CZ")} · {formatBytes(file.size)}</div>
+                  )}
+                </div>
+                <button
+                  onClick={e => { e.stopPropagation(); onSelect(file.url, file.key); onClose(); }}
+                  style={{ background: "#1a1a1a", border: "1px solid #333", color: "#aaa", padding: "6px 12px", fontSize: "12px", borderRadius: "3px", cursor: "pointer", flexShrink: 0 }}
+                >
+                  Vybrat
+                </button>
+              </div>
+              {previewKey === file.key && (
+                <div style={{ padding: "0 16px 12px" }}>
+                  <video
+                    src={file.url}
+                    controls
+                    autoPlay
+                    muted
+                    style={{ width: "100%", maxHeight: "200px", borderRadius: "4px", background: "#000", border: "1px solid #222" }}
+                  />
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div style={{ fontSize: "11px", color: "#444" }}>
+          {!loading && !error && `${filtered.length} / ${files.length} videí`}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 interface Beat {
   id: number;
   title: string;
@@ -2100,6 +2211,48 @@ function SEOTab({ settings, onRefresh }: any) {
   const [saved, setSaved] = useState<Record<string, boolean>>({});
   const [ogImageUploading, setOgImageUploading] = useState(false);
   const ogImageInputRef = useRef<HTMLInputElement>(null);
+  const [videoUploading, setVideoUploading] = useState<Record<string, boolean>>({});
+  const [videoUploadProgress, setVideoUploadProgress] = useState<Record<string, number>>({});
+  const [videoUploadError, setVideoUploadError] = useState<Record<string, string>>({});
+  const [b2VideoPickerFor, setB2VideoPickerFor] = useState<string | null>(null);
+  const homeVideoInputRef = useRef<HTMLInputElement>(null);
+  const beatyVideoInputRef = useRef<HTMLInputElement>(null);
+
+  const uploadVideo = async (file: File, field: string) => {
+    setVideoUploading(prev => ({ ...prev, [field]: true }));
+    setVideoUploadError(prev => ({ ...prev, [field]: "" }));
+    setVideoUploadProgress(prev => ({ ...prev, [field]: 0 }));
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", "/api/upload?type=video", true);
+      xhr.timeout = 20 * 60 * 1000;
+      await new Promise<void>((resolve, reject) => {
+        xhr.upload.onprogress = (evt) => {
+          if (!evt.lengthComputable) return;
+          setVideoUploadProgress(prev => ({ ...prev, [field]: Math.round((evt.loaded / evt.total) * 100) }));
+        };
+        xhr.onerror = () => reject(new Error("Network error"));
+        xhr.ontimeout = () => reject(new Error("Upload timeout"));
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            const data = JSON.parse(xhr.responseText);
+            handleChange(field, data.url);
+            setVideoUploadProgress(prev => ({ ...prev, [field]: 100 }));
+            resolve();
+          } else {
+            reject(new Error(`Upload failed (${xhr.status})`));
+          }
+        };
+        xhr.send(formData);
+      });
+    } catch (err) {
+      setVideoUploadError(prev => ({ ...prev, [field]: err instanceof Error ? err.message : "Upload failed" }));
+    } finally {
+      setVideoUploading(prev => ({ ...prev, [field]: false }));
+    }
+  };
 
   const uploadOgImage = async (file: File) => {
     setOgImageUploading(true);
@@ -2144,35 +2297,65 @@ function SEOTab({ settings, onRefresh }: any) {
   const fieldStyle: React.CSSProperties = { width: "100%", background: "#111111", border: "1px solid #2a2a2a", color: "#fff", padding: "8px 10px", fontSize: "13px", borderRadius: "3px", fontFamily: "inherit", boxSizing: "border-box" };
   const labelStyle: React.CSSProperties = { display: "block", fontSize: "11px", color: "#666", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "5px" };
 
+  const VideoField = ({ field, label, hint, inputRef }: { field: string; label: string; hint: string; inputRef: React.RefObject<HTMLInputElement> }) => (
+    <div>
+      <label style={labelStyle}>{label}</label>
+      <div style={{ display: "flex", gap: "6px", marginBottom: "6px" }}>
+        <input
+          value={values[field]}
+          onChange={(e) => handleChange(field, e.target.value)}
+          placeholder="https://..."
+          style={{ ...fieldStyle, flex: 1 }}
+          data-testid={`input-${field}`}
+        />
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          disabled={videoUploading[field]}
+          style={{ background: "#1a1a1a", border: "1px solid #2a2a2a", color: "#aaa", padding: "0 10px", fontSize: "11px", borderRadius: "3px", cursor: "pointer", whiteSpace: "nowrap", opacity: videoUploading[field] ? 0.6 : 1 }}
+          data-testid={`button-upload-${field}`}
+        >
+          {videoUploading[field] ? `${videoUploadProgress[field] ?? 0}%` : "Nahrát"}
+        </button>
+        <button
+          type="button"
+          onClick={() => setB2VideoPickerFor(field)}
+          style={{ background: "#1a1a1a", border: "1px solid #2a2a2a", color: "#aaa", padding: "0 10px", fontSize: "11px", borderRadius: "3px", cursor: "pointer", whiteSpace: "nowrap" }}
+          data-testid={`button-b2-${field}`}
+        >
+          Knihovna B2
+        </button>
+      </div>
+      {videoUploading[field] && (
+        <div style={{ height: "4px", background: "#1b1b1b", borderRadius: "999px", overflow: "hidden", marginBottom: "6px" }}>
+          <div style={{ height: "100%", width: `${videoUploadProgress[field] ?? 0}%`, background: "linear-gradient(90deg,#0B99FC,#4cc3ff)", transition: "width 200ms ease" }} />
+        </div>
+      )}
+      {videoUploadError[field] && <div style={{ fontSize: "11px", color: "#ff4444", marginBottom: "4px" }}>✗ {videoUploadError[field]}</div>}
+      {values[field] && !videoUploading[field] && (
+        <video src={values[field]} muted preload="metadata" style={{ width: "100%", maxHeight: "80px", objectFit: "cover", borderRadius: "3px", border: "1px solid #1e1e1e", display: "block", marginBottom: "4px" }} />
+      )}
+      <div style={{ fontSize: "11px", color: "#444" }}>{hint}</div>
+      <input ref={inputRef} type="file" accept="video/*,.mp4,.mov,.webm" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) uploadVideo(f, field); e.target.value = ""; }} />
+    </div>
+  );
+
   return (
     <div>
+      {b2VideoPickerFor && (
+        <B2VideoPickerModal
+          onSelect={(url) => { handleChange(b2VideoPickerFor, url); setB2VideoPickerFor(null); }}
+          onClose={() => setB2VideoPickerFor(null)}
+        />
+      )}
+
       <div style={{ marginBottom: "24px", padding: "16px", border: "1px solid #1f1f1f", borderRadius: "4px" }}>
         <div style={{ fontSize: "12px", color: "#888", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "14px", borderBottom: "1px solid #1a1a1a", paddingBottom: "10px" }}>
           Videa
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "14px" }}>
-          <div>
-            <label style={labelStyle}>Video – Domovská stránka (URL)</label>
-            <input
-              value={values.home_video}
-              onChange={(e) => handleChange("home_video", e.target.value)}
-              placeholder="/uploads/voodoo808-video.mov"
-              style={fieldStyle}
-              data-testid="input-home-video"
-            />
-            <div style={{ fontSize: "11px", color: "#444", marginTop: "4px" }}>Přehrává se na pozadí úvodní stránky</div>
-          </div>
-          <div>
-            <label style={labelStyle}>Video – Beaty stránka (URL)</label>
-            <input
-              value={values.beaty_video}
-              onChange={(e) => handleChange("beaty_video", e.target.value)}
-              placeholder="/uploads/beaty-video.mov"
-              style={fieldStyle}
-              data-testid="input-beaty-video"
-            />
-            <div style={{ fontSize: "11px", color: "#444", marginTop: "4px" }}>Přehrává se na pozadí stránky s beaty</div>
-          </div>
+          <VideoField field="home_video" label="Video – Domovská stránka" hint="Přehrává se na pozadí úvodní stránky" inputRef={homeVideoInputRef} />
+          <VideoField field="beaty_video" label="Video – Beaty stránka" hint="Přehrává se na pozadí stránky s beaty" inputRef={beatyVideoInputRef} />
         </div>
         <button
           className="btn btn-filled"

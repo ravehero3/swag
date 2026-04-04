@@ -99,4 +99,7 @@ export async function listFiles(bucket: string, prefix?: string): Promise<{ key:
 export const STORAGE_BUCKETS = {
   PREVIEWS: process.env.B2_PREVIEW_BUCKET!,
   ZIPS: process.env.B2_ZIP_BUCKET!,
+  VIDEOS: process.env.B2_VIDEO_BUCKET || process.env.B2_PREVIEW_BUCKET!,
 };
+
+export const VIDEO_PREFIX = process.env.B2_VIDEO_BUCKET ? "" : "videos/";
