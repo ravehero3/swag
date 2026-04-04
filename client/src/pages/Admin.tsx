@@ -161,10 +161,10 @@ function Admin() {
   const [, navigate] = useLocation();
   const initialTab = (() => {
     const p = new URLSearchParams(window.location.search).get("tab");
-    const valid = ["beats", "kits", "orders", "licenses", "settings", "emails", "promo", "seo", "zakaznici"];
-    return (valid.includes(p || "") ? p : "orders") as "beats" | "kits" | "orders" | "licenses" | "settings" | "emails" | "promo" | "seo" | "zakaznici";
+    const valid = ["beats", "kits", "orders", "licenses", "emails", "promo", "seo", "zakaznici", "komentare"];
+    return (valid.includes(p || "") ? p : "orders") as "beats" | "kits" | "orders" | "licenses" | "emails" | "promo" | "seo" | "zakaznici" | "komentare";
   })();
-  const [tab, setTab] = useState<"beats" | "kits" | "orders" | "licenses" | "settings" | "emails" | "promo" | "seo" | "zakaznici">(initialTab);
+  const [tab, setTab] = useState<"beats" | "kits" | "orders" | "licenses" | "emails" | "promo" | "seo" | "zakaznici" | "komentare">(initialTab);
   const [beats, setBeats] = useState<Beat[]>([]);
   const [kits, setKits] = useState<SoundKit[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
@@ -282,14 +282,14 @@ function Admin() {
       <h1 style={{ marginBottom: "24px", color: "#666" }}>Admin Panel</h1>
 
       <div style={{ display: "flex", gap: "12px", marginBottom: "24px", flexWrap: "wrap", justifyContent: "center" }}>
-        {["beats", "kits", "orders", "zakaznici", "licenses", "settings", "emails", "promo", "seo", "komentare"].map((t) => (
+        {["beats", "kits", "orders", "zakaznici", "licenses", "emails", "promo", "seo", "komentare"].map((t) => (
           <button
             key={t}
             className={tab === t ? "btn btn-filled" : "btn btn-admin"}
             onClick={() => setTab(t as any)}
             style={tab !== t ? { borderColor: "#333", color: "#666" } : {}}
           >
-            {t === "beats" ? "Beaty" : t === "kits" ? "Zvuky" : t === "orders" ? "Objednávky" : t === "zakaznici" ? "Zákazníci" : t === "licenses" ? "Licence" : t === "settings" ? "Nastavení" : t === "emails" ? "Emaily" : t === "promo" ? "Promo kódy" : t === "komentare" ? "Komentáře" : "SEO"}
+            {t === "beats" ? "Beaty" : t === "kits" ? "Zvuky" : t === "orders" ? "Objednávky" : t === "zakaznici" ? "Zákazníci" : t === "licenses" ? "Licence" : t === "emails" ? "Emaily" : t === "promo" ? "Promo kódy" : t === "komentare" ? "Komentáře" : "SEO"}
           </button>
         ))}
       </div>
@@ -322,7 +322,6 @@ function Admin() {
         {tab === "orders" && <OrdersTab orders={orders} onRefresh={loadData} />}
         {tab === "zakaznici" && <ZakazniciTab />}
         {tab === "licenses" && <LicensesTab licenses={licenses} onRefresh={loadData} />}
-        {tab === "settings" && <SettingsTab settings={settings} onRefresh={refreshSettings} />}
         {tab === "emails" && <EmailsTab />}
         {tab === "promo" && <PromoCodesTab />}
         {tab === "seo" && <SEOTab settings={settings} onRefresh={refreshSettings} />}
@@ -2083,6 +2082,8 @@ function SEOSection({
 
 function SEOTab({ settings, onRefresh }: any) {
   const [values, setValues] = useState<Record<string, string>>({
+    home_video: settings.home_video || "",
+    beaty_video: settings.beaty_video || "",
     seo_site_name: settings.seo_site_name || "VOODOO808",
     seo_og_image: settings.seo_og_image || "",
     seo_home_title: settings.seo_home_title || "",
@@ -2145,6 +2146,45 @@ function SEOTab({ settings, onRefresh }: any) {
 
   return (
     <div>
+      <div style={{ marginBottom: "24px", padding: "16px", border: "1px solid #1f1f1f", borderRadius: "4px" }}>
+        <div style={{ fontSize: "12px", color: "#888", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "14px", borderBottom: "1px solid #1a1a1a", paddingBottom: "10px" }}>
+          Videa
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "14px" }}>
+          <div>
+            <label style={labelStyle}>Video – Domovská stránka (URL)</label>
+            <input
+              value={values.home_video}
+              onChange={(e) => handleChange("home_video", e.target.value)}
+              placeholder="/uploads/voodoo808-video.mov"
+              style={fieldStyle}
+              data-testid="input-home-video"
+            />
+            <div style={{ fontSize: "11px", color: "#444", marginTop: "4px" }}>Přehrává se na pozadí úvodní stránky</div>
+          </div>
+          <div>
+            <label style={labelStyle}>Video – Beaty stránka (URL)</label>
+            <input
+              value={values.beaty_video}
+              onChange={(e) => handleChange("beaty_video", e.target.value)}
+              placeholder="/uploads/beaty-video.mov"
+              style={fieldStyle}
+              data-testid="input-beaty-video"
+            />
+            <div style={{ fontSize: "11px", color: "#444", marginTop: "4px" }}>Přehrává se na pozadí stránky s beaty</div>
+          </div>
+        </div>
+        <button
+          className="btn btn-filled"
+          onClick={() => saveKeys("videos", ["home_video", "beaty_video"])}
+          disabled={saving["videos"]}
+          style={{ opacity: saving["videos"] ? 0.6 : 1 }}
+          data-testid="button-save-videos"
+        >
+          {saved["videos"] ? "✓ Uloženo" : saving["videos"] ? "Ukládám..." : "Uložit videa"}
+        </button>
+      </div>
+
       <div style={{ fontSize: "12px", color: "#555", lineHeight: "1.7", marginBottom: "24px", padding: "14px", border: "1px solid #1a1a1a", borderRadius: "3px", background: "#111111" }}>
         Zde nastavíš, jak se tvůj web zobrazuje ve výsledcích Google. Titulek a popis vidí zákazník dřív než klikne na stránku — dobře napsané SEO přivede víc návštěvníků.
       </div>
@@ -2233,29 +2273,6 @@ function SEOTab({ settings, onRefresh }: any) {
         saving={!!saving["zvuky"]}
         saved={!!saved["zvuky"]}
       />
-    </div>
-  );
-}
-
-function SettingsTab({ settings, onRefresh }: any) {
-  const [localSettings, setLocalSettings] = useState(settings);
-
-  const handleSave = async (key: string, value: string) => {
-    await fetch("/api/admin/settings", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ key, value }) });
-    onRefresh();
-  };
-
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-      {Object.entries(localSettings).map(([key, value]: [string, any]) => (
-        <div key={key}>
-          <label style={{ display: "block", marginBottom: "8px" }}>{key}</label>
-          <div style={{ display: "flex", gap: "8px" }}>
-            <input value={value} onChange={(e) => setLocalSettings({ ...localSettings, [key]: e.target.value })} style={{ flex: 1 }} />
-            <button className="btn btn-filled" onClick={() => handleSave(key, localSettings[key])}>Uložit</button>
-          </div>
-        </div>
-      ))}
     </div>
   );
 }
