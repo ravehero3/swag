@@ -71,8 +71,9 @@ function SoundWave({ audioRef, isPlaying, audioUrl }: SoundWaveProps) {
 
     cx.clearRect(0, 0, W, H);
 
-    const midY = H / 2;
-    const maxAmp = midY * 0.92;
+    const divY = H * 0.70;
+    const topMaxAmp = divY * 0.90;
+    const botMaxAmp = (H - divY) * 0.90;
     const count = BAR_COUNT;
     const slotW = W / count;
     const barW = Math.max(1, slotW * 0.55);
@@ -91,10 +92,11 @@ function SoundWave({ audioRef, isPlaying, audioUrl }: SoundWaveProps) {
       for (let i = 0; i < numBars; i++) {
         const phase = (i / numBars) * Math.PI * 2;
         const ripple = 0.85 + Math.sin(t * 3.5 + phase) * 0.15;
-        const amp = heightProfile[i] * maxAmp * 0.62 * pulse * ripple;
+        const topAmp = heightProfile[i] * topMaxAmp * 0.62 * pulse * ripple;
+        const botAmp = heightProfile[i] * botMaxAmp * 0.62 * pulse * ripple;
         const x = startX + i * (iconBarW + iconGap);
-        const barH = Math.max(amp * 2, 3);
-        const barY = midY - amp;
+        const barH = Math.max(topAmp + botAmp, 3);
+        const barY = divY - topAmp;
         const radius = iconBarW / 2;
         cx.fillStyle = `rgba(255,255,255,0.70)`;
         cx.beginPath();
@@ -105,6 +107,9 @@ function SoundWave({ audioRef, isPlaying, audioUrl }: SoundWaveProps) {
         }
         cx.fill();
       }
+
+      cx.fillStyle = "#000";
+      cx.fillRect(0, divY, W, 1);
       return;
     }
 
@@ -116,7 +121,9 @@ function SoundWave({ audioRef, isPlaying, audioUrl }: SoundWaveProps) {
 
     for (let i = 0; i < count; i++) {
       const x = i * slotW + gap / 2;
-      const amp = Math.max(peaks[i] * maxAmp, 1.2);
+      const peak = peaks[i];
+      const topAmp = Math.max(peak * topMaxAmp, 1.2);
+      const botAmp = Math.max(peak * botMaxAmp, 0.5);
       const isPlayed = i < playheadBar;
       const isHead = Math.abs(i - playheadBar) < 1.2;
 
@@ -125,11 +132,11 @@ function SoundWave({ audioRef, isPlaying, audioUrl }: SoundWaveProps) {
       } else if (isPlayed) {
         cx.fillStyle = "rgba(255,255,255,0.85)";
       } else {
-        cx.fillStyle = "rgba(255,255,255,0.09)";
+        cx.fillStyle = "rgba(255,255,255,0.28)";
       }
 
-      const barH = amp * 2;
-      const barY = midY - amp;
+      const barH = topAmp + botAmp;
+      const barY = divY - topAmp;
       const radius = Math.min(barW / 2, 1.5);
       cx.beginPath();
       if (cx.roundRect) {
@@ -139,6 +146,9 @@ function SoundWave({ audioRef, isPlaying, audioUrl }: SoundWaveProps) {
       }
       cx.fill();
     }
+
+    cx.fillStyle = "#000";
+    cx.fillRect(0, divY, W, 1);
   }, []);
 
   useEffect(() => {
