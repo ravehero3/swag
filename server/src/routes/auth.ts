@@ -2,6 +2,35 @@ import { Router, Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import { pool } from "../db.js";
 import passport from "passport";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+import { requireAuth } from "../middleware/auth.js";
+
+const avatarUploadDir = process.env.NODE_ENV === "production"
+  ? "/tmp/uploads/avatars"
+  : path.join(process.cwd(), "public/uploads/avatars");
+
+function ensureAvatarDir() {
+  if (!fs.existsSync(avatarUploadDir)) {
+    fs.mkdirSync(avatarUploadDir, { recursive: true });
+  }
+}
+
+const avatarUpload = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => { ensureAvatarDir(); cb(null, avatarUploadDir); },
+    filename: (_req, file, cb) => {
+      const ext = path.extname(file.originalname).toLowerCase() || ".jpg";
+      cb(null, `avatar-${Date.now()}${ext}`);
+    },
+  }),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype.startsWith("image/")) cb(null, true);
+    else cb(new Error("Only images allowed"));
+  },
+});
 
 const router = Router();
 
@@ -99,7 +128,7 @@ router.get("/me", async (req: Request, res: Response) => {
   
   try {
     const result = await pool.query(
-      "SELECT id, email, is_admin FROM users WHERE id = $1",
+      "SELECT id, email, is_admin, avatar_url FROM users WHERE id = $1",
       [req.session.userId]
     );
     
@@ -107,9 +136,20 @@ router.get("/me", async (req: Request, res: Response) => {
       return res.status(401).json({ error: "Uživatel nenalezen" });
     }
     
-    res.json({ user: { id: result.rows[0].id, email: result.rows[0].email, isAdmin: result.rows[0].is_admin } });
+    res.json({ user: { id: result.rows[0].id, email: result.rows[0].email, isAdmin: result.rows[0].is_admin, avatarUrl: result.rows[0].avatar_url } });
   } catch (error) {
     res.status(500).json({ error: "Chyba serveru" });
+  }
+});
+
+router.post("/avatar", requireAuth, avatarUpload.single("avatar"), async (req: Request, res: Response) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: "Žádný soubor" });
+    const url = `/uploads/avatars/${req.file.filename}`;
+    await pool.query("UPDATE users SET avatar_url = $1 WHERE id = $2", [url, req.session.userId]);
+    res.json({ avatarUrl: url });
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při nahrávání avataru" });
   }
 });
 

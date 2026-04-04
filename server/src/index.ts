@@ -13,6 +13,7 @@ import savedRoutes from "./routes/saved.js";
 import licensesRoutes from "./routes/licenses.js";
 import adminLicensesRoutes from "./routes/adminLicenses.js";
 import leadsRoutes from "./routes/leads.js";
+import commentsRoutes from "./routes/comments.js";
 import { requireAuth, requireAdmin } from "./middleware/auth.js";
 import bcrypt from "bcryptjs";
 
@@ -121,6 +122,7 @@ app.use("/api/upload", uploadRoutes);
 app.use("/api/saved", savedRoutes);
 app.use("/api/licenses", licensesRoutes);
 app.use("/api/admin", adminLicensesRoutes);
+app.use("/api/beats", commentsRoutes);
 
 async function seedAdmin() {
   try {
@@ -270,6 +272,19 @@ app.patch("/api/admin/email-templates/:key", requireAdmin, async (req, res) => {
     res.json(result.rows[0]);
   } catch (error) {
     res.status(500).json({ error: "Chyba při ukládání šablony" });
+  }
+});
+
+app.post("/api/admin/email-templates/:key/preview", requireAdmin, async (req, res) => {
+  try {
+    const { buildPreviewEmailHtml } = await import("./email.js");
+    const { intro_text } = req.body;
+    const appUrl = process.env.APP_URL || `https://${process.env.REPLIT_DEV_DOMAIN}` || "http://localhost:5000";
+    const html = buildPreviewEmailHtml(req.params.key, intro_text || "", appUrl);
+    res.setHeader("Content-Type", "text/html");
+    res.send(html);
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při generování náhledu" });
   }
 });
 

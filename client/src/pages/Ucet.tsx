@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useApp } from "../App.js";
 import { useLocation, Link } from "wouter";
 
@@ -26,7 +26,37 @@ export default function Ucet() {
   const [playingId, setPlayingId] = useState<number | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [payingOrderId, setPayingOrderId] = useState<number | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const avatarInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (user?.avatarUrl) setAvatarUrl(user.avatarUrl);
+  }, [user]);
+
+  const handleAvatarUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingAvatar(true);
+    try {
+      const formData = new FormData();
+      formData.append("avatar", file);
+      const res = await fetch("/api/auth/avatar", {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
+      const data = await res.json();
+      if (res.ok) setAvatarUrl(data.avatarUrl);
+      else alert(data.error || "Chyba při nahrávání");
+    } catch {
+      alert("Chyba při nahrávání avataru.");
+    } finally {
+      setUploadingAvatar(false);
+      if (avatarInputRef.current) avatarInputRef.current.value = "";
+    }
+  }, []);
 
   useEffect(() => {
     if (!user) {
@@ -244,11 +274,44 @@ export default function Ucet() {
 
       <h1 style={{ fontSize: "32px", marginBottom: "32px", fontWeight: "400" }}>Můj účet</h1>
       
+      <input
+        ref={avatarInputRef}
+        type="file"
+        accept="image/*"
+        style={{ display: "none" }}
+        onChange={handleAvatarUpload}
+        data-testid="input-avatar-upload"
+      />
+
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px", marginBottom: "48px" }}>
         <div style={{ padding: "24px", background: "#111111", border: "1px solid #333", borderRadius: "8px" }}>
           <h2 style={{ fontSize: "18px", marginBottom: "16px", color: "#999", fontWeight: "400" }}>Osobní údaje</h2>
-          <p style={{ color: "#fff", margin: "0 0 8px 0" }}>Email: {user?.email}</p>
-          <p style={{ color: "#666", fontSize: "14px", margin: 0 }}>ID uživatele: #{user?.id}</p>
+          <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "16px" }}>
+            <div
+              onClick={() => avatarInputRef.current?.click()}
+              style={{ position: "relative", width: "64px", height: "64px", borderRadius: "50%", overflow: "hidden", background: "#222", border: "1px solid #333", cursor: "pointer", flexShrink: 0 }}
+              title="Klikněte pro změnu fotky"
+              data-testid="button-change-avatar"
+            >
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              ) : (
+                <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", color: "#444" }}>
+                  {user?.email?.[0]?.toUpperCase() || "?"}
+                </div>
+              )}
+              <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", opacity: 0, transition: "opacity 0.2s" }}
+                onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
+                onMouseLeave={e => (e.currentTarget.style.opacity = "0")}
+              >
+                <span style={{ fontSize: "11px", color: "#fff", textAlign: "center", lineHeight: 1.3 }}>{uploadingAvatar ? "..." : "Změnit"}</span>
+              </div>
+            </div>
+            <div>
+              <p style={{ color: "#fff", margin: "0 0 4px 0" }}>{user?.email}</p>
+              <p style={{ color: "#666", fontSize: "13px", margin: 0 }}>ID uživatele: #{user?.id}</p>
+            </div>
+          </div>
         </div>
 
         <div style={{ padding: "24px", background: "#111111", border: "1px solid #333", borderRadius: "8px" }}>

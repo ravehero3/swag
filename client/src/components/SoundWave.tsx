@@ -142,13 +142,18 @@ function SoundWave({ audioRef, isPlaying, audioUrl }: SoundWaveProps) {
   }, []);
 
   useEffect(() => {
-    const loop = () => {
-      draw();
+    if (isPlaying) {
+      const loop = () => {
+        draw();
+        rafRef.current = requestAnimationFrame(loop);
+      };
       rafRef.current = requestAnimationFrame(loop);
-    };
-    rafRef.current = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(rafRef.current);
-  }, [draw]);
+      return () => cancelAnimationFrame(rafRef.current);
+    } else {
+      cancelAnimationFrame(rafRef.current);
+      draw();
+    }
+  }, [draw, isPlaying]);
 
   useEffect(() => {
     const canvas = canvasRef.current;

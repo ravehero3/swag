@@ -210,4 +210,16 @@ router.put("/:id/status", requireAdmin, async (req: Request, res: Response) => {
   }
 });
 
+router.delete("/:id", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const result = await pool.query("DELETE FROM orders WHERE id = $1 RETURNING id", [req.params.id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Objednávka nenalezena" });
+    }
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při mazání objednávky" });
+  }
+});
+
 export default router;

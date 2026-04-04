@@ -1383,12 +1383,19 @@ function RevenueChart({ orders }: { orders: any[] }) {
   );
 }
 
-function OrdersList({ orders }: { orders: any[] }) {
+function OrdersList({ orders, onRefresh }: { orders: any[]; onRefresh: () => void }) {
   const [expandedId, setExpandedId] = useState<number | null>(null);
+
+  const handleDelete = async (e: React.MouseEvent, id: number) => {
+    e.stopPropagation();
+    if (!confirm(`Opravdu smazat objednávku #${id}?`)) return;
+    await fetch(`/api/orders/${id}`, { method: "DELETE", credentials: "include" });
+    onRefresh();
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-      <div style={{ display: "grid", gridTemplateColumns: "60px 1fr 120px 90px 100px 100px", gap: "8px", padding: "8px", fontSize: "11px", color: "#555", textTransform: "uppercase", letterSpacing: "0.06em", borderBottom: "1px solid #1a1a1a" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "60px 1fr 120px 90px 100px 120px", gap: "8px", padding: "8px", fontSize: "11px", color: "#555", textTransform: "uppercase", letterSpacing: "0.06em", borderBottom: "1px solid #1a1a1a" }}>
         <div>ID</div><div>Email / Kupující</div><div>Celkem</div><div>Status</div><div>Datum</div><div>Akce</div>
       </div>
       {orders.map((order: any) => {
@@ -1398,7 +1405,7 @@ function OrdersList({ orders }: { orders: any[] }) {
         const isExpanded = expandedId === order.id;
         return (
           <div key={order.id} style={{ border: "1px solid #1a1a1a", borderRadius: "3px", overflow: "hidden" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "60px 1fr 120px 90px 100px 100px", gap: "8px", padding: "10px 8px", alignItems: "center", background: isExpanded ? "#161616" : "transparent", cursor: "pointer" }}
+            <div style={{ display: "grid", gridTemplateColumns: "60px 1fr 120px 90px 100px 120px", gap: "8px", padding: "10px 8px", alignItems: "center", background: isExpanded ? "#161616" : "transparent", cursor: "pointer" }}
               onClick={() => setExpandedId(isExpanded ? null : order.id)}>
               <div style={{ fontSize: "12px", color: "#666" }}>#{order.id}</div>
               <div>
@@ -1412,7 +1419,17 @@ function OrdersList({ orders }: { orders: any[] }) {
                 </span>
               </div>
               <div style={{ fontSize: "12px", color: "#666" }}>{new Date(order.created_at).toLocaleDateString("cs-CZ")}</div>
-              <div style={{ fontSize: "12px", color: "#555" }}>{isExpanded ? "▲" : "▼"}</div>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <span style={{ fontSize: "12px", color: "#555" }}>{isExpanded ? "▲" : "▼"}</span>
+                <button
+                  onClick={(e) => handleDelete(e, order.id)}
+                  data-testid={`button-delete-order-${order.id}`}
+                  style={{ background: "none", border: "1px solid #3a1a1a", borderRadius: "3px", color: "#884444", fontSize: "11px", padding: "2px 8px", cursor: "pointer" }}
+                  title="Smazat objednávku"
+                >
+                  Smazat
+                </button>
+              </div>
             </div>
             {isExpanded && (
               <div style={{ borderTop: "1px solid #1a1a1a", padding: "14px 12px", background: "#090909" }}>
@@ -1469,7 +1486,7 @@ function OrdersList({ orders }: { orders: any[] }) {
   );
 }
 
-function OrdersTab({ orders }: any) {
+function OrdersTab({ orders, onRefresh }: any) {
   const totalRevenue = orders.reduce((s: number, o: any) => s + (Number(o.total) || 0), 0);
   const paidOrders = orders.filter((o: any) => o.status === "paid" || o.status === "completed");
   const avgOrder = paidOrders.length > 0 ? Math.round(totalRevenue / paidOrders.length) : 0;
@@ -1519,7 +1536,7 @@ function OrdersTab({ orders }: any) {
       {orders.length === 0 ? (
         <div style={{ textAlign: "center", padding: "40px", color: "#444", fontSize: "13px" }}>Žádné objednávky</div>
       ) : (
-        <OrdersList orders={orders} />
+        <OrdersList orders={orders} onRefresh={onRefresh} />
       )}
     </div>
   );
@@ -2411,6 +2428,27 @@ function EmailsTab() {
   const [editForm, setEditForm] = useState({ subject: "", intro_text: "" });
   const [saving, setSaving] = useState(false);
   const [saveOk, setSaveOk] = useState(false);
+  const [previewHtml, setPreviewHtml] = useState<string | null>(null);
+  const [loadingPreview, setLoadingPreview] = useState(false);
+
+  const handleEmailPreview = async () => {
+    if (!editingKey) return;
+    setLoadingPreview(true);
+    try {
+      const res = await fetch(`/api/admin/email-templates/${editingKey}/preview`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ intro_text: editForm.intro_text }),
+      });
+      const html = await res.text();
+      setPreviewHtml(html);
+    } catch {
+      alert("Chyba při načítání náhledu.");
+    } finally {
+      setLoadingPreview(false);
+    }
+  };
 
   const load = async () => {
     setLoading(true);
@@ -2466,6 +2504,20 @@ function EmailsTab() {
     const scenario = EMAIL_SCENARIOS.find(s => s.key === editingKey);
     return (
       <div style={{ maxWidth: "640px" }}>
+        {previewHtml && (
+          <div
+            onClick={() => setPreviewHtml(null)}
+            style={{ position: "fixed", inset: 0, background: "rgba(10,10,10,0.92)", zIndex: 1000, display: "flex", flexDirection: "column", alignItems: "center", overflowY: "auto", padding: "24px 16px 48px" }}
+          >
+            <div onClick={(e) => e.stopPropagation()} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", maxWidth: "640px", marginBottom: "16px", flexShrink: 0 }}>
+              <span style={{ fontWeight: "600", color: "#ddd", fontSize: "13px", letterSpacing: "0.04em" }}>Náhled emailu – {scenario?.label}</span>
+              <button onClick={() => setPreviewHtml(null)} style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "4px", fontSize: "13px", cursor: "pointer", color: "#ccc", padding: "4px 12px" }}>Zavřít ×</button>
+            </div>
+            <div onClick={(e) => e.stopPropagation()} style={{ width: "640px", maxWidth: "100%", background: "#0a0a0a", borderRadius: "4px", overflow: "hidden", border: "1px solid #222" }}>
+              <iframe srcDoc={previewHtml} style={{ width: "100%", height: "700px", border: "none", display: "block" }} title="Náhled emailu" />
+            </div>
+          </div>
+        )}
         <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "24px" }}>
           <button
             onClick={() => setEditingKey(null)}
@@ -2512,7 +2564,7 @@ function EmailsTab() {
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: "12px" }}>
+        <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
           <button
             onClick={handleSave}
             disabled={saving}
@@ -2520,6 +2572,14 @@ function EmailsTab() {
             style={{ borderRadius: "4px" }}
           >
             {saving ? "Ukládám..." : saveOk ? "Uloženo ✓" : "Uložit šablonu"}
+          </button>
+          <button
+            onClick={handleEmailPreview}
+            disabled={loadingPreview}
+            className="btn btn-admin"
+            style={{ borderRadius: "4px" }}
+          >
+            {loadingPreview ? "Načítám..." : "Náhled emailu"}
           </button>
           <button
             onClick={() => setEditingKey(null)}

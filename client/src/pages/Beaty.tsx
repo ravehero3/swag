@@ -187,6 +187,10 @@ function Beaty() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [showTitle, setShowTitle] = useState(false);
+  const [comments, setComments] = useState<any[]>([]);
+  const [commentText, setCommentText] = useState("");
+  const [submittingComment, setSubmittingComment] = useState(false);
+  const [beatStats, setBeatStats] = useState<{ comments: number; saves: number } | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const beatsListRef = useScrollAnimation();
   const soundKitsRef = useScrollAnimation();
@@ -277,6 +281,43 @@ function Beaty() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    if (!currentBeat) return;
+    const id = currentBeat.id;
+    setComments([]);
+    setBeatStats(null);
+    Promise.all([
+      fetch(`/api/beats/${id}/comments`).then(r => r.ok ? r.json() : []),
+      fetch(`/api/beats/${id}/stats`).then(r => r.ok ? r.json() : null),
+    ]).then(([commentsData, statsData]) => {
+      setComments(Array.isArray(commentsData) ? commentsData : []);
+      setBeatStats(statsData);
+    }).catch(console.error);
+  }, [currentBeat?.id]);
+
+  const handleCommentSubmit = async () => {
+    if (!commentText.trim() || !currentBeat || !user) return;
+    setSubmittingComment(true);
+    try {
+      const res = await fetch(`/api/beats/${currentBeat.id}/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ text: commentText.trim() }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setComments(prev => [data, ...prev]);
+        setCommentText("");
+        setBeatStats(prev => prev ? { ...prev, comments: prev.comments + 1 } : prev);
+      }
+    } catch (err) {
+      console.error("Comment error:", err);
+    } finally {
+      setSubmittingComment(false);
+    }
+  };
 
   const playBeat = async (beat: Beat) => {
     if (currentBeat?.id === beat.id) {
@@ -816,6 +857,62 @@ function Beaty() {
 
         {currentBeat && (
           <SoundWave audioRef={audioRef} isPlaying={isPlaying} audioUrl={currentBeat.preview_url} />
+        )}
+
+        {currentBeat && isPlaying && (
+          <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 16px", marginTop: "8px", marginBottom: "8px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "12px" }}>
+              {beatStats && (
+                <>
+                  <span data-testid="text-beat-saves" style={{ fontSize: "12px", color: "#555", display: "flex", alignItems: "center", gap: "4px" }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ color: "#555" }}><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+                    {beatStats.saves}
+                  </span>
+                  <span data-testid="text-beat-comments" style={{ fontSize: "12px", color: "#555", display: "flex", alignItems: "center", gap: "4px" }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: "#555" }}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+                    {beatStats.comments}
+                  </span>
+                </>
+              )}
+            </div>
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <input
+                type="text"
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") handleCommentSubmit(); }}
+                placeholder={user ? "Napište komentář..." : "Pro komentáře se přihlaste"}
+                disabled={!user || submittingComment}
+                data-testid="input-beat-comment"
+                style={{ flex: 1, padding: "8px 16px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "20px", color: "#fff", fontSize: "13px", fontFamily: "inherit", outline: "none" }}
+              />
+              {user && (
+                <button
+                  onClick={handleCommentSubmit}
+                  disabled={!commentText.trim() || submittingComment}
+                  data-testid="button-submit-comment"
+                  style={{ padding: "8px 16px", background: commentText.trim() ? "#fff" : "#222", color: commentText.trim() ? "#000" : "#555", border: "none", borderRadius: "20px", fontSize: "13px", cursor: commentText.trim() ? "pointer" : "default", fontFamily: "inherit", transition: "all 0.2s" }}
+                >
+                  {submittingComment ? "..." : "Odeslat"}
+                </button>
+              )}
+            </div>
+            {comments.length > 0 && (
+              <div style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "6px", maxHeight: "140px", overflowY: "auto" }}>
+                {comments.map((c: any) => (
+                  <div key={c.id} data-testid={`comment-item-${c.id}`} style={{ display: "flex", gap: "8px", alignItems: "flex-start" }}>
+                    <div style={{ width: "24px", height: "24px", borderRadius: "50%", background: "#222", border: "1px solid #333", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: "#666" }}>
+                      {c.email?.[0]?.toUpperCase() || "?"}
+                    </div>
+                    <div>
+                      <span style={{ fontSize: "11px", color: "#555", marginRight: "8px" }}>{c.email?.split("@")[0]}</span>
+                      <span style={{ fontSize: "13px", color: "#ccc" }}>{c.text}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         )}
 
         <div ref={beatsListRef} className="scroll-fade-section" style={{ marginBottom: "48px", maxWidth: "1200px", margin: "0 auto", marginTop: "60px" }}>

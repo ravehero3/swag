@@ -222,6 +222,17 @@ export async function initDatabase() {
       CREATE INDEX IF NOT EXISTS idx_saved_items_user_id ON saved_items (user_id);
     `);
 
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS beat_comments (
+        id SERIAL PRIMARY KEY,
+        beat_id INTEGER REFERENCES beats(id) ON DELETE CASCADE,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        text TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX IF NOT EXISTS idx_beat_comments_beat_id ON beat_comments (beat_id);
+    `);
+
     // Safe column migrations — add any columns that may be missing from older deployments
     await client.query(`
       ALTER TABLE beats ADD COLUMN IF NOT EXISTS trackout_url VARCHAR(500);
@@ -236,6 +247,7 @@ export async function initDatabase() {
       ALTER TABLE orders ADD COLUMN IF NOT EXISTS buyer_artist_name VARCHAR(255);
       ALTER TABLE orders ADD COLUMN IF NOT EXISTS buyer_address TEXT;
       ALTER TABLE license_types ADD COLUMN IF NOT EXISTS contract_template TEXT;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(500);
     `);
 
     console.log("Database initialized successfully");
