@@ -191,7 +191,11 @@ function Beaty() {
   const [submittingComment, setSubmittingComment] = useState(false);
   const [beatStats, setBeatStats] = useState<{ comments: number; saves: number } | null>(null);
   const [authNudge, setAuthNudge] = useState(false);
+  const [hoveredCommentId, setHoveredCommentId] = useState<number | null>(null);
+  const [isDraggingComment, setIsDraggingComment] = useState(false);
+  const [draggingCommentId, setDraggingCommentId] = useState<number | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const waveContainerRef = useRef<HTMLDivElement>(null);
   const beatsListRef = useScrollAnimation();
   const soundKitsRef = useScrollAnimation();
   const { user, addToCart, settings, refreshSavedCount } = useApp() as any;
@@ -314,12 +318,15 @@ function Beaty() {
   const handleCommentSubmit = async () => {
     if (!commentText.trim() || !currentBeat || !user) return;
     setSubmittingComment(true);
+    const timeOffset = (audioRef.current?.duration && audioRef.current.duration > 0)
+      ? audioRef.current.currentTime / audioRef.current.duration
+      : 0;
     try {
       const res = await fetch(`/api/beats/${currentBeat.id}/comments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ text: commentText.trim() }),
+        body: JSON.stringify({ text: commentText.trim(), time_offset: timeOffset }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -333,6 +340,74 @@ function Beaty() {
       setSubmittingComment(false);
     }
   };
+
+  const handleDeleteComment = async (commentId: number) => {
+    if (!currentBeat) return;
+    try {
+      const res = await fetch(`/api/beats/${currentBeat.id}/comments/${commentId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (res.ok) {
+        setComments(prev => prev.filter(c => c.id !== commentId));
+        setBeatStats(prev => prev ? { ...prev, comments: prev.comments - 1 } : prev);
+      }
+    } catch (err) {
+      console.error("Failed to delete comment:", err);
+    }
+  };
+
+  const handleCommentDragStart = (e: { preventDefault: () => void; stopPropagation: () => void }, comment: any) => {
+    if (comment.user_id !== user?.id) return;
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingComment(true);
+    setDraggingCommentId(comment.id);
+  };
+
+  useEffect(() => {
+    if (!isDraggingComment || draggingCommentId === null) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const container = waveContainerRef.current;
+      if (!container) return;
+      const rect = container.getBoundingClientRect();
+      const newOffset = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      setComments(prev => prev.map(c =>
+        c.id === draggingCommentId ? { ...c, time_offset: newOffset } : c
+      ));
+    };
+
+    const handleMouseUp = async (e: MouseEvent) => {
+      const container = waveContainerRef.current;
+      let newOffset = 0;
+      if (container) {
+        const rect = container.getBoundingClientRect();
+        newOffset = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      }
+      setIsDraggingComment(false);
+      const commentId = draggingCommentId;
+      setDraggingCommentId(null);
+      if (!currentBeat) return;
+      try {
+        await fetch(`/api/beats/${currentBeat.id}/comments/${commentId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ time_offset: newOffset }),
+        });
+      } catch (err) {
+        console.error("Failed to update comment position:", err);
+      }
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isDraggingComment, draggingCommentId, currentBeat?.id]);
 
   const playBeat = async (beat: Beat) => {
     if (currentBeat?.id === beat.id) {
@@ -898,7 +973,56 @@ function Beaty() {
                 ))}
               </div>
             )}
-            <SoundWave audioRef={audioRef} isPlaying={isPlaying} audioUrl={currentBeat.preview_url} />
+            <SoundWave
+              audioRef={audioRef}
+              isPlaying={isPlaying}
+              audioUrl={currentBeat.preview_url}
+              isDraggingComment={isDraggingComment}
+              waveRef={waveContainerRef}
+            >
+              {comments.map((c: any) => {
+                const isOwn = c.user_id === user?.id;
+                const offset = typeof c.time_offset === 'number' ? c.time_offset : 0;
+                return (
+                  <div
+                    key={c.id}
+                    style={{
+                      position: "absolute",
+                      left: `${offset * 100}%`,
+                      top: "50%",
+                      transform: "translate(-50%, -50%)",
+                      zIndex: draggingCommentId === c.id ? 200 : 50,
+                      pointerEvents: "all",
+                      userSelect: "none",
+                    }}
+                    onMouseDown={isOwn ? (e) => { e.stopPropagation(); handleCommentDragStart(e, c); } : undefined}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div style={{
+                      width: "22px",
+                      height: "22px",
+                      borderRadius: "50%",
+                      background: "#1a1a1a",
+                      border: `1.5px solid ${isOwn ? '#888' : '#444'}`,
+                      overflow: "hidden",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "9px",
+                      color: "#888",
+                      cursor: isOwn ? (draggingCommentId === c.id ? "grabbing" : "grab") : "default",
+                      boxShadow: "0 1px 6px rgba(0,0,0,0.7)",
+                    }}>
+                      {c.avatar_url ? (
+                        <img src={c.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      ) : (
+                        <span>{(c.username || c.email)?.[0]?.toUpperCase() || "?"}</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </SoundWave>
           </>
         )}
 
@@ -941,20 +1065,33 @@ function Beaty() {
               )}
             </div>
             {comments.length > 0 && (
-              <div style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "6px", maxHeight: "140px", overflowY: "auto" }}>
+              <div style={{ marginTop: "12px", display: "flex", flexWrap: "wrap", gap: "6px", maxHeight: "160px", overflowY: "auto" }}>
                 {comments.map((c: any) => (
-                  <div key={c.id} data-testid={`comment-item-${c.id}`} style={{ display: "flex", gap: "8px", alignItems: "flex-start" }}>
-                    <div style={{ width: "24px", height: "24px", borderRadius: "50%", background: "#222", border: "1px solid #333", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: "#666", overflow: "hidden" }}>
+                  <div
+                    key={c.id}
+                    data-testid={`comment-item-${c.id}`}
+                    style={{ position: "relative", display: "inline-flex", gap: "6px", alignItems: "center", background: "#111", border: "1px solid #2a2a2a", borderRadius: "20px", padding: "4px 10px 4px 6px" }}
+                    onMouseEnter={() => setHoveredCommentId(c.id)}
+                    onMouseLeave={() => setHoveredCommentId(null)}
+                  >
+                    <div style={{ width: "22px", height: "22px", borderRadius: "50%", background: "#222", border: "1px solid #333", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "9px", color: "#666", overflow: "hidden" }}>
                       {c.avatar_url ? (
                         <img src={c.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                       ) : (
                         (c.username || c.email)?.[0]?.toUpperCase() || "?"
                       )}
                     </div>
-                    <div>
-                      <span style={{ fontSize: "11px", color: "#555", marginRight: "8px" }}>{c.username || c.email?.split("@")[0]}</span>
-                      <span style={{ fontSize: "13px", color: "#ccc" }}>{c.text}</span>
+                    <div style={{ maxWidth: "220px", overflow: "hidden" }}>
+                      <span style={{ fontSize: "11px", color: "#555", marginRight: "6px" }}>{c.username || c.email?.split("@")[0]}</span>
+                      <span style={{ fontSize: "12px", color: "#bbb", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.text}</span>
                     </div>
+                    {c.user_id === user?.id && hoveredCommentId === c.id && (
+                      <button
+                        onClick={() => handleDeleteComment(c.id)}
+                        data-testid={`button-delete-comment-${c.id}`}
+                        style={{ position: "absolute", top: "-6px", right: "-6px", width: "16px", height: "16px", borderRadius: "50%", background: "#333", border: "1px solid #555", color: "#aaa", fontSize: "10px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 0, lineHeight: 1 }}
+                      >×</button>
+                    )}
                   </div>
                 ))}
               </div>

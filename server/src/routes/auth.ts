@@ -122,7 +122,7 @@ router.get("/me", async (req: Request, res: Response) => {
   
   try {
     const result = await pool.query(
-      "SELECT id, email, is_admin, avatar_url FROM users WHERE id = $1",
+      "SELECT id, email, is_admin, avatar_url, username FROM users WHERE id = $1",
       [req.session.userId]
     );
     

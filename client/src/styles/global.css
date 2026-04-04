@@ -43,6 +43,19 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  transition: z-index 0s;
+}
+
+.comment-avatar-wrap:hover {
+  z-index: 100 !important;
+}
+
+.comment-avatar-wrap > div:first-child {
+  transition: transform 0.2s ease;
+}
+
+.comment-avatar-wrap:hover > div:first-child {
+  transform: scale(1.5);
 }
 
 .comment-avatar-wrap .comment-tooltip {

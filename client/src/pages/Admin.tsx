@@ -660,21 +660,34 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   };
 
   const UploadProgressBar = ({ type }: { type: string }) => {
-    if (!uploading[type]) return null;
     const pct = uploadProgress[type] ?? 0;
+    const isUploading = uploading[type];
+    const isDone = !isUploading && pct >= 100;
+    if (!isUploading && !isDone) return null;
     return (
       <div style={{ marginTop: "8px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-          <span style={{ fontSize: "12px", color: "#aaa" }}>Nahrávám…</span>
-          <span style={{ fontSize: "12px", color: "#aaa" }}>{pct}%</span>
+          {isUploading ? (
+            <>
+              <span style={{ fontSize: "12px", color: "#aaa" }}>Nahrávám…</span>
+              <span style={{ fontSize: "12px", color: "#aaa" }}>{pct}%</span>
+            </>
+          ) : (
+            <>
+              <span style={{ fontSize: "12px", color: "#4caf50" }}>✓ Nahráno – bezpečné pokračovat</span>
+              <span style={{ fontSize: "12px", color: "#4caf50" }}>100%</span>
+            </>
+          )}
         </div>
         <div style={{ height: "10px", background: "#1b1b1b", borderRadius: "999px", overflow: "hidden", border: "1px solid #2a2a2a" }}>
           <div
             style={{
               height: "100%",
               width: `${pct}%`,
-              background: "linear-gradient(90deg, #0B99FC, #4cc3ff)",
-              transition: "width 200ms ease",
+              background: isDone
+                ? "linear-gradient(90deg, #2e7d32, #4caf50)"
+                : "linear-gradient(90deg, #0B99FC, #4cc3ff)",
+              transition: "width 200ms ease, background 300ms ease",
             }}
           />
         </div>
@@ -808,7 +821,15 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
               <UploadProgressBar type="artwork" />
               <div style={{ marginTop: "6px" }}><UploadStatus type="artwork" url={form.artworkUrl} /></div>
               {form.artworkUrl && !uploading["artwork"] && (
-                <img src={form.artworkUrl} alt="artwork preview" style={{ width: "80px", height: "80px", objectFit: "cover", marginTop: "8px", borderRadius: "3px" }} />
+                <div style={{ display: "flex", gap: "10px", alignItems: "flex-start", marginTop: "8px" }}>
+                  <img src={form.artworkUrl} alt="artwork preview" style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "3px" }} />
+                  <button
+                    type="button"
+                    onClick={() => setForm(f => ({ ...f, artworkUrl: "" }))}
+                    style={{ background: "none", border: "1px solid #444", color: "#888", padding: "4px 10px", borderRadius: "3px", fontSize: "12px", cursor: "pointer", marginTop: "4px" }}
+                    data-testid="button-delete-artwork-beat"
+                  >Smazat obrázek</button>
+                </div>
               )}
             </div>
 
@@ -1172,21 +1193,34 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
   };
 
   const UploadProgressBar = ({ type }: { type: string }) => {
-    if (!uploading[type]) return null;
     const pct = uploadProgress[type] ?? 0;
+    const isUploading = uploading[type];
+    const isDone = !isUploading && pct >= 100;
+    if (!isUploading && !isDone) return null;
     return (
       <div style={{ marginTop: "8px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-          <span style={{ fontSize: "12px", color: "#aaa" }}>Nahrávám…</span>
-          <span style={{ fontSize: "12px", color: "#aaa" }}>{pct}%</span>
+          {isUploading ? (
+            <>
+              <span style={{ fontSize: "12px", color: "#aaa" }}>Nahrávám…</span>
+              <span style={{ fontSize: "12px", color: "#aaa" }}>{pct}%</span>
+            </>
+          ) : (
+            <>
+              <span style={{ fontSize: "12px", color: "#4caf50" }}>✓ Nahráno – bezpečné pokračovat</span>
+              <span style={{ fontSize: "12px", color: "#4caf50" }}>100%</span>
+            </>
+          )}
         </div>
         <div style={{ height: "10px", background: "#1b1b1b", borderRadius: "999px", overflow: "hidden", border: "1px solid #2a2a2a" }}>
           <div
             style={{
               height: "100%",
               width: `${pct}%`,
-              background: "linear-gradient(90deg, #0B99FC, #4cc3ff)",
-              transition: "width 200ms ease",
+              background: isDone
+                ? "linear-gradient(90deg, #2e7d32, #4caf50)"
+                : "linear-gradient(90deg, #0B99FC, #4cc3ff)",
+              transition: "width 200ms ease, background 300ms ease",
             }}
           />
         </div>
@@ -1319,6 +1353,17 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
               <label style={{ display: "block", marginBottom: "8px" }}>Artwork</label>
               <input type="file" accept="image/*" onChange={async (e) => { if (e.target.files?.[0]) { const url = await uploadFile(e.target.files[0], "artwork"); setForm({ ...form, artworkUrl: url as string }); } }} style={{ width: "100%" }} />
               <UploadProgressBar type="artwork" />
+              {form.artworkUrl && !uploading["artwork"] && (
+                <div style={{ display: "flex", gap: "10px", alignItems: "flex-start", marginTop: "8px" }}>
+                  <img src={form.artworkUrl} alt="artwork preview" style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "3px" }} />
+                  <button
+                    type="button"
+                    onClick={() => setForm(f => ({ ...f, artworkUrl: "" }))}
+                    style={{ background: "none", border: "1px solid #444", color: "#888", padding: "4px 10px", borderRadius: "3px", fontSize: "12px", cursor: "pointer", marginTop: "4px" }}
+                    data-testid="button-delete-artwork-kit"
+                  >Smazat obrázek</button>
+                </div>
+              )}
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "16px" }}>
