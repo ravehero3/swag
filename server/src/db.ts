@@ -196,7 +196,12 @@ export async function initDatabase() {
         ('seo_beaty_keywords', 'koupit beat, beaty online, trap beaty, hip hop beaty, český beat'),
         ('seo_zvuky_title', 'Zvuky & Drum Kity – VOODOO808'),
         ('seo_zvuky_description', 'Prémiové zvukové sady a drum kity pro hudební producenty. One-shot sady, loop kity a více – vše ke stažení.'),
-        ('seo_zvuky_keywords', 'drum kit, zvuky pro producenty, one shot kit, loop kit, sample pack')
+        ('seo_zvuky_keywords', 'drum kit, zvuky pro producenty, one shot kit, loop kit, sample pack'),
+        ('ig_story_bg_color', '#000000'),
+        ('ig_story_text_color', '#ffffff'),
+        ('ig_story_accent_color', '#aaaaaa'),
+        ('ig_story_overlay_opacity', '0.45'),
+        ('ig_story_tagline', '')
       ON CONFLICT (key) DO NOTHING;
     `);
     

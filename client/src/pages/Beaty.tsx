@@ -184,7 +184,6 @@ function Beaty() {
   };
   const [sortBy, setSortBy] = useState<"bpm" | "key" | null>(null);
   const [sortAsc, setSortAsc] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [showTitle, setShowTitle] = useState(false);
   const [comments, setComments] = useState<any[]>([]);
@@ -206,17 +205,11 @@ function Beaty() {
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
     const tagParam = searchParams.get("tag");
-    const searchParam = searchParams.get("search");
     
     if (tagParam) {
       setSelectedTag(tagParam);
-      setSearchQuery("");
-    } else if (searchParam) {
-      setSearchQuery(searchParam);
-      setSelectedTag(null);
     } else {
       setSelectedTag(null);
-      setSearchQuery("");
     }
   }, [location]);
 
@@ -224,7 +217,6 @@ function Beaty() {
     let url = "/api/beats";
     const params = new URLSearchParams();
     if (selectedTag) params.append("tag", selectedTag);
-    if (searchQuery) params.append("search", searchQuery);
     if (params.toString()) url += "?" + params.toString();
     
     setBeatsLoading(true);
@@ -250,7 +242,7 @@ function Beaty() {
         }
       });
     });
-  }, [selectedTag, searchQuery]);
+  }, [selectedTag]);
 
   useEffect(() => {
     if (user) {
@@ -1120,7 +1112,7 @@ function Beaty() {
               </div>
 
               {beat.tags && beat.tags.length > 0 && (
-                <div className="desktop-only" style={{ display: "flex", gap: "4px", flexWrap: "wrap", marginLeft: "12px", alignItems: "center" }}>
+                <div className="desktop-only" onClick={(e) => e.stopPropagation()} style={{ display: "flex", gap: "4px", flexWrap: "wrap", marginLeft: "12px", alignItems: "center", cursor: "default" }}>
                   {beat.tags.map((tag) => (
                     <span
                       key={tag}
@@ -1134,6 +1126,7 @@ function Beaty() {
                         fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
                         whiteSpace: "nowrap",
                         userSelect: "none",
+                        cursor: "default",
                       }}
                     >
                       {tag}

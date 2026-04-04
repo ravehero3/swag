@@ -157,7 +157,6 @@ function Home() {
   const [contractModalBeat, setContractModalBeat] = useState<Beat | null>(null);
   const [sortBy, setSortBy] = useState<"bpm" | "key" | null>(null);
   const [sortAsc, setSortAsc] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [showTitle, setShowTitle] = useState(false);
   const [comments, setComments] = useState<any[]>([]);
@@ -183,17 +182,11 @@ function Home() {
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
     const tagParam = searchParams.get("tag");
-    const searchParam = searchParams.get("search");
     
     if (tagParam) {
       setSelectedTag(tagParam);
-      setSearchQuery("");
-    } else if (searchParam) {
-      setSearchQuery(searchParam);
-      setSelectedTag(null);
     } else {
       setSelectedTag(null);
-      setSearchQuery("");
     }
   }, [location]);
 
@@ -201,7 +194,6 @@ function Home() {
     let url = "/api/beats";
     const params = new URLSearchParams();
     if (selectedTag) params.append("tag", selectedTag);
-    if (searchQuery) params.append("search", searchQuery);
     if (params.toString()) url += "?" + params.toString();
 
     setBeatsLoading(true);
@@ -214,7 +206,7 @@ function Home() {
       if (highlightedData && !highlightedData.error) setHighlightedBeat(highlightedData);
       setBeatsLoading(false);
     });
-  }, [selectedTag, searchQuery]);
+  }, [selectedTag]);
 
   useEffect(() => {
     if (user) {
@@ -911,53 +903,6 @@ function Home() {
 
 
         <div ref={beatsListRef} className="scroll-fade-section" style={{ marginBottom: "48px", maxWidth: "1200px", margin: "0 auto", marginTop: "60px" }}>
-          {!isHomePage && (
-            <div style={{ marginBottom: "24px", display: "flex", gap: "16px", alignItems: "center" }}>
-              <input
-                type="text"
-                placeholder="Hledat..."
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setSelectedTag(null);
-                }}
-                style={{
-                  flex: 1,
-                  padding: "12px 16px",
-                  background: "#111111",
-                  border: "1px solid #333",
-                  borderRadius: "4px",
-                  color: "#fff",
-                  fontSize: "14px",
-                  fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
-                }}
-              />
-              {selectedTag && (
-                <button
-                  onClick={() => {
-                    setLocation("/beaty");
-                  }}
-                  style={{
-                    padding: "8px 16px",
-                    background: "#333",
-                    border: "1px solid #555",
-                    borderRadius: "4px",
-                    color: "#fff",
-                    cursor: "pointer",
-                    fontSize: "12px",
-                    fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
-                  }}
-                >
-                  ✕ Vymazat filtr
-                </button>
-              )}
-            </div>
-          )}
-          {selectedTag && (
-            <div style={{ marginBottom: "16px", padding: "8px 16px", background: "#1a1a1a", borderRadius: "4px", fontSize: "12px", color: "#999" }}>
-              Filtrováno podle tagu: <strong>{selectedTag}</strong>
-            </div>
-          )}
           {otherBeats.length === 0 && !highlightedBeat ? (
             <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "8px" }}>
               {Array(4).fill(null).map((_, index) => (

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useRoute, useLocation } from "wouter";
 import { useApp } from "../App.js";
 import MiniWavePlayer from "../components/MiniWavePlayer.js";
+import ShareModal from "../components/ShareModal.js";
 
 interface ProductData {
   id: number;
@@ -26,6 +27,7 @@ function ProductDetail() {
   const [product, setProduct] = useState<ProductData | null>(null);
   const [loading, setLoading] = useState(true);
   const [addedToCart, setAddedToCart] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
 
   useEffect(() => {
     if (params) {
@@ -285,6 +287,49 @@ function ProductDetail() {
           </button>
         )}
 
+        {/* Share button */}
+        <button
+          onClick={() => setShareOpen(true)}
+          style={{
+            width: "100%",
+            padding: "12px",
+            backgroundColor: "transparent",
+            color: "#555",
+            border: "1px solid #2a2a2a",
+            borderRadius: "4px",
+            fontSize: "12px",
+            fontWeight: "500",
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            cursor: "pointer",
+            marginBottom: "24px",
+            transition: "all 0.2s ease",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "8px",
+          }}
+          onMouseEnter={(e) => {
+            const btn = e.currentTarget as HTMLButtonElement;
+            btn.style.borderColor = "#555";
+            btn.style.color = "#fff";
+          }}
+          onMouseLeave={(e) => {
+            const btn = e.currentTarget as HTMLButtonElement;
+            btn.style.borderColor = "#2a2a2a";
+            btn.style.color = "#555";
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="18" cy="5" r="3" />
+            <circle cx="6" cy="12" r="3" />
+            <circle cx="18" cy="19" r="3" />
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+          </svg>
+          Sdílet
+        </button>
+
         {/* Description */}
         {product.description && (
           <p
@@ -299,6 +344,13 @@ function ProductDetail() {
           </p>
         )}
       </div>
+
+      <ShareModal
+        product={{ id: product.id, title: product.title, price: product.price, artwork_url: product.artwork_url }}
+        productType={params?.type === "beat" ? "beat" : "sound_kit"}
+        isOpen={shareOpen}
+        onClose={() => setShareOpen(false)}
+      />
     </div>
   );
 }

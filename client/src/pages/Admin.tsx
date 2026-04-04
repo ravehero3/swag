@@ -2206,6 +2206,11 @@ function SEOTab({ settings, onRefresh }: any) {
     seo_zvuky_title: settings.seo_zvuky_title || "",
     seo_zvuky_description: settings.seo_zvuky_description || "",
     seo_zvuky_keywords: settings.seo_zvuky_keywords || "",
+    ig_story_bg_color: settings.ig_story_bg_color || "#000000",
+    ig_story_text_color: settings.ig_story_text_color || "#ffffff",
+    ig_story_accent_color: settings.ig_story_accent_color || "#aaaaaa",
+    ig_story_overlay_opacity: settings.ig_story_overlay_opacity || "0.45",
+    ig_story_tagline: settings.ig_story_tagline || "",
   });
   const [saving, setSaving] = useState<Record<string, boolean>>({});
   const [saved, setSaved] = useState<Record<string, boolean>>({});
@@ -2456,6 +2461,131 @@ function SEOTab({ settings, onRefresh }: any) {
         saving={!!saving["zvuky"]}
         saved={!!saved["zvuky"]}
       />
+
+      <InstagramStoryTemplateSection values={values} onChange={handleChange} onSave={() => saveKeys("ig_story", ["ig_story_bg_color", "ig_story_text_color", "ig_story_accent_color", "ig_story_overlay_opacity", "ig_story_tagline"])} saving={!!saving["ig_story"]} saved={!!saved["ig_story"]} />
+    </div>
+  );
+}
+
+function InstagramStoryTemplateSection({ values, onChange, onSave, saving, saved }: any) {
+  const storyBgColor = values.ig_story_bg_color || "#000000";
+  const storyTextColor = values.ig_story_text_color || "#ffffff";
+  const storyAccentColor = values.ig_story_accent_color || "#aaaaaa";
+  const overlayOpacity = parseFloat(values.ig_story_overlay_opacity || "0.45");
+  const tagline = values.ig_story_tagline || "";
+
+  const labelStyle = { fontSize: "11px", color: "#666", marginBottom: "6px", display: "block", letterSpacing: "0.05em", textTransform: "uppercase" as const };
+  const fieldStyle = { width: "100%", padding: "9px 12px", background: "#0d0d0d", border: "1px solid #2a2a2a", borderRadius: "3px", color: "#fff", fontSize: "13px", fontFamily: "inherit", outline: "none", boxSizing: "border-box" as const };
+
+  return (
+    <div style={{ marginTop: "32px", paddingTop: "28px", borderTop: "1px solid #1a1a1a" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="1.5">
+          <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+          <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+          <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+        </svg>
+        <h3 style={{ fontSize: "13px", fontWeight: "600", color: "#fff", margin: 0 }}>Instagram Story šablona</h3>
+      </div>
+      <p style={{ fontSize: "12px", color: "#444", marginBottom: "20px", lineHeight: 1.6 }}>
+        Nastav vzhled karty pro sdílení beatů a sound kitů na Instagram Stories. Uživatelé si kartu stáhnou a sdílí ručně.
+      </p>
+
+      <div style={{ display: "flex", gap: "24px", alignItems: "flex-start" }}>
+        <div
+          style={{
+            width: "108px",
+            height: "192px",
+            flexShrink: 0,
+            borderRadius: "6px",
+            overflow: "hidden",
+            border: "1px solid #2a2a2a",
+            position: "relative",
+            background: storyBgColor,
+          }}
+        >
+          <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "55%", background: `linear-gradient(135deg, #333 0%, #111 100%)` }} />
+          <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "55%", background: `rgba(0,0,0,${overlayOpacity})` }} />
+          <div
+            style={{
+              position: "absolute",
+              bottom: 0, left: 0, right: 0,
+              height: "50%",
+              background: `linear-gradient(to bottom, ${storyBgColor}bb, ${storyBgColor})`,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "8px 6px",
+              gap: "3px",
+            }}
+          >
+            <div style={{ fontSize: "8px", fontWeight: "700", color: storyTextColor, textAlign: "center", letterSpacing: "0.05em" }}>BEAT NÁZEV</div>
+            <div style={{ fontSize: "7px", color: storyAccentColor }}>299 CZK</div>
+            {tagline && <div style={{ fontSize: "6.5px", color: storyTextColor + "88", fontStyle: "italic", textAlign: "center" }}>{tagline}</div>}
+            <div style={{ fontSize: "6px", color: storyTextColor + "44", marginTop: "3px" }}>VOODOO808</div>
+          </div>
+        </div>
+
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "14px" }}>
+          <div style={{ display: "flex", gap: "12px" }}>
+            <div style={{ flex: 1 }}>
+              <label style={labelStyle}>Barva pozadí</label>
+              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                <input type="color" value={storyBgColor} onChange={(e) => onChange("ig_story_bg_color", e.target.value)} style={{ width: "36px", height: "36px", padding: "2px", background: "#0d0d0d", border: "1px solid #2a2a2a", borderRadius: "3px", cursor: "pointer" }} />
+                <input type="text" value={storyBgColor} onChange={(e) => onChange("ig_story_bg_color", e.target.value)} style={{ ...fieldStyle, width: "90px" }} />
+              </div>
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={labelStyle}>Barva textu</label>
+              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                <input type="color" value={storyTextColor} onChange={(e) => onChange("ig_story_text_color", e.target.value)} style={{ width: "36px", height: "36px", padding: "2px", background: "#0d0d0d", border: "1px solid #2a2a2a", borderRadius: "3px", cursor: "pointer" }} />
+                <input type="text" value={storyTextColor} onChange={(e) => onChange("ig_story_text_color", e.target.value)} style={{ ...fieldStyle, width: "90px" }} />
+              </div>
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={labelStyle}>Akcent (cena)</label>
+              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                <input type="color" value={storyAccentColor} onChange={(e) => onChange("ig_story_accent_color", e.target.value)} style={{ width: "36px", height: "36px", padding: "2px", background: "#0d0d0d", border: "1px solid #2a2a2a", borderRadius: "3px", cursor: "pointer" }} />
+                <input type="text" value={storyAccentColor} onChange={(e) => onChange("ig_story_accent_color", e.target.value)} style={{ ...fieldStyle, width: "90px" }} />
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label style={labelStyle}>Průhlednost překryvu artwork ({Math.round(overlayOpacity * 100)}%)</label>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.05"
+              value={overlayOpacity}
+              onChange={(e) => onChange("ig_story_overlay_opacity", e.target.value)}
+              style={{ width: "100%", accentColor: "#fff" }}
+            />
+          </div>
+
+          <div>
+            <label style={labelStyle}>Tagline (volitelné)</label>
+            <input
+              type="text"
+              value={tagline}
+              onChange={(e) => onChange("ig_story_tagline", e.target.value)}
+              placeholder="např. Exkluzivní beaty pro producenty"
+              style={fieldStyle}
+            />
+          </div>
+
+          <button
+            className="btn btn-filled"
+            onClick={onSave}
+            disabled={saving}
+            style={{ alignSelf: "flex-start", opacity: saving ? 0.6 : 1 }}
+          >
+            {saved ? "✓ Uloženo" : saving ? "Ukládám…" : "Uložit šablonu"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
