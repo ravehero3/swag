@@ -17,8 +17,12 @@ interface AvatarCropModalProps {
 
 async function getCroppedBlob(imageSrc: string, pixelCrop: Area): Promise<Blob> {
   const image = new Image();
-  image.src = imageSrc;
-  await new Promise((resolve) => { image.onload = resolve; });
+  await new Promise<void>((resolve, reject) => {
+    image.onload = () => resolve();
+    image.onerror = () => reject(new Error("Image failed to load"));
+    image.src = imageSrc;
+    if (image.complete && image.naturalWidth > 0) resolve();
+  });
 
   const canvas = document.createElement("canvas");
   const SIZE = 256;

@@ -19,7 +19,7 @@ interface Order {
 }
 
 export default function Ucet() {
-  const { user, addToCart, cart } = useApp() as any;
+  const { user, setUser, addToCart, cart } = useApp() as any;
   const [, setLocation] = useLocation();
   const [orders, setOrders] = useState<Order[]>([]);
   const [savedItems, setSavedItems] = useState<any[]>([]);
@@ -60,6 +60,7 @@ export default function Ucet() {
       if (res.ok) {
         setAvatarUrl(data.avatarUrl);
         setCropImageSrc(null);
+        if (user) setUser({ ...user, avatarUrl: data.avatarUrl });
       } else {
         alert(data.error || "Chyba při nahrávání");
       }
