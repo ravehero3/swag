@@ -6,7 +6,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "dev": "node --import tsx/esm server/src/index.ts",
+    "dev": "npx tsx server/src/index.ts",
     "build": "vite build && tsc --project server/tsconfig.json --skipLibCheck",
     "seed-admin": "npx tsx server/src/seed-admin.ts",
     "start": "node dist/server/index.js",
