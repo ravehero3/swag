@@ -143,7 +143,7 @@ function SoundWave({ audioRef, isPlaying, audioUrl, children }: SoundWaveProps) 
         cx.fill();
       } else {
         const topColor = isPlayed ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.28)";
-        const botColor = isPlayed ? "rgba(255,255,255,0.72)" : "rgba(255,255,255,0.15)";
+        const botColor = isPlayed ? "rgba(255,255,255,0.61)" : "rgba(255,255,255,0.13)";
 
         cx.fillStyle = topColor;
         cx.beginPath();

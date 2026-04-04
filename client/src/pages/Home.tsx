@@ -7,6 +7,7 @@ import ContractModal from "../components/ContractModal.js";
 import MusicPlayer from "../components/MusicPlayer.js";
 import SoundWave from "../components/SoundWave.js";
 import SoundKitsDock from "../components/SoundKitsDock.js";
+import ShareModal from "../components/ShareModal.js";
 
 interface Beat {
   id: number;
@@ -163,6 +164,11 @@ function Home() {
   const [commentText, setCommentText] = useState("");
   const [submittingComment, setSubmittingComment] = useState(false);
   const [beatStats, setBeatStats] = useState<{ comments: number; saves: number } | null>(null);
+  const [shareBeat, setShareBeat] = useState<Beat | null>(null);
+  const [audioDuration, setAudioDuration] = useState(0);
+  const [audioCurrentTime, setAudioCurrentTime] = useState(0);
+  const [hoveredCommentId, setHoveredCommentId] = useState<number | null>(null);
+  const [activeCommentId, setActiveCommentId] = useState<number | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const beatsListRef = useScrollAnimation();
   const soundKitsRef = useScrollAnimation();
@@ -254,6 +260,33 @@ function Home() {
     }).catch(console.error);
   }, [currentBeat?.id]);
 
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    const onTimeUpdate = () => setAudioCurrentTime(audio.currentTime);
+    const onLoaded = () => setAudioDuration(audio.duration || 0);
+    audio.addEventListener("timeupdate", onTimeUpdate);
+    audio.addEventListener("loadedmetadata", onLoaded);
+    if (audio.duration) setAudioDuration(audio.duration);
+    return () => {
+      audio.removeEventListener("timeupdate", onTimeUpdate);
+      audio.removeEventListener("loadedmetadata", onLoaded);
+    };
+  }, [currentBeat]);
+
+  useEffect(() => {
+    if (audioDuration <= 0 || comments.length === 0) {
+      setActiveCommentId(null);
+      return;
+    }
+    const WINDOW = 2.0;
+    const active = comments.find((c: any) => {
+      const t = parseFloat(c.time_offset) || 0;
+      return Math.abs(t - audioCurrentTime) < WINDOW;
+    });
+    setActiveCommentId(active ? active.id : null);
+  }, [audioCurrentTime, comments, audioDuration]);
+
   const handleCommentSubmit = async () => {
     if (!commentText.trim() || !currentBeat || !user) return;
     setSubmittingComment(true);
@@ -262,7 +295,7 @@ function Home() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ text: commentText.trim() }),
+        body: JSON.stringify({ text: commentText.trim(), time_offset: audioRef.current?.currentTime || 0 }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -393,6 +426,11 @@ function Home() {
       return next;
     });
 
+    // Optimistically update beatStats saves counter for the current beat
+    if (currentBeat?.id === beat.id) {
+      setBeatStats((prev) => prev ? { ...prev, saves: Math.max(0, prev.saves + (wasSaved ? -1 : 1)) } : prev);
+    }
+
     // Trigger pop animation
     setPoppingHearts((prev) => new Set([...prev, beat.id]));
     setTimeout(() => {
@@ -411,6 +449,9 @@ function Home() {
         });
         if (!res.ok) {
           setSavedBeats((prev) => new Set([...prev, beat.id]));
+          if (currentBeat?.id === beat.id) {
+            setBeatStats((prev) => prev ? { ...prev, saves: prev.saves + 1 } : prev);
+          }
         } else {
           refreshSavedCount();
         }
@@ -427,6 +468,9 @@ function Home() {
             next.delete(beat.id);
             return next;
           });
+          if (currentBeat?.id === beat.id) {
+            setBeatStats((prev) => prev ? { ...prev, saves: Math.max(0, prev.saves - 1) } : prev);
+          }
         } else {
           refreshSavedCount();
         }
@@ -439,6 +483,9 @@ function Home() {
         else next.delete(beat.id);
         return next;
       });
+      if (currentBeat?.id === beat.id) {
+        setBeatStats((prev) => prev ? { ...prev, saves: prev.saves + (wasSaved ? 1 : -1) } : prev);
+      }
     }
   };
 
@@ -696,6 +743,7 @@ function Home() {
                       </svg>
                     </button>
                     <button
+                      onClick={() => setShareBeat(highlightedBeat)}
                       style={{
                         padding: "8px",
                         background: "#000",
@@ -793,30 +841,35 @@ function Home() {
 
         {currentBeat && (
           <>
-            {comments.length > 0 && (
-              <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 16px 6px 16px", display: "flex", alignItems: "center", gap: "0" }}>
-                {comments.slice(0, 10).map((c: any, i: number) => (
+            <SoundWave audioRef={audioRef} isPlaying={isPlaying} audioUrl={currentBeat.preview_url}>
+              {comments.slice(0, 20).map((c: any) => {
+                const xPct = audioDuration > 0 ? Math.min(98, Math.max(1, (parseFloat(c.time_offset) || 0) / audioDuration * 100)) : 2;
+                const isActive = activeCommentId === c.id || hoveredCommentId === c.id;
+                return (
                   <div
                     key={c.id}
-                    className="comment-avatar-wrap"
-                    style={{ marginLeft: i > 0 ? "-8px" : 0, zIndex: 10 - i }}
+                    onClick={(e) => e.stopPropagation()}
+                    onMouseEnter={() => setHoveredCommentId(c.id)}
+                    onMouseLeave={() => setHoveredCommentId(null)}
+                    style={{ position: "absolute", left: `calc(${xPct}% - 9px)`, top: "53px", zIndex: 20, cursor: "pointer" }}
                   >
-                    <div style={{ width: "26px", height: "26px", borderRadius: "50%", background: "#1a1a1a", border: "1.5px solid #333", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: "#666", overflow: "hidden", cursor: "pointer" }}>
+                    <div style={{ width: "18px", height: "18px", borderRadius: "50%", background: "#1a1a1a", border: isActive ? "1.5px solid #fff" : "1.5px solid #444", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", transition: "border-color 0.15s ease" }}>
                       {c.avatar_url ? (
                         <img src={c.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                       ) : (
-                        <span style={{ fontSize: "10px", color: "#888" }}>{c.email?.[0]?.toUpperCase() || "?"}</span>
+                        <span style={{ fontSize: "8px", color: "#888" }}>{c.email?.[0]?.toUpperCase() || "?"}</span>
                       )}
                     </div>
-                    <div className="comment-tooltip" style={{ position: "absolute", bottom: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)", background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "6px", padding: "6px 10px", fontSize: "12px", color: "#ccc", whiteSpace: "nowrap", maxWidth: "240px", overflow: "hidden", textOverflow: "ellipsis", zIndex: 999, boxShadow: "0 4px 12px rgba(0,0,0,0.5)" }}>
-                      <span style={{ color: "#555", marginRight: "6px" }}>{c.email?.split("@")[0]}</span>
-                      {c.text}
-                    </div>
+                    {isActive && (
+                      <div style={{ position: "absolute", top: "calc(100% + 6px)", left: "50%", transform: "translateX(-50%)", background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "6px", padding: "5px 9px", fontSize: "12px", color: "#ccc", whiteSpace: "nowrap", maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", zIndex: 999, boxShadow: "0 4px 12px rgba(0,0,0,0.6)", pointerEvents: "none" }}>
+                        <span style={{ color: "#555", marginRight: "5px" }}>{c.email?.split("@")[0]}</span>
+                        {c.text}
+                      </div>
+                    )}
                   </div>
-                ))}
-              </div>
-            )}
-            <SoundWave audioRef={audioRef} isPlaying={isPlaying} audioUrl={currentBeat.preview_url} />
+                );
+              })}
+            </SoundWave>
             <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 16px", marginTop: "8px", marginBottom: "8px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "12px" }}>
                 {beatStats && (
@@ -838,7 +891,7 @@ function Home() {
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter") handleCommentSubmit(); }}
-                  placeholder={user ? "Napište komentář..." : "Pro komentáře se přihlaste"}
+                  placeholder={user ? "dej koment bro…" : "Pro komentáře se přihlaste"}
                   disabled={!user || submittingComment}
                   style={{ flex: 1, padding: "8px 16px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "20px", color: "#fff", fontSize: "13px", fontFamily: "inherit", outline: "none" }}
                 />
@@ -852,28 +905,10 @@ function Home() {
                   </button>
                 )}
               </div>
-              {comments.length > 0 && (
-                <div style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "6px", maxHeight: "140px", overflowY: "auto" }}>
-                  {comments.map((c: any) => (
-                    <div key={c.id} style={{ display: "flex", gap: "8px", alignItems: "flex-start" }}>
-                      <div style={{ width: "24px", height: "24px", borderRadius: "50%", background: "#222", border: "1px solid #333", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: "#666", overflow: "hidden" }}>
-                        {c.avatar_url ? (
-                          <img src={c.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                        ) : (
-                          c.email?.[0]?.toUpperCase() || "?"
-                        )}
-                      </div>
-                      <div>
-                        <span style={{ fontSize: "11px", color: "#555", marginRight: "8px" }}>{c.email?.split("@")[0]}</span>
-                        <span style={{ fontSize: "13px", color: "#ccc" }}>{c.text}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           </>
         )}
+
 
         <div ref={beatsListRef} className="scroll-fade-section" style={{ marginBottom: "48px", maxWidth: "1200px", margin: "0 auto", marginTop: "60px" }}>
           {!isHomePage && (
@@ -1179,6 +1214,7 @@ function Home() {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
+                    setShareBeat(beat);
                   }}
                   style={{
                     background: "#111111",
@@ -1506,6 +1542,16 @@ function Home() {
         isSaved={currentBeat ? savedBeats.has(currentBeat.id) : false}
         onToggleSave={() => currentBeat && toggleSave(currentBeat)}
       />
+
+      {shareBeat && (
+        <ShareModal
+          beatId={shareBeat.id}
+          beatTitle={shareBeat.title}
+          isOpen={true}
+          onClose={() => setShareBeat(null)}
+        />
+      )}
+
       <div style={{ height: "100px" }} />
     </div>
   );

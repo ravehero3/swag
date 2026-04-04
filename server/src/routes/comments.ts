@@ -7,7 +7,7 @@ const router = Router();
 router.get("/:beatId/comments", async (req: Request, res: Response) => {
   try {
     const result = await pool.query(
-      `SELECT bc.id, bc.text, bc.created_at, u.email, u.avatar_url
+      `SELECT bc.id, bc.text, bc.created_at, bc.time_offset, u.email, u.avatar_url
        FROM beat_comments bc
        JOIN users u ON bc.user_id = u.id
        WHERE bc.beat_id = $1
@@ -46,15 +46,16 @@ router.delete("/:beatId/comments/:commentId", requireAdmin, async (req: Request,
 
 router.post("/:beatId/comments", requireAuth, async (req: Request, res: Response) => {
   try {
-    const { text } = req.body;
+    const { text, time_offset } = req.body;
     if (!text || !text.trim()) {
       return res.status(400).json({ error: "Komentář nesmí být prázdný" });
     }
+    const offset = typeof time_offset === "number" && isFinite(time_offset) ? time_offset : 0;
     const result = await pool.query(
-      `INSERT INTO beat_comments (beat_id, user_id, text)
-       VALUES ($1, $2, $3)
-       RETURNING id, text, created_at`,
-      [req.params.beatId, req.session.userId, text.trim()]
+      `INSERT INTO beat_comments (beat_id, user_id, text, time_offset)
+       VALUES ($1, $2, $3, $4)
+       RETURNING id, text, created_at, time_offset`,
+      [req.params.beatId, req.session.userId, text.trim(), offset]
     );
     const userRes = await pool.query("SELECT email, avatar_url FROM users WHERE id = $1", [req.session.userId]);
     const comment = { ...result.rows[0], email: userRes.rows[0]?.email, avatar_url: userRes.rows[0]?.avatar_url };
