@@ -872,7 +872,32 @@ function Beaty() {
         )}
 
         {currentBeat && (
-          <SoundWave audioRef={audioRef} isPlaying={isPlaying} audioUrl={currentBeat.preview_url} />
+          <>
+            {comments.length > 0 && (
+              <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 16px 6px 16px", display: "flex", alignItems: "center", gap: "0" }}>
+                {comments.slice(0, 10).map((c: any, i: number) => (
+                  <div
+                    key={c.id}
+                    className="comment-avatar-wrap"
+                    style={{ marginLeft: i > 0 ? "-8px" : 0, zIndex: 10 - i }}
+                  >
+                    <div style={{ width: "26px", height: "26px", borderRadius: "50%", background: "#1a1a1a", border: "1.5px solid #333", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: "#666", overflow: "hidden", cursor: "pointer" }}>
+                      {c.avatar_url ? (
+                        <img src={c.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      ) : (
+                        <span style={{ fontSize: "10px", color: "#888" }}>{c.email?.[0]?.toUpperCase() || "?"}</span>
+                      )}
+                    </div>
+                    <div className="comment-tooltip" style={{ position: "absolute", bottom: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)", background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "6px", padding: "6px 10px", fontSize: "12px", color: "#ccc", whiteSpace: "nowrap", maxWidth: "240px", overflow: "hidden", textOverflow: "ellipsis", zIndex: 999, boxShadow: "0 4px 12px rgba(0,0,0,0.5)" }}>
+                      <span style={{ color: "#555", marginRight: "6px" }}>{c.email?.split("@")[0]}</span>
+                      {c.text}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            <SoundWave audioRef={audioRef} isPlaying={isPlaying} audioUrl={currentBeat.preview_url} />
+          </>
         )}
 
         {currentBeat && isPlaying && (

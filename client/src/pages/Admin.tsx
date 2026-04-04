@@ -282,14 +282,14 @@ function Admin() {
       <h1 style={{ marginBottom: "24px", color: "#666" }}>Admin Panel</h1>
 
       <div style={{ display: "flex", gap: "12px", marginBottom: "24px", flexWrap: "wrap", justifyContent: "center" }}>
-        {["beats", "kits", "orders", "zakaznici", "licenses", "settings", "emails", "promo", "seo"].map((t) => (
+        {["beats", "kits", "orders", "zakaznici", "licenses", "settings", "emails", "promo", "seo", "komentare"].map((t) => (
           <button
             key={t}
             className={tab === t ? "btn btn-filled" : "btn btn-admin"}
             onClick={() => setTab(t as any)}
             style={tab !== t ? { borderColor: "#333", color: "#666" } : {}}
           >
-            {t === "beats" ? "Beaty" : t === "kits" ? "Zvuky" : t === "orders" ? "Objednávky" : t === "zakaznici" ? "Zákazníci" : t === "licenses" ? "Licence" : t === "settings" ? "Nastavení" : t === "emails" ? "Emaily" : t === "promo" ? "Promo kódy" : "SEO"}
+            {t === "beats" ? "Beaty" : t === "kits" ? "Zvuky" : t === "orders" ? "Objednávky" : t === "zakaznici" ? "Zákazníci" : t === "licenses" ? "Licence" : t === "settings" ? "Nastavení" : t === "emails" ? "Emaily" : t === "promo" ? "Promo kódy" : t === "komentare" ? "Komentáře" : "SEO"}
           </button>
         ))}
       </div>
@@ -326,6 +326,7 @@ function Admin() {
         {tab === "emails" && <EmailsTab />}
         {tab === "promo" && <PromoCodesTab />}
         {tab === "seo" && <SEOTab settings={settings} onRefresh={refreshSettings} />}
+        {tab === "komentare" && <KomentareTab />}
       </div>
     </div>
   );
@@ -2814,6 +2815,101 @@ function PromoCodesTab() {
                     style={{ background: "transparent", border: "1px solid #333", color: "#666", padding: "3px 10px", fontSize: "11px", borderRadius: "2px", cursor: "pointer", fontFamily: "inherit" }}
                   >
                     Smazat
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+}
+
+function KomentareTab() {
+  const [comments, setComments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<number | null>(null);
+
+  const loadComments = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/admin/comments", { credentials: "include" });
+      if (!res.ok) throw new Error("Nepodařilo se načíst komentáře");
+      const data = await res.json();
+      setComments(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { loadComments(); }, []);
+
+  const handleDelete = async (beatId: number, commentId: number) => {
+    if (!confirm("Smazat tento komentář?")) return;
+    setDeleting(commentId);
+    try {
+      const res = await fetch(`/api/beats/${beatId}/comments/${commentId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (res.ok) setComments(prev => prev.filter(c => c.id !== commentId));
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setDeleting(null);
+    }
+  };
+
+  const headStyle = { padding: "8px 12px", fontSize: "11px", color: "#555", fontWeight: 400 as const, borderBottom: "1px solid #222", textTransform: "uppercase" as const, letterSpacing: "0.08em" };
+  const cellStyle = { padding: "8px 12px", borderBottom: "1px solid #1a1a1a", verticalAlign: "top" as const };
+
+  return (
+    <div style={{ color: "#fff" }}>
+      <h2 style={{ fontSize: "18px", fontWeight: 400, marginBottom: "20px", color: "#888" }}>Komentáře</h2>
+      {loading ? (
+        <div style={{ color: "#555", fontSize: "13px" }}>Načítám…</div>
+      ) : error ? (
+        <div style={{ color: "#ff4444", fontSize: "13px" }}>{error}</div>
+      ) : comments.length === 0 ? (
+        <div style={{ color: "#555", fontSize: "13px" }}>Žádné komentáře.</div>
+      ) : (
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr>
+              <th style={{ ...headStyle, textAlign: "left" }}>Beat</th>
+              <th style={{ ...headStyle, textAlign: "left" }}>Uživatel</th>
+              <th style={{ ...headStyle, textAlign: "left" }}>Komentář</th>
+              <th style={{ ...headStyle, textAlign: "left" }}>Datum</th>
+              <th style={{ ...headStyle, textAlign: "right" }}>Akce</th>
+            </tr>
+          </thead>
+          <tbody>
+            {comments.map(c => (
+              <tr key={c.id} data-testid={`row-comment-${c.id}`}>
+                <td style={{ ...cellStyle, color: "#aaa", fontSize: "13px" }}>{c.beat_title}</td>
+                <td style={{ ...cellStyle, color: "#888", fontSize: "12px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    {c.avatar_url && <img src={c.avatar_url} alt="" style={{ width: "20px", height: "20px", borderRadius: "50%", objectFit: "cover" }} />}
+                    {c.email?.split("@")[0]}
+                  </div>
+                </td>
+                <td style={{ ...cellStyle, color: "#ccc", fontSize: "13px", maxWidth: "280px", wordBreak: "break-word" }}>{c.text}</td>
+                <td style={{ ...cellStyle, color: "#555", fontSize: "12px", whiteSpace: "nowrap" }}>
+                  {new Date(c.created_at).toLocaleDateString("cs-CZ")}
+                </td>
+                <td style={{ ...cellStyle, textAlign: "right" }}>
+                  <button
+                    data-testid={`button-delete-comment-${c.id}`}
+                    onClick={() => handleDelete(c.beat_id, c.id)}
+                    disabled={deleting === c.id}
+                    style={{ background: "transparent", border: "1px solid #333", color: "#666", padding: "3px 10px", fontSize: "11px", borderRadius: "2px", cursor: deleting === c.id ? "not-allowed" : "pointer", fontFamily: "inherit" }}
+                  >
+                    {deleting === c.id ? "…" : "Smazat"}
                   </button>
                 </td>
               </tr>

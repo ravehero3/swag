@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import { pool } from "../db.js";
-import { requireAuth } from "../middleware/auth.js";
+import { requireAuth, requireAdmin } from "../middleware/auth.js";
 
 const router = Router();
 
@@ -32,6 +32,15 @@ router.get("/:beatId/stats", async (req: Request, res: Response) => {
     });
   } catch (error) {
     res.status(500).json({ error: "Chyba při načítání statistik" });
+  }
+});
+
+router.delete("/:beatId/comments/:commentId", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    await pool.query("DELETE FROM beat_comments WHERE id = $1 AND beat_id = $2", [req.params.commentId, req.params.beatId]);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při mazání komentáře" });
   }
 });
 

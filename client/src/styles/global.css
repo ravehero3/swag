@@ -38,6 +38,23 @@ button {
   animation: fadeIn 0.6s ease-out forwards;
 }
 
+.comment-avatar-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.comment-avatar-wrap .comment-tooltip {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.comment-avatar-wrap:hover .comment-tooltip {
+  opacity: 1 !important;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;

@@ -145,6 +145,21 @@ async function seedAdmin() {
   }
 }
 
+app.get("/api/admin/comments", requireAdmin, async (_req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT bc.id, bc.beat_id, bc.text, bc.created_at, u.email, u.avatar_url, b.title as beat_title
+       FROM beat_comments bc
+       JOIN users u ON bc.user_id = u.id
+       JOIN beats b ON bc.beat_id = b.id
+       ORDER BY bc.created_at DESC`
+    );
+    res.json(result.rows);
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při načítání komentářů" });
+  }
+});
+
 app.get("/api/promo-codes", requireAdmin, async (_req, res) => {
   try {
     const result = await pool.query("SELECT * FROM promo_codes ORDER BY created_at DESC");
