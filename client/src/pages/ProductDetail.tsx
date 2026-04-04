@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useRoute, useLocation } from "wouter";
 import { useApp } from "../App.js";
+import MiniWavePlayer from "../components/MiniWavePlayer.js";
 
 interface ProductData {
   id: number;
@@ -212,14 +213,9 @@ function ProductDetail() {
             >
               {previews.length > 1 ? "Ukázky" : "Ukázka"}
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
               {previews.map((url, idx) => (
-                <audio
-                  key={idx}
-                  controls
-                  src={url}
-                  style={{ width: "100%", height: "36px" }}
-                />
+                <MiniWavePlayer key={idx} url={url} />
               ))}
             </div>
           </div>
