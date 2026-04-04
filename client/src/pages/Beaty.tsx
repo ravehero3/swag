@@ -275,13 +275,35 @@ function Beaty() {
   useEffect(() => {
     const handleScroll = () => {
       const scrollPosition = window.scrollY;
-      // Show title after user scrolls more than 300px
       setShowTitle(scrollPosition > 300);
     };
-
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code !== "Space") return;
+      const target = e.target as HTMLElement;
+      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA") return;
+      e.preventDefault();
+      if (currentBeat) {
+        if (isPlaying) {
+          audioRef.current?.pause();
+          setIsPlaying(false);
+        } else {
+          audioRef.current?.play().then(() => setIsPlaying(true)).catch(() => {});
+        }
+      } else {
+        const allBeats = highlightedBeat
+          ? [highlightedBeat, ...beats.filter((b) => b.id !== highlightedBeat.id)]
+          : beats;
+        if (allBeats.length > 0) playBeat(allBeats[0]);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [currentBeat, isPlaying, beats, highlightedBeat]);
 
   useEffect(() => {
     if (!currentBeat) return;
@@ -806,9 +828,8 @@ function Beaty() {
                     {highlightedBeat.tags && highlightedBeat.tags.length > 0 && (
                       <div className="desktop-only" style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
                         {highlightedBeat.tags.map((tag) => (
-                          <button
+                          <span
                             key={tag}
-                            onClick={() => setLocation(`/beaty?tag=${encodeURIComponent(tag)}`)}
                             style={{
                               padding: "3px 8px",
                               background: "#111111",
@@ -817,23 +838,12 @@ function Beaty() {
                               borderRadius: "20px",
                               fontSize: "10px",
                               fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
-                              cursor: "pointer",
-                              transition: "transform 0.15s ease, border-color 0.15s ease",
                               whiteSpace: "nowrap",
-                            }}
-                            onMouseEnter={(e) => {
-                              const btn = e.currentTarget as HTMLButtonElement;
-                              btn.style.transform = "scale(1.02)";
-                              btn.style.borderColor = "#555";
-                            }}
-                            onMouseLeave={(e) => {
-                              const btn = e.currentTarget as HTMLButtonElement;
-                              btn.style.transform = "scale(1)";
-                              btn.style.borderColor = "#333";
+                              userSelect: "none",
                             }}
                           >
                             {tag}
-                          </button>
+                          </span>
                         ))}
                       </div>
                     )}
@@ -961,53 +971,6 @@ function Beaty() {
         )}
 
         <div ref={beatsListRef} className="scroll-fade-section" style={{ marginBottom: "48px", maxWidth: "1200px", margin: "0 auto", marginTop: "60px" }}>
-          {!isHomePage && (
-            <div style={{ marginBottom: "24px", display: "flex", gap: "16px", alignItems: "center" }}>
-              <input
-                type="text"
-                placeholder="Hledat..."
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setSelectedTag(null);
-                }}
-                style={{
-                  flex: 1,
-                  padding: "12px 16px",
-                  background: "#111111",
-                  border: "1px solid #333",
-                  borderRadius: "4px",
-                  color: "#fff",
-                  fontSize: "14px",
-                  fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
-                }}
-              />
-              {selectedTag && (
-                <button
-                  onClick={() => {
-                    setLocation("/beaty");
-                  }}
-                  style={{
-                    padding: "8px 16px",
-                    background: "#333",
-                    border: "1px solid #555",
-                    borderRadius: "4px",
-                    color: "#fff",
-                    cursor: "pointer",
-                    fontSize: "12px",
-                    fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
-                  }}
-                >
-                  ✕ Vymazat filtr
-                </button>
-              )}
-            </div>
-          )}
-          {selectedTag && (
-            <div style={{ marginBottom: "16px", padding: "8px 16px", background: "#1a1a1a", borderRadius: "4px", fontSize: "12px", color: "#999" }}>
-              Filtrováno podle tagu: <strong>{selectedTag}</strong>
-            </div>
-          )}
           {otherBeats.length === 0 && !highlightedBeat ? (
             <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "8px" }}>
               {Array(4).fill(null).map((_, index) => (
@@ -1159,12 +1122,8 @@ function Beaty() {
               {beat.tags && beat.tags.length > 0 && (
                 <div className="desktop-only" style={{ display: "flex", gap: "4px", flexWrap: "wrap", marginLeft: "12px", alignItems: "center" }}>
                   {beat.tags.map((tag) => (
-                    <button
+                    <span
                       key={tag}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setLocation(`/beaty?tag=${encodeURIComponent(tag)}`);
-                      }}
                       style={{
                         padding: "3px 8px",
                         background: "#111111",
@@ -1173,23 +1132,12 @@ function Beaty() {
                         borderRadius: "20px",
                         fontSize: "10px",
                         fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
-                        cursor: "pointer",
-                        transition: "transform 0.15s ease, border-color 0.15s ease",
                         whiteSpace: "nowrap",
-                      }}
-                      onMouseEnter={(e) => {
-                        const btn = e.currentTarget as HTMLButtonElement;
-                        btn.style.transform = "scale(1.02)";
-                        btn.style.borderColor = "#555";
-                      }}
-                      onMouseLeave={(e) => {
-                        const btn = e.currentTarget as HTMLButtonElement;
-                        btn.style.transform = "scale(1)";
-                        btn.style.borderColor = "#333";
+                        userSelect: "none",
                       }}
                     >
                       {tag}
-                    </button>
+                    </span>
                   ))}
                 </div>
               )}
