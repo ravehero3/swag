@@ -6,11 +6,13 @@ interface SoundWaveProps {
   isPlaying: boolean;
   audioUrl?: string;
   children?: React.ReactNode;
+  isDraggingComment?: boolean;
+  waveRef?: React.RefObject<HTMLDivElement>;
 }
 
 const BAR_COUNT = 480;
 
-function SoundWave({ audioRef, isPlaying, audioUrl, children }: SoundWaveProps) {
+function SoundWave({ audioRef, isPlaying, audioUrl, children, isDraggingComment, waveRef }: SoundWaveProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number>(0);
   const progressRef = useRef<number>(0);
@@ -265,6 +267,7 @@ function SoundWave({ audioRef, isPlaying, audioUrl, children }: SoundWaveProps) 
 
   const seek = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
+      if (isDraggingComment) return;
       const rect = e.currentTarget.getBoundingClientRect();
       const p = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
       progressRef.current = p;
@@ -272,25 +275,27 @@ function SoundWave({ audioRef, isPlaying, audioUrl, children }: SoundWaveProps) 
       const audio = audioRef.current;
       if (audio && audio.duration) audio.currentTime = p * audio.duration;
     },
-    [audioRef, draw]
+    [audioRef, draw, isDraggingComment]
   );
 
   const scrub = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
       if (e.buttons !== 1) return;
+      if (isDraggingComment) return;
       seek(e);
     },
-    [seek]
+    [seek, isDraggingComment]
   );
 
   return (
     <div
+      ref={waveRef}
       onClick={seek}
       onMouseMove={scrub}
       style={{
         position: "relative",
         height: 72,
-        cursor: "pointer",
+        cursor: isDraggingComment ? "grabbing" : "pointer",
         margin: "20px auto 4px",
         maxWidth: "1200px",
         padding: "0 16px",

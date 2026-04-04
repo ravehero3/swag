@@ -168,12 +168,16 @@ function Home() {
   const [audioCurrentTime, setAudioCurrentTime] = useState(0);
   const [hoveredCommentId, setHoveredCommentId] = useState<number | null>(null);
   const [activeCommentId, setActiveCommentId] = useState<number | null>(null);
+  const [draggingComment, setDraggingComment] = useState<{ id: number; xPct: number } | null>(null);
+  const [usernameInput, setUsernameInput] = useState("");
+  const [savingUsername, setSavingUsername] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const waveRef = useRef<HTMLDivElement>(null);
   const commentTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastTriggeredCommentRef = useRef<number | null>(null);
   const beatsListRef = useScrollAnimation();
   const soundKitsRef = useScrollAnimation();
-  const { user, addToCart, settings, refreshSavedCount } = useApp() as any;
+  const { user, setUser, addToCart, settings, refreshSavedCount } = useApp() as any;
   useSEO("home");
 
   // Determine if we're on home page or beaty page
@@ -291,6 +295,59 @@ function Home() {
     if (commentTimerRef.current) clearTimeout(commentTimerRef.current);
     setActiveCommentId(null);
   }, [currentBeat?.id]);
+
+  useEffect(() => {
+    if (!draggingComment) return;
+    const onMove = (e: MouseEvent) => {
+      const rect = waveRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const xPct = Math.max(1, Math.min(98, (e.clientX - rect.left) / rect.width * 100));
+      setDraggingComment(prev => prev ? { ...prev, xPct } : null);
+    };
+    const onUp = async (e: MouseEvent) => {
+      if (!currentBeat) return;
+      const rect = waveRef.current?.getBoundingClientRect();
+      const finalXPct = rect
+        ? Math.max(1, Math.min(98, (e.clientX - rect.left) / rect.width * 100))
+        : draggingComment.xPct;
+      const newOffset = finalXPct / 100 * audioDuration;
+      const id = draggingComment.id;
+      setDraggingComment(null);
+      setComments(prev => prev.map(c => c.id === id ? { ...c, time_offset: newOffset } : c));
+      await fetch(`/api/beats/${currentBeat.id}/comments/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ time_offset: newOffset }),
+      });
+    };
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
+    return () => {
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+    };
+  }, [draggingComment, currentBeat, audioDuration]);
+
+  const handleSaveUsername = async () => {
+    if (!usernameInput.trim() || !user) return;
+    setSavingUsername(true);
+    try {
+      const res = await fetch("/api/auth/username", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ username: usernameInput.trim() }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setUser({ ...user, username: data.username });
+        setUsernameInput("");
+      }
+    } finally {
+      setSavingUsername(false);
+    }
+  };
 
   const handleCommentSubmit = async () => {
     if (!commentText.trim() || !currentBeat || !user) return;
@@ -850,27 +907,71 @@ function Home() {
 
         {currentBeat && (
           <>
-            <SoundWave audioRef={audioRef} isPlaying={isPlaying} audioUrl={currentBeat.preview_url}>
+            <SoundWave audioRef={audioRef} isPlaying={isPlaying} audioUrl={currentBeat.preview_url} isDraggingComment={!!draggingComment} waveRef={waveRef}>
               {comments.slice(0, 20).map((c: any) => {
-                const xPct = audioDuration > 0 ? Math.min(98, Math.max(1, (parseFloat(c.time_offset) || 0) / audioDuration * 100)) : 2;
-                const isActive = activeCommentId === c.id || hoveredCommentId === c.id;
+                const baseXPct = audioDuration > 0 ? Math.min(98, Math.max(1, (parseFloat(c.time_offset) || 0) / audioDuration * 100)) : 2;
+                const xPct = draggingComment?.id === c.id ? draggingComment.xPct : baseXPct;
+                const isHovered = hoveredCommentId === c.id;
+                const isActive = activeCommentId === c.id || isHovered;
+                const isDragging = draggingComment?.id === c.id;
+                const isOwnComment = user && c.user_id === user.id;
                 return (
                   <div
                     key={c.id}
                     onClick={(e) => e.stopPropagation()}
                     onMouseEnter={() => setHoveredCommentId(c.id)}
                     onMouseLeave={() => setHoveredCommentId(null)}
-                    style={{ position: "absolute", left: `calc(${xPct}% - 9px)`, top: "53px", zIndex: 20, cursor: "pointer" }}
+                    style={{ position: "absolute", left: `calc(${xPct}% - 9px)`, top: "47px", zIndex: isDragging ? 30 : 20, cursor: isOwnComment ? (isDragging ? "grabbing" : "grab") : "default", userSelect: "none" }}
                   >
-                    <div style={{ width: "18px", height: "18px", borderRadius: "50%", background: "#1a1a1a", border: isActive ? "1.5px solid #fff" : "1.5px solid #444", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", transition: "border-color 0.15s ease" }}>
+                    <div
+                      onMouseDown={isOwnComment ? (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const rect = waveRef.current?.getBoundingClientRect();
+                        if (!rect) return;
+                        const initXPct = Math.max(1, Math.min(98, (e.clientX - rect.left) / rect.width * 100));
+                        setDraggingComment({ id: c.id, xPct: initXPct });
+                      } : undefined}
+                      style={{
+                        width: "18px",
+                        height: "18px",
+                        borderRadius: "50%",
+                        background: "#1a1a1a",
+                        border: isActive || isDragging ? "1.5px solid #fff" : "1.5px solid #444",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        overflow: "hidden",
+                        transition: "transform 0.15s ease, border-color 0.15s ease",
+                        transform: isHovered || isDragging ? "scale(1.5)" : "scale(1)",
+                        transformOrigin: "center center",
+                      }}
+                    >
                       {c.avatar_url ? (
                         <img src={c.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                       ) : (
                         <span style={{ fontSize: "8px", color: "#888" }}>{(c.username || c.email)?.[0]?.toUpperCase() || "?"}</span>
                       )}
                     </div>
-                    {isActive && (
-                      <div style={{ position: "absolute", top: "calc(100% + 6px)", left: "50%", transform: "translateX(-50%)", background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "6px", padding: "5px 9px", fontSize: "12px", color: "#ccc", whiteSpace: "nowrap", maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", zIndex: 999, boxShadow: "0 4px 12px rgba(0,0,0,0.6)", pointerEvents: "none" }}>
+                    {isOwnComment && isHovered && !isDragging && (
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!currentBeat) return;
+                          fetch(`/api/beats/${currentBeat.id}/comments/${c.id}`, { method: "DELETE", credentials: "include" })
+                            .then(r => r.ok ? r.json() : null)
+                            .then(() => {
+                              setComments(prev => prev.filter(cm => cm.id !== c.id));
+                              setBeatStats(prev => prev ? { ...prev, comments: Math.max(0, prev.comments - 1) } : prev);
+                            });
+                        }}
+                        style={{ position: "absolute", top: "-7px", right: "-7px", width: "13px", height: "13px", background: "#2a2a2a", border: "1px solid #555", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", zIndex: 40, color: "#bbb", fontSize: "9px", lineHeight: 1 }}
+                      >
+                        ×
+                      </div>
+                    )}
+                    {isActive && !isDragging && (
+                      <div style={{ position: "absolute", top: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)", background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "6px", padding: "5px 9px", fontSize: "12px", color: "#ccc", whiteSpace: "nowrap", maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", zIndex: 999, boxShadow: "0 4px 12px rgba(0,0,0,0.6)", pointerEvents: "none" }}>
                         <span style={{ color: "#555", marginRight: "5px" }}>{c.username || c.email?.split("@")[0]}</span>
                         {c.text}
                       </div>
@@ -914,6 +1015,28 @@ function Home() {
                   </button>
                 )}
               </div>
+              {user && !user.username && (
+                <div style={{ display: "flex", gap: "8px", alignItems: "center", marginTop: "8px" }}>
+                  <input
+                    type="text"
+                    value={usernameInput}
+                    onChange={(e) => setUsernameInput(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") handleSaveUsername(); }}
+                    placeholder="Nastav si přezdívku pro komentáře…"
+                    maxLength={50}
+                    style={{ flex: 1, padding: "6px 14px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "20px", color: "#fff", fontSize: "12px", fontFamily: "inherit", outline: "none" }}
+                    data-testid="input-username"
+                  />
+                  <button
+                    onClick={handleSaveUsername}
+                    disabled={!usernameInput.trim() || savingUsername}
+                    style={{ padding: "6px 14px", background: usernameInput.trim() ? "#fff" : "#222", color: usernameInput.trim() ? "#000" : "#555", border: "none", borderRadius: "20px", fontSize: "12px", cursor: usernameInput.trim() ? "pointer" : "default", fontFamily: "inherit", transition: "all 0.2s", whiteSpace: "nowrap" }}
+                    data-testid="button-save-username"
+                  >
+                    {savingUsername ? "..." : "Uložit přezdívku"}
+                  </button>
+                </div>
+              )}
             </div>
           </>
         )}
