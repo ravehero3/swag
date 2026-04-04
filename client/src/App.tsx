@@ -1,5 +1,5 @@
 import { lazy, Suspense, useState, useEffect, createContext, useContext } from "react";
-import { Route, Switch, useLocation } from "wouter";
+import { Route, Switch, useLocation, Redirect } from "wouter";
 import Header from "./components/Header.js";
 import ExtendedFooter from "./components/ExtendedFooter.js";
 import Footer from "./components/Footer.js";
@@ -222,7 +222,7 @@ function App() {
           <Suspense fallback={<PageLoader />}>
             <Switch>
               <Route path="/" component={Home} />
-              <Route path="/beaty" component={Beaty} />
+              <Route path="/beaty"><Redirect to="/" /></Route>
               <Route path="/zvuky" component={Zvuky} />
               <Route path="/produkt/:type/:id" component={ProductDetail} />
               <Route path="/prihlasit-se" component={Login} />

@@ -585,6 +585,9 @@ function Home() {
         }
         .heart-pop { animation: heartPop 0.35s ease-out forwards; }
         .comment-avatar-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+        .comment-avatar-wrap > div:first-child { transition: transform 0.2s ease; }
+        .comment-avatar-wrap:hover { z-index: 999 !important; }
+        .comment-avatar-wrap:hover > div:first-child { transform: scale(2); }
         .comment-avatar-wrap .comment-tooltip { opacity: 0; pointer-events: none; transition: opacity 0.15s ease; }
         .comment-avatar-wrap:hover .comment-tooltip { opacity: 1 !important; }
       `}</style>
@@ -1015,28 +1018,6 @@ function Home() {
                   </button>
                 )}
               </div>
-              {user && !user.username && (
-                <div style={{ display: "flex", gap: "8px", alignItems: "center", marginTop: "8px" }}>
-                  <input
-                    type="text"
-                    value={usernameInput}
-                    onChange={(e) => setUsernameInput(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === "Enter") handleSaveUsername(); }}
-                    placeholder="Nastav si přezdívku pro komentáře…"
-                    maxLength={50}
-                    style={{ flex: 1, padding: "6px 14px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "20px", color: "#fff", fontSize: "12px", fontFamily: "inherit", outline: "none" }}
-                    data-testid="input-username"
-                  />
-                  <button
-                    onClick={handleSaveUsername}
-                    disabled={!usernameInput.trim() || savingUsername}
-                    style={{ padding: "6px 14px", background: usernameInput.trim() ? "#fff" : "#222", color: usernameInput.trim() ? "#000" : "#555", border: "none", borderRadius: "20px", fontSize: "12px", cursor: usernameInput.trim() ? "pointer" : "default", fontFamily: "inherit", transition: "all 0.2s", whiteSpace: "nowrap" }}
-                    data-testid="button-save-username"
-                  >
-                    {savingUsername ? "..." : "Uložit přezdívku"}
-                  </button>
-                </div>
-              )}
             </div>
           </>
         )}

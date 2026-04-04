@@ -35,10 +35,10 @@ function Header() {
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: "12px", position: "relative", zIndex: 10, padding: "0 8px" }}>
-        <Link href="/beaty" className="header-link">
+        <Link href="/" className="header-link">
           <span
-            style={navLinkStyle("/beaty")}
-            onMouseEnter={() => setHoveredLink("/beaty")}
+            style={navLinkStyle("/")}
+            onMouseEnter={() => setHoveredLink("/")}
             onMouseLeave={() => setHoveredLink(null)}
           >
             BEATY
