@@ -203,7 +203,13 @@ export async function initDatabase() {
         ('ig_story_overlay_opacity', '0.45'),
         ('ig_story_tagline', ''),
         ('ig_story_listening_text', 'právě poslouchám'),
-        ('ig_story_website_text', 'NA VOODOO808.COM')
+        ('ig_story_website_text', 'NA VOODOO808.COM'),
+        ('ig_story_logo_url', ''),
+        ('ig_story_logo_placement', 'top-center'),
+        ('ig_story_logo_y', '0'),
+        ('ig_story_listening_y', '0'),
+        ('ig_story_title_y', '0'),
+        ('ig_story_website_y', '0')
       ON CONFLICT (key) DO NOTHING;
     `);
     

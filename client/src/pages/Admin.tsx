@@ -393,14 +393,14 @@ function Admin() {
       <h1 style={{ marginBottom: "24px", color: "#666" }}>Admin Panel</h1>
 
       <div style={{ display: "flex", gap: "12px", marginBottom: "24px", flexWrap: "wrap", justifyContent: "center" }}>
-        {["beats", "kits", "orders", "zakaznici", "licenses", "emails", "promo", "seo", "komentare"].map((t) => (
+        {["beats", "kits", "orders", "zakaznici", "licenses", "emails", "promo", "seo", "ig_stories", "komentare"].map((t) => (
           <button
             key={t}
             className={tab === t ? "btn btn-filled" : "btn btn-admin"}
             onClick={() => setTab(t as any)}
             style={tab !== t ? { borderColor: "#333", color: "#666" } : {}}
           >
-            {t === "beats" ? "Beaty" : t === "kits" ? "Zvuky" : t === "orders" ? "Objednávky" : t === "zakaznici" ? "Zákazníci" : t === "licenses" ? "Licence" : t === "emails" ? "Emaily" : t === "promo" ? "Promo kódy" : t === "komentare" ? "Komentáře" : "SEO"}
+            {t === "beats" ? "Beaty" : t === "kits" ? "Zvuky" : t === "orders" ? "Objednávky" : t === "zakaznici" ? "Zákazníci" : t === "licenses" ? "Licence" : t === "emails" ? "Emaily" : t === "promo" ? "Promo kódy" : t === "komentare" ? "Komentáře" : t === "ig_stories" ? "IG Stories" : "SEO"}
           </button>
         ))}
       </div>
@@ -436,6 +436,7 @@ function Admin() {
         {tab === "emails" && <EmailsTab />}
         {tab === "promo" && <PromoCodesTab />}
         {tab === "seo" && <SEOTab settings={settings} onRefresh={refreshSettings} />}
+        {tab === "ig_stories" && <IGStoriesTab settings={settings} onRefresh={refreshSettings} />}
         {tab === "komentare" && <KomentareTab />}
       </div>
     </div>
@@ -2206,13 +2207,6 @@ function SEOTab({ settings, onRefresh }: any) {
     seo_zvuky_title: settings.seo_zvuky_title || "",
     seo_zvuky_description: settings.seo_zvuky_description || "",
     seo_zvuky_keywords: settings.seo_zvuky_keywords || "",
-    ig_story_bg_color: settings.ig_story_bg_color || "#000000",
-    ig_story_text_color: settings.ig_story_text_color || "#ffffff",
-    ig_story_accent_color: settings.ig_story_accent_color || "#aaaaaa",
-    ig_story_overlay_opacity: settings.ig_story_overlay_opacity || "0.45",
-    ig_story_tagline: settings.ig_story_tagline || "",
-    ig_story_listening_text: settings.ig_story_listening_text || "právě poslouchám",
-    ig_story_website_text: settings.ig_story_website_text || "NA VOODOO808.COM",
   });
   const [saving, setSaving] = useState<Record<string, boolean>>({});
   const [saved, setSaved] = useState<Record<string, boolean>>({});
@@ -2464,7 +2458,6 @@ function SEOTab({ settings, onRefresh }: any) {
         saved={!!saved["zvuky"]}
       />
 
-      <InstagramStoryTemplateSection values={values} onChange={handleChange} onSave={() => saveKeys("ig_story", ["ig_story_bg_color", "ig_story_text_color", "ig_story_accent_color", "ig_story_overlay_opacity", "ig_story_tagline", "ig_story_listening_text", "ig_story_website_text"])} saving={!!saving["ig_story"]} saved={!!saved["ig_story"]} />
     </div>
   );
 }
