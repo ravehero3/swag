@@ -61,6 +61,45 @@ function SoundWave({ audioRef, isPlaying, audioUrl, children }: SoundWaveProps) 
     };
   }, [audioRef, audioUrl, loadWaveform]);
 
+  const formatTime = (secs: number) => {
+    if (!isFinite(secs) || isNaN(secs)) return "0:00";
+    const m = Math.floor(secs / 60);
+    const s = Math.floor(secs % 60);
+    return `${m}:${s.toString().padStart(2, "0")}`;
+  };
+
+  const drawTimePill = (
+    cx: CanvasRenderingContext2D,
+    label: string,
+    centerX: number,
+    baseY: number,
+    canvasW: number
+  ) => {
+    const pillH = 16;
+    const paddingX = 6;
+    cx.font = "bold 9px monospace";
+    const textW = cx.measureText(label).width;
+    const pillW = textW + paddingX * 2;
+    const pillR = 4;
+    const margin = 4;
+    let px = centerX - pillW / 2;
+    px = Math.max(margin, Math.min(canvasW - pillW - margin, px));
+    const py = baseY - pillH - 4;
+
+    cx.fillStyle = "rgba(255,255,255,0.13)";
+    cx.beginPath();
+    if (cx.roundRect) {
+      cx.roundRect(px, py, pillW, pillH, pillR);
+    } else {
+      cx.rect(px, py, pillW, pillH);
+    }
+    cx.fill();
+
+    cx.fillStyle = "rgba(255,255,255,0.85)";
+    cx.textBaseline = "middle";
+    cx.fillText(label, px + paddingX, py + pillH / 2);
+  };
+
   const draw = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -171,7 +210,19 @@ function SoundWave({ audioRef, isPlaying, audioUrl, children }: SoundWaveProps) 
     const playheadX = prog * W;
     cx.fillStyle = "rgba(255,255,255,0.95)";
     cx.fillRect(playheadX - 0.75, 0, 1.5, H);
-  }, []);
+
+    const audio = audioRef.current;
+    const currentTime = audio ? audio.currentTime : 0;
+    const duration = audio ? audio.duration : 0;
+
+    if (prog > 0 || currentTime > 0) {
+      drawTimePill(cx, formatTime(currentTime), playheadX, divY, W);
+    }
+
+    if (isFinite(duration) && duration > 0) {
+      drawTimePill(cx, formatTime(duration), W - 4, divY, W);
+    }
+  }, [audioRef]);
 
   useEffect(() => {
     if (isPlaying) {
