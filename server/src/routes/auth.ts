@@ -7,20 +7,26 @@ import path from "path";
 import fs from "fs";
 import { requireAuth } from "../middleware/auth.js";
 
-const avatarUploadDir = path.join(process.cwd(), "public/uploads/avatars");
+const avatarUploadDir = process.env.NODE_ENV === "production"
+  ? "/tmp/avatars"
+  : path.join(process.cwd(), "public/uploads/avatars");
 
 function ensureAvatarDir() {
-  if (!fs.existsSync(avatarUploadDir)) {
-    fs.mkdirSync(avatarUploadDir, { recursive: true });
+  try {
+    if (!fs.existsSync(avatarUploadDir)) {
+      fs.mkdirSync(avatarUploadDir, { recursive: true });
+    }
+  } catch {
+    // Ignore — read-only filesystem in serverless environments
   }
 }
 
-// Create directory immediately at module load
-ensureAvatarDir();
-
 const avatarUpload = multer({
   storage: multer.diskStorage({
-    destination: (_req, _file, cb) => { cb(null, avatarUploadDir); },
+    destination: (_req, _file, cb) => {
+      ensureAvatarDir();
+      cb(null, avatarUploadDir);
+    },
     filename: (_req, file, cb) => {
       const ext = path.extname(file.originalname).toLowerCase() || ".jpg";
       cb(null, `avatar-${Date.now()}${ext}`);
