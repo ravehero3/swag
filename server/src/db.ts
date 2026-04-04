@@ -83,11 +83,13 @@ export async function initDatabase() {
         number_of_sounds INTEGER DEFAULT 0,
         tags TEXT[],
         preview_url VARCHAR(500),
+        preview_urls TEXT[] DEFAULT ARRAY[]::TEXT[],
         file_url VARCHAR(500),
         artwork_url VARCHAR(500),
         legal_info TEXT,
         author_info TEXT,
         is_published BOOLEAN DEFAULT FALSE,
+        order_index INTEGER DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
 

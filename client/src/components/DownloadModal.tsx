@@ -48,7 +48,7 @@ function DownloadModal({ item, isOpen, onClose, user }: DownloadModalProps) {
         if (data.downloadUrl) {
           const a = document.createElement("a");
           a.href = data.downloadUrl;
-          a.download = item.title;
+          a.download = `${item.title} (VOODOO808.COM)`;
           a.target = "_blank";
           a.rel = "noopener noreferrer";
           document.body.appendChild(a);

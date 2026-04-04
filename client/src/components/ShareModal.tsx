@@ -221,8 +221,7 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
               </div>
 
               <div style={{ flex: 1 }}>
-                <p style={{ fontSize: "12px", color: "#555", margin: "0 0 12px 0", lineHeight: 1.6 }}>Stáhni si kartu pro Instagram Story — sdílej ji jako příběh a odkaz na produkt.</p>
-                <p style={{ fontSize: "11px", color: "#444", margin: "0 0 16px 0", lineHeight: 1.5 }}>Texty a barvy lze upravit v administraci v sekci SEO & Média.</p>
+                <p style={{ fontSize: "12px", color: "#555", margin: "0 0 16px 0", lineHeight: 1.6 }}>Stáhni si kartu pro Instagram Story — sdílej ji jako příběh a odkaz na produkt.</p>
                 <button onClick={downloadStoryCard} disabled={isGenerating} style={{ width: "100%", padding: "11px", background: isGenerating ? "#222" : "#fff", color: isGenerating ? "#555" : "#000", border: "none", borderRadius: "4px", fontSize: "13px", fontWeight: "600", cursor: isGenerating ? "default" : "pointer", transition: "all 0.2s", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
                   {isGenerating ? (
                     <>

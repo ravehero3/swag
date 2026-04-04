@@ -8,7 +8,7 @@ const router = Router();
 router.get("/", async (_req: Request, res: Response) => {
   try {
     const result = await pool.query(
-      "SELECT * FROM sound_kits WHERE is_published = true ORDER BY created_at DESC"
+      "SELECT * FROM sound_kits WHERE is_published = true ORDER BY order_index ASC, created_at DESC"
     );
     res.set("Cache-Control", "public, max-age=300, stale-while-revalidate=60");
     res.json(result.rows);
@@ -19,10 +19,25 @@ router.get("/", async (_req: Request, res: Response) => {
 
 router.get("/all", requireAdmin, async (_req: Request, res: Response) => {
   try {
-    const result = await pool.query("SELECT * FROM sound_kits ORDER BY created_at DESC");
+    const result = await pool.query("SELECT * FROM sound_kits ORDER BY order_index ASC, created_at DESC");
     res.json(result.rows);
   } catch (error) {
     res.status(500).json({ error: "Chyba při načítání zvukových kitů" });
+  }
+});
+
+router.patch("/reorder", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { swaps } = req.body as { swaps: { id: number; orderIndex: number }[] };
+    if (!Array.isArray(swaps) || swaps.length === 0) {
+      return res.status(400).json({ error: "Neplatná data pro přeřazení" });
+    }
+    for (const swap of swaps) {
+      await pool.query("UPDATE sound_kits SET order_index = $1 WHERE id = $2", [swap.orderIndex, swap.id]);
+    }
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při změně pořadí kitů" });
   }
 });
 

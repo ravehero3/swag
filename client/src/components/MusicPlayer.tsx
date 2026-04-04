@@ -86,7 +86,7 @@ function MusicPlayer({
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${currentBeat.title}.mp3`;
+      a.download = `${currentBeat.title} (VOODOO808.COM).mp3`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -94,7 +94,7 @@ function MusicPlayer({
     } catch {
       const a = document.createElement("a");
       a.href = currentBeat.preview_url;
-      a.download = `${currentBeat.title}.mp3`;
+      a.download = `${currentBeat.title} (VOODOO808.COM).mp3`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

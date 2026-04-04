@@ -169,6 +169,8 @@ function Home() {
   const [hoveredCommentId, setHoveredCommentId] = useState<number | null>(null);
   const [activeCommentId, setActiveCommentId] = useState<number | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const commentTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastTriggeredCommentRef = useRef<number | null>(null);
   const beatsListRef = useScrollAnimation();
   const soundKitsRef = useScrollAnimation();
   const { user, addToCart, settings, refreshSavedCount } = useApp() as any;
@@ -267,17 +269,28 @@ function Home() {
   }, [currentBeat]);
 
   useEffect(() => {
-    if (audioDuration <= 0 || comments.length === 0) {
-      setActiveCommentId(null);
-      return;
-    }
-    const WINDOW = 2.0;
-    const active = comments.find((c: any) => {
+    if (audioDuration <= 0 || comments.length === 0) return;
+    const TRIGGER_WINDOW = 0.5;
+    const triggered = comments.find((c: any) => {
       const t = parseFloat(c.time_offset) || 0;
-      return Math.abs(t - audioCurrentTime) < WINDOW;
+      return audioCurrentTime >= t && audioCurrentTime < t + TRIGGER_WINDOW;
     });
-    setActiveCommentId(active ? active.id : null);
+    if (triggered && triggered.id !== lastTriggeredCommentRef.current) {
+      if (commentTimerRef.current) clearTimeout(commentTimerRef.current);
+      lastTriggeredCommentRef.current = triggered.id;
+      setActiveCommentId(triggered.id);
+      commentTimerRef.current = setTimeout(() => {
+        setActiveCommentId(null);
+        lastTriggeredCommentRef.current = null;
+      }, 10000);
+    }
   }, [audioCurrentTime, comments, audioDuration]);
+
+  useEffect(() => {
+    lastTriggeredCommentRef.current = null;
+    if (commentTimerRef.current) clearTimeout(commentTimerRef.current);
+    setActiveCommentId(null);
+  }, [currentBeat?.id]);
 
   const handleCommentSubmit = async () => {
     if (!commentText.trim() || !currentBeat || !user) return;
@@ -394,7 +407,7 @@ function Home() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${beat.title}.mp3`;
+      a.download = `${beat.title} (VOODOO808.COM).mp3`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -402,7 +415,7 @@ function Home() {
     } catch {
       const a = document.createElement("a");
       a.href = beat.preview_url;
-      a.download = `${beat.title}.mp3`;
+      a.download = `${beat.title} (VOODOO808.COM).mp3`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -945,6 +958,8 @@ function Home() {
                 <div className="desktop-only" style={{ width: "100px", flexShrink: 0 }}><button onClick={() => { setSortBy(sortBy === "bpm" ? "bpm" : "bpm"); setSortAsc(sortBy === "bpm" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0, textAlign: "left", width: "100%" }}>BPM {sortBy === "bpm" && (sortAsc ? "↑" : "↓")}</button></div>
                 {/* KEY — matches beat key column */}
                 <div className="desktop-only" style={{ width: "100px", flexShrink: 0 }}><button onClick={() => { setSortBy(sortBy === "key" ? "key" : "key"); setSortAsc(sortBy === "key" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0, textAlign: "left", width: "100%" }}>KEY {sortBy === "key" && (sortAsc ? "↑" : "↓")}</button></div>
+                {/* TAGY — matches tags column */}
+                <div className="desktop-only" style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", marginLeft: "12px" }}>TAGY</div>
               </div>
               {(sortBy && sortBy === "bpm" ? [...otherBeats].sort((a, b) => sortAsc ? a.bpm - b.bpm : b.bpm - a.bpm) : sortBy && sortBy === "key" ? [...otherBeats].sort((a, b) => sortAsc ? a.key.localeCompare(b.key) : b.key.localeCompare(a.key)) : otherBeats).map((beat) => (
             <div

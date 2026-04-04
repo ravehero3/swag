@@ -252,6 +252,7 @@ interface SoundKit {
   legal_info: string;
   author_info: string;
   is_published: boolean;
+  order_index?: number;
 }
 
 interface LicenseType {
@@ -1062,6 +1063,22 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
     onRefresh();
   };
 
+  const handleReorderKit = async (id: number, direction: "up" | "down") => {
+    const sortedKits = [...kits].sort((a: SoundKit, b: SoundKit) => (a.order_index ?? a.id) - (b.order_index ?? b.id));
+    const idx = sortedKits.findIndex((k: SoundKit) => k.id === id);
+    const swapIdx = direction === "up" ? idx - 1 : idx + 1;
+    if (swapIdx < 0 || swapIdx >= sortedKits.length) return;
+    const a = sortedKits[idx];
+    const b = sortedKits[swapIdx];
+    await fetch("/api/sound-kits/reorder", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ swaps: [{ id: a.id, orderIndex: b.order_index ?? b.id }, { id: b.id, orderIndex: a.order_index ?? a.id }] }),
+    });
+    onRefresh();
+  };
+
   const uploadFile = async (file: File, type: string) => {
     setUploading(prev => ({ ...prev, [type]: true }));
     setUploadError(prev => ({ ...prev, [type]: "" }));
@@ -1201,6 +1218,9 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
                 <option value="loop_kit">Loop Kit</option>
                 <option value="one_shot_bundle">One Shot Bundle</option>
                 <option value="drum_kit_bundle">Drum Kit Bundle</option>
+                <option value="gross_beat_bank">Gross Beat Bank</option>
+                <option value="loopy">Loopy</option>
+                <option value="vyhodny_bundle">Výhodný Bundle</option>
               </select>
             </div>
             <div style={{ gridColumn: "1 / -1" }}>
@@ -1349,7 +1369,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
           </tr>
         </thead>
         <tbody>
-          {kits.map((kit: SoundKit) => (
+          {[...kits].sort((a: SoundKit, b: SoundKit) => (a.order_index ?? a.id) - (b.order_index ?? b.id)).map((kit: SoundKit, rowIdx: number, sortedArr: SoundKit[]) => (
             <tr
               key={kit.id}
               style={{
@@ -1390,6 +1410,18 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
               <td style={{ padding: "12px" }}>{kit.is_free ? "Zdarma" : `${kit.price} CZK`}</td>
               <td style={{ padding: "12px" }}>{kit.is_published ? "Publikováno" : "Skryto"}</td>
               <td style={{ padding: "12px", textAlign: "right" }} onClick={(e) => e.stopPropagation()}>
+                <button
+                  onClick={() => handleReorderKit(kit.id, "up")}
+                  disabled={rowIdx === 0}
+                  title="Posunout nahoru"
+                  style={{ background: "transparent", border: "1px solid #333", color: rowIdx === 0 ? "#333" : "#888", cursor: rowIdx === 0 ? "default" : "pointer", padding: "4px 7px", borderRadius: "3px", marginRight: "4px", fontSize: "12px" }}
+                >▲</button>
+                <button
+                  onClick={() => handleReorderKit(kit.id, "down")}
+                  disabled={rowIdx === sortedArr.length - 1}
+                  title="Posunout dolů"
+                  style={{ background: "transparent", border: "1px solid #333", color: rowIdx === sortedArr.length - 1 ? "#333" : "#888", cursor: rowIdx === sortedArr.length - 1 ? "default" : "pointer", padding: "4px 7px", borderRadius: "3px", marginRight: "8px", fontSize: "12px" }}
+                >▼</button>
                 <button className="btn btn-admin" onClick={() => { setEditing(kit); setShowForm(true); }} style={{ marginRight: "8px" }} data-testid={`button-edit-kit-${kit.id}`}>Upravit</button>
                 <button className="btn btn-admin" onClick={() => handleDelete(kit.id)} style={{ color: "#333", borderColor: "#333" }} data-testid={`button-delete-kit-${kit.id}`}>Smazat</button>
               </td>
