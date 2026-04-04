@@ -30,12 +30,50 @@ export default function Ucet() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
+  const [username, setUsername] = useState<string>("");
+  const [editingUsername, setEditingUsername] = useState(false);
+  const [usernameInput, setUsernameInput] = useState<string>("");
+  const [savingUsername, setSavingUsername] = useState(false);
+  const [usernameError, setUsernameError] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (user?.avatarUrl) setAvatarUrl(user.avatarUrl);
+    if (user?.username) setUsername(user.username);
   }, [user]);
+
+  const handleUsernameEdit = () => {
+    setUsernameInput(username);
+    setUsernameError(null);
+    setEditingUsername(true);
+  };
+
+  const handleUsernameSave = async () => {
+    if (!usernameInput.trim()) return;
+    setSavingUsername(true);
+    setUsernameError(null);
+    try {
+      const res = await fetch("/api/auth/username", {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: usernameInput.trim() }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setUsername(data.username);
+        setEditingUsername(false);
+        if (user) setUser({ ...user, username: data.username });
+      } else {
+        setUsernameError(data.error || "Chyba při ukládání");
+      }
+    } catch {
+      setUsernameError("Chyba připojení");
+    } finally {
+      setSavingUsername(false);
+    }
+  };
 
   const handleAvatarFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -329,9 +367,55 @@ export default function Ucet() {
                 <span style={{ fontSize: "11px", color: "#fff", textAlign: "center", lineHeight: 1.3 }}>{uploadingAvatar ? "..." : "Změnit"}</span>
               </div>
             </div>
-            <div>
-              <p style={{ color: "#fff", margin: "0 0 4px 0" }}>{user?.email}</p>
-              <p style={{ color: "#666", fontSize: "13px", margin: 0 }}>ID uživatele: #{user?.id}</p>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ color: "#fff", margin: "0 0 6px 0", fontSize: "14px" }}>{user?.email}</p>
+              {editingUsername ? (
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                    <input
+                      type="text"
+                      value={usernameInput}
+                      onChange={(e) => setUsernameInput(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter") handleUsernameSave(); if (e.key === "Escape") setEditingUsername(false); }}
+                      placeholder="vase_jmeno"
+                      maxLength={50}
+                      autoFocus
+                      data-testid="input-username"
+                      style={{ flex: 1, padding: "4px 10px", background: "#000", border: "1px solid #555", borderRadius: "4px", color: "#fff", fontSize: "13px", fontFamily: "inherit", outline: "none", minWidth: 0 }}
+                    />
+                    <button
+                      onClick={handleUsernameSave}
+                      disabled={savingUsername || !usernameInput.trim()}
+                      data-testid="button-save-username"
+                      style={{ padding: "4px 12px", background: "#fff", color: "#000", border: "none", borderRadius: "4px", fontSize: "12px", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap", opacity: savingUsername ? 0.6 : 1 }}
+                    >
+                      {savingUsername ? "..." : "Uložit"}
+                    </button>
+                    <button
+                      onClick={() => setEditingUsername(false)}
+                      style={{ padding: "4px 8px", background: "transparent", color: "#666", border: "1px solid #333", borderRadius: "4px", fontSize: "12px", cursor: "pointer", fontFamily: "inherit" }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  {usernameError && <p style={{ color: "#f87171", fontSize: "11px", margin: 0 }}>{usernameError}</p>}
+                </div>
+              ) : (
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span style={{ color: username ? "#aaa" : "#555", fontSize: "13px" }}>
+                    {username ? `@${username}` : "Přidat uživatelské jméno"}
+                  </span>
+                  <button
+                    onClick={handleUsernameEdit}
+                    data-testid="button-edit-username"
+                    style={{ padding: "2px 8px", background: "transparent", color: "#555", border: "1px solid #333", borderRadius: "4px", fontSize: "11px", cursor: "pointer", fontFamily: "inherit", transition: "color 0.15s, border-color 0.15s" }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = "#fff"; (e.currentTarget as HTMLButtonElement).style.borderColor = "#555"; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = "#555"; (e.currentTarget as HTMLButtonElement).style.borderColor = "#333"; }}
+                  >
+                    {username ? "Upravit" : "+ Přidat"}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

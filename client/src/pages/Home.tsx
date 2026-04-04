@@ -849,12 +849,12 @@ function Home() {
                       {c.avatar_url ? (
                         <img src={c.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                       ) : (
-                        <span style={{ fontSize: "8px", color: "#888" }}>{c.email?.[0]?.toUpperCase() || "?"}</span>
+                        <span style={{ fontSize: "8px", color: "#888" }}>{(c.username || c.email)?.[0]?.toUpperCase() || "?"}</span>
                       )}
                     </div>
                     {isActive && (
                       <div style={{ position: "absolute", top: "calc(100% + 6px)", left: "50%", transform: "translateX(-50%)", background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "6px", padding: "5px 9px", fontSize: "12px", color: "#ccc", whiteSpace: "nowrap", maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", zIndex: 999, boxShadow: "0 4px 12px rgba(0,0,0,0.6)", pointerEvents: "none" }}>
-                        <span style={{ color: "#555", marginRight: "5px" }}>{c.email?.split("@")[0]}</span>
+                        <span style={{ color: "#555", marginRight: "5px" }}>{c.username || c.email?.split("@")[0]}</span>
                         {c.text}
                       </div>
                     )}

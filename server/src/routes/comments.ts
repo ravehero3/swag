@@ -7,7 +7,7 @@ const router = Router();
 router.get("/:beatId/comments", async (req: Request, res: Response) => {
   try {
     const result = await pool.query(
-      `SELECT bc.id, bc.text, bc.created_at, bc.time_offset, u.email, u.avatar_url
+      `SELECT bc.id, bc.text, bc.created_at, bc.time_offset, u.email, u.avatar_url, u.username
        FROM beat_comments bc
        JOIN users u ON bc.user_id = u.id
        WHERE bc.beat_id = $1
@@ -57,8 +57,8 @@ router.post("/:beatId/comments", requireAuth, async (req: Request, res: Response
        RETURNING id, text, created_at, time_offset`,
       [req.params.beatId, req.session.userId, text.trim(), offset]
     );
-    const userRes = await pool.query("SELECT email, avatar_url FROM users WHERE id = $1", [req.session.userId]);
-    const comment = { ...result.rows[0], email: userRes.rows[0]?.email, avatar_url: userRes.rows[0]?.avatar_url };
+    const userRes = await pool.query("SELECT email, avatar_url, username FROM users WHERE id = $1", [req.session.userId]);
+    const comment = { ...result.rows[0], email: userRes.rows[0]?.email, avatar_url: userRes.rows[0]?.avatar_url, username: userRes.rows[0]?.username };
     res.json(comment);
   } catch (error) {
     res.status(500).json({ error: "Chyba při přidávání komentáře" });

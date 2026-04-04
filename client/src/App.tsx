@@ -29,6 +29,8 @@ interface User {
   id: number;
   email: string;
   isAdmin: boolean;
+  username?: string;
+  avatarUrl?: string;
 }
 
 interface CartItem {

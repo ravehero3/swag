@@ -130,9 +130,29 @@ router.get("/me", async (req: Request, res: Response) => {
       return res.status(401).json({ error: "Uživatel nenalezen" });
     }
     
-    res.json({ user: { id: result.rows[0].id, email: result.rows[0].email, isAdmin: result.rows[0].is_admin, avatarUrl: result.rows[0].avatar_url } });
+    res.json({ user: { id: result.rows[0].id, email: result.rows[0].email, isAdmin: result.rows[0].is_admin, avatarUrl: result.rows[0].avatar_url, username: result.rows[0].username } });
   } catch (error) {
     res.status(500).json({ error: "Chyba serveru" });
+  }
+});
+
+router.patch("/username", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { username } = req.body;
+    if (!username || !username.trim()) {
+      return res.status(400).json({ error: "Uživatelské jméno nesmí být prázdné" });
+    }
+    const cleaned = username.trim().slice(0, 50);
+    if (!/^[a-zA-Z0-9_.\-]+$/.test(cleaned)) {
+      return res.status(400).json({ error: "Jméno může obsahovat pouze písmena, čísla, _, . a -" });
+    }
+    await pool.query("UPDATE users SET username = $1 WHERE id = $2", [cleaned, req.session.userId]);
+    res.json({ username: cleaned });
+  } catch (error: any) {
+    if (error.code === "23505") {
+      return res.status(409).json({ error: "Toto uživatelské jméno je již obsazené" });
+    }
+    res.status(500).json({ error: "Chyba při ukládání uživatelského jména" });
   }
 });
 
