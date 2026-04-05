@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "npm run build && node scripts/build-server.mjs",
+  "buildCommand": "npx vite build && node scripts/build-server.mjs",
   "outputDirectory": "dist/public",
   "rewrites": [
     { "source": "/api/:path*", "destination": "/api/server" },
