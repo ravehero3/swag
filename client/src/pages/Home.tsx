@@ -175,6 +175,7 @@ function Home() {
   const waveRef = useRef<HTMLDivElement>(null);
   const commentTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastTriggeredCommentRef = useRef<number | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const beatsListRef = useScrollAnimation();
   const soundKitsRef = useScrollAnimation();
   const { user, setUser, addToCart, settings, refreshSavedCount } = useApp() as any;
@@ -295,6 +296,12 @@ function Home() {
     if (commentTimerRef.current) clearTimeout(commentTimerRef.current);
     setActiveCommentId(null);
   }, [currentBeat?.id]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.play().catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (!draggingComment) return;
@@ -590,6 +597,10 @@ function Home() {
         .comment-avatar-wrap:hover > div:first-child { transform: scale(2); }
         .comment-avatar-wrap .comment-tooltip { opacity: 0; pointer-events: none; transition: opacity 0.15s ease; }
         .comment-avatar-wrap:hover .comment-tooltip { opacity: 1 !important; }
+        @media (max-width: 768px) {
+          .mobile-hide-dock { display: none !important; }
+          .mobile-video-container { min-height: 320px !important; max-height: 60vh; }
+        }
       `}</style>
       <audio
         ref={audioRef}
@@ -600,8 +611,9 @@ function Home() {
         }}
       />
 
-      <div style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative", background: "#000", minHeight: "600px" }}>
+      <div className="mobile-video-container" style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative", background: "#000", minHeight: "600px" }}>
         <video
+          ref={videoRef}
           key={settings?.home_video}
           src={settings?.home_video || "/uploads/voodoo808-video.mov"}
           autoPlay
@@ -1510,7 +1522,7 @@ function Home() {
         </div>
 
         {isHomePage && (
-          <div style={{ 
+          <div className="mobile-hide-dock" style={{ 
             backgroundImage: "url(/uploads/artwork/dock-bg-computer.jpg)", 
             backgroundSize: "100% auto", 
             backgroundPosition: "bottom center", 
