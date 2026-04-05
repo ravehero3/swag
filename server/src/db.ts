@@ -211,7 +211,14 @@ export async function initDatabase() {
         ('ig_story_logo_y', '0'),
         ('ig_story_listening_y', '0'),
         ('ig_story_title_y', '0'),
-        ('ig_story_website_y', '0')
+        ('ig_story_website_y', '0'),
+        ('ig_story_card_show', 'true'),
+        ('ig_story_card_radius', '24'),
+        ('ig_story_card_blur', '14'),
+        ('ig_story_card_brightness', '0.18'),
+        ('ig_story_card_shadow', 'true'),
+        ('ig_story_card_shadow_amount', '24'),
+        ('ig_story_card_padding', '16')
       ON CONFLICT (key) DO NOTHING;
     `);
     

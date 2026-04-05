@@ -2542,10 +2542,10 @@ function SEOTab({ settings, onRefresh }: any) {
 type IGLayer = { id: string; visible: boolean; y: number; mode: "text" | "image"; imageUrl: string | null };
 
 const IG_STORY_DEFAULT_LAYERS: IGLayer[] = [
-  { id: "logo",      visible: true, y: 218, mode: "text", imageUrl: null },
-  { id: "listening", visible: true, y: 252, mode: "text", imageUrl: null },
-  { id: "title",     visible: true, y: 278, mode: "text", imageUrl: null },
-  { id: "website",   visible: true, y: 315, mode: "text", imageUrl: null },
+  { id: "logo",      visible: true, y: 42,  mode: "text", imageUrl: null },
+  { id: "listening", visible: true, y: 58,  mode: "text", imageUrl: null },
+  { id: "title",     visible: true, y: 70,  mode: "text", imageUrl: null },
+  { id: "website",   visible: true, y: 340, mode: "text", imageUrl: null },
 ];
 
 const IG_LAYER_LABELS: Record<string, string> = {
@@ -2554,6 +2554,43 @@ const IG_LAYER_LABELS: Record<string, string> = {
   title: "Název beatu / kitu",
   website: "Text webu",
 };
+
+// Deterministic waveform bar heights for visual preview (0–1)
+const WAVE_BARS = [
+  0.3,0.5,0.7,0.4,0.8,0.6,0.9,0.5,0.3,0.7,
+  0.6,0.4,0.8,1.0,0.7,0.5,0.9,0.6,0.4,0.8,
+  0.5,0.7,0.3,0.6,0.9,0.8,0.4,0.6,0.7,0.5,
+  0.8,0.4,0.6,0.9,0.5,0.7,0.3,0.8,0.6,0.4,
+  0.7,0.5,0.9,0.6,0.4,0.8,0.5,0.3,0.7,0.6,
+];
+const PLAYHEAD_FRACTION = 2 / 3;
+
+function IGWaveformPreview({ width, color, playedColor }: { width: number; color: string; playedColor: string }) {
+  const barCount = WAVE_BARS.length;
+  const gap = 1.5;
+  const barW = (width - gap * (barCount - 1)) / barCount;
+  const h = 22;
+  return (
+    <svg width={width} height={h} style={{ display: "block" }}>
+      {WAVE_BARS.map((v, i) => {
+        const x = i * (barW + gap);
+        const barH = Math.max(2, v * h);
+        const y = (h - barH) / 2;
+        const played = (i / barCount) < PLAYHEAD_FRACTION;
+        return <rect key={i} x={x} y={y} width={barW} height={barH} rx={barW / 2} fill={played ? playedColor : color} />;
+      })}
+      {/* Playhead line */}
+      <rect
+        x={PLAYHEAD_FRACTION * width - 1}
+        y={0}
+        width={2}
+        height={h}
+        fill={playedColor}
+        rx={1}
+      />
+    </svg>
+  );
+}
 
 function IGStoriesTab({ settings, onRefresh }: any) {
   const [values, setValues] = useState<Record<string, string>>({
@@ -2566,6 +2603,13 @@ function IGStoriesTab({ settings, onRefresh }: any) {
     ig_story_bg_mode: settings.ig_story_bg_mode || "artwork",
     ig_story_blur: settings.ig_story_blur || "20",
     ig_story_layers: settings.ig_story_layers || JSON.stringify(IG_STORY_DEFAULT_LAYERS),
+    ig_story_card_show: settings.ig_story_card_show ?? "true",
+    ig_story_card_radius: settings.ig_story_card_radius || "24",
+    ig_story_card_blur: settings.ig_story_card_blur || "14",
+    ig_story_card_brightness: settings.ig_story_card_brightness || "0.18",
+    ig_story_card_shadow: settings.ig_story_card_shadow ?? "true",
+    ig_story_card_shadow_amount: settings.ig_story_card_shadow_amount || "24",
+    ig_story_card_padding: settings.ig_story_card_padding || "16",
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -2588,7 +2632,7 @@ function IGStoriesTab({ settings, onRefresh }: any) {
       return parsed.map((l: any) => ({
         id: l.id,
         visible: l.visible ?? true,
-        y: typeof l.y === "number" ? l.y : (IG_STORY_DEFAULT_LAYERS.find(d => d.id === l.id)?.y ?? 280),
+        y: typeof l.y === "number" ? l.y : (IG_STORY_DEFAULT_LAYERS.find(d => d.id === l.id)?.y ?? 60),
         mode: l.mode ?? "text",
         imageUrl: l.imageUrl ?? null,
       }));
@@ -2597,10 +2641,7 @@ function IGStoriesTab({ settings, onRefresh }: any) {
 
   const setLayers = (nl: IGLayer[]) => handleChange("ig_story_layers", JSON.stringify(nl));
   const updateLayer = (i: number, patch: Partial<IGLayer>) => setLayers(layers.map((l, idx) => idx === i ? { ...l, ...patch } : l));
-
-  const moveLayerY = (i: number, dir: "up" | "down") => {
-    updateLayer(i, { y: layers[i].y + (dir === "up" ? -10 : 10) });
-  };
+  const moveLayerY = (i: number, dir: "up" | "down") => updateLayer(i, { y: layers[i].y + (dir === "up" ? -5 : 5) });
 
   const handleImageUpload = async (i: number, file: File) => {
     setUploading(prev => ({ ...prev, [i]: true }));
@@ -2638,23 +2679,48 @@ function IGStoriesTab({ settings, onRefresh }: any) {
   const websiteText = values.ig_story_website_text;
   const previewArtwork = previewBeat?.artwork_url;
   const previewTitle = previewBeat?.title || "BEAT NÁZEV";
+  const previewArtist = previewBeat?.artist || "VOODOO808";
+
+  // Card settings
+  const cardShow = values.ig_story_card_show !== "false";
+  const cardRadius = parseFloat(values.ig_story_card_radius);
+  const cardBlur = parseFloat(values.ig_story_card_blur);
+  const cardBrightness = parseFloat(values.ig_story_card_brightness);
+  const cardShadow = values.ig_story_card_shadow !== "false";
+  const cardShadowAmount = parseFloat(values.ig_story_card_shadow_amount);
+  const cardPadding = parseFloat(values.ig_story_card_padding);
+
+  // Preview card is 216px wide. Card has 24px margins each side → card width = 168px
+  const PREVIEW_W = 216;
+  const CARD_MARGIN = 24;
+  const cardW = PREVIEW_W - CARD_MARGIN * 2;           // 168px
+  const artworkW = cardW - cardPadding * 2;             // inner artwork size
+  const cardGlassBg = `rgba(255,255,255,${cardBrightness})`;
+  const cardBoxShadow = cardShadow ? `0 ${cardShadowAmount * 0.5}px ${cardShadowAmount}px rgba(0,0,0,0.55)` : "none";
 
   const labelStyle = { fontSize: "11px", color: "#666", marginBottom: "6px", display: "block", letterSpacing: "0.05em", textTransform: "uppercase" as const };
   const fieldStyle = { width: "100%", padding: "9px 12px", background: "#0d0d0d", border: "1px solid #2a2a2a", borderRadius: "3px", color: "#fff", fontSize: "13px", fontFamily: "inherit", outline: "none", boxSizing: "border-box" as const };
   const modeBtnStyle = (active: boolean) => ({ padding: "4px 10px", background: active ? "#fff" : "transparent", color: active ? "#000" : "#555", border: "1px solid " + (active ? "#fff" : "#333"), borderRadius: "3px", fontSize: "11px", cursor: "pointer", fontFamily: "inherit" });
+  const sectionHeadStyle = { fontSize: "10px", color: "#555", textTransform: "uppercase" as const, letterSpacing: "0.1em", borderBottom: "1px solid #1a1a1a", paddingBottom: "8px", marginBottom: "14px" };
 
   const renderLayerPreview = (layer: IGLayer) => {
     if (!layer.visible) return null;
     const style: React.CSSProperties = { position: "absolute", left: 0, right: 0, top: layer.y + "px", textAlign: "center", pointerEvents: "none" };
     if (layer.mode === "image" && layer.imageUrl) {
-      return <img key={layer.id} src={layer.imageUrl} alt="" style={{ ...style, height: "18px", width: "auto", maxWidth: "80%", margin: "0 auto", display: "block", objectFit: "contain" }} />;
+      return <img key={layer.id} src={layer.imageUrl} alt="" style={{ ...style, height: "16px", width: "auto", maxWidth: "80%", margin: "0 auto", display: "block", objectFit: "contain" }} />;
     }
-    if (layer.id === "logo") return <div key="logo" style={{ ...style, fontSize: "11px", fontWeight: 700, color: textColor, letterSpacing: "3px" }}>VOODOO808</div>;
-    if (layer.id === "listening") return <div key="listening" style={{ ...style, fontSize: "8px", color: textColor + "88", fontStyle: "italic" }}>{listeningText}</div>;
-    if (layer.id === "title") return <div key="title" style={{ ...style, fontSize: "15px", fontWeight: 700, color: textColor, letterSpacing: "0.05em", lineHeight: 1.2 }}>{previewTitle.toUpperCase()}</div>;
-    if (layer.id === "website") return <div key="website" style={{ ...style, fontSize: "7px", color: textColor + "66", letterSpacing: "1px" }}>{websiteText}</div>;
+    if (layer.id === "logo") return <div key="logo" style={{ ...style, fontSize: "10px", fontWeight: 700, color: textColor, letterSpacing: "3px" }}>VOODOO808</div>;
+    if (layer.id === "listening") return <div key="listening" style={{ ...style, fontSize: "7px", color: textColor + "88", fontStyle: "italic" }}>{listeningText}</div>;
+    if (layer.id === "title") return <div key="title" style={{ ...style, fontSize: "13px", fontWeight: 700, color: textColor, letterSpacing: "0.05em", lineHeight: 1.2 }}>{previewTitle.toUpperCase()}</div>;
+    if (layer.id === "website") return <div key="website" style={{ ...style, fontSize: "6px", color: textColor + "66", letterSpacing: "1px" }}>{websiteText}</div>;
     return null;
   };
+
+  // Compute card top position so it sits 24px above the bottom of the preview (384px total)
+  // Card height: padding + artworkW + 8 (name) + 6 (artist) + 8 (gap) + waveform (22) + 8 (gap) + controls (18) + 8 (gap) + volume (6) + padding
+  const waveW = artworkW;
+  const estimatedCardH = cardPadding + artworkW + 8 + 14 + 4 + 10 + 8 + 22 + 8 + 18 + 8 + 6 + cardPadding;
+  const cardTop = 384 - 24 - estimatedCardH;
 
   return (
     <div style={{ padding: "24px 0" }}>
@@ -2663,57 +2729,143 @@ function IGStoriesTab({ settings, onRefresh }: any) {
       </div>
       <div style={{ display: "flex", gap: "32px", alignItems: "flex-start" }}>
 
-        {/* Preview card */}
+        {/* ───── Preview card ───── */}
         <div style={{ flexShrink: 0 }}>
           <div style={{ fontSize: "11px", color: "#555", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
             Náhled{previewBeat ? ` — ${previewBeat.title}` : ""}
           </div>
-          <div style={{ width: "216px", height: "384px", position: "relative", overflow: "hidden", borderRadius: "8px", border: "1px solid #2a2a2a", background: bgMode === "color" ? bgColor : "#111" }}>
+          <div style={{ width: `${PREVIEW_W}px`, height: "384px", position: "relative", overflow: "hidden", borderRadius: "8px", border: "1px solid #2a2a2a", background: bgMode === "color" ? bgColor : "#111" }}>
+            {/* Background */}
             {bgMode === "artwork" && previewArtwork && (
               <img src={previewArtwork} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", filter: `blur(${blurVal}px)`, transform: "scale(1.3)" }} />
             )}
             {bgMode === "artwork" && !previewArtwork && (
               <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, #333 0%, #111 100%)" }} />
             )}
+            {/* Dark overlay */}
             <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${overlayOpacity})` }} />
-            <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -58%)", width: "72%", aspectRatio: "1/1", background: "#222", borderRadius: "3px", overflow: "hidden" }}>
-              {previewArtwork && <img src={previewArtwork} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
-            </div>
+
+            {/* Text layers */}
             {layers.map(layer => renderLayerPreview(layer))}
+
+            {/* ── Glassmorphism player card ── */}
+            {cardShow && (
+              <div
+                style={{
+                  position: "absolute",
+                  left: `${CARD_MARGIN}px`,
+                  top: `${Math.max(90, cardTop)}px`,
+                  width: `${cardW}px`,
+                  borderRadius: `${cardRadius}px`,
+                  backdropFilter: `blur(${cardBlur}px)`,
+                  WebkitBackdropFilter: `blur(${cardBlur}px)`,
+                  background: cardGlassBg,
+                  border: "1px solid rgba(255,255,255,0.18)",
+                  boxShadow: cardBoxShadow,
+                  padding: `${cardPadding}px`,
+                  boxSizing: "border-box",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: "0",
+                }}
+              >
+                {/* Artwork */}
+                <div style={{ width: `${artworkW}px`, height: `${artworkW}px`, borderRadius: `${Math.max(0, cardRadius - cardPadding)}px`, overflow: "hidden", background: "#1a1a1a", flexShrink: 0 }}>
+                  {previewArtwork
+                    ? <img src={previewArtwork} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    : <div style={{ width: "100%", height: "100%", background: "linear-gradient(135deg,#2a2a2a,#111)" }} />
+                  }
+                </div>
+
+                {/* Beat name */}
+                <div style={{ marginTop: "10px", fontSize: "9px", fontWeight: 700, color: "#fff", letterSpacing: "0.06em", textAlign: "center", width: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {previewTitle.toUpperCase()}
+                </div>
+                {/* Artist */}
+                <div style={{ marginTop: "3px", fontSize: "7px", color: "rgba(255,255,255,0.6)", letterSpacing: "0.04em", textAlign: "center" }}>
+                  {previewArtist.toUpperCase()}
+                </div>
+
+                {/* Waveform timeline */}
+                <div style={{ marginTop: "10px", width: "100%" }}>
+                  <IGWaveformPreview width={waveW} color="rgba(255,255,255,0.22)" playedColor="rgba(255,255,255,0.85)" />
+                  {/* Time labels */}
+                  <div style={{ display: "flex", justifyContent: "space-between", marginTop: "3px" }}>
+                    <span style={{ fontSize: "5px", color: "rgba(255,255,255,0.5)" }}>2:12</span>
+                    <span style={{ fontSize: "5px", color: "rgba(255,255,255,0.35)" }}>3:18</span>
+                  </div>
+                </div>
+
+                {/* Player controls */}
+                <div style={{ marginTop: "8px", display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", width: "100%" }}>
+                  {/* Prev */}
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="19" x2="5" y2="5"/>
+                  </svg>
+                  {/* Pause button */}
+                  <div style={{ width: "22px", height: "22px", borderRadius: "50%", background: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <svg width="9" height="9" viewBox="0 0 24 24" fill="#000">
+                      <rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>
+                    </svg>
+                  </div>
+                  {/* Next */}
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/>
+                  </svg>
+                </div>
+
+                {/* Volume bar */}
+                <div style={{ marginTop: "10px", width: "100%", display: "flex", alignItems: "center", gap: "5px" }}>
+                  {/* Volume icon */}
+                  <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="2.5" strokeLinecap="round">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                  </svg>
+                  <div style={{ flex: 1, height: "3px", background: "rgba(255,255,255,0.18)", borderRadius: "2px", position: "relative", overflow: "hidden" }}>
+                    <div style={{ position: "absolute", left: 0, top: 0, height: "100%", width: "70%", background: "rgba(255,255,255,0.75)", borderRadius: "2px" }} />
+                  </div>
+                  {/* Max icon */}
+                  <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="2.5" strokeLinecap="round">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+                  </svg>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Settings panel */}
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "18px" }}>
+        {/* ───── Settings panel ───── */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "18px", minWidth: 0 }}>
 
           {/* Background mode */}
           <div>
+            <div style={sectionHeadStyle}>Pozadí</div>
             <label style={labelStyle}>Typ pozadí</label>
-            <div style={{ display: "flex", gap: "8px" }}>
+            <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
               {([["artwork", "Artwork + blur"], ["color", "Plná barva"]] as const).map(([val, label]) => (
                 <button key={val} onClick={() => handleChange("ig_story_bg_mode", val)} style={{ flex: 1, padding: "9px", background: bgMode === val ? "#fff" : "#0d0d0d", color: bgMode === val ? "#000" : "#666", border: "1px solid " + (bgMode === val ? "#fff" : "#2a2a2a"), borderRadius: "3px", fontSize: "12px", cursor: "pointer", fontFamily: "inherit" }}>
                   {label}
                 </button>
               ))}
             </div>
+
+            {bgMode === "artwork" && (
+              <>
+                <label style={labelStyle}>Rozmazání pozadí — {values.ig_story_blur}px</label>
+                <input type="range" min="0" max="40" step="1" value={blurVal} onChange={(e) => handleChange("ig_story_blur", e.target.value)} style={{ width: "100%", accentColor: "#fff" }} />
+              </>
+            )}
+
+            {bgMode === "color" && (
+              <>
+                <label style={labelStyle}>Barva pozadí</label>
+                <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                  <input type="color" value={bgColor} onChange={(e) => handleChange("ig_story_bg_color", e.target.value)} style={{ width: "36px", height: "36px", padding: "2px", background: "#0d0d0d", border: "1px solid #2a2a2a", borderRadius: "3px", cursor: "pointer" }} />
+                  <input type="text" value={bgColor} onChange={(e) => handleChange("ig_story_bg_color", e.target.value)} style={{ ...fieldStyle, width: "90px" }} />
+                </div>
+              </>
+            )}
           </div>
-
-          {bgMode === "artwork" && (
-            <div>
-              <label style={labelStyle}>Rozmazání pozadí — {values.ig_story_blur}px</label>
-              <input type="range" min="0" max="40" step="1" value={blurVal} onChange={(e) => handleChange("ig_story_blur", e.target.value)} style={{ width: "100%", accentColor: "#fff" }} />
-            </div>
-          )}
-
-          {bgMode === "color" && (
-            <div>
-              <label style={labelStyle}>Barva pozadí</label>
-              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                <input type="color" value={bgColor} onChange={(e) => handleChange("ig_story_bg_color", e.target.value)} style={{ width: "36px", height: "36px", padding: "2px", background: "#0d0d0d", border: "1px solid #2a2a2a", borderRadius: "3px", cursor: "pointer" }} />
-                <input type="text" value={bgColor} onChange={(e) => handleChange("ig_story_bg_color", e.target.value)} style={{ ...fieldStyle, width: "90px" }} />
-              </div>
-            </div>
-          )}
 
           {/* Colors + overlay */}
           <div style={{ display: "flex", gap: "12px" }}>
@@ -2730,18 +2882,81 @@ function IGStoriesTab({ settings, onRefresh }: any) {
             </div>
           </div>
 
+          {/* ── Glassmorphism card settings ── */}
+          <div>
+            <div style={sectionHeadStyle}>Player karta (glassmorphism)</div>
+
+            {/* Show/hide toggle */}
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "14px" }}>
+              <button
+                onClick={() => handleChange("ig_story_card_show", cardShow ? "false" : "true")}
+                style={{ padding: "6px 14px", background: cardShow ? "#fff" : "#0d0d0d", color: cardShow ? "#000" : "#555", border: "1px solid " + (cardShow ? "#fff" : "#333"), borderRadius: "3px", fontSize: "12px", cursor: "pointer", fontFamily: "inherit" }}
+              >
+                {cardShow ? "✓ Zobrazit kartu" : "Skrýt kartu"}
+              </button>
+            </div>
+
+            {cardShow && (
+              <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+
+                {/* Radius + Padding row */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                  <div>
+                    <label style={labelStyle}>Zaoblení rohů — {values.ig_story_card_radius}px</label>
+                    <input type="range" min="0" max="40" step="1" value={cardRadius} onChange={(e) => handleChange("ig_story_card_radius", e.target.value)} style={{ width: "100%", accentColor: "#fff" }} />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Vnitřní padding — {values.ig_story_card_padding}px</label>
+                    <input type="range" min="8" max="32" step="1" value={cardPadding} onChange={(e) => handleChange("ig_story_card_padding", e.target.value)} style={{ width: "100%", accentColor: "#fff" }} />
+                  </div>
+                </div>
+
+                {/* Glass blur + brightness row */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                  <div>
+                    <label style={labelStyle}>Rozmazání skla — {values.ig_story_card_blur}px</label>
+                    <input type="range" min="0" max="40" step="1" value={cardBlur} onChange={(e) => handleChange("ig_story_card_blur", e.target.value)} style={{ width: "100%", accentColor: "#fff" }} />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Světlost skla — {Math.round(cardBrightness * 100)}%</label>
+                    <input type="range" min="0" max="0.6" step="0.01" value={cardBrightness} onChange={(e) => handleChange("ig_story_card_brightness", e.target.value)} style={{ width: "100%", accentColor: "#fff" }} />
+                  </div>
+                </div>
+
+                {/* Shadow */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", alignItems: "end" }}>
+                  <div>
+                    <label style={labelStyle}>Stín</label>
+                    <button
+                      onClick={() => handleChange("ig_story_card_shadow", cardShadow ? "false" : "true")}
+                      style={{ width: "100%", padding: "9px", background: cardShadow ? "#fff" : "#0d0d0d", color: cardShadow ? "#000" : "#555", border: "1px solid " + (cardShadow ? "#fff" : "#333"), borderRadius: "3px", fontSize: "12px", cursor: "pointer", fontFamily: "inherit" }}
+                    >
+                      {cardShadow ? "✓ Stín zapnut" : "Stín vypnut"}
+                    </button>
+                  </div>
+                  {cardShadow && (
+                    <div>
+                      <label style={labelStyle}>Intenzita stínu — {values.ig_story_card_shadow_amount}px</label>
+                      <input type="range" min="0" max="60" step="2" value={cardShadowAmount} onChange={(e) => handleChange("ig_story_card_shadow_amount", e.target.value)} style={{ width: "100%", accentColor: "#fff" }} />
+                    </div>
+                  )}
+                </div>
+
+              </div>
+            )}
+          </div>
+
           {/* Text layers */}
           <div>
-            <label style={labelStyle}>Vrstvy textu</label>
+            <div style={sectionHeadStyle}>Textové vrstvy</div>
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               {layers.map((layer, i) => (
                 <div key={layer.id} style={{ background: "#0d0d0d", border: "1px solid #2a2a2a", borderRadius: "4px", padding: "10px 12px", display: "flex", flexDirection: "column", gap: "8px" }}>
-                  {/* Row 1: label + Y controls + eye */}
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                     <span style={{ flex: 1, fontSize: "12px", color: layer.visible ? "#ccc" : "#444", textDecoration: layer.visible ? "none" : "line-through" }}>{IG_LAYER_LABELS[layer.id]}</span>
                     <span style={{ fontSize: "10px", color: "#444", whiteSpace: "nowrap" }}>Y: {layer.y}px</span>
-                    <button onClick={() => moveLayerY(i, "up")} title="Posunout nahoru na kartě" style={{ background: "transparent", border: "1px solid #2a2a2a", borderRadius: "3px", color: "#666", cursor: "pointer", padding: "2px 7px", fontSize: "10px", lineHeight: 1.4, fontFamily: "inherit" }}>▲</button>
-                    <button onClick={() => moveLayerY(i, "down")} title="Posunout dolů na kartě" style={{ background: "transparent", border: "1px solid #2a2a2a", borderRadius: "3px", color: "#666", cursor: "pointer", padding: "2px 7px", fontSize: "10px", lineHeight: 1.4, fontFamily: "inherit" }}>▼</button>
+                    <button onClick={() => moveLayerY(i, "up")} title="Posunout nahoru" style={{ background: "transparent", border: "1px solid #2a2a2a", borderRadius: "3px", color: "#666", cursor: "pointer", padding: "2px 7px", fontSize: "10px", lineHeight: 1.4, fontFamily: "inherit" }}>▲</button>
+                    <button onClick={() => moveLayerY(i, "down")} title="Posunout dolů" style={{ background: "transparent", border: "1px solid #2a2a2a", borderRadius: "3px", color: "#666", cursor: "pointer", padding: "2px 7px", fontSize: "10px", lineHeight: 1.4, fontFamily: "inherit" }}>▼</button>
                     <button onClick={() => updateLayer(i, { visible: !layer.visible })} title={layer.visible ? "Skrýt" : "Zobrazit"} style={{ background: "transparent", border: "none", color: layer.visible ? "#aaa" : "#3a3a3a", cursor: "pointer", padding: "2px 4px", display: "flex", alignItems: "center" }}>
                       {layer.visible ? (
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -2750,7 +2965,6 @@ function IGStoriesTab({ settings, onRefresh }: any) {
                       )}
                     </button>
                   </div>
-                  {/* Row 2: mode toggle + upload */}
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                     <button onClick={() => updateLayer(i, { mode: "text" })} style={modeBtnStyle(layer.mode === "text")}>Aa Text</button>
                     <button onClick={() => fileInputRefs.current[i]?.click()} style={modeBtnStyle(layer.mode === "image")}>
@@ -2777,12 +2991,15 @@ function IGStoriesTab({ settings, onRefresh }: any) {
 
           {/* Editable texts */}
           <div>
-            <label style={labelStyle}>Text nad názvem</label>
-            <input type="text" value={listeningText} onChange={(e) => handleChange("ig_story_listening_text", e.target.value)} placeholder="právě poslouchám" style={fieldStyle} />
-          </div>
-          <div>
-            <label style={labelStyle}>Text webu</label>
-            <input type="text" value={websiteText} onChange={(e) => handleChange("ig_story_website_text", e.target.value)} placeholder="NA VOODOO808.COM" style={fieldStyle} />
+            <div style={sectionHeadStyle}>Texty</div>
+            <div style={{ marginBottom: "12px" }}>
+              <label style={labelStyle}>Text nad názvem</label>
+              <input type="text" value={listeningText} onChange={(e) => handleChange("ig_story_listening_text", e.target.value)} placeholder="právě poslouchám" style={fieldStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>Text webu</label>
+              <input type="text" value={websiteText} onChange={(e) => handleChange("ig_story_website_text", e.target.value)} placeholder="NA VOODOO808.COM" style={fieldStyle} />
+            </div>
           </div>
 
           <button className="btn btn-filled" onClick={handleSave} disabled={saving} style={{ alignSelf: "flex-start", opacity: saving ? 0.6 : 1 }}>

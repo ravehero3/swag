@@ -600,6 +600,11 @@ function Home() {
         @media (max-width: 768px) {
           .mobile-hide-dock { display: none !important; }
           .mobile-video-container { min-height: 320px !important; max-height: 60vh; }
+          .mobile-only-video-section { display: block !important; }
+          .desktop-main-video { display: none !important; }
+        }
+        @media (min-width: 769px) {
+          .mobile-only-video-section { display: none !important; }
         }
       `}</style>
       <audio
@@ -611,7 +616,7 @@ function Home() {
         }}
       />
 
-      <div className="mobile-video-container" style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative", background: "#000", minHeight: "600px" }}>
+      <div className="mobile-video-container desktop-main-video" style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative", background: "#000", minHeight: "600px" }}>
         <video
           ref={videoRef}
           key={settings?.home_video}
@@ -632,6 +637,29 @@ function Home() {
             width: "100%",
             height: "166px",
             background: "linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 100%)",
+            pointerEvents: "none",
+          }}
+        />
+      </div>
+
+      {/* Mobile-only video — shown only on screens ≤768px */}
+      <div className="mobile-only-video-section" style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginBottom: "24px", overflow: "hidden", position: "relative", background: "#000" }}>
+        <video
+          src="/uploads/mobile-home-video.mov"
+          autoPlay
+          loop
+          muted
+          playsInline
+          style={{ width: "100%", display: "block", objectFit: "cover", background: "#000" }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            width: "100%",
+            height: "80px",
+            background: "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 100%)",
             pointerEvents: "none",
           }}
         />
