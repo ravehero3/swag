@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, CSSProperties } from "react";
 import { useApp } from "../App.js";
 
 interface ShareProduct {
@@ -116,36 +116,55 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
       }
 
       ctx.textAlign = "center";
-      ctx.letterSpacing = "0px";
 
-      let textY = 1920 - 400;
+      const CARD_H = 384;
+      const CANVAS_H = 1920;
+      const yScale = CANVAS_H / CARD_H;
+
       for (const layer of storyLayers) {
         if (!layer.visible) continue;
+        const layerY = (typeof layer.y === "number" ? layer.y : 280) * yScale;
+
+        if (layer.mode === "image" && layer.imageUrl) {
+          const logoImg = new Image();
+          logoImg.crossOrigin = "anonymous";
+          await new Promise<void>((resolve) => {
+            logoImg.onload = () => resolve();
+            logoImg.onerror = () => resolve();
+            logoImg.src = layer.imageUrl!;
+            setTimeout(resolve, 4000);
+          });
+          if (logoImg.complete && logoImg.naturalWidth > 0) {
+            const maxH = 90;
+            const scale = maxH / logoImg.naturalHeight;
+            const w = logoImg.naturalWidth * scale;
+            ctx.drawImage(logoImg, (1080 - w) / 2, layerY - maxH / 2, w, maxH);
+          }
+          continue;
+        }
+
+        ctx.letterSpacing = "0px";
         if (layer.id === "logo") {
           ctx.font = "bold 52px Helvetica, Arial, sans-serif";
           ctx.fillStyle = storyTextColor + "cc";
           ctx.letterSpacing = "8px";
-          ctx.fillText("VOODOO808", 540, textY);
+          ctx.fillText("VOODOO808", 540, layerY);
           ctx.letterSpacing = "0px";
-          textY += 70;
         } else if (layer.id === "listening") {
           ctx.font = "italic 36px Helvetica, Arial, sans-serif";
           ctx.fillStyle = storyTextColor + "88";
-          ctx.fillText(listeningText, 540, textY);
-          textY += 50;
+          ctx.fillText(listeningText, 540, layerY);
         } else if (layer.id === "title") {
           ctx.font = "bold 80px Helvetica, Arial, sans-serif";
           ctx.fillStyle = storyTextColor;
           const titleLines = wrapText(ctx, resolvedTitle.toUpperCase(), 900, 80);
-          for (const line of titleLines) {
-            ctx.fillText(line, 540, textY);
-            textY += 96;
-          }
+          titleLines.forEach((line, li) => {
+            ctx.fillText(line, 540, layerY + li * 96);
+          });
         } else if (layer.id === "website") {
           ctx.font = "38px Helvetica, Arial, sans-serif";
           ctx.fillStyle = storyTextColor + "99";
-          ctx.fillText(websiteText, 540, textY);
-          textY += 55;
+          ctx.fillText(websiteText, 540, layerY);
         }
       }
 
@@ -237,15 +256,18 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
                   </div>
                 )}
 
-                <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "8px 6px", display: "flex", flexDirection: "column", alignItems: "center", gap: "2px" }}>
-                  {storyLayers.filter(l => l.visible).map(layer => {
-                    if (layer.id === "logo") return <div key="logo" style={{ fontSize: "7px", fontWeight: "700", color: storyTextColor, letterSpacing: "2px" }}>VOODOO808</div>;
-                    if (layer.id === "listening") return <div key="listening" style={{ fontSize: "5.5px", color: storyTextColor + "88", fontStyle: "italic" }}>{listeningText}</div>;
-                    if (layer.id === "title") return <div key="title" style={{ fontSize: "8px", fontWeight: "700", color: storyTextColor, textAlign: "center", letterSpacing: "0.05em", lineHeight: 1.2 }}>{resolvedTitle.toUpperCase()}</div>;
-                    if (layer.id === "website") return <div key="website" style={{ fontSize: "5.5px", color: storyTextColor + "66", letterSpacing: "0.5px" }}>{websiteText}</div>;
-                    return null;
-                  })}
-                </div>
+                {storyLayers.filter(l => l.visible).map(layer => {
+                  const yPct = ((layer.y ?? 280) / 384) * 100;
+                  const base: CSSProperties = { position: "absolute", left: 0, right: 0, top: yPct + "%", textAlign: "center", transform: "translateY(-50%)", pointerEvents: "none" };
+                  if (layer.mode === "image" && layer.imageUrl) {
+                    return <img key={layer.id} src={layer.imageUrl} alt="" style={{ ...base, height: "12px", width: "auto", maxWidth: "80%", margin: "0 auto", display: "block", objectFit: "contain" }} />;
+                  }
+                  if (layer.id === "logo") return <div key="logo" style={{ ...base, fontSize: "7px", fontWeight: "700", color: storyTextColor, letterSpacing: "2px" }}>VOODOO808</div>;
+                  if (layer.id === "listening") return <div key="listening" style={{ ...base, fontSize: "5.5px", color: storyTextColor + "88", fontStyle: "italic" }}>{listeningText}</div>;
+                  if (layer.id === "title") return <div key="title" style={{ ...base, fontSize: "8px", fontWeight: "700", color: storyTextColor, letterSpacing: "0.05em", lineHeight: 1.2 }}>{resolvedTitle.toUpperCase()}</div>;
+                  if (layer.id === "website") return <div key="website" style={{ ...base, fontSize: "5.5px", color: storyTextColor + "66", letterSpacing: "0.5px" }}>{websiteText}</div>;
+                  return null;
+                })}
               </div>
 
               <div style={{ flex: 1 }}>

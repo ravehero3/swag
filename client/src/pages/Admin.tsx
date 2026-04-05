@@ -2539,11 +2539,13 @@ function SEOTab({ settings, onRefresh }: any) {
   );
 }
 
-const IG_STORY_DEFAULT_LAYERS = [
-  { id: "logo", visible: true },
-  { id: "listening", visible: true },
-  { id: "title", visible: true },
-  { id: "website", visible: true },
+type IGLayer = { id: string; visible: boolean; y: number; mode: "text" | "image"; imageUrl: string | null };
+
+const IG_STORY_DEFAULT_LAYERS: IGLayer[] = [
+  { id: "logo",      visible: true, y: 218, mode: "text", imageUrl: null },
+  { id: "listening", visible: true, y: 252, mode: "text", imageUrl: null },
+  { id: "title",     visible: true, y: 278, mode: "text", imageUrl: null },
+  { id: "website",   visible: true, y: 315, mode: "text", imageUrl: null },
 ];
 
 const IG_LAYER_LABELS: Record<string, string> = {
@@ -2568,6 +2570,8 @@ function IGStoriesTab({ settings, onRefresh }: any) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [previewBeat, setPreviewBeat] = useState<any>(null);
+  const [uploading, setUploading] = useState<Record<number, boolean>>({});
+  const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
     fetch("/api/beats", { credentials: "include" })
@@ -2578,21 +2582,40 @@ function IGStoriesTab({ settings, onRefresh }: any) {
 
   const handleChange = (key: string, val: string) => setValues(prev => ({ ...prev, [key]: val }));
 
-  const layers: { id: string; visible: boolean }[] = (() => {
-    try { return JSON.parse(values.ig_story_layers); } catch { return IG_STORY_DEFAULT_LAYERS; }
+  const layers: IGLayer[] = (() => {
+    try {
+      const parsed = JSON.parse(values.ig_story_layers);
+      return parsed.map((l: any) => ({
+        id: l.id,
+        visible: l.visible ?? true,
+        y: typeof l.y === "number" ? l.y : (IG_STORY_DEFAULT_LAYERS.find(d => d.id === l.id)?.y ?? 280),
+        mode: l.mode ?? "text",
+        imageUrl: l.imageUrl ?? null,
+      }));
+    } catch { return IG_STORY_DEFAULT_LAYERS; }
   })();
 
-  const setLayers = (nl: { id: string; visible: boolean }[]) => handleChange("ig_story_layers", JSON.stringify(nl));
+  const setLayers = (nl: IGLayer[]) => handleChange("ig_story_layers", JSON.stringify(nl));
+  const updateLayer = (i: number, patch: Partial<IGLayer>) => setLayers(layers.map((l, idx) => idx === i ? { ...l, ...patch } : l));
 
-  const moveLayer = (i: number, dir: "up" | "down") => {
-    const nl = [...layers];
-    const t = dir === "up" ? i - 1 : i + 1;
-    if (t < 0 || t >= nl.length) return;
-    [nl[i], nl[t]] = [nl[t], nl[i]];
-    setLayers(nl);
+  const moveLayerY = (i: number, dir: "up" | "down") => {
+    updateLayer(i, { y: layers[i].y + (dir === "up" ? -10 : 10) });
   };
 
-  const toggleLayer = (i: number) => setLayers(layers.map((l, idx) => idx === i ? { ...l, visible: !l.visible } : l));
+  const handleImageUpload = async (i: number, file: File) => {
+    setUploading(prev => ({ ...prev, [i]: true }));
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const res = await fetch("/api/upload?type=artwork", { method: "POST", credentials: "include", body: form });
+      if (res.ok) {
+        const data = await res.json();
+        updateLayer(i, { imageUrl: data.url, mode: "image" });
+      }
+    } finally {
+      setUploading(prev => ({ ...prev, [i]: false }));
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -2618,6 +2641,20 @@ function IGStoriesTab({ settings, onRefresh }: any) {
 
   const labelStyle = { fontSize: "11px", color: "#666", marginBottom: "6px", display: "block", letterSpacing: "0.05em", textTransform: "uppercase" as const };
   const fieldStyle = { width: "100%", padding: "9px 12px", background: "#0d0d0d", border: "1px solid #2a2a2a", borderRadius: "3px", color: "#fff", fontSize: "13px", fontFamily: "inherit", outline: "none", boxSizing: "border-box" as const };
+  const modeBtnStyle = (active: boolean) => ({ padding: "4px 10px", background: active ? "#fff" : "transparent", color: active ? "#000" : "#555", border: "1px solid " + (active ? "#fff" : "#333"), borderRadius: "3px", fontSize: "11px", cursor: "pointer", fontFamily: "inherit" });
+
+  const renderLayerPreview = (layer: IGLayer) => {
+    if (!layer.visible) return null;
+    const style: React.CSSProperties = { position: "absolute", left: 0, right: 0, top: layer.y + "px", textAlign: "center", pointerEvents: "none" };
+    if (layer.mode === "image" && layer.imageUrl) {
+      return <img key={layer.id} src={layer.imageUrl} alt="" style={{ ...style, height: "18px", width: "auto", maxWidth: "80%", margin: "0 auto", display: "block", objectFit: "contain" }} />;
+    }
+    if (layer.id === "logo") return <div key="logo" style={{ ...style, fontSize: "11px", fontWeight: 700, color: textColor, letterSpacing: "3px" }}>VOODOO808</div>;
+    if (layer.id === "listening") return <div key="listening" style={{ ...style, fontSize: "8px", color: textColor + "88", fontStyle: "italic" }}>{listeningText}</div>;
+    if (layer.id === "title") return <div key="title" style={{ ...style, fontSize: "15px", fontWeight: 700, color: textColor, letterSpacing: "0.05em", lineHeight: 1.2 }}>{previewTitle.toUpperCase()}</div>;
+    if (layer.id === "website") return <div key="website" style={{ ...style, fontSize: "7px", color: textColor + "66", letterSpacing: "1px" }}>{websiteText}</div>;
+    return null;
+  };
 
   return (
     <div style={{ padding: "24px 0" }}>
@@ -2642,15 +2679,7 @@ function IGStoriesTab({ settings, onRefresh }: any) {
             <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -58%)", width: "72%", aspectRatio: "1/1", background: "#222", borderRadius: "3px", overflow: "hidden" }}>
               {previewArtwork && <img src={previewArtwork} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
             </div>
-            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "10px 12px 18px", display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
-              {layers.filter(l => l.visible).map(layer => {
-                if (layer.id === "logo") return <div key="logo" style={{ fontSize: "11px", fontWeight: 700, color: textColor, letterSpacing: "3px" }}>VOODOO808</div>;
-                if (layer.id === "listening") return <div key="listening" style={{ fontSize: "8px", color: textColor + "88", fontStyle: "italic" }}>{listeningText}</div>;
-                if (layer.id === "title") return <div key="title" style={{ fontSize: "15px", fontWeight: 700, color: textColor, textAlign: "center", letterSpacing: "0.05em", lineHeight: 1.2 }}>{previewTitle.toUpperCase()}</div>;
-                if (layer.id === "website") return <div key="website" style={{ fontSize: "7px", color: textColor + "66", letterSpacing: "1px" }}>{websiteText}</div>;
-                return null;
-              })}
-            </div>
+            {layers.map(layer => renderLayerPreview(layer))}
           </div>
         </div>
 
@@ -2704,19 +2733,43 @@ function IGStoriesTab({ settings, onRefresh }: any) {
           {/* Text layers */}
           <div>
             <label style={labelStyle}>Vrstvy textu</label>
-            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               {layers.map((layer, i) => (
-                <div key={layer.id} style={{ display: "flex", alignItems: "center", gap: "6px", padding: "8px 10px", background: "#0d0d0d", border: "1px solid #2a2a2a", borderRadius: "3px" }}>
-                  <button onClick={() => moveLayer(i, "up")} disabled={i === 0} title="Posunout nahoru" style={{ background: "transparent", border: "none", color: i === 0 ? "#2a2a2a" : "#666", cursor: i === 0 ? "default" : "pointer", padding: "2px 5px", fontSize: "11px", lineHeight: 1, fontFamily: "inherit" }}>▲</button>
-                  <button onClick={() => moveLayer(i, "down")} disabled={i === layers.length - 1} title="Posunout dolů" style={{ background: "transparent", border: "none", color: i === layers.length - 1 ? "#2a2a2a" : "#666", cursor: i === layers.length - 1 ? "default" : "pointer", padding: "2px 5px", fontSize: "11px", lineHeight: 1, fontFamily: "inherit" }}>▼</button>
-                  <span style={{ flex: 1, fontSize: "12px", color: layer.visible ? "#ccc" : "#3a3a3a", textDecoration: layer.visible ? "none" : "line-through" }}>{IG_LAYER_LABELS[layer.id]}</span>
-                  <button onClick={() => toggleLayer(i)} title={layer.visible ? "Skrýt" : "Zobrazit"} style={{ background: "transparent", border: "none", color: layer.visible ? "#aaa" : "#3a3a3a", cursor: "pointer", padding: "2px 4px", display: "flex", alignItems: "center" }}>
-                    {layer.visible ? (
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                    ) : (
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                <div key={layer.id} style={{ background: "#0d0d0d", border: "1px solid #2a2a2a", borderRadius: "4px", padding: "10px 12px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                  {/* Row 1: label + Y controls + eye */}
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span style={{ flex: 1, fontSize: "12px", color: layer.visible ? "#ccc" : "#444", textDecoration: layer.visible ? "none" : "line-through" }}>{IG_LAYER_LABELS[layer.id]}</span>
+                    <span style={{ fontSize: "10px", color: "#444", whiteSpace: "nowrap" }}>Y: {layer.y}px</span>
+                    <button onClick={() => moveLayerY(i, "up")} title="Posunout nahoru na kartě" style={{ background: "transparent", border: "1px solid #2a2a2a", borderRadius: "3px", color: "#666", cursor: "pointer", padding: "2px 7px", fontSize: "10px", lineHeight: 1.4, fontFamily: "inherit" }}>▲</button>
+                    <button onClick={() => moveLayerY(i, "down")} title="Posunout dolů na kartě" style={{ background: "transparent", border: "1px solid #2a2a2a", borderRadius: "3px", color: "#666", cursor: "pointer", padding: "2px 7px", fontSize: "10px", lineHeight: 1.4, fontFamily: "inherit" }}>▼</button>
+                    <button onClick={() => updateLayer(i, { visible: !layer.visible })} title={layer.visible ? "Skrýt" : "Zobrazit"} style={{ background: "transparent", border: "none", color: layer.visible ? "#aaa" : "#3a3a3a", cursor: "pointer", padding: "2px 4px", display: "flex", alignItems: "center" }}>
+                      {layer.visible ? (
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                      ) : (
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                      )}
+                    </button>
+                  </div>
+                  {/* Row 2: mode toggle + upload */}
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <button onClick={() => updateLayer(i, { mode: "text" })} style={modeBtnStyle(layer.mode === "text")}>Aa Text</button>
+                    <button onClick={() => fileInputRefs.current[i]?.click()} style={modeBtnStyle(layer.mode === "image")}>
+                      {uploading[i] ? "Nahrávám…" : layer.mode === "image" && layer.imageUrl ? "🖼 Změnit logo" : "🖼 Nahrát logo"}
+                    </button>
+                    <input
+                      ref={el => { fileInputRefs.current[i] = el; }}
+                      type="file"
+                      accept="image/*"
+                      style={{ display: "none" }}
+                      onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImageUpload(i, f); e.target.value = ""; }}
+                    />
+                    {layer.mode === "image" && layer.imageUrl && (
+                      <>
+                        <img src={layer.imageUrl} alt="" style={{ height: "20px", borderRadius: "2px", border: "1px solid #333" }} />
+                        <button onClick={() => updateLayer(i, { mode: "text", imageUrl: null })} style={{ background: "transparent", border: "none", color: "#555", cursor: "pointer", fontSize: "14px", lineHeight: 1, padding: "0 4px" }} title="Odebrat logo">×</button>
+                      </>
                     )}
-                  </button>
+                  </div>
                 </div>
               ))}
             </div>
