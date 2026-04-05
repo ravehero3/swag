@@ -2,13 +2,21 @@ const cache = new Map<string, number[] | null>();
 const inFlight = new Set<string>();
 
 const BAR_COUNT = 480;
-const FETCH_TIMEOUT_MS = 8000;
+const FETCH_TIMEOUT_MS = 15000;
+
+function proxiedUrl(url: string): string {
+  if (!url.startsWith("http")) return url;
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  if (url.startsWith(origin)) return url;
+  return `/api/audio-proxy?url=${encodeURIComponent(url)}`;
+}
 
 async function extractWaveform(url: string): Promise<number[] | null> {
   try {
+    const fetchUrl = proxiedUrl(url);
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-    const response = await fetch(url, { mode: "cors", signal: controller.signal });
+    const response = await fetch(fetchUrl, { signal: controller.signal });
     clearTimeout(timeout);
     if (!response.ok) return null;
     const arrayBuffer = await response.arrayBuffer();

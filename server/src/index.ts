@@ -16,6 +16,7 @@ import leadsRoutes from "./routes/leads.js";
 import commentsRoutes from "./routes/comments.js";
 import { requireAuth, requireAdmin } from "./middleware/auth.js";
 import bcrypt from "bcryptjs";
+import { configureBucketCors, STORAGE_BUCKETS } from "./lib/storage.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -327,6 +328,47 @@ app.post("/api/admin/settings", requireAdmin, async (req, res) => {
   }
 });
 
+// Audio proxy — lets the browser fetch B2 audio via the server to avoid CORS
+app.get("/api/audio-proxy", async (req: any, res: any) => {
+  const url = req.query.url as string;
+  if (!url) return res.status(400).json({ error: "Missing url" });
+
+  const b2Endpoint = process.env.B2_ENDPOINT || "";
+  const b2PublicBase = process.env.B2_PUBLIC_BASE_URL || "";
+  const isAllowed =
+    url.includes("backblazeb2.com") ||
+    (b2Endpoint && url.includes(b2Endpoint)) ||
+    (b2PublicBase && url.startsWith(b2PublicBase));
+  if (!isAllowed) return res.status(403).json({ error: "URL not allowed" });
+
+  try {
+    const upstream = await fetch(url, {
+      headers: { "User-Agent": "VOODOO808-Server/1.0" },
+    });
+    if (!upstream.ok) return res.status(upstream.status).end();
+
+    res.setHeader("Content-Type", upstream.headers.get("content-type") || "audio/mpeg");
+    res.setHeader("Cache-Control", "public, max-age=86400");
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    const cl = upstream.headers.get("content-length");
+    if (cl) res.setHeader("Content-Length", cl);
+
+    if (!upstream.body) return res.status(500).end();
+    const reader = (upstream.body as any).getReader();
+    const pump = async () => {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        res.write(Buffer.from(value));
+      }
+      res.end();
+    };
+    await pump();
+  } catch (err) {
+    if (!res.headersSent) res.status(500).json({ error: "Proxy error", detail: String(err) });
+  }
+});
+
 // JSON error handler — ensures API routes always return JSON, never HTML
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error("Express error on", req.method, req.path, ":", err.message);
@@ -380,6 +422,10 @@ async function ensureDbInitialized() {
     try {
       await initDatabase();
       await seedAdmin();
+      // Configure B2 CORS so browsers can fetch audio directly (silent fail)
+      if (STORAGE_BUCKETS.PREVIEWS) {
+        configureBucketCors(STORAGE_BUCKETS.PREVIEWS).catch(() => {});
+      }
       dbInitialized = true;
     } catch (err) {
       dbInitPromise = null;

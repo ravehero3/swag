@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand, GetObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, GetObjectCommand, ListObjectsV2Command, PutBucketCorsCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import type { Readable } from "stream";
 
@@ -103,3 +103,25 @@ export const STORAGE_BUCKETS = {
 };
 
 export const VIDEO_PREFIX = process.env.B2_VIDEO_BUCKET ? "" : "videos/";
+
+export async function configureBucketCors(bucket: string): Promise<void> {
+  if (!bucket) return;
+  try {
+    await s3Client.send(new PutBucketCorsCommand({
+      Bucket: bucket,
+      CORSConfiguration: {
+        CORSRules: [
+          {
+            AllowedHeaders: ["*"],
+            AllowedMethods: ["GET", "HEAD"],
+            AllowedOrigins: ["*"],
+            MaxAgeSeconds: 86400,
+          },
+        ],
+      },
+    }));
+    console.log(`B2 CORS configured for bucket: ${bucket}`);
+  } catch (err) {
+    console.warn(`B2 CORS setup skipped for ${bucket}:`, (err as Error).message);
+  }
+}
