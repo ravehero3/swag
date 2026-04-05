@@ -953,7 +953,7 @@ function Home() {
             <SoundWave audioRef={audioRef} isPlaying={isPlaying} audioUrl={currentBeat.preview_url} isDraggingComment={!!draggingComment} waveRef={waveRef}>
               {comments.slice(0, 20).map((c: any) => {
                 const baseXPct = audioDuration > 0 ? Math.min(98, Math.max(1, (parseFloat(c.time_offset) || 0) / audioDuration * 100)) : 2;
-                const xPct = draggingComment?.id === c.id ? draggingComment.xPct : baseXPct;
+                const xPct = (draggingComment && draggingComment.id === c.id) ? draggingComment.xPct : baseXPct;
                 const isHovered = hoveredCommentId === c.id;
                 const isActive = activeCommentId === c.id || isHovered;
                 const isDragging = draggingComment?.id === c.id;

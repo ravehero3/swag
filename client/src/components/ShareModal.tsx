@@ -39,7 +39,7 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
   const websiteText = settings?.ig_story_website_text || "NA VOODOO808.COM";
   const bgMode = settings?.ig_story_bg_mode || "artwork";
   const blurAmount = parseFloat(settings?.ig_story_blur || "20");
-  const storyLayers: { id: string; visible: boolean }[] = (() => {
+  const storyLayers: { id: string; visible: boolean; y?: number; mode?: string; imageUrl?: string | null }[] = (() => {
     try {
       const parsed = JSON.parse(settings?.ig_story_layers || "null");
       return Array.isArray(parsed) ? parsed : [{ id: "logo", visible: true }, { id: "listening", visible: true }, { id: "title", visible: true }, { id: "website", visible: true }];

@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
-import Cropper from "react-easy-crop";
+import CropperLib from "react-easy-crop";
+const Cropper = CropperLib as any;
 
 interface Area {
   x: number;
