@@ -12,7 +12,7 @@ const args = [
   '--bundle',
   '--platform=node',
   '--format=esm',
-  '--outfile=api/server.mjs',
+  '--outfile=api/server.js',
   '--external:pg-native',
   '--external:better-sqlite3',
   '--external:oracledb',
@@ -25,6 +25,6 @@ const args = [
 
 execSync(`npx esbuild ${args}`, { stdio: 'inherit', cwd: root });
 
-const bytes = statSync(resolve(root, 'api/server.mjs')).size;
+const bytes = statSync(resolve(root, 'api/server.js')).size;
 const mb = (bytes / 1024 / 1024).toFixed(1);
-console.log(`Server bundle written to api/server.mjs (${mb} MB)`);
+console.log(`Server bundle written to api/server.js (${mb} MB)`);

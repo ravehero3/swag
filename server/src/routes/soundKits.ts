@@ -8,11 +8,12 @@ const router = Router();
 router.get("/", async (_req: Request, res: Response) => {
   try {
     const result = await pool.query(
-      "SELECT * FROM sound_kits WHERE is_published = true ORDER BY order_index ASC, created_at DESC"
+      "SELECT id, title, description, type, price, is_free, number_of_sounds, tags, preview_url, preview_urls, file_url, artwork_url, legal_info, author_info, is_published, order_index, created_at FROM sound_kits WHERE is_published = true ORDER BY order_index ASC, created_at DESC"
     );
     res.set("Cache-Control", "public, max-age=300, stale-while-revalidate=60");
     res.json(result.rows);
   } catch (error) {
+    console.error("Error fetching sound kits:", error);
     res.status(500).json({ error: "Chyba při načítání zvukových kitů" });
   }
 });
