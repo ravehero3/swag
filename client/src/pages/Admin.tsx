@@ -2610,6 +2610,7 @@ function IGStoriesTab({ settings, onRefresh }: any) {
     ig_story_card_shadow: settings.ig_story_card_shadow ?? "true",
     ig_story_card_shadow_amount: settings.ig_story_card_shadow_amount || "24",
     ig_story_card_padding: settings.ig_story_card_padding || "16",
+    ig_story_card_title_line_height: settings.ig_story_card_title_line_height || "1.2",
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -2679,7 +2680,8 @@ function IGStoriesTab({ settings, onRefresh }: any) {
   const websiteText = values.ig_story_website_text;
   const previewArtwork = previewBeat?.artwork_url;
   const previewTitle = previewBeat?.title || "BEAT NÁZEV";
-  const previewArtist = previewBeat?.artist || "VOODOO808";
+  const previewArtist = previewBeat?.artist || "VOODOO808.COM";
+  const titleLineHeight = parseFloat(values.ig_story_card_title_line_height);
 
   // Card settings
   const cardShow = values.ig_story_card_show !== "false";
@@ -2753,7 +2755,8 @@ function IGStoriesTab({ settings, onRefresh }: any) {
               <div
                 style={{
                   position: "absolute",
-                  left: `${CARD_MARGIN}px`,
+                  left: "50%",
+                  transform: "translateX(-50%)",
                   top: `${Math.max(90, cardTop)}px`,
                   width: `${cardW}px`,
                   borderRadius: `${cardRadius}px`,
@@ -2779,11 +2782,11 @@ function IGStoriesTab({ settings, onRefresh }: any) {
                 </div>
 
                 {/* Beat name */}
-                <div style={{ marginTop: "10px", fontSize: "9px", fontWeight: 700, color: "#fff", letterSpacing: "0.06em", textAlign: "center", width: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                <div style={{ marginTop: "10px", fontSize: "9px", fontWeight: 700, color: "#fff", letterSpacing: "0.06em", textAlign: "center", width: "100%", wordBreak: "break-word", lineHeight: titleLineHeight }}>
                   {previewTitle.toUpperCase()}
                 </div>
-                {/* Artist */}
-                <div style={{ marginTop: "3px", fontSize: "7px", color: "rgba(255,255,255,0.6)", letterSpacing: "0.04em", textAlign: "center" }}>
+                {/* Artist / brand */}
+                <div style={{ marginTop: "3px", fontSize: "7px", color: "rgba(255,255,255,0.6)", letterSpacing: "0.04em", textAlign: "right", width: "100%" }}>
                   {previewArtist.toUpperCase()}
                 </div>
 
@@ -2909,6 +2912,12 @@ function IGStoriesTab({ settings, onRefresh }: any) {
                     <label style={labelStyle}>Vnitřní padding — {values.ig_story_card_padding}px</label>
                     <input type="range" min="8" max="32" step="1" value={cardPadding} onChange={(e) => handleChange("ig_story_card_padding", e.target.value)} style={{ width: "100%", accentColor: "#fff" }} />
                   </div>
+                </div>
+
+                {/* Title line height */}
+                <div>
+                  <label style={labelStyle}>Výška řádku názvu — {values.ig_story_card_title_line_height}</label>
+                  <input type="range" min="1.0" max="2.0" step="0.05" value={titleLineHeight} onChange={(e) => handleChange("ig_story_card_title_line_height", e.target.value)} style={{ width: "100%", accentColor: "#fff" }} />
                 </div>
 
                 {/* Glass blur + brightness row */}
