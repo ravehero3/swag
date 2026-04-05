@@ -7,8 +7,6 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 mkdirSync(resolve(root, 'api'), { recursive: true });
 
-const esbuild = resolve(root, 'node_modules/.bin/esbuild');
-
 const args = [
   'server/src/index.ts',
   '--bundle',
@@ -25,7 +23,7 @@ const args = [
   '--target=node20',
 ].join(' ');
 
-execSync(`${esbuild} ${args}`, { stdio: 'inherit', cwd: root });
+execSync(`npx esbuild ${args}`, { stdio: 'inherit', cwd: root });
 
 const bytes = statSync(resolve(root, 'api/server.mjs')).size;
 const mb = (bytes / 1024 / 1024).toFixed(1);
