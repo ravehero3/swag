@@ -10,18 +10,18 @@
       }
     },
     {
-      "src": "server/src/index.ts",
+      "src": "server/src/prod.ts",
       "use": "@vercel/node"
     }
   ],
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "server/src/index.ts"
+      "destination": "server/src/prod.ts"
     },
     {
       "source": "/uploads/(.*)",
-      "destination": "server/src/index.ts"
+      "destination": "server/src/prod.ts"
     },
     {
       "source": "/(.*)",
