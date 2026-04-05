@@ -310,6 +310,101 @@ input::placeholder, textarea::placeholder {
   }
 }
 
+/* ─── Mobile Music Player ───────────────────────────────────────────────────── */
+
+@media (max-width: 640px) {
+  /* Shrink the bar to 68px on mobile */
+  .music-player-bar {
+    height: 68px !important;
+    padding: 0 !important;
+  }
+
+  /* Artwork fills the full bar height, flush to the left edge */
+  .player-artwork {
+    width: 68px !important;
+    height: 68px !important;
+    margin-left: 0 !important;
+    flex-shrink: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  /* Progress bar stays at the very top */
+  .music-player-bar > div[style*="position: absolute"] {
+    top: 0 !important;
+  }
+
+  /* Left section: tighter gap, no overflow */
+  .player-left-section {
+    gap: 10px !important;
+    overflow: hidden !important;
+  }
+
+  /* Info row: wrap if needed, hide save heart on mobile */
+  .player-info-wrap {
+    gap: 6px !important;
+    overflow: hidden !important;
+    flex-wrap: nowrap !important;
+  }
+
+  .player-save-btn {
+    display: none !important;
+  }
+
+  /* Title: smaller, truncated */
+  .player-title {
+    font-size: 13px !important;
+    max-width: 130px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    flex-shrink: 1 !important;
+  }
+
+  /* Buy button: compact — keep bag icon + price, just smaller */
+  .player-buy-btn {
+    min-width: 0 !important;
+    padding: 6px 8px 6px 12px !important;
+    height: 28px !important;
+    font-size: 11px !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Controls: only prev, play, next — loop and shuffle already hidden */
+  .music-player-controls {
+    gap: 4px !important;
+    flex-shrink: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  .music-player-controls button {
+    padding: 6px !important;
+  }
+
+  /* Hide loop (first) and shuffle (last) */
+  .music-player-controls button:first-child,
+  .music-player-controls button:last-child {
+    display: none !important;
+  }
+
+  .music-player-controls button svg {
+    width: 15px !important;
+    height: 15px !important;
+  }
+
+  /* Play/pause circle: slightly smaller */
+  .music-player-controls button:nth-child(3) {
+    width: 36px !important;
+    height: 36px !important;
+    font-size: 16px !important;
+    margin: 0 !important;
+  }
+
+  /* Right section (volume, download, share): fully hidden on mobile */
+  .player-right-section {
+    display: none !important;
+  }
+}
+
 /* ─── Custom Cursor ─────────────────────────────────────────────────────────── */
 
 *, *::before, *::after {

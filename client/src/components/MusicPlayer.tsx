@@ -132,6 +132,7 @@ function MusicPlayer({
   return (
     <>
       <div
+        className="music-player-bar"
         style={{
           position: "fixed",
           bottom: 0,
@@ -213,19 +214,21 @@ function MusicPlayer({
           />
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "16px", flex: 1, position: "relative" }}>
+        <div className="player-left-section" style={{ display: "flex", alignItems: "center", gap: "16px", flex: 1, position: "relative" }}>
           <img
             src={currentBeat.artwork_url || "/uploads/artwork/metallic-logo.png"}
             alt={currentBeat.title}
             onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
+            className="player-artwork"
             style={{ width: "84px", height: "84px", objectFit: "cover", borderRadius: "2px", marginLeft: "-16px", marginRight: "0" }}
           />
-          <div style={{ flex: 1, display: "flex", alignItems: "center", gap: "12px" }}>
+          <div className="player-info-wrap" style={{ flex: 1, display: "flex", alignItems: "center", gap: "12px" }}>
             <div className="player-title" style={{ fontWeight: "bold", fontSize: "18px" }}>{currentBeat.title}</div>
             {onToggleSave && (
               <button
                 onClick={onToggleSave}
                 title={isSaved ? "Remove from favorites" : "Add to favorites"}
+                className="player-save-btn"
                 style={{
                   background: "transparent",
                   border: "none",
@@ -247,7 +250,7 @@ function MusicPlayer({
             )}
             <button
               onClick={() => onBuyClick(currentBeat)}
-              className="btn-bounce buy-btn-player"
+              className="btn-bounce buy-btn-player player-buy-btn"
               style={{
                 padding: "8px 8px 8px 16px",
                 background: "#000",
@@ -436,7 +439,7 @@ function MusicPlayer({
           </button>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1, justifyContent: "flex-end" }}>
+        <div className="player-right-section" style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1, justifyContent: "flex-end" }}>
 
           {/* Volume Control */}
           <div
@@ -632,62 +635,6 @@ function MusicPlayer({
             }}
             title="Share"
           >
-            <style>{`
-              @media (max-width: 768px) {
-                .player-title {
-                  font-size: 14px !important;
-                  max-width: 120px !important;
-                  overflow: hidden !important;
-                  text-overflow: ellipsis !important;
-                  white-space: nowrap !important;
-                }
-                .music-player-controls {
-                  display: flex !important;
-                  gap: 8px !important;
-                  margin-right: 80px !important;
-                }
-                .music-player-controls button {
-                  padding: 8px !important;
-                }
-                .music-player-controls button:first-child,
-                .music-player-controls button:last-child {
-                  display: none !important;
-                }
-                .music-player-controls button svg {
-                  width: 16px !important;
-                  height: 16px !important;
-                }
-                .music-player-controls button:nth-child(3) {
-                  width: 36px !important;
-                  height: 36px !important;
-                  font-size: 18px !important;
-                }
-                .share-btn-mobile {
-                  position: absolute !important;
-                  right: 8px !important;
-                  bottom: 8px !important;
-                  top: auto !important;
-                  transform: none !important;
-                  z-index: 1002 !important;
-                }
-                .download-btn-player {
-                  position: absolute !important;
-                  right: 48px !important;
-                  bottom: 8px !important;
-                  top: auto !important;
-                  z-index: 1002 !important;
-                }
-                .buy-btn-player {
-                  display: none !important;
-                }
-                .buy-btn-mobile {
-                  display: none !important;
-                }
-                .buy-btn-mobile-new {
-                  display: none !important;
-                }
-              }
-            `}</style>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="18" cy="5" r="3" />
               <circle cx="6" cy="12" r="3" />
