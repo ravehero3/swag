@@ -391,14 +391,20 @@ async function ensureDbInitialized() {
 
 // Standard Vercel Node handler export
 export default async (req: any, res: any) => {
-  if (process.env.NODE_ENV === "production") {
-    try {
-      await ensureDbInitialized();
-    } catch (error) {
-      console.error("DB init error:", error instanceof Error ? error.message : String(error));
+  try {
+    await ensureDbInitialized();
+    return await new Promise<void>((resolve, reject) => {
+      app(req, res);
+      res.on("finish", resolve);
+      res.on("error", reject);
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("Serverless handler error:", message);
+    if (!res.headersSent) {
+      res.status(500).json({ error: "Server error", details: message });
     }
   }
-  return app(req, res);
 };
 
 if (process.env.NODE_ENV !== "production") {
