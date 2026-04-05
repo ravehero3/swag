@@ -37,6 +37,16 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
   const overlayOpacity = parseFloat(settings?.ig_story_overlay_opacity || "0.45");
   const listeningText = settings?.ig_story_listening_text || "právě poslouchám";
   const websiteText = settings?.ig_story_website_text || "NA VOODOO808.COM";
+  const bgMode = settings?.ig_story_bg_mode || "artwork";
+  const blurAmount = parseFloat(settings?.ig_story_blur || "20");
+  const storyLayers: { id: string; visible: boolean }[] = (() => {
+    try {
+      const parsed = JSON.parse(settings?.ig_story_layers || "null");
+      return Array.isArray(parsed) ? parsed : [{ id: "logo", visible: true }, { id: "listening", visible: true }, { id: "title", visible: true }, { id: "website", visible: true }];
+    } catch {
+      return [{ id: "logo", visible: true }, { id: "listening", visible: true }, { id: "title", visible: true }, { id: "website", visible: true }];
+    }
+  })();
 
   if (!isOpen) return null;
 
@@ -66,65 +76,78 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
       ctx.fillStyle = storyBgColor;
       ctx.fillRect(0, 0, 1080, 1920);
 
+      let img: HTMLImageElement | null = null;
       if (resolvedArtwork) {
-        const img = new Image();
-        img.crossOrigin = "anonymous";
+        const loadedImg = new Image();
+        loadedImg.crossOrigin = "anonymous";
         await new Promise<void>((resolve) => {
-          img.onload = () => resolve();
-          img.onerror = () => resolve();
-          img.src = resolvedArtwork;
+          loadedImg.onload = () => resolve();
+          loadedImg.onerror = () => resolve();
+          loadedImg.src = resolvedArtwork;
           setTimeout(resolve, 4000);
         });
+        if (loadedImg.complete && loadedImg.naturalWidth > 0) img = loadedImg;
+      }
 
-        if (img.complete && img.naturalWidth > 0) {
-          ctx.save();
-          ctx.filter = "blur(40px)";
-          const scale = Math.max(1080 / img.naturalWidth, 1920 / img.naturalHeight);
-          const bw = img.naturalWidth * scale;
-          const bh = img.naturalHeight * scale;
-          ctx.drawImage(img, (1080 - bw) / 2, (1920 - bh) / 2, bw, bh);
-          ctx.restore();
+      if (bgMode === "artwork" && img) {
+        ctx.save();
+        ctx.filter = `blur(${Math.round(blurAmount * 3)}px)`;
+        const scale = Math.max(1080 / img.naturalWidth, 1920 / img.naturalHeight) * 1.1;
+        const bw = img.naturalWidth * scale;
+        const bh = img.naturalHeight * scale;
+        ctx.drawImage(img, (1080 - bw) / 2, (1920 - bh) / 2, bw, bh);
+        ctx.restore();
+      }
 
-          ctx.fillStyle = `rgba(0,0,0,${overlayOpacity + 0.2})`;
-          ctx.fillRect(0, 0, 1080, 1920);
+      ctx.fillStyle = `rgba(0,0,0,${overlayOpacity})`;
+      ctx.fillRect(0, 0, 1080, 1920);
 
-          const artPad = 120;
-          const artSize = 1080 - artPad * 2;
-          const artY = (1920 - artSize) / 2 - 80;
-          ctx.save();
-          ctx.filter = "none";
-          const src = Math.min(img.naturalWidth, img.naturalHeight);
-          const sx = (img.naturalWidth - src) / 2;
-          const sy = (img.naturalHeight - src) / 2;
-          ctx.drawImage(img, sx, sy, src, src, artPad, artY, artSize, artSize);
-          ctx.restore();
-        }
+      if (img) {
+        const artPad = 120;
+        const artSize = 1080 - artPad * 2;
+        const artY = (1920 - artSize) / 2 - 80;
+        ctx.save();
+        ctx.filter = "none";
+        const src = Math.min(img.naturalWidth, img.naturalHeight);
+        const sx = (img.naturalWidth - src) / 2;
+        const sy = (img.naturalHeight - src) / 2;
+        ctx.drawImage(img, sx, sy, src, src, artPad, artY, artSize, artSize);
+        ctx.restore();
       }
 
       ctx.textAlign = "center";
+      ctx.letterSpacing = "0px";
 
-      ctx.font = "bold 52px Helvetica, Arial, sans-serif";
-      ctx.fillStyle = storyTextColor + "cc";
-      ctx.letterSpacing = "8px";
-      ctx.fillText("VOODOO808", 540, 120);
-
-      const textAreaY = 1920 - 340;
-
-      ctx.font = `italic 36px Helvetica, Arial, sans-serif`;
-      ctx.fillStyle = storyTextColor + "88";
-      ctx.fillText(listeningText, 540, textAreaY);
-
-      ctx.font = "bold 80px Helvetica, Arial, sans-serif";
-      ctx.fillStyle = storyTextColor;
-      const titleLines = wrapText(ctx, resolvedTitle.toUpperCase(), 900, 80);
-      titleLines.forEach((line, i) => {
-        ctx.fillText(line, 540, textAreaY + 60 + i * 96);
-      });
-
-      const afterTitle = textAreaY + 60 + titleLines.length * 96 + 30;
-      ctx.font = "38px Helvetica, Arial, sans-serif";
-      ctx.fillStyle = storyTextColor + "99";
-      ctx.fillText(websiteText, 540, afterTitle);
+      let textY = 1920 - 400;
+      for (const layer of storyLayers) {
+        if (!layer.visible) continue;
+        if (layer.id === "logo") {
+          ctx.font = "bold 52px Helvetica, Arial, sans-serif";
+          ctx.fillStyle = storyTextColor + "cc";
+          ctx.letterSpacing = "8px";
+          ctx.fillText("VOODOO808", 540, textY);
+          ctx.letterSpacing = "0px";
+          textY += 70;
+        } else if (layer.id === "listening") {
+          ctx.font = "italic 36px Helvetica, Arial, sans-serif";
+          ctx.fillStyle = storyTextColor + "88";
+          ctx.fillText(listeningText, 540, textY);
+          textY += 50;
+        } else if (layer.id === "title") {
+          ctx.font = "bold 80px Helvetica, Arial, sans-serif";
+          ctx.fillStyle = storyTextColor;
+          const titleLines = wrapText(ctx, resolvedTitle.toUpperCase(), 900, 80);
+          for (const line of titleLines) {
+            ctx.fillText(line, 540, textY);
+            textY += 96;
+          }
+        } else if (layer.id === "website") {
+          ctx.font = "38px Helvetica, Arial, sans-serif";
+          ctx.fillStyle = storyTextColor + "99";
+          ctx.fillText(websiteText, 540, textY);
+          textY += 55;
+        }
+      }
 
       const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
       if (!blob) return;
@@ -199,13 +222,14 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
 
           {activeTab === "story" && (
             <div style={{ display: "flex", gap: "20px", alignItems: "flex-start" }}>
-              <div style={{ width: "120px", height: "213px", flexShrink: 0, borderRadius: "6px", overflow: "hidden", border: "1px solid #2a2a2a", position: "relative", background: storyBgColor }}>
-                {resolvedArtwork && (
-                  <img src={resolvedArtwork} alt="" crossOrigin="anonymous" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", filter: "blur(12px)", transform: "scale(1.1)", opacity: 1 }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+              <div style={{ width: "120px", height: "213px", flexShrink: 0, borderRadius: "6px", overflow: "hidden", border: "1px solid #2a2a2a", position: "relative", background: bgMode === "color" ? storyBgColor : "#111" }}>
+                {bgMode === "artwork" && resolvedArtwork && (
+                  <img src={resolvedArtwork} alt="" crossOrigin="anonymous" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", filter: `blur(${blurAmount}px)`, transform: "scale(1.3)" }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
                 )}
-                <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${overlayOpacity + 0.2})` }} />
-
-                <div style={{ position: "absolute", top: "8px", left: 0, right: 0, textAlign: "center", fontSize: "7px", fontWeight: "700", color: storyTextColor, letterSpacing: "2px" }}>VOODOO808</div>
+                {bgMode === "artwork" && !resolvedArtwork && (
+                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, #333 0%, #111 100%)" }} />
+                )}
+                <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${overlayOpacity})` }} />
 
                 {resolvedArtwork && (
                   <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -58%)", width: "72%", aspectRatio: "1/1" }}>
@@ -214,9 +238,13 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
                 )}
 
                 <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "8px 6px", display: "flex", flexDirection: "column", alignItems: "center", gap: "2px" }}>
-                  <div style={{ fontSize: "5.5px", color: storyTextColor + "88", fontStyle: "italic" }}>{listeningText}</div>
-                  <div style={{ fontSize: "8px", fontWeight: "700", color: storyTextColor, textAlign: "center", letterSpacing: "0.05em", lineHeight: 1.2 }}>{resolvedTitle.toUpperCase()}</div>
-                  <div style={{ fontSize: "5.5px", color: storyTextColor + "66", letterSpacing: "0.5px" }}>{websiteText}</div>
+                  {storyLayers.filter(l => l.visible).map(layer => {
+                    if (layer.id === "logo") return <div key="logo" style={{ fontSize: "7px", fontWeight: "700", color: storyTextColor, letterSpacing: "2px" }}>VOODOO808</div>;
+                    if (layer.id === "listening") return <div key="listening" style={{ fontSize: "5.5px", color: storyTextColor + "88", fontStyle: "italic" }}>{listeningText}</div>;
+                    if (layer.id === "title") return <div key="title" style={{ fontSize: "8px", fontWeight: "700", color: storyTextColor, textAlign: "center", letterSpacing: "0.05em", lineHeight: 1.2 }}>{resolvedTitle.toUpperCase()}</div>;
+                    if (layer.id === "website") return <div key="website" style={{ fontSize: "5.5px", color: storyTextColor + "66", letterSpacing: "0.5px" }}>{websiteText}</div>;
+                    return null;
+                  })}
                 </div>
               </div>
 
