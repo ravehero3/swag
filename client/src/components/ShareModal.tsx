@@ -151,7 +151,6 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
       };
       img.onload = () => settle(img);
       img.onerror = () => {
-        // If proxy failed, try loading without CORS restriction (will taint canvas but at least show background)
         if (src.startsWith("/api/image-proxy")) {
           const img2 = new Image();
           img2.onload = () => settle(img2);
@@ -165,6 +164,44 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
       img.src = src;
       setTimeout(() => settle(null), 10000);
     });
+  }
+
+  // Load a black-on-transparent PNG icon and draw it as white at (cx, cy) centered
+  async function drawIconWhite(
+    ctx: CanvasRenderingContext2D,
+    src: string,
+    cx: number,
+    cy: number,
+    w: number,
+    h: number,
+    opacity = 1,
+    flipX = false
+  ) {
+    const img = await loadImage(src);
+    if (!img) return;
+    const tmpC = document.createElement("canvas");
+    tmpC.width = img.naturalWidth;
+    tmpC.height = img.naturalHeight;
+    const tc = tmpC.getContext("2d")!;
+    tc.drawImage(img, 0, 0);
+    const d = tc.getImageData(0, 0, tmpC.width, tmpC.height);
+    const px = d.data;
+    for (let i = 0; i < px.length; i += 4) {
+      if (px[i + 3] > 10) {
+        px[i] = 255; px[i + 1] = 255; px[i + 2] = 255;
+        px[i + 3] = Math.round(px[i + 3] * opacity);
+      }
+    }
+    tc.putImageData(d, 0, 0);
+    ctx.save();
+    if (flipX) {
+      ctx.translate(cx, cy - h / 2);
+      ctx.scale(-1, 1);
+      ctx.drawImage(tmpC, -w / 2, 0, w, h);
+    } else {
+      ctx.drawImage(tmpC, cx - w / 2, cy - h / 2, w, h);
+    }
+    ctx.restore();
   }
 
   function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
@@ -555,82 +592,20 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
         ctx.textAlign = "center";
         curY += 8 * xScale;
 
-        // ── Player controls — sharp-cornered arrows + pause ──
-        const ctrlY = curY + 9 * xScale;
+        // ── Player controls — PNG icons (black→white pixel conversion) ──
+        const ctrlY = curY + 10 * xScale;
         const ctrlCx = CW / 2;
-        const aPW = 13 * xScale;
-        const aPH = 10 * xScale;
-        const sx = aPW / 14;
-        const sy = aPH / 10;
+        const arrowW = 16 * xScale;   // prev/next icon width
+        const arrowH = 16 * xScale;   // prev/next icon height
+        const pauseW = 13 * xScale;   // pause icon width
+        const pauseH = 16 * xScale;   // pause icon height
 
-        // Sharp left-pointing double-arrow (prev) — minimal corner rounding
-        const drawPrevArrows = (cx: number, cy: number) => {
-          const ox = cx - aPW / 2, oy = cy - aPH / 2;
-          ctx.beginPath();
-          // Arrow 1: sharper trailing edge
-          ctx.moveTo(ox + 6.5 * sx, oy + 0);
-          ctx.lineTo(ox + 6.5 * sx, oy + 10 * sy);
-          ctx.lineTo(ox + 5.2 * sx, oy + 10 * sy);
-          ctx.lineTo(ox + 0.4 * sx, oy + 5.6 * sy);
-          ctx.quadraticCurveTo(ox + 0, oy + 5 * sy, ox + 0.4 * sx, oy + 4.4 * sy);
-          ctx.lineTo(ox + 5.2 * sx, oy + 0);
-          ctx.closePath();
-          // Arrow 2
-          ctx.moveTo(ox + 13.5 * sx, oy + 0);
-          ctx.lineTo(ox + 13.5 * sx, oy + 10 * sy);
-          ctx.lineTo(ox + 12.2 * sx, oy + 10 * sy);
-          ctx.lineTo(ox + 7.4 * sx, oy + 5.6 * sy);
-          ctx.quadraticCurveTo(ox + 7 * sx, oy + 5 * sy, ox + 7.4 * sx, oy + 4.4 * sy);
-          ctx.lineTo(ox + 12.2 * sx, oy + 0);
-          ctx.closePath();
-          ctx.fill();
-        };
-
-        // Sharp right-pointing double-arrow (next)
-        const drawNextArrows = (cx: number, cy: number) => {
-          const ox = cx - aPW / 2, oy = cy - aPH / 2;
-          ctx.beginPath();
-          // Arrow 1
-          ctx.moveTo(ox + 0, oy + 0);
-          ctx.lineTo(ox + 0, oy + 10 * sy);
-          ctx.lineTo(ox + 1.8 * sx, oy + 10 * sy);
-          ctx.lineTo(ox + 6.6 * sx, oy + 5.6 * sy);
-          ctx.quadraticCurveTo(ox + 7 * sx, oy + 5 * sy, ox + 6.6 * sx, oy + 4.4 * sy);
-          ctx.lineTo(ox + 1.8 * sx, oy + 0);
-          ctx.closePath();
-          // Arrow 2
-          ctx.moveTo(ox + 7 * sx, oy + 0);
-          ctx.lineTo(ox + 7 * sx, oy + 10 * sy);
-          ctx.lineTo(ox + 8.8 * sx, oy + 10 * sy);
-          ctx.lineTo(ox + 13.6 * sx, oy + 5.6 * sy);
-          ctx.quadraticCurveTo(ox + 14 * sx, oy + 5 * sy, ox + 13.6 * sx, oy + 4.4 * sy);
-          ctx.lineTo(ox + 8.8 * sx, oy + 0);
-          ctx.closePath();
-          ctx.fill();
-        };
-
-        ctx.fillStyle = "rgba(255,255,255,0.75)";
-        drawPrevArrows(ctrlCx - 26 * xScale, ctrlY);
-
-        // Pause bars — sharper (0.3px radius), bars closer together (gap 3)
-        const pauseBarW = 4 * xScale;
-        const pauseBarH = 13 * xScale;
-        const pauseBarGap = 3 * xScale;
-        ctx.fillStyle = "#fff";
-        if (typeof ctx.roundRect === "function") {
-          ctx.beginPath();
-          ctx.roundRect(ctrlCx - pauseBarGap / 2 - pauseBarW, ctrlY - pauseBarH / 2, pauseBarW, pauseBarH, 0.3 * xScale);
-          ctx.fill();
-          ctx.beginPath();
-          ctx.roundRect(ctrlCx + pauseBarGap / 2, ctrlY - pauseBarH / 2, pauseBarW, pauseBarH, 0.3 * xScale);
-          ctx.fill();
-        } else {
-          ctx.fillRect(ctrlCx - pauseBarGap / 2 - pauseBarW, ctrlY - pauseBarH / 2, pauseBarW, pauseBarH);
-          ctx.fillRect(ctrlCx + pauseBarGap / 2, ctrlY - pauseBarH / 2, pauseBarW, pauseBarH);
-        }
-
-        ctx.fillStyle = "rgba(255,255,255,0.75)";
-        drawNextArrows(ctrlCx + 26 * xScale, ctrlY);
+        // Prev (previous.png) — 75% opacity
+        await drawIconWhite(ctx, "/icons/previous.png", ctrlCx - 28 * xScale, ctrlY, arrowW, arrowH, 0.75);
+        // Pause (pause.png) — full opacity, white
+        await drawIconWhite(ctx, "/icons/pause.png", ctrlCx, ctrlY, pauseW, pauseH, 1.0);
+        // Next (mirror of previous.png) — 75% opacity, flipped
+        await drawIconWhite(ctx, "/icons/previous.png", ctrlCx + 28 * xScale, ctrlY, arrowW, arrowH, 0.75, true);
 
         curY += 20 * xScale;
 
@@ -829,23 +804,14 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
                           <span style={{ fontSize: "3px", color: "rgba(255,255,255,0.5)" }}>{playedStr || "–:––"}</span>
                           <span style={{ fontSize: "3px", color: "rgba(255,255,255,0.35)" }}>{durationStr || "–:––"}</span>
                         </div>
-                        {/* Player controls — sharper triangles */}
+                        {/* Player controls — real PNG icons, inverted to white */}
                         <div style={{ marginTop: "3px", display: "flex", alignItems: "center", justifyContent: "center", gap: "5px" }}>
-                          {/* Prev — sharp triangles */}
-                          <svg width="7" height="5" viewBox="0 0 14 10" fill="rgba(255,255,255,0.75)">
-                            <path d="M6.5,0 L6.5,10 L5.2,10 L0.4,5.6 Q0,5 0.4,4.4 L5.2,0 Z"/>
-                            <path d="M13.5,0 L13.5,10 L12.2,10 L7.4,5.6 Q7,5 7.4,4.4 L12.2,0 Z"/>
-                          </svg>
-                          {/* Pause — tighter gap, less radius */}
-                          <svg width="5" height="6" viewBox="0 0 8 12" fill="#fff">
-                            <rect x="0" y="0" width="3" height="12" rx="0.3"/>
-                            <rect x="5" y="0" width="3" height="12" rx="0.3"/>
-                          </svg>
-                          {/* Next — sharp triangles */}
-                          <svg width="7" height="5" viewBox="0 0 14 10" fill="rgba(255,255,255,0.75)">
-                            <path d="M0,0 L0,10 L1.8,10 L6.6,5.6 Q7,5 6.6,4.4 L1.8,0 Z"/>
-                            <path d="M7,0 L7,10 L8.8,10 L13.6,5.6 Q14,5 13.6,4.4 L8.8,0 Z"/>
-                          </svg>
+                          {/* Prev */}
+                          <img src="/icons/previous.png" alt="" style={{ width: "8px", height: "8px", filter: "invert(1)", opacity: 0.75, display: "block" }} />
+                          {/* Pause */}
+                          <img src="/icons/pause.png" alt="" style={{ width: "6px", height: "8px", filter: "invert(1)", opacity: 1, display: "block" }} />
+                          {/* Next — mirror of previous */}
+                          <img src="/icons/previous.png" alt="" style={{ width: "8px", height: "8px", filter: "invert(1)", opacity: 0.75, transform: "scaleX(-1)", display: "block" }} />
                         </div>
                         {/* Volume — left: speaker only, right: speaker + 3 arcs */}
                         <div style={{ marginTop: "2px", display: "flex", alignItems: "center", gap: "2px" }}>
