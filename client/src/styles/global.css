@@ -55,7 +55,17 @@ button {
 }
 
 .comment-avatar-wrap:hover > div:first-child {
-  transform: scale(1.5);
+  transform: scale(2);
+}
+
+.waveform-comment-avatar {
+  transition: transform 0.2s ease;
+  transform-origin: center bottom;
+}
+
+.waveform-comment-avatar:hover {
+  transform: scale(2);
+  z-index: 200 !important;
 }
 
 .comment-avatar-wrap .comment-tooltip {

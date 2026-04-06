@@ -148,7 +148,7 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
           ctx.font = "bold 52px Helvetica, Arial, sans-serif";
           ctx.fillStyle = storyTextColor + "cc";
           ctx.letterSpacing = "8px";
-          ctx.fillText("VOODOO808", 540, layerY);
+          ctx.fillText("VOODOO808.COM", 540, layerY);
           ctx.letterSpacing = "0px";
         } else if (layer.id === "listening") {
           ctx.font = "italic 36px Helvetica, Arial, sans-serif";
@@ -262,7 +262,7 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
                   if (layer.mode === "image" && layer.imageUrl) {
                     return <img key={layer.id} src={layer.imageUrl} alt="" style={{ ...base, height: "12px", width: "auto", maxWidth: "80%", margin: "0 auto", display: "block", objectFit: "contain" }} />;
                   }
-                  if (layer.id === "logo") return <div key="logo" style={{ ...base, fontSize: "7px", fontWeight: "700", color: storyTextColor, letterSpacing: "2px" }}>VOODOO808</div>;
+                  if (layer.id === "logo") return <div key="logo" style={{ ...base, fontSize: "7px", fontWeight: "700", color: storyTextColor, letterSpacing: "2px" }}>VOODOO808.COM</div>;
                   if (layer.id === "listening") return <div key="listening" style={{ ...base, fontSize: "5.5px", color: storyTextColor + "88", fontStyle: "italic" }}>{listeningText}</div>;
                   if (layer.id === "title") return <div key="title" style={{ ...base, fontSize: "8px", fontWeight: "700", color: storyTextColor, letterSpacing: "0.05em", lineHeight: 1.2 }}>{resolvedTitle.toUpperCase()}</div>;
                   if (layer.id === "website") return <div key="website" style={{ ...base, fontSize: "5.5px", color: storyTextColor + "66", letterSpacing: "0.5px" }}>{websiteText}</div>;

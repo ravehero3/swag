@@ -998,7 +998,7 @@ function Beaty() {
                     onMouseDown={isOwn ? (e) => { e.stopPropagation(); handleCommentDragStart(e, c); } : undefined}
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <div style={{
+                    <div className="waveform-comment-avatar" style={{
                       width: "22px",
                       height: "22px",
                       borderRadius: "50%",

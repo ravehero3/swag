@@ -2592,6 +2592,12 @@ function IGWaveformPreview({ width, color, playedColor }: { width: number; color
   );
 }
 
+function formatDuration(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${m}:${s.toString().padStart(2, "0")}`;
+}
+
 function IGStoriesTab({ settings, onRefresh }: any) {
   const [values, setValues] = useState<Record<string, string>>({
     ig_story_bg_color: settings.ig_story_bg_color || "#000000",
@@ -2611,12 +2617,20 @@ function IGStoriesTab({ settings, onRefresh }: any) {
     ig_story_card_shadow_amount: settings.ig_story_card_shadow_amount || "24",
     ig_story_card_padding: settings.ig_story_card_padding || "16",
     ig_story_card_title_line_height: settings.ig_story_card_title_line_height || "1.2",
+    ig_story_card_y_offset: settings.ig_story_card_y_offset || "0",
+    ig_story_card_title_align: settings.ig_story_card_title_align || "center",
+    ig_story_card_brand_align: settings.ig_story_card_brand_align || "right",
+    ig_story_logo_url: settings.ig_story_logo_url || "",
+    ig_story_logo_invert: settings.ig_story_logo_invert || "false",
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [previewBeat, setPreviewBeat] = useState<any>(null);
+  const [previewBeatDuration, setPreviewBeatDuration] = useState<number | null>(null);
   const [uploading, setUploading] = useState<Record<number, boolean>>({});
+  const [logoUploading, setLogoUploading] = useState(false);
   const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const logoInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     fetch("/api/beats", { credentials: "include" })
@@ -2624,6 +2638,15 @@ function IGStoriesTab({ settings, onRefresh }: any) {
       .then(beats => { if (Array.isArray(beats) && beats.length > 0) setPreviewBeat(beats[0]); })
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (!previewBeat?.preview_url) { setPreviewBeatDuration(null); return; }
+    const audio = new Audio();
+    audio.crossOrigin = "anonymous";
+    audio.src = `/api/audio-proxy?url=${encodeURIComponent(previewBeat.preview_url)}`;
+    audio.onloadedmetadata = () => { setPreviewBeatDuration(audio.duration); };
+    audio.onerror = () => { setPreviewBeatDuration(null); };
+  }, [previewBeat?.preview_url]);
 
   const handleChange = (key: string, val: string) => setValues(prev => ({ ...prev, [key]: val }));
 
@@ -2659,6 +2682,21 @@ function IGStoriesTab({ settings, onRefresh }: any) {
     }
   };
 
+  const handleLogoUpload = async (file: File) => {
+    setLogoUploading(true);
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const res = await fetch("/api/upload?type=artwork", { method: "POST", credentials: "include", body: form });
+      if (res.ok) {
+        const data = await res.json();
+        handleChange("ig_story_logo_url", data.url);
+      }
+    } finally {
+      setLogoUploading(false);
+    }
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -2691,6 +2729,15 @@ function IGStoriesTab({ settings, onRefresh }: any) {
   const cardShadow = values.ig_story_card_shadow !== "false";
   const cardShadowAmount = parseFloat(values.ig_story_card_shadow_amount);
   const cardPadding = parseFloat(values.ig_story_card_padding);
+  const cardYOffset = parseInt(values.ig_story_card_y_offset || "0", 10);
+  const cardTitleAlign = (values.ig_story_card_title_align || "center") as "left" | "center" | "right";
+  const cardBrandAlign = (values.ig_story_card_brand_align || "right") as "left" | "right";
+  const logoUrl = values.ig_story_logo_url || "";
+  const logoInvert = values.ig_story_logo_invert === "true";
+
+  // Duration display
+  const durationStr = previewBeatDuration !== null ? formatDuration(previewBeatDuration) : "–:––";
+  const playedStr = previewBeatDuration !== null ? formatDuration(previewBeatDuration * PLAYHEAD_FRACTION) : "–:––";
 
   // Preview card is 216px wide. Card has 24px margins each side → card width = 168px
   const PREVIEW_W = 216;
@@ -2711,7 +2758,7 @@ function IGStoriesTab({ settings, onRefresh }: any) {
     if (layer.mode === "image" && layer.imageUrl) {
       return <img key={layer.id} src={layer.imageUrl} alt="" style={{ ...style, height: "16px", width: "auto", maxWidth: "80%", margin: "0 auto", display: "block", objectFit: "contain" }} />;
     }
-    if (layer.id === "logo") return <div key="logo" style={{ ...style, fontSize: "10px", fontWeight: 700, color: textColor, letterSpacing: "3px" }}>VOODOO808</div>;
+    if (layer.id === "logo") return <div key="logo" style={{ ...style, fontSize: "10px", fontWeight: 700, color: textColor, letterSpacing: "3px" }}>VOODOO808.COM</div>;
     if (layer.id === "listening") return <div key="listening" style={{ ...style, fontSize: "7px", color: textColor + "88", fontStyle: "italic" }}>{listeningText}</div>;
     if (layer.id === "title") return <div key="title" style={{ ...style, fontSize: "13px", fontWeight: 700, color: textColor, letterSpacing: "0.05em", lineHeight: 1.2 }}>{previewTitle.toUpperCase()}</div>;
     if (layer.id === "website") return <div key="website" style={{ ...style, fontSize: "6px", color: textColor + "66", letterSpacing: "1px" }}>{websiteText}</div>;
@@ -2722,7 +2769,8 @@ function IGStoriesTab({ settings, onRefresh }: any) {
   // Card height: padding + artworkW + 8 (name) + 6 (artist) + 8 (gap) + waveform (22) + 8 (gap) + controls (18) + 8 (gap) + volume (6) + padding
   const waveW = artworkW;
   const estimatedCardH = cardPadding + artworkW + 8 + 14 + 4 + 10 + 8 + 22 + 8 + 18 + 8 + 6 + cardPadding;
-  const cardTop = 384 - 24 - estimatedCardH;
+  const centeredCardTop = (384 - estimatedCardH) / 2;
+  const cardTop = Math.max(10, centeredCardTop + cardYOffset);
 
   return (
     <div style={{ padding: "24px 0" }}>
@@ -2782,12 +2830,12 @@ function IGStoriesTab({ settings, onRefresh }: any) {
                 </div>
 
                 {/* Beat name */}
-                <div style={{ marginTop: "10px", fontSize: "9px", fontWeight: 700, color: "#fff", letterSpacing: "0.06em", textAlign: "center", width: "100%", wordBreak: "break-word", lineHeight: titleLineHeight }}>
+                <div style={{ marginTop: "10px", fontSize: "9px", fontWeight: 700, color: "#fff", letterSpacing: "0.06em", textAlign: cardTitleAlign, width: "100%", wordBreak: "break-word", lineHeight: titleLineHeight, overflowWrap: "break-word" }}>
                   {previewTitle.toUpperCase()}
                 </div>
                 {/* Artist / brand */}
-                <div style={{ marginTop: "3px", fontSize: "7px", color: "rgba(255,255,255,0.6)", letterSpacing: "0.04em", textAlign: "right", width: "100%" }}>
-                  {previewArtist.toUpperCase()}
+                <div style={{ marginTop: "3px", fontSize: "7px", color: "rgba(255,255,255,0.6)", letterSpacing: "0.04em", textAlign: cardBrandAlign, width: "100%" }}>
+                  VOODOO808.COM
                 </div>
 
                 {/* Waveform timeline */}
@@ -2795,8 +2843,8 @@ function IGStoriesTab({ settings, onRefresh }: any) {
                   <IGWaveformPreview width={waveW} color="rgba(255,255,255,0.22)" playedColor="rgba(255,255,255,0.85)" />
                   {/* Time labels */}
                   <div style={{ display: "flex", justifyContent: "space-between", marginTop: "3px" }}>
-                    <span style={{ fontSize: "5px", color: "rgba(255,255,255,0.5)" }}>2:12</span>
-                    <span style={{ fontSize: "5px", color: "rgba(255,255,255,0.35)" }}>3:18</span>
+                    <span style={{ fontSize: "5px", color: "rgba(255,255,255,0.5)" }}>{playedStr}</span>
+                    <span style={{ fontSize: "5px", color: "rgba(255,255,255,0.35)" }}>{durationStr}</span>
                   </div>
                 </div>
 
@@ -2951,7 +2999,65 @@ function IGStoriesTab({ settings, onRefresh }: any) {
                   )}
                 </div>
 
+                {/* Vertical position */}
+                <div>
+                  <label style={labelStyle}>Vertikální pozice — {cardYOffset >= 0 ? "+" : ""}{cardYOffset}px</label>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <button onClick={() => handleChange("ig_story_card_y_offset", String(cardYOffset - 5))} style={{ padding: "5px 12px", background: "#0d0d0d", border: "1px solid #2a2a2a", borderRadius: "3px", color: "#ccc", cursor: "pointer", fontSize: "14px", fontFamily: "inherit", lineHeight: 1 }}>▲</button>
+                    <button onClick={() => handleChange("ig_story_card_y_offset", String(cardYOffset + 5))} style={{ padding: "5px 12px", background: "#0d0d0d", border: "1px solid #2a2a2a", borderRadius: "3px", color: "#ccc", cursor: "pointer", fontSize: "14px", fontFamily: "inherit", lineHeight: 1 }}>▼</button>
+                    <button onClick={() => handleChange("ig_story_card_y_offset", "0")} style={{ padding: "5px 10px", background: "transparent", border: "1px solid #222", borderRadius: "3px", color: "#555", cursor: "pointer", fontSize: "11px", fontFamily: "inherit" }}>Reset</button>
+                    <span style={{ fontSize: "11px", color: "#444" }}>vycentrováno ± posun</span>
+                  </div>
+                </div>
+
+                {/* Title alignment */}
+                <div>
+                  <label style={labelStyle}>Zarovnání názvu</label>
+                  <div style={{ display: "flex", gap: "6px" }}>
+                    {(["left", "center", "right"] as const).map(a => (
+                      <button key={a} onClick={() => handleChange("ig_story_card_title_align", a)} style={{ flex: 1, padding: "6px", background: cardTitleAlign === a ? "#fff" : "#0d0d0d", color: cardTitleAlign === a ? "#000" : "#555", border: "1px solid " + (cardTitleAlign === a ? "#fff" : "#2a2a2a"), borderRadius: "3px", fontSize: "11px", cursor: "pointer", fontFamily: "inherit" }}>
+                        {a === "left" ? "← Vlevo" : a === "center" ? "― Střed" : "→ Vpravo"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Brand text alignment */}
+                <div>
+                  <label style={labelStyle}>Zarovnání VOODOO808.COM</label>
+                  <div style={{ display: "flex", gap: "6px" }}>
+                    {(["left", "right"] as const).map(a => (
+                      <button key={a} onClick={() => handleChange("ig_story_card_brand_align", a)} style={{ flex: 1, padding: "6px", background: cardBrandAlign === a ? "#fff" : "#0d0d0d", color: cardBrandAlign === a ? "#000" : "#555", border: "1px solid " + (cardBrandAlign === a ? "#fff" : "#2a2a2a"), borderRadius: "3px", fontSize: "11px", cursor: "pointer", fontFamily: "inherit" }}>
+                        {a === "left" ? "← Vlevo" : "→ Vpravo"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
               </div>
+            )}
+          </div>
+
+          {/* Logo upload */}
+          <div>
+            <div style={sectionHeadStyle}>Logo</div>
+            <input ref={logoInputRef} type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => { const f = e.target.files?.[0]; if (f) handleLogoUpload(f); e.target.value = ""; }} />
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+              <button onClick={() => logoInputRef.current?.click()} style={{ padding: "7px 14px", background: "#0d0d0d", border: "1px solid #2a2a2a", borderRadius: "3px", color: "#ccc", fontSize: "12px", cursor: "pointer", fontFamily: "inherit" }}>
+                {logoUploading ? "Nahrávám…" : logoUrl ? "Změnit logo" : "Nahrát logo"}
+              </button>
+              {logoUrl && (
+                <>
+                  <img src={logoUrl} alt="logo" style={{ height: "28px", maxWidth: "100px", objectFit: "contain", filter: logoInvert ? "invert(1)" : "none", background: logoInvert ? "#222" : "transparent", borderRadius: "3px", padding: "2px" }} />
+                  <button onClick={() => handleChange("ig_story_logo_invert", logoInvert ? "false" : "true")} style={{ padding: "6px 12px", background: logoInvert ? "#fff" : "#0d0d0d", color: logoInvert ? "#000" : "#666", border: "1px solid " + (logoInvert ? "#fff" : "#2a2a2a"), borderRadius: "3px", fontSize: "11px", cursor: "pointer", fontFamily: "inherit" }}>
+                    {logoInvert ? "✓ Invertováno" : "Invertovat"}
+                  </button>
+                  <button onClick={() => handleChange("ig_story_logo_url", "")} style={{ background: "transparent", border: "none", color: "#555", cursor: "pointer", fontSize: "14px", padding: "0 4px" }} title="Odebrat logo">×</button>
+                </>
+              )}
+            </div>
+            {logoUrl && (
+              <p style={{ fontSize: "11px", color: "#555", marginTop: "8px" }}>Logo bude zobrazeno v exportu story. Invertovat změní bílé logo na černé a naopak.</p>
             )}
           </div>
 
