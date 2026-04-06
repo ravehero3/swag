@@ -391,22 +391,52 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
         ctx.textAlign = "center";
         curY += 8 * xScale;
 
-        // Player controls — double chevron arrows + plain pause bars
+        // Player controls — filled double-arrow skip buttons + plain pause bars
         const ctrlY = curY + 9 * xScale;
         const ctrlCx = CW / 2;
-        const chevH = 9 * xScale;
-        const chevW = 5 * xScale;
-        // Prev (two left-pointing chevrons)
-        for (let ci = 0; ci < 2; ci++) {
-          const ox = ctrlCx - 80 * xScale + ci * chevW * 2.2;
+        const arrowH = 18 * xScale;  // total height of each filled arrow
+        const arrowW = 6 * xScale;   // width of each arrow
+        const arrowGap = 2 * xScale; // gap between the two paired arrows
+        const arrowR = 2 * xScale;   // corner radius
+
+        ctx.fillStyle = "rgba(255,255,255,0.75)";
+
+        // Draw one filled left-pointing arrow. bx = right edge, tipX = left tip.
+        const drawLeftArrow = (bx: number, cy: number) => {
+          const tipX = bx - arrowW;
+          const half = arrowH / 2;
           ctx.beginPath();
-          ctx.moveTo(ox + chevW, ctrlY - chevH); ctx.lineTo(ox, ctrlY); ctx.lineTo(ox + chevW, ctrlY + chevH);
-          ctx.strokeStyle = "rgba(255,255,255,0.75)";
-          ctx.lineWidth = 2 * xScale;
-          ctx.lineCap = "round"; ctx.lineJoin = "round";
-          ctx.stroke();
-        }
-        // Pause bars
+          ctx.moveTo(bx, cy - half + arrowR);
+          ctx.quadraticCurveTo(bx, cy - half, bx - arrowR, cy - half + arrowR * 0.5);
+          ctx.lineTo(tipX + arrowR, cy - arrowR * 0.45);
+          ctx.quadraticCurveTo(tipX, cy, tipX + arrowR, cy + arrowR * 0.45);
+          ctx.lineTo(bx - arrowR, cy + half - arrowR * 0.5);
+          ctx.quadraticCurveTo(bx, cy + half, bx, cy + half - arrowR);
+          ctx.closePath();
+          ctx.fill();
+        };
+
+        // Draw one filled right-pointing arrow. bx = left edge, tipX = right tip.
+        const drawRightArrow = (bx: number, cy: number) => {
+          const tipX = bx + arrowW;
+          const half = arrowH / 2;
+          ctx.beginPath();
+          ctx.moveTo(bx, cy - half + arrowR);
+          ctx.quadraticCurveTo(bx, cy - half, bx + arrowR, cy - half + arrowR * 0.5);
+          ctx.lineTo(tipX - arrowR, cy - arrowR * 0.45);
+          ctx.quadraticCurveTo(tipX, cy, tipX - arrowR, cy + arrowR * 0.45);
+          ctx.lineTo(bx + arrowR, cy + half - arrowR * 0.5);
+          ctx.quadraticCurveTo(bx, cy + half, bx, cy + half - arrowR);
+          ctx.closePath();
+          ctx.fill();
+        };
+
+        // Prev — two left-pointing filled arrows, touching
+        const prevRight = ctrlCx - 72 * xScale + arrowW * 2 + arrowGap;
+        drawLeftArrow(prevRight, ctrlY);
+        drawLeftArrow(prevRight - arrowW - arrowGap, ctrlY);
+
+        // Pause bars (two white rounded rectangles, 2px radius)
         const pauseBarW = 4 * xScale; const pauseBarH = 14 * xScale; const pauseBarGap = 5 * xScale;
         ctx.fillStyle = "#fff";
         if (typeof ctx.roundRect === "function") {
@@ -416,33 +446,51 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
           ctx.fillRect(ctrlCx - pauseBarGap / 2 - pauseBarW, ctrlY - pauseBarH / 2, pauseBarW, pauseBarH);
           ctx.fillRect(ctrlCx + pauseBarGap / 2, ctrlY - pauseBarH / 2, pauseBarW, pauseBarH);
         }
-        // Next (two right-pointing chevrons)
-        for (let ci = 0; ci < 2; ci++) {
-          const ox = ctrlCx + 68 * xScale + ci * chevW * 2.2;
-          ctx.beginPath();
-          ctx.moveTo(ox, ctrlY - chevH); ctx.lineTo(ox + chevW, ctrlY); ctx.lineTo(ox, ctrlY + chevH);
-          ctx.strokeStyle = "rgba(255,255,255,0.75)";
-          ctx.lineWidth = 2 * xScale;
-          ctx.lineCap = "round"; ctx.lineJoin = "round";
-          ctx.stroke();
-        }
+        ctx.fillStyle = "rgba(255,255,255,0.75)";
+
+        // Next — two right-pointing filled arrows, touching
+        const nextLeft = ctrlCx + 72 * xScale - arrowW * 2 - arrowGap;
+        drawRightArrow(nextLeft, ctrlY);
+        drawRightArrow(nextLeft + arrowW + arrowGap, ctrlY);
+
         curY += 20 * xScale;
 
-        // Volume bar
+        // Volume bar — left icon (low), track, right icon (high)
         const volIconW = 8 * xScale;
         const volBarH = 3 * xScale;
-        const volY = curY + volBarH / 2;
-        // Speaker icon (filled path — left)
+        const volIconH = volBarH * 4; // speaker body height
+        const volCY = curY + volBarH * 0.5; // center Y of icon
+
+        // Helper: draw filled speaker body
+        const drawSpeakerBody = (x: number, cy: number, iw: number, ih: number) => {
+          const hh = ih / 2;
+          ctx.beginPath();
+          ctx.moveTo(x + iw * 0.5, cy - hh);
+          ctx.lineTo(x + iw * 0.2, cy - hh * 0.35);
+          ctx.lineTo(x + iw * 0.05, cy - hh * 0.35);
+          ctx.lineTo(x + iw * 0.05, cy + hh * 0.35);
+          ctx.lineTo(x + iw * 0.2, cy + hh * 0.35);
+          ctx.lineTo(x + iw * 0.5, cy + hh);
+          ctx.closePath();
+          ctx.fill();
+        };
+
+        // Helper: draw filled wave arc sector around speaker tip
+        const drawFilledWave = (tipX: number, cy: number, r1: number, r2: number) => {
+          const angle = Math.PI * 0.35;
+          ctx.beginPath();
+          ctx.arc(tipX, cy, r2, -angle, angle);
+          ctx.arc(tipX, cy, r1, angle, -angle, true);
+          ctx.closePath();
+          ctx.fill();
+        };
+
         ctx.fillStyle = "rgba(255,255,255,0.45)";
-        ctx.beginPath();
-        ctx.moveTo(cardX + cardPad + volIconW * 0.5, curY - volBarH * 1.5);
-        ctx.lineTo(cardX + cardPad + volIconW * 0.2, curY - volBarH * 0.5);
-        ctx.lineTo(cardX + cardPad + volIconW * 0.05, curY - volBarH * 0.5);
-        ctx.lineTo(cardX + cardPad + volIconW * 0.05, curY + volBarH * 1.5);
-        ctx.lineTo(cardX + cardPad + volIconW * 0.2, curY + volBarH * 1.5);
-        ctx.lineTo(cardX + cardPad + volIconW * 0.5, curY + volBarH * 2.5);
-        ctx.closePath();
-        ctx.fill();
+
+        // Left volume icon: speaker + small wave
+        drawSpeakerBody(cardX + cardPad, volCY, volIconW, volIconH);
+        drawFilledWave(cardX + cardPad + volIconW * 0.5, volCY, volIconW * 0.35, volIconW * 0.65);
+
         // Volume track
         const volTrackX = cardX + cardPad + volIconW + 3 * xScale;
         const volTrackW = artW - volIconW * 2 - 6 * xScale;
@@ -456,6 +504,14 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
           ctx.fillStyle = "rgba(255,255,255,0.75)";
           ctx.fillRect(volTrackX, curY, volTrackW * 0.7, volBarH);
         }
+
+        // Right volume icon: speaker + small wave + large wave
+        ctx.fillStyle = "rgba(255,255,255,0.45)";
+        const rightIconX = cardX + cardPad + artW - volIconW;
+        drawSpeakerBody(rightIconX, volCY, volIconW, volIconH);
+        drawFilledWave(rightIconX + volIconW * 0.5, volCY, volIconW * 0.35, volIconW * 0.65);
+        drawFilledWave(rightIconX + volIconW * 0.5, volCY, volIconW * 0.7, volIconW * 1.1);
+
         curY += volBarH + 8 * xScale;
 
         // Comment bubble — only if user has commented
@@ -597,8 +653,8 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
             <div style={{ display: "flex", gap: "20px", alignItems: "flex-start" }}>
               {/* Mini preview — iPhone 16 Pro proportions (402×874pt) */}
               {(() => {
-                const MINI_W = 120;
-                const MINI_H = Math.round(MINI_W * 874 / 402); // ≈ 261px
+                const MINI_W = 160;
+                const MINI_H = Math.round(MINI_W * 874 / 402); // iPhone 16 Pro proportions
                 const CARD_MARGIN_MINI = 12;
                 const cardWm = MINI_W - CARD_MARGIN_MINI * 2;
                 const cardPadm = Math.round(cardPadding * (MINI_W / 216));
@@ -632,26 +688,31 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
                         </div>
                         {/* Player controls mini */}
                         <div style={{ marginTop: "3px", display: "flex", alignItems: "center", justifyContent: "center", gap: "5px" }}>
-                          <svg width="7" height="5" viewBox="0 0 13 10" fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="6.5,1 2,5 6.5,9"/><polyline points="11.5,1 7,5 11.5,9"/>
+                          <svg width="7" height="5" viewBox="0 0 14 10" fill="rgba(255,255,255,0.75)">
+                            <path d="M6.5,2 L6.5,8 Q6.5,10 5,10 L0.5,5.6 Q0,5 0.5,4.4 L5,0 Q6.5,0 6.5,2 Z"/>
+                            <path d="M13.5,2 L13.5,8 Q13.5,10 12,10 L7.5,5.6 Q7,5 7.5,4.4 L12,0 Q13.5,0 13.5,2 Z"/>
                           </svg>
                           <svg width="5" height="6" viewBox="0 0 10 12" fill="#fff">
                             <rect x="0.5" y="0.5" width="3" height="11" rx="2"/><rect x="6.5" y="0.5" width="3" height="11" rx="2"/>
                           </svg>
-                          <svg width="7" height="5" viewBox="0 0 13 10" fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="1,1 5.5,5 1,9"/><polyline points="6,1 10.5,5 6,9"/>
+                          <svg width="7" height="5" viewBox="0 0 14 10" fill="rgba(255,255,255,0.75)">
+                            <path d="M0,2 L0,8 Q0,10 1.5,10 L6,5.6 Q6.5,5 6,4.4 L1.5,0 Q0,0 0,2 Z"/>
+                            <path d="M7,2 L7,8 Q7,10 8.5,10 L13,5.6 Q13.5,5 13,4.4 L8.5,0 Q7,0 7,2 Z"/>
                           </svg>
                         </div>
                         {/* Volume mini */}
                         <div style={{ marginTop: "2px", display: "flex", alignItems: "center", gap: "2px" }}>
                           <svg width="4" height="4" viewBox="0 0 20 20" fill="rgba(255,255,255,0.45)">
                             <path d="M10 3.5 L5.5 7.5 H2 Q1 7.5 1 8.5 V11.5 Q1 12.5 2 12.5 H5.5 L10 16.5 Z"/>
+                            <path d="M12.5 7 Q15.5 10 12.5 13 L11.5 12 Q14 10 11.5 8 Z"/>
                           </svg>
                           <div style={{ flex: 1, height: "1.5px", background: "rgba(255,255,255,0.18)", borderRadius: "1px", position: "relative", overflow: "hidden" }}>
                             <div style={{ position: "absolute", left: 0, top: 0, height: "100%", width: "70%", background: "rgba(255,255,255,0.75)" }} />
                           </div>
                           <svg width="4" height="4" viewBox="0 0 20 20" fill="rgba(255,255,255,0.45)">
                             <path d="M10 3.5 L5.5 7.5 H2 Q1 7.5 1 8.5 V11.5 Q1 12.5 2 12.5 H5.5 L10 16.5 Z"/>
+                            <path d="M12.5 7 Q15.5 10 12.5 13 L11.5 12 Q14 10 11.5 8 Z"/>
+                            <path d="M14.5 5 Q19 10 14.5 15 L13.5 14 Q17.5 10 13.5 6 Z"/>
                           </svg>
                         </div>
                         {/* Comment bubble mini */}

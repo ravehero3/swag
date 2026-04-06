@@ -2769,7 +2769,7 @@ function IGStoriesTab({ settings, onRefresh }: any) {
   const playedStr = previewBeatDuration !== null ? formatDuration(previewBeatDuration * PLAYHEAD_FRACTION) : "–:––";
 
   // Preview card — iPhone 16 Pro proportions (402×874 pt → ratio 2.174)
-  const PREVIEW_W = 216;
+  const PREVIEW_W = 290;
   const PREVIEW_H = Math.round(PREVIEW_W * 874 / 402); // ≈ 470px
   const CARD_MARGIN = 24;
   const cardW = PREVIEW_W - CARD_MARGIN * 2;           // 168px
@@ -2881,38 +2881,38 @@ function IGStoriesTab({ settings, onRefresh }: any) {
 
                 {/* Player controls */}
                 <div style={{ marginTop: "8px", display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", width: "100%" }}>
-                  {/* Prev — two left-pointing arrows touching */}
-                  <svg width="13" height="10" viewBox="0 0 13 10" fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="6.5,1 2,5 6.5,9"/>
-                    <polyline points="11.5,1 7,5 11.5,9"/>
+                  {/* Prev — two filled left-pointing arrows touching, 2px radius corners */}
+                  <svg width="13" height="10" viewBox="0 0 14 10" fill="rgba(255,255,255,0.75)">
+                    <path d="M6.5,2 L6.5,8 Q6.5,10 5,10 L0.5,5.6 Q0,5 0.5,4.4 L5,0 Q6.5,0 6.5,2 Z"/>
+                    <path d="M13.5,2 L13.5,8 Q13.5,10 12,10 L7.5,5.6 Q7,5 7.5,4.4 L12,0 Q13.5,0 13.5,2 Z"/>
                   </svg>
-                  {/* Pause — just two white rounded bars, no circle */}
+                  {/* Pause — two white rounded bars, no circle */}
                   <svg width="10" height="12" viewBox="0 0 10 12" fill="#fff">
                     <rect x="0.5" y="0.5" width="3" height="11" rx="2"/>
                     <rect x="6.5" y="0.5" width="3" height="11" rx="2"/>
                   </svg>
-                  {/* Next — two right-pointing arrows touching */}
-                  <svg width="13" height="10" viewBox="0 0 13 10" fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="1,1 5.5,5 1,9"/>
-                    <polyline points="6,1 10.5,5 6,9"/>
+                  {/* Next — two filled right-pointing arrows touching, 2px radius corners */}
+                  <svg width="13" height="10" viewBox="0 0 14 10" fill="rgba(255,255,255,0.75)">
+                    <path d="M0,2 L0,8 Q0,10 1.5,10 L6,5.6 Q6.5,5 6,4.4 L1.5,0 Q0,0 0,2 Z"/>
+                    <path d="M7,2 L7,8 Q7,10 8.5,10 L13,5.6 Q13.5,5 13,4.4 L8.5,0 Q7,0 7,2 Z"/>
                   </svg>
                 </div>
 
                 {/* Volume bar */}
                 <div style={{ marginTop: "10px", width: "100%", display: "flex", alignItems: "center", gap: "5px" }}>
-                  {/* Volume low — filled speaker body + one arc */}
+                  {/* Volume low — filled speaker body + filled small wave */}
                   <svg width="8" height="8" viewBox="0 0 20 20" fill="rgba(255,255,255,0.45)">
-                    <path d="M10 3.5 L5.5 7.5 H2 Q1 7.5 1 8.5 V11.5 Q1 12.5 2 12.5 H5.5 L10 16.5 Z" rx="1"/>
-                    <path d="M13 7 Q15 10 13 13" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="1.5" strokeLinecap="round"/>
+                    <path d="M10 3.5 L5.5 7.5 H2 Q1 7.5 1 8.5 V11.5 Q1 12.5 2 12.5 H5.5 L10 16.5 Z"/>
+                    <path d="M12.5 7 Q15.5 10 12.5 13 L11.5 12 Q14 10 11.5 8 Z"/>
                   </svg>
                   <div style={{ flex: 1, height: "3px", background: "rgba(255,255,255,0.18)", borderRadius: "2px", position: "relative", overflow: "hidden" }}>
                     <div style={{ position: "absolute", left: 0, top: 0, height: "100%", width: "70%", background: "rgba(255,255,255,0.75)", borderRadius: "2px" }} />
                   </div>
-                  {/* Volume high — filled speaker + two arcs */}
+                  {/* Volume high — filled speaker + two filled waves */}
                   <svg width="8" height="8" viewBox="0 0 20 20" fill="rgba(255,255,255,0.45)">
-                    <path d="M10 3.5 L5.5 7.5 H2 Q1 7.5 1 8.5 V11.5 Q1 12.5 2 12.5 H5.5 L10 16.5 Z" rx="1"/>
-                    <path d="M13 7 Q15 10 13 13" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="1.5" strokeLinecap="round"/>
-                    <path d="M15.5 5 Q19 10 15.5 15" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="1.5" strokeLinecap="round"/>
+                    <path d="M10 3.5 L5.5 7.5 H2 Q1 7.5 1 8.5 V11.5 Q1 12.5 2 12.5 H5.5 L10 16.5 Z"/>
+                    <path d="M12.5 7 Q15.5 10 12.5 13 L11.5 12 Q14 10 11.5 8 Z"/>
+                    <path d="M14.5 5 Q19 10 14.5 15 L13.5 14 Q17.5 10 13.5 6 Z"/>
                   </svg>
                 </div>
 
