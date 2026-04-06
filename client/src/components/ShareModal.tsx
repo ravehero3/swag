@@ -1,5 +1,6 @@
 import { useState, useEffect, CSSProperties } from "react";
 import { useApp } from "../App.js";
+import { getWaveform, preloadWaveform } from "../lib/waveformCache.js";
 
 interface ShareProduct {
   id: number;
@@ -47,7 +48,8 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
   const [activeTab, setActiveTab] = useState<"link" | "story">("link");
   const [isGenerating, setIsGenerating] = useState(false);
   const [beatDuration, setBeatDuration] = useState<number | null>(null);
-  const [userComment, setUserComment] = useState<{ text: string; email: string; avatar_url?: string | null; username?: string | null } | null>(null);
+  const [userComment, setUserComment] = useState<{ text: string; email: string; avatar_url?: string | null; username?: string | null; time_offset?: number } | null>(null);
+  const [waveformData, setWaveformData] = useState<number[] | null>(null);
   const { settings } = useApp() as any;
 
   const resolvedId = product?.id ?? beatId ?? 0;
@@ -103,13 +105,23 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
       .then(r => r.ok ? r.json() : null)
       .then(data => {
         if (data && data.text) {
-          setUserComment({ text: data.text, email: data.email, avatar_url: data.avatar_url, username: data.username });
+          setUserComment({ text: data.text, email: data.email, avatar_url: data.avatar_url, username: data.username, time_offset: typeof data.time_offset === "number" ? data.time_offset : PLAYHEAD });
         } else {
           setUserComment(null);
         }
       })
       .catch(() => setUserComment(null));
   }, [isOpen, resolvedId]);
+
+  useEffect(() => {
+    if (!isOpen || !resolvedPreviewUrl) { setWaveformData(null); return; }
+    const cached = getWaveform(resolvedPreviewUrl);
+    if (cached && cached.length > 0) { setWaveformData(cached); return; }
+    preloadWaveform(resolvedPreviewUrl).then(() => {
+      const data = getWaveform(resolvedPreviewUrl);
+      if (data && data.length > 0) setWaveformData(data);
+    }).catch(() => {});
+  }, [isOpen, resolvedPreviewUrl]);
 
   if (!isOpen) return null;
 
@@ -251,21 +263,19 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
 
         // Card height in canvas pixels — use xScale since card size is relative to card width
         const artWpx = (cardW_prev - cardPadding * 2) * xScale;
-        const commentHpx = userComment ? (10 * xScale + 8 * xScale) : 0;
         const estimatedCardH = cardPad + artWpx
           + 10 * xScale   // after artwork
           + 9 * xScale    // title (~1 line)
           + 4 * xScale    // after title
           + 7 * xScale    // brand
           + 10 * xScale   // after brand
-          + 22 * xScale   // waveform
+          + 28 * xScale   // waveform (dual-axis, taller)
           + 3 * xScale    // after waveform
           + 5 * xScale    // time labels
           + 8 * xScale    // after time labels
           + 20 * xScale   // player controls
           + 3 * xScale    // volume bar
           + 8 * xScale    // after volume
-          + commentHpx    // optional comment bubble
           + cardPad;      // bottom padding
         const centeredCardY = (CH - estimatedCardH) / 2 + cardYOffset * yScale;
         const cardY = Math.max(10 * yScale, centeredCardY);
@@ -357,25 +367,108 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
         ctx.fillText("VOODOO808.COM", cardBrandAlign === "left" ? cardX + cardPad : cardX + cardW - cardPad, curY);
         curY += 10 * xScale;
 
-        // Waveform bars
-        const barCount = WAVE_BARS.length;
-        const waveH = 22 * xScale;
-        const gap = 1.5 * xScale;
-        const barW = (artW - gap * (barCount - 1)) / barCount;
+        // Waveform — dual-axis (top + bottom mirror) with real audio data
+        const peaks = waveformData && waveformData.length > 0 ? waveformData : WAVE_BARS;
+        const barCount = peaks.length;
+        const waveH = 28 * xScale;
+        const waveStartY = curY;
+        const waveEndX = cardX + cardPad + artW;
+        const slotW = artW / barCount;
+        const barW = Math.max(0.5, slotW * 0.55);
+        const wDivY = waveStartY + waveH * 0.70;
+        const topMaxAmp = waveH * 0.70 * 0.90;
+        const botMaxAmp = waveH * 0.30 * 0.90;
+        const barRadius = Math.min(barW / 2, 1.5);
         for (let i = 0; i < barCount; i++) {
-          const bh = Math.max(2 * xScale, WAVE_BARS[i] * waveH);
-          const by = curY + (waveH - bh) / 2;
-          const bx = cardX + cardPad + i * (barW + gap);
-          const played = (i / barCount) < PLAYHEAD;
-          ctx.fillStyle = played ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.22)";
+          const bx = cardX + cardPad + i * slotW + (slotW - barW) / 2;
+          const peak = peaks[i] ?? 0.5;
+          const topAmp = Math.max(peak * topMaxAmp, xScale * 0.5);
+          const botAmp = Math.max(peak * botMaxAmp, xScale * 0.3);
+          const isPlayed = (i / barCount) < PLAYHEAD;
+          ctx.fillStyle = isPlayed ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.28)";
           ctx.beginPath();
-          ctx.roundRect(bx, by, barW, bh, barW / 2);
+          if (ctx.roundRect) ctx.roundRect(bx, wDivY - topAmp, barW, topAmp, barRadius);
+          else ctx.rect(bx, wDivY - topAmp, barW, topAmp);
+          ctx.fill();
+          ctx.fillStyle = isPlayed ? "rgba(255,255,255,0.61)" : "rgba(255,255,255,0.13)";
+          ctx.beginPath();
+          if (ctx.roundRect) ctx.roundRect(bx, wDivY, barW, botAmp, barRadius);
+          else ctx.rect(bx, wDivY, barW, botAmp);
           ctx.fill();
         }
-        // Playhead line
-        ctx.fillStyle = "rgba(255,255,255,0.85)";
-        ctx.fillRect(cardX + cardPad + PLAYHEAD * artW - 1.5, curY, 3, waveH);
-        curY += waveH + 3 * xScale;
+        // Divider line
+        ctx.fillStyle = "rgba(0,0,0,0.25)";
+        ctx.fillRect(cardX + cardPad, wDivY, artW, Math.max(1, xScale * 0.3));
+        // Playhead vertical line
+        const playheadX = cardX + cardPad + PLAYHEAD * artW;
+        ctx.fillStyle = "rgba(255,255,255,0.95)";
+        ctx.fillRect(playheadX - 0.75 * xScale, waveStartY, 1.5 * xScale, waveH);
+
+        // Comment avatar pinned to time_offset on the waveform (like the webapp)
+        if (userComment) {
+          const tOff = typeof userComment.time_offset === "number" ? userComment.time_offset : PLAYHEAD;
+          const commentX = Math.max(cardX + cardPad + 12 * xScale, Math.min(waveEndX - 12 * xScale, cardX + cardPad + tOff * artW));
+          const commentCY = waveStartY + waveH * 0.50;
+          const avatarR = 11 * xScale;
+          // Draw avatar circle
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(commentX, commentCY, avatarR, 0, Math.PI * 2);
+          ctx.fillStyle = "#1a1a1a";
+          ctx.fill();
+          ctx.clip();
+          if (userComment.avatar_url) {
+            const avProxied = proxyImageUrl(userComment.avatar_url);
+            const avImg = await loadImage(avProxied);
+            if (avImg) ctx.drawImage(avImg, commentX - avatarR, commentCY - avatarR, avatarR * 2, avatarR * 2);
+          }
+          if (!userComment.avatar_url) {
+            ctx.fillStyle = "rgba(255,255,255,0.7)";
+            ctx.font = `bold ${avatarR * 0.9}px Helvetica,Arial,sans-serif`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText((userComment.username || userComment.email || "?").charAt(0).toUpperCase(), commentX, commentCY);
+          }
+          ctx.restore();
+          // White ring border
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(commentX, commentCY, avatarR, 0, Math.PI * 2);
+          ctx.strokeStyle = "rgba(255,255,255,0.75)";
+          ctx.lineWidth = 1.5 * xScale;
+          ctx.stroke();
+          ctx.restore();
+          // Tooltip bubble above avatar
+          const tipPadX = 7 * xScale;
+          const tipPadY = 5 * xScale;
+          const nameFsz = 4.5 * xScale;
+          const cFsz = 5.5 * xScale;
+          ctx.font = `${cFsz}px Helvetica,Arial,sans-serif`;
+          const maxTipW = Math.min(artW * 0.65, 180 * xScale);
+          const commentLines = wrapText(ctx, userComment.text, maxTipW - tipPadX * 2).slice(0, 2);
+          const tipH = tipPadY * 2 + nameFsz + 3 * xScale + commentLines.length * (cFsz + 2 * xScale);
+          const tipW = maxTipW;
+          const tipX = Math.max(cardX + cardPad, Math.min(waveEndX - tipW, commentX - tipW / 2));
+          const tipY = commentCY - avatarR - 8 * xScale - tipH;
+          ctx.fillStyle = "#1a1a1a";
+          if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(tipX, tipY, tipW, tipH, 6 * xScale); ctx.fill(); }
+          else ctx.fillRect(tipX, tipY, tipW, tipH);
+          ctx.strokeStyle = "rgba(255,255,255,0.12)";
+          ctx.lineWidth = xScale;
+          if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(tipX, tipY, tipW, tipH, 6 * xScale); ctx.stroke(); }
+          ctx.fillStyle = "rgba(255,255,255,0.5)";
+          ctx.font = `${nameFsz}px Helvetica,Arial,sans-serif`;
+          ctx.textAlign = "left";
+          ctx.textBaseline = "top";
+          ctx.fillText((userComment.username || userComment.email?.split("@")[0] || "user").substring(0, 24), tipX + tipPadX, tipY + tipPadY);
+          ctx.fillStyle = "rgba(255,255,255,0.88)";
+          ctx.font = `${cFsz}px Helvetica,Arial,sans-serif`;
+          commentLines.forEach((line, li) => ctx.fillText(line, tipX + tipPadX, tipY + tipPadY + nameFsz + 3 * xScale + li * (cFsz + 2 * xScale)));
+          ctx.textAlign = "center";
+          ctx.textBaseline = "alphabetic";
+        }
+
+        curY = waveStartY + waveH + 3 * xScale;
 
         // Time labels
         const timeFontSize = 5 * xScale;
@@ -391,50 +484,55 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
         ctx.textAlign = "center";
         curY += 8 * xScale;
 
-        // Player controls — filled double-arrow skip buttons + plain pause bars
+        // Player controls — exact SVG paths ported to canvas so they match the preview
         const ctrlY = curY + 9 * xScale;
         const ctrlCx = CW / 2;
-        const arrowH = 18 * xScale;  // total height of each filled arrow
-        const arrowW = 6 * xScale;   // width of each arrow
-        const arrowGap = 2 * xScale; // gap between the two paired arrows
-        const arrowR = 2 * xScale;   // corner radius
+        // Arrow pair dimensions matching SVG: viewBox "0 0 14 10", display 13×10
+        const aPW = 13 * xScale; // arrow-pair display width
+        const aPH = 10 * xScale; // arrow-pair display height
+        const sx = aPW / 14;     // x scale from viewBox units
+        const sy = aPH / 10;     // y scale from viewBox units
+
+        // Helper: draw the two-arrow "prev" shape (left-pointing) centered at (cx, cy)
+        const drawPrevArrows = (cx: number, cy: number) => {
+          const ox = cx - aPW / 2, oy = cy - aPH / 2;
+          ctx.beginPath();
+          // Arrow 1: M6.5,2 L6.5,8 Q6.5,10 5,10 L0.5,5.6 Q0,5 0.5,4.4 L5,0 Q6.5,0 6.5,2 Z
+          ctx.moveTo(ox+6.5*sx, oy+2*sy); ctx.lineTo(ox+6.5*sx, oy+8*sy);
+          ctx.quadraticCurveTo(ox+6.5*sx, oy+10*sy, ox+5*sx, oy+10*sy);
+          ctx.lineTo(ox+0.5*sx, oy+5.6*sy); ctx.quadraticCurveTo(ox+0*sx, oy+5*sy, ox+0.5*sx, oy+4.4*sy);
+          ctx.lineTo(ox+5*sx, oy+0*sy); ctx.quadraticCurveTo(ox+6.5*sx, oy+0*sy, ox+6.5*sx, oy+2*sy);
+          ctx.closePath();
+          // Arrow 2: M13.5,2 L13.5,8 Q13.5,10 12,10 L7.5,5.6 Q7,5 7.5,4.4 L12,0 Q13.5,0 13.5,2 Z
+          ctx.moveTo(ox+13.5*sx, oy+2*sy); ctx.lineTo(ox+13.5*sx, oy+8*sy);
+          ctx.quadraticCurveTo(ox+13.5*sx, oy+10*sy, ox+12*sx, oy+10*sy);
+          ctx.lineTo(ox+7.5*sx, oy+5.6*sy); ctx.quadraticCurveTo(ox+7*sx, oy+5*sy, ox+7.5*sx, oy+4.4*sy);
+          ctx.lineTo(ox+12*sx, oy+0*sy); ctx.quadraticCurveTo(ox+13.5*sx, oy+0*sy, ox+13.5*sx, oy+2*sy);
+          ctx.closePath();
+          ctx.fill();
+        };
+
+        // Helper: draw the two-arrow "next" shape (right-pointing) centered at (cx, cy)
+        const drawNextArrows = (cx: number, cy: number) => {
+          const ox = cx - aPW / 2, oy = cy - aPH / 2;
+          ctx.beginPath();
+          // Arrow 1: M0,2 L0,8 Q0,10 1.5,10 L6,5.6 Q6.5,5 6,4.4 L1.5,0 Q0,0 0,2 Z
+          ctx.moveTo(ox+0*sx, oy+2*sy); ctx.lineTo(ox+0*sx, oy+8*sy);
+          ctx.quadraticCurveTo(ox+0*sx, oy+10*sy, ox+1.5*sx, oy+10*sy);
+          ctx.lineTo(ox+6*sx, oy+5.6*sy); ctx.quadraticCurveTo(ox+6.5*sx, oy+5*sy, ox+6*sx, oy+4.4*sy);
+          ctx.lineTo(ox+1.5*sx, oy+0*sy); ctx.quadraticCurveTo(ox+0*sx, oy+0*sy, ox+0*sx, oy+2*sy);
+          ctx.closePath();
+          // Arrow 2: M7,2 L7,8 Q7,10 8.5,10 L13,5.6 Q13.5,5 13,4.4 L8.5,0 Q7,0 7,2 Z
+          ctx.moveTo(ox+7*sx, oy+2*sy); ctx.lineTo(ox+7*sx, oy+8*sy);
+          ctx.quadraticCurveTo(ox+7*sx, oy+10*sy, ox+8.5*sx, oy+10*sy);
+          ctx.lineTo(ox+13*sx, oy+5.6*sy); ctx.quadraticCurveTo(ox+13.5*sx, oy+5*sy, ox+13*sx, oy+4.4*sy);
+          ctx.lineTo(ox+8.5*sx, oy+0*sy); ctx.quadraticCurveTo(ox+7*sx, oy+0*sy, ox+7*sx, oy+2*sy);
+          ctx.closePath();
+          ctx.fill();
+        };
 
         ctx.fillStyle = "rgba(255,255,255,0.75)";
-
-        // Draw one filled left-pointing arrow. bx = right edge, tipX = left tip.
-        const drawLeftArrow = (bx: number, cy: number) => {
-          const tipX = bx - arrowW;
-          const half = arrowH / 2;
-          ctx.beginPath();
-          ctx.moveTo(bx, cy - half + arrowR);
-          ctx.quadraticCurveTo(bx, cy - half, bx - arrowR, cy - half + arrowR * 0.5);
-          ctx.lineTo(tipX + arrowR, cy - arrowR * 0.45);
-          ctx.quadraticCurveTo(tipX, cy, tipX + arrowR, cy + arrowR * 0.45);
-          ctx.lineTo(bx - arrowR, cy + half - arrowR * 0.5);
-          ctx.quadraticCurveTo(bx, cy + half, bx, cy + half - arrowR);
-          ctx.closePath();
-          ctx.fill();
-        };
-
-        // Draw one filled right-pointing arrow. bx = left edge, tipX = right tip.
-        const drawRightArrow = (bx: number, cy: number) => {
-          const tipX = bx + arrowW;
-          const half = arrowH / 2;
-          ctx.beginPath();
-          ctx.moveTo(bx, cy - half + arrowR);
-          ctx.quadraticCurveTo(bx, cy - half, bx + arrowR, cy - half + arrowR * 0.5);
-          ctx.lineTo(tipX - arrowR, cy - arrowR * 0.45);
-          ctx.quadraticCurveTo(tipX, cy, tipX - arrowR, cy + arrowR * 0.45);
-          ctx.lineTo(bx + arrowR, cy + half - arrowR * 0.5);
-          ctx.quadraticCurveTo(bx, cy + half, bx, cy + half - arrowR);
-          ctx.closePath();
-          ctx.fill();
-        };
-
-        // Prev — two left-pointing filled arrows, touching
-        const prevRight = ctrlCx - 72 * xScale + arrowW * 2 + arrowGap;
-        drawLeftArrow(prevRight, ctrlY);
-        drawLeftArrow(prevRight - arrowW - arrowGap, ctrlY);
+        drawPrevArrows(ctrlCx - 26 * xScale, ctrlY);
 
         // Pause bars (two white rounded rectangles, 2px radius)
         const pauseBarW = 4 * xScale; const pauseBarH = 14 * xScale; const pauseBarGap = 5 * xScale;
@@ -446,12 +544,9 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
           ctx.fillRect(ctrlCx - pauseBarGap / 2 - pauseBarW, ctrlY - pauseBarH / 2, pauseBarW, pauseBarH);
           ctx.fillRect(ctrlCx + pauseBarGap / 2, ctrlY - pauseBarH / 2, pauseBarW, pauseBarH);
         }
-        ctx.fillStyle = "rgba(255,255,255,0.75)";
 
-        // Next — two right-pointing filled arrows, touching
-        const nextLeft = ctrlCx + 72 * xScale - arrowW * 2 - arrowGap;
-        drawRightArrow(nextLeft, ctrlY);
-        drawRightArrow(nextLeft + arrowW + arrowGap, ctrlY);
+        ctx.fillStyle = "rgba(255,255,255,0.75)";
+        drawNextArrows(ctrlCx + 26 * xScale, ctrlY);
 
         curY += 20 * xScale;
 
@@ -513,66 +608,6 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
         drawFilledWave(rightIconX + volIconW * 0.5, volCY, volIconW * 0.7, volIconW * 1.1);
 
         curY += volBarH + 8 * xScale;
-
-        // Comment bubble — only if user has commented
-        if (userComment) {
-          const avatarSize = 18 * xScale;
-          const bubblePad = 5 * xScale;
-          const bubbleX = cardX + cardPad + avatarSize + 5 * xScale;
-          const bubbleW = artW - avatarSize - 5 * xScale;
-          const commentFontSize = 5 * xScale;
-          const nameFontSize = 4 * xScale;
-
-          // Avatar circle
-          ctx.save();
-          ctx.beginPath();
-          ctx.arc(cardX + cardPad + avatarSize / 2, curY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
-          ctx.clip();
-          ctx.fillStyle = "rgba(255,255,255,0.18)";
-          ctx.fill();
-          if (userComment.avatar_url) {
-            const avatarProxied = proxyImageUrl(userComment.avatar_url);
-            const avatarImg = await loadImage(avatarProxied);
-            if (avatarImg) {
-              ctx.drawImage(avatarImg, cardX + cardPad, curY, avatarSize, avatarSize);
-            }
-          } else {
-            const initials = (userComment.username || userComment.email || "?").charAt(0).toUpperCase();
-            ctx.fillStyle = "rgba(255,255,255,0.7)";
-            ctx.font = `bold ${avatarSize * 0.5}px Helvetica,Arial,sans-serif`;
-            ctx.textAlign = "center";
-            ctx.fillText(initials, cardX + cardPad + avatarSize / 2, curY + avatarSize * 0.65);
-          }
-          ctx.restore();
-
-          // Bubble background
-          const bubbleH = nameFontSize + commentFontSize * 2 + bubblePad * 2 + 3 * xScale;
-          ctx.fillStyle = "rgba(255,255,255,0.1)";
-          if (typeof ctx.roundRect === "function") {
-            ctx.beginPath(); ctx.roundRect(bubbleX, curY, bubbleW, bubbleH, 6 * xScale); ctx.fill();
-          } else {
-            ctx.fillRect(bubbleX, curY, bubbleW, bubbleH);
-          }
-
-          // Username
-          ctx.fillStyle = "rgba(255,255,255,0.5)";
-          ctx.font = `${nameFontSize}px Helvetica,Arial,sans-serif`;
-          ctx.textAlign = "left";
-          ctx.fillText(
-            (userComment.username || userComment.email?.split("@")[0] || "user").substring(0, 30),
-            bubbleX + bubblePad, curY + bubblePad + nameFontSize
-          );
-
-          // Comment text (truncated)
-          ctx.fillStyle = "rgba(255,255,255,0.85)";
-          ctx.font = `${commentFontSize}px Helvetica,Arial,sans-serif`;
-          const maxCommentW = bubbleW - bubblePad * 2;
-          const commentLines = wrapText(ctx, userComment.text, maxCommentW).slice(0, 2);
-          commentLines.forEach((line, li) => {
-            ctx.fillText(line, bubbleX + bubblePad, curY + bubblePad + nameFontSize + 3 * xScale + (li + 1) * (commentFontSize + 2 * xScale));
-          });
-          ctx.textAlign = "center";
-        }
       }
 
       const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
@@ -682,7 +717,28 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
                         </div>
                         <div style={{ fontSize: "4.5px", fontWeight: 700, color: "#fff", textAlign: cardTitleAlign, wordBreak: "break-word", lineHeight: 1.2, marginTop: "3px" }}>{resolvedTitle.toUpperCase()}</div>
                         <div style={{ fontSize: "3.5px", color: "rgba(255,255,255,0.6)", textAlign: cardBrandAlign }}>VOODOO808.COM</div>
-                        <div style={{ marginTop: "2px", display: "flex", justifyContent: "space-between" }}>
+                        {/* Waveform mini — 60 bars, centered (dual-axis effect), with playhead + comment avatar */}
+                        <div style={{ position: "relative", height: "11px", marginTop: "3px", overflow: "visible" }}>
+                          <div style={{ display: "flex", alignItems: "center", height: "100%", gap: "0.5px" }}>
+                            {(waveformData && waveformData.length > 0
+                              ? Array.from({ length: 60 }, (_, i) => waveformData[Math.floor(i * waveformData.length / 60)])
+                              : WAVE_BARS
+                            ).map((peak, i) => {
+                              const isPlayed = i / 60 < PLAYHEAD;
+                              return <div key={i} style={{ flexShrink: 0, width: "1px", height: `${Math.max(1, peak * 11)}px`, background: isPlayed ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.28)", borderRadius: "0.5px" }} />;
+                            })}
+                          </div>
+                          <div style={{ position: "absolute", left: `${PLAYHEAD * 100}%`, top: 0, width: "1px", height: "100%", background: "rgba(255,255,255,0.9)", zIndex: 1 }} />
+                          {userComment && (
+                            <div style={{ position: "absolute", left: `${(userComment.time_offset ?? PLAYHEAD) * 100}%`, top: "50%", transform: "translate(-50%,-50%)", width: "7px", height: "7px", borderRadius: "50%", background: "#1a1a1a", border: "1px solid rgba(255,255,255,0.75)", overflow: "hidden", zIndex: 2, flexShrink: 0 }}>
+                              {userComment.avatar_url
+                                ? <img src={userComment.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                : <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", fontSize: "3px", color: "rgba(255,255,255,0.8)", fontWeight: 700 }}>{(userComment.username || userComment.email || "?").charAt(0).toUpperCase()}</div>
+                              }
+                            </div>
+                          )}
+                        </div>
+                        <div style={{ marginTop: "1px", display: "flex", justifyContent: "space-between" }}>
                           <span style={{ fontSize: "3px", color: "rgba(255,255,255,0.5)" }}>{playedStr || "–:––"}</span>
                           <span style={{ fontSize: "3px", color: "rgba(255,255,255,0.35)" }}>{durationStr || "–:––"}</span>
                         </div>
@@ -715,20 +771,6 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
                             <path d="M14.5 5 Q19 10 14.5 15 L13.5 14 Q17.5 10 13.5 6 Z"/>
                           </svg>
                         </div>
-                        {/* Comment bubble mini */}
-                        {userComment && (
-                          <div style={{ marginTop: "3px", display: "flex", alignItems: "flex-start", gap: "2px" }}>
-                            <div style={{ width: "7px", height: "7px", borderRadius: "50%", background: "rgba(255,255,255,0.18)", flexShrink: 0, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                              {userComment.avatar_url
-                                ? <img src={userComment.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                                : <span style={{ fontSize: "3px", color: "rgba(255,255,255,0.7)", fontWeight: 700 }}>{(userComment.username || userComment.email || "?").charAt(0).toUpperCase()}</span>
-                              }
-                            </div>
-                            <div style={{ flex: 1, background: "rgba(255,255,255,0.1)", borderRadius: "3px", padding: "1.5px 2.5px", minWidth: 0 }}>
-                              <div style={{ fontSize: "2.5px", color: "rgba(255,255,255,0.85)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{userComment.text}</div>
-                            </div>
-                          </div>
-                        )}
                       </div>
                     )}
 

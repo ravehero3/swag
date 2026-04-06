@@ -111,7 +111,10 @@ app.use((req: any, _res: any, next: any) => {
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use("/uploads", express.static(path.join(__dirname, "../../public/uploads")));
+app.use("/uploads", (_req: any, res: any, next: any) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  next();
+}, express.static(path.join(__dirname, "../../public/uploads")));
 app.use(express.static(path.join(__dirname, "../../public")));
 
 app.use("/api/auth", authRoutes);
