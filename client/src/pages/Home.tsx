@@ -1560,8 +1560,10 @@ function Home() {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            pointerEvents: "none"
+            pointerEvents: "none",
+            position: "relative"
           }}>
+            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "260px", background: "linear-gradient(to bottom, #000 0%, transparent 100%)", zIndex: 2, pointerEvents: "none" }} />
             <div style={{
               width: "100%",
               textAlign: "center",
