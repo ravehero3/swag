@@ -33,14 +33,12 @@ function formatDur(seconds: number): string {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
-const WAVE_BARS = [
-  0.38,0.55,0.72,0.48,0.91,0.63,0.44,0.78,0.95,0.67,
-  0.52,0.41,0.69,0.85,0.73,0.56,0.38,0.80,1.00,0.88,
-  0.70,0.59,0.43,0.66,0.79,0.92,0.61,0.47,0.74,0.88,
-  0.95,0.77,0.62,0.50,0.83,0.97,0.72,0.58,0.41,0.69,
-  0.84,0.75,0.91,0.63,0.50,0.78,1.00,0.86,0.68,0.55,
-  0.43,0.72,0.89,0.76,0.60,0.45,0.66,0.82,0.58,0.40,
-];
+// 120 fallback bars (more detailed than before)
+const WAVE_BARS: number[] = Array.from({ length: 120 }, (_, i) => {
+  const t = i / 120;
+  return Math.max(0.15, Math.abs(Math.sin(t * Math.PI * 7 + 0.3) * 0.6 + Math.sin(t * Math.PI * 13 + 1.1) * 0.3 + 0.35));
+});
+
 const PLAYHEAD = 2 / 3;
 
 function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, onClose }: ShareModalProps) {
@@ -89,6 +87,9 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
       return [{ id: "logo", visible: true }, { id: "listening", visible: true }, { id: "title", visible: true }, { id: "website", visible: true }];
     }
   })();
+
+  // Effective playhead position — use comment time_offset if available
+  const PLAYHEAD_POS = typeof userComment?.time_offset === "number" ? userComment.time_offset : PLAYHEAD;
 
   useEffect(() => {
     if (!resolvedPreviewUrl || !isOpen) return;
@@ -144,10 +145,25 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
       if (!src) return resolve(null);
       const img = new Image();
       img.crossOrigin = "anonymous";
-      img.onload = () => resolve(img);
-      img.onerror = () => resolve(null);
+      let settled = false;
+      const settle = (val: HTMLImageElement | null) => {
+        if (!settled) { settled = true; resolve(val); }
+      };
+      img.onload = () => settle(img);
+      img.onerror = () => {
+        // If proxy failed, try loading without CORS restriction (will taint canvas but at least show background)
+        if (src.startsWith("/api/image-proxy")) {
+          const img2 = new Image();
+          img2.onload = () => settle(img2);
+          img2.onerror = () => settle(null);
+          img2.src = src;
+          setTimeout(() => settle(null), 8000);
+        } else {
+          settle(null);
+        }
+      };
       img.src = src;
-      setTimeout(() => resolve(null), 5000);
+      setTimeout(() => settle(null), 10000);
     });
   }
 
@@ -168,6 +184,35 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
     return lines;
   }
 
+  function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+    if (typeof ctx.roundRect === "function") {
+      ctx.roundRect(x, y, w, h, r);
+    } else {
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      ctx.lineTo(x + r, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
+    }
+  }
+
+  // Resample peaks array to targetCount bars
+  function resamplePeaks(peaks: number[], targetCount: number): number[] {
+    if (peaks.length === 0) return Array(targetCount).fill(0.5);
+    return Array.from({ length: targetCount }, (_, i) => {
+      const t = i / (targetCount - 1);
+      const src = t * (peaks.length - 1);
+      const lo = Math.floor(src);
+      const hi = Math.min(lo + 1, peaks.length - 1);
+      return peaks[lo] + (peaks[hi] - peaks[lo]) * (src - lo);
+    });
+  }
+
   const downloadStoryCard = async () => {
     setIsGenerating(true);
     try {
@@ -183,17 +228,27 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
       ctx.fillStyle = storyBgColor;
       ctx.fillRect(0, 0, CW, CH);
 
+      // Load artwork image — always route external URLs through proxy for CORS
       const artworkProxied = resolvedArtwork ? proxyImageUrl(resolvedArtwork) : "";
       const img = await loadImage(artworkProxied);
 
-      if (bgMode === "artwork" && img) {
-        ctx.save();
-        ctx.filter = `blur(${Math.round(blurAmount * 3)}px)`;
-        const scale = Math.max(CW / img.naturalWidth, CH / img.naturalHeight) * 1.1;
-        const bw = img.naturalWidth * scale;
-        const bh = img.naturalHeight * scale;
-        ctx.drawImage(img, (CW - bw) / 2, (CH - bh) / 2, bw, bh);
-        ctx.restore();
+      if (bgMode === "artwork") {
+        if (img) {
+          ctx.save();
+          ctx.filter = `blur(${Math.round(blurAmount * 3)}px)`;
+          const scale = Math.max(CW / img.naturalWidth, CH / img.naturalHeight) * 1.1;
+          const bw = img.naturalWidth * scale;
+          const bh = img.naturalHeight * scale;
+          ctx.drawImage(img, (CW - bw) / 2, (CH - bh) / 2, bw, bh);
+          ctx.restore();
+        } else {
+          // Fallback gradient if artwork didn't load
+          const grad = ctx.createLinearGradient(0, 0, CW, CH);
+          grad.addColorStop(0, "#1a1a1a");
+          grad.addColorStop(1, "#0a0a0a");
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, 0, CW, CH);
+        }
       }
 
       ctx.fillStyle = `rgba(0,0,0,${overlayOpacity})`;
@@ -261,27 +316,25 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
         const cardRad = cardRadius * xScale;
         const cardX = (CW - cardW) / 2;
 
-        // Card height in canvas pixels — use xScale since card size is relative to card width
         const artWpx = (cardW_prev - cardPadding * 2) * xScale;
         const estimatedCardH = cardPad + artWpx
-          + 10 * xScale   // after artwork
-          + 9 * xScale    // title (~1 line)
-          + 4 * xScale    // after title
-          + 7 * xScale    // brand
-          + 10 * xScale   // after brand
-          + 28 * xScale   // waveform (dual-axis, taller)
-          + 3 * xScale    // after waveform
+          + 10 * xScale
+          + 9 * xScale
+          + 4 * xScale
+          + 7 * xScale
+          + 10 * xScale
+          + 28 * xScale   // waveform
+          + 3 * xScale
           + 5 * xScale    // time labels
-          + 8 * xScale    // after time labels
+          + 8 * xScale
           + 20 * xScale   // player controls
-          + 3 * xScale    // volume bar
-          + 8 * xScale    // after volume
-          + cardPad;      // bottom padding
+          + 3 * xScale    // volume
+          + 8 * xScale
+          + cardPad;
         const centeredCardY = (CH - estimatedCardH) / 2 + cardYOffset * yScale;
         const cardY = Math.max(10 * yScale, centeredCardY);
-        const estimatedCardH_prev = estimatedCardH / xScale; // kept for card background draw below
 
-        // Simulate glass: draw blurred artwork crop behind the card
+        // Glass: blurred artwork crop behind card
         if (img) {
           ctx.save();
           ctx.beginPath();
@@ -367,49 +420,63 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
         ctx.fillText("VOODOO808.COM", cardBrandAlign === "left" ? cardX + cardPad : cardX + cardW - cardPad, curY);
         curY += 10 * xScale;
 
-        // Waveform — dual-axis (top + bottom mirror) with real audio data
-        const peaks = waveformData && waveformData.length > 0 ? waveformData : WAVE_BARS;
-        const barCount = peaks.length;
+        // ── Waveform — 200 bars, thinner, closer (like webapp) ──
+        const TARGET_BARS = 200;
+        const rawPeaks = waveformData && waveformData.length > 0 ? waveformData : WAVE_BARS;
+        const peaks = resamplePeaks(rawPeaks, TARGET_BARS);
         const waveH = 28 * xScale;
         const waveStartY = curY;
         const waveEndX = cardX + cardPad + artW;
-        const slotW = artW / barCount;
-        const barW = Math.max(0.5, slotW * 0.55);
+        const slotW = artW / TARGET_BARS;
+        const barW = Math.max(0.8, slotW * 0.38);  // thinner bars, more space between them
         const wDivY = waveStartY + waveH * 0.70;
         const topMaxAmp = waveH * 0.70 * 0.90;
         const botMaxAmp = waveH * 0.30 * 0.90;
-        const barRadius = Math.min(barW / 2, 1.5);
-        for (let i = 0; i < barCount; i++) {
+        const barRadius = Math.min(barW / 2, 0.8);
+
+        for (let i = 0; i < TARGET_BARS; i++) {
           const bx = cardX + cardPad + i * slotW + (slotW - barW) / 2;
           const peak = peaks[i] ?? 0.5;
           const topAmp = Math.max(peak * topMaxAmp, xScale * 0.5);
           const botAmp = Math.max(peak * botMaxAmp, xScale * 0.3);
-          const isPlayed = (i / barCount) < PLAYHEAD;
-          ctx.fillStyle = isPlayed ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.28)";
-          ctx.beginPath();
-          if (ctx.roundRect) ctx.roundRect(bx, wDivY - topAmp, barW, topAmp, barRadius);
-          else ctx.rect(bx, wDivY - topAmp, barW, topAmp);
-          ctx.fill();
-          ctx.fillStyle = isPlayed ? "rgba(255,255,255,0.61)" : "rgba(255,255,255,0.13)";
-          ctx.beginPath();
-          if (ctx.roundRect) ctx.roundRect(bx, wDivY, barW, botAmp, barRadius);
-          else ctx.rect(bx, wDivY, barW, botAmp);
-          ctx.fill();
+          const isPlayed = (i / TARGET_BARS) < PLAYHEAD_POS;
+          const isHead = Math.abs(i / TARGET_BARS - PLAYHEAD_POS) < (1.5 / TARGET_BARS);
+
+          if (isHead) {
+            ctx.fillStyle = "rgba(255,255,255,1)";
+            ctx.beginPath();
+            if (ctx.roundRect) ctx.roundRect(bx, wDivY - topAmp, barW, topAmp + botAmp, barRadius);
+            else ctx.rect(bx, wDivY - topAmp, barW, topAmp + botAmp);
+            ctx.fill();
+          } else {
+            ctx.fillStyle = isPlayed ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.28)";
+            ctx.beginPath();
+            if (ctx.roundRect) ctx.roundRect(bx, wDivY - topAmp, barW, topAmp, barRadius);
+            else ctx.rect(bx, wDivY - topAmp, barW, topAmp);
+            ctx.fill();
+            ctx.fillStyle = isPlayed ? "rgba(255,255,255,0.61)" : "rgba(255,255,255,0.13)";
+            ctx.beginPath();
+            if (ctx.roundRect) ctx.roundRect(bx, wDivY, barW, botAmp, barRadius);
+            else ctx.rect(bx, wDivY, barW, botAmp);
+            ctx.fill();
+          }
         }
+
         // Divider line
         ctx.fillStyle = "rgba(0,0,0,0.25)";
         ctx.fillRect(cardX + cardPad, wDivY, artW, Math.max(1, xScale * 0.3));
+
         // Playhead vertical line
-        const playheadX = cardX + cardPad + PLAYHEAD * artW;
+        const playheadX = cardX + cardPad + PLAYHEAD_POS * artW;
         ctx.fillStyle = "rgba(255,255,255,0.95)";
         ctx.fillRect(playheadX - 0.75 * xScale, waveStartY, 1.5 * xScale, waveH);
 
-        // Comment avatar pinned to time_offset on the waveform (like the webapp)
+        // ── User avatar pinned to playhead (same as webapp) ──
         if (userComment) {
-          const tOff = typeof userComment.time_offset === "number" ? userComment.time_offset : PLAYHEAD;
-          const commentX = Math.max(cardX + cardPad + 12 * xScale, Math.min(waveEndX - 12 * xScale, cardX + cardPad + tOff * artW));
+          const commentX = Math.max(cardX + cardPad + 12 * xScale, Math.min(waveEndX - 12 * xScale, playheadX));
           const commentCY = waveStartY + waveH * 0.50;
           const avatarR = 11 * xScale;
+
           // Draw avatar circle
           ctx.save();
           ctx.beginPath();
@@ -417,11 +484,13 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
           ctx.fillStyle = "#1a1a1a";
           ctx.fill();
           ctx.clip();
+
           if (userComment.avatar_url) {
             const avProxied = proxyImageUrl(userComment.avatar_url);
             const avImg = await loadImage(avProxied);
             if (avImg) ctx.drawImage(avImg, commentX - avatarR, commentCY - avatarR, avatarR * 2, avatarR * 2);
           }
+
           if (!userComment.avatar_url) {
             ctx.fillStyle = "rgba(255,255,255,0.7)";
             ctx.font = `bold ${avatarR * 0.9}px Helvetica,Arial,sans-serif`;
@@ -430,6 +499,7 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
             ctx.fillText((userComment.username || userComment.email || "?").charAt(0).toUpperCase(), commentX, commentCY);
           }
           ctx.restore();
+
           // White ring border
           ctx.save();
           ctx.beginPath();
@@ -438,6 +508,7 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
           ctx.lineWidth = 1.5 * xScale;
           ctx.stroke();
           ctx.restore();
+
           // Tooltip bubble above avatar
           const tipPadX = 7 * xScale;
           const tipPadY = 5 * xScale;
@@ -475,7 +546,7 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
         ctx.font = `${timeFontSize}px Helvetica, Arial, sans-serif`;
         ctx.textAlign = "left";
         ctx.fillStyle = "rgba(255,255,255,0.5)";
-        const playedTime = beatDuration ? formatDur(beatDuration * PLAYHEAD) : "–:––";
+        const playedTime = beatDuration ? formatDur(beatDuration * PLAYHEAD_POS) : "–:––";
         const totalTime = beatDuration ? formatDur(beatDuration) : "–:––";
         ctx.fillText(playedTime, cardX + cardPad, curY);
         ctx.textAlign = "right";
@@ -484,49 +555,56 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
         ctx.textAlign = "center";
         curY += 8 * xScale;
 
-        // Player controls — exact SVG paths ported to canvas so they match the preview
+        // ── Player controls — sharp-cornered arrows + pause ──
         const ctrlY = curY + 9 * xScale;
         const ctrlCx = CW / 2;
-        // Arrow pair dimensions matching SVG: viewBox "0 0 14 10", display 13×10
-        const aPW = 13 * xScale; // arrow-pair display width
-        const aPH = 10 * xScale; // arrow-pair display height
-        const sx = aPW / 14;     // x scale from viewBox units
-        const sy = aPH / 10;     // y scale from viewBox units
+        const aPW = 13 * xScale;
+        const aPH = 10 * xScale;
+        const sx = aPW / 14;
+        const sy = aPH / 10;
 
-        // Helper: draw the two-arrow "prev" shape (left-pointing) centered at (cx, cy)
+        // Sharp left-pointing double-arrow (prev) — minimal corner rounding
         const drawPrevArrows = (cx: number, cy: number) => {
           const ox = cx - aPW / 2, oy = cy - aPH / 2;
           ctx.beginPath();
-          // Arrow 1: M6.5,2 L6.5,8 Q6.5,10 5,10 L0.5,5.6 Q0,5 0.5,4.4 L5,0 Q6.5,0 6.5,2 Z
-          ctx.moveTo(ox+6.5*sx, oy+2*sy); ctx.lineTo(ox+6.5*sx, oy+8*sy);
-          ctx.quadraticCurveTo(ox+6.5*sx, oy+10*sy, ox+5*sx, oy+10*sy);
-          ctx.lineTo(ox+0.5*sx, oy+5.6*sy); ctx.quadraticCurveTo(ox+0*sx, oy+5*sy, ox+0.5*sx, oy+4.4*sy);
-          ctx.lineTo(ox+5*sx, oy+0*sy); ctx.quadraticCurveTo(ox+6.5*sx, oy+0*sy, ox+6.5*sx, oy+2*sy);
+          // Arrow 1: sharper trailing edge
+          ctx.moveTo(ox + 6.5 * sx, oy + 0);
+          ctx.lineTo(ox + 6.5 * sx, oy + 10 * sy);
+          ctx.lineTo(ox + 5.2 * sx, oy + 10 * sy);
+          ctx.lineTo(ox + 0.4 * sx, oy + 5.6 * sy);
+          ctx.quadraticCurveTo(ox + 0, oy + 5 * sy, ox + 0.4 * sx, oy + 4.4 * sy);
+          ctx.lineTo(ox + 5.2 * sx, oy + 0);
           ctx.closePath();
-          // Arrow 2: M13.5,2 L13.5,8 Q13.5,10 12,10 L7.5,5.6 Q7,5 7.5,4.4 L12,0 Q13.5,0 13.5,2 Z
-          ctx.moveTo(ox+13.5*sx, oy+2*sy); ctx.lineTo(ox+13.5*sx, oy+8*sy);
-          ctx.quadraticCurveTo(ox+13.5*sx, oy+10*sy, ox+12*sx, oy+10*sy);
-          ctx.lineTo(ox+7.5*sx, oy+5.6*sy); ctx.quadraticCurveTo(ox+7*sx, oy+5*sy, ox+7.5*sx, oy+4.4*sy);
-          ctx.lineTo(ox+12*sx, oy+0*sy); ctx.quadraticCurveTo(ox+13.5*sx, oy+0*sy, ox+13.5*sx, oy+2*sy);
+          // Arrow 2
+          ctx.moveTo(ox + 13.5 * sx, oy + 0);
+          ctx.lineTo(ox + 13.5 * sx, oy + 10 * sy);
+          ctx.lineTo(ox + 12.2 * sx, oy + 10 * sy);
+          ctx.lineTo(ox + 7.4 * sx, oy + 5.6 * sy);
+          ctx.quadraticCurveTo(ox + 7 * sx, oy + 5 * sy, ox + 7.4 * sx, oy + 4.4 * sy);
+          ctx.lineTo(ox + 12.2 * sx, oy + 0);
           ctx.closePath();
           ctx.fill();
         };
 
-        // Helper: draw the two-arrow "next" shape (right-pointing) centered at (cx, cy)
+        // Sharp right-pointing double-arrow (next)
         const drawNextArrows = (cx: number, cy: number) => {
           const ox = cx - aPW / 2, oy = cy - aPH / 2;
           ctx.beginPath();
-          // Arrow 1: M0,2 L0,8 Q0,10 1.5,10 L6,5.6 Q6.5,5 6,4.4 L1.5,0 Q0,0 0,2 Z
-          ctx.moveTo(ox+0*sx, oy+2*sy); ctx.lineTo(ox+0*sx, oy+8*sy);
-          ctx.quadraticCurveTo(ox+0*sx, oy+10*sy, ox+1.5*sx, oy+10*sy);
-          ctx.lineTo(ox+6*sx, oy+5.6*sy); ctx.quadraticCurveTo(ox+6.5*sx, oy+5*sy, ox+6*sx, oy+4.4*sy);
-          ctx.lineTo(ox+1.5*sx, oy+0*sy); ctx.quadraticCurveTo(ox+0*sx, oy+0*sy, ox+0*sx, oy+2*sy);
+          // Arrow 1
+          ctx.moveTo(ox + 0, oy + 0);
+          ctx.lineTo(ox + 0, oy + 10 * sy);
+          ctx.lineTo(ox + 1.8 * sx, oy + 10 * sy);
+          ctx.lineTo(ox + 6.6 * sx, oy + 5.6 * sy);
+          ctx.quadraticCurveTo(ox + 7 * sx, oy + 5 * sy, ox + 6.6 * sx, oy + 4.4 * sy);
+          ctx.lineTo(ox + 1.8 * sx, oy + 0);
           ctx.closePath();
-          // Arrow 2: M7,2 L7,8 Q7,10 8.5,10 L13,5.6 Q13.5,5 13,4.4 L8.5,0 Q7,0 7,2 Z
-          ctx.moveTo(ox+7*sx, oy+2*sy); ctx.lineTo(ox+7*sx, oy+8*sy);
-          ctx.quadraticCurveTo(ox+7*sx, oy+10*sy, ox+8.5*sx, oy+10*sy);
-          ctx.lineTo(ox+13*sx, oy+5.6*sy); ctx.quadraticCurveTo(ox+13.5*sx, oy+5*sy, ox+13*sx, oy+4.4*sy);
-          ctx.lineTo(ox+8.5*sx, oy+0*sy); ctx.quadraticCurveTo(ox+7*sx, oy+0*sy, ox+7*sx, oy+2*sy);
+          // Arrow 2
+          ctx.moveTo(ox + 7 * sx, oy + 0);
+          ctx.lineTo(ox + 7 * sx, oy + 10 * sy);
+          ctx.lineTo(ox + 8.8 * sx, oy + 10 * sy);
+          ctx.lineTo(ox + 13.6 * sx, oy + 5.6 * sy);
+          ctx.quadraticCurveTo(ox + 14 * sx, oy + 5 * sy, ox + 13.6 * sx, oy + 4.4 * sy);
+          ctx.lineTo(ox + 8.8 * sx, oy + 0);
           ctx.closePath();
           ctx.fill();
         };
@@ -534,12 +612,18 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
         ctx.fillStyle = "rgba(255,255,255,0.75)";
         drawPrevArrows(ctrlCx - 26 * xScale, ctrlY);
 
-        // Pause bars (two white rounded rectangles, 2px radius)
-        const pauseBarW = 4 * xScale; const pauseBarH = 14 * xScale; const pauseBarGap = 5 * xScale;
+        // Pause bars — sharper (0.3px radius), bars closer together (gap 3)
+        const pauseBarW = 4 * xScale;
+        const pauseBarH = 13 * xScale;
+        const pauseBarGap = 3 * xScale;
         ctx.fillStyle = "#fff";
         if (typeof ctx.roundRect === "function") {
-          ctx.beginPath(); ctx.roundRect(ctrlCx - pauseBarGap / 2 - pauseBarW, ctrlY - pauseBarH / 2, pauseBarW, pauseBarH, 2 * xScale); ctx.fill();
-          ctx.beginPath(); ctx.roundRect(ctrlCx + pauseBarGap / 2, ctrlY - pauseBarH / 2, pauseBarW, pauseBarH, 2 * xScale); ctx.fill();
+          ctx.beginPath();
+          ctx.roundRect(ctrlCx - pauseBarGap / 2 - pauseBarW, ctrlY - pauseBarH / 2, pauseBarW, pauseBarH, 0.3 * xScale);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.roundRect(ctrlCx + pauseBarGap / 2, ctrlY - pauseBarH / 2, pauseBarW, pauseBarH, 0.3 * xScale);
+          ctx.fill();
         } else {
           ctx.fillRect(ctrlCx - pauseBarGap / 2 - pauseBarW, ctrlY - pauseBarH / 2, pauseBarW, pauseBarH);
           ctx.fillRect(ctrlCx + pauseBarGap / 2, ctrlY - pauseBarH / 2, pauseBarW, pauseBarH);
@@ -550,41 +634,47 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
 
         curY += 20 * xScale;
 
-        // Volume bar — left icon (low), track, right icon (high)
-        const volIconW = 8 * xScale;
+        // ── Volume bar — left icon (speaker only), track, right icon (speaker + 3 arcs) ──
+        const volIconW = 7 * xScale;
+        const volIconH = 7 * xScale;  // square — less tall
         const volBarH = 3 * xScale;
-        const volIconH = volBarH * 4; // speaker body height
-        const volCY = curY + volBarH * 0.5; // center Y of icon
+        const volCY = curY + volBarH * 0.5;
 
-        // Helper: draw filled speaker body
-        const drawSpeakerBody = (x: number, cy: number, iw: number, ih: number) => {
+        // Speaker body (no sound waves)
+        const drawSpeakerOnly = (x: number, cy: number, iw: number, ih: number) => {
           const hh = ih / 2;
           ctx.beginPath();
-          ctx.moveTo(x + iw * 0.5, cy - hh);
-          ctx.lineTo(x + iw * 0.2, cy - hh * 0.35);
-          ctx.lineTo(x + iw * 0.05, cy - hh * 0.35);
-          ctx.lineTo(x + iw * 0.05, cy + hh * 0.35);
-          ctx.lineTo(x + iw * 0.2, cy + hh * 0.35);
-          ctx.lineTo(x + iw * 0.5, cy + hh);
+          ctx.moveTo(x + iw * 0.55, cy - hh);
+          ctx.lineTo(x + iw * 0.22, cy - hh * 0.38);
+          ctx.lineTo(x + iw * 0.05, cy - hh * 0.38);
+          ctx.lineTo(x + iw * 0.05, cy + hh * 0.38);
+          ctx.lineTo(x + iw * 0.22, cy + hh * 0.38);
+          ctx.lineTo(x + iw * 0.55, cy + hh);
           ctx.closePath();
           ctx.fill();
         };
 
-        // Helper: draw filled wave arc sector around speaker tip
-        const drawFilledWave = (tipX: number, cy: number, r1: number, r2: number) => {
-          const angle = Math.PI * 0.35;
-          ctx.beginPath();
-          ctx.arc(tipX, cy, r2, -angle, angle);
-          ctx.arc(tipX, cy, r1, angle, -angle, true);
-          ctx.closePath();
-          ctx.fill();
+        // Speaker body + 3 curved arcs
+        const drawSpeakerWithArcs = (x: number, cy: number, iw: number, ih: number) => {
+          drawSpeakerOnly(x, cy, iw, ih);
+          // 3 arcs from the tip of the speaker
+          const tipX = x + iw * 0.55;
+          const arcAngle = Math.PI * 0.38;
+          const lw = Math.max(0.5, iw * 0.09);
+          ctx.save();
+          ctx.strokeStyle = ctx.fillStyle as string;
+          ctx.lineWidth = lw;
+          ctx.lineCap = "round";
+          [iw * 0.28, iw * 0.46, iw * 0.64].forEach((r) => {
+            ctx.beginPath();
+            ctx.arc(tipX, cy, r, -arcAngle, arcAngle);
+            ctx.stroke();
+          });
+          ctx.restore();
         };
 
         ctx.fillStyle = "rgba(255,255,255,0.45)";
-
-        // Left volume icon: speaker + small wave
-        drawSpeakerBody(cardX + cardPad, volCY, volIconW, volIconH);
-        drawFilledWave(cardX + cardPad + volIconW * 0.5, volCY, volIconW * 0.35, volIconW * 0.65);
+        drawSpeakerOnly(cardX + cardPad, volCY, volIconW, volIconH);
 
         // Volume track
         const volTrackX = cardX + cardPad + volIconW + 3 * xScale;
@@ -600,12 +690,9 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
           ctx.fillRect(volTrackX, curY, volTrackW * 0.7, volBarH);
         }
 
-        // Right volume icon: speaker + small wave + large wave
         ctx.fillStyle = "rgba(255,255,255,0.45)";
         const rightIconX = cardX + cardPad + artW - volIconW;
-        drawSpeakerBody(rightIconX, volCY, volIconW, volIconH);
-        drawFilledWave(rightIconX + volIconW * 0.5, volCY, volIconW * 0.35, volIconW * 0.65);
-        drawFilledWave(rightIconX + volIconW * 0.5, volCY, volIconW * 0.7, volIconW * 1.1);
+        drawSpeakerWithArcs(rightIconX, volCY, volIconW, volIconH);
 
         curY += volBarH + 8 * xScale;
       }
@@ -623,25 +710,8 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
     }
   };
 
-  function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
-    if (typeof ctx.roundRect === "function") {
-      ctx.roundRect(x, y, w, h, r);
-    } else {
-      ctx.moveTo(x + r, y);
-      ctx.lineTo(x + w - r, y);
-      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-      ctx.lineTo(x + w, y + h - r);
-      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-      ctx.lineTo(x + r, y + h);
-      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-      ctx.lineTo(x, y + r);
-      ctx.quadraticCurveTo(x, y, x + r, y);
-      ctx.closePath();
-    }
-  }
-
   const durationStr = beatDuration ? formatDur(beatDuration) : null;
-  const playedStr = beatDuration ? formatDur(beatDuration * PLAYHEAD) : null;
+  const playedStr = beatDuration ? formatDur(beatDuration * PLAYHEAD_POS) : null;
 
   return (
     <div
@@ -686,19 +756,29 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
 
           {activeTab === "story" && (
             <div style={{ display: "flex", gap: "20px", alignItems: "flex-start" }}>
-              {/* Mini preview — iPhone 16 Pro proportions (402×874pt) */}
+              {/* Mini preview — iPhone proportions */}
               {(() => {
                 const MINI_W = 160;
-                const MINI_H = Math.round(MINI_W * 874 / 402); // iPhone 16 Pro proportions
+                const MINI_H = Math.round(MINI_W * 874 / 402);
                 const CARD_MARGIN_MINI = 12;
                 const cardWm = MINI_W - CARD_MARGIN_MINI * 2;
                 const cardPadm = Math.round(cardPadding * (MINI_W / 216));
                 const artWm = cardWm - cardPadm * 2;
-                const commentRowHm = userComment ? 16 : 0;
-                const cardHmEst = cardPadm + artWm + 40 + commentRowHm + cardPadm;
+                const cardHmEst = cardPadm + artWm + 40 + cardPadm;
                 const centeredTopM = (MINI_H - cardHmEst) / 2 + Math.round(cardYOffset * (MINI_H / 470));
                 const cardTopM = Math.max(5, centeredTopM);
                 const cardRadM = Math.round(cardRadius * (MINI_W / 216));
+                // Resample for mini preview (80 bars)
+                const miniPeaks = (() => {
+                  const raw = waveformData && waveformData.length > 0 ? waveformData : WAVE_BARS;
+                  return Array.from({ length: 80 }, (_, i) => {
+                    const t = i / 79;
+                    const src = t * (raw.length - 1);
+                    const lo = Math.floor(src);
+                    const hi = Math.min(lo + 1, raw.length - 1);
+                    return raw[lo] + (raw[hi] - raw[lo]) * (src - lo);
+                  });
+                })();
                 return (
                   <div style={{ width: `${MINI_W}px`, height: `${MINI_H}px`, flexShrink: 0, borderRadius: "6px", overflow: "hidden", border: "1px solid #2a2a2a", position: "relative", background: bgMode === "color" ? storyBgColor : "#111" }}>
                     {bgMode === "artwork" && resolvedArtwork && (
@@ -712,25 +792,31 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
                     {/* Player card mini preview */}
                     {cardShow && resolvedArtwork && (
                       <div style={{ position: "absolute", left: `${CARD_MARGIN_MINI}px`, top: `${cardTopM}px`, width: `${cardWm}px`, borderRadius: `${cardRadM}px`, backdropFilter: `blur(${cardBlur}px)`, WebkitBackdropFilter: `blur(${cardBlur}px)`, background: `rgba(255,255,255,${cardBrightness})`, border: "1px solid rgba(255,255,255,0.18)", boxShadow: cardShadow ? `0 ${cardShadowAmount * 0.25}px ${cardShadowAmount * 0.5}px rgba(0,0,0,0.55)` : "none", padding: `${cardPadm}px`, boxSizing: "border-box" as const, display: "flex", flexDirection: "column" as const, gap: "2px" }}>
+                        {/* Artwork */}
                         <div style={{ width: `${artWm}px`, height: `${artWm}px`, borderRadius: `${Math.max(0, cardRadM - cardPadm)}px`, overflow: "hidden", background: "#1a1a1a", flexShrink: 0 }}>
                           <img src={resolvedArtwork} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
                         </div>
+                        {/* Title */}
                         <div style={{ fontSize: "4.5px", fontWeight: 700, color: "#fff", textAlign: cardTitleAlign, wordBreak: "break-word", lineHeight: 1.2, marginTop: "3px" }}>{resolvedTitle.toUpperCase()}</div>
+                        {/* Brand */}
                         <div style={{ fontSize: "3.5px", color: "rgba(255,255,255,0.6)", textAlign: cardBrandAlign }}>VOODOO808.COM</div>
-                        {/* Waveform mini — 60 bars, centered (dual-axis effect), with playhead + comment avatar */}
+                        {/* Waveform — 80 bars, thinner, with playhead + comment avatar at playhead pos */}
                         <div style={{ position: "relative", height: "11px", marginTop: "3px", overflow: "visible" }}>
-                          <div style={{ display: "flex", alignItems: "center", height: "100%", gap: "0.5px" }}>
-                            {(waveformData && waveformData.length > 0
-                              ? Array.from({ length: 60 }, (_, i) => waveformData[Math.floor(i * waveformData.length / 60)])
-                              : WAVE_BARS
-                            ).map((peak, i) => {
-                              const isPlayed = i / 60 < PLAYHEAD;
-                              return <div key={i} style={{ flexShrink: 0, width: "1px", height: `${Math.max(1, peak * 11)}px`, background: isPlayed ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.28)", borderRadius: "0.5px" }} />;
+                          <div style={{ display: "flex", alignItems: "flex-end", height: "100%", gap: "0.3px", paddingBottom: "30%" }}>
+                            {miniPeaks.map((peak, i) => {
+                              const isPlayed = i / 80 < PLAYHEAD_POS;
+                              return (
+                                <div key={i} style={{ flexShrink: 0, width: "0.7px", height: `${Math.max(0.8, peak * 7.5)}px`, background: isPlayed ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.28)", borderRadius: "0.3px", alignSelf: "flex-end" }} />
+                              );
                             })}
                           </div>
-                          <div style={{ position: "absolute", left: `${PLAYHEAD * 100}%`, top: 0, width: "1px", height: "100%", background: "rgba(255,255,255,0.9)", zIndex: 1 }} />
+                          {/* Divider */}
+                          <div style={{ position: "absolute", left: 0, right: 0, bottom: "30%", height: "0.5px", background: "rgba(0,0,0,0.3)" }} />
+                          {/* Playhead */}
+                          <div style={{ position: "absolute", left: `${PLAYHEAD_POS * 100}%`, top: 0, width: "0.7px", height: "100%", background: "rgba(255,255,255,0.9)", zIndex: 1 }} />
+                          {/* User avatar at playhead */}
                           {userComment && (
-                            <div style={{ position: "absolute", left: `${(userComment.time_offset ?? PLAYHEAD) * 100}%`, top: "50%", transform: "translate(-50%,-50%)", width: "7px", height: "7px", borderRadius: "50%", background: "#1a1a1a", border: "1px solid rgba(255,255,255,0.75)", overflow: "hidden", zIndex: 2, flexShrink: 0 }}>
+                            <div style={{ position: "absolute", left: `${PLAYHEAD_POS * 100}%`, top: "50%", transform: "translate(-50%,-50%)", width: "7px", height: "7px", borderRadius: "50%", background: "#1a1a1a", border: "1px solid rgba(255,255,255,0.75)", overflow: "hidden", zIndex: 2, flexShrink: 0 }}>
                               {userComment.avatar_url
                                 ? <img src={userComment.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                                 : <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%", fontSize: "3px", color: "rgba(255,255,255,0.8)", fontWeight: 700 }}>{(userComment.username || userComment.email || "?").charAt(0).toUpperCase()}</div>
@@ -738,37 +824,44 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
                             </div>
                           )}
                         </div>
+                        {/* Time labels */}
                         <div style={{ marginTop: "1px", display: "flex", justifyContent: "space-between" }}>
                           <span style={{ fontSize: "3px", color: "rgba(255,255,255,0.5)" }}>{playedStr || "–:––"}</span>
                           <span style={{ fontSize: "3px", color: "rgba(255,255,255,0.35)" }}>{durationStr || "–:––"}</span>
                         </div>
-                        {/* Player controls mini */}
+                        {/* Player controls — sharper triangles */}
                         <div style={{ marginTop: "3px", display: "flex", alignItems: "center", justifyContent: "center", gap: "5px" }}>
+                          {/* Prev — sharp triangles */}
                           <svg width="7" height="5" viewBox="0 0 14 10" fill="rgba(255,255,255,0.75)">
-                            <path d="M6.5,2 L6.5,8 Q6.5,10 5,10 L0.5,5.6 Q0,5 0.5,4.4 L5,0 Q6.5,0 6.5,2 Z"/>
-                            <path d="M13.5,2 L13.5,8 Q13.5,10 12,10 L7.5,5.6 Q7,5 7.5,4.4 L12,0 Q13.5,0 13.5,2 Z"/>
+                            <path d="M6.5,0 L6.5,10 L5.2,10 L0.4,5.6 Q0,5 0.4,4.4 L5.2,0 Z"/>
+                            <path d="M13.5,0 L13.5,10 L12.2,10 L7.4,5.6 Q7,5 7.4,4.4 L12.2,0 Z"/>
                           </svg>
-                          <svg width="5" height="6" viewBox="0 0 10 12" fill="#fff">
-                            <rect x="0.5" y="0.5" width="3" height="11" rx="2"/><rect x="6.5" y="0.5" width="3" height="11" rx="2"/>
+                          {/* Pause — tighter gap, less radius */}
+                          <svg width="5" height="6" viewBox="0 0 8 12" fill="#fff">
+                            <rect x="0" y="0" width="3" height="12" rx="0.3"/>
+                            <rect x="5" y="0" width="3" height="12" rx="0.3"/>
                           </svg>
+                          {/* Next — sharp triangles */}
                           <svg width="7" height="5" viewBox="0 0 14 10" fill="rgba(255,255,255,0.75)">
-                            <path d="M0,2 L0,8 Q0,10 1.5,10 L6,5.6 Q6.5,5 6,4.4 L1.5,0 Q0,0 0,2 Z"/>
-                            <path d="M7,2 L7,8 Q7,10 8.5,10 L13,5.6 Q13.5,5 13,4.4 L8.5,0 Q7,0 7,2 Z"/>
+                            <path d="M0,0 L0,10 L1.8,10 L6.6,5.6 Q7,5 6.6,4.4 L1.8,0 Z"/>
+                            <path d="M7,0 L7,10 L8.8,10 L13.6,5.6 Q14,5 13.6,4.4 L8.8,0 Z"/>
                           </svg>
                         </div>
-                        {/* Volume mini */}
+                        {/* Volume — left: speaker only, right: speaker + 3 arcs */}
                         <div style={{ marginTop: "2px", display: "flex", alignItems: "center", gap: "2px" }}>
+                          {/* Left: speaker only */}
                           <svg width="4" height="4" viewBox="0 0 20 20" fill="rgba(255,255,255,0.45)">
-                            <path d="M10 3.5 L5.5 7.5 H2 Q1 7.5 1 8.5 V11.5 Q1 12.5 2 12.5 H5.5 L10 16.5 Z"/>
-                            <path d="M12.5 7 Q15.5 10 12.5 13 L11.5 12 Q14 10 11.5 8 Z"/>
+                            <path d="M11 3.5 L6.5 7.5 H3 Q2 7.5 2 8.5 V11.5 Q2 12.5 3 12.5 H6.5 L11 16.5 Z"/>
                           </svg>
                           <div style={{ flex: 1, height: "1.5px", background: "rgba(255,255,255,0.18)", borderRadius: "1px", position: "relative", overflow: "hidden" }}>
                             <div style={{ position: "absolute", left: 0, top: 0, height: "100%", width: "70%", background: "rgba(255,255,255,0.75)" }} />
                           </div>
-                          <svg width="4" height="4" viewBox="0 0 20 20" fill="rgba(255,255,255,0.45)">
-                            <path d="M10 3.5 L5.5 7.5 H2 Q1 7.5 1 8.5 V11.5 Q1 12.5 2 12.5 H5.5 L10 16.5 Z"/>
-                            <path d="M12.5 7 Q15.5 10 12.5 13 L11.5 12 Q14 10 11.5 8 Z"/>
-                            <path d="M14.5 5 Q19 10 14.5 15 L13.5 14 Q17.5 10 13.5 6 Z"/>
+                          {/* Right: speaker + 3 arcs */}
+                          <svg width="5" height="4" viewBox="0 0 24 20" fill="rgba(255,255,255,0.45)" stroke="rgba(255,255,255,0.45)" strokeLinecap="round">
+                            <path d="M11 3.5 L6.5 7.5 H3 Q2 7.5 2 8.5 V11.5 Q2 12.5 3 12.5 H6.5 L11 16.5 Z" stroke="none"/>
+                            <path d="M13.5 7 A4 4 0 0 1 13.5 13" fill="none" strokeWidth="1.5"/>
+                            <path d="M16 5.5 A7 7 0 0 1 16 14.5" fill="none" strokeWidth="1.5"/>
+                            <path d="M18.5 4 A10 10 0 0 1 18.5 16" fill="none" strokeWidth="1.5"/>
                           </svg>
                         </div>
                       </div>
