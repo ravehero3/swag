@@ -1,70 +1,70 @@
-# VOODOO808.COM - Digital Music Shop
+# VOODOO808 - Beat Store
 
-## Recent Changes
-- Migrated to Replit environment with built-in PostgreSQL database
-- DATABASE_URL and all PGHOST/PGPORT/etc secrets provisioned via Replit
-- Vite config cleaned up: Express owns port 5000 and serves Vite as middleware in dev
-- Workflow configured: `npm run dev` on port 5000 (webview output)
-- Database tables are initialized automatically on server start via `initDatabase()`
-- Admin user auto-seeded on startup (admin@voodoo808.com)
-
-## Overview
-E-commerce website for selling beats and drum kits to music producers. The site features:
-- **BEATY page**: Beat player with playlist, preview functionality, and purchasing
-- **ZVUKY page**: Sound kits/drum kits grid with preview audio, artwork, and downloads
-- **User authentication**: Login/register system for customers
-- **Admin panel**: Upload and manage products, artwork, preview audio, ZIP files. Has SEO management tab.
-- **Shopping cart**: Add items and checkout
-- **Order management**: Email delivery of digital files after purchase
-- **SEO management**: Admin panel "SEO" tab lets you edit title, description, keywords and OG image per page (Home, Beaty, Zvuky) with a live Google preview. Settings stored in the `settings` DB table, applied via the `useSEO` hook on each page.
+A full-stack e-commerce platform for music producers to sell beats and sound kits.
 
 ## Tech Stack
-- **Frontend**: React with TypeScript, Vite, Wouter (routing)
-- **Backend**: Express.js with TypeScript
-- **Database**: PostgreSQL (Neon-backed via Replit)
-- **File uploads**: Multer for handling audio/zip/image uploads
-- **Styling**: Custom CSS (black & white theme, Helvetica Neue font)
+
+- **Frontend**: React 18, Vite, TypeScript, Wouter (routing), Lucide-React (icons)
+- **Backend**: Node.js, Express, TypeScript
+- **Database**: PostgreSQL (Replit built-in), raw SQL via `pg` pool
+- **Auth**: Passport.js with Google OAuth 2.0 + bcrypt for local auth
+- **Storage**: Backblaze B2 (S3-compatible) for audio files and artwork
+- **Email**: Resend API for transactional emails
+- **Payments**: GoPay integration
 
 ## Project Structure
+
 ```
-├── client/                 # React frontend
-│   ├── src/
-│   │   ├── components/    # Header, UI components
-│   │   ├── pages/         # Beaty, Zvuky, Login, Cart, Checkout, Admin
-│   │   └── styles/        # Global CSS
-│   └── index.html
-├── server/                 # Express backend
-│   ├── src/
-│   │   ├── routes/        # API routes (auth, beats, soundKits, orders, upload)
-│   │   ├── middleware/    # Auth middleware
-│   │   └── db.ts          # Database connection and schema
-├── shared/                 # Shared TypeScript types
-├── public/uploads/         # Uploaded files (beats, kits, artwork, previews)
-└── attached_assets/        # Logo files
+client/          # React frontend (Vite-powered)
+  src/
+    components/  # UI components (AudioPlayer, modals, etc.)
+    pages/       # Page-level components (Home, Admin, Checkout, etc.)
+server/          # Express backend
+  src/
+    routes/      # API endpoints (auth, beats, orders, soundKits, etc.)
+    middleware/  # Authentication middleware
+    lib/         # Utilities (storage/S3, waveform generation)
+    db.ts        # Database connection & schema initialization
+    index.ts     # Main server entry point
+shared/          # Shared TypeScript types (client + server)
+public/          # Static assets (cursors, uploaded artwork, videos)
 ```
 
-## Running the Project
-```bash
-npm run dev
-```
-Server runs on port 5000 with Vite dev server middleware.
+## Running the App
 
-## Database Tables
-- `users`: User accounts with email/password auth
-- `beats`: Beat products (title, artist, bpm, key, price, files)
-- `sound_kits`: Sound kit products (drum kits, one shots, loops, etc.)
-- `orders`: Customer orders with items and status
-- `session`: Express session storage
+- **Development**: `npm run dev` — starts Express with Vite middleware (HMR)
+- **Build**: `npm run build` — compiles frontend to `dist/public`, backend to `dist/server`
+- **Production**: `npm start` — runs compiled `dist/server/index.js`
+
+The app listens on port **5000**.
+
+## Database
+
+Uses Replit's built-in PostgreSQL. The schema is auto-initialized on startup via `server/src/db.ts`.
+
+Key tables: `users`, `beats`, `sound_kits`, `orders`, `order_items`, `licenses`, `beat_comments`, `promo_codes`, `assets`, `settings`, `email_templates`.
+
+## Environment Variables
+
+Required secrets (set in Replit Secrets):
+- `DATABASE_URL` — auto-set by Replit DB
+- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` — for Google OAuth
+- `GOOGLE_CLIENT_SECRET` — Google OAuth secret
+- `B2_KEY_ID` / `B2_APPLICATION_KEY` — Backblaze B2 credentials
+- `SESSION_SECRET` — cookie session secret
+- `RESEND_API_KEY` — for transactional emails
+
+Non-secret env vars are in `.replit` under `[userenv.shared]`:
+- `B2_ENDPOINT`, `B2_PREVIEW_BUCKET`, `B2_ZIP_BUCKET`, `B2_PUBLIC_BASE_URL`, `RESEND_FROM`
 
 ## Admin Access
-To create an admin user, update a user's `is_admin` column to `true` in the database:
-```sql
-UPDATE users SET is_admin = true WHERE email = 'admin@example.com';
-```
 
-## User Preferences
-- Language: Czech (cs)
-- Design: Black & white minimalist theme
-- Font: Helvetica Neue
-- All elements have fade-in animations (0 to 100 opacity)
-- Input fields have 1px white stroke on black background
+Default admin account created on first startup:
+- Email: `admin@voodoo808.com`
+- Password: `admin123`
+
+## Deployment
+
+Configured for Replit Autoscale deployment:
+- Build: `npm run build`
+- Run: `node ./dist/index.cjs`
