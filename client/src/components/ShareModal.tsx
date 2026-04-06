@@ -47,6 +47,7 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
   const [activeTab, setActiveTab] = useState<"link" | "story">("link");
   const [isGenerating, setIsGenerating] = useState(false);
   const [beatDuration, setBeatDuration] = useState<number | null>(null);
+  const [userComment, setUserComment] = useState<{ text: string; email: string; avatar_url?: string | null; username?: string | null } | null>(null);
   const { settings } = useApp() as any;
 
   const resolvedId = product?.id ?? beatId ?? 0;
@@ -95,6 +96,20 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
     audio.onloadedmetadata = () => setBeatDuration(audio.duration);
     audio.onerror = () => setBeatDuration(null);
   }, [resolvedPreviewUrl, isOpen]);
+
+  useEffect(() => {
+    if (!isOpen || !resolvedId) { setUserComment(null); return; }
+    fetch(`/api/beats/${resolvedId}/my-last-comment`, { credentials: "include" })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data && data.text) {
+          setUserComment({ text: data.text, email: data.email, avatar_url: data.avatar_url, username: data.username });
+        } else {
+          setUserComment(null);
+        }
+      })
+      .catch(() => setUserComment(null));
+  }, [isOpen, resolvedId]);
 
   if (!isOpen) return null;
 
@@ -356,6 +371,134 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
         ctx.fillStyle = "rgba(255,255,255,0.35)";
         ctx.fillText(totalTime, cardX + cardW - cardPad, curY);
         ctx.textAlign = "center";
+        curY += 8 * xScale;
+
+        // Player controls — double chevron arrows + plain pause bars
+        const ctrlY = curY + 9 * xScale;
+        const ctrlCx = CW / 2;
+        const chevH = 9 * xScale;
+        const chevW = 5 * xScale;
+        // Prev (two left-pointing chevrons)
+        for (let ci = 0; ci < 2; ci++) {
+          const ox = ctrlCx - 80 * xScale + ci * chevW * 2.2;
+          ctx.beginPath();
+          ctx.moveTo(ox + chevW, ctrlY - chevH); ctx.lineTo(ox, ctrlY); ctx.lineTo(ox + chevW, ctrlY + chevH);
+          ctx.strokeStyle = "rgba(255,255,255,0.75)";
+          ctx.lineWidth = 2 * xScale;
+          ctx.lineCap = "round"; ctx.lineJoin = "round";
+          ctx.stroke();
+        }
+        // Pause bars
+        const pauseBarW = 4 * xScale; const pauseBarH = 14 * xScale; const pauseBarGap = 5 * xScale;
+        ctx.fillStyle = "#fff";
+        if (typeof ctx.roundRect === "function") {
+          ctx.beginPath(); ctx.roundRect(ctrlCx - pauseBarGap / 2 - pauseBarW, ctrlY - pauseBarH / 2, pauseBarW, pauseBarH, 2 * xScale); ctx.fill();
+          ctx.beginPath(); ctx.roundRect(ctrlCx + pauseBarGap / 2, ctrlY - pauseBarH / 2, pauseBarW, pauseBarH, 2 * xScale); ctx.fill();
+        } else {
+          ctx.fillRect(ctrlCx - pauseBarGap / 2 - pauseBarW, ctrlY - pauseBarH / 2, pauseBarW, pauseBarH);
+          ctx.fillRect(ctrlCx + pauseBarGap / 2, ctrlY - pauseBarH / 2, pauseBarW, pauseBarH);
+        }
+        // Next (two right-pointing chevrons)
+        for (let ci = 0; ci < 2; ci++) {
+          const ox = ctrlCx + 68 * xScale + ci * chevW * 2.2;
+          ctx.beginPath();
+          ctx.moveTo(ox, ctrlY - chevH); ctx.lineTo(ox + chevW, ctrlY); ctx.lineTo(ox, ctrlY + chevH);
+          ctx.strokeStyle = "rgba(255,255,255,0.75)";
+          ctx.lineWidth = 2 * xScale;
+          ctx.lineCap = "round"; ctx.lineJoin = "round";
+          ctx.stroke();
+        }
+        curY += 20 * xScale;
+
+        // Volume bar
+        const volIconW = 8 * xScale;
+        const volBarH = 3 * xScale;
+        const volY = curY + volBarH / 2;
+        // Speaker icon (filled path — left)
+        ctx.fillStyle = "rgba(255,255,255,0.45)";
+        ctx.beginPath();
+        ctx.moveTo(cardX + cardPad + volIconW * 0.5, curY - volBarH * 1.5);
+        ctx.lineTo(cardX + cardPad + volIconW * 0.2, curY - volBarH * 0.5);
+        ctx.lineTo(cardX + cardPad + volIconW * 0.05, curY - volBarH * 0.5);
+        ctx.lineTo(cardX + cardPad + volIconW * 0.05, curY + volBarH * 1.5);
+        ctx.lineTo(cardX + cardPad + volIconW * 0.2, curY + volBarH * 1.5);
+        ctx.lineTo(cardX + cardPad + volIconW * 0.5, curY + volBarH * 2.5);
+        ctx.closePath();
+        ctx.fill();
+        // Volume track
+        const volTrackX = cardX + cardPad + volIconW + 3 * xScale;
+        const volTrackW = artW - volIconW * 2 - 6 * xScale;
+        ctx.fillStyle = "rgba(255,255,255,0.18)";
+        if (typeof ctx.roundRect === "function") {
+          ctx.beginPath(); ctx.roundRect(volTrackX, curY, volTrackW, volBarH, volBarH / 2); ctx.fill();
+          ctx.fillStyle = "rgba(255,255,255,0.75)";
+          ctx.beginPath(); ctx.roundRect(volTrackX, curY, volTrackW * 0.7, volBarH, volBarH / 2); ctx.fill();
+        } else {
+          ctx.fillRect(volTrackX, curY, volTrackW, volBarH);
+          ctx.fillStyle = "rgba(255,255,255,0.75)";
+          ctx.fillRect(volTrackX, curY, volTrackW * 0.7, volBarH);
+        }
+        curY += volBarH + 8 * xScale;
+
+        // Comment bubble — only if user has commented
+        if (userComment) {
+          const avatarSize = 18 * xScale;
+          const bubblePad = 5 * xScale;
+          const bubbleX = cardX + cardPad + avatarSize + 5 * xScale;
+          const bubbleW = artW - avatarSize - 5 * xScale;
+          const commentFontSize = 5 * xScale;
+          const nameFontSize = 4 * xScale;
+
+          // Avatar circle
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(cardX + cardPad + avatarSize / 2, curY + avatarSize / 2, avatarSize / 2, 0, Math.PI * 2);
+          ctx.clip();
+          ctx.fillStyle = "rgba(255,255,255,0.18)";
+          ctx.fill();
+          if (userComment.avatar_url) {
+            const avatarProxied = proxyImageUrl(userComment.avatar_url);
+            const avatarImg = await loadImage(avatarProxied);
+            if (avatarImg) {
+              ctx.drawImage(avatarImg, cardX + cardPad, curY, avatarSize, avatarSize);
+            }
+          } else {
+            const initials = (userComment.username || userComment.email || "?").charAt(0).toUpperCase();
+            ctx.fillStyle = "rgba(255,255,255,0.7)";
+            ctx.font = `bold ${avatarSize * 0.5}px Helvetica,Arial,sans-serif`;
+            ctx.textAlign = "center";
+            ctx.fillText(initials, cardX + cardPad + avatarSize / 2, curY + avatarSize * 0.65);
+          }
+          ctx.restore();
+
+          // Bubble background
+          const bubbleH = nameFontSize + commentFontSize * 2 + bubblePad * 2 + 3 * xScale;
+          ctx.fillStyle = "rgba(255,255,255,0.1)";
+          if (typeof ctx.roundRect === "function") {
+            ctx.beginPath(); ctx.roundRect(bubbleX, curY, bubbleW, bubbleH, 6 * xScale); ctx.fill();
+          } else {
+            ctx.fillRect(bubbleX, curY, bubbleW, bubbleH);
+          }
+
+          // Username
+          ctx.fillStyle = "rgba(255,255,255,0.5)";
+          ctx.font = `${nameFontSize}px Helvetica,Arial,sans-serif`;
+          ctx.textAlign = "left";
+          ctx.fillText(
+            (userComment.username || userComment.email?.split("@")[0] || "user").substring(0, 30),
+            bubbleX + bubblePad, curY + bubblePad + nameFontSize
+          );
+
+          // Comment text (truncated)
+          ctx.fillStyle = "rgba(255,255,255,0.85)";
+          ctx.font = `${commentFontSize}px Helvetica,Arial,sans-serif`;
+          const maxCommentW = bubbleW - bubblePad * 2;
+          const commentLines = wrapText(ctx, userComment.text, maxCommentW).slice(0, 2);
+          commentLines.forEach((line, li) => {
+            ctx.fillText(line, bubbleX + bubblePad, curY + bubblePad + nameFontSize + 3 * xScale + (li + 1) * (commentFontSize + 2 * xScale));
+          });
+          ctx.textAlign = "center";
+        }
       }
 
       const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
@@ -434,57 +577,98 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
 
           {activeTab === "story" && (
             <div style={{ display: "flex", gap: "20px", alignItems: "flex-start" }}>
-              {/* Mini preview */}
-              <div style={{ width: "120px", height: "213px", flexShrink: 0, borderRadius: "6px", overflow: "hidden", border: "1px solid #2a2a2a", position: "relative", background: bgMode === "color" ? storyBgColor : "#111" }}>
-                {bgMode === "artwork" && resolvedArtwork && (
-                  <img src={resolvedArtwork} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", filter: `blur(${blurAmount}px)`, transform: "scale(1.3)" }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
-                )}
-                {bgMode === "artwork" && !resolvedArtwork && (
-                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, #333 0%, #111 100%)" }} />
-                )}
-                <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${overlayOpacity})` }} />
+              {/* Mini preview — iPhone 16 Pro proportions (402×874pt) */}
+              {(() => {
+                const MINI_W = 120;
+                const MINI_H = Math.round(MINI_W * 874 / 402); // ≈ 261px
+                const CARD_MARGIN_MINI = 12;
+                const cardWm = MINI_W - CARD_MARGIN_MINI * 2;
+                const cardPadm = Math.round(cardPadding * (MINI_W / 216));
+                const artWm = cardWm - cardPadm * 2;
+                const commentRowHm = userComment ? 16 : 0;
+                const cardHmEst = cardPadm + artWm + 40 + commentRowHm + cardPadm;
+                const centeredTopM = (MINI_H - cardHmEst) / 2 + Math.round(cardYOffset * (MINI_H / 470));
+                const cardTopM = Math.max(5, centeredTopM);
+                const cardRadM = Math.round(cardRadius * (MINI_W / 216));
+                return (
+                  <div style={{ width: `${MINI_W}px`, height: `${MINI_H}px`, flexShrink: 0, borderRadius: "6px", overflow: "hidden", border: "1px solid #2a2a2a", position: "relative", background: bgMode === "color" ? storyBgColor : "#111" }}>
+                    {bgMode === "artwork" && resolvedArtwork && (
+                      <img src={resolvedArtwork} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", filter: `blur(${blurAmount}px)`, transform: "scale(1.3)" }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                    )}
+                    {bgMode === "artwork" && !resolvedArtwork && (
+                      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, #333 0%, #111 100%)" }} />
+                    )}
+                    <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${overlayOpacity})` }} />
 
-                {/* Player card mini preview */}
-                {cardShow && resolvedArtwork && (() => {
-                  const PREV_W = 120;
-                  const PREV_H = 213;
-                  const CARD_MARGIN_MINI = 12;
-                  const cardWm = PREV_W - CARD_MARGIN_MINI * 2;
-                  const cardPadm = Math.round(cardPadding * (PREV_W / 216));
-                  const artWm = cardWm - cardPadm * 2;
-                  const cardHmEst = cardPadm + artWm + 40 + cardPadm;
-                  const centeredTopM = (PREV_H - cardHmEst) / 2 + Math.round(cardYOffset * (PREV_H / 384));
-                  const cardTopM = Math.max(5, centeredTopM);
-                  const cardRadM = Math.round(cardRadius * (PREV_W / 216));
-                  return (
-                    <div style={{ position: "absolute", left: `${CARD_MARGIN_MINI}px`, top: `${cardTopM}px`, width: `${cardWm}px`, borderRadius: `${cardRadM}px`, backdropFilter: `blur(${cardBlur}px)`, WebkitBackdropFilter: `blur(${cardBlur}px)`, background: `rgba(255,255,255,${cardBrightness})`, border: "1px solid rgba(255,255,255,0.18)", boxShadow: cardShadow ? `0 ${cardShadowAmount * 0.25}px ${cardShadowAmount * 0.5}px rgba(0,0,0,0.55)` : "none", padding: `${cardPadm}px`, boxSizing: "border-box" as const, display: "flex", flexDirection: "column" as const, gap: "2px" }}>
-                      <div style={{ width: `${artWm}px`, height: `${artWm}px`, borderRadius: `${Math.max(0, cardRadM - cardPadm)}px`, overflow: "hidden", background: "#1a1a1a", flexShrink: 0 }}>
-                        <img src={resolvedArtwork} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                    {/* Player card mini preview */}
+                    {cardShow && resolvedArtwork && (
+                      <div style={{ position: "absolute", left: `${CARD_MARGIN_MINI}px`, top: `${cardTopM}px`, width: `${cardWm}px`, borderRadius: `${cardRadM}px`, backdropFilter: `blur(${cardBlur}px)`, WebkitBackdropFilter: `blur(${cardBlur}px)`, background: `rgba(255,255,255,${cardBrightness})`, border: "1px solid rgba(255,255,255,0.18)", boxShadow: cardShadow ? `0 ${cardShadowAmount * 0.25}px ${cardShadowAmount * 0.5}px rgba(0,0,0,0.55)` : "none", padding: `${cardPadm}px`, boxSizing: "border-box" as const, display: "flex", flexDirection: "column" as const, gap: "2px" }}>
+                        <div style={{ width: `${artWm}px`, height: `${artWm}px`, borderRadius: `${Math.max(0, cardRadM - cardPadm)}px`, overflow: "hidden", background: "#1a1a1a", flexShrink: 0 }}>
+                          <img src={resolvedArtwork} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                        </div>
+                        <div style={{ fontSize: "4.5px", fontWeight: 700, color: "#fff", textAlign: cardTitleAlign, wordBreak: "break-word", lineHeight: 1.2, marginTop: "3px" }}>{resolvedTitle.toUpperCase()}</div>
+                        <div style={{ fontSize: "3.5px", color: "rgba(255,255,255,0.6)", textAlign: cardBrandAlign }}>VOODOO808.COM</div>
+                        <div style={{ marginTop: "2px", display: "flex", justifyContent: "space-between" }}>
+                          <span style={{ fontSize: "3px", color: "rgba(255,255,255,0.5)" }}>{playedStr || "–:––"}</span>
+                          <span style={{ fontSize: "3px", color: "rgba(255,255,255,0.35)" }}>{durationStr || "–:––"}</span>
+                        </div>
+                        {/* Player controls mini */}
+                        <div style={{ marginTop: "3px", display: "flex", alignItems: "center", justifyContent: "center", gap: "5px" }}>
+                          <svg width="7" height="5" viewBox="0 0 13 10" fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="6.5,1 2,5 6.5,9"/><polyline points="11.5,1 7,5 11.5,9"/>
+                          </svg>
+                          <svg width="5" height="6" viewBox="0 0 10 12" fill="#fff">
+                            <rect x="0.5" y="0.5" width="3" height="11" rx="2"/><rect x="6.5" y="0.5" width="3" height="11" rx="2"/>
+                          </svg>
+                          <svg width="7" height="5" viewBox="0 0 13 10" fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="1,1 5.5,5 1,9"/><polyline points="6,1 10.5,5 6,9"/>
+                          </svg>
+                        </div>
+                        {/* Volume mini */}
+                        <div style={{ marginTop: "2px", display: "flex", alignItems: "center", gap: "2px" }}>
+                          <svg width="4" height="4" viewBox="0 0 20 20" fill="rgba(255,255,255,0.45)">
+                            <path d="M10 3.5 L5.5 7.5 H2 Q1 7.5 1 8.5 V11.5 Q1 12.5 2 12.5 H5.5 L10 16.5 Z"/>
+                          </svg>
+                          <div style={{ flex: 1, height: "1.5px", background: "rgba(255,255,255,0.18)", borderRadius: "1px", position: "relative", overflow: "hidden" }}>
+                            <div style={{ position: "absolute", left: 0, top: 0, height: "100%", width: "70%", background: "rgba(255,255,255,0.75)" }} />
+                          </div>
+                          <svg width="4" height="4" viewBox="0 0 20 20" fill="rgba(255,255,255,0.45)">
+                            <path d="M10 3.5 L5.5 7.5 H2 Q1 7.5 1 8.5 V11.5 Q1 12.5 2 12.5 H5.5 L10 16.5 Z"/>
+                          </svg>
+                        </div>
+                        {/* Comment bubble mini */}
+                        {userComment && (
+                          <div style={{ marginTop: "3px", display: "flex", alignItems: "flex-start", gap: "2px" }}>
+                            <div style={{ width: "7px", height: "7px", borderRadius: "50%", background: "rgba(255,255,255,0.18)", flexShrink: 0, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                              {userComment.avatar_url
+                                ? <img src={userComment.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                : <span style={{ fontSize: "3px", color: "rgba(255,255,255,0.7)", fontWeight: 700 }}>{(userComment.username || userComment.email || "?").charAt(0).toUpperCase()}</span>
+                              }
+                            </div>
+                            <div style={{ flex: 1, background: "rgba(255,255,255,0.1)", borderRadius: "3px", padding: "1.5px 2.5px", minWidth: 0 }}>
+                              <div style={{ fontSize: "2.5px", color: "rgba(255,255,255,0.85)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{userComment.text}</div>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                      <div style={{ fontSize: "4.5px", fontWeight: 700, color: "#fff", textAlign: cardTitleAlign, wordBreak: "break-word", lineHeight: 1.2, marginTop: "3px" }}>{resolvedTitle.toUpperCase()}</div>
-                      <div style={{ fontSize: "3.5px", color: "rgba(255,255,255,0.6)", textAlign: cardBrandAlign }}>VOODOO808.COM</div>
-                      <div style={{ marginTop: "2px", display: "flex", justifyContent: "space-between" }}>
-                        <span style={{ fontSize: "3px", color: "rgba(255,255,255,0.5)" }}>{playedStr || "–:––"}</span>
-                        <span style={{ fontSize: "3px", color: "rgba(255,255,255,0.35)" }}>{durationStr || "–:––"}</span>
-                      </div>
-                    </div>
-                  );
-                })()}
+                    )}
 
-                {/* Text layers (behind/above card based on Y position) */}
-                {storyLayers.filter(l => l.visible).map(layer => {
-                  const yPct = ((layer.y ?? 280) / 384) * 100;
-                  const base: CSSProperties = { position: "absolute", left: 0, right: 0, top: yPct + "%", textAlign: "center", transform: "translateY(-50%)", pointerEvents: "none" };
-                  if (layer.mode === "image" && layer.imageUrl) {
-                    return <img key={layer.id} src={layer.imageUrl} alt="" style={{ ...base, height: "12px", width: "auto", maxWidth: "80%", margin: "0 auto", display: "block", objectFit: "contain", filter: logoInvert ? "invert(1)" : "none" }} />;
-                  }
-                  if (layer.id === "logo") return <div key="logo" style={{ ...base, fontSize: "7px", fontWeight: "700", color: storyTextColor, letterSpacing: "2px" }}>VOODOO808.COM</div>;
-                  if (layer.id === "listening") return <div key="listening" style={{ ...base, fontSize: "5.5px", color: storyTextColor + "88", fontStyle: "italic" }}>{listeningText}</div>;
-                  if (layer.id === "title") return <div key="title" style={{ ...base, fontSize: "8px", fontWeight: "700", color: storyTextColor, letterSpacing: "0.05em", lineHeight: 1.2 }}>{resolvedTitle.toUpperCase()}</div>;
-                  if (layer.id === "website") return <div key="website" style={{ ...base, fontSize: "5.5px", color: storyTextColor + "66", letterSpacing: "0.5px" }}>{websiteText}</div>;
-                  return null;
-                })}
-              </div>
+                    {/* Text layers */}
+                    {storyLayers.filter(l => l.visible).map(layer => {
+                      const yPct = ((layer.y ?? 280) / 470) * 100;
+                      const base: CSSProperties = { position: "absolute", left: 0, right: 0, top: yPct + "%", textAlign: "center", transform: "translateY(-50%)", pointerEvents: "none" };
+                      if (layer.mode === "image" && layer.imageUrl) {
+                        return <img key={layer.id} src={layer.imageUrl} alt="" style={{ ...base, height: "12px", width: "auto", maxWidth: "80%", margin: "0 auto", display: "block", objectFit: "contain", filter: logoInvert ? "invert(1)" : "none" }} />;
+                      }
+                      if (layer.id === "logo") return <div key="logo" style={{ ...base, fontSize: "7px", fontWeight: "700", color: storyTextColor, letterSpacing: "2px" }}>VOODOO808.COM</div>;
+                      if (layer.id === "listening") return <div key="listening" style={{ ...base, fontSize: "5.5px", color: storyTextColor + "88", fontStyle: "italic" }}>{listeningText}</div>;
+                      if (layer.id === "title") return <div key="title" style={{ ...base, fontSize: "8px", fontWeight: "700", color: storyTextColor, letterSpacing: "0.05em", lineHeight: 1.2 }}>{resolvedTitle.toUpperCase()}</div>;
+                      if (layer.id === "website") return <div key="website" style={{ ...base, fontSize: "5.5px", color: storyTextColor + "66", letterSpacing: "0.5px" }}>{websiteText}</div>;
+                      return null;
+                    })}
+                  </div>
+                );
+              })()}
 
               <div style={{ flex: 1 }}>
                 <p style={{ fontSize: "12px", color: "#555", margin: "0 0 16px 0", lineHeight: 1.6 }}>Stáhni si kartu pro Instagram Story — sdílej ji jako příběh a odkaz na produkt. Šablona se nastavuje v Admin → Instagram Stories.</p>

@@ -2639,6 +2639,7 @@ function IGStoriesTab({ settings, onRefresh }: any) {
   const [saved, setSaved] = useState(false);
   const [previewBeat, setPreviewBeat] = useState<any>(null);
   const [previewBeatDuration, setPreviewBeatDuration] = useState<number | null>(null);
+  const [previewComment, setPreviewComment] = useState<{ text: string; email: string; avatar_url?: string | null; username?: string | null } | null>(null);
   const [uploading, setUploading] = useState<Record<number, boolean>>({});
   const [logoUploading, setLogoUploading] = useState(false);
   const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -2647,7 +2648,23 @@ function IGStoriesTab({ settings, onRefresh }: any) {
   useEffect(() => {
     fetch("/api/beats", { credentials: "include" })
       .then(r => r.ok ? r.json() : [])
-      .then(beats => { if (Array.isArray(beats) && beats.length > 0) setPreviewBeat(beats[0]); })
+      .then(beats => {
+        if (Array.isArray(beats) && beats.length > 0) {
+          const beat = beats[0];
+          setPreviewBeat(beat);
+          fetch(`/api/beats/${beat.id}/comments`, { credentials: "include" })
+            .then(r => r.ok ? r.json() : [])
+            .then((comments: any[]) => {
+              if (Array.isArray(comments) && comments.length > 0) {
+                const c = comments[0];
+                setPreviewComment({ text: c.text, email: c.email, avatar_url: c.avatar_url, username: c.username });
+              } else {
+                setPreviewComment(null);
+              }
+            })
+            .catch(() => setPreviewComment(null));
+        }
+      })
       .catch(() => {});
   }, []);
 
@@ -2751,8 +2768,9 @@ function IGStoriesTab({ settings, onRefresh }: any) {
   const durationStr = previewBeatDuration !== null ? formatDuration(previewBeatDuration) : "–:––";
   const playedStr = previewBeatDuration !== null ? formatDuration(previewBeatDuration * PLAYHEAD_FRACTION) : "–:––";
 
-  // Preview card is 216px wide. Card has 24px margins each side → card width = 168px
+  // Preview card — iPhone 16 Pro proportions (402×874 pt → ratio 2.174)
   const PREVIEW_W = 216;
+  const PREVIEW_H = Math.round(PREVIEW_W * 874 / 402); // ≈ 470px
   const CARD_MARGIN = 24;
   const cardW = PREVIEW_W - CARD_MARGIN * 2;           // 168px
   const artworkW = cardW - cardPadding * 2;             // inner artwork size
@@ -2777,11 +2795,12 @@ function IGStoriesTab({ settings, onRefresh }: any) {
     return null;
   };
 
-  // Compute card top position so it sits centered in the 384px preview
-  // Card height: padding + artworkW + 10 (name gap) + 14 (name) + 3 (brand gap) + 7 (brand) + 10 (wave gap) + 28 (wave) + 3 (time) + 6 (time labels) + 8 (controls gap) + 18 (controls) + 10 (volume gap) + 6 (volume) + padding
+  // Compute card top position so it sits centered in the iPhone 16 Pro preview
+  // Card height: padding + artworkW + 10 (name gap) + 14 (name) + 3 (brand gap) + 7 (brand) + 10 (wave gap) + 28 (wave) + 3 (time) + 6 (time labels) + 8 (controls gap) + 18 (controls) + 10 (volume gap) + 6 (volume) + [comment: 8+20 if present] + padding
   const waveW = artworkW;
-  const estimatedCardH = cardPadding + artworkW + 10 + 14 + 3 + 7 + 10 + 28 + 3 + 6 + 8 + 18 + 10 + 6 + cardPadding;
-  const centeredCardTop = (384 - estimatedCardH) / 2;
+  const commentRowH = previewComment ? 28 : 0;
+  const estimatedCardH = cardPadding + artworkW + 10 + 14 + 3 + 7 + 10 + 28 + 3 + 6 + 8 + 18 + 10 + 6 + commentRowH + cardPadding;
+  const centeredCardTop = (PREVIEW_H - estimatedCardH) / 2;
   const cardTop = Math.max(10, centeredCardTop + cardYOffset);
 
   return (
@@ -2796,7 +2815,7 @@ function IGStoriesTab({ settings, onRefresh }: any) {
           <div style={{ fontSize: "11px", color: "#555", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
             Náhled{previewBeat ? ` — ${previewBeat.title}` : ""}
           </div>
-          <div style={{ width: `${PREVIEW_W}px`, height: "384px", position: "relative", overflow: "hidden", borderRadius: "8px", border: "1px solid #2a2a2a", background: bgMode === "color" ? bgColor : "#111" }}>
+          <div style={{ width: `${PREVIEW_W}px`, height: `${PREVIEW_H}px`, position: "relative", overflow: "hidden", borderRadius: "8px", border: "1px solid #2a2a2a", background: bgMode === "color" ? bgColor : "#111" }}>
             {/* Background */}
             {bgMode === "artwork" && previewArtwork && (
               <img src={previewArtwork} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", filter: `blur(${blurVal}px)`, transform: "scale(1.3)" }} />
@@ -2862,36 +2881,64 @@ function IGStoriesTab({ settings, onRefresh }: any) {
 
                 {/* Player controls */}
                 <div style={{ marginTop: "8px", display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", width: "100%" }}>
-                  {/* Prev */}
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="19" x2="5" y2="5"/>
+                  {/* Prev — two left-pointing arrows touching */}
+                  <svg width="13" height="10" viewBox="0 0 13 10" fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="6.5,1 2,5 6.5,9"/>
+                    <polyline points="11.5,1 7,5 11.5,9"/>
                   </svg>
-                  {/* Pause button */}
-                  <div style={{ width: "22px", height: "22px", borderRadius: "50%", background: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <svg width="9" height="9" viewBox="0 0 24 24" fill="#000">
-                      <rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>
-                    </svg>
-                  </div>
-                  {/* Next */}
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/>
+                  {/* Pause — just two white rounded bars, no circle */}
+                  <svg width="10" height="12" viewBox="0 0 10 12" fill="#fff">
+                    <rect x="0.5" y="0.5" width="3" height="11" rx="2"/>
+                    <rect x="6.5" y="0.5" width="3" height="11" rx="2"/>
+                  </svg>
+                  {/* Next — two right-pointing arrows touching */}
+                  <svg width="13" height="10" viewBox="0 0 13 10" fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="1,1 5.5,5 1,9"/>
+                    <polyline points="6,1 10.5,5 6,9"/>
                   </svg>
                 </div>
 
                 {/* Volume bar */}
                 <div style={{ marginTop: "10px", width: "100%", display: "flex", alignItems: "center", gap: "5px" }}>
-                  {/* Volume icon */}
-                  <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="2.5" strokeLinecap="round">
-                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                  {/* Volume low — filled speaker body + one arc */}
+                  <svg width="8" height="8" viewBox="0 0 20 20" fill="rgba(255,255,255,0.45)">
+                    <path d="M10 3.5 L5.5 7.5 H2 Q1 7.5 1 8.5 V11.5 Q1 12.5 2 12.5 H5.5 L10 16.5 Z" rx="1"/>
+                    <path d="M13 7 Q15 10 13 13" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="1.5" strokeLinecap="round"/>
                   </svg>
                   <div style={{ flex: 1, height: "3px", background: "rgba(255,255,255,0.18)", borderRadius: "2px", position: "relative", overflow: "hidden" }}>
                     <div style={{ position: "absolute", left: 0, top: 0, height: "100%", width: "70%", background: "rgba(255,255,255,0.75)", borderRadius: "2px" }} />
                   </div>
-                  {/* Max icon */}
-                  <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="2.5" strokeLinecap="round">
-                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+                  {/* Volume high — filled speaker + two arcs */}
+                  <svg width="8" height="8" viewBox="0 0 20 20" fill="rgba(255,255,255,0.45)">
+                    <path d="M10 3.5 L5.5 7.5 H2 Q1 7.5 1 8.5 V11.5 Q1 12.5 2 12.5 H5.5 L10 16.5 Z" rx="1"/>
+                    <path d="M13 7 Q15 10 13 13" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="1.5" strokeLinecap="round"/>
+                    <path d="M15.5 5 Q19 10 15.5 15" fill="none" stroke="rgba(255,255,255,0.45)" strokeWidth="1.5" strokeLinecap="round"/>
                   </svg>
                 </div>
+
+                {/* Comment bubble — only shown if a comment exists */}
+                {previewComment && (
+                  <div style={{ marginTop: "8px", width: "100%", display: "flex", alignItems: "flex-start", gap: "5px" }}>
+                    {/* Avatar */}
+                    <div style={{ width: "14px", height: "14px", borderRadius: "50%", background: "rgba(255,255,255,0.18)", flexShrink: 0, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      {previewComment.avatar_url
+                        ? <img src={previewComment.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        : <span style={{ fontSize: "5px", color: "rgba(255,255,255,0.7)", fontFamily: "Inter,sans-serif", fontWeight: 700 }}>
+                            {(previewComment.username || previewComment.email || "?").charAt(0).toUpperCase()}
+                          </span>
+                      }
+                    </div>
+                    {/* Bubble */}
+                    <div style={{ flex: 1, background: "rgba(255,255,255,0.1)", borderRadius: "6px", padding: "3px 5px", minWidth: 0 }}>
+                      <div style={{ fontSize: "5px", color: "rgba(255,255,255,0.5)", fontFamily: "Inter,sans-serif", marginBottom: "1px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {previewComment.username || previewComment.email?.split("@")[0] || "user"}
+                      </div>
+                      <div style={{ fontSize: "5.5px", color: "rgba(255,255,255,0.85)", fontFamily: "Inter,sans-serif", lineHeight: 1.3, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as any }}>
+                        {previewComment.text}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

@@ -81,6 +81,27 @@ router.patch("/:beatId/comments/:commentId", requireAuth, async (req: Request, r
   }
 });
 
+router.get("/:beatId/my-last-comment", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const userId = req.session.userId;
+    const result = await pool.query(
+      `SELECT bc.id, bc.text, bc.created_at, bc.time_offset, bc.user_id, u.email, u.avatar_url, u.username
+       FROM beat_comments bc
+       JOIN users u ON bc.user_id = u.id
+       WHERE bc.beat_id = $1 AND bc.user_id = $2
+       ORDER BY bc.created_at DESC
+       LIMIT 1`,
+      [req.params.beatId, userId]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Žádný komentář nenalezen" });
+    }
+    res.json(result.rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při načítání komentáře" });
+  }
+});
+
 router.post("/:beatId/comments", requireAuth, async (req: Request, res: Response) => {
   try {
     const { text, time_offset } = req.body;
