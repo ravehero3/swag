@@ -2805,7 +2805,7 @@ function IGStoriesTab({ settings, onRefresh }: any) {
                   position: "absolute",
                   left: "50%",
                   transform: "translateX(-50%)",
-                  top: `${Math.max(90, cardTop)}px`,
+                  top: `${cardTop}px`,
                   width: `${cardW}px`,
                   borderRadius: `${cardRadius}px`,
                   backdropFilter: `blur(${cardBlur}px)`,
