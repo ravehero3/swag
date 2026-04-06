@@ -2555,39 +2555,51 @@ const IG_LAYER_LABELS: Record<string, string> = {
   website: "Text webu",
 };
 
-// Deterministic waveform bar heights for visual preview (0–1)
+// Deterministic waveform bar heights for visual preview (0–1) — 60 bars, organic hip-hop shape
 const WAVE_BARS = [
-  0.3,0.5,0.7,0.4,0.8,0.6,0.9,0.5,0.3,0.7,
-  0.6,0.4,0.8,1.0,0.7,0.5,0.9,0.6,0.4,0.8,
-  0.5,0.7,0.3,0.6,0.9,0.8,0.4,0.6,0.7,0.5,
-  0.8,0.4,0.6,0.9,0.5,0.7,0.3,0.8,0.6,0.4,
-  0.7,0.5,0.9,0.6,0.4,0.8,0.5,0.3,0.7,0.6,
+  0.38,0.55,0.72,0.48,0.91,0.63,0.44,0.78,0.95,0.67,
+  0.52,0.41,0.69,0.85,0.73,0.56,0.38,0.80,1.00,0.88,
+  0.70,0.59,0.43,0.66,0.79,0.92,0.61,0.47,0.74,0.88,
+  0.95,0.77,0.62,0.50,0.83,0.97,0.72,0.58,0.41,0.69,
+  0.84,0.75,0.91,0.63,0.50,0.78,1.00,0.86,0.68,0.55,
+  0.43,0.72,0.89,0.76,0.60,0.45,0.66,0.82,0.58,0.40,
 ];
 const PLAYHEAD_FRACTION = 2 / 3;
 
-function IGWaveformPreview({ width, color, playedColor }: { width: number; color: string; playedColor: string }) {
+// Matches the SoundWave.tsx dual-axis design: tall top bars + shorter bottom reflection
+function IGWaveformPreview({ width }: { width: number }) {
   const barCount = WAVE_BARS.length;
-  const gap = 1.5;
-  const barW = (width - gap * (barCount - 1)) / barCount;
-  const h = 22;
+  const gap = 0.8;
+  const barW = Math.max(1, (width - gap * (barCount - 1)) / barCount);
+  const h = 28;
+  const divY = h * 0.70;
+  const topMaxAmp = divY * 0.90;
+  const botMaxAmp = (h - divY) * 0.90;
+  const radius = Math.min(barW / 2, 1.5);
   return (
     <svg width={width} height={h} style={{ display: "block" }}>
       {WAVE_BARS.map((v, i) => {
         const x = i * (barW + gap);
-        const barH = Math.max(2, v * h);
-        const y = (h - barH) / 2;
         const played = (i / barCount) < PLAYHEAD_FRACTION;
-        return <rect key={i} x={x} y={y} width={barW} height={barH} rx={barW / 2} fill={played ? playedColor : color} />;
+        const isHead = Math.abs(i / barCount - PLAYHEAD_FRACTION) < (1 / barCount) * 0.8;
+        const topAmp = Math.max(v * topMaxAmp, 1.2);
+        const botAmp = Math.max(v * botMaxAmp, 0.5);
+        if (isHead) {
+          return <rect key={i} x={x} y={divY - topAmp} width={barW} height={topAmp + botAmp} rx={radius} fill="rgba(255,255,255,1)" />;
+        }
+        return (
+          <g key={i}>
+            <rect x={x} y={divY - topAmp} width={barW} height={topAmp} rx={radius}
+              fill={played ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.28)"} />
+            <rect x={x} y={divY} width={barW} height={botAmp} rx={radius}
+              fill={played ? "rgba(255,255,255,0.61)" : "rgba(255,255,255,0.13)"} />
+          </g>
+        );
       })}
-      {/* Playhead line */}
-      <rect
-        x={PLAYHEAD_FRACTION * width - 1}
-        y={0}
-        width={2}
-        height={h}
-        fill={playedColor}
-        rx={1}
-      />
+      {/* Center dividing line (like SoundWave) */}
+      <rect x={0} y={divY} width={width} height={0.75} fill="rgba(0,0,0,0.6)" />
+      {/* Vertical playhead */}
+      <rect x={PLAYHEAD_FRACTION * width - 0.75} y={0} width={1.5} height={h} fill="rgba(255,255,255,0.95)" rx={0.75} />
     </svg>
   );
 }
@@ -2765,10 +2777,10 @@ function IGStoriesTab({ settings, onRefresh }: any) {
     return null;
   };
 
-  // Compute card top position so it sits 24px above the bottom of the preview (384px total)
-  // Card height: padding + artworkW + 8 (name) + 6 (artist) + 8 (gap) + waveform (22) + 8 (gap) + controls (18) + 8 (gap) + volume (6) + padding
+  // Compute card top position so it sits centered in the 384px preview
+  // Card height: padding + artworkW + 10 (name gap) + 14 (name) + 3 (brand gap) + 7 (brand) + 10 (wave gap) + 28 (wave) + 3 (time) + 6 (time labels) + 8 (controls gap) + 18 (controls) + 10 (volume gap) + 6 (volume) + padding
   const waveW = artworkW;
-  const estimatedCardH = cardPadding + artworkW + 8 + 14 + 4 + 10 + 8 + 22 + 8 + 18 + 8 + 6 + cardPadding;
+  const estimatedCardH = cardPadding + artworkW + 10 + 14 + 3 + 7 + 10 + 28 + 3 + 6 + 8 + 18 + 10 + 6 + cardPadding;
   const centeredCardTop = (384 - estimatedCardH) / 2;
   const cardTop = Math.max(10, centeredCardTop + cardYOffset);
 
@@ -2830,21 +2842,21 @@ function IGStoriesTab({ settings, onRefresh }: any) {
                 </div>
 
                 {/* Beat name */}
-                <div style={{ marginTop: "10px", fontSize: "9px", fontWeight: 700, color: "#fff", letterSpacing: "0.06em", textAlign: cardTitleAlign, width: "100%", wordBreak: "break-word", lineHeight: titleLineHeight, overflowWrap: "break-word" }}>
+                <div style={{ marginTop: "10px", fontSize: "9px", fontWeight: 700, color: "#fff", letterSpacing: "0.06em", textAlign: cardTitleAlign, width: "100%", wordBreak: "break-word", lineHeight: titleLineHeight, overflowWrap: "break-word", fontFamily: "Inter, sans-serif" }}>
                   {previewTitle.toUpperCase()}
                 </div>
                 {/* Artist / brand */}
-                <div style={{ marginTop: "3px", fontSize: "7px", color: "rgba(255,255,255,0.6)", letterSpacing: "0.04em", textAlign: cardBrandAlign, width: "100%" }}>
+                <div style={{ marginTop: "3px", fontSize: "7px", color: "rgba(255,255,255,0.6)", letterSpacing: "0.04em", textAlign: cardBrandAlign, width: "100%", fontFamily: "Inter, sans-serif" }}>
                   VOODOO808.COM
                 </div>
 
-                {/* Waveform timeline */}
+                {/* Waveform timeline — mirrors SoundWave.tsx dual-axis design */}
                 <div style={{ marginTop: "10px", width: "100%" }}>
-                  <IGWaveformPreview width={waveW} color="rgba(255,255,255,0.22)" playedColor="rgba(255,255,255,0.85)" />
+                  <IGWaveformPreview width={waveW} />
                   {/* Time labels */}
                   <div style={{ display: "flex", justifyContent: "space-between", marginTop: "3px" }}>
-                    <span style={{ fontSize: "5px", color: "rgba(255,255,255,0.5)" }}>{playedStr}</span>
-                    <span style={{ fontSize: "5px", color: "rgba(255,255,255,0.35)" }}>{durationStr}</span>
+                    <span style={{ fontSize: "5px", color: "rgba(255,255,255,0.5)", fontFamily: "Inter, sans-serif" }}>{playedStr}</span>
+                    <span style={{ fontSize: "5px", color: "rgba(255,255,255,0.35)", fontFamily: "Inter, sans-serif" }}>{durationStr}</span>
                   </div>
                 </div>
 
