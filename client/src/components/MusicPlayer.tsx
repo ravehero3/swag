@@ -648,7 +648,7 @@ function MusicPlayer({
       </div>
 
       <ShareModal
-        product={{ id: currentBeat.id, title: currentBeat.title, price: currentBeat.price, artwork_url: currentBeat.artwork_url }}
+        product={{ id: currentBeat.id, title: currentBeat.title, price: currentBeat.price, artwork_url: currentBeat.artwork_url, preview_url: currentBeat.preview_url }}
         productType="beat"
         isOpen={showShareModal}
         onClose={() => setShowShareModal(false)}

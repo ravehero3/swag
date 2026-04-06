@@ -1,4 +1,4 @@
-import { useState, CSSProperties } from "react";
+import { useState, useEffect, CSSProperties } from "react";
 import { useApp } from "../App.js";
 
 interface ShareProduct {
@@ -6,6 +6,7 @@ interface ShareProduct {
   title: string;
   price?: number;
   artwork_url?: string;
+  preview_url?: string;
 }
 
 interface ShareModalProps {
@@ -17,15 +18,40 @@ interface ShareModalProps {
   onClose: () => void;
 }
 
+function proxyImageUrl(url: string): string {
+  if (!url) return url;
+  if (url.includes("backblazeb2.com") || url.includes("b2cdn") || url.includes("b2.us")) {
+    return `/api/image-proxy?url=${encodeURIComponent(url)}`;
+  }
+  return url;
+}
+
+function formatDur(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${m}:${s.toString().padStart(2, "0")}`;
+}
+
+const WAVE_BARS = [
+  0.3,0.5,0.7,0.4,0.8,0.6,0.9,0.5,0.3,0.7,
+  0.6,0.4,0.8,1.0,0.7,0.5,0.9,0.6,0.4,0.8,
+  0.5,0.7,0.3,0.6,0.9,0.8,0.4,0.6,0.7,0.5,
+  0.8,0.4,0.6,0.9,0.5,0.7,0.3,0.8,0.6,0.4,
+  0.7,0.5,0.9,0.6,0.4,0.8,0.5,0.3,0.7,0.6,
+];
+const PLAYHEAD = 2 / 3;
+
 function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, onClose }: ShareModalProps) {
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<"link" | "story">("link");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [beatDuration, setBeatDuration] = useState<number | null>(null);
   const { settings } = useApp() as any;
 
   const resolvedId = product?.id ?? beatId ?? 0;
   const resolvedTitle = product?.title ?? beatTitle ?? "";
   const resolvedArtwork = product?.artwork_url ?? "";
+  const resolvedPreviewUrl = product?.preview_url ?? "";
   const resolvedType = productType;
 
   const shareUrl = resolvedType === "sound_kit"
@@ -39,6 +65,18 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
   const websiteText = settings?.ig_story_website_text || "NA VOODOO808.COM";
   const bgMode = settings?.ig_story_bg_mode || "artwork";
   const blurAmount = parseFloat(settings?.ig_story_blur || "20");
+  const cardShow = settings?.ig_story_card_show !== "false";
+  const cardRadius = parseFloat(settings?.ig_story_card_radius || "24");
+  const cardBlur = parseFloat(settings?.ig_story_card_blur || "14");
+  const cardBrightness = parseFloat(settings?.ig_story_card_brightness || "0.18");
+  const cardShadow = settings?.ig_story_card_shadow !== "false";
+  const cardShadowAmount = parseFloat(settings?.ig_story_card_shadow_amount || "24");
+  const cardPadding = parseFloat(settings?.ig_story_card_padding || "16");
+  const cardYOffset = parseInt(settings?.ig_story_card_y_offset || "0", 10);
+  const cardTitleAlign = (settings?.ig_story_card_title_align || "center") as "left" | "center" | "right";
+  const cardBrandAlign = (settings?.ig_story_card_brand_align || "right") as "left" | "right";
+  const logoInvert = settings?.ig_story_logo_invert === "true";
+
   const storyLayers: { id: string; visible: boolean; y?: number; mode?: string; imageUrl?: string | null }[] = (() => {
     try {
       const parsed = JSON.parse(settings?.ig_story_layers || "null");
@@ -47,6 +85,15 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
       return [{ id: "logo", visible: true }, { id: "listening", visible: true }, { id: "title", visible: true }, { id: "website", visible: true }];
     }
   })();
+
+  useEffect(() => {
+    if (!resolvedPreviewUrl || !isOpen) return;
+    const audio = new Audio();
+    audio.crossOrigin = "anonymous";
+    audio.src = `/api/audio-proxy?url=${encodeURIComponent(resolvedPreviewUrl)}`;
+    audio.onloadedmetadata = () => setBeatDuration(audio.duration);
+    audio.onerror = () => setBeatDuration(null);
+  }, [resolvedPreviewUrl, isOpen]);
 
   if (!isOpen) return null;
 
@@ -64,124 +111,19 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
     window.open("https://www.instagram.com/", "_blank");
   };
 
-  const downloadStoryCard = async () => {
-    setIsGenerating(true);
-    try {
-      const canvas = document.createElement("canvas");
-      canvas.width = 1080;
-      canvas.height = 1920;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return;
+  function loadImage(src: string): Promise<HTMLImageElement | null> {
+    return new Promise((resolve) => {
+      if (!src) return resolve(null);
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => resolve(img);
+      img.onerror = () => resolve(null);
+      img.src = src;
+      setTimeout(() => resolve(null), 5000);
+    });
+  }
 
-      ctx.fillStyle = storyBgColor;
-      ctx.fillRect(0, 0, 1080, 1920);
-
-      let img: HTMLImageElement | null = null;
-      if (resolvedArtwork) {
-        const loadedImg = new Image();
-        loadedImg.crossOrigin = "anonymous";
-        await new Promise<void>((resolve) => {
-          loadedImg.onload = () => resolve();
-          loadedImg.onerror = () => resolve();
-          loadedImg.src = resolvedArtwork;
-          setTimeout(resolve, 4000);
-        });
-        if (loadedImg.complete && loadedImg.naturalWidth > 0) img = loadedImg;
-      }
-
-      if (bgMode === "artwork" && img) {
-        ctx.save();
-        ctx.filter = `blur(${Math.round(blurAmount * 3)}px)`;
-        const scale = Math.max(1080 / img.naturalWidth, 1920 / img.naturalHeight) * 1.1;
-        const bw = img.naturalWidth * scale;
-        const bh = img.naturalHeight * scale;
-        ctx.drawImage(img, (1080 - bw) / 2, (1920 - bh) / 2, bw, bh);
-        ctx.restore();
-      }
-
-      ctx.fillStyle = `rgba(0,0,0,${overlayOpacity})`;
-      ctx.fillRect(0, 0, 1080, 1920);
-
-      if (img) {
-        const artPad = 120;
-        const artSize = 1080 - artPad * 2;
-        const artY = (1920 - artSize) / 2 - 80;
-        ctx.save();
-        ctx.filter = "none";
-        const src = Math.min(img.naturalWidth, img.naturalHeight);
-        const sx = (img.naturalWidth - src) / 2;
-        const sy = (img.naturalHeight - src) / 2;
-        ctx.drawImage(img, sx, sy, src, src, artPad, artY, artSize, artSize);
-        ctx.restore();
-      }
-
-      ctx.textAlign = "center";
-
-      const CARD_H = 384;
-      const CANVAS_H = 1920;
-      const yScale = CANVAS_H / CARD_H;
-
-      for (const layer of storyLayers) {
-        if (!layer.visible) continue;
-        const layerY = (typeof layer.y === "number" ? layer.y : 280) * yScale;
-
-        if (layer.mode === "image" && layer.imageUrl) {
-          const logoImg = new Image();
-          logoImg.crossOrigin = "anonymous";
-          await new Promise<void>((resolve) => {
-            logoImg.onload = () => resolve();
-            logoImg.onerror = () => resolve();
-            logoImg.src = layer.imageUrl!;
-            setTimeout(resolve, 4000);
-          });
-          if (logoImg.complete && logoImg.naturalWidth > 0) {
-            const maxH = 90;
-            const scale = maxH / logoImg.naturalHeight;
-            const w = logoImg.naturalWidth * scale;
-            ctx.drawImage(logoImg, (1080 - w) / 2, layerY - maxH / 2, w, maxH);
-          }
-          continue;
-        }
-
-        ctx.letterSpacing = "0px";
-        if (layer.id === "logo") {
-          ctx.font = "bold 52px Helvetica, Arial, sans-serif";
-          ctx.fillStyle = storyTextColor + "cc";
-          ctx.letterSpacing = "8px";
-          ctx.fillText("VOODOO808.COM", 540, layerY);
-          ctx.letterSpacing = "0px";
-        } else if (layer.id === "listening") {
-          ctx.font = "italic 36px Helvetica, Arial, sans-serif";
-          ctx.fillStyle = storyTextColor + "88";
-          ctx.fillText(listeningText, 540, layerY);
-        } else if (layer.id === "title") {
-          ctx.font = "bold 80px Helvetica, Arial, sans-serif";
-          ctx.fillStyle = storyTextColor;
-          const titleLines = wrapText(ctx, resolvedTitle.toUpperCase(), 900, 80);
-          titleLines.forEach((line, li) => {
-            ctx.fillText(line, 540, layerY + li * 96);
-          });
-        } else if (layer.id === "website") {
-          ctx.font = "38px Helvetica, Arial, sans-serif";
-          ctx.fillStyle = storyTextColor + "99";
-          ctx.fillText(websiteText, 540, layerY);
-        }
-      }
-
-      const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
-      if (!blob) return;
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `voodoo808-story-${resolvedId}.png`;
-      a.click();
-      URL.revokeObjectURL(url);
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number, _fontSize: number): string[] {
+  function wrapText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
     const words = text.split(" ");
     const lines: string[] = [];
     let current = "";
@@ -197,6 +139,256 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
     if (current) lines.push(current);
     return lines;
   }
+
+  const downloadStoryCard = async () => {
+    setIsGenerating(true);
+    try {
+      const CW = 1080;
+      const CH = 1920;
+      const canvas = document.createElement("canvas");
+      canvas.width = CW;
+      canvas.height = CH;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      // ── Background ──
+      ctx.fillStyle = storyBgColor;
+      ctx.fillRect(0, 0, CW, CH);
+
+      const artworkProxied = resolvedArtwork ? proxyImageUrl(resolvedArtwork) : "";
+      const img = await loadImage(artworkProxied);
+
+      if (bgMode === "artwork" && img) {
+        ctx.save();
+        ctx.filter = `blur(${Math.round(blurAmount * 3)}px)`;
+        const scale = Math.max(CW / img.naturalWidth, CH / img.naturalHeight) * 1.1;
+        const bw = img.naturalWidth * scale;
+        const bh = img.naturalHeight * scale;
+        ctx.drawImage(img, (CW - bw) / 2, (CH - bh) / 2, bw, bh);
+        ctx.restore();
+      }
+
+      ctx.fillStyle = `rgba(0,0,0,${overlayOpacity})`;
+      ctx.fillRect(0, 0, CW, CH);
+
+      // ── Text layers (logo, listening, title, website) ──
+      ctx.textAlign = "center";
+      const PREV_H = 384;
+      const yScale = CH / PREV_H;
+
+      for (const layer of storyLayers) {
+        if (!layer.visible) continue;
+        const layerY = (typeof layer.y === "number" ? layer.y : 280) * yScale;
+
+        if (layer.mode === "image" && layer.imageUrl) {
+          const logoProxied = proxyImageUrl(layer.imageUrl);
+          const logoImg = await loadImage(logoProxied);
+          if (logoImg) {
+            const maxH = 90;
+            const s = maxH / logoImg.naturalHeight;
+            const w = logoImg.naturalWidth * s;
+            if (logoInvert) {
+              ctx.save();
+              ctx.filter = "invert(1)";
+            }
+            ctx.drawImage(logoImg, (CW - w) / 2, layerY - maxH / 2, w, maxH);
+            if (logoInvert) ctx.restore();
+          }
+          continue;
+        }
+
+        ctx.letterSpacing = "0px";
+        if (layer.id === "logo") {
+          ctx.font = "bold 52px Helvetica, Arial, sans-serif";
+          ctx.fillStyle = storyTextColor + "cc";
+          ctx.letterSpacing = "8px";
+          ctx.fillText("VOODOO808.COM", CW / 2, layerY);
+          ctx.letterSpacing = "0px";
+        } else if (layer.id === "listening") {
+          ctx.font = "italic 36px Helvetica, Arial, sans-serif";
+          ctx.fillStyle = storyTextColor + "88";
+          ctx.fillText(listeningText, CW / 2, layerY);
+        } else if (layer.id === "title") {
+          ctx.font = "bold 80px Helvetica, Arial, sans-serif";
+          ctx.fillStyle = storyTextColor;
+          const titleLines = wrapText(ctx, resolvedTitle.toUpperCase(), 900);
+          titleLines.forEach((line, li) => ctx.fillText(line, CW / 2, layerY + li * 96));
+        } else if (layer.id === "website") {
+          ctx.font = "38px Helvetica, Arial, sans-serif";
+          ctx.fillStyle = storyTextColor + "99";
+          ctx.fillText(websiteText, CW / 2, layerY);
+        }
+      }
+
+      // ── Glassmorphism player card ──
+      if (cardShow) {
+        const PREV_W = 216;
+        const CARD_MARGIN = 24;
+        const cardW_prev = PREV_W - CARD_MARGIN * 2;
+        const xScale = CW / PREV_W;
+
+        const cardW = cardW_prev * xScale;
+        const cardPad = cardPadding * xScale;
+        const artW = cardW - cardPad * 2;
+        const cardRad = cardRadius * xScale;
+        const cardX = (CW - cardW) / 2;
+
+        const estimatedCardH_prev = cardPadding + (cardW_prev - cardPadding * 2) + 8 + 14 + 4 + 10 + 8 + 22 + 8 + 18 + 8 + 6 + cardPadding;
+        const centeredTop_prev = (PREV_H - estimatedCardH_prev) / 2 + cardYOffset;
+        const cardY = Math.max(10 * yScale, centeredTop_prev * yScale);
+
+        // Simulate glass: draw blurred artwork crop behind the card
+        if (img) {
+          ctx.save();
+          ctx.beginPath();
+          roundRect(ctx, cardX, cardY, cardW, estimatedCardH_prev * yScale, cardRad);
+          ctx.clip();
+          ctx.filter = `blur(${Math.round(cardBlur * 2)}px)`;
+          const scale = Math.max(CW / img.naturalWidth, CH / img.naturalHeight) * 1.1;
+          const bw = img.naturalWidth * scale;
+          const bh = img.naturalHeight * scale;
+          ctx.drawImage(img, (CW - bw) / 2, (CH - bh) / 2, bw, bh);
+          ctx.filter = "none";
+          ctx.restore();
+        }
+
+        // Glass fill overlay
+        ctx.save();
+        ctx.beginPath();
+        roundRect(ctx, cardX, cardY, cardW, estimatedCardH_prev * yScale, cardRad);
+        ctx.clip();
+        ctx.fillStyle = `rgba(255,255,255,${cardBrightness})`;
+        ctx.fillRect(cardX, cardY, cardW, estimatedCardH_prev * yScale);
+        ctx.restore();
+
+        // Card border
+        ctx.save();
+        ctx.beginPath();
+        roundRect(ctx, cardX, cardY, cardW, estimatedCardH_prev * yScale, cardRad);
+        ctx.strokeStyle = "rgba(255,255,255,0.22)";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.restore();
+
+        // Card shadow
+        if (cardShadow) {
+          ctx.save();
+          ctx.shadowColor = "rgba(0,0,0,0.55)";
+          ctx.shadowBlur = cardShadowAmount * xScale;
+          ctx.shadowOffsetY = cardShadowAmount * 0.5 * xScale;
+          ctx.beginPath();
+          roundRect(ctx, cardX, cardY, cardW, estimatedCardH_prev * yScale, cardRad);
+          ctx.fillStyle = "transparent";
+          ctx.fill();
+          ctx.restore();
+        }
+
+        let curY = cardY + cardPad;
+
+        // Artwork square
+        const artRad = Math.max(0, cardRad - cardPad);
+        ctx.save();
+        ctx.beginPath();
+        roundRect(ctx, cardX + cardPad, curY, artW, artW, artRad);
+        ctx.clip();
+        if (img) {
+          const src = Math.min(img.naturalWidth, img.naturalHeight);
+          const sx = (img.naturalWidth - src) / 2;
+          const sy = (img.naturalHeight - src) / 2;
+          ctx.drawImage(img, sx, sy, src, src, cardX + cardPad, curY, artW, artW);
+        } else {
+          ctx.fillStyle = "#1a1a1a";
+          ctx.fillRect(cardX + cardPad, curY, artW, artW);
+        }
+        ctx.restore();
+        curY += artW + 10 * xScale;
+
+        // Title
+        const titleFontSize = 9 * xScale;
+        ctx.font = `bold ${titleFontSize}px Helvetica, Arial, sans-serif`;
+        ctx.fillStyle = "#ffffff";
+        ctx.letterSpacing = `${0.06 * titleFontSize}px`;
+        const titleLines = wrapText(ctx, resolvedTitle.toUpperCase(), artW);
+        const titleLineH = titleFontSize * 1.25;
+        const titleAlign = cardTitleAlign === "left" ? cardX + cardPad : cardTitleAlign === "right" ? cardX + cardW - cardPad : CW / 2;
+        ctx.textAlign = cardTitleAlign === "center" ? "center" : cardTitleAlign === "left" ? "left" : "right";
+        titleLines.forEach((line, li) => ctx.fillText(line, titleAlign, curY + li * titleLineH));
+        curY += titleLines.length * titleLineH + 4 * xScale;
+        ctx.letterSpacing = "0px";
+
+        // Brand
+        ctx.font = `${7 * xScale}px Helvetica, Arial, sans-serif`;
+        ctx.fillStyle = "rgba(255,255,255,0.6)";
+        ctx.textAlign = cardBrandAlign === "left" ? "left" : "right";
+        ctx.fillText("VOODOO808.COM", cardBrandAlign === "left" ? cardX + cardPad : cardX + cardW - cardPad, curY);
+        curY += 10 * xScale;
+
+        // Waveform bars
+        const barCount = WAVE_BARS.length;
+        const waveH = 22 * xScale;
+        const gap = 1.5 * xScale;
+        const barW = (artW - gap * (barCount - 1)) / barCount;
+        for (let i = 0; i < barCount; i++) {
+          const bh = Math.max(2 * xScale, WAVE_BARS[i] * waveH);
+          const by = curY + (waveH - bh) / 2;
+          const bx = cardX + cardPad + i * (barW + gap);
+          const played = (i / barCount) < PLAYHEAD;
+          ctx.fillStyle = played ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.22)";
+          ctx.beginPath();
+          ctx.roundRect(bx, by, barW, bh, barW / 2);
+          ctx.fill();
+        }
+        // Playhead line
+        ctx.fillStyle = "rgba(255,255,255,0.85)";
+        ctx.fillRect(cardX + cardPad + PLAYHEAD * artW - 1.5, curY, 3, waveH);
+        curY += waveH + 3 * xScale;
+
+        // Time labels
+        const timeFontSize = 5 * xScale;
+        ctx.font = `${timeFontSize}px Helvetica, Arial, sans-serif`;
+        ctx.textAlign = "left";
+        ctx.fillStyle = "rgba(255,255,255,0.5)";
+        const playedTime = beatDuration ? formatDur(beatDuration * PLAYHEAD) : "–:––";
+        const totalTime = beatDuration ? formatDur(beatDuration) : "–:––";
+        ctx.fillText(playedTime, cardX + cardPad, curY);
+        ctx.textAlign = "right";
+        ctx.fillStyle = "rgba(255,255,255,0.35)";
+        ctx.fillText(totalTime, cardX + cardW - cardPad, curY);
+        ctx.textAlign = "center";
+      }
+
+      const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
+      if (!blob) return;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `voodoo808-story-${resolvedId}.png`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+    if (typeof ctx.roundRect === "function") {
+      ctx.roundRect(x, y, w, h, r);
+    } else {
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      ctx.lineTo(x + r, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
+    }
+  }
+
+  const durationStr = beatDuration ? formatDur(beatDuration) : null;
+  const playedStr = beatDuration ? formatDur(beatDuration * PLAYHEAD) : null;
 
   return (
     <div
@@ -241,26 +433,49 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
 
           {activeTab === "story" && (
             <div style={{ display: "flex", gap: "20px", alignItems: "flex-start" }}>
+              {/* Mini preview */}
               <div style={{ width: "120px", height: "213px", flexShrink: 0, borderRadius: "6px", overflow: "hidden", border: "1px solid #2a2a2a", position: "relative", background: bgMode === "color" ? storyBgColor : "#111" }}>
                 {bgMode === "artwork" && resolvedArtwork && (
-                  <img src={resolvedArtwork} alt="" crossOrigin="anonymous" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", filter: `blur(${blurAmount}px)`, transform: "scale(1.3)" }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                  <img src={resolvedArtwork} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", filter: `blur(${blurAmount}px)`, transform: "scale(1.3)" }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
                 )}
                 {bgMode === "artwork" && !resolvedArtwork && (
                   <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, #333 0%, #111 100%)" }} />
                 )}
                 <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${overlayOpacity})` }} />
 
-                {resolvedArtwork && (
-                  <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -58%)", width: "72%", aspectRatio: "1/1" }}>
-                    <img src={resolvedArtwork} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", borderRadius: "2px" }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
-                  </div>
-                )}
+                {/* Player card mini preview */}
+                {cardShow && resolvedArtwork && (() => {
+                  const PREV_W = 120;
+                  const PREV_H = 213;
+                  const CARD_MARGIN_MINI = 12;
+                  const cardWm = PREV_W - CARD_MARGIN_MINI * 2;
+                  const cardPadm = Math.round(cardPadding * (PREV_W / 216));
+                  const artWm = cardWm - cardPadm * 2;
+                  const cardHmEst = cardPadm + artWm + 40 + cardPadm;
+                  const centeredTopM = (PREV_H - cardHmEst) / 2 + Math.round(cardYOffset * (PREV_H / 384));
+                  const cardTopM = Math.max(5, centeredTopM);
+                  const cardRadM = Math.round(cardRadius * (PREV_W / 216));
+                  return (
+                    <div style={{ position: "absolute", left: `${CARD_MARGIN_MINI}px`, top: `${cardTopM}px`, width: `${cardWm}px`, borderRadius: `${cardRadM}px`, backdropFilter: `blur(${cardBlur}px)`, WebkitBackdropFilter: `blur(${cardBlur}px)`, background: `rgba(255,255,255,${cardBrightness})`, border: "1px solid rgba(255,255,255,0.18)", boxShadow: cardShadow ? `0 ${cardShadowAmount * 0.25}px ${cardShadowAmount * 0.5}px rgba(0,0,0,0.55)` : "none", padding: `${cardPadm}px`, boxSizing: "border-box" as const, display: "flex", flexDirection: "column" as const, gap: "2px" }}>
+                      <div style={{ width: `${artWm}px`, height: `${artWm}px`, borderRadius: `${Math.max(0, cardRadM - cardPadm)}px`, overflow: "hidden", background: "#1a1a1a", flexShrink: 0 }}>
+                        <img src={resolvedArtwork} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                      </div>
+                      <div style={{ fontSize: "4.5px", fontWeight: 700, color: "#fff", textAlign: cardTitleAlign, wordBreak: "break-word", lineHeight: 1.2, marginTop: "3px" }}>{resolvedTitle.toUpperCase()}</div>
+                      <div style={{ fontSize: "3.5px", color: "rgba(255,255,255,0.6)", textAlign: cardBrandAlign }}>VOODOO808.COM</div>
+                      <div style={{ marginTop: "2px", display: "flex", justifyContent: "space-between" }}>
+                        <span style={{ fontSize: "3px", color: "rgba(255,255,255,0.5)" }}>{playedStr || "–:––"}</span>
+                        <span style={{ fontSize: "3px", color: "rgba(255,255,255,0.35)" }}>{durationStr || "–:––"}</span>
+                      </div>
+                    </div>
+                  );
+                })()}
 
+                {/* Text layers (behind/above card based on Y position) */}
                 {storyLayers.filter(l => l.visible).map(layer => {
                   const yPct = ((layer.y ?? 280) / 384) * 100;
                   const base: CSSProperties = { position: "absolute", left: 0, right: 0, top: yPct + "%", textAlign: "center", transform: "translateY(-50%)", pointerEvents: "none" };
                   if (layer.mode === "image" && layer.imageUrl) {
-                    return <img key={layer.id} src={layer.imageUrl} alt="" style={{ ...base, height: "12px", width: "auto", maxWidth: "80%", margin: "0 auto", display: "block", objectFit: "contain" }} />;
+                    return <img key={layer.id} src={layer.imageUrl} alt="" style={{ ...base, height: "12px", width: "auto", maxWidth: "80%", margin: "0 auto", display: "block", objectFit: "contain", filter: logoInvert ? "invert(1)" : "none" }} />;
                   }
                   if (layer.id === "logo") return <div key="logo" style={{ ...base, fontSize: "7px", fontWeight: "700", color: storyTextColor, letterSpacing: "2px" }}>VOODOO808.COM</div>;
                   if (layer.id === "listening") return <div key="listening" style={{ ...base, fontSize: "5.5px", color: storyTextColor + "88", fontStyle: "italic" }}>{listeningText}</div>;
@@ -271,7 +486,7 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
               </div>
 
               <div style={{ flex: 1 }}>
-                <p style={{ fontSize: "12px", color: "#555", margin: "0 0 16px 0", lineHeight: 1.6 }}>Stáhni si kartu pro Instagram Story — sdílej ji jako příběh a odkaz na produkt.</p>
+                <p style={{ fontSize: "12px", color: "#555", margin: "0 0 16px 0", lineHeight: 1.6 }}>Stáhni si kartu pro Instagram Story — sdílej ji jako příběh a odkaz na produkt. Šablona se nastavuje v Admin → Instagram Stories.</p>
                 <button onClick={downloadStoryCard} disabled={isGenerating} style={{ width: "100%", padding: "11px", background: isGenerating ? "#222" : "#fff", color: isGenerating ? "#555" : "#000", border: "none", borderRadius: "4px", fontSize: "13px", fontWeight: "600", cursor: isGenerating ? "default" : "pointer", transition: "all 0.2s", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
                   {isGenerating ? (
                     <>

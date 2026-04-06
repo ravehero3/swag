@@ -346,7 +346,7 @@ function ProductDetail() {
       </div>
 
       <ShareModal
-        product={{ id: product.id, title: product.title, price: product.price, artwork_url: product.artwork_url }}
+        product={{ id: product.id, title: product.title, price: product.price, artwork_url: product.artwork_url, preview_url: product.preview_url }}
         productType={params?.type === "beat" ? "beat" : "sound_kit"}
         isOpen={shareOpen}
         onClose={() => setShareOpen(false)}
