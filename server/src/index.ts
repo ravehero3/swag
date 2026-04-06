@@ -369,18 +369,13 @@ app.get("/api/audio-proxy", async (req: any, res: any) => {
   }
 });
 
-// Image proxy — lets the browser draw B2 images on canvas (avoids CORS taint)
+// Image proxy — lets the browser draw any external image on canvas (avoids CORS taint)
 app.get("/api/image-proxy", async (req: any, res: any) => {
   const url = req.query.url as string;
   if (!url) return res.status(400).json({ error: "Missing url" });
-
-  const b2Endpoint = process.env.B2_ENDPOINT || "";
-  const b2PublicBase = process.env.B2_PUBLIC_BASE_URL || "";
-  const isAllowed =
-    url.includes("backblazeb2.com") ||
-    (b2Endpoint && url.includes(b2Endpoint)) ||
-    (b2PublicBase && url.startsWith(b2PublicBase));
-  if (!isAllowed) return res.status(403).json({ error: "URL not allowed" });
+  if (!url.startsWith("https://") && !url.startsWith("http://")) {
+    return res.status(403).json({ error: "Only http/https URLs allowed" });
+  }
 
   try {
     const upstream = await fetch(url, {

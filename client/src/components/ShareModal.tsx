@@ -20,7 +20,7 @@ interface ShareModalProps {
 
 function proxyImageUrl(url: string): string {
   if (!url) return url;
-  if (url.includes("backblazeb2.com") || url.includes("b2cdn") || url.includes("b2.us")) {
+  if (url.startsWith("http://") || url.startsWith("https://")) {
     return `/api/image-proxy?url=${encodeURIComponent(url)}`;
   }
   return url;
