@@ -189,7 +189,7 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
 
       // ── Text layers (logo, listening, title, website) ──
       ctx.textAlign = "center";
-      const PREV_H = 384;
+      const PREV_H = 470;
       const yScale = CH / PREV_H;
 
       for (const layer of storyLayers) {
@@ -249,15 +249,33 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
         const cardRad = cardRadius * xScale;
         const cardX = (CW - cardW) / 2;
 
-        const estimatedCardH_prev = cardPadding + (cardW_prev - cardPadding * 2) + 8 + 14 + 4 + 10 + 8 + 22 + 8 + 18 + 8 + 6 + cardPadding;
-        const centeredTop_prev = (PREV_H - estimatedCardH_prev) / 2 + cardYOffset;
-        const cardY = Math.max(10 * yScale, centeredTop_prev * yScale);
+        // Card height in canvas pixels — use xScale since card size is relative to card width
+        const artWpx = (cardW_prev - cardPadding * 2) * xScale;
+        const commentHpx = userComment ? (10 * xScale + 8 * xScale) : 0;
+        const estimatedCardH = cardPad + artWpx
+          + 10 * xScale   // after artwork
+          + 9 * xScale    // title (~1 line)
+          + 4 * xScale    // after title
+          + 7 * xScale    // brand
+          + 10 * xScale   // after brand
+          + 22 * xScale   // waveform
+          + 3 * xScale    // after waveform
+          + 5 * xScale    // time labels
+          + 8 * xScale    // after time labels
+          + 20 * xScale   // player controls
+          + 3 * xScale    // volume bar
+          + 8 * xScale    // after volume
+          + commentHpx    // optional comment bubble
+          + cardPad;      // bottom padding
+        const centeredCardY = (CH - estimatedCardH) / 2 + cardYOffset * yScale;
+        const cardY = Math.max(10 * yScale, centeredCardY);
+        const estimatedCardH_prev = estimatedCardH / xScale; // kept for card background draw below
 
         // Simulate glass: draw blurred artwork crop behind the card
         if (img) {
           ctx.save();
           ctx.beginPath();
-          roundRect(ctx, cardX, cardY, cardW, estimatedCardH_prev * yScale, cardRad);
+          roundRect(ctx, cardX, cardY, cardW, estimatedCardH, cardRad);
           ctx.clip();
           ctx.filter = `blur(${Math.round(cardBlur * 2)}px)`;
           const scale = Math.max(CW / img.naturalWidth, CH / img.naturalHeight) * 1.1;
@@ -271,16 +289,16 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
         // Glass fill overlay
         ctx.save();
         ctx.beginPath();
-        roundRect(ctx, cardX, cardY, cardW, estimatedCardH_prev * yScale, cardRad);
+        roundRect(ctx, cardX, cardY, cardW, estimatedCardH, cardRad);
         ctx.clip();
         ctx.fillStyle = `rgba(255,255,255,${cardBrightness})`;
-        ctx.fillRect(cardX, cardY, cardW, estimatedCardH_prev * yScale);
+        ctx.fillRect(cardX, cardY, cardW, estimatedCardH);
         ctx.restore();
 
         // Card border
         ctx.save();
         ctx.beginPath();
-        roundRect(ctx, cardX, cardY, cardW, estimatedCardH_prev * yScale, cardRad);
+        roundRect(ctx, cardX, cardY, cardW, estimatedCardH, cardRad);
         ctx.strokeStyle = "rgba(255,255,255,0.22)";
         ctx.lineWidth = 2;
         ctx.stroke();
@@ -293,7 +311,7 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
           ctx.shadowBlur = cardShadowAmount * xScale;
           ctx.shadowOffsetY = cardShadowAmount * 0.5 * xScale;
           ctx.beginPath();
-          roundRect(ctx, cardX, cardY, cardW, estimatedCardH_prev * yScale, cardRad);
+          roundRect(ctx, cardX, cardY, cardW, estimatedCardH, cardRad);
           ctx.fillStyle = "transparent";
           ctx.fill();
           ctx.restore();

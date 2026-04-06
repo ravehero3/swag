@@ -1655,6 +1655,8 @@ function Home() {
 
       {shareBeat && (
         <ShareModal
+          product={{ id: shareBeat.id, title: shareBeat.title, price: shareBeat.price, artwork_url: shareBeat.artwork_url, preview_url: shareBeat.preview_url }}
+          productType="beat"
           beatId={shareBeat.id}
           beatTitle={shareBeat.title}
           isOpen={true}
