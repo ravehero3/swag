@@ -669,49 +669,58 @@ function Home() {
         {highlightedBeat && (
           <div className="fade-in-section delay-2" style={{ marginBottom: "48px", display: "flex", justifyContent: "center", marginTop: "-116px", position: "relative", zIndex: 50 }}>
             <div style={{ display: "flex", gap: "48px", alignItems: "flex-start", marginBottom: "32px", width: "1000px", position: "relative", zIndex: 50 }}>
-              <div style={{ position: "relative", flexShrink: 0 }}>
+              <div style={{ position: "relative", flexShrink: 0 }} className="highlight-artwork-container">
+                <style>{`
+                  @keyframes hacPlayPulse {
+                    0%, 100% { box-shadow: 0 0 0 1px rgba(255,255,255,0.28), 0 8px 32px rgba(0,0,0,0.4), inset 0 1.5px 0 rgba(255,255,255,0.7), inset 0 -1px 0 rgba(0,0,0,0.15); }
+                    50% { box-shadow: 0 0 0 1px rgba(255,255,255,0.45), 0 8px 40px rgba(0,0,0,0.5), inset 0 1.5px 0 rgba(255,255,255,0.85), inset 0 -1px 0 rgba(0,0,0,0.15); }
+                  }
+                  .hac-play-overlay {
+                    position: absolute; top: 50%; left: 50%;
+                    width: 66px; height: 66px; border-radius: 50%; border: none;
+                    background: transparent; backdrop-filter: blur(1px); -webkit-backdrop-filter: blur(1px);
+                    box-shadow: 0 0 0 1px rgba(255,255,255,0.14);
+                    color: #fff; font-size: 20px; cursor: pointer;
+                    display: flex; align-items: center; justify-content: center;
+                    z-index: 4;
+                    opacity: 0; transform: translate(-50%, -50%) scale(0.82);
+                    transition: opacity 0.28s cubic-bezier(0.34,1.56,0.64,1), transform 0.28s cubic-bezier(0.34,1.56,0.64,1);
+                  }
+                  .highlight-artwork-container:hover .hac-play-overlay {
+                    opacity: 1; transform: translate(-50%, -50%) scale(1);
+                  }
+                  .hac-play-overlay:hover { transform: translate(-50%, -50%) scale(1.1) !important; }
+                  .hac-play-overlay:active { transform: translate(-50%, -50%) scale(0.93) !important; }
+                  .hac-play-overlay.is-playing { animation: hacPlayPulse 2s ease-in-out infinite; }
+                  .hac-blur-ring {
+                    position: absolute; top: 50%; left: 50%;
+                    width: 66px; height: 66px; border-radius: 50%;
+                    transform: translate(-50%, -50%) scale(0.82); pointer-events: none;
+                    backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+                    -webkit-mask-image: radial-gradient(circle at center, transparent 0%, transparent 28%, rgba(0,0,0,0.2) 40%, rgba(0,0,0,0.7) 60%, black 78%, black 100%);
+                    mask-image: radial-gradient(circle at center, transparent 0%, transparent 28%, rgba(0,0,0,0.2) 40%, rgba(0,0,0,0.7) 60%, black 78%, black 100%);
+                    opacity: 0; z-index: 3;
+                    transition: opacity 0.28s cubic-bezier(0.34,1.56,0.64,1), transform 0.28s cubic-bezier(0.34,1.56,0.64,1);
+                  }
+                  .highlight-artwork-container:hover .hac-blur-ring {
+                    opacity: 1; transform: translate(-50%, -50%) scale(1);
+                  }
+                  @media (max-width: 768px) {
+                    .hac-play-overlay { opacity: 1 !important; transform: translate(-50%, -50%) scale(1) !important; }
+                    .hac-blur-ring { opacity: 1 !important; transform: translate(-50%, -50%) scale(1) !important; }
+                  }
+                `}</style>
                 <img
                   src={highlightedBeat.artwork_url || "/uploads/artwork/metallic-logo.png"}
                   alt={highlightedBeat.title}
                   onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
-                  style={{ width: "200px", height: "200px", objectFit: "cover", border: "1px solid #666", borderRadius: "4px" }}
+                  style={{ width: "200px", height: "200px", objectFit: "cover", border: "1px solid #666", borderRadius: "4px", display: "block" }}
                 />
-                <div
-                  style={{
-                    position: "absolute",
-                    top: "50%",
-                    left: "50%",
-                    transform: "translate(-50%, -50%)",
-                    width: "40px",
-                    height: "40px",
-                    borderRadius: "50%",
-                    backdropFilter: "blur(10px) brightness(1.2)",
-                    background: "rgba(255, 255, 255, 0.1)",
-                    border: "1px solid rgba(255, 255, 255, 0.2)",
-                    pointerEvents: "none",
-                  }}
-                />
+                <div className="hac-blur-ring" />
                 <button
                   onClick={() => playBeat(highlightedBeat)}
-                  style={{
-                    position: "absolute",
-                    top: "50%",
-                    left: "50%",
-                    transform: "translate(-50%, -50%)",
-                    width: "40px",
-                    height: "40px",
-                    borderRadius: "50%",
-                    border: "2px solid #fff",
-                    background: currentBeat?.id === highlightedBeat.id && isPlaying ? "#fff" : "rgba(13,13,13,0.7)",
-                    color: currentBeat?.id === highlightedBeat.id && isPlaying ? "#000" : "#fff",
-                    fontSize: "16px",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    zIndex: 1,
-                    padding: "8px",
-                  }}
+                  className={`hac-play-overlay${currentBeat?.id === highlightedBeat.id && isPlaying ? " is-playing" : ""}`}
+                  style={{ paddingLeft: currentBeat?.id === highlightedBeat.id && isPlaying ? "0" : "3px" }}
                 >
                   {currentBeat?.id === highlightedBeat.id && isPlaying ? "⏸" : "▶"}
                 </button>
