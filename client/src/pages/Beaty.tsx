@@ -736,7 +736,7 @@ function Beaty() {
                   </span>
                   <span style={{ fontSize: "12px", fontFamily: "Work Sans, sans-serif", color: "#666" }}>•</span>
                   <span style={{ fontSize: "12px", fontFamily: "Work Sans, sans-serif", color: "#666" }}>
-                    {highlightedBeat.bpm}BPM
+                    {highlightedBeat.bpm}BPM{highlightedBeat.key ? ` - ${highlightedBeat.key}` : ""}
                   </span>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "8px" }}>
