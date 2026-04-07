@@ -159,6 +159,7 @@ function Beaty() {
   const [savedBeats, setSavedBeats] = useState<Set<number>>(new Set());
   const [poppingHearts, setPoppingHearts] = useState<Set<number>>(new Set());
   const [beatPlayCounts, setBeatPlayCounts] = useState<Record<number, number>>({});
+  const [swappedBeat, setSwappedBeat] = useState<Beat | null>(null);
   const [contractModalBeat, setContractModalBeat] = useState<Beat | null>(null);
   const [downloadingBeat, setDownloadingBeat] = useState<Beat | null>(null);
 
@@ -299,15 +300,16 @@ function Beaty() {
           audioRef.current?.play().then(() => setIsPlaying(true)).catch(() => {});
         }
       } else {
-        const allBeats = highlightedBeat
-          ? [highlightedBeat, ...beats.filter((b) => b.id !== highlightedBeat.id)]
+        const liveHighlight = swappedBeat ?? highlightedBeat;
+        const allBeats = liveHighlight
+          ? [liveHighlight, ...beats.filter((b) => b.id !== liveHighlight.id)]
           : beats;
         if (allBeats.length > 0) playBeat(allBeats[0]);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [currentBeat, isPlaying, beats, highlightedBeat]);
+  }, [currentBeat, isPlaying, beats, highlightedBeat, swappedBeat]);
 
   useEffect(() => {
     if (!currentBeat) return;
@@ -445,6 +447,13 @@ function Beaty() {
       audio.src = src;
       audio.load();
 
+      // Featured track swap: if we play a non-highlighted beat, it takes the featured spot
+      if (highlightedBeat && beat.id !== highlightedBeat.id) {
+        setSwappedBeat(beat);
+      } else {
+        setSwappedBeat(null);
+      }
+
       fetch(`/api/beats/${beat.id}/play`, { method: "POST" })
         .then(r => r.ok ? r.json() : null)
         .then(data => { if (data?.play_count !== undefined) setBeatPlayCounts(prev => ({ ...prev, [beat.id]: data.play_count })); })
@@ -489,7 +498,8 @@ function Beaty() {
 
   const handlePrevious = () => {
     if (!currentBeat) return;
-    const allBeats = highlightedBeat ? [highlightedBeat, ...beats.filter(b => b.id !== highlightedBeat.id)] : beats;
+    const liveHighlight = swappedBeat ?? highlightedBeat;
+    const allBeats = liveHighlight ? [liveHighlight, ...beats.filter(b => b.id !== liveHighlight.id)] : beats;
     const currentIndex = allBeats.findIndex(b => b.id === currentBeat.id);
     const prevIndex = currentIndex > 0 ? currentIndex - 1 : allBeats.length - 1;
     playBeat(allBeats[prevIndex]);
@@ -497,7 +507,8 @@ function Beaty() {
 
   const handleNext = () => {
     if (!currentBeat) return;
-    const allBeats = highlightedBeat ? [highlightedBeat, ...beats.filter(b => b.id !== highlightedBeat.id)] : beats;
+    const liveHighlight = swappedBeat ?? highlightedBeat;
+    const allBeats = liveHighlight ? [liveHighlight, ...beats.filter(b => b.id !== liveHighlight.id)] : beats;
     const currentIndex = allBeats.findIndex(b => b.id === currentBeat.id);
     
     if (isShuffling) {
@@ -602,7 +613,16 @@ function Beaty() {
   };
 
   const filteredBeats = beatLimit ? beats.slice(0, beatLimit) : beats;
-  const otherBeats = filteredBeats.filter((b) => b.id !== highlightedBeat?.id);
+  // If a beat from the list is playing, it swaps into the featured slot
+  const displayedHighlight = swappedBeat ?? highlightedBeat;
+  // The list excludes whatever is in the featured slot; if swapped, original highlighted comes back into the list
+  const otherBeats = (() => {
+    const base = filteredBeats.filter((b) => b.id !== displayedHighlight?.id);
+    if (swappedBeat && highlightedBeat && swappedBeat.id !== highlightedBeat.id) {
+      return [highlightedBeat, ...base];
+    }
+    return base;
+  })();
 
   if (beatsLoading) {
     return (
@@ -691,7 +711,7 @@ function Beaty() {
       </div>
       
       <div style={{ padding: "0 20px" }} className="fade-in-grid">
-        {highlightedBeat && (
+        {displayedHighlight && (
           <div className="fade-in-section delay-2" style={{ marginBottom: "48px", display: "flex", justifyContent: "center", marginTop: "-116px", position: "relative", zIndex: 50 }}>
             <div style={{ display: "flex", gap: "48px", alignItems: "flex-start", marginBottom: "32px", width: "1000px", position: "relative", zIndex: 50 }}>
               <div style={{ position: "relative", flexShrink: 0 }} className="highlight-artwork-container">
@@ -736,18 +756,18 @@ function Beaty() {
                   }
                 `}</style>
                 <img
-                  src={highlightedBeat.artwork_url || "/uploads/artwork/metallic-logo.png"}
-                  alt={highlightedBeat.title}
+                  src={displayedHighlight.artwork_url || "/uploads/artwork/metallic-logo.png"}
+                  alt={displayedHighlight.title}
                   onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
                   style={{ width: "200px", height: "200px", objectFit: "cover", border: "1px solid #666", borderRadius: "4px", display: "block" }}
                 />
                 <div className="hac-blur-ring" />
                 <button
-                  onClick={() => playBeat(highlightedBeat)}
-                  className={`hac-play-overlay${currentBeat?.id === highlightedBeat.id && isPlaying ? " is-playing" : ""}`}
-                  style={{ paddingLeft: currentBeat?.id === highlightedBeat.id && isPlaying ? "0" : "3px" }}
+                  onClick={() => playBeat(displayedHighlight)}
+                  className={`hac-play-overlay${currentBeat?.id === displayedHighlight.id && isPlaying ? " is-playing" : ""}`}
+                  style={{ paddingLeft: currentBeat?.id === displayedHighlight.id && isPlaying ? "0" : "3px" }}
                 >
-                  {currentBeat?.id === highlightedBeat.id && isPlaying ? "⏸" : "▶"}
+                  {currentBeat?.id === displayedHighlight.id && isPlaying ? "⏸" : "▶"}
                 </button>
               </div>
 
@@ -758,16 +778,16 @@ function Beaty() {
                   </span>
                   <span style={{ fontSize: "12px", fontFamily: "Work Sans, sans-serif", color: "#666" }}>•</span>
                   <span style={{ fontSize: "12px", fontFamily: "Work Sans, sans-serif", color: "#666" }}>
-                    {highlightedBeat.bpm}BPM{highlightedBeat.key ? ` - ${highlightedBeat.key}` : ""}
+                    {displayedHighlight.bpm}BPM{displayedHighlight.key ? ` - ${displayedHighlight.key}` : ""}
                   </span>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "8px" }}>
                   <h2 style={{ fontSize: "30px", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontWeight: "400", lineHeight: "1.1", position: "relative", zIndex: 10, margin: 0 }}>
-                    {highlightedBeat.title}
+                    {displayedHighlight.title}
                   </h2>
                   <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                     <button
-                      onClick={() => openContractModal(highlightedBeat)}
+                      onClick={() => openContractModal(displayedHighlight)}
                       className="btn-bounce"
                       style={{
                         padding: "8px 8px 8px 16px",
@@ -857,7 +877,7 @@ function Beaty() {
                         </svg>
                         <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "#fff", lineHeight: "1", right: "-10px", top: "-5px" }}>+</span>
                       </div>
-                      <span style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "8px" }}>{Math.floor(highlightedBeat.price)} CZK</span>
+                      <span style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "8px" }}>{Math.floor(displayedHighlight.price)} CZK</span>
                     </button>
                     <button
                       style={{
@@ -877,7 +897,7 @@ function Beaty() {
                       }}
                       onMouseEnter={(e) => (e.currentTarget.style.background = "#1a1a1a")}
                       onMouseLeave={(e) => (e.currentTarget.style.background = "#000")}
-                      onClick={() => downloadPreview(highlightedBeat)}
+                      onClick={() => downloadPreview(displayedHighlight)}
                       title="Download"
                     >
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2">
@@ -914,9 +934,9 @@ function Beaty() {
                         <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
                       </svg>
                     </button>
-                    {highlightedBeat.tags && highlightedBeat.tags.length > 0 && (
+                    {displayedHighlight.tags && displayedHighlight.tags.length > 0 && (
                       <div className="desktop-only" style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
-                        {highlightedBeat.tags.map((tag) => (
+                        {displayedHighlight.tags.map((tag) => (
                           <span
                             key={tag}
                             style={{
@@ -942,7 +962,7 @@ function Beaty() {
 
               {user && (
                 <button
-                  onClick={() => toggleSave(highlightedBeat)}
+                  onClick={() => toggleSave(displayedHighlight)}
                   className="heart-btn"
                   style={{
                     background: "transparent",
@@ -954,11 +974,11 @@ function Beaty() {
                   }}
                 >
                   <svg
-                    className={poppingHearts.has(highlightedBeat.id) ? "heart-pop" : ""}
+                    className={poppingHearts.has(displayedHighlight.id) ? "heart-pop" : ""}
                     width="24"
                     height="24"
                     viewBox="0 0 24 24"
-                    fill={savedBeats.has(highlightedBeat.id) ? "#fff" : "none"}
+                    fill={savedBeats.has(displayedHighlight.id) ? "#fff" : "none"}
                     stroke="#fff"
                     strokeWidth="2"
                   >
@@ -1122,7 +1142,7 @@ function Beaty() {
         )}
 
         <div ref={beatsListRef} className="scroll-fade-section" style={{ marginBottom: "48px", maxWidth: "1200px", margin: "0 auto", marginTop: "60px" }}>
-          {otherBeats.length === 0 && !highlightedBeat ? (
+          {otherBeats.length === 0 && !displayedHighlight ? (
             <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "8px" }}>
               {Array(4).fill(null).map((_, index) => (
                 <div
@@ -1245,11 +1265,9 @@ function Beaty() {
                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                   </svg>
                 </button>
-                {currentBeat?.id === beat.id && (
-                  <span style={{ fontSize: "10px", color: "#555", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", minWidth: "20px", letterSpacing: "0.02em", transition: "color 0.2s" }}>
-                    {(beatPlayCounts[beat.id] ?? 0).toLocaleString()}
-                  </span>
-                )}
+                <span style={{ fontSize: "10px", color: "#555", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", minWidth: "20px", letterSpacing: "0.02em", transition: "color 0.2s" }}>
+                  {(beatPlayCounts[beat.id] ?? 0).toLocaleString()}
+                </span>
               </div>
               <div style={{ flexShrink: 0 }}>
                 <img
