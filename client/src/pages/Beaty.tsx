@@ -23,6 +23,7 @@ interface Beat {
   tags?: string[];
   is_highlighted?: boolean;
   waveform_data?: number[];
+  play_count?: number;
 }
 
 
@@ -157,6 +158,7 @@ function Beaty() {
   const [isShuffling, setIsShuffling] = useState(false);
   const [savedBeats, setSavedBeats] = useState<Set<number>>(new Set());
   const [poppingHearts, setPoppingHearts] = useState<Set<number>>(new Set());
+  const [beatPlayCounts, setBeatPlayCounts] = useState<Record<number, number>>({});
   const [contractModalBeat, setContractModalBeat] = useState<Beat | null>(null);
   const [downloadingBeat, setDownloadingBeat] = useState<Beat | null>(null);
 
@@ -229,7 +231,13 @@ function Beaty() {
       fetch(url).then((res) => res.json()).catch(() => []),
       fetch("/api/beats/highlighted").then((res) => res.json()).catch(() => null),
     ]).then(([beatsData, highlightedData]) => {
-      if (Array.isArray(beatsData)) setBeats(beatsData);
+      if (Array.isArray(beatsData)) {
+        setBeats(beatsData);
+        const counts: Record<number, number> = {};
+        beatsData.forEach((b: Beat) => { counts[b.id] = b.play_count ?? 0; });
+        if (highlightedData && !highlightedData.error) counts[highlightedData.id] = highlightedData.play_count ?? 0;
+        setBeatPlayCounts(counts);
+      }
       if (highlightedData && !highlightedData.error) setHighlightedBeat(highlightedData);
       setBeatsLoading(false);
 
@@ -436,6 +444,11 @@ function Beaty() {
       setCurrentBeat(beat);
       audio.src = src;
       audio.load();
+
+      fetch(`/api/beats/${beat.id}/play`, { method: "POST" })
+        .then(r => r.ok ? r.json() : null)
+        .then(data => { if (data?.play_count !== undefined) setBeatPlayCounts(prev => ({ ...prev, [beat.id]: data.play_count })); })
+        .catch(() => {});
 
       try {
         await new Promise<void>((resolve, reject) => {
@@ -1189,7 +1202,7 @@ function Beaty() {
               }}
             >
               <div data-separator style={{ position: "absolute", bottom: 0, left: "80px", right: "16px", height: "1px", background: "#333", opacity: 1, transition: "opacity 0.15s ease" }} />
-              <div className="mobile-hide" style={{ position: "relative", display: "flex", alignItems: "center", gap: "16px", marginRight: "-4px" }}>
+              <div className="mobile-hide" style={{ position: "relative", display: "flex", alignItems: "center", gap: "6px", marginRight: "-4px" }}>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -1232,6 +1245,11 @@ function Beaty() {
                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                   </svg>
                 </button>
+                {currentBeat?.id === beat.id && (
+                  <span style={{ fontSize: "10px", color: "#555", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", minWidth: "20px", letterSpacing: "0.02em", transition: "color 0.2s" }}>
+                    {(beatPlayCounts[beat.id] ?? 0).toLocaleString()}
+                  </span>
+                )}
               </div>
               <div style={{ flexShrink: 0 }}>
                 <img

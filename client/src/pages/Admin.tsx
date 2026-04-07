@@ -2539,7 +2539,7 @@ function SEOTab({ settings, onRefresh }: any) {
   );
 }
 
-type IGLayer = { id: string; visible: boolean; y: number; mode: "text" | "image"; imageUrl: string | null };
+type IGLayer = { id: string; visible: boolean; y: number; mode: "text" | "image"; imageUrl: string | null; align?: "left" | "center" | "right" };
 
 const IG_STORY_DEFAULT_LAYERS: IGLayer[] = [
   { id: "logo",      visible: true, y: 42,  mode: "text", imageUrl: null },
@@ -2553,6 +2553,20 @@ const IG_LAYER_LABELS: Record<string, string> = {
   listening: "Text nad názvem",
   title: "Název beatu / kitu",
   website: "Text webu",
+};
+
+const ZVUKY_PREV_H = 630;
+
+const IG_ZVUKY_DEFAULT_LAYERS: IGLayer[] = [
+  { id: "logo",    visible: true, y: 40,  mode: "text", imageUrl: null, align: "center" },
+  { id: "title",   visible: true, y: 450, mode: "text", imageUrl: null, align: "center" },
+  { id: "website", visible: true, y: 480, mode: "text", imageUrl: null, align: "center" },
+];
+
+const IG_ZVUKY_LAYER_LABELS: Record<string, string> = {
+  logo: "Logo",
+  title: "Název sound kitu",
+  website: "Text webu (VOODOO808.COM)",
 };
 
 // Deterministic waveform bar heights for visual preview (0–1) — 60 bars, organic hip-hop shape

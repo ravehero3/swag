@@ -23,7 +23,7 @@ const router = Router();
 router.get("/", async (req: Request, res: Response) => {
   try {
     const { search, tag } = req.query;
-    let query = "SELECT id, title, artist, bpm, key, price, preview_url, artwork_url, trackout_url, tags, is_highlighted, waveform_data, created_at FROM beats WHERE is_published = true";
+    let query = "SELECT id, title, artist, bpm, key, price, preview_url, artwork_url, trackout_url, tags, is_highlighted, waveform_data, play_count, created_at FROM beats WHERE is_published = true";
     const params: any[] = [];
     
     if (tag) {
@@ -192,6 +192,18 @@ router.post("/bulk-delete", requireAdmin, async (req: Request, res: Response) =>
     res.json({ message: `${ids.length} beatů smazáno` });
   } catch (error) {
     res.status(500).json({ error: "Chyba při mazání beatů" });
+  }
+});
+
+router.post("/:id/play", async (req: Request, res: Response) => {
+  try {
+    const beatId = parseInt(req.params.id, 10);
+    if (isNaN(beatId)) return res.status(400).json({ error: "Invalid beat id" });
+    await pool.query("UPDATE beats SET play_count = COALESCE(play_count, 0) + 1 WHERE id = $1", [beatId]);
+    const result = await pool.query("SELECT play_count FROM beats WHERE id = $1", [beatId]);
+    res.json({ play_count: result.rows[0]?.play_count ?? 0 });
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při aktualizaci počtu přehrání" });
   }
 });
 
