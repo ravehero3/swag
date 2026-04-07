@@ -150,17 +150,9 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
         if (!settled) { settled = true; resolve(val); }
       };
       img.onload = () => settle(img);
-      img.onerror = () => {
-        if (src.startsWith("/api/image-proxy")) {
-          const img2 = new Image();
-          img2.onload = () => settle(img2);
-          img2.onerror = () => settle(null);
-          img2.src = src;
-          setTimeout(() => settle(null), 8000);
-        } else {
-          settle(null);
-        }
-      };
+      // Never fall back to a non-CORS load — that would taint the canvas
+      // and crash drawImage mid-render. Just resolve null and use the placeholder.
+      img.onerror = () => settle(null);
       img.src = src;
       setTimeout(() => settle(null), 10000);
     });

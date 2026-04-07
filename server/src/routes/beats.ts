@@ -48,9 +48,10 @@ router.get("/", async (req: Request, res: Response) => {
 router.get("/highlighted", async (_req: Request, res: Response) => {
   try {
     const result = await pool.query(
-      "SELECT id, title, artist, bpm, key, price, preview_url, artwork_url, trackout_url, tags, is_highlighted, waveform_data, created_at FROM beats WHERE is_highlighted = true AND is_published = true LIMIT 1"
+      "SELECT id, title, artist, bpm, key, price, preview_url, file_url, artwork_url, trackout_url, tags, is_highlighted, is_published, waveform_data, created_at FROM beats WHERE is_highlighted = true AND is_published = true LIMIT 1"
     );
-    res.set("Cache-Control", "public, max-age=300, stale-while-revalidate=60");
+    // No caching — highlighted status must always be fresh so admin changes are visible immediately
+    res.set("Cache-Control", "no-cache, no-store, must-revalidate");
     res.json(result.rows[0] || null);
   } catch (error) {
     res.status(500).json({ error: "Chyba při načítání zvýrazněného beatu" });
