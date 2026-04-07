@@ -136,12 +136,14 @@ router.put("/:id", requireAdmin, async (req: Request, res: Response) => {
     }
     
     const beatTags = Array.isArray(tags) ? tags.slice(0, 3) : [];
+    // $14 is previewUrl again — avoids PostgreSQL "inconsistent types" error when $6
+    // appears in both a SET position and a CASE comparison in the same query.
     const result = await pool.query(
-      `UPDATE beats SET title = $1, artist = $2, bpm = $3, key = $4, price = $5, 
+      `UPDATE beats SET title = $1, artist = $2, bpm = $3, key = $4, price = $5,
        preview_url = $6, file_url = $7, artwork_url = $8, trackout_url = $9, tags = $10, is_published = $11, is_highlighted = $12,
-       waveform_data = CASE WHEN $6 != preview_url THEN NULL ELSE waveform_data END
+       waveform_data = CASE WHEN $14::varchar IS DISTINCT FROM preview_url THEN NULL ELSE waveform_data END
        WHERE id = $13 RETURNING *`,
-      [title, artist, bpm, key, price, previewUrl, fileUrl, artworkUrl, trackoutUrl || null, beatTags, isPublished, isHighlighted, req.params.id]
+      [title, artist, bpm, key, price, previewUrl, fileUrl, artworkUrl, trackoutUrl || null, beatTags, isPublished, isHighlighted, req.params.id, previewUrl]
     );
     const beat = result.rows[0];
     res.json(beat);
@@ -149,6 +151,7 @@ router.put("/:id", requireAdmin, async (req: Request, res: Response) => {
       triggerWaveformComputation(beat.id, previewUrl).catch(() => {});
     }
   } catch (error) {
+    console.error("Error updating beat:", error);
     res.status(500).json({ error: "Chyba při aktualizaci beatu" });
   }
 });
