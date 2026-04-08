@@ -2737,7 +2737,7 @@ function IGStoriesTab({ settings, onRefresh }: any) {
 
   const setZvukyLayers = (nl: IGLayer[]) => handleZvukyChange("ig_zvuky_layers", JSON.stringify(nl));
   const updateZvukyLayer = (i: number, patch: Partial<IGLayer>) => setZvukyLayers(zvukyLayers.map((l, idx) => idx === i ? { ...l, ...patch } : l));
-  const moveZvukyLayerY = (i: number, dir: "up" | "down") => updateZvukyLayer(i, { y: zvukyLayers[i].y + (dir === "up" ? -10 : 10) });
+  const moveZvukyLayerY = (i: number, dir: "up" | "down") => updateZvukyLayer(i, { y: zvukyLayers[i].y + (dir === "up" ? -20 : 20) });
 
   const handleZvukyLogoUpload = async (file: File) => {
     setZvukyLogoUploading(true);
@@ -3078,7 +3078,7 @@ function IGStoriesTab({ settings, onRefresh }: any) {
                       <div style={{ fontSize: "5px", color: "rgba(255,255,255,0.5)", fontFamily: "Inter,sans-serif", marginBottom: "1px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         {previewComment.username || previewComment.email?.split("@")[0] || "user"}
                       </div>
-                      <div style={{ fontSize: "5.5px", color: "rgba(255,255,255,0.85)", fontFamily: "Inter,sans-serif", lineHeight: 1.3, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as any }}>
+                      <div style={{ fontSize: "5.5px", color: "rgba(255,255,255,0.85)", fontFamily: "Inter,sans-serif", lineHeight: 1.3, wordBreak: "break-word" }}>
                         {previewComment.text}
                       </div>
                     </div>
@@ -3344,8 +3344,8 @@ function IGStoriesTab({ settings, onRefresh }: any) {
                 const ax = (ZVUKY_PREV_W_DISPLAY - artSide) / 2;
                 const ay = (ZVUKY_PREV_H_DISPLAY - artSide) / 2 - Math.round(ZVUKY_PREV_H_DISPLAY * 0.06);
                 return (
-                  <div style={{ position: "absolute", left: `${ax}px`, top: `${ay}px`, width: `${artSide}px`, height: `${artSide}px`, borderRadius: "6px", overflow: "hidden" }}>
-                    <img src={zvukyPreviewArtwork} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  <div style={{ position: "absolute", left: `${ax}px`, top: `${ay}px`, width: `${artSide}px`, height: `${artSide}px`, borderRadius: "6px", overflow: "hidden", background: "#0a0a0a" }}>
+                    <img src={zvukyPreviewArtwork} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
                   </div>
                 );
               })()}
@@ -3363,12 +3363,24 @@ function IGStoriesTab({ settings, onRefresh }: any) {
               })()}
               {zvukyLayers.map(layer => {
                 if (!layer.visible) return null;
-                const style: React.CSSProperties = { position: "absolute", left: 0, right: 0, top: `${(layer.y ?? 280) * ZVUKY_PREV_H_DISPLAY / ZVUKY_PREV_H}px`, textAlign: "center" as const, pointerEvents: "none" };
+                const lAlign = (layer.align ?? "center") as "left" | "center" | "right";
+                const adminMargin = "8px";
+                const style: React.CSSProperties = {
+                  position: "absolute",
+                  top: `${(layer.y ?? 280) * ZVUKY_PREV_H_DISPLAY / ZVUKY_PREV_H}px`,
+                  pointerEvents: "none",
+                  transform: "translateY(-50%)",
+                  ...(lAlign === "center" ? { left: 0, right: 0, textAlign: "center" as const } :
+                      lAlign === "left" ? { left: adminMargin, right: "auto", textAlign: "left" as const } :
+                      { right: adminMargin, left: "auto", textAlign: "right" as const }),
+                };
                 if (layer.mode === "image" && layer.imageUrl) {
-                  return <img key={layer.id} src={layer.imageUrl} alt="" style={{ ...style, height: "14px", width: "auto", maxWidth: "80%", margin: "0 auto", display: "block", objectFit: "contain", filter: zvukyLogoInvert ? "invert(1)" : "none" }} />;
+                  const imgStyle: React.CSSProperties = { height: "14px", width: "auto", objectFit: "contain" as const, display: "block", filter: zvukyLogoInvert ? "invert(1)" : "none",
+                    ...(lAlign === "center" ? { margin: "0 auto", maxWidth: "80%" } : lAlign === "left" ? { marginRight: "auto" } : { marginLeft: "auto" }) };
+                  return <img key={layer.id} src={layer.imageUrl} alt="" style={{ ...style, ...imgStyle }} />;
                 }
                 if (layer.id === "logo") return <div key="logo" style={{ ...style, fontSize: "9px", fontWeight: 700, color: zvukyTextColor, letterSpacing: "2px" }}>VOODOO808.COM</div>;
-                if (layer.id === "title") return <div key="title" style={{ ...style, fontSize: "14px", fontWeight: 700, color: zvukyTextColor, letterSpacing: "0.04em", lineHeight: 1.2 }}>{zvukyPreviewTitle.toUpperCase()}</div>;
+                if (layer.id === "title") return <div key="title" style={{ ...style, fontSize: "14px", fontWeight: 700, color: zvukyTextColor, letterSpacing: "0.04em", lineHeight: 1.2, wordBreak: "break-word" as const }}>{zvukyPreviewTitle.toUpperCase()}</div>;
                 if (layer.id === "website") return <div key="website" style={{ ...style, fontSize: "7px", color: zvukyTextColor + "88" }}>VOODOO808.COM</div>;
                 return null;
               })}
@@ -3443,6 +3455,11 @@ function IGStoriesTab({ settings, onRefresh }: any) {
                       <span style={{ fontSize: "10px", color: "#444", whiteSpace: "nowrap" }}>Y: {layer.y}px</span>
                       <button onClick={() => moveZvukyLayerY(i, "up")} style={{ background: "transparent", border: "1px solid #2a2a2a", borderRadius: "3px", color: "#666", cursor: "pointer", padding: "2px 7px", fontSize: "10px", lineHeight: 1.4, fontFamily: "inherit" }}>▲</button>
                       <button onClick={() => moveZvukyLayerY(i, "down")} style={{ background: "transparent", border: "1px solid #2a2a2a", borderRadius: "3px", color: "#666", cursor: "pointer", padding: "2px 7px", fontSize: "10px", lineHeight: 1.4, fontFamily: "inherit" }}>▼</button>
+                      {(["left", "center", "right"] as const).map(al => (
+                        <button key={al} onClick={() => updateZvukyLayer(i, { align: al })} title={al === "left" ? "Vlevo" : al === "center" ? "Na střed" : "Vpravo"} style={{ background: (layer.align ?? "center") === al ? "#222" : "transparent", border: "1px solid " + ((layer.align ?? "center") === al ? "#555" : "#2a2a2a"), borderRadius: "3px", color: (layer.align ?? "center") === al ? "#ccc" : "#444", cursor: "pointer", padding: "2px 5px", fontSize: "9px", lineHeight: 1.4, fontFamily: "inherit" }}>
+                          {al === "left" ? "◁" : al === "center" ? "◇" : "▷"}
+                        </button>
+                      ))}
                       <button onClick={() => updateZvukyLayer(i, { visible: !layer.visible })} style={{ background: "transparent", border: "none", color: layer.visible ? "#aaa" : "#3a3a3a", cursor: "pointer", padding: "2px 4px", display: "flex", alignItems: "center" }}>
                         {layer.visible ? (
                           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>

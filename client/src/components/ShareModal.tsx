@@ -94,19 +94,19 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
   const zvukyTextColor = settings?.ig_zvuky_text_color || "#ffffff";
   const zvukyShowHoverCard = settings?.ig_zvuky_show_hover_card === "true";
   const zvukyLogoInvert = settings?.ig_zvuky_logo_invert === "true";
-  const zvukyLayers: { id: string; visible: boolean; y?: number; mode?: string; imageUrl?: string | null }[] = (() => {
+  const zvukyLayers: { id: string; visible: boolean; y?: number; mode?: string; imageUrl?: string | null; align?: string }[] = (() => {
     try {
       const parsed = JSON.parse(settings?.ig_zvuky_layers || "null");
       return Array.isArray(parsed) ? parsed : [
-        { id: "logo", visible: true, y: 40, mode: "text", imageUrl: null },
-        { id: "title", visible: true, y: 450, mode: "text", imageUrl: null },
-        { id: "website", visible: true, y: 480, mode: "text", imageUrl: null },
+        { id: "logo", visible: true, y: 40, mode: "text", imageUrl: null, align: "center" },
+        { id: "title", visible: true, y: 450, mode: "text", imageUrl: null, align: "center" },
+        { id: "website", visible: true, y: 480, mode: "text", imageUrl: null, align: "center" },
       ];
     } catch {
       return [
-        { id: "logo", visible: true, y: 40, mode: "text", imageUrl: null },
-        { id: "title", visible: true, y: 450, mode: "text", imageUrl: null },
-        { id: "website", visible: true, y: 480, mode: "text", imageUrl: null },
+        { id: "logo", visible: true, y: 40, mode: "text", imageUrl: null, align: "center" },
+        { id: "title", visible: true, y: 450, mode: "text", imageUrl: null, align: "center" },
+        { id: "website", visible: true, y: 480, mode: "text", imageUrl: null, align: "center" },
       ];
     }
   })();
@@ -738,15 +738,19 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
       const artY = (CH - artMaxSide) / 2 - Math.round(CH * 0.06);
 
       if (img) {
-        const src = Math.min(img.naturalWidth, img.naturalHeight);
-        const sx = (img.naturalWidth - src) / 2;
-        const sy = (img.naturalHeight - src) / 2;
+        const iW = img.naturalWidth, iH = img.naturalHeight;
+        const scale = Math.min(artMaxSide / iW, artMaxSide / iH);
+        const dw = iW * scale, dh = iH * scale;
+        const dx = artX + (artMaxSide - dw) / 2;
+        const dy = artY + (artMaxSide - dh) / 2;
         ctx.save();
         ctx.beginPath();
         if (ctx.roundRect) ctx.roundRect(artX, artY, artMaxSide, artMaxSide, 24);
         else ctx.rect(artX, artY, artMaxSide, artMaxSide);
         ctx.clip();
-        ctx.drawImage(img, sx, sy, src, src, artX, artY, artMaxSide, artMaxSide);
+        ctx.fillStyle = "#0a0a0a";
+        ctx.fillRect(artX, artY, artMaxSide, artMaxSide);
+        ctx.drawImage(img, 0, 0, iW, iH, dx, dy, dw, dh);
         ctx.restore();
       } else {
         ctx.fillStyle = "#1a1a1a";
@@ -803,11 +807,13 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
       // Text layers (logo, title, website)
       const ZVUKY_PREV_H = 630;
       const yScale = CH / ZVUKY_PREV_H;
-      ctx.textAlign = "center";
+      const ZVUKY_MARGIN = 90;
 
       for (const layer of zvukyLayers) {
         if (!layer.visible) continue;
         const layerY = (typeof layer.y === "number" ? layer.y : 280) * yScale;
+        const layerAlign = (layer.align || "center") as "left" | "center" | "right";
+        const textX = layerAlign === "left" ? ZVUKY_MARGIN : layerAlign === "right" ? CW - ZVUKY_MARGIN : CW / 2;
 
         if (layer.mode === "image" && layer.imageUrl) {
           const logoProxied = proxyImageUrl(layer.imageUrl);
@@ -816,30 +822,34 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
             const maxH = 90;
             const s = maxH / logoImg.naturalHeight;
             const w = logoImg.naturalWidth * s;
+            const imgX = layerAlign === "left" ? ZVUKY_MARGIN : layerAlign === "right" ? CW - ZVUKY_MARGIN - w : (CW - w) / 2;
             if (zvukyLogoInvert) { ctx.save(); ctx.filter = "invert(1)"; }
-            ctx.drawImage(logoImg, (CW - w) / 2, layerY - maxH / 2, w, maxH);
+            ctx.drawImage(logoImg, imgX, layerY - maxH / 2, w, maxH);
             if (zvukyLogoInvert) ctx.restore();
           }
           continue;
         }
 
+        ctx.textAlign = layerAlign === "center" ? "center" : layerAlign === "left" ? "left" : "right";
         ctx.letterSpacing = "0px";
         if (layer.id === "logo") {
           ctx.font = "bold 52px Helvetica, Arial, sans-serif";
           ctx.fillStyle = zvukyTextColor + "cc";
           ctx.letterSpacing = "8px";
-          ctx.fillText("VOODOO808.COM", CW / 2, layerY);
+          ctx.fillText("VOODOO808.COM", textX, layerY);
           ctx.letterSpacing = "0px";
         } else if (layer.id === "title") {
           ctx.font = "bold 96px Helvetica, Arial, sans-serif";
           ctx.fillStyle = zvukyTextColor;
-          const titleLines = wrapText(ctx, resolvedTitle.toUpperCase(), 900);
-          titleLines.forEach((line, li) => ctx.fillText(line, CW / 2, layerY + li * 112));
+          const maxTitleW = layerAlign === "center" ? CW - ZVUKY_MARGIN * 2 : CW - ZVUKY_MARGIN * 2;
+          const titleLines = wrapText(ctx, resolvedTitle.toUpperCase(), maxTitleW);
+          titleLines.forEach((line, li) => ctx.fillText(line, textX, layerY + li * 112));
         } else if (layer.id === "website") {
           ctx.font = "38px Helvetica, Arial, sans-serif";
           ctx.fillStyle = zvukyTextColor + "99";
-          ctx.fillText("VOODOO808.COM", CW / 2, layerY);
+          ctx.fillText("VOODOO808.COM", textX, layerY);
         }
+        ctx.textAlign = "center";
       }
 
       const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
@@ -914,8 +924,8 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
                     {resolvedArtwork && <img src={resolvedArtwork} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", filter: `blur(${zvukyBgBlur}px)`, transform: "scale(1.3)" }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />}
                     <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${zvukyOverlayOpacity})` }} />
                     {resolvedArtwork && (
-                      <div style={{ position: "absolute", left: `${artXm}px`, top: `${artYm}px`, width: `${artSizeM}px`, height: `${artSizeM}px`, borderRadius: "4px", overflow: "hidden" }}>
-                        <img src={resolvedArtwork} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      <div style={{ position: "absolute", left: `${artXm}px`, top: `${artYm}px`, width: `${artSizeM}px`, height: `${artSizeM}px`, borderRadius: "4px", overflow: "hidden", background: "#0a0a0a" }}>
+                        <img src={resolvedArtwork} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
                       </div>
                     )}
                     {zvukyShowHoverCard && (
@@ -927,12 +937,24 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
                     )}
                     {zvukyLayers.filter(l => l.visible).map(layer => {
                       const yPct = ((layer.y ?? 280) / ZVUKY_PREV_H) * 100;
-                      const base: CSSProperties = { position: "absolute", left: 0, right: 0, top: yPct + "%", textAlign: "center" as const, transform: "translateY(-50%)", pointerEvents: "none" as const };
+                      const lAlign = (layer.align || "center") as "left" | "center" | "right";
+                      const miniMargin = "8px";
+                      const base: CSSProperties = {
+                        position: "absolute",
+                        top: yPct + "%",
+                        transform: "translateY(-50%)",
+                        pointerEvents: "none" as const,
+                        ...(lAlign === "center" ? { left: 0, right: 0, textAlign: "center" as const } :
+                            lAlign === "left" ? { left: miniMargin, right: "auto", textAlign: "left" as const } :
+                            { right: miniMargin, left: "auto", textAlign: "right" as const }),
+                      };
                       if (layer.mode === "image" && layer.imageUrl) {
-                        return <img key={layer.id} src={layer.imageUrl} alt="" style={{ ...base, height: "10px", width: "auto", maxWidth: "75%", margin: "0 auto", display: "block", objectFit: "contain", filter: zvukyLogoInvert ? "invert(1)" : "none" }} />;
+                        const imgStyle: CSSProperties = { height: "10px", width: "auto", objectFit: "contain", filter: zvukyLogoInvert ? "invert(1)" : "none", display: "block",
+                          ...(lAlign === "center" ? { margin: "0 auto", maxWidth: "75%" } : lAlign === "left" ? { marginRight: "auto" } : { marginLeft: "auto" }) };
+                        return <img key={layer.id} src={layer.imageUrl} alt="" style={{ ...base, ...imgStyle }} />;
                       }
                       if (layer.id === "logo") return <div key="logo" style={{ ...base, fontSize: "6px", fontWeight: "700", color: zvukyTextColor, letterSpacing: "1.5px" }}>VOODOO808.COM</div>;
-                      if (layer.id === "title") return <div key="title" style={{ ...base, fontSize: "9px", fontWeight: "700", color: zvukyTextColor, letterSpacing: "0.04em", lineHeight: 1.15 }}>{resolvedTitle.toUpperCase()}</div>;
+                      if (layer.id === "title") return <div key="title" style={{ ...base, fontSize: "9px", fontWeight: "700", color: zvukyTextColor, letterSpacing: "0.04em", lineHeight: 1.15, wordBreak: "break-word" as const }}>{resolvedTitle.toUpperCase()}</div>;
                       if (layer.id === "website") return <div key="website" style={{ ...base, fontSize: "5px", color: zvukyTextColor + "88", letterSpacing: "0.4px" }}>VOODOO808.COM</div>;
                       return null;
                     })}
