@@ -2701,6 +2701,8 @@ function IGStoriesTab({ settings, onRefresh }: any) {
     ig_zvuky_text_color: settings.ig_zvuky_text_color || "#ffffff",
     ig_zvuky_layers: settings.ig_zvuky_layers || JSON.stringify(IG_ZVUKY_DEFAULT_LAYERS),
     ig_zvuky_show_hover_card: settings.ig_zvuky_show_hover_card || "false",
+    ig_zvuky_hover_show_sounds: settings.ig_zvuky_hover_show_sounds || "false",
+    ig_zvuky_show_artwork_bg: settings.ig_zvuky_show_artwork_bg || "false",
     ig_zvuky_logo_url: settings.ig_zvuky_logo_url || "",
     ig_zvuky_logo_invert: settings.ig_zvuky_logo_invert || "false",
   });
@@ -2933,6 +2935,8 @@ function IGStoriesTab({ settings, onRefresh }: any) {
   const zvukyOverlay = parseFloat(zvukyValues.ig_zvuky_overlay_opacity);
   const zvukyTextColor = zvukyValues.ig_zvuky_text_color;
   const zvukyShowHoverCard = zvukyValues.ig_zvuky_show_hover_card === "true";
+  const zvukyHoverShowSounds = zvukyValues.ig_zvuky_hover_show_sounds === "true";
+  const zvukyShowArtworkBg = zvukyValues.ig_zvuky_show_artwork_bg === "true";
   const zvukyLogoUrl = zvukyValues.ig_zvuky_logo_url;
   const zvukyLogoInvert = zvukyValues.ig_zvuky_logo_invert === "true";
   const zvukyPreviewArtwork = previewKit?.artwork_url || "";
@@ -3344,20 +3348,34 @@ function IGStoriesTab({ settings, onRefresh }: any) {
                 const ax = (ZVUKY_PREV_W_DISPLAY - artSide) / 2;
                 const ay = (ZVUKY_PREV_H_DISPLAY - artSide) / 2 - Math.round(ZVUKY_PREV_H_DISPLAY * 0.06);
                 return (
-                  <div style={{ position: "absolute", left: `${ax}px`, top: `${ay}px`, width: `${artSide}px`, height: `${artSide}px`, borderRadius: "6px", overflow: "hidden", background: "#0a0a0a" }}>
-                    <img src={zvukyPreviewArtwork} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
-                  </div>
+                  <>
+                    {/* White glow beneath artwork */}
+                    <div style={{ position: "absolute", left: `${ax}px`, top: `${ay + artSide * 0.7}px`, width: `${artSide}px`, height: `${artSide * 0.5}px`, background: "radial-gradient(ellipse at center top, rgba(255,255,255,0.35) 0%, transparent 70%)", pointerEvents: "none" }} />
+                    <div style={{ position: "absolute", left: `${ax}px`, top: `${ay}px`, width: `${artSide}px`, height: `${artSide}px`, borderRadius: "6px", overflow: "hidden", background: zvukyShowArtworkBg ? "#0a0a0a" : "transparent" }}>
+                      <img src={zvukyPreviewArtwork} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                    </div>
+                  </>
                 );
               })()}
               {zvukyShowHoverCard && zvukyPreviewArtwork && (() => {
                 const artSide = Math.round(ZVUKY_PREV_W_DISPLAY * 0.7);
                 const ax = (ZVUKY_PREV_W_DISPLAY - artSide) / 2;
                 const ay = (ZVUKY_PREV_H_DISPLAY - artSide) / 2 - Math.round(ZVUKY_PREV_H_DISPLAY * 0.06);
+                const pillTop = ay + artSide + 6;
+                const pillLeft = ax;
                 return (
-                  <div style={{ position: "absolute", left: `${ax}px`, top: `${ay + artSide + 5}px`, width: `${artSide}px`, borderRadius: "4px", background: "rgba(10,10,10,0.9)", border: "1px solid rgba(255,255,255,0.15)", padding: "5px 8px", boxSizing: "border-box" }}>
-                    <div style={{ fontSize: "6px", color: "rgba(255,255,255,0.5)", marginBottom: "2px" }}>SOUND KIT</div>
-                    <div style={{ fontSize: "8px", fontWeight: 700, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{zvukyPreviewTitle.toUpperCase()}</div>
-                    {previewKit?.price !== undefined && <div style={{ fontSize: "6px", color: "rgba(255,255,255,0.65)", marginTop: "2px" }}>{previewKit.is_free ? "ZDARMA" : `${previewKit.price} CZK`}</div>}
+                  <div style={{ position: "absolute", left: `${pillLeft}px`, top: `${pillTop}px`, width: `${artSide}px`, boxSizing: "border-box" }}>
+                    {/* V-arrow caret */}
+                    <div style={{ position: "relative", width: "10px", height: "10px", background: "rgba(10,10,10,0.92)", border: "1px solid #333", borderRight: "none", borderBottom: "none", transform: "rotate(45deg)", margin: "0 auto", marginBottom: "-5px", zIndex: 1 }} />
+                    {/* Pill body */}
+                    <div style={{ background: "rgba(10,10,10,0.92)", border: "1px solid #333", borderRadius: "5px", padding: "5px 7px", backdropFilter: "blur(8px)", position: "relative", zIndex: 2 }}>
+                      <div style={{ fontSize: "5px", color: "#666", marginBottom: "2px" }}>SOUND KIT</div>
+                      <div style={{ fontSize: "7px", fontWeight: 700, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: "2px" }}>{zvukyPreviewTitle}</div>
+                      {zvukyHoverShowSounds
+                        ? previewKit?.sound_count != null && <div style={{ fontSize: "5.5px", color: "#999" }}>{previewKit.sound_count} zvuků</div>
+                        : previewKit?.price !== undefined && <div style={{ fontSize: "5.5px", color: "#999" }}>{previewKit.is_free ? "ZDARMA" : `${previewKit.price} CZK`}</div>
+                      }
+                    </div>
                   </div>
                 );
               })()}
@@ -3412,16 +3430,40 @@ function IGStoriesTab({ settings, onRefresh }: any) {
               </div>
             </div>
 
+            {/* Artwork bg + glow */}
+            <div>
+              <div style={sectionHeadStyle}>Artwork</div>
+              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                <button
+                  onClick={() => handleZvukyChange("ig_zvuky_show_artwork_bg", zvukyShowArtworkBg ? "false" : "true")}
+                  style={{ padding: "6px 14px", background: zvukyShowArtworkBg ? "#fff" : "#0d0d0d", color: zvukyShowArtworkBg ? "#000" : "#555", border: "1px solid " + (zvukyShowArtworkBg ? "#fff" : "#333"), borderRadius: "3px", fontSize: "12px", cursor: "pointer", fontFamily: "inherit" }}
+                >
+                  {zvukyShowArtworkBg ? "✓ Tmavé pozadí artwork" : "Tmavé pozadí artwork"}
+                </button>
+              </div>
+              <p style={{ fontSize: "11px", color: "#444", marginTop: "8px" }}>Vypněte pro průhledné pozadí za artworkem (bíle záře pod ním zůstane).</p>
+            </div>
+
             {/* Hover card */}
             <div>
               <div style={sectionHeadStyle}>Hover karta produktu</div>
-              <button
-                onClick={() => handleZvukyChange("ig_zvuky_show_hover_card", zvukyShowHoverCard ? "false" : "true")}
-                style={{ padding: "6px 14px", background: zvukyShowHoverCard ? "#fff" : "#0d0d0d", color: zvukyShowHoverCard ? "#000" : "#555", border: "1px solid " + (zvukyShowHoverCard ? "#fff" : "#333"), borderRadius: "3px", fontSize: "12px", cursor: "pointer", fontFamily: "inherit" }}
-              >
-                {zvukyShowHoverCard ? "✓ Zobrazit kartu produktu" : "Skrýt kartu produktu"}
-              </button>
-              <p style={{ fontSize: "11px", color: "#444", marginTop: "8px" }}>Zobrazí kopii hover karty sound kitu (název, typ, cena) pod artworkem.</p>
+              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                <button
+                  onClick={() => handleZvukyChange("ig_zvuky_show_hover_card", zvukyShowHoverCard ? "false" : "true")}
+                  style={{ padding: "6px 14px", background: zvukyShowHoverCard ? "#fff" : "#0d0d0d", color: zvukyShowHoverCard ? "#000" : "#555", border: "1px solid " + (zvukyShowHoverCard ? "#fff" : "#333"), borderRadius: "3px", fontSize: "12px", cursor: "pointer", fontFamily: "inherit" }}
+                >
+                  {zvukyShowHoverCard ? "✓ Zobrazit kartu" : "Skrýt kartu"}
+                </button>
+                {zvukyShowHoverCard && (
+                  <button
+                    onClick={() => handleZvukyChange("ig_zvuky_hover_show_sounds", zvukyHoverShowSounds ? "false" : "true")}
+                    style={{ padding: "6px 14px", background: zvukyHoverShowSounds ? "#fff" : "#0d0d0d", color: zvukyHoverShowSounds ? "#000" : "#555", border: "1px solid " + (zvukyHoverShowSounds ? "#fff" : "#333"), borderRadius: "3px", fontSize: "12px", cursor: "pointer", fontFamily: "inherit" }}
+                  >
+                    {zvukyHoverShowSounds ? "✓ Počet zvuků" : "Zobrazit počet zvuků"}
+                  </button>
+                )}
+              </div>
+              <p style={{ fontSize: "11px", color: "#444", marginTop: "8px" }}>Karta pod artworkem se šipkou — stejný design jako na webu. Přepněte mezi cenou a počtem zvuků.</p>
             </div>
 
             {/* Logo */}

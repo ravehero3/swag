@@ -93,6 +93,8 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
   const zvukyOverlayOpacity = parseFloat(settings?.ig_zvuky_overlay_opacity || "0.5");
   const zvukyTextColor = settings?.ig_zvuky_text_color || "#ffffff";
   const zvukyShowHoverCard = settings?.ig_zvuky_show_hover_card === "true";
+  const zvukyHoverShowSounds = settings?.ig_zvuky_hover_show_sounds === "true";
+  const zvukyShowArtworkBg = settings?.ig_zvuky_show_artwork_bg === "true";
   const zvukyLogoInvert = settings?.ig_zvuky_logo_invert === "true";
   const zvukyLayers: { id: string; visible: boolean; y?: number; mode?: string; imageUrl?: string | null; align?: string }[] = (() => {
     try {
@@ -744,63 +746,110 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
         const dx = artX + (artMaxSide - dw) / 2;
         const dy = artY + (artMaxSide - dh) / 2;
         ctx.save();
-        ctx.beginPath();
-        if (ctx.roundRect) ctx.roundRect(artX, artY, artMaxSide, artMaxSide, 24);
-        else ctx.rect(artX, artY, artMaxSide, artMaxSide);
-        ctx.clip();
-        ctx.fillStyle = "#0a0a0a";
-        ctx.fillRect(artX, artY, artMaxSide, artMaxSide);
+        if (zvukyShowArtworkBg) {
+          ctx.beginPath();
+          if (ctx.roundRect) ctx.roundRect(artX, artY, artMaxSide, artMaxSide, 24);
+          else ctx.rect(artX, artY, artMaxSide, artMaxSide);
+          ctx.clip();
+          ctx.fillStyle = "#0a0a0a";
+          ctx.fillRect(artX, artY, artMaxSide, artMaxSide);
+        }
         ctx.drawImage(img, 0, 0, iW, iH, dx, dy, dw, dh);
         ctx.restore();
       } else {
-        ctx.fillStyle = "#1a1a1a";
-        if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(artX, artY, artMaxSide, artMaxSide, 24); ctx.fill(); }
-        else ctx.fillRect(artX, artY, artMaxSide, artMaxSide);
+        if (zvukyShowArtworkBg) {
+          ctx.fillStyle = "#1a1a1a";
+          if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(artX, artY, artMaxSide, artMaxSide, 24); ctx.fill(); }
+          else ctx.fillRect(artX, artY, artMaxSide, artMaxSide);
+        }
       }
 
-      // Optional hover card below artwork
+      // White glow beneath artwork
+      {
+        const glowCX = artX + artMaxSide / 2;
+        const glowCY = artY + artMaxSide;
+        const glowRX = artMaxSide * 0.55;
+        const glowRY = artMaxSide * 0.22;
+        const glow = ctx.createRadialGradient(glowCX, glowCY, 0, glowCX, glowCY, glowRX);
+        glow.addColorStop(0, "rgba(255,255,255,0.38)");
+        glow.addColorStop(0.5, "rgba(255,255,255,0.14)");
+        glow.addColorStop(1, "rgba(255,255,255,0)");
+        ctx.save();
+        ctx.scale(1, glowRY / glowRX);
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(glowCX, glowCY * (glowRX / glowRY), glowRX, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      // Optional hover card below artwork — product-info-pill style with V-arrow caret
       if (zvukyShowHoverCard) {
         const hcW = artMaxSide;
         const hcH = 220;
         const hcX = artX;
-        const hcY = artY + artMaxSide + 50;
+        const hcY = artY + artMaxSide + 60;
 
+        // V-arrow caret (rotated square, top-left+top borders only)
+        const caretSz = 28;
+        const caretX = hcX + hcW / 2 - caretSz / 2;
+        const caretY = hcY - caretSz / 2;
+        ctx.save();
+        ctx.translate(hcX + hcW / 2, caretY + caretSz / 2);
+        ctx.rotate(Math.PI / 4);
+        ctx.fillStyle = "rgba(10,10,10,0.92)";
+        ctx.fillRect(-caretSz / 2, -caretSz / 2, caretSz, caretSz);
+        ctx.strokeStyle = "#333";
+        ctx.lineWidth = 2;
+        // Only stroke top and left edges (top-left corner of the rotated square = the visible "V" point)
+        ctx.beginPath();
+        ctx.moveTo(-caretSz / 2, caretSz / 2);
+        ctx.lineTo(-caretSz / 2, -caretSz / 2);
+        ctx.lineTo(caretSz / 2, -caretSz / 2);
+        ctx.stroke();
+        ctx.restore();
+
+        // Pill body with backdrop simulation
         ctx.save();
         ctx.beginPath();
-        if (ctx.roundRect) ctx.roundRect(hcX, hcY, hcW, hcH, 20);
+        if (ctx.roundRect) ctx.roundRect(hcX, hcY, hcW, hcH, 16);
         else ctx.rect(hcX, hcY, hcW, hcH);
         ctx.clip();
         if (img) {
           ctx.filter = `blur(24px)`;
-          const scale = Math.max(hcW / img.naturalWidth, hcH / img.naturalHeight) * 1.2;
-          ctx.drawImage(img, hcX + (hcW - img.naturalWidth * scale) / 2, hcY + (hcH - img.naturalHeight * scale) / 2, img.naturalWidth * scale, img.naturalHeight * scale);
+          const s = Math.max(hcW / img.naturalWidth, hcH / img.naturalHeight) * 1.2;
+          ctx.drawImage(img, hcX + (hcW - img.naturalWidth * s) / 2, hcY + (hcH - img.naturalHeight * s) / 2, img.naturalWidth * s, img.naturalHeight * s);
           ctx.filter = "none";
         }
-        ctx.fillStyle = "rgba(10,10,10,0.88)";
+        ctx.fillStyle = "rgba(10,10,10,0.92)";
         ctx.fillRect(hcX, hcY, hcW, hcH);
         ctx.restore();
 
+        // Pill border
         ctx.save();
         ctx.beginPath();
-        if (ctx.roundRect) ctx.roundRect(hcX, hcY, hcW, hcH, 20);
+        if (ctx.roundRect) ctx.roundRect(hcX, hcY, hcW, hcH, 16);
         else ctx.rect(hcX, hcY, hcW, hcH);
-        ctx.strokeStyle = "rgba(255,255,255,0.2)";
+        ctx.strokeStyle = "#333";
         ctx.lineWidth = 2;
         ctx.stroke();
         ctx.restore();
 
+        // Pill text
         ctx.textAlign = "center";
-        ctx.font = "36px Helvetica, Arial, sans-serif";
-        ctx.fillStyle = "rgba(255,255,255,0.5)";
-        ctx.fillText("SOUND KIT", CW / 2, hcY + 68);
-        ctx.font = "bold 60px Helvetica, Arial, sans-serif";
-        ctx.fillStyle = "#ffffff";
-        const hcTitleLines = wrapText(ctx, resolvedTitle.toUpperCase(), hcW - 80);
-        hcTitleLines.slice(0, 2).forEach((line, li) => ctx.fillText(line, CW / 2, hcY + 138 + li * 68));
-        if (product?.price !== undefined) {
-          ctx.font = "44px Helvetica, Arial, sans-serif";
-          ctx.fillStyle = "rgba(255,255,255,0.7)";
-          ctx.fillText(product.price === 0 ? "ZDARMA" : `${product.price} CZK`, CW / 2, hcY + 198);
+        ctx.font = "34px Helvetica, Arial, sans-serif";
+        ctx.fillStyle = "rgba(255,255,255,0.4)";
+        ctx.fillText("SOUND KIT", CW / 2, hcY + 60);
+        ctx.font = "bold 62px Helvetica, Arial, sans-serif";
+        ctx.fillStyle = "#fff";
+        const hcTitleLines = wrapText(ctx, resolvedTitle, hcW - 80);
+        hcTitleLines.slice(0, 2).forEach((line, li) => ctx.fillText(line, CW / 2, hcY + 130 + li * 70));
+        ctx.font = "40px Helvetica, Arial, sans-serif";
+        ctx.fillStyle = "rgba(255,255,255,0.55)";
+        if (zvukyHoverShowSounds && (product as any)?.sound_count != null) {
+          ctx.fillText(`${(product as any).sound_count} zvuků`, CW / 2, hcY + 196);
+        } else if (!zvukyHoverShowSounds && product?.price !== undefined) {
+          ctx.fillText(product.price === 0 ? "ZDARMA" : `${product.price} CZK`, CW / 2, hcY + 196);
         }
       }
 
@@ -924,15 +973,27 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
                     {resolvedArtwork && <img src={resolvedArtwork} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", filter: `blur(${zvukyBgBlur}px)`, transform: "scale(1.3)" }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />}
                     <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${zvukyOverlayOpacity})` }} />
                     {resolvedArtwork && (
-                      <div style={{ position: "absolute", left: `${artXm}px`, top: `${artYm}px`, width: `${artSizeM}px`, height: `${artSizeM}px`, borderRadius: "4px", overflow: "hidden", background: "#0a0a0a" }}>
-                        <img src={resolvedArtwork} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
-                      </div>
+                      <>
+                        {/* White glow beneath artwork */}
+                        <div style={{ position: "absolute", left: `${artXm}px`, top: `${artYm + artSizeM * 0.72}px`, width: `${artSizeM}px`, height: `${artSizeM * 0.45}px`, background: "radial-gradient(ellipse at center top, rgba(255,255,255,0.38) 0%, transparent 70%)", pointerEvents: "none" }} />
+                        <div style={{ position: "absolute", left: `${artXm}px`, top: `${artYm}px`, width: `${artSizeM}px`, height: `${artSizeM}px`, borderRadius: "4px", overflow: "hidden", background: zvukyShowArtworkBg ? "#0a0a0a" : "transparent" }}>
+                          <img src={resolvedArtwork} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                        </div>
+                      </>
                     )}
                     {zvukyShowHoverCard && (
-                      <div style={{ position: "absolute", left: `${artXm}px`, top: `${artYm + artSizeM + 4}px`, width: `${artSizeM}px`, borderRadius: "3px", background: "rgba(10,10,10,0.9)", border: "1px solid rgba(255,255,255,0.15)", padding: "4px 6px", boxSizing: "border-box" as const }}>
-                        <div style={{ fontSize: "3.5px", color: "rgba(255,255,255,0.5)", marginBottom: "2px" }}>SOUND KIT</div>
-                        <div style={{ fontSize: "5px", fontWeight: 700, color: "#fff", marginBottom: "2px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{resolvedTitle.toUpperCase()}</div>
-                        {product?.price !== undefined && <div style={{ fontSize: "4px", color: "rgba(255,255,255,0.7)" }}>{product.price === 0 ? "ZDARMA" : `${product.price} CZK`}</div>}
+                      <div style={{ position: "absolute", left: `${artXm}px`, top: `${artYm + artSizeM + 3}px`, width: `${artSizeM}px`, boxSizing: "border-box" as const }}>
+                        {/* V-arrow caret */}
+                        <div style={{ width: "7px", height: "7px", background: "rgba(10,10,10,0.92)", border: "1px solid #333", borderRight: "none", borderBottom: "none", transform: "rotate(45deg)", margin: "0 auto", marginBottom: "-3px", position: "relative", zIndex: 1 }} />
+                        {/* Pill body */}
+                        <div style={{ background: "rgba(10,10,10,0.92)", border: "1px solid #333", borderRadius: "3px", padding: "3px 5px", position: "relative", zIndex: 2 }}>
+                          <div style={{ fontSize: "3.5px", color: "#666", marginBottom: "1px" }}>SOUND KIT</div>
+                          <div style={{ fontSize: "5px", fontWeight: 700, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: "1px" }}>{resolvedTitle}</div>
+                          {zvukyHoverShowSounds
+                            ? (product as any)?.sound_count != null && <div style={{ fontSize: "3.5px", color: "#999" }}>{(product as any).sound_count} zvuků</div>
+                            : product?.price !== undefined && <div style={{ fontSize: "3.5px", color: "#999" }}>{product.price === 0 ? "ZDARMA" : `${product.price} CZK`}</div>
+                          }
+                        </div>
                       </div>
                     )}
                     {zvukyLayers.filter(l => l.visible).map(layer => {
