@@ -475,6 +475,29 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
   const [b2PickerFor, setB2PickerFor] = useState<string | null>(null);
   const [hoveredBeatId, setHoveredBeatId] = useState<number | null>(null);
+  const [previewBeatId, setPreviewBeatId] = useState<number | null>(null);
+  const previewAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  const toggleBeatPreview = (beat: Beat, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!beat.preview_url) return;
+    if (previewBeatId === beat.id) {
+      previewAudioRef.current?.pause();
+      setPreviewBeatId(null);
+    } else {
+      if (previewAudioRef.current) { previewAudioRef.current.pause(); }
+      const audio = new Audio(beat.preview_url);
+      audio.volume = 0.7;
+      audio.play().catch(() => {});
+      audio.onended = () => setPreviewBeatId(null);
+      previewAudioRef.current = audio;
+      setPreviewBeatId(beat.id);
+    }
+  };
+
+  useEffect(() => {
+    return () => { previewAudioRef.current?.pause(); };
+  }, []);
 
   const handleSelectAll = () => {
     if (selectedBeats.length === beats.length) {
@@ -929,19 +952,30 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                   data-testid={`checkbox-beat-${beat.id}`}
                 />
               </td>
-              <td style={{ padding: "8px 12px" }}>
-                {beat.artwork_url ? (
-                  <img
-                    src={beat.artwork_url}
-                    alt={beat.title}
-                    style={{ width: "40px", height: "40px", objectFit: "cover", borderRadius: "3px", display: "block" }}
-                    onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
-                  />
-                ) : (
-                  <div style={{ width: "40px", height: "40px", background: "#222", borderRadius: "3px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <span style={{ fontSize: "18px", color: "#444" }}>♪</span>
-                  </div>
-                )}
+              <td style={{ padding: "8px 12px" }} onClick={(e) => toggleBeatPreview(beat, e)}>
+                <div style={{ position: "relative", width: "40px", height: "40px", cursor: beat.preview_url ? "pointer" : "default", flexShrink: 0 }} title={beat.preview_url ? (previewBeatId === beat.id ? "Pozastavit náhled" : "Přehrát náhled") : "Bez náhledu"}>
+                  {beat.artwork_url ? (
+                    <img
+                      src={beat.artwork_url}
+                      alt={beat.title}
+                      style={{ width: "40px", height: "40px", objectFit: "cover", borderRadius: "3px", display: "block", transition: "opacity 0.15s", opacity: previewBeatId === beat.id ? 0.55 : 1 }}
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
+                    />
+                  ) : (
+                    <div style={{ width: "40px", height: "40px", background: "#222", borderRadius: "3px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <span style={{ fontSize: "18px", color: "#444" }}>♪</span>
+                    </div>
+                  )}
+                  {beat.preview_url && (
+                    <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "3px", background: previewBeatId === beat.id ? "rgba(0,0,0,0.4)" : "transparent", transition: "background 0.15s" }}>
+                      {previewBeatId === beat.id ? (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                      ) : hoveredBeatId === beat.id ? (
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="rgba(255,255,255,0.85)"><path d="M5 3l14 9-14 9V3z"/></svg>
+                      ) : null}
+                    </div>
+                  )}
+                </div>
               </td>
               <td style={{ padding: "12px" }}>{beat.title}</td>
               <td style={{ padding: "12px" }}>{beat.bpm}</td>
@@ -2659,6 +2693,84 @@ function IGStoriesTab({ settings, onRefresh }: any) {
   const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const logoInputRef = useRef<HTMLInputElement | null>(null);
 
+  const [storySubTab, setStorySubTab] = useState<"beaty" | "zvuky">("beaty");
+
+  const [zvukyValues, setZvukyValues] = useState<Record<string, string>>({
+    ig_zvuky_bg_blur: settings.ig_zvuky_bg_blur || "20",
+    ig_zvuky_overlay_opacity: settings.ig_zvuky_overlay_opacity || "0.5",
+    ig_zvuky_text_color: settings.ig_zvuky_text_color || "#ffffff",
+    ig_zvuky_layers: settings.ig_zvuky_layers || JSON.stringify(IG_ZVUKY_DEFAULT_LAYERS),
+    ig_zvuky_show_hover_card: settings.ig_zvuky_show_hover_card || "false",
+    ig_zvuky_logo_url: settings.ig_zvuky_logo_url || "",
+    ig_zvuky_logo_invert: settings.ig_zvuky_logo_invert || "false",
+  });
+  const [zvukySaving, setZvukySaving] = useState(false);
+  const [zvukySaved, setZvukySaved] = useState(false);
+  const [previewKit, setPreviewKit] = useState<any>(null);
+  const [zvukyLogoUploading, setZvukyLogoUploading] = useState(false);
+  const [zvukyLayerUploading, setZvukyLayerUploading] = useState<Record<number, boolean>>({});
+  const zvukyLogoInputRef = useRef<HTMLInputElement | null>(null);
+  const zvukyFileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  useEffect(() => {
+    fetch("/api/sound-kits", { credentials: "include" })
+      .then(r => r.ok ? r.json() : [])
+      .then(kits => { if (Array.isArray(kits) && kits.length > 0) setPreviewKit(kits[0]); })
+      .catch(() => {});
+  }, []);
+
+  const handleZvukyChange = (key: string, val: string) => setZvukyValues(prev => ({ ...prev, [key]: val }));
+
+  const zvukyLayers: IGLayer[] = (() => {
+    try {
+      const parsed = JSON.parse(zvukyValues.ig_zvuky_layers);
+      return parsed.map((l: any) => ({
+        id: l.id,
+        visible: l.visible ?? true,
+        y: typeof l.y === "number" ? l.y : (IG_ZVUKY_DEFAULT_LAYERS.find((d: IGLayer) => d.id === l.id)?.y ?? 60),
+        mode: l.mode ?? "text",
+        imageUrl: l.imageUrl ?? null,
+        align: l.align ?? "center",
+      }));
+    } catch { return IG_ZVUKY_DEFAULT_LAYERS; }
+  })();
+
+  const setZvukyLayers = (nl: IGLayer[]) => handleZvukyChange("ig_zvuky_layers", JSON.stringify(nl));
+  const updateZvukyLayer = (i: number, patch: Partial<IGLayer>) => setZvukyLayers(zvukyLayers.map((l, idx) => idx === i ? { ...l, ...patch } : l));
+  const moveZvukyLayerY = (i: number, dir: "up" | "down") => updateZvukyLayer(i, { y: zvukyLayers[i].y + (dir === "up" ? -10 : 10) });
+
+  const handleZvukyLogoUpload = async (file: File) => {
+    setZvukyLogoUploading(true);
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const res = await fetch("/api/upload?type=artwork", { method: "POST", credentials: "include", body: form });
+      if (res.ok) { const data = await res.json(); handleZvukyChange("ig_zvuky_logo_url", data.url); }
+    } finally { setZvukyLogoUploading(false); }
+  };
+
+  const handleZvukyLayerImageUpload = async (i: number, file: File) => {
+    setZvukyLayerUploading(prev => ({ ...prev, [i]: true }));
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const res = await fetch("/api/upload?type=artwork", { method: "POST", credentials: "include", body: form });
+      if (res.ok) { const data = await res.json(); updateZvukyLayer(i, { imageUrl: data.url, mode: "image" }); }
+    } finally { setZvukyLayerUploading(prev => ({ ...prev, [i]: false })); }
+  };
+
+  const handleZvukySave = async () => {
+    setZvukySaving(true);
+    try {
+      await Promise.all(Object.keys(zvukyValues).map(key =>
+        fetch("/api/admin/settings", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ key, value: zvukyValues[key] }) })
+      ));
+      setZvukySaved(true);
+      setTimeout(() => setZvukySaved(false), 2500);
+      onRefresh();
+    } finally { setZvukySaving(false); }
+  };
+
   useEffect(() => {
     fetch("/api/beats", { credentials: "include" })
       .then(r => r.ok ? r.json() : [])
@@ -2817,12 +2929,31 @@ function IGStoriesTab({ settings, onRefresh }: any) {
   const centeredCardTop = (PREVIEW_H - estimatedCardH) / 2;
   const cardTop = Math.max(10, centeredCardTop + cardYOffset);
 
+  const zvukyBgBlur = parseFloat(zvukyValues.ig_zvuky_bg_blur);
+  const zvukyOverlay = parseFloat(zvukyValues.ig_zvuky_overlay_opacity);
+  const zvukyTextColor = zvukyValues.ig_zvuky_text_color;
+  const zvukyShowHoverCard = zvukyValues.ig_zvuky_show_hover_card === "true";
+  const zvukyLogoUrl = zvukyValues.ig_zvuky_logo_url;
+  const zvukyLogoInvert = zvukyValues.ig_zvuky_logo_invert === "true";
+  const zvukyPreviewArtwork = previewKit?.artwork_url || "";
+  const zvukyPreviewTitle = previewKit?.title || "SOUND KIT NÁZEV";
+  const ZVUKY_PREV_H_DISPLAY = 470;
+  const ZVUKY_PREV_W_DISPLAY = Math.round(ZVUKY_PREV_H_DISPLAY * 1080 / 1920);
+
   return (
     <div style={{ padding: "24px 0" }}>
-      <div style={{ fontSize: "12px", color: "#888", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "24px", borderBottom: "1px solid #1a1a1a", paddingBottom: "12px" }}>
+      <div style={{ fontSize: "12px", color: "#888", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "16px", borderBottom: "1px solid #1a1a1a", paddingBottom: "12px" }}>
         Instagram Stories šablona
       </div>
-      <div style={{ display: "flex", gap: "32px", alignItems: "flex-start" }}>
+      <div style={{ display: "flex", gap: "0", marginBottom: "24px", borderBottom: "1px solid #1a1a1a" }}>
+        {(["beaty", "zvuky"] as const).map(t => (
+          <button key={t} onClick={() => setStorySubTab(t)} style={{ padding: "9px 22px", background: "transparent", border: "none", borderBottom: storySubTab === t ? "2px solid #fff" : "2px solid transparent", color: storySubTab === t ? "#fff" : "#555", fontSize: "13px", fontWeight: storySubTab === t ? 600 : 400, cursor: "pointer", fontFamily: "inherit", marginBottom: "-1px" }}>
+            {t === "beaty" ? "BEATY" : "ZVUKY"}
+          </button>
+        ))}
+      </div>
+
+      {storySubTab === "beaty" && <div style={{ display: "flex", gap: "32px", alignItems: "flex-start" }}>
 
         {/* ───── Preview card ───── */}
         <div style={{ flexShrink: 0 }}>
@@ -3194,7 +3325,162 @@ function IGStoriesTab({ settings, onRefresh }: any) {
             {saved ? "✓ Uloženo" : saving ? "Ukládám…" : "Uložit šablonu"}
           </button>
         </div>
-      </div>
+      </div>}
+
+      {storySubTab === "zvuky" && (
+        <div style={{ display: "flex", gap: "32px", alignItems: "flex-start" }}>
+          {/* ── ZVUKY Preview ── */}
+          <div style={{ flexShrink: 0 }}>
+            <div style={{ fontSize: "11px", color: "#555", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              Náhled{previewKit ? ` — ${previewKit.title}` : ""}
+            </div>
+            <div style={{ width: `${ZVUKY_PREV_W_DISPLAY}px`, height: `${ZVUKY_PREV_H_DISPLAY}px`, position: "relative", overflow: "hidden", borderRadius: "8px", border: "1px solid #2a2a2a", background: "#111" }}>
+              {zvukyPreviewArtwork && (
+                <img src={zvukyPreviewArtwork} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", filter: `blur(${zvukyBgBlur}px)`, transform: "scale(1.3)" }} />
+              )}
+              <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${zvukyOverlay})` }} />
+              {zvukyPreviewArtwork && (() => {
+                const artSide = Math.round(ZVUKY_PREV_W_DISPLAY * 0.7);
+                const ax = (ZVUKY_PREV_W_DISPLAY - artSide) / 2;
+                const ay = (ZVUKY_PREV_H_DISPLAY - artSide) / 2 - Math.round(ZVUKY_PREV_H_DISPLAY * 0.06);
+                return (
+                  <div style={{ position: "absolute", left: `${ax}px`, top: `${ay}px`, width: `${artSide}px`, height: `${artSide}px`, borderRadius: "6px", overflow: "hidden" }}>
+                    <img src={zvukyPreviewArtwork} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  </div>
+                );
+              })()}
+              {zvukyShowHoverCard && zvukyPreviewArtwork && (() => {
+                const artSide = Math.round(ZVUKY_PREV_W_DISPLAY * 0.7);
+                const ax = (ZVUKY_PREV_W_DISPLAY - artSide) / 2;
+                const ay = (ZVUKY_PREV_H_DISPLAY - artSide) / 2 - Math.round(ZVUKY_PREV_H_DISPLAY * 0.06);
+                return (
+                  <div style={{ position: "absolute", left: `${ax}px`, top: `${ay + artSide + 5}px`, width: `${artSide}px`, borderRadius: "4px", background: "rgba(10,10,10,0.9)", border: "1px solid rgba(255,255,255,0.15)", padding: "5px 8px", boxSizing: "border-box" }}>
+                    <div style={{ fontSize: "6px", color: "rgba(255,255,255,0.5)", marginBottom: "2px" }}>SOUND KIT</div>
+                    <div style={{ fontSize: "8px", fontWeight: 700, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{zvukyPreviewTitle.toUpperCase()}</div>
+                    {previewKit?.price !== undefined && <div style={{ fontSize: "6px", color: "rgba(255,255,255,0.65)", marginTop: "2px" }}>{previewKit.is_free ? "ZDARMA" : `${previewKit.price} CZK`}</div>}
+                  </div>
+                );
+              })()}
+              {zvukyLayers.map(layer => {
+                if (!layer.visible) return null;
+                const style: React.CSSProperties = { position: "absolute", left: 0, right: 0, top: `${(layer.y ?? 280) * ZVUKY_PREV_H_DISPLAY / ZVUKY_PREV_H}px`, textAlign: "center" as const, pointerEvents: "none" };
+                if (layer.mode === "image" && layer.imageUrl) {
+                  return <img key={layer.id} src={layer.imageUrl} alt="" style={{ ...style, height: "14px", width: "auto", maxWidth: "80%", margin: "0 auto", display: "block", objectFit: "contain", filter: zvukyLogoInvert ? "invert(1)" : "none" }} />;
+                }
+                if (layer.id === "logo") return <div key="logo" style={{ ...style, fontSize: "9px", fontWeight: 700, color: zvukyTextColor, letterSpacing: "2px" }}>VOODOO808.COM</div>;
+                if (layer.id === "title") return <div key="title" style={{ ...style, fontSize: "14px", fontWeight: 700, color: zvukyTextColor, letterSpacing: "0.04em", lineHeight: 1.2 }}>{zvukyPreviewTitle.toUpperCase()}</div>;
+                if (layer.id === "website") return <div key="website" style={{ ...style, fontSize: "7px", color: zvukyTextColor + "88" }}>VOODOO808.COM</div>;
+                return null;
+              })}
+            </div>
+          </div>
+
+          {/* ── ZVUKY Settings ── */}
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "18px", minWidth: 0 }}>
+
+            {/* Background */}
+            <div>
+              <div style={sectionHeadStyle}>Pozadí</div>
+              <label style={labelStyle}>Rozmazání pozadí — {zvukyValues.ig_zvuky_bg_blur}px</label>
+              <input type="range" min="0" max="40" step="1" value={zvukyBgBlur} onChange={(e) => handleZvukyChange("ig_zvuky_bg_blur", e.target.value)} style={{ width: "100%", accentColor: "#fff" }} />
+            </div>
+
+            {/* Colors + overlay */}
+            <div style={{ display: "flex", gap: "12px" }}>
+              <div style={{ flex: 1 }}>
+                <label style={labelStyle}>Barva textu</label>
+                <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                  <input type="color" value={zvukyTextColor} onChange={(e) => handleZvukyChange("ig_zvuky_text_color", e.target.value)} style={{ width: "36px", height: "36px", padding: "2px", background: "#0d0d0d", border: "1px solid #2a2a2a", borderRadius: "3px", cursor: "pointer" }} />
+                  <input type="text" value={zvukyTextColor} onChange={(e) => handleZvukyChange("ig_zvuky_text_color", e.target.value)} style={{ ...fieldStyle, width: "90px" }} />
+                </div>
+              </div>
+              <div style={{ flex: 1 }}>
+                <label style={labelStyle}>Překryv — {Math.round(zvukyOverlay * 100)}%</label>
+                <input type="range" min="0" max="1" step="0.05" value={zvukyOverlay} onChange={(e) => handleZvukyChange("ig_zvuky_overlay_opacity", e.target.value)} style={{ width: "100%", accentColor: "#fff", marginTop: "10px" }} />
+              </div>
+            </div>
+
+            {/* Hover card */}
+            <div>
+              <div style={sectionHeadStyle}>Hover karta produktu</div>
+              <button
+                onClick={() => handleZvukyChange("ig_zvuky_show_hover_card", zvukyShowHoverCard ? "false" : "true")}
+                style={{ padding: "6px 14px", background: zvukyShowHoverCard ? "#fff" : "#0d0d0d", color: zvukyShowHoverCard ? "#000" : "#555", border: "1px solid " + (zvukyShowHoverCard ? "#fff" : "#333"), borderRadius: "3px", fontSize: "12px", cursor: "pointer", fontFamily: "inherit" }}
+              >
+                {zvukyShowHoverCard ? "✓ Zobrazit kartu produktu" : "Skrýt kartu produktu"}
+              </button>
+              <p style={{ fontSize: "11px", color: "#444", marginTop: "8px" }}>Zobrazí kopii hover karty sound kitu (název, typ, cena) pod artworkem.</p>
+            </div>
+
+            {/* Logo */}
+            <div>
+              <div style={sectionHeadStyle}>Logo</div>
+              <input ref={zvukyLogoInputRef} type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => { const f = e.target.files?.[0]; if (f) handleZvukyLogoUpload(f); e.target.value = ""; }} />
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+                <button onClick={() => zvukyLogoInputRef.current?.click()} style={{ padding: "7px 14px", background: "#0d0d0d", border: "1px solid #2a2a2a", borderRadius: "3px", color: "#ccc", fontSize: "12px", cursor: "pointer", fontFamily: "inherit" }}>
+                  {zvukyLogoUploading ? "Nahrávám…" : zvukyLogoUrl ? "Změnit logo" : "Nahrát logo"}
+                </button>
+                {zvukyLogoUrl && (
+                  <>
+                    <img src={zvukyLogoUrl} alt="logo" style={{ height: "28px", maxWidth: "100px", objectFit: "contain", filter: zvukyLogoInvert ? "invert(1)" : "none", background: zvukyLogoInvert ? "#222" : "transparent", borderRadius: "3px", padding: "2px" }} />
+                    <button onClick={() => handleZvukyChange("ig_zvuky_logo_invert", zvukyLogoInvert ? "false" : "true")} style={{ padding: "6px 12px", background: zvukyLogoInvert ? "#fff" : "#0d0d0d", color: zvukyLogoInvert ? "#000" : "#666", border: "1px solid " + (zvukyLogoInvert ? "#fff" : "#2a2a2a"), borderRadius: "3px", fontSize: "11px", cursor: "pointer", fontFamily: "inherit" }}>
+                      {zvukyLogoInvert ? "✓ Invertováno" : "Invertovat"}
+                    </button>
+                    <button onClick={() => handleZvukyChange("ig_zvuky_logo_url", "")} style={{ background: "transparent", border: "none", color: "#555", cursor: "pointer", fontSize: "14px", padding: "0 4px" }} title="Odebrat logo">×</button>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Text layers */}
+            <div>
+              <div style={sectionHeadStyle}>Textové vrstvy</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                {zvukyLayers.map((layer, i) => (
+                  <div key={layer.id} style={{ background: "#0d0d0d", border: "1px solid #2a2a2a", borderRadius: "4px", padding: "10px 12px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <span style={{ flex: 1, fontSize: "12px", color: layer.visible ? "#ccc" : "#444", textDecoration: layer.visible ? "none" : "line-through" }}>{IG_ZVUKY_LAYER_LABELS[layer.id]}</span>
+                      <span style={{ fontSize: "10px", color: "#444", whiteSpace: "nowrap" }}>Y: {layer.y}px</span>
+                      <button onClick={() => moveZvukyLayerY(i, "up")} style={{ background: "transparent", border: "1px solid #2a2a2a", borderRadius: "3px", color: "#666", cursor: "pointer", padding: "2px 7px", fontSize: "10px", lineHeight: 1.4, fontFamily: "inherit" }}>▲</button>
+                      <button onClick={() => moveZvukyLayerY(i, "down")} style={{ background: "transparent", border: "1px solid #2a2a2a", borderRadius: "3px", color: "#666", cursor: "pointer", padding: "2px 7px", fontSize: "10px", lineHeight: 1.4, fontFamily: "inherit" }}>▼</button>
+                      <button onClick={() => updateZvukyLayer(i, { visible: !layer.visible })} style={{ background: "transparent", border: "none", color: layer.visible ? "#aaa" : "#3a3a3a", cursor: "pointer", padding: "2px 4px", display: "flex", alignItems: "center" }}>
+                        {layer.visible ? (
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        ) : (
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                        )}
+                      </button>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <button onClick={() => updateZvukyLayer(i, { mode: "text" })} style={modeBtnStyle(layer.mode === "text")}>Aa Text</button>
+                      <button onClick={() => zvukyFileInputRefs.current[i]?.click()} style={modeBtnStyle(layer.mode === "image")}>
+                        {zvukyLayerUploading[i] ? "Nahrávám…" : layer.mode === "image" && layer.imageUrl ? "🖼 Změnit logo" : "🖼 Nahrát logo"}
+                      </button>
+                      <input
+                        ref={el => { zvukyFileInputRefs.current[i] = el; }}
+                        type="file"
+                        accept="image/*"
+                        style={{ display: "none" }}
+                        onChange={(e) => { const f = e.target.files?.[0]; if (f) handleZvukyLayerImageUpload(i, f); e.target.value = ""; }}
+                      />
+                      {layer.mode === "image" && layer.imageUrl && (
+                        <>
+                          <img src={layer.imageUrl} alt="" style={{ height: "20px", borderRadius: "2px", border: "1px solid #333" }} />
+                          <button onClick={() => updateZvukyLayer(i, { mode: "text", imageUrl: null })} style={{ background: "transparent", border: "none", color: "#555", cursor: "pointer", fontSize: "14px", lineHeight: 1, padding: "0 4px" }} title="Odebrat logo">×</button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <button className="btn btn-filled" onClick={handleZvukySave} disabled={zvukySaving} style={{ alignSelf: "flex-start", opacity: zvukySaving ? 0.6 : 1 }}>
+              {zvukySaved ? "✓ Uloženo" : zvukySaving ? "Ukládám…" : "Uložit ZVUKY šablonu"}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

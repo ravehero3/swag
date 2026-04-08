@@ -88,6 +88,29 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
     }
   })();
 
+  // ZVUKY settings (for sound_kit story cards)
+  const zvukyBgBlur = parseFloat(settings?.ig_zvuky_bg_blur || "20");
+  const zvukyOverlayOpacity = parseFloat(settings?.ig_zvuky_overlay_opacity || "0.5");
+  const zvukyTextColor = settings?.ig_zvuky_text_color || "#ffffff";
+  const zvukyShowHoverCard = settings?.ig_zvuky_show_hover_card === "true";
+  const zvukyLogoInvert = settings?.ig_zvuky_logo_invert === "true";
+  const zvukyLayers: { id: string; visible: boolean; y?: number; mode?: string; imageUrl?: string | null }[] = (() => {
+    try {
+      const parsed = JSON.parse(settings?.ig_zvuky_layers || "null");
+      return Array.isArray(parsed) ? parsed : [
+        { id: "logo", visible: true, y: 40, mode: "text", imageUrl: null },
+        { id: "title", visible: true, y: 450, mode: "text", imageUrl: null },
+        { id: "website", visible: true, y: 480, mode: "text", imageUrl: null },
+      ];
+    } catch {
+      return [
+        { id: "logo", visible: true, y: 40, mode: "text", imageUrl: null },
+        { id: "title", visible: true, y: 450, mode: "text", imageUrl: null },
+        { id: "website", visible: true, y: 480, mode: "text", imageUrl: null },
+      ];
+    }
+  })();
+
   // Effective playhead position — use comment time_offset if available
   const PLAYHEAD_POS = typeof userComment?.time_offset === "number" ? userComment.time_offset : PLAYHEAD;
 
@@ -545,7 +568,7 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
           const cFsz = 5.5 * xScale;
           ctx.font = `${cFsz}px Helvetica,Arial,sans-serif`;
           const maxTipW = Math.min(artW * 0.65, 180 * xScale);
-          const commentLines = wrapText(ctx, userComment.text, maxTipW - tipPadX * 2).slice(0, 2);
+          const commentLines = wrapText(ctx, userComment.text, maxTipW - tipPadX * 2);
           const tipH = tipPadY * 2 + nameFsz + 3 * xScale + commentLines.length * (cFsz + 2 * xScale);
           const tipW = maxTipW;
           const tipX = Math.max(cardX + cardPad, Math.min(waveEndX - tipW, commentX - tipW / 2));
@@ -677,6 +700,161 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
     }
   };
 
+  const downloadZvukyStoryCard = async () => {
+    setIsGenerating(true);
+    try {
+      const CW = 1080;
+      const CH = 1920;
+      const canvas = document.createElement("canvas");
+      canvas.width = CW;
+      canvas.height = CH;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      ctx.fillStyle = "#000";
+      ctx.fillRect(0, 0, CW, CH);
+
+      const artworkProxied = resolvedArtwork ? proxyImageUrl(resolvedArtwork) : "";
+      const img = await loadImage(artworkProxied);
+
+      // Blurred background
+      if (img) {
+        ctx.save();
+        ctx.filter = `blur(${Math.round(zvukyBgBlur * 3)}px)`;
+        const scale = Math.max(CW / img.naturalWidth, CH / img.naturalHeight) * 1.2;
+        const bw = img.naturalWidth * scale;
+        const bh = img.naturalHeight * scale;
+        ctx.drawImage(img, (CW - bw) / 2, (CH - bh) / 2, bw, bh);
+        ctx.restore();
+      }
+
+      // Dark overlay
+      ctx.fillStyle = `rgba(0,0,0,${zvukyOverlayOpacity})`;
+      ctx.fillRect(0, 0, CW, CH);
+
+      // Centered artwork square
+      const artMaxSide = Math.round(CW * 0.7);
+      const artX = (CW - artMaxSide) / 2;
+      const artY = (CH - artMaxSide) / 2 - Math.round(CH * 0.06);
+
+      if (img) {
+        const src = Math.min(img.naturalWidth, img.naturalHeight);
+        const sx = (img.naturalWidth - src) / 2;
+        const sy = (img.naturalHeight - src) / 2;
+        ctx.save();
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(artX, artY, artMaxSide, artMaxSide, 24);
+        else ctx.rect(artX, artY, artMaxSide, artMaxSide);
+        ctx.clip();
+        ctx.drawImage(img, sx, sy, src, src, artX, artY, artMaxSide, artMaxSide);
+        ctx.restore();
+      } else {
+        ctx.fillStyle = "#1a1a1a";
+        if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(artX, artY, artMaxSide, artMaxSide, 24); ctx.fill(); }
+        else ctx.fillRect(artX, artY, artMaxSide, artMaxSide);
+      }
+
+      // Optional hover card below artwork
+      if (zvukyShowHoverCard) {
+        const hcW = artMaxSide;
+        const hcH = 220;
+        const hcX = artX;
+        const hcY = artY + artMaxSide + 50;
+
+        ctx.save();
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(hcX, hcY, hcW, hcH, 20);
+        else ctx.rect(hcX, hcY, hcW, hcH);
+        ctx.clip();
+        if (img) {
+          ctx.filter = `blur(24px)`;
+          const scale = Math.max(hcW / img.naturalWidth, hcH / img.naturalHeight) * 1.2;
+          ctx.drawImage(img, hcX + (hcW - img.naturalWidth * scale) / 2, hcY + (hcH - img.naturalHeight * scale) / 2, img.naturalWidth * scale, img.naturalHeight * scale);
+          ctx.filter = "none";
+        }
+        ctx.fillStyle = "rgba(10,10,10,0.88)";
+        ctx.fillRect(hcX, hcY, hcW, hcH);
+        ctx.restore();
+
+        ctx.save();
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(hcX, hcY, hcW, hcH, 20);
+        else ctx.rect(hcX, hcY, hcW, hcH);
+        ctx.strokeStyle = "rgba(255,255,255,0.2)";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.restore();
+
+        ctx.textAlign = "center";
+        ctx.font = "36px Helvetica, Arial, sans-serif";
+        ctx.fillStyle = "rgba(255,255,255,0.5)";
+        ctx.fillText("SOUND KIT", CW / 2, hcY + 68);
+        ctx.font = "bold 60px Helvetica, Arial, sans-serif";
+        ctx.fillStyle = "#ffffff";
+        const hcTitleLines = wrapText(ctx, resolvedTitle.toUpperCase(), hcW - 80);
+        hcTitleLines.slice(0, 2).forEach((line, li) => ctx.fillText(line, CW / 2, hcY + 138 + li * 68));
+        if (product?.price !== undefined) {
+          ctx.font = "44px Helvetica, Arial, sans-serif";
+          ctx.fillStyle = "rgba(255,255,255,0.7)";
+          ctx.fillText(product.price === 0 ? "ZDARMA" : `${product.price} CZK`, CW / 2, hcY + 198);
+        }
+      }
+
+      // Text layers (logo, title, website)
+      const ZVUKY_PREV_H = 630;
+      const yScale = CH / ZVUKY_PREV_H;
+      ctx.textAlign = "center";
+
+      for (const layer of zvukyLayers) {
+        if (!layer.visible) continue;
+        const layerY = (typeof layer.y === "number" ? layer.y : 280) * yScale;
+
+        if (layer.mode === "image" && layer.imageUrl) {
+          const logoProxied = proxyImageUrl(layer.imageUrl);
+          const logoImg = await loadImage(logoProxied);
+          if (logoImg) {
+            const maxH = 90;
+            const s = maxH / logoImg.naturalHeight;
+            const w = logoImg.naturalWidth * s;
+            if (zvukyLogoInvert) { ctx.save(); ctx.filter = "invert(1)"; }
+            ctx.drawImage(logoImg, (CW - w) / 2, layerY - maxH / 2, w, maxH);
+            if (zvukyLogoInvert) ctx.restore();
+          }
+          continue;
+        }
+
+        ctx.letterSpacing = "0px";
+        if (layer.id === "logo") {
+          ctx.font = "bold 52px Helvetica, Arial, sans-serif";
+          ctx.fillStyle = zvukyTextColor + "cc";
+          ctx.letterSpacing = "8px";
+          ctx.fillText("VOODOO808.COM", CW / 2, layerY);
+          ctx.letterSpacing = "0px";
+        } else if (layer.id === "title") {
+          ctx.font = "bold 96px Helvetica, Arial, sans-serif";
+          ctx.fillStyle = zvukyTextColor;
+          const titleLines = wrapText(ctx, resolvedTitle.toUpperCase(), 900);
+          titleLines.forEach((line, li) => ctx.fillText(line, CW / 2, layerY + li * 112));
+        } else if (layer.id === "website") {
+          ctx.font = "38px Helvetica, Arial, sans-serif";
+          ctx.fillStyle = zvukyTextColor + "99";
+          ctx.fillText("VOODOO808.COM", CW / 2, layerY);
+        }
+      }
+
+      const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
+      if (!blob) return;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `voodoo808-zvuky-story-${resolvedId}.png`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   const durationStr = beatDuration ? formatDur(beatDuration) : null;
   const playedStr = beatDuration ? formatDur(beatDuration * PLAYHEAD_POS) : null;
 
@@ -721,7 +899,67 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
             </>
           )}
 
-          {activeTab === "story" && (
+          {activeTab === "story" && resolvedType === "sound_kit" && (
+            <div style={{ display: "flex", gap: "20px", alignItems: "flex-start" }}>
+              {/* ZVUKY Mini Preview */}
+              {(() => {
+                const MINI_W = 160;
+                const MINI_H = Math.round(MINI_W * 1920 / 1080);
+                const ZVUKY_PREV_H = 630;
+                const artSizeM = Math.round(MINI_W * 0.65);
+                const artXm = Math.round((MINI_W - artSizeM) / 2);
+                const artYm = Math.round((MINI_H - artSizeM) / 2 - MINI_H * 0.06);
+                return (
+                  <div style={{ width: `${MINI_W}px`, height: `${MINI_H}px`, flexShrink: 0, borderRadius: "6px", overflow: "hidden", border: "1px solid #2a2a2a", position: "relative", background: "#111" }}>
+                    {resolvedArtwork && <img src={resolvedArtwork} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", filter: `blur(${zvukyBgBlur}px)`, transform: "scale(1.3)" }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />}
+                    <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${zvukyOverlayOpacity})` }} />
+                    {resolvedArtwork && (
+                      <div style={{ position: "absolute", left: `${artXm}px`, top: `${artYm}px`, width: `${artSizeM}px`, height: `${artSizeM}px`, borderRadius: "4px", overflow: "hidden" }}>
+                        <img src={resolvedArtwork} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      </div>
+                    )}
+                    {zvukyShowHoverCard && (
+                      <div style={{ position: "absolute", left: `${artXm}px`, top: `${artYm + artSizeM + 4}px`, width: `${artSizeM}px`, borderRadius: "3px", background: "rgba(10,10,10,0.9)", border: "1px solid rgba(255,255,255,0.15)", padding: "4px 6px", boxSizing: "border-box" as const }}>
+                        <div style={{ fontSize: "3.5px", color: "rgba(255,255,255,0.5)", marginBottom: "2px" }}>SOUND KIT</div>
+                        <div style={{ fontSize: "5px", fontWeight: 700, color: "#fff", marginBottom: "2px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{resolvedTitle.toUpperCase()}</div>
+                        {product?.price !== undefined && <div style={{ fontSize: "4px", color: "rgba(255,255,255,0.7)" }}>{product.price === 0 ? "ZDARMA" : `${product.price} CZK`}</div>}
+                      </div>
+                    )}
+                    {zvukyLayers.filter(l => l.visible).map(layer => {
+                      const yPct = ((layer.y ?? 280) / ZVUKY_PREV_H) * 100;
+                      const base: CSSProperties = { position: "absolute", left: 0, right: 0, top: yPct + "%", textAlign: "center" as const, transform: "translateY(-50%)", pointerEvents: "none" as const };
+                      if (layer.mode === "image" && layer.imageUrl) {
+                        return <img key={layer.id} src={layer.imageUrl} alt="" style={{ ...base, height: "10px", width: "auto", maxWidth: "75%", margin: "0 auto", display: "block", objectFit: "contain", filter: zvukyLogoInvert ? "invert(1)" : "none" }} />;
+                      }
+                      if (layer.id === "logo") return <div key="logo" style={{ ...base, fontSize: "6px", fontWeight: "700", color: zvukyTextColor, letterSpacing: "1.5px" }}>VOODOO808.COM</div>;
+                      if (layer.id === "title") return <div key="title" style={{ ...base, fontSize: "9px", fontWeight: "700", color: zvukyTextColor, letterSpacing: "0.04em", lineHeight: 1.15 }}>{resolvedTitle.toUpperCase()}</div>;
+                      if (layer.id === "website") return <div key="website" style={{ ...base, fontSize: "5px", color: zvukyTextColor + "88", letterSpacing: "0.4px" }}>VOODOO808.COM</div>;
+                      return null;
+                    })}
+                  </div>
+                );
+              })()}
+
+              <div style={{ flex: 1 }}>
+                <p style={{ fontSize: "12px", color: "#555", margin: "0 0 16px 0", lineHeight: 1.6 }}>Stáhni si ZVUKY story kartu pro Instagram — sdílej sound kit jako příběh. Šablona se nastavuje v Admin → IG Stories → ZVUKY.</p>
+                <button onClick={downloadZvukyStoryCard} disabled={isGenerating} style={{ width: "100%", padding: "11px", background: isGenerating ? "#222" : "#fff", color: isGenerating ? "#555" : "#000", border: "none", borderRadius: "4px", fontSize: "13px", fontWeight: "600", cursor: isGenerating ? "default" : "pointer", transition: "all 0.2s", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+                  {isGenerating ? (
+                    <>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: "spin 1s linear infinite" }}><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" /></svg>
+                      Generuji...
+                    </>
+                  ) : (
+                    <>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+                      Stáhnout ZVUKY Story (1080×1920)
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "story" && resolvedType !== "sound_kit" && (
             <div style={{ display: "flex", gap: "20px", alignItems: "flex-start" }}>
               {/* Mini preview — iPhone proportions */}
               {(() => {

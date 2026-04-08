@@ -1265,9 +1265,14 @@ function Beaty() {
                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                   </svg>
                 </button>
-                <span style={{ fontSize: "10px", color: "#555", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", minWidth: "20px", letterSpacing: "0.02em", transition: "color 0.2s" }}>
+                {currentBeat?.id === beat.id && isPlaying ? (
+                <span style={{ fontSize: "10px", color: "#aaa", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", minWidth: "20px", letterSpacing: "0.02em", transition: "color 0.2s", display: "flex", alignItems: "center", gap: "2px" }}>
+                  <svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor" style={{ flexShrink: 0 }}><path d="M2 1.5L8 5L2 8.5V1.5Z"/></svg>
                   {(beatPlayCounts[beat.id] ?? 0).toLocaleString()}
                 </span>
+              ) : (
+                <span style={{ fontSize: "10px", color: "transparent", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", minWidth: "20px", letterSpacing: "0.02em" }}>0</span>
+              )}
               </div>
               <div style={{ flexShrink: 0 }}>
                 <img
