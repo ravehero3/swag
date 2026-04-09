@@ -159,7 +159,6 @@ function Beaty() {
   const [savedBeats, setSavedBeats] = useState<Set<number>>(new Set());
   const [poppingHearts, setPoppingHearts] = useState<Set<number>>(new Set());
   const [beatPlayCounts, setBeatPlayCounts] = useState<Record<number, number>>({});
-  const [swappedBeat, setSwappedBeat] = useState<Beat | null>(null);
   const [contractModalBeat, setContractModalBeat] = useState<Beat | null>(null);
   const [downloadingBeat, setDownloadingBeat] = useState<Beat | null>(null);
 
@@ -300,16 +299,15 @@ function Beaty() {
           audioRef.current?.play().then(() => setIsPlaying(true)).catch(() => {});
         }
       } else {
-        const liveHighlight = swappedBeat ?? highlightedBeat;
-        const allBeats = liveHighlight
-          ? [liveHighlight, ...beats.filter((b) => b.id !== liveHighlight.id)]
+        const allBeats = highlightedBeat
+          ? [highlightedBeat, ...beats.filter((b) => b.id !== highlightedBeat.id)]
           : beats;
         if (allBeats.length > 0) playBeat(allBeats[0]);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [currentBeat, isPlaying, beats, highlightedBeat, swappedBeat]);
+  }, [currentBeat, isPlaying, beats, highlightedBeat]);
 
   useEffect(() => {
     if (!currentBeat) return;
@@ -447,12 +445,6 @@ function Beaty() {
       audio.src = src;
       audio.load();
 
-      // Featured track swap: if we play a non-highlighted beat, it takes the featured spot
-      if (highlightedBeat && beat.id !== highlightedBeat.id) {
-        setSwappedBeat(beat);
-      } else {
-        setSwappedBeat(null);
-      }
 
       fetch(`/api/beats/${beat.id}/play`, { method: "POST" })
         .then(r => r.ok ? r.json() : null)
@@ -498,7 +490,7 @@ function Beaty() {
 
   const handlePrevious = () => {
     if (!currentBeat) return;
-    const liveHighlight = swappedBeat ?? highlightedBeat;
+    const liveHighlight = currentBeat ?? highlightedBeat;
     const allBeats = liveHighlight ? [liveHighlight, ...beats.filter(b => b.id !== liveHighlight.id)] : beats;
     const currentIndex = allBeats.findIndex(b => b.id === currentBeat.id);
     const prevIndex = currentIndex > 0 ? currentIndex - 1 : allBeats.length - 1;
@@ -507,7 +499,7 @@ function Beaty() {
 
   const handleNext = () => {
     if (!currentBeat) return;
-    const liveHighlight = swappedBeat ?? highlightedBeat;
+    const liveHighlight = currentBeat ?? highlightedBeat;
     const allBeats = liveHighlight ? [liveHighlight, ...beats.filter(b => b.id !== liveHighlight.id)] : beats;
     const currentIndex = allBeats.findIndex(b => b.id === currentBeat.id);
     
@@ -613,12 +605,12 @@ function Beaty() {
   };
 
   const filteredBeats = beatLimit ? beats.slice(0, beatLimit) : beats;
-  // If a beat from the list is playing, it swaps into the featured slot
-  const displayedHighlight = swappedBeat ?? highlightedBeat;
-  // The list excludes whatever is in the featured slot; if swapped, original highlighted comes back into the list
+  // Always show the currently playing beat in the featured slot
+  const displayedHighlight = currentBeat ?? highlightedBeat;
+  // The list excludes whatever is in the featured slot; if a different beat is playing, original highlighted comes back into the list
   const otherBeats = (() => {
     const base = filteredBeats.filter((b) => b.id !== displayedHighlight?.id);
-    if (swappedBeat && highlightedBeat && swappedBeat.id !== highlightedBeat.id) {
+    if (currentBeat && highlightedBeat && currentBeat.id !== highlightedBeat.id) {
       return [highlightedBeat, ...base];
     }
     return base;
@@ -774,7 +766,7 @@ function Beaty() {
               <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-start", flex: 1 }}>
                 <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "6px" }}>
                   <span style={{ fontSize: "12px", fontFamily: "Work Sans, sans-serif", color: "#999" }}>
-                    Beat týdne
+                    {currentBeat && currentBeat.id === displayedHighlight?.id && isPlaying ? "Nyní hraje" : currentBeat ? "Naposledy hrán" : "Beat týdne"}
                   </span>
                   <span style={{ fontSize: "12px", fontFamily: "Work Sans, sans-serif", color: "#666" }}>•</span>
                   <span style={{ fontSize: "12px", fontFamily: "Work Sans, sans-serif", color: "#666" }}>

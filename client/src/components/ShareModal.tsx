@@ -93,7 +93,8 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
   const zvukyOverlayOpacity = parseFloat(settings?.ig_zvuky_overlay_opacity || "0.5");
   const zvukyTextColor = settings?.ig_zvuky_text_color || "#ffffff";
   const zvukyShowHoverCard = settings?.ig_zvuky_show_hover_card === "true";
-  const zvukyHoverShowSounds = settings?.ig_zvuky_hover_show_sounds === "true";
+  const zvukyHoverShowSounds = settings?.ig_zvuky_hover_show_sounds !== "false";
+  const zvukyTypeLabels: Record<string, string> = { drum_kit: "Drum Kit", one_shot_kit: "One Shot Kit", loop_kit: "Loop Kit", one_shot_bundle: "One Shot Bundle", drum_kit_bundle: "Drum Kit Bundle" };
   const zvukyShowArtworkBg = settings?.ig_zvuky_show_artwork_bg === "true";
   const zvukyLogoInvert = settings?.ig_zvuky_logo_invert === "true";
   const zvukyLayers: { id: string; visible: boolean; y?: number; mode?: string; imageUrl?: string | null; align?: string }[] = (() => {
@@ -839,15 +840,16 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
         ctx.textAlign = "center";
         ctx.font = "34px Helvetica, Arial, sans-serif";
         ctx.fillStyle = "rgba(255,255,255,0.4)";
-        ctx.fillText("SOUND KIT", CW / 2, hcY + 60);
+        const productTypeLabel = zvukyTypeLabels[(product as any)?.type] || (product as any)?.typeLabel || "Sound Kit";
+        ctx.fillText(productTypeLabel.toUpperCase(), CW / 2, hcY + 60);
         ctx.font = "bold 62px Helvetica, Arial, sans-serif";
         ctx.fillStyle = "#fff";
         const hcTitleLines = wrapText(ctx, resolvedTitle, hcW - 80);
         hcTitleLines.slice(0, 2).forEach((line, li) => ctx.fillText(line, CW / 2, hcY + 130 + li * 70));
         ctx.font = "40px Helvetica, Arial, sans-serif";
         ctx.fillStyle = "rgba(255,255,255,0.55)";
-        if (zvukyHoverShowSounds && (product as any)?.sound_count != null) {
-          ctx.fillText(`${(product as any).sound_count} zvuků`, CW / 2, hcY + 196);
+        if (zvukyHoverShowSounds && (product as any)?.number_of_sounds != null) {
+          ctx.fillText(`${(product as any).number_of_sounds} zvuků`, CW / 2, hcY + 196);
         } else if (!zvukyHoverShowSounds && product?.price !== undefined) {
           ctx.fillText(product.price === 0 ? "ZDARMA" : `${product.price} CZK`, CW / 2, hcY + 196);
         }
@@ -987,10 +989,10 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
                         <div style={{ width: "7px", height: "7px", background: "rgba(10,10,10,0.92)", border: "1px solid #333", borderRight: "none", borderBottom: "none", transform: "rotate(45deg)", margin: "0 auto", marginBottom: "-3px", position: "relative", zIndex: 1 }} />
                         {/* Pill body */}
                         <div style={{ background: "rgba(10,10,10,0.92)", border: "1px solid #333", borderRadius: "3px", padding: "3px 5px", position: "relative", zIndex: 2 }}>
-                          <div style={{ fontSize: "3.5px", color: "#666", marginBottom: "1px" }}>SOUND KIT</div>
+                          <div style={{ fontSize: "3.5px", color: "#666", marginBottom: "1px" }}>{(zvukyTypeLabels[(product as any)?.type] || (product as any)?.typeLabel || "Sound Kit").toUpperCase()}</div>
                           <div style={{ fontSize: "5px", fontWeight: 700, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: "1px" }}>{resolvedTitle}</div>
                           {zvukyHoverShowSounds
-                            ? (product as any)?.sound_count != null && <div style={{ fontSize: "3.5px", color: "#999" }}>{(product as any).sound_count} zvuků</div>
+                            ? (product as any)?.number_of_sounds != null && <div style={{ fontSize: "3.5px", color: "#999" }}>{(product as any).number_of_sounds} zvuků</div>
                             : product?.price !== undefined && <div style={{ fontSize: "3.5px", color: "#999" }}>{product.price === 0 ? "ZDARMA" : `${product.price} CZK`}</div>
                           }
                         </div>

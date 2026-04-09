@@ -2935,7 +2935,7 @@ function IGStoriesTab({ settings, onRefresh }: any) {
   const zvukyOverlay = parseFloat(zvukyValues.ig_zvuky_overlay_opacity);
   const zvukyTextColor = zvukyValues.ig_zvuky_text_color;
   const zvukyShowHoverCard = zvukyValues.ig_zvuky_show_hover_card === "true";
-  const zvukyHoverShowSounds = zvukyValues.ig_zvuky_hover_show_sounds === "true";
+  const zvukyHoverShowSounds = zvukyValues.ig_zvuky_hover_show_sounds !== "false";
   const zvukyShowArtworkBg = zvukyValues.ig_zvuky_show_artwork_bg === "true";
   const zvukyLogoUrl = zvukyValues.ig_zvuky_logo_url;
   const zvukyLogoInvert = zvukyValues.ig_zvuky_logo_invert === "true";
@@ -3369,10 +3369,13 @@ function IGStoriesTab({ settings, onRefresh }: any) {
                     <div style={{ position: "relative", width: "10px", height: "10px", background: "rgba(10,10,10,0.92)", border: "1px solid #333", borderRight: "none", borderBottom: "none", transform: "rotate(45deg)", margin: "0 auto", marginBottom: "-5px", zIndex: 1 }} />
                     {/* Pill body */}
                     <div style={{ background: "rgba(10,10,10,0.92)", border: "1px solid #333", borderRadius: "5px", padding: "5px 7px", backdropFilter: "blur(8px)", position: "relative", zIndex: 2 }}>
-                      <div style={{ fontSize: "5px", color: "#666", marginBottom: "2px" }}>SOUND KIT</div>
+                      {(() => {
+                        const kitTypeLabels: Record<string, string> = { drum_kit: "Drum Kit", one_shot_kit: "One Shot Kit", loop_kit: "Loop Kit", one_shot_bundle: "One Shot Bundle", drum_kit_bundle: "Drum Kit Bundle" };
+                        return <div style={{ fontSize: "5px", color: "#666", marginBottom: "2px" }}>{(kitTypeLabels[previewKit?.type] || "Sound Kit").toUpperCase()}</div>;
+                      })()}
                       <div style={{ fontSize: "7px", fontWeight: 700, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: "2px" }}>{zvukyPreviewTitle}</div>
                       {zvukyHoverShowSounds
-                        ? previewKit?.sound_count != null && <div style={{ fontSize: "5.5px", color: "#999" }}>{previewKit.sound_count} zvuků</div>
+                        ? previewKit?.number_of_sounds != null && <div style={{ fontSize: "5.5px", color: "#999" }}>{previewKit.number_of_sounds} zvuků</div>
                         : previewKit?.price !== undefined && <div style={{ fontSize: "5.5px", color: "#999" }}>{previewKit.is_free ? "ZDARMA" : `${previewKit.price} CZK`}</div>
                       }
                     </div>
