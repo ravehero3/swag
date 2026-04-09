@@ -484,6 +484,4 @@ export default async (req: any, res: any) => {
   }
 };
 
-if (process.env.NODE_ENV !== "production") {
-  startServer().catch(console.error);
-}
+startServer().catch(console.error);
