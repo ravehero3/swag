@@ -490,8 +490,7 @@ function Beaty() {
 
   const handlePrevious = () => {
     if (!currentBeat) return;
-    const liveHighlight = currentBeat ?? highlightedBeat;
-    const allBeats = liveHighlight ? [liveHighlight, ...beats.filter(b => b.id !== liveHighlight.id)] : beats;
+    const allBeats = highlightedBeat ? [highlightedBeat, ...beats.filter(b => b.id !== highlightedBeat.id)] : beats;
     const currentIndex = allBeats.findIndex(b => b.id === currentBeat.id);
     const prevIndex = currentIndex > 0 ? currentIndex - 1 : allBeats.length - 1;
     playBeat(allBeats[prevIndex]);
@@ -499,13 +498,14 @@ function Beaty() {
 
   const handleNext = () => {
     if (!currentBeat) return;
-    const liveHighlight = currentBeat ?? highlightedBeat;
-    const allBeats = liveHighlight ? [liveHighlight, ...beats.filter(b => b.id !== liveHighlight.id)] : beats;
+    const allBeats = highlightedBeat ? [highlightedBeat, ...beats.filter(b => b.id !== highlightedBeat.id)] : beats;
     const currentIndex = allBeats.findIndex(b => b.id === currentBeat.id);
     
     if (isShuffling) {
-      const randomIndex = Math.floor(Math.random() * allBeats.length);
-      playBeat(allBeats[randomIndex]);
+      const otherBeatsForShuffle = allBeats.filter(b => b.id !== currentBeat.id);
+      if (otherBeatsForShuffle.length === 0) return;
+      const randomIndex = Math.floor(Math.random() * otherBeatsForShuffle.length);
+      playBeat(otherBeatsForShuffle[randomIndex]);
     } else {
       const nextIndex = currentIndex < allBeats.length - 1 ? currentIndex + 1 : 0;
       playBeat(allBeats[nextIndex]);
@@ -611,7 +611,7 @@ function Beaty() {
   const otherBeats = (() => {
     const base = filteredBeats.filter((b) => b.id !== displayedHighlight?.id);
     if (currentBeat && highlightedBeat && currentBeat.id !== highlightedBeat.id) {
-      return [highlightedBeat, ...base];
+      return [highlightedBeat, ...base.filter(b => b.id !== highlightedBeat.id)];
     }
     return base;
   })();

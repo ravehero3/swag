@@ -567,7 +567,7 @@ function Home() {
   const otherBeats = (() => {
     const base = filteredBeats.filter((b) => b.id !== displayedHighlight?.id);
     if (currentBeat && highlightedBeat && currentBeat.id !== highlightedBeat.id) {
-      return [highlightedBeat, ...base];
+      return [highlightedBeat, ...base.filter(b => b.id !== highlightedBeat.id)];
     }
     return base;
   })();
@@ -718,38 +718,38 @@ function Home() {
                   }
                 `}</style>
                 <img
-                  src={highlightedBeat.artwork_url || "/uploads/artwork/metallic-logo.png"}
-                  alt={highlightedBeat.title}
+                  src={displayedHighlight.artwork_url || "/uploads/artwork/metallic-logo.png"}
+                  alt={displayedHighlight.title}
                   onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
                   style={{ width: "200px", height: "200px", objectFit: "cover", border: "1px solid #666", borderRadius: "4px", display: "block" }}
                 />
                 <div className="hac-blur-ring" />
                 <button
-                  onClick={() => playBeat(highlightedBeat)}
-                  className={`hac-play-overlay${currentBeat?.id === highlightedBeat.id && isPlaying ? " is-playing" : ""}`}
-                  style={{ paddingLeft: currentBeat?.id === highlightedBeat.id && isPlaying ? "0" : "3px" }}
+                  onClick={() => playBeat(displayedHighlight)}
+                  className={`hac-play-overlay${currentBeat?.id === displayedHighlight.id && isPlaying ? " is-playing" : ""}`}
+                  style={{ paddingLeft: currentBeat?.id === displayedHighlight.id && isPlaying ? "0" : "3px" }}
                 >
-                  {currentBeat?.id === highlightedBeat.id && isPlaying ? "⏸" : "▶"}
+                  {currentBeat?.id === displayedHighlight.id && isPlaying ? "⏸" : "▶"}
                 </button>
               </div>
 
               <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-start", flex: 1 }}>
                 <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "6px" }}>
                   <span style={{ fontSize: "12px", fontFamily: "Work Sans, sans-serif", color: "#999" }}>
-                    Beat týdne
+                    {currentBeat && currentBeat.id === displayedHighlight.id && isPlaying ? "Nyní hraje" : currentBeat ? "Naposledy hrán" : "Beat týdne"}
                   </span>
                   <span style={{ fontSize: "12px", fontFamily: "Work Sans, sans-serif", color: "#666" }}>•</span>
                   <span style={{ fontSize: "12px", fontFamily: "Work Sans, sans-serif", color: "#666" }}>
-                    {highlightedBeat.bpm}BPM{highlightedBeat.key ? ` - ${highlightedBeat.key}` : ""}
+                    {displayedHighlight.bpm}BPM{displayedHighlight.key ? ` - ${displayedHighlight.key}` : ""}
                   </span>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "8px" }}>
                   <h2 style={{ fontSize: "30px", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontWeight: "400", lineHeight: "1.1", position: "relative", zIndex: 10, margin: 0 }}>
-                    {highlightedBeat.title}
+                    {displayedHighlight.title}
                   </h2>
                   <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                     <button
-                      onClick={() => openContractModal(highlightedBeat)}
+                      onClick={() => openContractModal(displayedHighlight)}
                       className="btn-bounce"
                       style={{
                         padding: "8px 8px 8px 16px",
@@ -839,7 +839,7 @@ function Home() {
                         </svg>
                         <span style={{ position: "absolute", fontSize: "16px", fontWeight: "400", color: "#fff", lineHeight: "1", right: "-10px", top: "-5px" }}>+</span>
                       </div>
-                      <span style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "8px" }}>{Math.floor(highlightedBeat.price)} CZK</span>
+                      <span style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "8px" }}>{Math.floor(displayedHighlight.price)} CZK</span>
                     </button>
                     <button
                       style={{
@@ -868,7 +868,7 @@ function Home() {
                       </svg>
                     </button>
                     <button
-                      onClick={() => setShareBeat(highlightedBeat)}
+                      onClick={() => setShareBeat(displayedHighlight)}
                       style={{
                         padding: "8px",
                         background: "#000",
@@ -896,9 +896,9 @@ function Home() {
                         <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
                       </svg>
                     </button>
-                    {highlightedBeat.tags && highlightedBeat.tags.length > 0 && (
+                    {displayedHighlight.tags && displayedHighlight.tags.length > 0 && (
                       <div className="desktop-only" style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
-                        {highlightedBeat.tags.map((tag) => (
+                        {displayedHighlight.tags.map((tag) => (
                           <button
                             key={tag}
                             onClick={() => setLocation(`/beaty?tag=${encodeURIComponent(tag)}`)}
@@ -936,7 +936,7 @@ function Home() {
 
               {user && (
                 <button
-                  onClick={() => toggleSave(highlightedBeat)}
+                  onClick={() => toggleSave(displayedHighlight)}
                   style={{
                     background: "transparent",
                     border: "none",
@@ -947,11 +947,11 @@ function Home() {
                   }}
                 >
                   <svg
-                    className={poppingHearts.has(highlightedBeat.id) ? "heart-pop" : ""}
+                    className={poppingHearts.has(displayedHighlight.id) ? "heart-pop" : ""}
                     width="24"
                     height="24"
                     viewBox="0 0 24 24"
-                    fill={savedBeats.has(highlightedBeat.id) ? "#fff" : "none"}
+                    fill={savedBeats.has(displayedHighlight.id) ? "#fff" : "none"}
                     stroke="#fff"
                     strokeWidth="2"
                     style={{ transition: "fill 0.2s ease" }}
