@@ -563,7 +563,14 @@ function Home() {
   };
 
   const filteredBeats = beatLimit ? beats.slice(0, beatLimit) : beats;
-  const otherBeats = filteredBeats.filter((b) => b.id !== highlightedBeat?.id);
+  const displayedHighlight = currentBeat ?? highlightedBeat;
+  const otherBeats = (() => {
+    const base = filteredBeats.filter((b) => b.id !== displayedHighlight?.id);
+    if (currentBeat && highlightedBeat && currentBeat.id !== highlightedBeat.id) {
+      return [highlightedBeat, ...base];
+    }
+    return base;
+  })();
 
   if (beatsLoading) {
     return (
@@ -666,7 +673,7 @@ function Home() {
       </div>
       
       <div style={{ padding: "0 20px" }} className="fade-in-grid">
-        {highlightedBeat && (
+        {displayedHighlight && (
           <div className="fade-in-section delay-2" style={{ marginBottom: "48px", display: "flex", justifyContent: "center", marginTop: "-116px", position: "relative", zIndex: 50 }}>
             <div style={{ display: "flex", gap: "48px", alignItems: "flex-start", marginBottom: "32px", width: "1000px", position: "relative", zIndex: 50 }}>
               <div style={{ position: "relative", flexShrink: 0 }} className="highlight-artwork-container">
