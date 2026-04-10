@@ -1116,7 +1116,7 @@ function Beaty() {
                         (c.username || c.email)?.[0]?.toUpperCase() || "?"
                       )}
                     </div>
-                    <div style={{ maxWidth: "260px", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", wordBreak: "break-word" } as any}>
+                    <div style={{ maxWidth: "260px", wordBreak: "break-word" }}>
                       <span style={{ fontSize: "11px", color: "#555", marginRight: "6px" }}>{c.username || c.email?.split("@")[0]}</span>
                       <span style={{ fontSize: "12px", color: "#bbb" }}>{c.text}</span>
                     </div>
