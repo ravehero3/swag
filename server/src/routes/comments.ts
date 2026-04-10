@@ -108,6 +108,9 @@ router.post("/:beatId/comments", requireAuth, async (req: Request, res: Response
     if (!text || !text.trim()) {
       return res.status(400).json({ error: "Komentář nesmí být prázdný" });
     }
+    if (text.trim().length > 200) {
+      return res.status(400).json({ error: "Komentář nesmí být delší než 200 znaků" });
+    }
     const offset = typeof time_offset === "number" && isFinite(time_offset) ? time_offset : 0;
     const result = await pool.query(
       `INSERT INTO beat_comments (beat_id, user_id, text, time_offset)

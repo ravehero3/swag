@@ -1084,6 +1084,7 @@ function Beaty() {
                 onKeyDown={(e) => { if (e.key === "Enter") handleCommentSubmit(); }}
                 placeholder={user ? "Napište komentář..." : "Pro komentáře se přihlaste"}
                 disabled={!user || submittingComment}
+                maxLength={200}
                 data-testid="input-beat-comment"
                 style={{ flex: 1, padding: "8px 16px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "20px", color: "#fff", fontSize: "13px", fontFamily: "inherit", outline: "none" }}
               />
@@ -1099,25 +1100,25 @@ function Beaty() {
               )}
             </div>
             {comments.length > 0 && (
-              <div style={{ marginTop: "12px", display: "flex", flexWrap: "wrap", gap: "6px", maxHeight: "160px", overflowY: "auto" }}>
+              <div style={{ marginTop: "12px", display: "flex", flexWrap: "wrap", gap: "6px", maxHeight: "320px", overflowY: "auto" }}>
                 {comments.map((c: any) => (
                   <div
                     key={c.id}
                     data-testid={`comment-item-${c.id}`}
-                    style={{ position: "relative", display: "inline-flex", gap: "6px", alignItems: "center", background: "#111", border: "1px solid #2a2a2a", borderRadius: "20px", padding: "4px 10px 4px 6px" }}
+                    style={{ position: "relative", display: "inline-flex", gap: "6px", alignItems: "flex-start", background: "#111", border: "1px solid #2a2a2a", borderRadius: "12px", padding: "6px 10px 6px 6px" }}
                     onMouseEnter={() => setHoveredCommentId(c.id)}
                     onMouseLeave={() => setHoveredCommentId(null)}
                   >
-                    <div style={{ width: "22px", height: "22px", borderRadius: "50%", background: "#222", border: "1px solid #333", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "9px", color: "#666", overflow: "hidden" }}>
+                    <div style={{ width: "22px", height: "22px", borderRadius: "50%", background: "#222", border: "1px solid #333", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "9px", color: "#666", overflow: "hidden", marginTop: "1px" }}>
                       {c.avatar_url ? (
                         <img src={c.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                       ) : (
                         (c.username || c.email)?.[0]?.toUpperCase() || "?"
                       )}
                     </div>
-                    <div style={{ maxWidth: "220px", overflow: "hidden" }}>
+                    <div style={{ maxWidth: "260px", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", wordBreak: "break-word" } as any}>
                       <span style={{ fontSize: "11px", color: "#555", marginRight: "6px" }}>{c.username || c.email?.split("@")[0]}</span>
-                      <span style={{ fontSize: "12px", color: "#bbb", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.text}</span>
+                      <span style={{ fontSize: "12px", color: "#bbb" }}>{c.text}</span>
                     </div>
                     {c.user_id === user?.id && hoveredCommentId === c.id && (
                       <button
