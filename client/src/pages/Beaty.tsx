@@ -999,7 +999,7 @@ function Beaty() {
                         <span style={{ fontSize: "10px", color: "#888" }}>{(c.username || c.email)?.[0]?.toUpperCase() || "?"}</span>
                       )}
                     </div>
-                    <div className="comment-tooltip" style={{ position: "absolute", bottom: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)", background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "6px", padding: "6px 10px", fontSize: "12px", color: "#ccc", whiteSpace: "nowrap", maxWidth: "240px", overflow: "hidden", textOverflow: "ellipsis", zIndex: 999, boxShadow: "0 4px 12px rgba(0,0,0,0.5)" }}>
+                    <div className="comment-tooltip" style={{ position: "absolute", bottom: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)", background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "6px", padding: "6px 10px", fontSize: "12px", color: "#ccc", maxWidth: "260px", wordBreak: "break-word", zIndex: 999, boxShadow: "0 4px 12px rgba(0,0,0,0.5)" }}>
                       <span style={{ color: "#555", marginRight: "6px" }}>{c.username || c.email?.split("@")[0]}</span>
                       {c.text}
                     </div>
