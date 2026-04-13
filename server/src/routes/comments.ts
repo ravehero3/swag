@@ -22,13 +22,15 @@ router.get("/:beatId/comments", async (req: Request, res: Response) => {
 
 router.get("/:beatId/stats", async (req: Request, res: Response) => {
   try {
-    const [commentsRes, savesRes] = await Promise.all([
+    const [commentsRes, savesRes, playsRes] = await Promise.all([
       pool.query("SELECT COUNT(*) FROM beat_comments WHERE beat_id = $1", [req.params.beatId]),
       pool.query("SELECT COUNT(*) FROM saved_items WHERE item_id = $1 AND item_type = 'beat'", [req.params.beatId]),
+      pool.query("SELECT play_count FROM beats WHERE id = $1", [req.params.beatId]),
     ]);
     res.json({
       comments: parseInt(commentsRes.rows[0].count, 10),
       saves: parseInt(savesRes.rows[0].count, 10),
+      plays: playsRes.rows[0]?.play_count ?? 0,
     });
   } catch (error) {
     res.status(500).json({ error: "Chyba při načítání statistik" });
