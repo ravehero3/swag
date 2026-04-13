@@ -570,8 +570,19 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
           const nameFsz = 4.5 * xScale;
           const cFsz = 5.5 * xScale;
           ctx.font = `${cFsz}px Helvetica,Arial,sans-serif`;
-          const maxTipW = Math.min(artW * 0.65, 180 * xScale);
-          const commentLines = wrapText(ctx, userComment.text, maxTipW - tipPadX * 2);
+          const maxTipW = Math.min(artW * 0.82, 220 * xScale);
+          const MAX_COMMENT_LINES = 3;
+          const allCommentLines = wrapText(ctx, userComment.text, maxTipW - tipPadX * 2);
+          let commentLines: string[];
+          if (allCommentLines.length > MAX_COMMENT_LINES) {
+            let lastLine = allCommentLines[MAX_COMMENT_LINES - 1];
+            while (lastLine.length > 0 && ctx.measureText(lastLine + "…").width > maxTipW - tipPadX * 2) {
+              lastLine = lastLine.slice(0, -1);
+            }
+            commentLines = [...allCommentLines.slice(0, MAX_COMMENT_LINES - 1), lastLine + "…"];
+          } else {
+            commentLines = allCommentLines;
+          }
           const tipH = tipPadY * 2 + nameFsz + 3 * xScale + commentLines.length * (cFsz + 2 * xScale);
           const tipW = maxTipW;
           const tipX = Math.max(cardX + cardPad, Math.min(waveEndX - tipW, commentX - tipW / 2));
