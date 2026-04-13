@@ -264,6 +264,8 @@ export default function ProductCard({
           alignItems: "center",
           justifyContent: "center",
           transition: "all 0.3s ease",
+          padding: "40px",
+          boxSizing: "border-box",
         }}
       >
         <img
