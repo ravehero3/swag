@@ -352,6 +352,33 @@ app.get("/api/audio-proxy", async (req: any, res: any) => {
   }
 });
 
+app.get("/api/image-proxy", async (req: any, res: any) => {
+  const url = req.query.url as string;
+  if (!url) return res.status(400).json({ error: "Missing url" });
+  if (!url.startsWith("https://") && !url.startsWith("http://")) {
+    return res.status(403).json({ error: "Only http/https URLs allowed" });
+  }
+
+  try {
+    const upstream = await fetch(url, {
+      headers: { "User-Agent": "VOODOO808-Server/1.0" },
+    });
+    if (!upstream.ok) return res.status(upstream.status).end();
+
+    const ct = upstream.headers.get("content-type") || "image/jpeg";
+    res.setHeader("Content-Type", ct);
+    res.setHeader("Cache-Control", "public, max-age=86400");
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    const cl = upstream.headers.get("content-length");
+    if (cl) res.setHeader("Content-Length", cl);
+
+    const buf = await upstream.arrayBuffer();
+    res.end(Buffer.from(buf));
+  } catch (err) {
+    if (!res.headersSent) res.status(500).json({ error: "Image proxy error", detail: String(err) });
+  }
+});
+
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error("Express error on", req.method, req.path, ":", err.message);
   if (req.path.startsWith('/api/') || req.path.startsWith('/uploads/')) {
