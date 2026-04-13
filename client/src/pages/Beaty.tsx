@@ -1063,16 +1063,16 @@ function Beaty() {
         {currentBeat && isPlaying && (
           <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 16px", marginTop: "8px", marginBottom: "8px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "12px" }}>
-              <span data-testid="text-beat-saves" style={{ fontSize: "12px", color: "#555", display: "flex", alignItems: "center", gap: "4px" }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ color: "#555" }}><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+              <span data-testid="text-beat-saves" style={{ fontSize: "12px", color: "#777", display: "flex", alignItems: "center", gap: "4px" }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ color: "#777" }}><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
                 {beatStats?.saves ?? 0}
               </span>
-              <span data-testid="text-beat-comments" style={{ fontSize: "12px", color: "#555", display: "flex", alignItems: "center", gap: "4px" }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: "#555" }}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+              <span data-testid="text-beat-comments" style={{ fontSize: "12px", color: "#777", display: "flex", alignItems: "center", gap: "4px" }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: "#777" }}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
                 {beatStats?.comments ?? 0}
               </span>
-              <span data-testid="text-beat-plays" style={{ fontSize: "12px", color: "#555", display: "flex", alignItems: "center", gap: "4px" }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ color: "#555" }}><polygon points="5 3 19 12 5 21 5 3" /></svg>
+              <span data-testid="text-beat-plays" style={{ fontSize: "12px", color: "#777", display: "flex", alignItems: "center", gap: "4px" }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ color: "#777" }}><polygon points="5 3 19 12 5 21 5 3" /></svg>
                 {(beatStats?.plays ?? beatPlayCounts[currentBeat.id] ?? 0).toLocaleString()}
               </span>
             </div>
@@ -1115,21 +1115,21 @@ function Beaty() {
                   <div
                     key={c.id}
                     data-testid={`comment-item-${c.id}`}
-                    style={{ position: "relative", background: "#111", border: "1px solid #2a2a2a", borderRadius: "12px", padding: "6px 10px 6px 6px", width: "100%" }}
+                    style={{ position: "relative", background: "#111", border: "1px solid #2a2a2a", borderRadius: "12px", padding: "8px 10px 8px 8px", width: "100%", boxSizing: "border-box" }}
                     onMouseEnter={() => setHoveredCommentId(c.id)}
                     onMouseLeave={() => setHoveredCommentId(null)}
                   >
-                    <div style={{ display: "flex", gap: "6px", alignItems: "flex-start" }}>
-                      <div style={{ width: "22px", height: "22px", borderRadius: "50%", background: "#222", border: "1px solid #333", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "9px", color: "#666", overflow: "hidden", marginTop: "1px" }}>
+                    <div style={{ display: "flex", gap: "8px", alignItems: "flex-start" }}>
+                      <div style={{ width: "22px", height: "22px", borderRadius: "50%", background: "#222", border: "1px solid #333", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "9px", color: "#666", overflow: "hidden", marginTop: "2px" }}>
                         {c.avatar_url ? (
                           <img src={c.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                         ) : (
                           (c.username || c.email)?.[0]?.toUpperCase() || "?"
                         )}
                       </div>
-                      <div style={{ flex: 1, minWidth: 0, wordBreak: "break-word", whiteSpace: "normal" }}>
-                        <span style={{ fontSize: "11px", color: "#555", marginRight: "6px" }}>{c.username || c.email?.split("@")[0]}</span>
-                        <span style={{ fontSize: "12px", color: "#bbb" }}>{c.text}</span>
+                      <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: "2px" }}>
+                        <span style={{ fontSize: "11px", color: "#555", display: "block" }}>{c.username || c.email?.split("@")[0]}</span>
+                        <span style={{ fontSize: "13px", color: "#ccc", display: "block", wordBreak: "break-word", whiteSpace: "pre-wrap", lineHeight: "1.5" }}>{c.text}</span>
                       </div>
                     </div>
                     {c.user_id === user?.id && hoveredCommentId === c.id && (
