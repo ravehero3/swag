@@ -1105,20 +1105,22 @@ function Beaty() {
                   <div
                     key={c.id}
                     data-testid={`comment-item-${c.id}`}
-                    style={{ position: "relative", display: "inline-flex", gap: "6px", alignItems: "flex-start", background: "#111", border: "1px solid #2a2a2a", borderRadius: "12px", padding: "6px 10px 6px 6px" }}
+                    style={{ position: "relative", display: "inline-block", maxWidth: "320px", verticalAlign: "top", background: "#111", border: "1px solid #2a2a2a", borderRadius: "12px", padding: "6px 10px 6px 6px" }}
                     onMouseEnter={() => setHoveredCommentId(c.id)}
                     onMouseLeave={() => setHoveredCommentId(null)}
                   >
-                    <div style={{ width: "22px", height: "22px", borderRadius: "50%", background: "#222", border: "1px solid #333", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "9px", color: "#666", overflow: "hidden", marginTop: "1px" }}>
-                      {c.avatar_url ? (
-                        <img src={c.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                      ) : (
-                        (c.username || c.email)?.[0]?.toUpperCase() || "?"
-                      )}
-                    </div>
-                    <div style={{ maxWidth: "260px", wordBreak: "break-word" }}>
-                      <span style={{ fontSize: "11px", color: "#555", marginRight: "6px" }}>{c.username || c.email?.split("@")[0]}</span>
-                      <span style={{ fontSize: "12px", color: "#bbb" }}>{c.text}</span>
+                    <div style={{ display: "flex", gap: "6px", alignItems: "flex-start" }}>
+                      <div style={{ width: "22px", height: "22px", borderRadius: "50%", background: "#222", border: "1px solid #333", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "9px", color: "#666", overflow: "hidden", marginTop: "1px" }}>
+                        {c.avatar_url ? (
+                          <img src={c.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        ) : (
+                          (c.username || c.email)?.[0]?.toUpperCase() || "?"
+                        )}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0, wordBreak: "break-word" }}>
+                        <span style={{ fontSize: "11px", color: "#555", marginRight: "6px" }}>{c.username || c.email?.split("@")[0]}</span>
+                        <span style={{ fontSize: "12px", color: "#bbb" }}>{c.text}</span>
+                      </div>
                     </div>
                     {c.user_id === user?.id && hoveredCommentId === c.id && (
                       <button
