@@ -999,7 +999,7 @@ function Beaty() {
                         <span style={{ fontSize: "10px", color: "#888" }}>{(c.username || c.email)?.[0]?.toUpperCase() || "?"}</span>
                       )}
                     </div>
-                    <div className="comment-tooltip" style={{ position: "absolute", bottom: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)", background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "6px", padding: "6px 10px", fontSize: "12px", color: "#ccc", maxWidth: "260px", wordBreak: "break-word", zIndex: 999, boxShadow: "0 4px 12px rgba(0,0,0,0.5)" }}>
+                    <div className="comment-tooltip" style={{ position: "absolute", bottom: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)", background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "6px", padding: "6px 10px", fontSize: "12px", color: "#ccc", minWidth: "160px", maxWidth: "420px", width: "max-content", wordBreak: "break-word", zIndex: 999, boxShadow: "0 4px 12px rgba(0,0,0,0.5)", whiteSpace: "normal" }}>
                       <span style={{ color: "#555", marginRight: "6px" }}>{c.username || c.email?.split("@")[0]}</span>
                       {c.text}
                     </div>
@@ -1105,7 +1105,7 @@ function Beaty() {
                   <div
                     key={c.id}
                     data-testid={`comment-item-${c.id}`}
-                    style={{ position: "relative", display: "inline-block", maxWidth: "320px", verticalAlign: "top", background: "#111", border: "1px solid #2a2a2a", borderRadius: "12px", padding: "6px 10px 6px 6px" }}
+                    style={{ position: "relative", background: "#111", border: "1px solid #2a2a2a", borderRadius: "12px", padding: "6px 10px 6px 6px", maxWidth: "min(560px, 100%)" }}
                     onMouseEnter={() => setHoveredCommentId(c.id)}
                     onMouseLeave={() => setHoveredCommentId(null)}
                   >
