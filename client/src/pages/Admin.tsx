@@ -1377,6 +1377,22 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
                 </button>
               </div>
               <UploadProgressBar type="kit" />
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", margin: "10px 0 6px" }}>
+                <div style={{ flex: 1, height: "1px", background: "#333" }} />
+                <span style={{ fontSize: "11px", color: "#555", whiteSpace: "nowrap" }}>nebo Google Drive URL</span>
+                <div style={{ flex: 1, height: "1px", background: "#333" }} />
+              </div>
+              <input
+                type="url"
+                placeholder="https://drive.google.com/drive/folders/..."
+                value={form.fileUrl?.startsWith("https://") || form.fileUrl?.startsWith("http://") ? form.fileUrl : ""}
+                onChange={(e) => setForm({ ...form, fileUrl: e.target.value })}
+                style={{ width: "100%", padding: "8px 10px", background: "#111", border: "1px solid #333", color: "#fff", borderRadius: "3px", fontSize: "13px", boxSizing: "border-box" }}
+                data-testid="input-gdrive-url"
+              />
+              <p style={{ fontSize: "11px", color: "#555", marginTop: "5px" }}>
+                Nastav sdílení složky: Sdílet → Kdokoli se odkazem → Prohlížeč
+              </p>
               {form.fileUrl && !uploading["kit"] && (
                 <div style={{ marginTop: "6px" }}>
                   <span style={{ fontSize: "12px", color: "#4caf50" }}>✓ {form.fileUrl}</span>

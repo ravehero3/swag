@@ -564,7 +564,7 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
           ctx.stroke();
           ctx.restore();
 
-          // Tooltip bubble above avatar
+          // Tooltip bubble below avatar
           const tipPadX = 7 * xScale;
           const tipPadY = 5 * xScale;
           const nameFsz = 4.5 * xScale;
@@ -586,7 +586,7 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
           const tipH = tipPadY * 2 + nameFsz + 3 * xScale + commentLines.length * (cFsz + 2 * xScale);
           const tipW = maxTipW;
           const tipX = Math.max(cardX + cardPad, Math.min(waveEndX - tipW, commentX - tipW / 2));
-          const tipY = commentCY - avatarR - 8 * xScale - tipH;
+          const tipY = commentCY + avatarR + 8 * xScale;
           ctx.fillStyle = "#1a1a1a";
           if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(tipX, tipY, tipW, tipH, 6 * xScale); ctx.fill(); }
           else ctx.fillRect(tipX, tipY, tipW, tipH);

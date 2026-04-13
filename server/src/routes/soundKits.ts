@@ -151,10 +151,16 @@ router.get("/:id/download", requireAuth, async (req: Request, res: Response) => 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "Sound kit nenalezen" });
     }
-    if (!result.rows[0].file_url) {
+    const fileUrl: string = result.rows[0].file_url;
+    if (!fileUrl) {
       return res.status(404).json({ error: "Soubor není dostupný" });
     }
-    const url = await generateDownloadUrl(STORAGE_BUCKETS.ZIPS, result.rows[0].file_url);
+    // If it's already a full URL (Google Drive, etc.) return it directly
+    if (fileUrl.startsWith("https://") || fileUrl.startsWith("http://")) {
+      return res.json({ downloadUrl: fileUrl });
+    }
+    // Otherwise it's a B2 object key — generate a signed download URL
+    const url = await generateDownloadUrl(STORAGE_BUCKETS.ZIPS, fileUrl);
     res.json({ downloadUrl: url });
   } catch (error) {
     res.status(500).json({ error: "Chyba při generování odkazu ke stažení" });
