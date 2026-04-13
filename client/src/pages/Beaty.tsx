@@ -1100,12 +1100,12 @@ function Beaty() {
               )}
             </div>
             {comments.length > 0 && (
-              <div style={{ marginTop: "12px", display: "flex", flexWrap: "wrap", gap: "6px", maxHeight: "320px", overflowY: "auto" }}>
+              <div style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "6px", maxHeight: "320px", overflowY: "auto" }}>
                 {comments.map((c: any) => (
                   <div
                     key={c.id}
                     data-testid={`comment-item-${c.id}`}
-                    style={{ position: "relative", background: "#111", border: "1px solid #2a2a2a", borderRadius: "12px", padding: "6px 10px 6px 6px", maxWidth: "min(560px, 100%)" }}
+                    style={{ position: "relative", background: "#111", border: "1px solid #2a2a2a", borderRadius: "12px", padding: "6px 10px 6px 6px", width: "100%" }}
                     onMouseEnter={() => setHoveredCommentId(c.id)}
                     onMouseLeave={() => setHoveredCommentId(null)}
                   >
@@ -1117,7 +1117,7 @@ function Beaty() {
                           (c.username || c.email)?.[0]?.toUpperCase() || "?"
                         )}
                       </div>
-                      <div style={{ flex: 1, minWidth: 0, wordBreak: "break-word" }}>
+                      <div style={{ flex: 1, minWidth: 0, wordBreak: "break-word", whiteSpace: "normal" }}>
                         <span style={{ fontSize: "11px", color: "#555", marginRight: "6px" }}>{c.username || c.email?.split("@")[0]}</span>
                         <span style={{ fontSize: "12px", color: "#bbb" }}>{c.text}</span>
                       </div>
