@@ -1073,6 +1073,10 @@ function Beaty() {
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: "#555" }}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
                     {beatStats.comments}
                   </span>
+                  <span data-testid="text-beat-plays" style={{ fontSize: "12px", color: "#555", display: "flex", alignItems: "center", gap: "4px" }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ color: "#555" }}><polygon points="5 3 19 12 5 21 5 3" /></svg>
+                    {(beatPlayCounts[currentBeat.id] ?? 0).toLocaleString()}
+                  </span>
                 </>
               )}
             </div>
@@ -1099,6 +1103,16 @@ function Beaty() {
                 </button>
               )}
             </div>
+            {commentText.length > 0 && (
+              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "4px", paddingRight: "4px" }}>
+                <span
+                  data-testid="text-comment-char-count"
+                  style={{ fontSize: "11px", color: commentText.length >= 180 ? (commentText.length >= 200 ? "#e55" : "#a87a30") : "#444" }}
+                >
+                  {commentText.length}/200
+                </span>
+              </div>
+            )}
             {comments.length > 0 && (
               <div style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "6px", maxHeight: "320px", overflowY: "auto" }}>
                 {comments.map((c: any) => (
