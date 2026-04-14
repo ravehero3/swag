@@ -76,13 +76,6 @@ export default function ProductCard({
       }}
       onMouseEnter={(e) => {
         const target = e.currentTarget as HTMLDivElement;
-        
-        // Find the image container and apply glow
-        const imgContainer = target.querySelector('.product-image-container') as HTMLDivElement;
-        if (imgContainer) {
-          imgContainer.style.boxShadow = "none";
-          imgContainer.style.filter = "drop-shadow(0 20px 20px rgba(255, 255, 255, 0.4))";
-        }
 
         // Create particles from beneath the image
         for (let i = 0; i < 12; i++) {
@@ -115,13 +108,6 @@ export default function ProductCard({
       }}
       onMouseLeave={(e) => {
         const target = e.currentTarget as HTMLDivElement;
-        
-        const imgContainer = target.querySelector('.product-image-container') as HTMLDivElement;
-        if (imgContainer) {
-          imgContainer.style.boxShadow = "none";
-          imgContainer.style.filter = "none";
-        }
-        
         const particles = target.querySelectorAll('div[data-product-particle="true"]');
         particles.forEach(p => p.remove());
       }}
@@ -135,9 +121,21 @@ export default function ProductCard({
         .heart-pulse {
           animation: heartPulse 0.3s ease-out;
         }
+        .product-card-container {
+          will-change: transform;
+          transform: translateZ(0);
+        }
         .product-card-container:hover {
-          transform: scale(1.02);
+          transform: translateZ(0) scale(1.02);
           z-index: 10;
+        }
+        .product-image-container {
+          will-change: filter;
+          transform: translateZ(0);
+          transition: filter 0.25s ease;
+        }
+        .product-card-container:hover .product-image-container {
+          filter: drop-shadow(0 20px 20px rgba(255, 255, 255, 0.4));
         }
         @keyframes liquidShimmer {
           0% { background-position: -200% center; }

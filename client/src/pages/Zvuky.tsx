@@ -207,7 +207,29 @@ function Zvuky() {
 
       {/* Content — above video */}
       <div style={{ position: "relative", zIndex: 2, paddingTop: "100px" }}>
-        {loading ? null : kits.length > 0 ? (
+        {loading ? (
+          <div style={{ width: "100%", padding: "0 20px", display: "flex", justifyContent: "center" }}>
+            <style>{`
+              @keyframes skeletonPulse {
+                0%, 100% { opacity: 0.04; }
+                50% { opacity: 0.10; }
+              }
+              .sk { background: #fff; border-radius: 4px; animation: skeletonPulse 1.6s ease-in-out infinite; }
+            `}</style>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "0", maxWidth: "1200px", width: "100%" }}>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} style={{ padding: "8px", animationDelay: `${i * 80}ms` }}>
+                  <div className="sk" style={{ aspectRatio: "1", borderRadius: "4px", animationDelay: `${i * 80}ms` }} />
+                  <div style={{ padding: "16px 0 8px" }}>
+                    <div className="sk" style={{ height: "10px", width: "40%", marginBottom: "10px", animationDelay: `${i * 80 + 60}ms` }} />
+                    <div className="sk" style={{ height: "14px", width: "70%", marginBottom: "10px", animationDelay: `${i * 80 + 120}ms` }} />
+                    <div className="sk" style={{ height: "10px", width: "30%", animationDelay: `${i * 80 + 180}ms` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : kits.length > 0 ? (
           <div style={{ width: "100%", marginBottom: "48px" }}>
             <ProductsGrid
               products={products}

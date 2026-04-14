@@ -24,6 +24,8 @@ const LegalInfo = lazy(() => import("./pages/LegalInfo.js"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy.js"));
 const CookiePolicy = lazy(() => import("./pages/CookiePolicy.js"));
 const CookieSettings = lazy(() => import("./pages/CookieSettings.js"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword.js"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword.js"));
 
 interface User {
   id: number;
@@ -238,6 +240,8 @@ function App() {
               <Route path="/ochrana-osobnich-udaju" component={PrivacyPolicy} />
               <Route path="/cookies" component={CookiePolicy} />
               <Route path="/nastaveni-cookies" component={CookieSettings} />
+              <Route path="/zapomenute-heslo" component={ForgotPassword} />
+              <Route path="/resetovat-heslo" component={ResetPassword} />
               <Route>
                 <div className="fade-in" style={{ textAlign: "center", padding: "100px 20px" }}>
                   <h1>404</h1>

@@ -131,18 +131,18 @@ app.use("/api/beats", commentsRoutes);
 async function seedAdmin() {
   try {
     const email = 'admin@voodoo808.com';
-    const password = 'admin123';
+    const password = 'kaleidoskopsesnaziuletetdvematalirum1B';
+    const hashedPassword = await bcrypt.hash(password, 10);
     console.log(`Checking for admin user: ${email}...`);
-    const existing = await pool.query('SELECT id, is_admin FROM users WHERE email = $1', [email]);
+    const existing = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
     
     if (existing.rows.length === 0) {
       console.log('Admin user not found, creating...');
-      const hashedPassword = await bcrypt.hash(password, 10);
       await pool.query('INSERT INTO users (email, password, is_admin) VALUES ($1, $2, true)', [email, hashedPassword]);
       console.log('Admin user created successfully.');
     } else {
-      console.log('Admin user exists, ensuring admin privileges...');
-      await pool.query('UPDATE users SET is_admin = true WHERE email = $1', [email]);
+      console.log('Admin user exists, updating password and privileges...');
+      await pool.query('UPDATE users SET password = $1, is_admin = true WHERE email = $2', [hashedPassword, email]);
     }
   } catch (e) {
     console.error("Admin seed failed:", e);

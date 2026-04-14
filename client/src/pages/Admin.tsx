@@ -3575,11 +3575,13 @@ function downloadCsv(rows: string[][], filename: string) {
 }
 
 function ZakazniciTab() {
-  const [section, setSection] = useState<"customers" | "leads">("customers");
+  const [section, setSection] = useState<"customers" | "leads" | "registered">("customers");
   const [customers, setCustomers] = useState<any[]>([]);
   const [leads, setLeads] = useState<any[]>([]);
+  const [registeredUsers, setRegisteredUsers] = useState<any[]>([]);
   const [loadingCustomers, setLoadingCustomers] = useState(true);
   const [loadingLeads, setLoadingLeads] = useState(true);
+  const [loadingRegistered, setLoadingRegistered] = useState(true);
 
   useEffect(() => {
     fetch("/api/leads/admin/customers", { credentials: "include" })
@@ -3593,6 +3595,13 @@ function ZakazniciTab() {
       .then(r => r.ok ? r.json() : [])
       .then(data => { setLeads(data); setLoadingLeads(false); })
       .catch(() => setLoadingLeads(false));
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/auth/admin/users", { credentials: "include" })
+      .then(r => r.ok ? r.json() : [])
+      .then(data => { setRegisteredUsers(data); setLoadingRegistered(false); })
+      .catch(() => setLoadingRegistered(false));
   }, []);
 
   const exportCustomerEmails = () => {
@@ -3615,7 +3624,7 @@ function ZakazniciTab() {
   return (
     <div>
       <div style={{ display: "flex", gap: "12px", marginBottom: "24px", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" }}>
-        <div style={{ display: "flex", gap: "8px" }}>
+        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
           <button
             onClick={() => setSection("customers")}
             className={section === "customers" ? "btn btn-filled" : "btn"}
@@ -3629,6 +3638,14 @@ function ZakazniciTab() {
             style={{ borderRadius: "4px", ...(section !== "leads" ? { borderColor: "#333", color: "#666" } : {}) }}
           >
             Zájemci o free ({leads.length})
+          </button>
+          <button
+            onClick={() => setSection("registered")}
+            className={section === "registered" ? "btn btn-filled" : "btn"}
+            style={{ borderRadius: "4px", ...(section !== "registered" ? { borderColor: "#333", color: "#666" } : {}) }}
+            data-testid="button-tab-registered"
+          >
+            Registrovaní uživatelé ({registeredUsers.length})
           </button>
         </div>
         <button
@@ -3706,6 +3723,46 @@ function ZakazniciTab() {
                     </tr>
                   );
                 })}
+              </tbody>
+            </table>
+          )}
+        </div>
+      )}
+
+      {section === "registered" && (
+        <div>
+          <p style={{ color: "#555", fontSize: "12px", marginBottom: "16px" }}>
+            Všichni registrovaní uživatelé — včetně těch, kteří ještě nic nekoupili.
+          </p>
+          {loadingRegistered ? (
+            <div style={{ color: "#666", padding: "24px" }}>Načítám...</div>
+          ) : registeredUsers.length === 0 ? (
+            <div style={{ color: "#444", padding: "24px" }}>Žádní registrovaní uživatelé.</div>
+          ) : (
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr>
+                  <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", letterSpacing: "0.08em" }}>Email</th>
+                  <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", letterSpacing: "0.08em" }}>Uživatelské jméno</th>
+                  <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", letterSpacing: "0.08em" }}>Role</th>
+                  <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", letterSpacing: "0.08em" }}>Registrace</th>
+                </tr>
+              </thead>
+              <tbody>
+                {registeredUsers.map((u, i) => (
+                  <tr key={i}>
+                    <td style={{ ...cellStyle, color: "#fff", fontWeight: 500 }} data-testid={`text-user-email-${i}`}>{u.email}</td>
+                    <td style={{ ...cellStyle, color: "#888", fontSize: "13px" }}>{u.username || <span style={{ color: "#444" }}>—</span>}</td>
+                    <td style={{ ...cellStyle }}>
+                      {u.is_admin ? (
+                        <span style={{ fontSize: "11px", color: "#e8304a", background: "rgba(232,48,74,0.1)", padding: "2px 8px", borderRadius: "3px", border: "1px solid rgba(232,48,74,0.3)" }}>Admin</span>
+                      ) : (
+                        <span style={{ fontSize: "11px", color: "#555" }}>Uživatel</span>
+                      )}
+                    </td>
+                    <td style={{ ...cellStyle, color: "#666", fontSize: "12px" }}>{new Date(u.created_at).toLocaleDateString("cs-CZ")}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           )}

@@ -5,8 +5,9 @@ import passport from "passport";
 import multer from "multer";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
-import { requireAuth } from "../middleware/auth.js";
+import { requireAuth, requireAdmin } from "../middleware/auth.js";
 import { uploadFile, STORAGE_BUCKETS } from "../lib/storage.js";
+import { sendPasswordResetEmail } from "../email.js";
 
 function getAvatarPublicUrl(key: string): string {
   if (process.env.B2_PUBLIC_BASE_URL) {
@@ -196,6 +197,73 @@ router.get("/profile-info", async (req: Request, res: Response) => {
       buyerAddress: row.buyer_address,
     });
   } catch (error) {
+    res.status(500).json({ error: "Chyba serveru" });
+  }
+});
+
+router.get("/admin/users", requireAdmin, async (_req: Request, res: Response) => {
+  try {
+    const result = await pool.query(
+      "SELECT id, email, username, avatar_url, is_admin, created_at FROM users ORDER BY created_at DESC"
+    );
+    res.json(result.rows);
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při načítání uživatelů" });
+  }
+});
+
+router.post("/forgot-password", async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: "Email je povinný" });
+
+    const result = await pool.query("SELECT id, email FROM users WHERE email = $1", [email]);
+    // Always return success to prevent email enumeration
+    if (result.rows.length === 0) {
+      return res.json({ message: "Pokud email existuje, obdržíte odkaz pro reset hesla." });
+    }
+
+    const user = result.rows[0];
+    const token = uuidv4();
+    const expires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+    await pool.query(
+      "UPDATE users SET reset_token = $1, reset_token_expires = $2 WHERE id = $3",
+      [token, expires, user.id]
+    );
+
+    await sendPasswordResetEmail(user.email, token);
+    res.json({ message: "Pokud email existuje, obdržíte odkaz pro reset hesla." });
+  } catch (error) {
+    console.error("Forgot password error:", error);
+    res.status(500).json({ error: "Chyba serveru" });
+  }
+});
+
+router.post("/reset-password", async (req: Request, res: Response) => {
+  try {
+    const { token, password } = req.body;
+    if (!token || !password) return res.status(400).json({ error: "Token a heslo jsou povinné" });
+    if (password.length < 8) return res.status(400).json({ error: "Heslo musí mít alespoň 8 znaků" });
+
+    const result = await pool.query(
+      "SELECT id FROM users WHERE reset_token = $1 AND reset_token_expires > NOW()",
+      [token]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(400).json({ error: "Odkaz je neplatný nebo vypršel. Požádejte o nový." });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await pool.query(
+      "UPDATE users SET password = $1, reset_token = NULL, reset_token_expires = NULL WHERE id = $2",
+      [hashedPassword, result.rows[0].id]
+    );
+
+    res.json({ message: "Heslo bylo úspěšně změněno." });
+  } catch (error) {
+    console.error("Reset password error:", error);
     res.status(500).json({ error: "Chyba serveru" });
   }
 });

@@ -701,6 +701,75 @@ export async function sendContractEmail(orderId: number): Promise<void> {
   }
 }
 
+export async function sendPasswordResetEmail(email: string, token: string): Promise<void> {
+  const apiKey = process.env.RESEND_API_KEY || process.env.RESEND_API;
+  if (!apiKey) {
+    console.log("[Email] RESEND_API_KEY not configured, skipping password reset email");
+    return;
+  }
+
+  const appUrl = process.env.APP_URL ||
+    (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : "https://www.voodoo808.com");
+  const resetLink = `${appUrl}/resetovat-heslo?token=${token}`;
+  const fromAddress = process.env.RESEND_FROM || "VOODOO808 <info@voodoo808.com>";
+  const resend = new Resend(apiKey);
+
+  const html = `<!DOCTYPE html>
+<html lang="cs">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#0a0a0a;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:48px 0;">
+    <tr><td align="center">
+      <table width="520" cellpadding="0" cellspacing="0" style="background:#111;border:1px solid #222;border-radius:6px;overflow:hidden;max-width:520px;width:100%;">
+        <tr><td style="padding:40px 40px 0;text-align:center;">
+          <p style="margin:0 0 4px;font-size:11px;letter-spacing:0.15em;color:#555;text-transform:uppercase;">VOODOO808</p>
+          <h1 style="margin:0 0 32px;font-size:22px;font-weight:500;color:#fff;letter-spacing:-0.01em;">Reset hesla</h1>
+        </td></tr>
+        <tr><td style="padding:0 40px 40px;">
+          <p style="color:#888;font-size:14px;line-height:1.7;margin:0 0 24px;">
+            Obdrželi jsme žádost o reset hesla pro váš účet <strong style="color:#ccc;">${email}</strong>.
+            Klikněte na tlačítko níže pro nastavení nového hesla.
+          </p>
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <tr><td align="center" style="padding:8px 0 24px;">
+              <a href="${resetLink}" style="display:inline-block;background:#fff;color:#000;text-decoration:none;font-size:13px;font-weight:500;letter-spacing:0.04em;padding:14px 32px;border-radius:4px;">
+                RESETOVAT HESLO
+              </a>
+            </td></tr>
+          </table>
+          <p style="color:#555;font-size:12px;line-height:1.7;margin:0 0 8px;">
+            Odkaz je platný 1 hodinu. Pokud jste o reset hesla nežádali, tento email ignorujte.
+          </p>
+          <p style="color:#444;font-size:11px;line-height:1.6;margin:0;word-break:break-all;">
+            ${resetLink}
+          </p>
+        </td></tr>
+        <tr><td style="border-top:1px solid #1e1e1e;padding:24px 40px;text-align:center;">
+          <p style="margin:0;color:#444;font-size:11px;">
+            &copy; ${new Date().getFullYear()} VOODOO808 &mdash;
+            <a href="mailto:info@voodoo808.com" style="color:#555;text-decoration:none;">info@voodoo808.com</a>
+          </p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: fromAddress,
+      to: [email],
+      subject: "Reset hesla – VOODOO808",
+      html,
+    });
+    if (error) console.error("[Email] Password reset email error:", error);
+    else console.log("[Email] Password reset email sent, id:", data?.id);
+  } catch (err) {
+    console.error("[Email] Failed to send password reset email:", err);
+  }
+}
+
 export async function sendFreeDownloadEmail(lead: { id: number; email: string; items: any[] }): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY || process.env.RESEND_API;
   if (!apiKey) {

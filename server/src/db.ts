@@ -273,6 +273,8 @@ export async function initDatabase() {
       ALTER TABLE license_types ADD COLUMN IF NOT EXISTS contract_template TEXT;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(500);
       ALTER TABLE users ADD COLUMN IF NOT EXISTS username VARCHAR(50);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMPTZ;
       ALTER TABLE beat_comments ADD COLUMN IF NOT EXISTS time_offset NUMERIC DEFAULT 0;
     `);
 

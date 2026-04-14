@@ -219,6 +219,19 @@ function Login() {
             Google
           </button>
 
+          {isLogin && (
+            <div style={{ textAlign: "right", marginBottom: "4px", marginTop: "-4px" }}>
+              <a
+                href="/zapomenute-heslo"
+                style={{ color: "#555", fontSize: "12px", textDecoration: "none" }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "#999")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "#555")}
+              >
+                Zapomenuté heslo?
+              </a>
+            </div>
+          )}
+
           <button
             type="button"
             onClick={() => setIsLogin(!isLogin)}
