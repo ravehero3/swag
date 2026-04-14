@@ -228,11 +228,23 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
     let current = "";
     for (const word of words) {
       const test = current ? current + " " + word : word;
-      if (ctx.measureText(test).width > maxWidth && current) {
+      if (ctx.measureText(test).width <= maxWidth) {
+        current = test;
+      } else if (!current) {
+        // Single word wider than maxWidth — break at character level
+        let partial = "";
+        for (const char of word) {
+          if (ctx.measureText(partial + char).width > maxWidth && partial) {
+            lines.push(partial);
+            partial = char;
+          } else {
+            partial += char;
+          }
+        }
+        current = partial;
+      } else {
         lines.push(current);
         current = word;
-      } else {
-        current = test;
       }
     }
     if (current) lines.push(current);
@@ -526,85 +538,6 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
         ctx.fillStyle = "rgba(255,255,255,0.95)";
         ctx.fillRect(playheadX - 0.75 * xScale, waveStartY, 1.5 * xScale, waveH);
 
-        // ── User avatar pinned to playhead (same as webapp) ──
-        if (userComment) {
-          const commentX = Math.max(cardX + cardPad + 12 * xScale, Math.min(waveEndX - 12 * xScale, playheadX));
-          const commentCY = waveStartY + waveH * 0.50;
-          const avatarR = 11 * xScale;
-
-          // Draw avatar circle
-          ctx.save();
-          ctx.beginPath();
-          ctx.arc(commentX, commentCY, avatarR, 0, Math.PI * 2);
-          ctx.fillStyle = "#1a1a1a";
-          ctx.fill();
-          ctx.clip();
-
-          if (userComment.avatar_url) {
-            const avProxied = proxyImageUrl(userComment.avatar_url);
-            const avImg = await loadImage(avProxied);
-            if (avImg) ctx.drawImage(avImg, commentX - avatarR, commentCY - avatarR, avatarR * 2, avatarR * 2);
-          }
-
-          if (!userComment.avatar_url) {
-            ctx.fillStyle = "rgba(255,255,255,0.7)";
-            ctx.font = `bold ${avatarR * 0.9}px Helvetica,Arial,sans-serif`;
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText((userComment.username || userComment.email || "?").charAt(0).toUpperCase(), commentX, commentCY);
-          }
-          ctx.restore();
-
-          // White ring border
-          ctx.save();
-          ctx.beginPath();
-          ctx.arc(commentX, commentCY, avatarR, 0, Math.PI * 2);
-          ctx.strokeStyle = "rgba(255,255,255,0.75)";
-          ctx.lineWidth = 1.5 * xScale;
-          ctx.stroke();
-          ctx.restore();
-
-          // Tooltip bubble below avatar
-          const tipPadX = 7 * xScale;
-          const tipPadY = 5 * xScale;
-          const nameFsz = 4.5 * xScale;
-          const cFsz = 5.5 * xScale;
-          ctx.font = `${cFsz}px Helvetica,Arial,sans-serif`;
-          const maxTipW = Math.min(artW * 0.82, 220 * xScale);
-          const MAX_COMMENT_LINES = 3;
-          const allCommentLines = wrapText(ctx, userComment.text, maxTipW - tipPadX * 2);
-          let commentLines: string[];
-          if (allCommentLines.length > MAX_COMMENT_LINES) {
-            let lastLine = allCommentLines[MAX_COMMENT_LINES - 1];
-            while (lastLine.length > 0 && ctx.measureText(lastLine + "…").width > maxTipW - tipPadX * 2) {
-              lastLine = lastLine.slice(0, -1);
-            }
-            commentLines = [...allCommentLines.slice(0, MAX_COMMENT_LINES - 1), lastLine + "…"];
-          } else {
-            commentLines = allCommentLines;
-          }
-          const tipH = tipPadY * 2 + nameFsz + 3 * xScale + commentLines.length * (cFsz + 2 * xScale);
-          const tipW = maxTipW;
-          const tipX = Math.max(cardX + cardPad, Math.min(waveEndX - tipW, commentX - tipW / 2));
-          const tipY = commentCY + avatarR + 8 * xScale;
-          ctx.fillStyle = "#1a1a1a";
-          if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(tipX, tipY, tipW, tipH, 6 * xScale); ctx.fill(); }
-          else ctx.fillRect(tipX, tipY, tipW, tipH);
-          ctx.strokeStyle = "rgba(255,255,255,0.12)";
-          ctx.lineWidth = xScale;
-          if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(tipX, tipY, tipW, tipH, 6 * xScale); ctx.stroke(); }
-          ctx.fillStyle = "rgba(255,255,255,0.5)";
-          ctx.font = `${nameFsz}px Helvetica,Arial,sans-serif`;
-          ctx.textAlign = "left";
-          ctx.textBaseline = "top";
-          ctx.fillText((userComment.username || userComment.email?.split("@")[0] || "user").substring(0, 24), tipX + tipPadX, tipY + tipPadY);
-          ctx.fillStyle = "rgba(255,255,255,0.88)";
-          ctx.font = `${cFsz}px Helvetica,Arial,sans-serif`;
-          commentLines.forEach((line, li) => ctx.fillText(line, tipX + tipPadX, tipY + tipPadY + nameFsz + 3 * xScale + li * (cFsz + 2 * xScale)));
-          ctx.textAlign = "center";
-          ctx.textBaseline = "alphabetic";
-        }
-
         curY = waveStartY + waveH + 3 * xScale;
 
         // Time labels
@@ -699,6 +632,107 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
         drawSpeakerWithArcs(rightIconX, volCY, volIconW, volIconH);
 
         curY += volBarH + 8 * xScale;
+
+        // ── User comment pill — drawn LAST so it sits on top of every other card element ──
+        if (userComment) {
+          const commentX = Math.max(cardX + cardPad + 12 * xScale, Math.min(waveEndX - 12 * xScale, playheadX));
+          const commentCY = waveStartY + waveH * 0.50;
+          const avatarR = 11 * xScale;
+
+          // Avatar circle (filled background + optional image / initial letter)
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(commentX, commentCY, avatarR, 0, Math.PI * 2);
+          ctx.fillStyle = "#1a1a1a";
+          ctx.fill();
+          ctx.clip();
+
+          if (userComment.avatar_url) {
+            const avProxied = proxyImageUrl(userComment.avatar_url);
+            const avImg = await loadImage(avProxied);
+            if (avImg) ctx.drawImage(avImg, commentX - avatarR, commentCY - avatarR, avatarR * 2, avatarR * 2);
+          }
+
+          if (!userComment.avatar_url) {
+            ctx.fillStyle = "rgba(255,255,255,0.7)";
+            ctx.font = `bold ${avatarR * 0.9}px Helvetica,Arial,sans-serif`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText((userComment.username || userComment.email || "?").charAt(0).toUpperCase(), commentX, commentCY);
+          }
+          ctx.restore();
+
+          // White ring around avatar
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(commentX, commentCY, avatarR, 0, Math.PI * 2);
+          ctx.strokeStyle = "rgba(255,255,255,0.75)";
+          ctx.lineWidth = 1.5 * xScale;
+          ctx.stroke();
+          ctx.restore();
+
+          // Pill geometry — ensure the font is set BEFORE calling wrapText
+          const tipPadX = 8 * xScale;
+          const tipPadY = 6 * xScale;
+          const nameFsz = 4.5 * xScale;
+          const cFsz = 5.5 * xScale;
+          const lineGap = 2.5 * xScale;
+          const maxTipW = Math.min(artW * 0.88, 230 * xScale);
+          const innerW = maxTipW - tipPadX * 2;
+
+          // Set font before measuring so wrapText uses the correct metrics
+          ctx.font = `${cFsz}px Helvetica,Arial,sans-serif`;
+          const MAX_COMMENT_LINES = 3;
+          const allCommentLines = wrapText(ctx, userComment.text, innerW);
+          let commentLines: string[];
+          if (allCommentLines.length > MAX_COMMENT_LINES) {
+            let lastLine = allCommentLines[MAX_COMMENT_LINES - 1];
+            while (lastLine.length > 0 && ctx.measureText(lastLine + "…").width > innerW) {
+              lastLine = lastLine.slice(0, -1);
+            }
+            commentLines = [...allCommentLines.slice(0, MAX_COMMENT_LINES - 1), lastLine + "…"];
+          } else {
+            commentLines = allCommentLines;
+          }
+
+          // Height: top-pad + username row + gap + comment rows + bottom-pad
+          const tipH = tipPadY * 2 + nameFsz + lineGap + commentLines.length * cFsz + (commentLines.length - 1) * lineGap;
+          const tipW = maxTipW;
+          const tipX = Math.max(cardX + cardPad, Math.min(waveEndX - tipW, commentX - tipW / 2));
+          // Position pill below the avatar; clamp so it stays within the card
+          const rawTipY = commentCY + avatarR + 6 * xScale;
+          const tipY = Math.min(rawTipY, cardY + estimatedCardH - tipH - cardPad);
+
+          // Pill background
+          ctx.fillStyle = "rgba(15,15,15,0.92)";
+          if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(tipX, tipY, tipW, tipH, 6 * xScale); ctx.fill(); }
+          else ctx.fillRect(tipX, tipY, tipW, tipH);
+
+          // Pill border
+          ctx.strokeStyle = "rgba(255,255,255,0.15)";
+          ctx.lineWidth = xScale;
+          if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(tipX, tipY, tipW, tipH, 6 * xScale); ctx.stroke(); }
+
+          // Username line
+          ctx.fillStyle = "rgba(255,255,255,0.55)";
+          ctx.font = `${nameFsz}px Helvetica,Arial,sans-serif`;
+          ctx.textAlign = "left";
+          ctx.textBaseline = "top";
+          ctx.fillText(
+            (userComment.username || userComment.email?.split("@")[0] || "user").substring(0, 24),
+            tipX + tipPadX, tipY + tipPadY
+          );
+
+          // Comment text lines
+          ctx.fillStyle = "rgba(255,255,255,0.92)";
+          ctx.font = `${cFsz}px Helvetica,Arial,sans-serif`;
+          commentLines.forEach((line, li) =>
+            ctx.fillText(line, tipX + tipPadX, tipY + tipPadY + nameFsz + lineGap + li * (cFsz + lineGap))
+          );
+
+          ctx.textAlign = "center";
+          ctx.textBaseline = "alphabetic";
+        }
       }
 
       const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
