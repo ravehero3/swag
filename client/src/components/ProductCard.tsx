@@ -46,18 +46,11 @@ export default function ProductCard({
   };
 
   const handleProductClick = () => {
-    // Save to recently viewed
     const viewedJson = localStorage.getItem("voodoo808_recently_viewed");
     let viewed = viewedJson ? JSON.parse(viewedJson) : [];
-    
-    // Remove if already exists and add to front
     viewed = viewed.filter((v: any) => v.id !== id);
     viewed.unshift({ id, name, price, images, typeLabel, type });
-    
-    // Keep last 10
     localStorage.setItem("voodoo808_recently_viewed", JSON.stringify(viewed.slice(0, 10)));
-
-    // Open in new tab
     const url = `/produkt/${type === 'beat' ? 'beat' : 'sound_kit'}/${id}`;
     window.open(url, '_blank');
   };
@@ -65,51 +58,13 @@ export default function ProductCard({
   return (
     <div
       onClick={handleProductClick}
-      className="product-card-container group"
+      className="product-card-container"
       style={{
         overflow: "visible",
         position: "relative",
         backgroundColor: "transparent",
-        transition: "all 0.2s ease",
         cursor: "pointer",
         padding: "8px",
-      }}
-      onMouseEnter={(e) => {
-        const target = e.currentTarget as HTMLDivElement;
-
-        // Create particles from beneath the image
-        for (let i = 0; i < 12; i++) {
-          const particle = document.createElement("div");
-          particle.setAttribute("data-product-particle", "true");
-          particle.style.position = "absolute";
-          particle.style.width = "3px";
-          particle.style.height = "3px";
-          particle.style.background = "rgba(255, 255, 255, 0.8)";
-          particle.style.borderRadius = "50%";
-          particle.style.left = `${20 + Math.random() * 60}%`;
-          particle.style.top = "70%";
-          particle.style.pointerEvents = "none";
-          particle.style.zIndex = "5";
-          
-          const duration = 1 + Math.random() * 2;
-          const xOffset = (Math.random() - 0.5) * 100;
-          const yOffset = -150 - Math.random() * 100;
-          
-          particle.style.transition = `all ${duration}s ease-out`;
-          target.appendChild(particle);
-          
-          setTimeout(() => {
-            particle.style.transform = `translate(${xOffset}px, ${yOffset}px)`;
-            particle.style.opacity = "0";
-          }, 10);
-          
-          setTimeout(() => particle.remove(), duration * 1000);
-        }
-      }}
-      onMouseLeave={(e) => {
-        const target = e.currentTarget as HTMLDivElement;
-        const particles = target.querySelectorAll('div[data-product-particle="true"]');
-        particles.forEach(p => p.remove());
       }}
     >
       <style>{`
@@ -118,44 +73,46 @@ export default function ProductCard({
           50% { transform: scale(1.3); }
           100% { transform: scale(1); }
         }
-        .heart-pulse {
-          animation: heartPulse 0.3s ease-out;
+        @keyframes playPulse {
+          0%, 100% { box-shadow: 0 0 0 1px rgba(255,255,255,0.28), 0 8px 32px rgba(0,0,0,0.4); }
+          50%       { box-shadow: 0 0 0 1px rgba(255,255,255,0.55), 0 8px 40px rgba(0,0,0,0.5); }
         }
+        .heart-pulse { animation: heartPulse 0.3s ease-out; }
+
+        /* Card container — promoted to its own GPU layer from the start */
         .product-card-container {
           will-change: transform;
           transform: translateZ(0);
+          transition: transform 0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
         .product-card-container:hover {
           transform: translateZ(0) scale(1.02);
           z-index: 10;
         }
+
+        /* Artwork glow — GPU-only (filter on its own layer) */
         .product-image-container {
           will-change: filter;
           transform: translateZ(0);
-          transition: filter 0.25s ease;
+          transition: filter 0.22s ease;
         }
         .product-card-container:hover .product-image-container {
-          filter: drop-shadow(0 20px 20px rgba(255, 255, 255, 0.4));
+          filter: drop-shadow(0 16px 24px rgba(255,255,255,0.35));
         }
-        @keyframes liquidShimmer {
-          0% { background-position: -200% center; }
-          100% { background-position: 200% center; }
-        }
-        @keyframes playPulse {
-          0%, 100% { box-shadow: 0 0 0 1px rgba(255,255,255,0.28), 0 8px 32px rgba(0,0,0,0.4), inset 0 1.5px 0 rgba(255,255,255,0.7), inset 0 -1px 0 rgba(0,0,0,0.15), inset 0 0 0 0.5px rgba(255,255,255,0.12); }
-          50% { box-shadow: 0 0 0 1px rgba(255,255,255,0.45), 0 8px 40px rgba(0,0,0,0.5), inset 0 1.5px 0 rgba(255,255,255,0.85), inset 0 -1px 0 rgba(0,0,0,0.15), inset 0 0 0 0.5px rgba(255,255,255,0.2); }
-        }
+
+        /* Play button — opacity + transform only (no backdrop-filter) */
         .play-button-overlay {
           opacity: 0;
           transform: translate(-50%, -50%) scale(0.82);
-          transition: opacity 0.28s cubic-bezier(0.34,1.56,0.64,1), transform 0.28s cubic-bezier(0.34,1.56,0.64,1);
+          transition: opacity 0.22s ease, transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+          will-change: transform, opacity;
         }
         .product-card-container:hover .play-button-overlay {
           opacity: 1;
           transform: translate(-50%, -50%) scale(1);
         }
         .play-button-overlay:hover {
-          transform: translate(-50%, -50%) scale(1.1) !important;
+          transform: translate(-50%, -50%) scale(1.08) !important;
         }
         .play-button-overlay:active {
           transform: translate(-50%, -50%) scale(0.93) !important;
@@ -163,94 +120,46 @@ export default function ProductCard({
         .play-button-overlay.is-playing {
           animation: playPulse 2s ease-in-out infinite;
         }
-        .play-blur-ring {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          width: 66px;
-          height: 66px;
-          border-radius: 50%;
-          transform: translate(-50%, -50%) scale(0.82);
-          pointer-events: none;
-          backdrop-filter: blur(18px);
-          -webkit-backdrop-filter: blur(18px);
-          -webkit-mask-image: radial-gradient(circle at center,
-            transparent 0%,
-            transparent 28%,
-            rgba(0,0,0,0.2) 40%,
-            rgba(0,0,0,0.7) 60%,
-            black 78%,
-            black 100%
-          );
-          mask-image: radial-gradient(circle at center,
-            transparent 0%,
-            transparent 28%,
-            rgba(0,0,0,0.2) 40%,
-            rgba(0,0,0,0.7) 60%,
-            black 78%,
-            black 100%
-          );
-          opacity: 0;
-          transition: opacity 0.28s cubic-bezier(0.34,1.56,0.64,1), transform 0.28s cubic-bezier(0.34,1.56,0.64,1);
-          z-index: 3;
-        }
-        .product-card-container:hover .play-blur-ring {
-          opacity: 1;
-          transform: translate(-50%, -50%) scale(1);
-        }
-        .product-image-container:has(.play-button-overlay:hover) .play-blur-ring {
-          transform: translate(-50%, -50%) scale(1.1);
-        }
+
+        /* Info pill — opacity + transform only (no backdrop-filter anywhere) */
         .product-info-pill {
           opacity: 0;
-          transition: all 0.3s ease;
-          transform: translateY(10px);
+          transform: translateY(8px);
+          transition: opacity 0.22s ease, transform 0.22s ease;
+          will-change: transform, opacity;
           position: relative;
-        }
-        .product-info-pill::before {
-          content: "";
-          position: absolute;
-          top: -7px;
-          left: 50%;
-          transform: translateX(-50%) rotate(45deg);
-          width: 14px;
-          height: 14px;
-          background: rgba(10, 10, 10, 0.95);
-          backdrop-filter: blur(8px);
-          border-left: 1px solid #333;
-          border-top: 1px solid #333;
-          opacity: 0;
-          transition: all 0.3s ease;
-          z-index: -1;
+          background: rgba(10, 10, 10, 0);
         }
         .product-card-container:hover .product-info-pill {
           opacity: 1;
           transform: translateY(0);
-          background: rgba(10, 10, 10, 0.9);
-          backdrop-filter: blur(8px);
-          border: 1px solid #333;
+          background: rgba(14, 14, 14, 0.92);
+          border: 1px solid #2a2a2a;
         }
-        .product-card-container:hover .product-info-pill::before {
-          opacity: 1;
+
+        /* Add-to-cart button — CSS-only hover, no JS needed */
+        .add-to-cart-btn {
+          transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
         }
+        .add-to-cart-btn:hover {
+          background: #fff !important;
+          color: #000 !important;
+          box-shadow: 0 0 18px rgba(255,255,255,0.5), inset 0 0 0 0.5px #000 !important;
+        }
+
         @media (max-width: 768px) {
           .play-button-overlay {
             opacity: 1 !important;
             transform: translate(-50%, -50%) scale(1) !important;
           }
-          .play-blur-ring {
-            opacity: 1 !important;
-            transform: translate(-50%, -50%) scale(1) !important;
-          }
           .product-info-pill {
-            opacity: 1;
-            transform: none;
-            background: transparent;
-            border: none;
+            opacity: 1 !important;
+            transform: none !important;
+            background: transparent !important;
+            border: none !important;
           }
         }
       `}</style>
-      {/* Top heart icon removed - only one heart at the bottom now */}
 
       <div
         className="product-image-container"
@@ -261,7 +170,6 @@ export default function ProductCard({
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          transition: "all 0.3s ease",
           padding: "40px",
           boxSizing: "border-box",
         }}
@@ -269,48 +177,35 @@ export default function ProductCard({
         <img
           src={images[0] || "/uploads/artwork/metallic-logo.png"}
           alt={name}
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "contain",
-          }}
+          style={{ width: "100%", height: "100%", objectFit: "contain" }}
         />
-        {onPlayClick && (
-          <>
-            {/* Outer blur donut ring — clear in center, blurred on edges */}
-            <div className="play-blur-ring" />
 
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onPlayClick();
-              }}
-              className={`play-button-overlay${isPlaying ? " is-playing" : ""}`}
-              style={{
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                width: "66px",
-                height: "66px",
-                borderRadius: "50%",
-                border: "none",
-                background: "transparent",
-                backdropFilter: "blur(1px)",
-                WebkitBackdropFilter: "blur(1px)",
-                boxShadow: "0 0 0 1px rgba(255,255,255,0.14)",
-                color: "#fff",
-                fontSize: "20px",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                paddingLeft: isPlaying ? "0" : "3px",
-                zIndex: 4,
-              }}
-            >
-              {isPlaying ? "⏸" : "▶"}
-            </button>
-          </>
+        {onPlayClick && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onPlayClick(); }}
+            className={`play-button-overlay${isPlaying ? " is-playing" : ""}`}
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              width: "62px",
+              height: "62px",
+              borderRadius: "50%",
+              border: "none",
+              background: "rgba(0,0,0,0.45)",
+              boxShadow: "0 0 0 1px rgba(255,255,255,0.18)",
+              color: "#fff",
+              fontSize: "20px",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              paddingLeft: isPlaying ? "0" : "3px",
+              zIndex: 4,
+            }}
+          >
+            {isPlaying ? "⏸" : "▶"}
+          </button>
         )}
       </div>
 
@@ -332,11 +227,8 @@ export default function ProductCard({
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "8px" }}>
           {onAddToCart && !isFree && (
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onAddToCart(id);
-              }}
-              className="btn-bounce"
+              onClick={(e) => { e.stopPropagation(); onAddToCart(id); }}
+              className="add-to-cart-btn"
               style={{
                 padding: "8px 8px 8px 16px",
                 background: "#000",
@@ -353,68 +245,11 @@ export default function ProductCard({
                 position: "relative",
                 minWidth: "120px",
                 height: "32px",
-                transition: "background 0.2s, color 0.2s, box-shadow 0.2s",
-                overflow: "visible",
                 outline: "none",
                 boxShadow: "inset 0 0 0 0.5px #fff",
                 WebkitAppearance: "none",
                 appearance: "none",
                 boxSizing: "border-box",
-              }}
-              onMouseEnter={(e) => {
-                const btn = e.currentTarget as HTMLButtonElement;
-                btn.style.background = "#fff";
-                btn.style.color = "#000";
-                btn.style.boxShadow = "0 0 20px rgba(255, 255, 255, 0.8), inset 0 0 0 0.5px #000, inset 0 0 10px rgba(255, 255, 255, 0.3)";
-                
-                // Create particles
-                for (let i = 0; i < 7; i++) {
-                  const particle = document.createElement("div");
-                  particle.setAttribute("data-particle", "true");
-                  const angle = (i / 7) * Math.PI * 2;
-                  particle.style.position = "absolute";
-                  particle.style.width = "4px";
-                  particle.style.height = "4px";
-                  particle.style.background = "#fff";
-                  particle.style.borderRadius = "50%";
-                  particle.style.left = "50%";
-                  particle.style.top = "50%";
-                  particle.style.pointerEvents = "none";
-                  particle.style.transform = "translate(-50%, -50%)";
-                  particle.style.opacity = "0.8";
-                  
-                  const distance = 35;
-                  const startX = Math.cos(angle) * distance;
-                  const startY = Math.sin(angle) * distance;
-                  const endX = Math.cos(angle) * (distance + 40);
-                  const endY = Math.sin(angle) * (distance + 40);
-                  
-                  particle.style.animation = `particleFloat-${i} 3s ease-out forwards`;
-                  
-                  btn.appendChild(particle);
-                  
-                  if (!document.querySelector(`style[data-particle-style="${i}"]`)) {
-                    const style = document.createElement("style");
-                    style.setAttribute("data-particle-style", i.toString());
-                    style.textContent = `
-                      @keyframes particleFloat-${i} {
-                        0% { transform: translate(calc(-50% + ${startX}px), calc(-50% + ${startY}px)); opacity: 0.8; }
-                        100% { transform: translate(calc(-50% + ${endX}px), calc(-50% + ${endY}px)); opacity: 0; }
-                      }
-                    `;
-                    document.head.appendChild(style);
-                  }
-                }
-              }}
-              onMouseLeave={(e) => {
-                const btn = e.currentTarget as HTMLButtonElement;
-                btn.style.background = "#000";
-                btn.style.color = "#fff";
-                btn.style.boxShadow = "inset 0 0 0 0.5px #fff";
-                
-                // Clean up particles
-                const particles = btn.querySelectorAll('div[data-particle="true"]');
-                particles.forEach(p => p.remove());
               }}
             >
               <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -428,14 +263,10 @@ export default function ProductCard({
             </button>
           )}
           {isFree && (
-            <span style={{ fontWeight: "bold", fontSize: "14px", color: "#999" }}>
-              ZDARMA
-            </span>
+            <span style={{ fontWeight: "bold", fontSize: "14px", color: "#999" }}>ZDARMA</span>
           )}
           {!isFree && !onAddToCart && (
-            <span style={{ fontWeight: "bold", fontSize: "14px" }}>
-              {price} CZK
-            </span>
+            <span style={{ fontWeight: "bold", fontSize: "14px" }}>{price} CZK</span>
           )}
           {onToggleSave && (
             <button
@@ -452,7 +283,7 @@ export default function ProductCard({
                 minWidth: "24px",
                 height: "24px",
                 flexShrink: 0,
-                borderRadius: "4px"
+                borderRadius: "4px",
               }}
               title={isSaved ? "Remove from favorites" : "Add to favorites"}
             >
@@ -463,7 +294,10 @@ export default function ProductCard({
                 fill={isSaved ? "#e8304a" : "none"}
                 stroke={isSaved ? "#e8304a" : "rgba(255,255,255,0.7)"}
                 strokeWidth="2"
-                style={{ transition: "fill 0.25s ease, stroke 0.25s ease, transform 0.15s ease", transform: isHeartAnimating ? "scale(1.35)" : "scale(1)" }}
+                style={{
+                  transition: "fill 0.2s ease, stroke 0.2s ease",
+                  transform: isHeartAnimating ? "scale(1.35)" : "scale(1)",
+                }}
               >
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
               </svg>
