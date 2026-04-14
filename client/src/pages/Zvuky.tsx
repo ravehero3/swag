@@ -183,20 +183,21 @@ function Zvuky() {
           position: "fixed",
           inset: 0,
           zIndex: 0,
-          backgroundImage: `url(/attached_assets/wall_background_1768155050336.webp)`,
+          backgroundImage: `url(/wall_background_new.webp)`,
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
           pointerEvents: "none",
         }}
       >
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background: "radial-gradient(circle at center, transparent 0%, rgba(13,13,13,0.4) 40%, rgba(13,13,13,0.9) 85%, black 100%)",
-          }}
-        />
+        {/* Top fade */}
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, black 0%, transparent 35%)", pointerEvents: "none" }} />
+        {/* Bottom fade */}
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, black 0%, transparent 35%)", pointerEvents: "none" }} />
+        {/* Left fade */}
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right, black 0%, transparent 30%)", pointerEvents: "none" }} />
+        {/* Right fade */}
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to left, black 0%, transparent 30%)", pointerEvents: "none" }} />
       </div>
 
       <audio
