@@ -703,27 +703,29 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
           const rawTipY = commentCY + avatarR + 6 * xScale;
           const tipY = Math.min(rawTipY, cardY + estimatedCardH - tipH - cardPad);
 
-          // Pill background — frosted glass, semi-transparent
-          ctx.save();
-          ctx.globalAlpha = 1;
-          if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(tipX, tipY, tipW, tipH, 6 * xScale); }
-          else { ctx.beginPath(); ctx.rect(tipX, tipY, tipW, tipH); }
-          ctx.fillStyle = "rgba(255,255,255,0.13)";
-          ctx.fill();
+          // Pill background — gaussian blur of region behind, then 80% dark overlay
+          const pillPW = Math.ceil(tipW);
+          const pillPH = Math.ceil(tipH);
+          const blurCanvas = document.createElement("canvas");
+          blurCanvas.width = pillPW;
+          blurCanvas.height = pillPH;
+          const blurCtx = blurCanvas.getContext("2d")!;
+          // Sample the pixels currently behind the pill and blur them
+          blurCtx.filter = "blur(20px)";
+          blurCtx.drawImage(canvas, Math.floor(tipX), Math.floor(tipY), pillPW, pillPH, 0, 0, pillPW, pillPH);
+          blurCtx.filter = "none";
 
-          // Glossy top-half highlight
-          const glossGrad = ctx.createLinearGradient(tipX, tipY, tipX, tipY + tipH * 0.55);
-          glossGrad.addColorStop(0, "rgba(255,255,255,0.22)");
-          glossGrad.addColorStop(1, "rgba(255,255,255,0)");
-          if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(tipX, tipY, tipW, tipH * 0.55, [6 * xScale, 6 * xScale, 0, 0]); }
-          else { ctx.beginPath(); ctx.rect(tipX, tipY, tipW, tipH * 0.55); }
-          ctx.fillStyle = glossGrad;
-          ctx.fill();
+          // Clip to pill shape, draw blurred region back, then dark overlay
+          ctx.save();
+          if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(tipX, tipY, tipW, tipH, 6 * xScale); ctx.clip(); }
+          ctx.drawImage(blurCanvas, Math.floor(tipX), Math.floor(tipY));
+          ctx.fillStyle = "rgba(0,0,0,0.80)";
+          ctx.fillRect(tipX, tipY, tipW, tipH);
           ctx.restore();
 
-          // Pill border — glassy edge
+          // Pill border
           ctx.save();
-          ctx.strokeStyle = "rgba(255,255,255,0.38)";
+          ctx.strokeStyle = "rgba(255,255,255,0.22)";
           ctx.lineWidth = xScale;
           if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(tipX, tipY, tipW, tipH, 6 * xScale); ctx.stroke(); }
           ctx.restore();
