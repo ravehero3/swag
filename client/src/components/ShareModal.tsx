@@ -703,18 +703,33 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
           const rawTipY = commentCY + avatarR + 6 * xScale;
           const tipY = Math.min(rawTipY, cardY + estimatedCardH - tipH - cardPad);
 
-          // Pill background
-          ctx.fillStyle = "rgba(15,15,15,0.92)";
-          if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(tipX, tipY, tipW, tipH, 6 * xScale); ctx.fill(); }
-          else ctx.fillRect(tipX, tipY, tipW, tipH);
+          // Pill background — frosted glass, semi-transparent
+          ctx.save();
+          ctx.globalAlpha = 1;
+          if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(tipX, tipY, tipW, tipH, 6 * xScale); }
+          else { ctx.beginPath(); ctx.rect(tipX, tipY, tipW, tipH); }
+          ctx.fillStyle = "rgba(255,255,255,0.13)";
+          ctx.fill();
 
-          // Pill border
-          ctx.strokeStyle = "rgba(255,255,255,0.15)";
+          // Glossy top-half highlight
+          const glossGrad = ctx.createLinearGradient(tipX, tipY, tipX, tipY + tipH * 0.55);
+          glossGrad.addColorStop(0, "rgba(255,255,255,0.22)");
+          glossGrad.addColorStop(1, "rgba(255,255,255,0)");
+          if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(tipX, tipY, tipW, tipH * 0.55, [6 * xScale, 6 * xScale, 0, 0]); }
+          else { ctx.beginPath(); ctx.rect(tipX, tipY, tipW, tipH * 0.55); }
+          ctx.fillStyle = glossGrad;
+          ctx.fill();
+          ctx.restore();
+
+          // Pill border — glassy edge
+          ctx.save();
+          ctx.strokeStyle = "rgba(255,255,255,0.38)";
           ctx.lineWidth = xScale;
           if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(tipX, tipY, tipW, tipH, 6 * xScale); ctx.stroke(); }
+          ctx.restore();
 
           // Username line
-          ctx.fillStyle = "rgba(255,255,255,0.55)";
+          ctx.fillStyle = "rgba(255,255,255,0.72)";
           ctx.font = `${nameFsz}px Helvetica,Arial,sans-serif`;
           ctx.textAlign = "left";
           ctx.textBaseline = "top";
@@ -724,7 +739,7 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
           );
 
           // Comment text lines
-          ctx.fillStyle = "rgba(255,255,255,0.92)";
+          ctx.fillStyle = "rgba(255,255,255,1)";
           ctx.font = `${cFsz}px Helvetica,Arial,sans-serif`;
           commentLines.forEach((line, li) =>
             ctx.fillText(line, tipX + tipPadX, tipY + tipPadY + nameFsz + lineGap + li * (cFsz + lineGap))
