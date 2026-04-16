@@ -301,7 +301,7 @@ function Home() {
     const video = videoRef.current;
     if (!video) return;
     video.play().catch(() => {});
-  }, []);
+  }, [settings?.home_video]);
 
   useEffect(() => {
     if (!draggingComment) return;
@@ -640,6 +640,7 @@ function Home() {
           loop
           muted
           playsInline
+          onLoadedData={(e) => { (e.target as HTMLVideoElement).play().catch(() => {}); }}
           style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", background: "#000" }}
         >
           Your browser does not support the video tag.
