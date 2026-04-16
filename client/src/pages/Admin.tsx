@@ -1293,7 +1293,8 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
             </div>
             <div style={{ gridColumn: "1 / -1" }}>
               <label style={{ display: "block", marginBottom: "8px" }}>Popis</label>
-              <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} style={{ width: "100%" }} />
+              <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={7} placeholder="Každý řádek = nový odstavec na stránce produktu. Prázdný řádek = mezera mezi odstavci." style={{ width: "100%" }} />
+              <p style={{ fontSize: "11px", color: "#555", marginTop: "4px" }}>Každý řádek se zobrazí jako samostatný odstavec. Pro větší mezeru stiskněte Enter dvakrát.</p>
             </div>
             <div>
               <label style={{ display: "block", marginBottom: "8px" }}>Typ / Cena</label>

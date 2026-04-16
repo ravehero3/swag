@@ -332,16 +332,15 @@ function ProductDetail() {
 
         {/* Description */}
         {product.description && (
-          <p
-            style={{
-              color: "#666",
-              fontSize: "13px",
-              lineHeight: 1.7,
-              margin: 0,
-            }}
-          >
-            {product.description}
-          </p>
+          <div style={{ color: "#666", fontSize: "13px", lineHeight: 1.7 }}>
+            {product.description.split("\n").map((line, i) =>
+              line.trim() ? (
+                <p key={i} style={{ margin: "0 0 10px 0" }}>{line}</p>
+              ) : (
+                <br key={i} />
+              )
+            )}
+          </div>
         )}
       </div>
 
