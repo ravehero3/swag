@@ -70,10 +70,6 @@ function Checkout() {
 
   const handleFreeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) {
-      setError("Pro dokončení objednávky se musíte přihlásit.");
-      return;
-    }
     setLoading(true);
     setError("");
     try {
@@ -98,7 +94,7 @@ function Checkout() {
 
       clearCart();
       setFreeSuccess(true);
-      setTimeout(() => navigate("/ucet"), 3000);
+      setTimeout(() => navigate(user ? "/ucet" : "/"), 3000);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -179,13 +175,14 @@ function Checkout() {
         <div style={{ maxWidth: "500px", width: "100%", textAlign: "center" }}>
           <h1 style={{ marginBottom: "24px" }}>Soubory jsou na cestě!</h1>
           <p style={{ color: "#666", marginBottom: "24px" }}>
-            Na email <strong style={{ color: "#fff" }}>{email}</strong> jsme odeslali odkaz ke stažení. Najdete soubory také ve svém účtu.
+            Na email <strong style={{ color: "#fff" }}>{email}</strong> jsme odeslali odkaz ke stažení.
+            {user && " Najdete soubory také ve svém účtu."}
           </p>
           <p style={{ color: "#555", fontSize: "13px", marginBottom: "24px" }}>
-            Přesměrovávám na váš účet...
+            {user ? "Přesměrovávám na váš účet..." : "Přesměrovávám na hlavní stránku..."}
           </p>
-          <button className="btn btn-bounce" onClick={() => navigate("/ucet")} style={{ borderRadius: "4px" }}>
-            Přejít na účet
+          <button className="btn btn-bounce" onClick={() => navigate(user ? "/ucet" : "/")} style={{ borderRadius: "4px" }}>
+            {user ? "Přejít na účet" : "Zpět na hlavní stránku"}
           </button>
         </div>
       </div>
@@ -288,7 +285,7 @@ function Checkout() {
               {loading ? "Zpracování..." : "Získat zdarma"}
             </button>
             <p style={{ fontSize: "11px", color: "#555", textAlign: "center", marginTop: "12px", lineHeight: "1.5" }}>
-              Soubory budou okamžitě dostupné ve vašem účtu i na emailu.
+              {user ? "Soubory budou okamžitě dostupné ve vašem účtu i na emailu." : "Odkaz ke stažení vám zašleme okamžitě na email."}
             </p>
           </form>
         </div>

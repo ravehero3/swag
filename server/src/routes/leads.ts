@@ -5,7 +5,7 @@ import { sendFreeDownloadEmail } from "../email.js";
 
 const router = Router();
 
-router.post("/", requireAuth, async (req: Request, res: Response) => {
+router.post("/", async (req: Request, res: Response) => {
   try {
     const { email, items } = req.body;
     const userId = req.session.userId || null;
