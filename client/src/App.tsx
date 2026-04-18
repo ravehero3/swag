@@ -1,10 +1,11 @@
-import { lazy, Suspense, useState, useEffect, createContext, useContext } from "react";
+import { lazy, Suspense, useState, useEffect, useRef, createContext, useContext } from "react";
 import { Route, Switch, useLocation, Redirect } from "wouter";
 import Header from "./components/Header.js";
 import ExtendedFooter from "./components/ExtendedFooter.js";
 import Footer from "./components/Footer.js";
 import CartModal from "./components/CartModal.js";
 import NewsletterWindow from "./components/NewsletterWindow.js";
+import MusicPlayer from "./components/MusicPlayer.js";
 import "./styles/global.css";
 
 const Home = lazy(() => import("./pages/Home.js"));
@@ -44,6 +45,24 @@ interface CartItem {
   licenseTypeId?: number | null;
 }
 
+export interface PreviewPlayerItem {
+  id: number;
+  title: string;
+  artist?: string;
+  bpm: number;
+  key: string;
+  price: number;
+  preview_url: string;
+  artwork_url: string;
+  product_type: "beat" | "sound_kit";
+}
+
+interface PreviewPlayerContext {
+  currentItem: PreviewPlayerItem | null;
+  isPlaying: boolean;
+  playPreview: (item: PreviewPlayerItem, queue?: PreviewPlayerItem[]) => Promise<void>;
+}
+
 interface AppContextType {
   user: User | null;
   setUser: (user: User | null) => void;
@@ -60,6 +79,7 @@ interface AppContextType {
   refreshSettings: () => Promise<void>;
   savedCount: number;
   refreshSavedCount: () => Promise<void>;
+  previewPlayer: PreviewPlayerContext;
 }
 
 export const AppContext = createContext<AppContextType>({
@@ -78,6 +98,11 @@ export const AppContext = createContext<AppContextType>({
   refreshSettings: async () => {},
   savedCount: 0,
   refreshSavedCount: async () => {},
+  previewPlayer: {
+    currentItem: null,
+    isPlaying: false,
+    playPreview: async () => {},
+  },
 });
 
 export const useApp = () => useContext(AppContext);
@@ -106,6 +131,12 @@ function App() {
   const [isNewsletterOpen, setIsNewsletterOpen] = useState(false);
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [savedCount, setSavedCount] = useState(0);
+  const [previewCurrentItem, setPreviewCurrentItem] = useState<PreviewPlayerItem | null>(null);
+  const [previewQueue, setPreviewQueue] = useState<PreviewPlayerItem[]>([]);
+  const [isPreviewPlaying, setIsPreviewPlaying] = useState(false);
+  const [isPreviewLooping, setIsPreviewLooping] = useState(false);
+  const [isPreviewShuffling, setIsPreviewShuffling] = useState(false);
+  const previewAudioRef = useRef<HTMLAudioElement>(null);
   const [location] = useLocation();
 
   useEffect(() => {
@@ -208,6 +239,107 @@ function App() {
   };
 
   useEffect(() => {
+    if (previewAudioRef.current) {
+      previewAudioRef.current.loop = isPreviewLooping;
+    }
+  }, [isPreviewLooping]);
+
+  const playPreview = async (item: PreviewPlayerItem, queue?: PreviewPlayerItem[]) => {
+    const audio = previewAudioRef.current;
+    if (!audio || !item.preview_url) return;
+
+    const isSameItem =
+      previewCurrentItem?.id === item.id &&
+      previewCurrentItem?.product_type === item.product_type &&
+      previewCurrentItem?.preview_url === item.preview_url;
+
+    if (queue && queue.length > 0) {
+      setPreviewQueue(queue);
+    } else if (!previewQueue.length) {
+      setPreviewQueue([item]);
+    }
+
+    if (isSameItem) {
+      if (isPreviewPlaying) {
+        audio.pause();
+        setIsPreviewPlaying(false);
+      } else {
+        try {
+          await audio.play();
+          setIsPreviewPlaying(true);
+        } catch (err) {
+          console.error("Preview resume failed:", err);
+          setIsPreviewPlaying(false);
+        }
+      }
+      return;
+    }
+
+    setPreviewCurrentItem(item);
+    audio.src = item.preview_url;
+    audio.load();
+    try {
+      await audio.play();
+      setIsPreviewPlaying(true);
+    } catch (err) {
+      console.error("Preview play failed:", err, "| src:", item.preview_url);
+      setIsPreviewPlaying(false);
+    }
+  };
+
+  const handlePreviewPlayPause = () => {
+    if (previewCurrentItem) {
+      playPreview(previewCurrentItem, previewQueue.length ? previewQueue : [previewCurrentItem]);
+    }
+  };
+
+  const handlePreviewPrevious = () => {
+    if (!previewCurrentItem) return;
+    const queue = previewQueue.length ? previewQueue : [previewCurrentItem];
+    const currentIndex = queue.findIndex(
+      (item) =>
+        item.id === previewCurrentItem.id &&
+        item.product_type === previewCurrentItem.product_type &&
+        item.preview_url === previewCurrentItem.preview_url
+    );
+    const prevIndex = currentIndex > 0 ? currentIndex - 1 : queue.length - 1;
+    playPreview(queue[prevIndex], queue);
+  };
+
+  const handlePreviewNext = () => {
+    if (!previewCurrentItem) return;
+    const queue = previewQueue.length ? previewQueue : [previewCurrentItem];
+    if (isPreviewShuffling && queue.length > 1) {
+      const otherItems = queue.filter(
+        (item) =>
+          item.id !== previewCurrentItem.id ||
+          item.product_type !== previewCurrentItem.product_type ||
+          item.preview_url !== previewCurrentItem.preview_url
+      );
+      playPreview(otherItems[Math.floor(Math.random() * otherItems.length)], queue);
+      return;
+    }
+    const currentIndex = queue.findIndex(
+      (item) =>
+        item.id === previewCurrentItem.id &&
+        item.product_type === previewCurrentItem.product_type &&
+        item.preview_url === previewCurrentItem.preview_url
+    );
+    const nextIndex = currentIndex >= 0 && currentIndex < queue.length - 1 ? currentIndex + 1 : 0;
+    playPreview(queue[nextIndex], queue);
+  };
+
+  const handlePreviewBuyClick = (item: PreviewPlayerItem) => {
+    addToCart({
+      productId: item.id,
+      productType: item.product_type,
+      title: item.title,
+      price: Number(item.price),
+      artworkUrl: item.artwork_url || "/uploads/artwork/metallic-logo.png",
+    });
+  };
+
+  useEffect(() => {
     if (!authLoading) {
       refreshSavedCount();
     }
@@ -217,8 +349,9 @@ function App() {
   const isPokladnaPage = location === "/pokladna";
 
   return (
-    <AppContext.Provider value={{ user, setUser, authLoading, cart, addToCart, removeFromCart, clearCart, isCartOpen, setIsCartOpen, isNewsletterOpen, setIsNewsletterOpen, settings, refreshSettings, savedCount, refreshSavedCount }}>
+    <AppContext.Provider value={{ user, setUser, authLoading, cart, addToCart, removeFromCart, clearCart, isCartOpen, setIsCartOpen, isNewsletterOpen, setIsNewsletterOpen, settings, refreshSettings, savedCount, refreshSavedCount, previewPlayer: { currentItem: previewCurrentItem, isPlaying: isPreviewPlaying, playPreview } }}>
       <div style={{ minHeight: "100vh", background: "#000", display: "flex", flexDirection: "column" }}>
+        <audio ref={previewAudioRef} onEnded={() => setIsPreviewPlaying(false)} />
         <Header />
         <main style={{ flex: 1, position: "relative", zIndex: 20 }} className="fade-in">
           <Suspense fallback={<PageLoader />}>
@@ -259,6 +392,21 @@ function App() {
         )}
         <CartModal isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
         <NewsletterWindow isOpen={isNewsletterOpen} onClose={() => setIsNewsletterOpen(false)} />
+        {previewCurrentItem && !isAdminPage && !isPokladnaPage && (
+          <MusicPlayer
+            currentBeat={previewCurrentItem}
+            isPlaying={isPreviewPlaying}
+            isLooping={isPreviewLooping}
+            isShuffling={isPreviewShuffling}
+            onPlayPause={handlePreviewPlayPause}
+            onPrevious={handlePreviewPrevious}
+            onNext={handlePreviewNext}
+            onToggleLoop={() => setIsPreviewLooping((value) => !value)}
+            onToggleShuffle={() => setIsPreviewShuffling((value) => !value)}
+            onBuyClick={handlePreviewBuyClick}
+            audioRef={previewAudioRef}
+          />
+        )}
       </div>
     </AppContext.Provider>
   );

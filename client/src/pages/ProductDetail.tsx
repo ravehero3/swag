@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRoute, useLocation } from "wouter";
 import { useApp } from "../App.js";
-import MiniWavePlayer from "../components/MiniWavePlayer.js";
 import ShareModal from "../components/ShareModal.js";
 
 interface ProductData {
@@ -23,7 +22,7 @@ interface ProductData {
 function ProductDetail() {
   const [, params] = useRoute("/produkt/:type/:id");
   const [, setLocation] = useLocation();
-  const { addToCart } = useApp() as any;
+  const { addToCart, previewPlayer } = useApp() as any;
   const [product, setProduct] = useState<ProductData | null>(null);
   const [loading, setLoading] = useState(true);
   const [addedToCart, setAddedToCart] = useState(false);
@@ -58,6 +57,24 @@ function ProductDetail() {
     });
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 2000);
+  };
+
+  const playProductPreview = (url: string) => {
+    if (!product || !params) return;
+    const productType = params.type === "beat" ? "beat" : "sound_kit";
+    const queue = previews.map((previewUrl) => ({
+      id: product.id,
+      title: previews.length > 1 ? `${product.title} — ukázka ${previews.indexOf(previewUrl) + 1}` : product.title,
+      artist: product.artist || typeLabels[product.type || productType] || (productType === "beat" ? "Beat" : "Sound Kit"),
+      bpm: product.bpm || 0,
+      key: product.key || "",
+      price: Number(product.price),
+      preview_url: previewUrl,
+      artwork_url: product.artwork_url || "/uploads/artwork/metallic-logo.png",
+      product_type: productType,
+    }));
+    const item = queue.find((previewItem) => previewItem.preview_url === url) || queue[0];
+    previewPlayer.playPreview(item, queue);
   };
 
   if (loading) return null;
@@ -247,9 +264,38 @@ function ProductDetail() {
               {previews.length > 1 ? "Ukázky" : "Ukázka"}
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-              {previews.map((url, idx) => (
-                <MiniWavePlayer key={idx} url={url} />
-              ))}
+              {previews.map((url, idx) => {
+                const productType = params?.type === "beat" ? "beat" : "sound_kit";
+                const isCurrent =
+                  previewPlayer.currentItem?.id === product.id &&
+                  previewPlayer.currentItem?.product_type === productType &&
+                  previewPlayer.currentItem?.preview_url === url;
+                return (
+                  <button
+                    key={url}
+                    onClick={() => playProductPreview(url)}
+                    style={{
+                      width: "100%",
+                      padding: "14px 16px",
+                      background: isCurrent && previewPlayer.isPlaying ? "#fff" : "#0d0d0d",
+                      color: isCurrent && previewPlayer.isPlaying ? "#000" : "#fff",
+                      border: "1px solid #333",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      fontSize: "12px",
+                      letterSpacing: "0.08em",
+                      textTransform: "uppercase",
+                    }}
+                    data-testid={`button-play-preview-${idx}`}
+                  >
+                    <span>{previews.length > 1 ? `Přehrát ukázku ${idx + 1}` : "Přehrát ukázku"}</span>
+                    <span>{isCurrent && previewPlayer.isPlaying ? "⏸" : "▶"}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}

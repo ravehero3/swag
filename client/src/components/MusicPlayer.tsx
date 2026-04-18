@@ -4,13 +4,14 @@ import ShareModal from "./ShareModal.js";
 interface Beat {
   id: number;
   title: string;
-  artist: string;
+  artist?: string;
   bpm: number;
   key: string;
   price: number;
   preview_url: string;
   artwork_url: string;
   is_highlighted?: boolean;
+  product_type?: "beat" | "sound_kit";
 }
 
 interface MusicPlayerProps {
@@ -649,7 +650,7 @@ function MusicPlayer({
 
       <ShareModal
         product={{ id: currentBeat.id, title: currentBeat.title, price: currentBeat.price, artwork_url: currentBeat.artwork_url, preview_url: currentBeat.preview_url }}
-        productType="beat"
+        productType={currentBeat.product_type === "sound_kit" ? "sound_kit" : "beat"}
         isOpen={showShareModal}
         onClose={() => setShowShareModal(false)}
       />

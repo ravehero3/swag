@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useApp } from "../App.js";
 import { useLocation } from "wouter";
 import ProductsGrid from "../components/ProductsGrid.js";
@@ -53,13 +53,9 @@ prefetchKits();
 function Zvuky() {
   const [kits, setKits] = useState<SoundKit[]>(() => _kitsCache ?? []);
   const [loading, setLoading] = useState(() => _kitsCache === null);
-  const [currentKit, setCurrentKit] = useState<SoundKit | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
   const [savedKits, setSavedKits] = useState<Set<number>>(new Set());
   const [saveToast, setSaveToast] = useState<{ text: string; saved: boolean } | null>(null);
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const [currentPreviewUrl, setCurrentPreviewUrl] = useState("");
-  const { user, addToCart, settings, refreshSavedCount } = useApp() as any;
+  const { user, addToCart, settings, refreshSavedCount, previewPlayer } = useApp() as any;
   const [, setLocation] = useLocation();
 
   const getKitPreviewUrl = (kit: SoundKit) => {
@@ -103,34 +99,34 @@ function Zvuky() {
       console.error("Sound kit has no preview URL:", kit.title);
       return;
     }
-    if (currentKit?.id === kit.id) {
-      if (isPlaying) {
-        audioRef.current?.pause();
-        setIsPlaying(false);
-      } else {
-        try {
-          await audioRef.current?.play();
-          setIsPlaying(true);
-        } catch (err) {
-          console.error("Sound kit audio resume failed:", err);
-          setIsPlaying(false);
-        }
-      }
-    } else {
-      const audio = audioRef.current;
-      if (!audio) return;
-      setCurrentKit(kit);
-      setCurrentPreviewUrl(previewUrl);
-      audio.src = previewUrl;
-      audio.load();
-      try {
-        await audio.play();
-        setIsPlaying(true);
-      } catch (err) {
-        console.error("Sound kit audio play failed:", err, "| src:", previewUrl);
-        setIsPlaying(false);
-      }
-    }
+    const queue = kits
+      .map((item) => {
+        const url = getKitPreviewUrl(item);
+        if (!url) return null;
+        return {
+          id: item.id,
+          title: item.title,
+          artist: typeLabels[item.type] || "Sound Kit",
+          bpm: 0,
+          key: "",
+          price: Number(item.price),
+          preview_url: url,
+          artwork_url: item.artwork_url || "/uploads/artwork/metallic-logo.png",
+          product_type: "sound_kit" as const,
+        };
+      })
+      .filter(Boolean);
+    await previewPlayer.playPreview({
+      id: kit.id,
+      title: kit.title,
+      artist: typeLabels[kit.type] || "Sound Kit",
+      bpm: 0,
+      key: "",
+      price: Number(kit.price),
+      preview_url: previewUrl,
+      artwork_url: kit.artwork_url || "/uploads/artwork/metallic-logo.png",
+      product_type: "sound_kit",
+    }, queue);
   };
 
   const handleAddToCart = (kit: SoundKit) => {
@@ -249,12 +245,6 @@ function Zvuky() {
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to left, black 0%, transparent 30%)", pointerEvents: "none" }} />
       </div>
 
-      <audio
-        ref={audioRef}
-        src={currentPreviewUrl}
-        onEnded={() => setIsPlaying(false)}
-      />
-
       {/* Content — above video */}
       <div style={{ position: "relative", zIndex: 2, paddingTop: "100px" }}>
         {loading ? (
@@ -286,8 +276,8 @@ function Zvuky() {
               savedProducts={Array.from(savedKits)}
               onToggleSave={(id) => toggleSave(kits.find((k) => k.id === id)!)}
               onPlayClick={(id) => playPreview(kits.find((k) => k.id === id)!)}
-              isPlaying={isPlaying}
-              currentPlayingId={currentKit?.id}
+              isPlaying={previewPlayer.isPlaying && previewPlayer.currentItem?.product_type === "sound_kit"}
+              currentPlayingId={previewPlayer.currentItem?.product_type === "sound_kit" ? previewPlayer.currentItem?.id : undefined}
               onAddToCart={(id) => handleAddToCart(kits.find((k) => k.id === id)!)}
               compactCards
             />

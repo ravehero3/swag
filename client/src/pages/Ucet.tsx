@@ -19,13 +19,11 @@ interface Order {
 }
 
 export default function Ucet() {
-  const { user, setUser, addToCart, cart } = useApp() as any;
+  const { user, setUser, addToCart, cart, previewPlayer } = useApp() as any;
   const [, setLocation] = useLocation();
   const [orders, setOrders] = useState<Order[]>([]);
   const [savedItems, setSavedItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [playingId, setPlayingId] = useState<number | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
   const [payingOrderId, setPayingOrderId] = useState<number | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -35,7 +33,6 @@ export default function Ucet() {
   const [usernameInput, setUsernameInput] = useState<string>("");
   const [savingUsername, setSavingUsername] = useState(false);
   const [usernameError, setUsernameError] = useState<string | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -141,49 +138,35 @@ export default function Ucet() {
     fetchData();
   }, [user, setLocation]);
 
-  useEffect(() => {
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
+  const getSavedPreviewUrl = (item: any) => {
+    const urls = [
+      ...(Array.isArray(item.item_data?.preview_urls) ? item.item_data.preview_urls : []),
+      item.item_data?.preview_url,
+    ].filter((url): url is string => typeof url === "string" && url.trim().length > 0);
+    return urls[0] || "";
+  };
+
+  const toPreviewPlayerItem = (item: any) => {
+    const previewUrl = getSavedPreviewUrl(item);
+    if (!previewUrl) return;
+    return {
+      id: item.item_data?.id || item.item_id,
+      title: item.item_data?.title || "Preview",
+      artist: item.item_type === "beat" ? item.item_data?.artist || "Beat" : "Sound Kit",
+      bpm: item.item_data?.bpm || 0,
+      key: item.item_data?.key || "",
+      price: Number(item.item_data?.price || 0),
+      preview_url: previewUrl,
+      artwork_url: item.item_data?.artwork_url || "/uploads/artwork/metallic-logo.png",
+      product_type: item.item_type === "beat" ? "beat" as const : "sound_kit" as const,
     };
-  }, []);
+  };
 
   const handleSavedItemClick = (item: any) => {
-    const previewUrl = item.item_data?.preview_url;
-    if (!previewUrl) return;
-
-    const itemId = item.item_id;
-
-    if (playingId === itemId) {
-      if (isPlaying) {
-        audioRef.current?.pause();
-        setIsPlaying(false);
-      } else {
-        audioRef.current?.play();
-        setIsPlaying(true);
-      }
-      return;
-    }
-
-    if (audioRef.current) {
-      audioRef.current.pause();
-    }
-
-    const audio = new Audio(previewUrl);
-    audio.volume = 0.8;
-    audioRef.current = audio;
-
-    audio.play().then(() => {
-      setPlayingId(itemId);
-      setIsPlaying(true);
-    }).catch(() => {});
-
-    audio.addEventListener("ended", () => {
-      setIsPlaying(false);
-      setPlayingId(null);
-    });
+    const previewItem = toPreviewPlayerItem(item);
+    if (!previewItem) return;
+    const queue = savedItems.map(toPreviewPlayerItem).filter(Boolean);
+    previewPlayer.playPreview(previewItem, queue);
   };
 
   const handlePayOrder = async (orderId: number) => {
@@ -510,8 +493,11 @@ export default function Ucet() {
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "20px" }}>
               {savedItems.slice(0, 4).map((item) => {
-                const hasAudio = !!item.item_data?.preview_url && item.item_type === "beat";
-                const itemPlaying = playingId === item.item_id && isPlaying;
+                const hasAudio = !!getSavedPreviewUrl(item);
+                const itemPlaying =
+                  previewPlayer.currentItem?.id === (item.item_data?.id || item.item_id) &&
+                  previewPlayer.currentItem?.product_type === (item.item_type === "beat" ? "beat" : "sound_kit") &&
+                  previewPlayer.isPlaying;
                 return (
                   <div
                     key={`${item.item_type}-${item.item_id}`}

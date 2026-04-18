@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useApp } from "../App.js";
 import { Link, useLocation } from "wouter";
 
@@ -14,6 +14,7 @@ interface SavedItem {
     key?: string;
     price: number;
     preview_url?: string;
+    preview_urls?: string[];
     artwork_url?: string;
     type?: string;
     number_of_sounds?: number;
@@ -31,12 +32,9 @@ const typeLabels: Record<string, string> = {
 
 function Ulozeno() {
   const [savedItems, setSavedItems] = useState<SavedItem[]>([]);
-  const [currentItem, setCurrentItem] = useState<SavedItem | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
   const [removingItems, setRemovingItems] = useState<Set<number>>(new Set());
   const [addedItems, setAddedItems] = useState<Set<number>>(new Set());
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const { user, addToCart, cart, authLoading, refreshSavedCount } = useApp() as any;
+  const { user, addToCart, cart, authLoading, refreshSavedCount, previewPlayer } = useApp() as any;
   const [location] = useLocation();
 
   const cartCount = cart.length;
@@ -78,26 +76,35 @@ function Ulozeno() {
     }
   }, [user, authLoading]);
 
-  const playPreview = (item: SavedItem) => {
-    if (!item.item_data.preview_url) return;
+  const getPreviewUrl = (item: SavedItem) => {
+    const urls = [
+      ...(Array.isArray(item.item_data.preview_urls) ? item.item_data.preview_urls : []),
+      item.item_data.preview_url,
+    ].filter((url): url is string => typeof url === "string" && url.trim().length > 0);
+    return urls[0] || "";
+  };
 
-    if (currentItem?.id === item.id) {
-      if (isPlaying) {
-        audioRef.current?.pause();
-        setIsPlaying(false);
-      } else {
-        audioRef.current?.play();
-        setIsPlaying(true);
-      }
-    } else {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.src = item.item_data.preview_url;
-        audioRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
-      }
-      setCurrentItem(item);
-      setIsPlaying(true);
-    }
+  const toPreviewPlayerItem = (item: SavedItem) => {
+    const previewUrl = getPreviewUrl(item);
+    if (!previewUrl) return null;
+    return {
+      id: item.item_data.id,
+      title: item.item_data.title,
+      artist: item.item_type === "beat" ? item.item_data.artist || "Beat" : typeLabels[item.item_data.type || ""] || "Sound Kit",
+      bpm: item.item_data.bpm || 0,
+      key: item.item_data.key || "",
+      price: Number(item.item_data.price),
+      preview_url: previewUrl,
+      artwork_url: item.item_data.artwork_url || "/uploads/artwork/metallic-logo.png",
+      product_type: item.item_type === "beat" ? "beat" as const : "sound_kit" as const,
+    };
+  };
+
+  const playPreview = (item: SavedItem) => {
+    const previewItem = toPreviewPlayerItem(item);
+    if (!previewItem) return;
+    const queue = savedItems.map(toPreviewPlayerItem).filter(Boolean);
+    previewPlayer.playPreview(previewItem, queue);
   };
 
   const handleRemove = async (item: SavedItem) => {
@@ -207,12 +214,6 @@ function Ulozeno() {
       className="min-h-screen bg-black text-white fade-in overflow-x-hidden relative flex flex-col"
       style={{ minHeight: "calc(100vh - 42px)" }}
     >
-      <audio
-        ref={audioRef}
-        src={currentItem?.item_data?.preview_url}
-        onEnded={() => setIsPlaying(false)}
-      />
-
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes cartOut {
           0%   { opacity: 1; transform: scale(1) translateY(0); }
@@ -376,6 +377,11 @@ function Ulozeno() {
               {savedItems.map((item) => {
                 const isRemoving = removingItems.has(item.id);
                 const isAdded = addedItems.has(item.id);
+                const previewUrl = getPreviewUrl(item);
+                const itemPlaying =
+                  previewPlayer.currentItem?.id === item.item_data.id &&
+                  previewPlayer.currentItem?.product_type === (item.item_type === "beat" ? "beat" : "sound_kit") &&
+                  previewPlayer.isPlaying;
                 return (
                   <div
                     key={item.id}
@@ -398,10 +404,10 @@ function Ulozeno() {
                         style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "4px", display: "block" }}
                       />
                       {/* Play button */}
-                      {item.item_data.preview_url && (
+                      {previewUrl && (
                         <button
                           onClick={() => playPreview(item)}
-                          className={`ulozeno-play-btn${currentItem?.id === item.id && isPlaying ? " playing" : ""}`}
+                          className={`ulozeno-play-btn${itemPlaying ? " playing" : ""}`}
                           style={{
                             position: "absolute",
                             inset: 0,
@@ -410,15 +416,15 @@ function Ulozeno() {
                             height: "44px",
                             borderRadius: "50%",
                             border: "1.5px solid #fff",
-                            background: currentItem?.id === item.id && isPlaying ? "#fff" : "rgba(13,13,13,0.55)",
-                            color: currentItem?.id === item.id && isPlaying ? "#000" : "#fff",
+                            background: itemPlaying ? "#fff" : "rgba(13,13,13,0.55)",
+                            color: itemPlaying ? "#000" : "#fff",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
                             cursor: "pointer",
                           }}
                         >
-                          {currentItem?.id === item.id && isPlaying ? (
+                          {itemPlaying ? (
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                               <rect x="6" y="4" width="4" height="16" />
                               <rect x="14" y="4" width="4" height="16" />

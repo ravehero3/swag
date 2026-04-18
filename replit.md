@@ -71,3 +71,7 @@ Configured for Replit Autoscale deployment:
 ## Migration Status
 
 Imported from Replit Agent and configured for Replit with Node.js 20, PostgreSQL 16, a webview workflow on port 5000, and Replit Autoscale publishing settings. The app initializes its database on startup and serves the React frontend through the Express server.
+
+## Audio Preview UX
+
+The app now has a shared preview player in `client/src/App.tsx` that renders the bottom `MusicPlayer` bar for non-admin/non-checkout pages. Sound kits, product detail previews, saved items, and account saved products should route preview clicks through this shared player so beats and sound kits use the same playback UX.
