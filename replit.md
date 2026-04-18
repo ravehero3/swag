@@ -49,7 +49,6 @@ Key tables: `users`, `beats`, `sound_kits`, `orders`, `order_items`, `licenses`,
 Required secrets (set in Replit Secrets):
 - `DATABASE_URL` — auto-set by Replit DB
 - `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` — for Google OAuth
-- `GOOGLE_CLIENT_SECRET` — Google OAuth secret
 - `B2_KEY_ID` / `B2_APPLICATION_KEY` — Backblaze B2 credentials
 - `SESSION_SECRET` — cookie session secret
 - `RESEND_API_KEY` — for transactional emails
@@ -61,10 +60,14 @@ Non-secret env vars are in `.replit` under `[userenv.shared]`:
 
 Default admin account created on first startup:
 - Email: `admin@voodoo808.com`
-- Password: `admin123`
+- Password: seeded by `server/src/index.ts`
 
 ## Deployment
 
 Configured for Replit Autoscale deployment:
 - Build: `npm run build`
-- Run: `node ./dist/index.cjs`
+- Run: `npm start`
+
+## Migration Status
+
+Imported from Replit Agent and configured for Replit with Node.js 20, PostgreSQL 16, a webview workflow on port 5000, and Replit Autoscale publishing settings. The app initializes its database on startup and serves the React frontend through the Express server.
