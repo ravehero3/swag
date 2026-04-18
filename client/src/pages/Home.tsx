@@ -623,8 +623,6 @@ function Home() {
           .mobile-only-flex { display: flex !important; }
           .home-beat-title-col { width: auto !important; flex: 1 !important; min-width: 0 !important; margin-right: 4px !important; }
           .home-beat-title-col > div:first-child { font-size: 15px !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-          .home-beat-dl-btn { display: none !important; }
-          .home-beat-share-btn { display: none !important; }
           .home-beat-buy-btn { min-width: 0 !important; padding: 8px 10px 8px 12px !important; font-size: 11px !important; }
           .home-beat-header-title { width: auto !important; flex: 1 !important; }
         }
