@@ -452,6 +452,40 @@ const PRICE_TYPES_BEAT = [
 
 type BeatPriceType = typeof PRICE_TYPES_BEAT[number]["id"];
 
+function BeatWaveformSparkline({ data }: { data: number[] }) {
+  const N = 40;
+  const W = 80;
+  const H = 18;
+  const gap = 0.7;
+  const barW = (W - gap * (N - 1)) / N;
+  const step = data.length / N;
+  const bars = Array.from({ length: N }, (_, i) => {
+    const start = Math.floor(i * step);
+    const end = Math.min(Math.floor((i + 1) * step), data.length);
+    let sum = 0;
+    for (let j = start; j < end; j++) sum += data[j];
+    return end > start ? sum / (end - start) : 0;
+  });
+  const mid = H / 2;
+  const topMax = mid - 1;
+  const botMax = mid * 0.38;
+  return (
+    <svg width={W} height={H} style={{ display: "block", flexShrink: 0 }}>
+      {bars.map((v, i) => {
+        const x = i * (barW + gap);
+        const topH = Math.max(0.5, v * topMax);
+        const botH = Math.max(0.3, v * botMax);
+        return (
+          <g key={i}>
+            <rect x={x} y={mid - topH} width={barW} height={topH} fill="rgba(255,255,255,0.38)" rx={0.4} />
+            <rect x={x} y={mid} width={barW} height={botH} fill="rgba(255,255,255,0.13)" rx={0.4} />
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
 function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh, loadData }: any) {
   const [form, setForm] = useState({
     title: "",
@@ -1074,16 +1108,17 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                 {!beat.preview_url ? (
                   <span style={{ fontSize: "12px", color: "#444" }}>—</span>
                 ) : (beat.waveform_data && Array.isArray(beat.waveform_data)) ? (
-                  <span
+                  <div
                     data-testid={`waveform-status-${beat.id}`}
-                    style={{ display: "inline-flex", alignItems: "center", gap: "5px", fontSize: "12px", color: "#4caf50" }}
+                    style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
+                    title={`${beat.waveform_data.length} bodů`}
                   >
-                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                    <BeatWaveformSparkline data={beat.waveform_data} />
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ flexShrink: 0 }}>
                       <circle cx="5" cy="5" r="4" fill="#4caf50" />
                       <path d="M3 5l1.5 1.5L7.5 3.5" stroke="#000" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
-                    Připraveno
-                  </span>
+                  </div>
                 ) : recomputingIds.has(beat.id) ? (
                   <span style={{ fontSize: "12px", color: "#888" }}>Spouštím…</span>
                 ) : (
