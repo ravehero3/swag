@@ -322,17 +322,17 @@ input::placeholder, textarea::placeholder {
 
 /* ─── Mobile Music Player ───────────────────────────────────────────────────── */
 
-@media (max-width: 640px) {
-  /* Shrink the bar to 68px on mobile */
+@media (max-width: 768px) {
+  /* Shrink the bar to 64px on mobile */
   .music-player-bar {
-    height: 68px !important;
+    height: 64px !important;
     padding: 0 !important;
   }
 
   /* Artwork fills the full bar height, flush to the left edge */
   .player-artwork {
-    width: 68px !important;
-    height: 68px !important;
+    width: 64px !important;
+    height: 64px !important;
     margin-left: 0 !important;
     flex-shrink: 0 !important;
     border-radius: 0 !important;
@@ -345,49 +345,55 @@ input::placeholder, textarea::placeholder {
 
   /* Left section: tighter gap, no overflow */
   .player-left-section {
-    gap: 10px !important;
+    gap: 8px !important;
     overflow: hidden !important;
+    flex: 1 !important;
+    min-width: 0 !important;
   }
 
-  /* Info row: wrap if needed, hide save heart on mobile */
+  /* Info row: single line, no wrap, clipped */
   .player-info-wrap {
     gap: 6px !important;
     overflow: hidden !important;
     flex-wrap: nowrap !important;
+    flex: 1 !important;
+    min-width: 0 !important;
   }
 
+  /* Hide save heart on mobile */
   .player-save-btn {
     display: none !important;
   }
 
-  /* Title: smaller, truncated */
+  /* Title: compact, truncated */
   .player-title {
-    font-size: 13px !important;
-    max-width: 130px !important;
+    font-size: 11px !important;
+    max-width: none !important;
+    flex: 1 !important;
+    min-width: 0 !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
     white-space: nowrap !important;
-    flex-shrink: 1 !important;
   }
 
-  /* Buy button: compact — keep bag icon + price, just smaller */
+  /* Buy button: compact — bag icon only, no min-width */
   .player-buy-btn {
     min-width: 0 !important;
-    padding: 6px 8px 6px 12px !important;
-    height: 28px !important;
-    font-size: 11px !important;
+    padding: 5px 8px 5px 10px !important;
+    height: 26px !important;
+    font-size: 10px !important;
     flex-shrink: 0 !important;
   }
 
   /* Controls: only prev, play, next — loop and shuffle already hidden */
   .music-player-controls {
-    gap: 4px !important;
+    gap: 2px !important;
     flex-shrink: 0 !important;
     margin-right: 0 !important;
   }
 
   .music-player-controls button {
-    padding: 6px !important;
+    padding: 5px !important;
   }
 
   /* Hide loop (first) and shuffle (last) */
@@ -397,15 +403,15 @@ input::placeholder, textarea::placeholder {
   }
 
   .music-player-controls button svg {
-    width: 15px !important;
-    height: 15px !important;
+    width: 14px !important;
+    height: 14px !important;
   }
 
   /* Play/pause circle: slightly smaller */
   .music-player-controls button:nth-child(3) {
-    width: 36px !important;
-    height: 36px !important;
-    font-size: 16px !important;
+    width: 34px !important;
+    height: 34px !important;
+    font-size: 15px !important;
     margin: 0 !important;
   }
 
