@@ -617,6 +617,16 @@ function Home() {
           .mobile-video-container { min-height: 320px !important; max-height: 60vh; }
           .mobile-only-video-section { display: block !important; }
           .desktop-main-video { display: none !important; }
+          .mobile-hide { display: none !important; }
+          .desktop-only { display: none !important; }
+          .mobile-only { display: flex !important; }
+          .mobile-only-flex { display: flex !important; }
+          .home-beat-title-col { width: auto !important; flex: 1 !important; min-width: 0 !important; margin-right: 4px !important; }
+          .home-beat-title-col > div:first-child { font-size: 15px !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+          .home-beat-dl-btn { display: none !important; }
+          .home-beat-share-btn { display: none !important; }
+          .home-beat-buy-btn { min-width: 0 !important; padding: 8px 10px 8px 12px !important; font-size: 11px !important; }
+          .home-beat-header-title { width: auto !important; flex: 1 !important; }
         }
         @media (min-width: 769px) {
           .mobile-only-video-section { display: none !important; }
@@ -1132,7 +1142,7 @@ function Home() {
                 {/* matches artwork image */}
                 <div style={{ width: "48px", flexShrink: 0 }} />
                 {/* NÁZEV — matches title column */}
-                <div style={{ width: "240px", minWidth: "240px", maxWidth: "240px", flexShrink: 0, marginRight: "12px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666" }}>NÁZEV</div>
+                <div className="home-beat-header-title" style={{ width: "240px", minWidth: "240px", maxWidth: "240px", flexShrink: 0, marginRight: "12px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666" }}>NÁZEV</div>
                 <div style={{ position: "absolute", bottom: 0, left: "80px", right: "16px", height: "1px", background: "#333" }} />
                 {/* BPM — matches beat bpm column */}
                 <div className="desktop-only" style={{ width: "100px", flexShrink: 0 }}><button onClick={() => { setSortBy(sortBy === "bpm" ? "bpm" : "bpm"); setSortAsc(sortBy === "bpm" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0, textAlign: "left", width: "100%" }}>BPM {sortBy === "bpm" && (sortAsc ? "↑" : "↓")}</button></div>
@@ -1233,7 +1243,7 @@ function Home() {
                   style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "4px" }}
                 />
               </div>
-              <div style={{ width: "240px", marginRight: "12px", display: "flex", flexDirection: "column", gap: "4px" }}>
+              <div className="home-beat-title-col" style={{ width: "240px", marginRight: "12px", display: "flex", flexDirection: "column", gap: "4px" }}>
                 <div style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "20px" }}>{beat.title}</div>
                 <div className="mobile-only-flex" style={{ display: "none", gap: "8px", alignItems: "center" }}>
                   {beat.bpm && <span style={{ fontSize: "11px", color: "#666", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif" }}>{beat.bpm} BPM</span>}
@@ -1325,6 +1335,7 @@ function Home() {
                       e.stopPropagation();
                       downloadPreview(beat);
                     }}
+                    className="home-beat-dl-btn"
                     style={{
                       background: "#111111",
                       border: "1px solid #333",
@@ -1360,6 +1371,7 @@ function Home() {
                     e.stopPropagation();
                     setShareBeat(beat);
                   }}
+                  className="home-beat-share-btn"
                   style={{
                     background: "#111111",
                     border: "1px solid #333",
@@ -1395,7 +1407,7 @@ function Home() {
                     e.stopPropagation();
                     openContractModal(beat);
                   }}
-                  className="btn-bounce"
+                  className="btn-bounce home-beat-buy-btn"
                   style={{
                     padding: "8px 8px 8px 16px",
                     background: "#000",

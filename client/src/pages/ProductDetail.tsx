@@ -85,63 +85,93 @@ function ProductDetail() {
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        height: "calc(100vh - 42px)",
-        backgroundColor: "#000",
-        color: "#fff",
-        overflow: "hidden",
-      }}
-    >
+    <div className="pd-container">
+      <style>{`
+        .pd-container {
+          display: flex;
+          height: calc(100vh - 42px);
+          background-color: #000;
+          color: #fff;
+          overflow: hidden;
+        }
+        .pd-artwork {
+          width: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 48px;
+          flex-shrink: 0;
+          overflow: hidden;
+        }
+        .pd-artwork img {
+          max-width: 100%;
+          max-height: 100%;
+          object-fit: contain;
+          border-radius: 4px;
+        }
+        .pd-divider {
+          width: 1px;
+          background-color: #222;
+          flex-shrink: 0;
+          align-self: stretch;
+        }
+        .pd-info {
+          width: 50%;
+          display: flex;
+          flex-direction: column;
+          padding: 48px 40px;
+          overflow-y: auto;
+          gap: 0;
+        }
+        @media (max-width: 768px) {
+          .pd-container {
+            flex-direction: column;
+            height: auto;
+            min-height: calc(100vh - 42px);
+            overflow-y: auto;
+          }
+          .pd-artwork {
+            width: 100%;
+            padding: 0;
+            flex-shrink: 0;
+            aspect-ratio: 1 / 1;
+            overflow: hidden;
+          }
+          .pd-artwork img {
+            width: 100%;
+            height: 100%;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover;
+            border-radius: 0;
+          }
+          .pd-divider {
+            display: none;
+          }
+          .pd-info {
+            width: 100%;
+            padding: 28px 20px 40px 20px;
+            overflow-y: visible;
+          }
+        }
+      `}</style>
+
       {/* Left half — artwork */}
-      <div
-        style={{
-          width: "50%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: "48px",
-          flexShrink: 0,
-          overflow: "hidden",
-        }}
-      >
+      <div className="pd-artwork">
         <img
           src={product.artwork_url || "/uploads/artwork/metallic-logo.png"}
           alt={product.title}
           onError={(e) => {
             (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png";
           }}
-          style={{
-            maxWidth: "100%",
-            maxHeight: "100%",
-            objectFit: "contain",
-            borderRadius: "4px",
-          }}
         />
       </div>
 
       {/* Center divider */}
-      <div
-        style={{
-          width: "1px",
-          backgroundColor: "#222",
-          flexShrink: 0,
-          alignSelf: "stretch",
-        }}
-      />
+      <div className="pd-divider" />
 
       {/* Right half — info */}
-      <div
-        style={{
-          width: "50%",
-          display: "flex",
-          flexDirection: "column",
-          padding: "48px 40px",
-          overflowY: "auto",
-          gap: "0",
-        }}
-      >
+      <div className="pd-info">
         {/* Back link */}
         <button
           onClick={() => setLocation(params?.type === "beat" ? "/beaty" : "/zvuky")}
