@@ -68,12 +68,13 @@ function ProductDetail() {
   );
 
   // Collect all preview URLs
-  const previews: string[] = [];
-  if (product.preview_urls && product.preview_urls.length > 0) {
-    previews.push(...product.preview_urls);
-  } else if (product.preview_url) {
-    previews.push(product.preview_url);
-  }
+  const previews = Array.from(new Set([
+    ...(Array.isArray(product.preview_urls) ? product.preview_urls : []),
+    product.preview_url,
+  ]
+    .filter((url): url is string => typeof url === "string")
+    .map((url) => url.trim())
+    .filter(Boolean)));
 
   const typeLabels: Record<string, string> = {
     drum_kit: "Drum Kit",

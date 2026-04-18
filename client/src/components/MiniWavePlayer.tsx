@@ -19,6 +19,7 @@ function MiniWavePlayer({ url, label }: MiniWavePlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [playError, setPlayError] = useState("");
 
   useEffect(() => {
     const audio = new Audio();
@@ -40,13 +41,21 @@ function MiniWavePlayer({ url, label }: MiniWavePlayerProps) {
       progressRef.current = 0;
       setCurrentTime(0);
     };
+    const onError = () => {
+      setIsPlaying(false);
+      setPlayError("Audio preview se nepodařilo načíst");
+    };
     const onPause = () => setIsPlaying(false);
-    const onPlay = () => setIsPlaying(true);
+    const onPlay = () => {
+      setPlayError("");
+      setIsPlaying(true);
+    };
 
     audio.addEventListener("timeupdate", onTimeUpdate);
     audio.addEventListener("durationchange", onDurationChange);
     audio.addEventListener("loadedmetadata", onDurationChange);
     audio.addEventListener("ended", onEnded);
+    audio.addEventListener("error", onError);
     audio.addEventListener("pause", onPause);
     audio.addEventListener("play", onPlay);
 
@@ -63,6 +72,7 @@ function MiniWavePlayer({ url, label }: MiniWavePlayerProps) {
       audio.removeEventListener("durationchange", onDurationChange);
       audio.removeEventListener("loadedmetadata", onDurationChange);
       audio.removeEventListener("ended", onEnded);
+      audio.removeEventListener("error", onError);
       audio.removeEventListener("pause", onPause);
       audio.removeEventListener("play", onPlay);
       window.removeEventListener("miniwave:play", stopOthers);
@@ -266,14 +276,21 @@ function MiniWavePlayer({ url, label }: MiniWavePlayerProps) {
     return () => ro.disconnect();
   }, [draw]);
 
-  const togglePlay = () => {
+  const togglePlay = async () => {
     const audio = audioRef.current;
     if (!audio) return;
     if (isPlaying) {
       audio.pause();
     } else {
       window.dispatchEvent(new CustomEvent("miniwave:play", { detail: audio }));
-      audio.play();
+      try {
+        setPlayError("");
+        await audio.play();
+      } catch (err) {
+        console.error("Mini preview play failed:", err, "| src:", url);
+        setIsPlaying(false);
+        setPlayError("Audio preview se nepodařilo přehrát");
+      }
     }
   };
 
@@ -377,6 +394,11 @@ function MiniWavePlayer({ url, label }: MiniWavePlayerProps) {
           }}
         />
       </div>
+      {playError && (
+        <span style={{ fontSize: "11px", color: "#b85c5c" }}>
+          {playError}
+        </span>
+      )}
     </div>
   );
 }

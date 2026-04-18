@@ -5,10 +5,21 @@ import { generateDownloadUrl, STORAGE_BUCKETS } from "../lib/storage.js";
 
 const router = Router();
 
+function normalizePreviewUrls(previewUrl?: string, previewUrls?: string[]) {
+  const urls = [
+    ...(Array.isArray(previewUrls) ? previewUrls : []),
+    previewUrl,
+  ]
+    .filter((url): url is string => typeof url === "string")
+    .map((url) => url.trim())
+    .filter(Boolean);
+  return Array.from(new Set(urls));
+}
+
 router.get("/", async (_req: Request, res: Response) => {
   try {
     const result = await pool.query(
-      "SELECT id, title, description, type, price, is_free, number_of_sounds, tags, preview_url, preview_urls, file_url, artwork_url, legal_info, author_info, is_published, order_index, created_at FROM sound_kits WHERE is_published = true ORDER BY order_index ASC, created_at DESC"
+      "SELECT id, title, description, type, price, is_free, number_of_sounds, tags, COALESCE(NULLIF(preview_url, ''), preview_urls[1]) AS preview_url, preview_urls, file_url, artwork_url, legal_info, author_info, is_published, order_index, created_at FROM sound_kits WHERE is_published = true ORDER BY order_index ASC, created_at DESC"
     );
     res.set("Cache-Control", "public, max-age=300, stale-while-revalidate=60");
     res.json(result.rows);
@@ -20,7 +31,7 @@ router.get("/", async (_req: Request, res: Response) => {
 
 router.get("/all", requireAdmin, async (_req: Request, res: Response) => {
   try {
-    const result = await pool.query("SELECT * FROM sound_kits ORDER BY order_index ASC, created_at DESC");
+    const result = await pool.query("SELECT *, COALESCE(NULLIF(preview_url, ''), preview_urls[1]) AS preview_url FROM sound_kits ORDER BY order_index ASC, created_at DESC");
     res.json(result.rows);
   } catch (error) {
     res.status(500).json({ error: "Chyba při načítání zvukových kitů" });
@@ -44,7 +55,7 @@ router.patch("/reorder", requireAdmin, async (req: Request, res: Response) => {
 
 router.get("/:id", async (req: Request, res: Response) => {
   try {
-    const result = await pool.query("SELECT * FROM sound_kits WHERE id = $1", [req.params.id]);
+    const result = await pool.query("SELECT *, COALESCE(NULLIF(preview_url, ''), preview_urls[1]) AS preview_url FROM sound_kits WHERE id = $1", [req.params.id]);
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "Kit nenalezen" });
     }
@@ -60,13 +71,14 @@ router.post("/", requireAdmin, async (req: Request, res: Response) => {
       title, description, type, price, isFree, numberOfSounds, 
       tags, previewUrl, previewUrls, fileUrl, artworkUrl, legalInfo, authorInfo, isPublished 
     } = req.body;
+    const normalizedPreviewUrls = normalizePreviewUrls(previewUrl, previewUrls);
     
     const result = await pool.query(
       `INSERT INTO sound_kits (title, description, type, price, is_free, number_of_sounds, 
        tags, preview_url, preview_urls, file_url, artwork_url, legal_info, author_info, is_published)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *`,
       [title, description, type, price || 0, isFree || false, numberOfSounds || 0, 
-       tags || [], previewUrl || (previewUrls?.[0] || null), previewUrls || [], fileUrl, artworkUrl, legalInfo, authorInfo, isPublished || false]
+       tags || [], normalizedPreviewUrls[0] || null, normalizedPreviewUrls, fileUrl, artworkUrl, legalInfo, authorInfo, isPublished || false]
     );
     res.json(result.rows[0]);
   } catch (error) {
@@ -81,6 +93,7 @@ router.put("/:id", requireAdmin, async (req: Request, res: Response) => {
       title, description, type, price, isFree, numberOfSounds, 
       tags, previewUrl, previewUrls, fileUrl, artworkUrl, legalInfo, authorInfo, isPublished 
     } = req.body;
+    const normalizedPreviewUrls = normalizePreviewUrls(previewUrl, previewUrls);
     
     const result = await pool.query(
       `UPDATE sound_kits SET title = $1, description = $2, type = $3, price = $4, 
@@ -88,7 +101,7 @@ router.put("/:id", requireAdmin, async (req: Request, res: Response) => {
        file_url = $10, artwork_url = $11, legal_info = $12, author_info = $13, is_published = $14
        WHERE id = $15 RETURNING *`,
       [title, description, type, price, isFree, numberOfSounds, tags, 
-       previewUrl || (previewUrls?.[0] || null), previewUrls || [],
+       normalizedPreviewUrls[0] || null, normalizedPreviewUrls,
        fileUrl, artworkUrl, legalInfo, authorInfo, isPublished, req.params.id]
     );
     res.json(result.rows[0]);

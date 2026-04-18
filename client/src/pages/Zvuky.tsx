@@ -13,6 +13,7 @@ interface SoundKit {
   number_of_sounds: number;
   tags: string[];
   preview_url: string;
+  preview_urls?: string[];
   artwork_url: string;
 }
 
@@ -57,8 +58,17 @@ function Zvuky() {
   const [savedKits, setSavedKits] = useState<Set<number>>(new Set());
   const [saveToast, setSaveToast] = useState<{ text: string; saved: boolean } | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const [currentPreviewUrl, setCurrentPreviewUrl] = useState("");
   const { user, addToCart, settings, refreshSavedCount } = useApp() as any;
   const [, setLocation] = useLocation();
+
+  const getKitPreviewUrl = (kit: SoundKit) => {
+    const urls = [
+      ...(Array.isArray(kit.preview_urls) ? kit.preview_urls : []),
+      kit.preview_url,
+    ].filter((url): url is string => typeof url === "string" && url.trim().length > 0);
+    return urls[0] || "";
+  };
 
   useEffect(() => {
     // If the cache was already populated before the first render, skip waiting.
@@ -87,20 +97,39 @@ function Zvuky() {
     }
   }, [user]);
 
-  const playPreview = (kit: SoundKit) => {
-    if (!kit.preview_url) return;
+  const playPreview = async (kit: SoundKit) => {
+    const previewUrl = getKitPreviewUrl(kit);
+    if (!previewUrl) {
+      console.error("Sound kit has no preview URL:", kit.title);
+      return;
+    }
     if (currentKit?.id === kit.id) {
       if (isPlaying) {
         audioRef.current?.pause();
         setIsPlaying(false);
       } else {
-        audioRef.current?.play();
-        setIsPlaying(true);
+        try {
+          await audioRef.current?.play();
+          setIsPlaying(true);
+        } catch (err) {
+          console.error("Sound kit audio resume failed:", err);
+          setIsPlaying(false);
+        }
       }
     } else {
+      const audio = audioRef.current;
+      if (!audio) return;
       setCurrentKit(kit);
-      setIsPlaying(true);
-      setTimeout(() => audioRef.current?.play(), 100);
+      setCurrentPreviewUrl(previewUrl);
+      audio.src = previewUrl;
+      audio.load();
+      try {
+        await audio.play();
+        setIsPlaying(true);
+      } catch (err) {
+        console.error("Sound kit audio play failed:", err, "| src:", previewUrl);
+        setIsPlaying(false);
+      }
     }
   };
 
@@ -222,7 +251,7 @@ function Zvuky() {
 
       <audio
         ref={audioRef}
-        src={currentKit?.preview_url}
+        src={currentPreviewUrl}
         onEnded={() => setIsPlaying(false)}
       />
 
