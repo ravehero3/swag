@@ -237,8 +237,8 @@ function Zvuky() {
               }
               .sk { background: #fff; border-radius: 4px; animation: skeletonPulse 1.6s ease-in-out infinite; }
             `}</style>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "0", maxWidth: "1200px", width: "100%" }}>
-              {Array.from({ length: 6 }).map((_, i) => (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0", maxWidth: "1200px", width: "100%" }}>
+              {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} style={{ padding: "8px", animationDelay: `${i * 80}ms` }}>
                   <div className="sk" style={{ aspectRatio: "1", borderRadius: "4px", animationDelay: `${i * 80}ms` }} />
                   <div style={{ padding: "16px 0 8px" }}>

@@ -486,6 +486,61 @@ function BeatWaveformSparkline({ data }: { data: number[] }) {
   );
 }
 
+function WaveformModal({ beat, onClose }: { beat: Beat; onClose: () => void }) {
+  const data = beat.waveform_data!;
+  const N = data.length;
+  const W = 480;
+  const H = 80;
+  const gap = 0.8;
+  const barW = Math.max(0.8, (W - gap * (N - 1)) / N);
+  const mid = H / 2;
+  const topMax = mid - 2;
+  const botMax = mid * 0.38;
+  return (
+    <div
+      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center" }}
+      onClick={onClose}
+    >
+      <div
+        style={{ background: "#111", border: "1px solid #2a2a2a", borderRadius: "6px", padding: "24px 28px", minWidth: "540px", maxWidth: "90vw" }}
+        onClick={e => e.stopPropagation()}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+          <div>
+            <div style={{ fontSize: "14px", fontWeight: 600, color: "#fff", marginBottom: "2px" }}>{beat.title}</div>
+            <div style={{ fontSize: "11px", color: "#555" }}>{N} bodů · waveform_data</div>
+          </div>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "#555", cursor: "pointer", fontSize: "20px", lineHeight: 1 }}>×</button>
+        </div>
+        <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ display: "block", overflow: "visible" }}>
+          {data.map((v, i) => {
+            const x = i * (barW + gap);
+            const topH = Math.max(0.5, v * topMax);
+            const botH = Math.max(0.3, v * botMax);
+            return (
+              <g key={i}>
+                <rect x={x} y={mid - topH} width={barW} height={topH} fill="rgba(255,255,255,0.45)" rx={0.3} />
+                <rect x={x} y={mid} width={barW} height={botH} fill="rgba(255,255,255,0.14)" rx={0.3} />
+              </g>
+            );
+          })}
+        </svg>
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: "12px", fontSize: "10px", color: "#444" }}>
+          <span>0:00</span>
+          <span style={{ color: "#4caf50", display: "flex", alignItems: "center", gap: "4px" }}>
+            <svg width="8" height="8" viewBox="0 0 10 10" fill="none">
+              <circle cx="5" cy="5" r="4" fill="#4caf50" />
+              <path d="M3 5l1.5 1.5L7.5 3.5" stroke="#000" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Připraveno
+          </span>
+          <span>konec</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh, loadData }: any) {
   const [form, setForm] = useState({
     title: "",
@@ -512,6 +567,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   const [hoveredBeatId, setHoveredBeatId] = useState<number | null>(null);
   const [previewBeatId, setPreviewBeatId] = useState<number | null>(null);
   const [recomputingIds, setRecomputingIds] = useState<Set<number>>(new Set());
+  const [expandedWaveformBeat, setExpandedWaveformBeat] = useState<Beat | null>(null);
   const previewAudioRef = useRef<HTMLAudioElement | null>(null);
 
   const hasPendingWaveforms = beats.some((b: Beat) => b.preview_url && !b.waveform_data);
@@ -1110,8 +1166,9 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                 ) : (beat.waveform_data && Array.isArray(beat.waveform_data)) ? (
                   <div
                     data-testid={`waveform-status-${beat.id}`}
-                    style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
-                    title={`${beat.waveform_data.length} bodů`}
+                    style={{ display: "inline-flex", alignItems: "center", gap: "6px", cursor: "pointer" }}
+                    title="Kliknutím zobrazit detail"
+                    onClick={(e) => { e.stopPropagation(); setExpandedWaveformBeat(beat); }}
                   >
                     <BeatWaveformSparkline data={beat.waveform_data} />
                     <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ flexShrink: 0 }}>
@@ -1156,6 +1213,10 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
           }}
           onClose={() => setB2PickerFor(null)}
         />
+      )}
+
+      {expandedWaveformBeat && (
+        <WaveformModal beat={expandedWaveformBeat} onClose={() => setExpandedWaveformBeat(null)} />
       )}
     </div>
   );
