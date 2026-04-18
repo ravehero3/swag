@@ -17,6 +17,7 @@ import commentsRoutes from "./routes/comments.js";
 import { requireAuth, requireAdmin } from "./middleware/auth.js";
 import bcrypt from "bcryptjs";
 import { configureBucketCors, STORAGE_BUCKETS } from "./lib/storage.js";
+import { computeWaveformFromUrl } from "./lib/waveform.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -411,9 +412,38 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   next(err);
 });
 
+async function computeMissingWaveforms() {
+  try {
+    const result = await pool.query(
+      "SELECT id, preview_url FROM beats WHERE preview_url IS NOT NULL AND (waveform_data IS NULL OR waveform_data::text = 'null') ORDER BY created_at DESC"
+    );
+    const beats = result.rows;
+    if (beats.length === 0) return;
+    console.log(`[Waveform] Computing waveforms for ${beats.length} beat(s) in background...`);
+    for (const beat of beats) {
+      try {
+        const existing = await pool.query("SELECT waveform_data FROM beats WHERE id = $1", [beat.id]);
+        if (existing.rows[0]?.waveform_data) continue;
+        const data = await computeWaveformFromUrl(beat.preview_url);
+        if (data) {
+          await pool.query("UPDATE beats SET waveform_data = $1 WHERE id = $2", [JSON.stringify(data), beat.id]);
+          console.log(`[Waveform] ✅ Beat ${beat.id} done`);
+        }
+      } catch (e) {
+        console.error(`[Waveform] Beat ${beat.id} failed:`, e);
+      }
+    }
+    console.log("[Waveform] All missing waveforms processed.");
+  } catch (e) {
+    console.error("[Waveform] Background job error:", e);
+  }
+}
+
 async function startServer() {
   await initDatabase();
   await seedAdmin();
+
+  computeMissingWaveforms().catch(() => {});
 
   if (process.env.NODE_ENV !== "production") {
     const { createServer: createViteServer } = await import("vite");
