@@ -17,6 +17,7 @@ interface ProductCardProps {
   onPlayClick?: () => void;
   typeLabel?: string;
   onAddToCart?: (id: string | number) => void;
+  compactArtwork?: boolean;
 }
 
 export default function ProductCard({
@@ -33,6 +34,7 @@ export default function ProductCard({
   onPlayClick,
   typeLabel,
   onAddToCart,
+  compactArtwork = false,
 }: ProductCardProps) {
   const [isHeartAnimating, setIsHeartAnimating] = React.useState(false);
 
@@ -64,7 +66,7 @@ export default function ProductCard({
         position: "relative",
         backgroundColor: "transparent",
         cursor: "pointer",
-        padding: "8px",
+        padding: compactArtwork ? "2px" : "8px",
       }}
     >
       <style>{`
@@ -169,7 +171,7 @@ export default function ProductCard({
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          padding: "40px",
+          padding: compactArtwork ? "12px" : "40px",
           boxSizing: "border-box",
         }}
       >

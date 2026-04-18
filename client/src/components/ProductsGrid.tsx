@@ -24,6 +24,7 @@ interface ProductsGridProps {
   isPlaying?: boolean;
   currentPlayingId?: string | number;
   onAddToCart?: (id: string | number) => void;
+  compactCards?: boolean;
 }
 
 export default function ProductsGrid({
@@ -35,6 +36,7 @@ export default function ProductsGrid({
   isPlaying = false,
   currentPlayingId,
   onAddToCart,
+  compactCards = false,
 }: ProductsGridProps) {
   const displayProducts = initialCount ? products.slice(0, initialCount) : products;
 
@@ -100,6 +102,7 @@ export default function ProductsGrid({
             onPlayClick={onPlayClick ? () => onPlayClick(product.id) : undefined}
             typeLabel={product.typeLabel}
             onAddToCart={onAddToCart}
+            compactArtwork={compactCards}
           />
         ))}
       </div>

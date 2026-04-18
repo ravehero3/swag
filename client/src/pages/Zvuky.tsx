@@ -260,6 +260,7 @@ function Zvuky() {
               isPlaying={isPlaying}
               currentPlayingId={currentKit?.id}
               onAddToCart={(id) => handleAddToCart(kits.find((k) => k.id === id)!)}
+              compactCards
             />
           </div>
         ) : (
