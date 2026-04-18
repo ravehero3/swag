@@ -504,6 +504,20 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     }
   };
 
+  const handleRecomputeAll = async () => {
+    const pending: Beat[] = beats.filter((b: Beat) => b.preview_url && !(b.waveform_data && Array.isArray(b.waveform_data)));
+    if (pending.length === 0) return;
+    const ids = pending.map((b: Beat) => b.id);
+    setRecomputingIds(prev => new Set([...prev, ...ids]));
+    await Promise.allSettled(
+      pending.map((b: Beat) =>
+        fetch(`/api/beats/${b.id}/recompute-waveform`, { method: "POST", credentials: "include" })
+      )
+    );
+    setRecomputingIds(prev => { const next = new Set(prev); ids.forEach(id => next.delete(id)); return next; });
+    setTimeout(() => loadData(), 1500);
+  };
+
   const toggleBeatPreview = (beat: Beat, e: React.MouseEvent) => {
     e.stopPropagation();
     if (!beat.preview_url) return;
@@ -965,7 +979,20 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                 : `Waveformy: ${withWave}/${withPreview} připraveno — výpočet probíhá...`}
             </span>
             {hasPendingWaveforms && (
-              <span style={{ fontSize: "11px", color: "#555", marginLeft: "auto" }}>obnovení za 5 s</span>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginLeft: "auto" }}>
+                <span style={{ fontSize: "11px", color: "#555" }}>obnovení za 5 s</span>
+                <button
+                  data-testid="button-recompute-all-waveforms"
+                  onClick={handleRecomputeAll}
+                  style={{
+                    background: "none", border: "1px solid #3a3000", color: "#b8972a",
+                    fontSize: "11px", padding: "3px 10px", borderRadius: "3px", cursor: "pointer",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  Přepočítat vše
+                </button>
+              </div>
             )}
           </div>
         );
