@@ -61,10 +61,10 @@ export default function ProductsGrid({
       <style>{`
         @media (max-width: 768px) {
           .products-grid-container {
-            grid-template-columns: repeat(2, 1fr) !important;
+            grid-template-columns: repeat(1, 1fr) !important;
             padding: 0 !important;
-            width: 100vw !important;
-            margin-left: -20px !important;
+            width: 100% !important;
+            margin-left: 0 !important;
           }
           .products-grid-root {
             padding: 0 !important;

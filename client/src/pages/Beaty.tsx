@@ -642,6 +642,18 @@ function Beaty() {
           100% { transform: scale(1); }
         }
         .heart-pop { animation: heartPop 0.35s ease-out forwards; }
+
+        .featured-beat-inner {
+          display: flex;
+          gap: 48px;
+          align-items: flex-start;
+          margin-bottom: 32px;
+          width: 100%;
+          max-width: 1000px;
+          position: relative;
+          z-index: 50;
+        }
+
         @media (max-width: 768px) {
           .beat-row { gap: 8px !important; padding: 6px 8px !important; }
           .beat-title-col {
@@ -655,6 +667,40 @@ function Beaty() {
           .beat-row-actions { margin-right: 4px !important; gap: 4px !important; }
           .beat-buy-btn { min-width: 70px !important; padding: 8px 4px 8px 8px !important; margin-left: 0 !important; }
           .beat-buy-price { padding-right: 4px !important; }
+
+          .featured-beat-inner {
+            flex-direction: column !important;
+            gap: 16px !important;
+            padding: 0 4px !important;
+          }
+          .featured-beat-artwork {
+            width: 100% !important;
+            max-width: 280px !important;
+            margin: 0 auto !important;
+          }
+          .featured-beat-artwork img {
+            width: 100% !important;
+            height: auto !important;
+            aspect-ratio: 1 !important;
+          }
+          .featured-beat-info {
+            width: 100% !important;
+          }
+          .featured-beat-actions {
+            flex-wrap: wrap !important;
+            gap: 8px !important;
+          }
+          .featured-beat-save-btn {
+            display: none !important;
+          }
+          .featured-beat-section {
+            margin-top: -60px !important;
+          }
+          .featured-beat-artwork-img {
+            width: 100% !important;
+            height: auto !important;
+            max-width: 100% !important;
+          }
         }
       `}</style>
       {authNudge && (
@@ -704,9 +750,9 @@ function Beaty() {
       
       <div style={{ padding: "0 20px" }} className="fade-in-grid">
         {displayedHighlight && (
-          <div className="fade-in-section delay-2" style={{ marginBottom: "48px", display: "flex", justifyContent: "center", marginTop: "-116px", position: "relative", zIndex: 50 }}>
-            <div style={{ display: "flex", gap: "48px", alignItems: "flex-start", marginBottom: "32px", width: "1000px", position: "relative", zIndex: 50 }}>
-              <div style={{ position: "relative", flexShrink: 0 }} className="highlight-artwork-container">
+          <div className="fade-in-section delay-2 featured-beat-section" style={{ marginBottom: "48px", display: "flex", justifyContent: "center", marginTop: "-116px", position: "relative", zIndex: 50 }}>
+            <div className="featured-beat-inner">
+              <div style={{ position: "relative", flexShrink: 0 }} className="highlight-artwork-container featured-beat-artwork">
                 <style>{`
                   @keyframes hacPlayPulse {
                     0%, 100% { box-shadow: 0 0 0 1px rgba(255,255,255,0.28), 0 8px 32px rgba(0,0,0,0.4), inset 0 1.5px 0 rgba(255,255,255,0.7), inset 0 -1px 0 rgba(0,0,0,0.15); }
@@ -751,19 +797,29 @@ function Beaty() {
                   src={displayedHighlight.artwork_url || "/uploads/artwork/metallic-logo.png"}
                   alt={displayedHighlight.title}
                   onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
+                  className="featured-beat-artwork-img"
                   style={{ width: "200px", height: "200px", objectFit: "cover", border: "1px solid #666", borderRadius: "4px", display: "block" }}
                 />
                 <div className="hac-blur-ring" />
                 <button
                   onClick={() => playBeat(displayedHighlight)}
                   className={`hac-play-overlay${currentBeat?.id === displayedHighlight.id && isPlaying ? " is-playing" : ""}`}
-                  style={{ paddingLeft: currentBeat?.id === displayedHighlight.id && isPlaying ? "0" : "3px" }}
+                  style={{ paddingLeft: 0 }}
                 >
-                  {currentBeat?.id === displayedHighlight.id && isPlaying ? "⏸" : "▶"}
+                  {currentBeat?.id === displayedHighlight.id && isPlaying ? (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                      <rect x="6" y="4" width="4" height="16" rx="1" />
+                      <rect x="14" y="4" width="4" height="16" rx="1" />
+                    </svg>
+                  ) : (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: "2px" }}>
+                      <polygon points="5,3 19,12 5,21" />
+                    </svg>
+                  )}
                 </button>
               </div>
 
-              <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-start", flex: 1 }}>
+              <div className="featured-beat-info" style={{ display: "flex", flexDirection: "column", justifyContent: "flex-start", flex: 1 }}>
                 <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "6px" }}>
                   <span style={{ fontSize: "12px", fontFamily: "Work Sans, sans-serif", color: "#999" }}>
                     {currentBeat && currentBeat.id === displayedHighlight?.id && isPlaying ? "Nyní hraje" : currentBeat ? "Naposledy hrán" : "Beat týdne"}
@@ -777,7 +833,7 @@ function Beaty() {
                   <h2 style={{ fontSize: "30px", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontWeight: "400", lineHeight: "1.1", position: "relative", zIndex: 10, margin: 0 }}>
                     {displayedHighlight.title}
                   </h2>
-                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <div className="featured-beat-actions" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                     <button
                       onClick={() => openContractModal(displayedHighlight)}
                       className="btn-bounce"
@@ -955,7 +1011,7 @@ function Beaty() {
               {user && (
                 <button
                   onClick={() => toggleSave(displayedHighlight)}
-                  className="heart-btn"
+                  className="heart-btn featured-beat-save-btn"
                   style={{
                     background: "transparent",
                     border: "none",

@@ -550,6 +550,13 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
         isPublished: editing.is_published,
         isHighlighted: editing.is_highlighted || false,
       });
+      const derivedNames: Record<string, string> = {};
+      const extractFilename = (url: string) =>
+        decodeURIComponent((url.split("/").pop() || "").split("?")[0]);
+      if (editing.preview_url) derivedNames["preview"] = extractFilename(editing.preview_url);
+      if (editing.artwork_url) derivedNames["artwork"] = extractFilename(editing.artwork_url);
+      if (editing.trackout_url) derivedNames["trackout"] = extractFilename(editing.trackout_url);
+      setUploadedNames(derivedNames);
       setShowForm(true);
     }
   }, [editing, setShowForm]);
@@ -571,6 +578,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
       setShowForm(false);
       setEditing(null);
       setForm({ title: "", artist: "VOODOO808", bpm: 140, key: "C", price: 5000, priceType: "beat", previewUrl: "", fileUrl: "", artworkUrl: "", trackoutUrl: "", tags: [], isPublished: true, isHighlighted: false });
+      setUploadedNames({});
       loadData();
     } else {
       const errorData = await res.json();
