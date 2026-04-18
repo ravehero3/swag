@@ -234,6 +234,7 @@ interface Beat {
   tags: string[];
   is_published: boolean;
   is_highlighted: boolean;
+  waveform_data?: number[] | null;
 }
 
 interface SoundKit {
@@ -476,7 +477,32 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   const [b2PickerFor, setB2PickerFor] = useState<string | null>(null);
   const [hoveredBeatId, setHoveredBeatId] = useState<number | null>(null);
   const [previewBeatId, setPreviewBeatId] = useState<number | null>(null);
+  const [recomputingIds, setRecomputingIds] = useState<Set<number>>(new Set());
   const previewAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  const hasPendingWaveforms = beats.some((b: Beat) => b.preview_url && !b.waveform_data);
+
+  useEffect(() => {
+    if (!hasPendingWaveforms) return;
+    const id = setInterval(() => { loadData(); }, 5000);
+    return () => clearInterval(id);
+  }, [hasPendingWaveforms, loadData]);
+
+  const handleRecomputeWaveform = async (beat: Beat, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setRecomputingIds(prev => new Set([...prev, beat.id]));
+    try {
+      await fetch(`/api/beats/${beat.id}/recompute-waveform`, {
+        method: "POST",
+        credentials: "include",
+      });
+      setTimeout(() => loadData(), 1000);
+    } catch {
+      // silent
+    } finally {
+      setRecomputingIds(prev => { const next = new Set(prev); next.delete(beat.id); return next; });
+    }
+  };
 
   const toggleBeatPreview = (beat: Beat, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -918,6 +944,33 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
         </div>
       )}
 
+      {beats.length > 0 && (() => {
+        const withWave = beats.filter((b: Beat) => b.waveform_data && Array.isArray(b.waveform_data)).length;
+        const withPreview = beats.filter((b: Beat) => b.preview_url).length;
+        const allReady = withWave >= withPreview && withPreview > 0;
+        return (
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "8px 12px", marginBottom: "8px", background: allReady ? "rgba(255,255,255,0.03)" : "rgba(255,200,50,0.05)", border: `1px solid ${allReady ? "#2a2a2a" : "#3a3000"}`, borderRadius: "4px" }}>
+            <div style={{ display: "flex", gap: "4px" }}>
+              {beats.filter((b: Beat) => b.preview_url).map((b: Beat) => (
+                <div
+                  key={b.id}
+                  title={b.title}
+                  style={{ width: "8px", height: "8px", borderRadius: "50%", background: (b.waveform_data && Array.isArray(b.waveform_data)) ? "#4caf50" : "#888", flexShrink: 0 }}
+                />
+              ))}
+            </div>
+            <span style={{ fontSize: "12px", color: allReady ? "#888" : "#b8972a" }}>
+              {allReady
+                ? `Waveformy: ${withWave}/${withPreview} připraveno`
+                : `Waveformy: ${withWave}/${withPreview} připraveno — výpočet probíhá...`}
+            </span>
+            {hasPendingWaveforms && (
+              <span style={{ fontSize: "11px", color: "#555", marginLeft: "auto" }}>obnovení za 5 s</span>
+            )}
+          </div>
+        );
+      })()}
+
       <table style={{ width: "100%", borderCollapse: "collapse" }}>
         <thead>
           <tr style={{ borderBottom: "1px solid #333" }}>
@@ -934,6 +987,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
             <th style={{ textAlign: "left", padding: "12px" }}>BPM</th>
             <th style={{ textAlign: "left", padding: "12px" }}>Status</th>
             <th style={{ textAlign: "left", padding: "12px" }}>Featured</th>
+            <th style={{ textAlign: "left", padding: "12px" }}>Waveform</th>
             <th style={{ textAlign: "right", padding: "12px" }}>Akce</th>
           </tr>
         </thead>
@@ -989,6 +1043,32 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
               <td style={{ padding: "12px" }}>{beat.bpm}</td>
               <td style={{ padding: "12px" }}>{beat.is_published ? "Publikováno" : "Skryto"}</td>
               <td style={{ padding: "12px" }}>{beat.is_highlighted ? "Featured" : ""}</td>
+              <td style={{ padding: "12px" }} onClick={(e) => e.stopPropagation()}>
+                {!beat.preview_url ? (
+                  <span style={{ fontSize: "12px", color: "#444" }}>—</span>
+                ) : (beat.waveform_data && Array.isArray(beat.waveform_data)) ? (
+                  <span
+                    data-testid={`waveform-status-${beat.id}`}
+                    style={{ display: "inline-flex", alignItems: "center", gap: "5px", fontSize: "12px", color: "#4caf50" }}
+                  >
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                      <circle cx="5" cy="5" r="4" fill="#4caf50" />
+                      <path d="M3 5l1.5 1.5L7.5 3.5" stroke="#000" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    Připraveno
+                  </span>
+                ) : recomputingIds.has(beat.id) ? (
+                  <span style={{ fontSize: "12px", color: "#888" }}>Spouštím…</span>
+                ) : (
+                  <button
+                    data-testid={`button-recompute-waveform-${beat.id}`}
+                    onClick={(e) => handleRecomputeWaveform(beat, e)}
+                    style={{ background: "none", border: "1px solid #3a3000", color: "#b8972a", fontSize: "11px", padding: "3px 8px", borderRadius: "3px", cursor: "pointer" }}
+                  >
+                    ⏳ Výpočet
+                  </button>
+                )}
+              </td>
               <td style={{ padding: "12px", textAlign: "right" }} onClick={(e) => e.stopPropagation()}>
                 <button className="btn btn-admin" onClick={() => { setEditing(beat); setShowForm(true); }} style={{ marginRight: "8px" }} data-testid={`button-edit-beat-${beat.id}`}>Upravit</button>
                 <button className="btn btn-admin" onClick={() => handleDelete(beat.id)} style={{ color: "#333", borderColor: "#333" }} data-testid={`button-delete-beat-${beat.id}`}>Smazat</button>

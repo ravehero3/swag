@@ -166,6 +166,22 @@ router.delete("/:id", requireAdmin, async (req: Request, res: Response) => {
   }
 });
 
+router.post("/:id/recompute-waveform", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const beatId = parseInt(req.params.id, 10);
+    if (isNaN(beatId)) return res.status(400).json({ error: "Invalid beat id" });
+    const beatRes = await pool.query("SELECT preview_url FROM beats WHERE id = $1", [beatId]);
+    if (beatRes.rows.length === 0) return res.status(404).json({ error: "Beat not found" });
+    const { preview_url } = beatRes.rows[0];
+    if (!preview_url) return res.status(400).json({ error: "Beat has no preview URL" });
+    await pool.query("UPDATE beats SET waveform_data = NULL WHERE id = $1", [beatId]);
+    res.json({ success: true, status: "computing" });
+    triggerWaveformComputation(beatId, preview_url).catch(() => {});
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při přepočtu waveformu" });
+  }
+});
+
 router.post("/:id/waveform", async (req: Request, res: Response) => {
   try {
     const { data } = req.body;
