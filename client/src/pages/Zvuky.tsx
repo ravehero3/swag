@@ -24,9 +24,34 @@ const typeLabels: Record<string, string> = {
   drum_kit_bundle: "Drum Kit Bundle",
 };
 
+// Module-level cache — starts fetching the moment this file is imported,
+// which happens when the router matches /zvuky, before any render occurs.
+let _kitsCache: SoundKit[] | null = null;
+let _kitsFetchPromise: Promise<SoundKit[]> | null = null;
+
+function prefetchKits(): Promise<SoundKit[]> {
+  if (_kitsCache !== null) return Promise.resolve(_kitsCache);
+  if (!_kitsFetchPromise) {
+    _kitsFetchPromise = fetch("/api/sound-kits")
+      .then((res) => res.json())
+      .then((data: SoundKit[]) => {
+        _kitsCache = Array.isArray(data) && data.length > 0 ? data : [];
+        return _kitsCache;
+      })
+      .catch(() => {
+        _kitsCache = [];
+        return _kitsCache;
+      });
+  }
+  return _kitsFetchPromise;
+}
+
+// Kick off the request immediately at import time.
+prefetchKits();
+
 function Zvuky() {
-  const [kits, setKits] = useState<SoundKit[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [kits, setKits] = useState<SoundKit[]>(() => _kitsCache ?? []);
+  const [loading, setLoading] = useState(() => _kitsCache === null);
   const [currentKit, setCurrentKit] = useState<SoundKit | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [savedKits, setSavedKits] = useState<Set<number>>(new Set());
@@ -36,17 +61,12 @@ function Zvuky() {
   const [, setLocation] = useLocation();
 
   useEffect(() => {
-    fetch("/api/sound-kits")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data && data.length > 0) {
-          setKits(data);
-        } else {
-          setKits([]);
-        }
-        setLoading(false);
-      })
-      .catch(() => { setKits([]); setLoading(false); });
+    // If the cache was already populated before the first render, skip waiting.
+    if (_kitsCache !== null) return;
+    prefetchKits().then((data) => {
+      setKits(data);
+      setLoading(false);
+    });
   }, []);
 
   useEffect(() => {
