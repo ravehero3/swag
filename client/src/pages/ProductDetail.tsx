@@ -122,9 +122,18 @@ function ProductDetail() {
           overflow: hidden;
         }
         .pd-artwork img {
-          max-width: 100%;
-          max-height: 100%;
-          object-fit: contain;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          border-radius: 4px;
+          display: block;
+        }
+        .pd-artwork-frame {
+          width: min(100%, calc(100vh - 138px));
+          max-width: 620px;
+          aspect-ratio: 1 / 1;
+          background: #050505;
+          overflow: hidden;
           border-radius: 4px;
         }
         .pd-divider {
@@ -163,6 +172,11 @@ function ProductDetail() {
             object-fit: cover;
             border-radius: 0;
           }
+          .pd-artwork-frame {
+            width: 100%;
+            max-width: none;
+            border-radius: 0;
+          }
           .pd-divider {
             display: none;
           }
@@ -176,6 +190,7 @@ function ProductDetail() {
 
       {/* Left half — artwork */}
       <div className="pd-artwork">
+        <div className="pd-artwork-frame">
         <img
           src={product.artwork_url || "/uploads/artwork/metallic-logo.png"}
           alt={product.title}
@@ -183,6 +198,7 @@ function ProductDetail() {
             (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png";
           }}
         />
+        </div>
       </div>
 
       {/* Center divider */}
@@ -274,6 +290,7 @@ function ProductDetail() {
                   <button
                     key={url}
                     onClick={() => playProductPreview(url)}
+                    className="voodoo-play-surface"
                     style={{
                       width: "100%",
                       padding: "14px 16px",
@@ -288,11 +305,17 @@ function ProductDetail() {
                       fontSize: "12px",
                       letterSpacing: "0.08em",
                       textTransform: "uppercase",
+                      position: "relative",
                     }}
                     data-testid={`button-play-preview-${idx}`}
                   >
                     <span>{previews.length > 1 ? `Přehrát ukázku ${idx + 1}` : "Přehrát ukázku"}</span>
-                    <span>{isCurrent && previewPlayer.isPlaying ? "⏸" : "▶"}</span>
+                    <span style={{ position: "relative", width: "36px", height: "36px", flexShrink: 0, display: "block" }}>
+                      <span className={`voodoo-play-ring is-visible`} style={{ "--voodoo-play-size": "36px" } as any} />
+                      <span className={`voodoo-play-button is-visible${isCurrent && previewPlayer.isPlaying ? " is-playing" : ""}`} style={{ "--voodoo-play-size": "36px", "--voodoo-play-font-size": "13px", paddingLeft: isCurrent && previewPlayer.isPlaying ? 0 : "2px" } as any}>
+                        {isCurrent && previewPlayer.isPlaying ? "⏸" : "▶"}
+                      </span>
+                    </span>
                   </button>
                 );
               })}

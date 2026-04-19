@@ -253,14 +253,6 @@ function Ulozeno() {
           color: #000;
           box-shadow: 0 0 14px rgba(36, 224, 83, 0.45);
         }
-        .ulozeno-play-btn {
-          opacity: 0;
-          transition: opacity 0.2s ease, transform 0.15s ease;
-        }
-        .ulozeno-card:hover .ulozeno-play-btn,
-        .ulozeno-play-btn.playing {
-          opacity: 1;
-        }
       `}} />
 
       {/* Vertical lines */}
@@ -396,45 +388,26 @@ function Ulozeno() {
                     }}
                   >
                     {/* Artwork */}
-                    <div style={{ position: "relative", width: "100%", aspectRatio: "1/1", marginBottom: "12px" }}>
+                    <div className="voodoo-play-surface" style={{ position: "relative", width: "100%", aspectRatio: "1/1", marginBottom: "12px", overflow: "hidden", borderRadius: "4px", background: "#050505" }}>
                       <img
                         src={item.item_data.artwork_url || "/uploads/artwork/metallic-logo.png"}
                         alt={item.item_data.title}
                         onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
-                        style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "4px", display: "block" }}
+                        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                       />
                       {/* Play button */}
                       {previewUrl && (
-                        <button
-                          onClick={() => playPreview(item)}
-                          className={`ulozeno-play-btn${itemPlaying ? " playing" : ""}`}
-                          style={{
-                            position: "absolute",
-                            inset: 0,
-                            margin: "auto",
-                            width: "44px",
-                            height: "44px",
-                            borderRadius: "50%",
-                            border: "1.5px solid #fff",
-                            background: itemPlaying ? "#fff" : "rgba(13,13,13,0.55)",
-                            color: itemPlaying ? "#000" : "#fff",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            cursor: "pointer",
-                          }}
-                        >
-                          {itemPlaying ? (
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                              <rect x="6" y="4" width="4" height="16" />
-                              <rect x="14" y="4" width="4" height="16" />
-                            </svg>
-                          ) : (
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: "2px" }}>
-                              <path d="M5 3l14 9-14 9V3z" />
-                            </svg>
-                          )}
-                        </button>
+                        <>
+                          <div className={`voodoo-play-ring${itemPlaying ? " is-visible" : ""}`} />
+                          <button
+                            onClick={() => playPreview(item)}
+                            className={`ulozeno-play-btn voodoo-play-button${itemPlaying ? " is-playing is-visible" : ""}`}
+                            style={{ paddingLeft: itemPlaying ? 0 : "3px" }}
+                            data-testid={`button-play-saved-${item.item_id}`}
+                          >
+                            {itemPlaying ? "⏸" : "▶"}
+                          </button>
+                        </>
                       )}
                       {/* Remove (heart) button */}
                       <button

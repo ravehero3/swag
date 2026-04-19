@@ -103,9 +103,6 @@ function ContractModal({ beat, isOpen, onClose, onAddToCart, onPlay, isPlaying }
           background: rgba(255, 255, 255, 0.08) !important;
           border-color: #666 !important;
         }
-        .modal-play-button:hover {
-          transform: translate(-50%, -50%) scale(1.1) !important;
-        }
       `}</style>
       <div
         style={{
@@ -150,34 +147,18 @@ function ContractModal({ beat, isOpen, onClose, onAddToCart, onPlay, isPlaying }
           <>
             <div style={{ padding: "24px", borderBottom: "1px solid #333" }}>
               <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
-                <div style={{ position: "relative", flexShrink: 0 }}>
+                <div className="voodoo-play-surface" style={{ position: "relative", flexShrink: 0, width: "100px", height: "100px", overflow: "hidden", borderRadius: "4px" }}>
                   <img
                     src={beat.artwork_url || "/uploads/artwork/metallic-logo.png"}
                     alt={beat.title}
                     onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
-                    style={{ width: "100px", height: "100px", objectFit: "cover", borderRadius: "4px" }}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                   />
+                  <div className={`voodoo-play-ring${isPlaying ? " is-visible" : ""}`} style={{ "--voodoo-play-size": "44px" } as any} />
                   <button
                     onClick={onPlay}
-                    className="modal-play-button"
-                    style={{
-                      position: "absolute",
-                      top: "50%",
-                      left: "50%",
-                      transform: "translate(-50%, -50%)",
-                      width: "40px",
-                      height: "40px",
-                      borderRadius: "50%",
-                      border: "2px solid #fff",
-                      background: isPlaying ? "#fff" : "rgba(13,13,13,0.7)",
-                      color: isPlaying ? "#000" : "#fff",
-                      fontSize: "14px",
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
-                    }}
+                    className={`modal-play-button voodoo-play-button${isPlaying ? " is-playing is-visible" : ""}`}
+                    style={{ "--voodoo-play-size": "44px", "--voodoo-play-font-size": "14px", paddingLeft: isPlaying ? 0 : "2px" } as any}
                   >
                     {isPlaying ? "⏸" : "▶"}
                   </button>

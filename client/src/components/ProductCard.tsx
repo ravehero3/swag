@@ -75,10 +75,6 @@ export default function ProductCard({
           50% { transform: scale(1.3); }
           100% { transform: scale(1); }
         }
-        @keyframes playPulse {
-          0%, 100% { box-shadow: 0 0 0 1px rgba(255,255,255,0.28), 0 8px 32px rgba(0,0,0,0.4); }
-          50%       { box-shadow: 0 0 0 1px rgba(255,255,255,0.55), 0 8px 40px rgba(0,0,0,0.5); }
-        }
         .heart-pulse { animation: heartPulse 0.3s ease-out; }
 
         /* Card container — promoted to its own GPU layer from the start */
@@ -100,27 +96,6 @@ export default function ProductCard({
         }
         .product-card-container:hover .product-image-container {
           filter: drop-shadow(0 16px 24px rgba(255,255,255,0.35));
-        }
-
-        /* Play button — opacity + transform only (no backdrop-filter) */
-        .play-button-overlay {
-          opacity: 0;
-          transform: translate(-50%, -50%) scale(0.82);
-          transition: opacity 0.22s ease, transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
-          will-change: transform, opacity;
-        }
-        .product-card-container:hover .play-button-overlay {
-          opacity: 1;
-          transform: translate(-50%, -50%) scale(1);
-        }
-        .play-button-overlay:hover {
-          transform: translate(-50%, -50%) scale(1.08) !important;
-        }
-        .play-button-overlay:active {
-          transform: translate(-50%, -50%) scale(0.93) !important;
-        }
-        .play-button-overlay.is-playing {
-          animation: playPulse 2s ease-in-out infinite;
         }
 
         /* Info pill — opacity + transform only (no backdrop-filter anywhere) */
@@ -169,7 +144,7 @@ export default function ProductCard({
       `}</style>
 
       <div
-        className="product-image-container"
+        className="product-image-container voodoo-play-surface"
         style={{
           aspectRatio: "1",
           background: "transparent",
@@ -177,51 +152,29 @@ export default function ProductCard({
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          padding: compactArtwork ? "12px" : "40px",
+          padding: compactArtwork ? "0" : "40px",
           boxSizing: "border-box",
+          overflow: "hidden",
         }}
       >
         <img
           src={images[0] || "/uploads/artwork/metallic-logo.png"}
           alt={name}
-          style={{ width: "100%", height: "100%", objectFit: "contain" }}
+          style={{ width: "100%", height: "100%", objectFit: compactArtwork ? "cover" : "contain", borderRadius: compactArtwork ? "4px" : 0 }}
         />
 
         {onPlayClick && (
-          <button
-            onClick={(e) => { e.stopPropagation(); onPlayClick(); }}
-            className={`play-button-overlay${isPlaying ? " is-playing" : ""}`}
-            style={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              width: "62px",
-              height: "62px",
-              borderRadius: "50%",
-              border: "none",
-              background: "rgba(0,0,0,0.45)",
-              boxShadow: "0 0 0 1px rgba(255,255,255,0.18)",
-              color: "#fff",
-              fontSize: "20px",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              paddingLeft: isPlaying ? "0" : "3px",
-              zIndex: 4,
-            }}
-          >
-            {isPlaying ? (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                <rect x="6" y="4" width="4" height="16" rx="1" />
-                <rect x="14" y="4" width="4" height="16" rx="1" />
-              </svg>
-            ) : (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: "2px" }}>
-                <polygon points="5,3 19,12 5,21" />
-              </svg>
-            )}
-          </button>
+          <>
+            <div className={`voodoo-play-ring${isPlaying ? " is-visible" : ""}`} />
+            <button
+              onClick={(e) => { e.stopPropagation(); onPlayClick(); }}
+              className={`play-button-overlay voodoo-play-button${isPlaying ? " is-playing is-visible" : ""}`}
+              data-testid={`button-play-product-${id}`}
+              style={{ paddingLeft: isPlaying ? "0" : "3px" }}
+            >
+              {isPlaying ? "⏸" : "▶"}
+            </button>
+          </>
         )}
       </div>
 

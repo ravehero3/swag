@@ -52,7 +52,7 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
         @media (max-width: 768px) {
           .cart-modal-panel { width: 100% !important; }
         }
-        .recently-viewed-item:hover { opacity: 1 !important; cursor: pointer; }
+        .recently-viewed-item:hover { opacity: 1 !important; cursor: pointer; border-color: #444 !important; }
       `}</style>
 
       {isOpen && (
@@ -226,21 +226,27 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                         window.location.href = path;
                       }}
                       style={{
-                        flex: "0 0 90px",
+                        flex: "0 0 92px",
                         display: "flex",
                         flexDirection: "column",
-                        gap: "4px",
+                        gap: "6px",
                         opacity: 0.75,
-                        transition: "opacity 0.2s ease",
+                        transition: "opacity 0.2s ease, border-color 0.2s ease",
+                        padding: "6px",
+                        background: "#0d0d0d",
+                        border: "1px solid #242424",
+                        borderRadius: "4px",
+                        boxSizing: "border-box",
                       }}
                     >
-                      <img
-                        src={item.artworkUrl || item.images?.[0] || "/uploads/artwork/metallic-logo.png"}
-                        alt={item.title || item.name}
-                        onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
-                        style={{ width: "100%", aspectRatio: "1", objectFit: "cover", borderRadius: "2px" }}
-                      />
-                      <div style={{ fontSize: "10px", color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      <div className="voodoo-artwork-square" style={{ borderRadius: "2px", flex: "0 0 auto" }}>
+                        <img
+                          src={item.artworkUrl || item.images?.[0] || "/uploads/artwork/metallic-logo.png"}
+                          alt={item.title || item.name}
+                          onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
+                        />
+                      </div>
+                      <div style={{ fontSize: "10px", lineHeight: "12px", height: "24px", color: "#fff", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as any }}>
                         {item.title || item.name}
                       </div>
                     </div>
