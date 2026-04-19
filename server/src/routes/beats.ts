@@ -240,7 +240,7 @@ router.post("/:id/recompute-waveform", requireAdmin, async (req: Request, res: R
   }
 });
 
-router.post("/:id/waveform", async (req: Request, res: Response) => {
+router.post("/:id/waveform", requireAdmin, async (req: Request, res: Response) => {
   try {
     const { data } = req.body;
     if (!Array.isArray(data) || data.length === 0) {

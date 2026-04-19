@@ -452,6 +452,66 @@ const PRICE_TYPES_BEAT = [
 
 type BeatPriceType = typeof PRICE_TYPES_BEAT[number]["id"];
 
+async function computeWaveformInBrowser(previewUrl: string): Promise<number[] | null> {
+  const BAR_COUNT = 480;
+  try {
+    const proxyUrl = `/api/audio-proxy?url=${encodeURIComponent(previewUrl)}`;
+    const response = await fetch(proxyUrl);
+    if (!response.ok) return null;
+    const arrayBuffer = await response.arrayBuffer();
+
+    const audioCtx = new AudioContext({ sampleRate: 22050 });
+    const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+
+    const numChannels = audioBuffer.numberOfChannels;
+    const length = audioBuffer.length;
+    const mono = new Float32Array(length);
+    for (let c = 0; c < numChannels; c++) {
+      const channelData = audioBuffer.getChannelData(c);
+      for (let i = 0; i < length; i++) mono[i] += channelData[i] / numChannels;
+    }
+
+    const samplesPerBin = Math.floor(length / BAR_COUNT);
+    if (samplesPerBin < 1) { await audioCtx.close(); return null; }
+
+    const rawPeaks = new Float32Array(BAR_COUNT);
+    const bassPeaks = new Float32Array(BAR_COUNT);
+    const alpha = 1 - Math.exp(-2 * Math.PI * 100 / 22050);
+    let lpState = 0;
+
+    for (let i = 0; i < BAR_COUNT; i++) {
+      const start = i * samplesPerBin;
+      const end = Math.min(start + samplesPerBin, length);
+      let maxRaw = 0;
+      let maxBass = 0;
+      for (let j = start; j < end; j++) {
+        const s = Math.abs(mono[j]);
+        lpState = lpState * (1 - alpha) + s * alpha;
+        if (s > maxRaw) maxRaw = s;
+        if (lpState > maxBass) maxBass = lpState;
+      }
+      rawPeaks[i] = maxRaw;
+      bassPeaks[i] = maxBass;
+    }
+
+    let maxR = 0.001, maxB = 0.001;
+    for (let i = 0; i < BAR_COUNT; i++) {
+      if (rawPeaks[i] > maxR) maxR = rawPeaks[i];
+      if (bassPeaks[i] > maxB) maxB = bassPeaks[i];
+    }
+
+    const result = Array.from({ length: BAR_COUNT }, (_, i) =>
+      Math.min(1, (rawPeaks[i] / maxR) * 0.60 + (bassPeaks[i] / maxB) * 0.55)
+    );
+
+    await audioCtx.close();
+    return result;
+  } catch (e) {
+    console.error("[Waveform] Browser computation failed:", e);
+    return null;
+  }
+}
+
 function getBeatWaveformQuality(data: number[]): { label: string; color: string } {
   if (!data || data.length < 10) return { label: "nízká", color: "#e53935" };
   const avg = data.reduce((a, b) => a + b, 0) / data.length;
@@ -614,19 +674,23 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
 
   const handleRecomputeWaveform = async (beat: Beat, e: React.MouseEvent) => {
     e.stopPropagation();
+    if (!beat.preview_url) return;
     setRecomputingIds(prev => new Set([...prev, beat.id]));
     try {
-      const res = await fetch(`/api/beats/${beat.id}/recompute-waveform`, {
-        method: "POST",
-        credentials: "include",
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        console.warn(`Waveform failed for beat ${beat.id}:`, err.error);
+      const data = await computeWaveformInBrowser(beat.preview_url);
+      if (data && data.length > 0) {
+        await fetch(`/api/beats/${beat.id}/waveform`, {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ data }),
+        });
+      } else {
+        console.warn(`Waveform computation returned null for beat ${beat.id}`);
       }
       await loadData();
-    } catch {
-      // silent
+    } catch (e) {
+      console.warn(`Waveform failed for beat ${beat.id}:`, e);
     } finally {
       setRecomputingIds(prev => { const next = new Set(prev); next.delete(beat.id); return next; });
     }
@@ -641,10 +705,16 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
       setRecomputeAllProgress({ current: i + 1, total: pending.length });
       setRecomputingIds(prev => new Set([...prev, b.id]));
       try {
-        const res = await fetch(`/api/beats/${b.id}/recompute-waveform`, { method: "POST", credentials: "include" });
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}));
-          console.warn(`Beat ${b.id} waveform failed:`, err.error);
+        const data = await computeWaveformInBrowser(b.preview_url!);
+        if (data && data.length > 0) {
+          await fetch(`/api/beats/${b.id}/waveform`, {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ data }),
+          });
+        } else {
+          console.warn(`Beat ${b.id} waveform returned null`);
         }
         await loadData();
       } catch (e) {
