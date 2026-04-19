@@ -1580,6 +1580,7 @@ function Home() {
             backgroundRepeat: "no-repeat",
             width: "100vw",
             marginLeft: "calc(-50vw + 50%)",
+            marginTop: "100px",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
@@ -1592,7 +1593,8 @@ function Home() {
               textAlign: "center",
               zIndex: 20,
               opacity: showTitle ? 1 : 0,
-              transition: "opacity 0.5s ease-in-out",
+              transform: showTitle ? "translateY(0)" : "translateY(28px)",
+              transition: "opacity 0.45s ease-out, transform 0.45s ease-out",
               marginTop: "-10px"
             }}>
                   <h2 style={{
