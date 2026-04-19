@@ -567,6 +567,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   const [hoveredBeatId, setHoveredBeatId] = useState<number | null>(null);
   const [previewBeatId, setPreviewBeatId] = useState<number | null>(null);
   const [recomputingIds, setRecomputingIds] = useState<Set<number>>(new Set());
+  const [recomputeAllProgress, setRecomputeAllProgress] = useState<{ current: number; total: number } | null>(null);
   const [expandedWaveformBeat, setExpandedWaveformBeat] = useState<Beat | null>(null);
   const previewAudioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -597,15 +598,22 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   const handleRecomputeAll = async () => {
     const pending: Beat[] = beats.filter((b: Beat) => b.preview_url && !(b.waveform_data && Array.isArray(b.waveform_data)));
     if (pending.length === 0) return;
-    const ids = pending.map((b: Beat) => b.id);
-    setRecomputingIds(prev => new Set([...prev, ...ids]));
-    await Promise.allSettled(
-      pending.map((b: Beat) =>
-        fetch(`/api/beats/${b.id}/recompute-waveform`, { method: "POST", credentials: "include" })
-      )
-    );
-    setRecomputingIds(prev => { const next = new Set(prev); ids.forEach(id => next.delete(id)); return next; });
-    setTimeout(() => loadData(), 1500);
+    setRecomputeAllProgress({ current: 0, total: pending.length });
+    for (let i = 0; i < pending.length; i++) {
+      const b = pending[i];
+      setRecomputeAllProgress({ current: i + 1, total: pending.length });
+      setRecomputingIds(prev => new Set([...prev, b.id]));
+      try {
+        await fetch(`/api/beats/${b.id}/recompute-waveform`, { method: "POST", credentials: "include" });
+        await new Promise<void>(resolve => setTimeout(resolve, 800));
+        await loadData();
+      } catch {
+        // silent
+      } finally {
+        setRecomputingIds(prev => { const next = new Set(prev); next.delete(b.id); return next; });
+      }
+    }
+    setRecomputeAllProgress(null);
   };
 
   const toggleBeatPreview = (beat: Beat, e: React.MouseEvent) => {
@@ -1070,17 +1078,26 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
             </span>
             {hasPendingWaveforms && (
               <div style={{ display: "flex", alignItems: "center", gap: "10px", marginLeft: "auto" }}>
-                <span style={{ fontSize: "11px", color: "#555" }}>obnovení za 5 s</span>
+                {recomputeAllProgress ? (
+                  <span style={{ fontSize: "11px", color: "#b8972a" }}>
+                    Zpracovávám {recomputeAllProgress.current}/{recomputeAllProgress.total}…
+                  </span>
+                ) : (
+                  <span style={{ fontSize: "11px", color: "#555" }}>obnovení za 5 s</span>
+                )}
                 <button
                   data-testid="button-recompute-all-waveforms"
                   onClick={handleRecomputeAll}
+                  disabled={!!recomputeAllProgress}
                   style={{
-                    background: "none", border: "1px solid #3a3000", color: "#b8972a",
-                    fontSize: "11px", padding: "3px 10px", borderRadius: "3px", cursor: "pointer",
+                    background: "none", border: "1px solid #3a3000", color: recomputeAllProgress ? "#555" : "#b8972a",
+                    fontSize: "11px", padding: "3px 10px", borderRadius: "3px",
+                    cursor: recomputeAllProgress ? "not-allowed" : "pointer",
                     whiteSpace: "nowrap",
+                    opacity: recomputeAllProgress ? 0.5 : 1,
                   }}
                 >
-                  Přepočítat vše
+                  {recomputeAllProgress ? `${recomputeAllProgress.current}/${recomputeAllProgress.total}` : "Přepočítat vše"}
                 </button>
               </div>
             )}
@@ -1353,7 +1370,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
     // Large ZIPs > 50MB use server POST (streaming, reliable)
     // Artwork always uses server upload to save locally (not B2)
     const isLargeFile = file.size > 50 * 1024 * 1024;
-    const useServerUpload = isLargeFile || type === "beat" || type === "kit" || type === "trackout" || type === "artwork";
+    const useServerUpload = isLargeFile || type === "beat" || type === "kit" || type === "trackout" || type === "artwork" || type === "preview";
 
     try {
       if (useServerUpload) {
@@ -1557,21 +1574,69 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
             <div style={{ gridColumn: "1 / -1" }}>
               <label style={{ display: "block", marginBottom: "8px" }}>Preview Audio (lze přidat více)</label>
               {form.previewUrls.map((url, idx) => (
-                <div key={idx} style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
-                  <audio controls src={url} style={{ flex: 1, height: "36px" }} />
-                  <button
-                    type="button"
-                    onClick={() => setForm(f => ({ ...f, previewUrls: f.previewUrls.filter((_, i) => i !== idx) }))}
-                    style={{ background: "none", border: "1px solid #666", color: "#fff", padding: "4px 10px", cursor: "pointer", borderRadius: "2px", fontSize: "14px" }}
-                  >×</button>
+                <div key={idx} style={{ marginBottom: "12px", background: "#0d0d0d", border: "1px solid #222", borderRadius: "6px", padding: "12px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "10px" }}>
+                    <span style={{ fontSize: "11px", color: "#555", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {url.split("/").pop() || url}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setForm(f => ({ ...f, previewUrls: f.previewUrls.filter((_, i) => i !== idx) }))}
+                      style={{ background: "none", border: "1px solid #444", color: "#888", padding: "2px 8px", cursor: "pointer", borderRadius: "3px", fontSize: "13px", flexShrink: 0 }}
+                    >×</button>
+                  </div>
+                  {/* Inline audio player */}
+                  <audio controls src={url} style={{ width: "100%", height: "36px" }} />
+                  {/* SoundWave-style visual preview */}
+                  <div style={{ marginTop: "10px", background: "#111", borderRadius: "4px", padding: "10px 14px" }}>
+                    <div style={{ fontSize: "10px", color: "#444", marginBottom: "6px", letterSpacing: "0.5px", textTransform: "uppercase" }}>Náhled přehrávače</div>
+                    <div style={{ display: "flex", alignItems: "flex-end", gap: "2px", height: "36px" }}>
+                      {Array.from({ length: 60 }, (_, i) => {
+                        const x = i / 60;
+                        const h = 0.15 + 0.7 * Math.abs(Math.sin(x * 9.7 + 1.2) * Math.cos(x * 4.3 + 0.5) * Math.sin(x * 2.1 + 0.8));
+                        const played = i < 18;
+                        return (
+                          <div
+                            key={i}
+                            style={{
+                              flex: 1,
+                              height: `${Math.round(h * 100)}%`,
+                              background: played
+                                ? "linear-gradient(to top, #0B99FC, #4cc3ff)"
+                                : "linear-gradient(to top, #2a2a2a, #3a3a3a)",
+                              borderRadius: "1px",
+                              minWidth: "2px",
+                            }}
+                          />
+                        );
+                      })}
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginTop: "4px" }}>
+                      <span style={{ fontSize: "10px", color: "#555" }}>0:00</span>
+                      <span style={{ fontSize: "10px", color: "#555" }}>—:——</span>
+                    </div>
+                  </div>
                 </div>
               ))}
-              <input type="file" accept="audio/*" onChange={async (e) => {
-                if (e.target.files?.[0]) {
-                  const url = await uploadFile(e.target.files[0], "preview");
-                  if (url) setForm(f => ({ ...f, previewUrls: [...f.previewUrls, url as string] }));
-                }
-              }} style={{ width: "100%" }} />
+              <div style={{ position: "relative" }}>
+                <input
+                  type="file"
+                  accept="audio/*"
+                  disabled={uploading["preview"]}
+                  onChange={async (e) => {
+                    if (e.target.files?.[0]) {
+                      const url = await uploadFile(e.target.files[0], "preview");
+                      if (url) setForm(f => ({ ...f, previewUrls: [...f.previewUrls, url as string] }));
+                    }
+                  }}
+                  style={{ width: "100%", opacity: uploading["preview"] ? 0.4 : 1 }}
+                />
+                {uploading["preview"] && (
+                  <div style={{ position: "absolute", right: "10px", top: "50%", transform: "translateY(-50%)", fontSize: "12px", color: "#0B99FC", pointerEvents: "none" }}>
+                    Nahrávám…
+                  </div>
+                )}
+              </div>
               <UploadProgressBar type="preview" />
             </div>
             <div>
