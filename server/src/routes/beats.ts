@@ -67,6 +67,56 @@ router.get("/all", requireAdmin, async (_req: Request, res: Response) => {
   }
 });
 
+router.get("/ffmpeg-health", requireAdmin, async (_req: Request, res: Response) => {
+  const { spawn } = await import("child_process");
+  const { createRequire } = await import("module");
+
+  function getFfmpegPath(): string {
+    try {
+      const require = createRequire(import.meta.url);
+      const p = require("ffmpeg-static");
+      if (p && typeof p === "string") return p;
+    } catch { /* fall through */ }
+    return "ffmpeg";
+  }
+
+  const ffmpegPath = getFfmpegPath();
+  const isBundle = ffmpegPath !== "ffmpeg";
+  const startMs = Date.now();
+
+  try {
+    const result = await new Promise<{ ok: boolean; version: string; durationMs: number }>((resolve) => {
+      const lines: string[] = [];
+      const proc = spawn(ffmpegPath, ["-version"], { stdio: ["ignore", "pipe", "pipe"] });
+      const collect = (chunk: Buffer) => lines.push(chunk.toString());
+      proc.stdout?.on("data", collect);
+      proc.stderr?.on("data", collect);
+      const timer = setTimeout(() => {
+        proc.kill();
+        resolve({ ok: false, version: "timeout", durationMs: Date.now() - startMs });
+      }, 8000);
+      proc.on("close", (code) => {
+        clearTimeout(timer);
+        const output = lines.join("");
+        const match = output.match(/ffmpeg version ([^\s]+)/);
+        resolve({ ok: code === 0, version: match ? match[1] : (code === 0 ? "ok" : "not found"), durationMs: Date.now() - startMs });
+      });
+      proc.on("error", () => {
+        clearTimeout(timer);
+        resolve({ ok: false, version: "spawn error — ffmpeg not found in PATH or bundle", durationMs: Date.now() - startMs });
+      });
+    });
+    res.json({
+      ok: result.ok,
+      version: result.version,
+      durationMs: result.durationMs,
+      source: isBundle ? `bundled (${ffmpegPath.split("/").slice(-3).join("/")})` : "system PATH",
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: String(err) });
+  }
+});
+
 router.get("/:id", async (req: Request, res: Response) => {
   try {
     const result = await pool.query("SELECT * FROM beats WHERE id = $1", [req.params.id]);

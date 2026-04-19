@@ -569,7 +569,21 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   const [recomputingIds, setRecomputingIds] = useState<Set<number>>(new Set());
   const [recomputeAllProgress, setRecomputeAllProgress] = useState<{ current: number; total: number } | null>(null);
   const [expandedWaveformBeat, setExpandedWaveformBeat] = useState<Beat | null>(null);
+  const [ffmpegHealth, setFfmpegHealth] = useState<{ ok: boolean; version: string; source: string; durationMs: number } | null | "loading">("loading");
   const previewAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  const checkFfmpegHealth = async () => {
+    setFfmpegHealth("loading");
+    try {
+      const res = await fetch("/api/beats/ffmpeg-health", { credentials: "include" });
+      const data = await res.json();
+      setFfmpegHealth(data);
+    } catch {
+      setFfmpegHealth({ ok: false, version: "network error", source: "unknown", durationMs: 0 });
+    }
+  };
+
+  useEffect(() => { checkFfmpegHealth(); }, []);
 
   const hasPendingWaveforms = beats.some((b: Beat) => b.preview_url && !b.waveform_data);
 
@@ -1062,6 +1076,36 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
           </button>
         </div>
       )}
+
+      {/* ffmpeg health check banner */}
+      {(() => {
+        const isLoading = ffmpegHealth === "loading";
+        const health = ffmpegHealth !== "loading" ? ffmpegHealth : null;
+        const color = isLoading ? "#555" : health?.ok ? "#4caf50" : "#e53935";
+        const bg = isLoading ? "rgba(255,255,255,0.02)" : health?.ok ? "rgba(76,175,80,0.06)" : "rgba(229,57,53,0.08)";
+        const border = isLoading ? "#2a2a2a" : health?.ok ? "#1a3d1a" : "#4a1010";
+        const dot = isLoading ? "#555" : health?.ok ? "#4caf50" : "#e53935";
+        return (
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "7px 12px", marginBottom: "6px", background: bg, border: `1px solid ${border}`, borderRadius: "4px" }}>
+            <div style={{ width: "7px", height: "7px", borderRadius: "50%", background: dot, flexShrink: 0, boxShadow: isLoading ? "none" : `0 0 6px ${dot}` }} />
+            <span style={{ fontSize: "11px", color, fontFamily: "monospace" }}>
+              {isLoading
+                ? "ffmpeg: ověřuji…"
+                : health?.ok
+                  ? `ffmpeg ${health.version} · ${health.source} · ${health.durationMs}ms`
+                  : `ffmpeg NEDOSTUPNÝ — ${health?.version ?? "unknown"} · ${health?.source ?? ""}`}
+            </span>
+            <button
+              onClick={checkFfmpegHealth}
+              disabled={isLoading}
+              data-testid="button-check-ffmpeg-health"
+              style={{ marginLeft: "auto", background: "none", border: "1px solid #333", color: "#555", fontSize: "10px", padding: "2px 8px", borderRadius: "3px", cursor: isLoading ? "not-allowed" : "pointer", opacity: isLoading ? 0.4 : 1, letterSpacing: "0.5px" }}
+            >
+              {isLoading ? "…" : "Ověřit znovu"}
+            </button>
+          </div>
+        );
+      })()}
 
       {beats.length > 0 && (() => {
         const withWave = beats.filter((b: Beat) => b.waveform_data && Array.isArray(b.waveform_data)).length;
