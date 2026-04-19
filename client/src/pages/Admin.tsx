@@ -845,8 +845,10 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     setUploadError(prev => ({ ...prev, [type]: "" }));
     setUploadProgress(prev => ({ ...prev, [type]: 0 }));
 
+    // Beat/kit/trackout/artwork: always go through server (reliable, handles auth)
+    // Preview audio: use direct B2 presign to bypass Vercel's 4.5 MB body limit
     const isLargeFile = file.size > 50 * 1024 * 1024;
-    const useServerUpload = isLargeFile || type === "beat" || type === "kit" || type === "trackout" || type === "artwork" || type === "preview";
+    const useServerUpload = isLargeFile || type === "beat" || type === "kit" || type === "trackout" || type === "artwork";
 
     try {
       if (useServerUpload) {
@@ -1481,11 +1483,16 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
     e.preventDefault();
     const url = editing ? `/api/sound-kits/${editing.id}` : "/api/sound-kits";
     const method = editing ? "PUT" : "POST";
-    await fetch(url, { method, headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(form) });
-    setShowForm(false);
-    setEditing(null);
-    setForm({ title: "", description: "", type: "drum_kit", price: 899, priceType: "kit", isFree: false, numberOfSounds: 0, tags: [], previewUrl: "", previewUrls: [], fileUrl: "", artworkUrl: "", legalInfo: "", authorInfo: "", isPublished: true });
-    onRefresh();
+    const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify(form) });
+    if (res.ok) {
+      setShowForm(false);
+      setEditing(null);
+      setForm({ title: "", description: "", type: "drum_kit", price: 899, priceType: "kit", isFree: false, numberOfSounds: 0, tags: [], previewUrl: "", previewUrls: [], fileUrl: "", artworkUrl: "", legalInfo: "", authorInfo: "", isPublished: true });
+      onRefresh();
+    } else {
+      const errorData = await res.json().catch(() => ({}));
+      alert(`Chyba při ukládání: ${errorData.error || res.status}`);
+    }
   };
 
   const handleDelete = async (id: number) => {
@@ -1515,10 +1522,10 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
     setUploadError(prev => ({ ...prev, [type]: "" }));
     setUploadProgress(prev => ({ ...prev, [type]: 0 }));
 
-    // Large ZIPs > 50MB use server POST (streaming, reliable)
-    // Artwork always uses server upload to save locally (not B2)
+    // Beat/kit/trackout/artwork: always go through server (reliable, handles auth)
+    // Preview audio: use direct B2 presign to bypass Vercel's 4.5 MB body limit
     const isLargeFile = file.size > 50 * 1024 * 1024;
-    const useServerUpload = isLargeFile || type === "beat" || type === "kit" || type === "trackout" || type === "artwork" || type === "preview";
+    const useServerUpload = isLargeFile || type === "beat" || type === "kit" || type === "trackout" || type === "artwork";
 
     try {
       if (useServerUpload) {
@@ -1554,7 +1561,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
           xhr.send(formData);
         });
       } else {
-        // Small files: direct B2 presign (existing logic)
+        // Preview audio + small files: direct B2 presign to avoid Vercel body size limit
         const ext = file.name.split('.').pop() || 'zip';
         const contentType = file.type || '';
 

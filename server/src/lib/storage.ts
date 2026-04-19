@@ -113,7 +113,7 @@ export async function configureBucketCors(bucket: string): Promise<void> {
         CORSRules: [
           {
             AllowedHeaders: ["*"],
-            AllowedMethods: ["GET", "HEAD"],
+            AllowedMethods: ["GET", "HEAD", "PUT"],
             AllowedOrigins: ["*"],
             MaxAgeSeconds: 86400,
           },

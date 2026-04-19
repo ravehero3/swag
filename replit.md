@@ -50,3 +50,9 @@ A full-stack e-commerce platform for music producers to buy beats and sound kits
 ## Replit Migration Notes
 - Changed `dev` script from `npx tsx` to `node_modules/.bin/tsx` to avoid interactive prompts
 - Replit PostgreSQL provisioned and connected via DATABASE_URL
+
+## Known Vercel Constraints & Fixes Applied
+- **Waveform scanning**: Moved from server-side ffmpeg to browser Web Audio API (ffmpeg not available in Vercel serverless).
+- **Audio preview uploads**: Vercel serverless functions have a hard 4.5 MB request body limit. Beat/sound-kit preview audio files were previously force-routed through the server, causing silent failures for larger files. Fixed: preview audio now uses presigned direct-to-B2 uploads (browser → B2 directly, bypassing Vercel). B2 CORS updated to allow `PUT` in addition to `GET`/`HEAD`.
+- **Kit form save errors**: Sound kit `handleSubmit` had no error handling — the form closed even on failed saves, making it impossible to notice session expiry or server errors. Fixed: now checks `res.ok` and shows an alert on failure (same pattern as the beat form).
+- Beats/sound-kits both use `STORAGE_BUCKETS.PREVIEWS` bucket for audio; bucket must be public for playback.
