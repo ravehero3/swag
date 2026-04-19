@@ -137,6 +137,9 @@ function App() {
   const [isPreviewLooping, setIsPreviewLooping] = useState(false);
   const [isPreviewShuffling, setIsPreviewShuffling] = useState(false);
   const previewAudioRef = useRef<HTMLAudioElement>(null);
+  const previewCurrentItemRef = useRef<PreviewPlayerItem | null>(null);
+  const previewQueueRef = useRef<PreviewPlayerItem[]>([]);
+  const isPreviewShufflingRef = useRef(false);
   const [location] = useLocation();
 
   useEffect(() => {
@@ -244,23 +247,34 @@ function App() {
     }
   }, [isPreviewLooping]);
 
+  useEffect(() => {
+    previewCurrentItemRef.current = previewCurrentItem;
+  }, [previewCurrentItem]);
+
+  useEffect(() => {
+    previewQueueRef.current = previewQueue;
+  }, [previewQueue]);
+
+  useEffect(() => {
+    isPreviewShufflingRef.current = isPreviewShuffling;
+  }, [isPreviewShuffling]);
+
   const playPreview = async (item: PreviewPlayerItem, queue?: PreviewPlayerItem[]) => {
     const audio = previewAudioRef.current;
     if (!audio || !item.preview_url) return;
 
+    const currentItem = previewCurrentItemRef.current;
     const isSameItem =
-      previewCurrentItem?.id === item.id &&
-      previewCurrentItem?.product_type === item.product_type &&
-      previewCurrentItem?.preview_url === item.preview_url;
+      currentItem?.id === item.id &&
+      currentItem?.product_type === item.product_type &&
+      currentItem?.preview_url === item.preview_url;
 
-    if (queue && queue.length > 0) {
-      setPreviewQueue(queue);
-    } else if (!previewQueue.length) {
-      setPreviewQueue([item]);
-    }
+    const activeQueue = queue && queue.length > 0 ? queue : previewQueueRef.current.length ? previewQueueRef.current : [item];
+    setPreviewQueue(activeQueue);
+    previewQueueRef.current = activeQueue;
 
     if (isSameItem) {
-      if (isPreviewPlaying) {
+      if (!audio.paused) {
         audio.pause();
         setIsPreviewPlaying(false);
       } else {
@@ -276,6 +290,7 @@ function App() {
     }
 
     setPreviewCurrentItem(item);
+    previewCurrentItemRef.current = item;
     audio.src = item.preview_url;
     audio.load();
     try {
@@ -287,43 +302,66 @@ function App() {
     }
   };
 
+  const handlePreviewEnded = () => {
+    const queue = previewQueueRef.current;
+    const currentItem = previewCurrentItemRef.current;
+    if (!currentItem || queue.length <= 1) {
+      setIsPreviewPlaying(false);
+      return;
+    }
+    const currentIndex = queue.findIndex(
+      (q) => q.id === currentItem.id && q.product_type === currentItem.product_type && q.preview_url === currentItem.preview_url
+    );
+    let nextIndex: number;
+    if (isPreviewShufflingRef.current) {
+      const others = queue.filter((_, i) => i !== currentIndex);
+      nextIndex = queue.indexOf(others[Math.floor(Math.random() * others.length)]);
+    } else {
+      nextIndex = currentIndex >= 0 && currentIndex < queue.length - 1 ? currentIndex + 1 : 0;
+    }
+    playPreview(queue[nextIndex], queue);
+  };
+
   const handlePreviewPlayPause = () => {
-    if (previewCurrentItem) {
-      playPreview(previewCurrentItem, previewQueue.length ? previewQueue : [previewCurrentItem]);
+    const currentItem = previewCurrentItemRef.current;
+    if (currentItem) {
+      playPreview(currentItem, previewQueueRef.current.length ? previewQueueRef.current : [currentItem]);
     }
   };
 
   const handlePreviewPrevious = () => {
-    if (!previewCurrentItem) return;
-    const queue = previewQueue.length ? previewQueue : [previewCurrentItem];
+    const currentItem = previewCurrentItemRef.current;
+    if (!currentItem) return;
+    const queue = previewQueueRef.current.length ? previewQueueRef.current : [currentItem];
     const currentIndex = queue.findIndex(
       (item) =>
-        item.id === previewCurrentItem.id &&
-        item.product_type === previewCurrentItem.product_type &&
-        item.preview_url === previewCurrentItem.preview_url
+        item.id === currentItem.id &&
+        item.product_type === currentItem.product_type &&
+        item.preview_url === currentItem.preview_url
     );
     const prevIndex = currentIndex > 0 ? currentIndex - 1 : queue.length - 1;
     playPreview(queue[prevIndex], queue);
   };
 
   const handlePreviewNext = () => {
-    if (!previewCurrentItem) return;
-    const queue = previewQueue.length ? previewQueue : [previewCurrentItem];
-    if (isPreviewShuffling && queue.length > 1) {
+    const currentItem = previewCurrentItemRef.current;
+    if (!currentItem) return;
+    const queue = previewQueueRef.current.length ? previewQueueRef.current : [currentItem];
+    if (isPreviewShufflingRef.current && queue.length > 1) {
       const otherItems = queue.filter(
         (item) =>
-          item.id !== previewCurrentItem.id ||
-          item.product_type !== previewCurrentItem.product_type ||
-          item.preview_url !== previewCurrentItem.preview_url
+          item.id !== currentItem.id ||
+          item.product_type !== currentItem.product_type ||
+          item.preview_url !== currentItem.preview_url
       );
       playPreview(otherItems[Math.floor(Math.random() * otherItems.length)], queue);
       return;
     }
     const currentIndex = queue.findIndex(
       (item) =>
-        item.id === previewCurrentItem.id &&
-        item.product_type === previewCurrentItem.product_type &&
-        item.preview_url === previewCurrentItem.preview_url
+        item.id === currentItem.id &&
+        item.product_type === currentItem.product_type &&
+        item.preview_url === currentItem.preview_url
     );
     const nextIndex = currentIndex >= 0 && currentIndex < queue.length - 1 ? currentIndex + 1 : 0;
     playPreview(queue[nextIndex], queue);
@@ -351,7 +389,11 @@ function App() {
   return (
     <AppContext.Provider value={{ user, setUser, authLoading, cart, addToCart, removeFromCart, clearCart, isCartOpen, setIsCartOpen, isNewsletterOpen, setIsNewsletterOpen, settings, refreshSettings, savedCount, refreshSavedCount, previewPlayer: { currentItem: previewCurrentItem, isPlaying: isPreviewPlaying, playPreview } }}>
       <div style={{ minHeight: "100vh", background: "#000", display: "flex", flexDirection: "column" }}>
-        <audio ref={previewAudioRef} onEnded={() => setIsPreviewPlaying(false)} />
+        <audio
+          ref={previewAudioRef}
+          onEnded={handlePreviewEnded}
+          onError={() => setIsPreviewPlaying(false)}
+        />
         <Header />
         <main style={{ flex: 1, position: "relative", zIndex: 20 }} className="fade-in">
           <Suspense fallback={<PageLoader />}>

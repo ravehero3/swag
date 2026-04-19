@@ -149,6 +149,9 @@ export default function ProductCard({
           box-shadow: 0 0 18px rgba(255,255,255,0.5), inset 0 0 0 0.5px #000 !important;
         }
 
+        .mobile-play-btn {
+          display: none;
+        }
         @media (max-width: 768px) {
           .play-button-overlay {
             display: none !important;
@@ -158,6 +161,9 @@ export default function ProductCard({
             transform: none !important;
             background: transparent !important;
             border: none !important;
+          }
+          .mobile-play-btn {
+            display: flex !important;
           }
         }
       `}</style>
@@ -235,6 +241,39 @@ export default function ProductCard({
         )}
 
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "8px" }}>
+          {onPlayClick && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onPlayClick(); }}
+              className={`mobile-play-btn${isPlaying ? " is-playing" : ""}`}
+              data-testid={`mobile-play-button-${id}`}
+              style={{
+                alignItems: "center",
+                justifyContent: "center",
+                width: "32px",
+                height: "32px",
+                borderRadius: "50%",
+                border: "none",
+                background: isPlaying ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.08)",
+                boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.2)",
+                color: "#fff",
+                fontSize: "12px",
+                cursor: "pointer",
+                flexShrink: 0,
+                padding: 0,
+              }}
+            >
+              {isPlaying ? (
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                  <rect x="6" y="4" width="4" height="16" rx="1" />
+                  <rect x="14" y="4" width="4" height="16" rx="1" />
+                </svg>
+              ) : (
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: "2px" }}>
+                  <polygon points="5,3 19,12 5,21" />
+                </svg>
+              )}
+            </button>
+          )}
           {onAddToCart && !isFree && (
             <button
               onClick={(e) => { e.stopPropagation(); onAddToCart(id); }}
