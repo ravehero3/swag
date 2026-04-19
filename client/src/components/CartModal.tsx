@@ -239,11 +239,12 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                         boxSizing: "border-box",
                       }}
                     >
-                      <div className="voodoo-artwork-square" style={{ borderRadius: "2px", flex: "0 0 auto" }}>
+                      <div style={{ width: "80px", height: "80px", flexShrink: 0, borderRadius: "2px", overflow: "hidden", background: "#050505" }}>
                         <img
                           src={item.artworkUrl || item.images?.[0] || "/uploads/artwork/metallic-logo.png"}
                           alt={item.title || item.name}
                           onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
+                          style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", display: "block" }}
                         />
                       </div>
                       <div style={{ fontSize: "10px", lineHeight: "12px", height: "24px", color: "#fff", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" as any }}>

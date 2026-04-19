@@ -160,7 +160,7 @@ export default function ProductCard({
         <img
           src={images[0] || "/uploads/artwork/metallic-logo.png"}
           alt={name}
-          style={{ width: "100%", height: "100%", objectFit: compactArtwork ? "cover" : "contain", borderRadius: compactArtwork ? "4px" : 0 }}
+          style={{ width: "100%", height: "100%", objectFit: compactArtwork ? "cover" : "contain", objectPosition: "center", borderRadius: compactArtwork ? "4px" : 0 }}
         />
 
         {onPlayClick && (

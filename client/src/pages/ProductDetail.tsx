@@ -125,8 +125,10 @@ function ProductDetail() {
           width: 100%;
           height: 100%;
           object-fit: cover;
+          object-position: center;
           border-radius: 4px;
           display: block;
+          flex-shrink: 0;
         }
         .pd-artwork-frame {
           width: min(100%, calc(100vh - 138px));
