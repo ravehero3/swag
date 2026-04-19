@@ -1,8 +1,21 @@
 import { spawn } from "child_process";
+import { createRequire } from "module";
 
 const BAR_COUNT = 480;
 
+function getFfmpegPath(): string {
+  try {
+    const require = createRequire(import.meta.url);
+    const ffmpegStatic = require("ffmpeg-static");
+    if (ffmpegStatic && typeof ffmpegStatic === "string") return ffmpegStatic;
+  } catch {
+    // fall through to system ffmpeg
+  }
+  return "ffmpeg";
+}
+
 export async function computeWaveformFromUrl(url: string): Promise<number[] | null> {
+  const ffmpegPath = getFfmpegPath();
   return new Promise((resolve) => {
     const chunks: Buffer[] = [];
     const timeout = setTimeout(() => {
@@ -10,7 +23,7 @@ export async function computeWaveformFromUrl(url: string): Promise<number[] | nu
       resolve(null);
     }, 60000);
 
-    const ffmpeg = spawn("ffmpeg", [
+    const ffmpeg = spawn(ffmpegPath, [
       "-i", url,
       "-ac", "1",
       "-ar", "22050",
@@ -61,8 +74,9 @@ export async function computeWaveformFromUrl(url: string): Promise<number[] | nu
       resolve(result);
     });
 
-    ffmpeg.on("error", () => {
+    ffmpeg.on("error", (err) => {
       clearTimeout(timeout);
+      console.error("[Waveform] ffmpeg spawn error:", err.message);
       resolve(null);
     });
   });

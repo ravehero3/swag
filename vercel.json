@@ -1,6 +1,11 @@
 {
   "version": 2,
   "public": true,
+  "functions": {
+    "server/src/prod.ts": {
+      "maxDuration": 60
+    }
+  },
   "builds": [
     {
       "src": "package.json",

@@ -583,11 +583,15 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     e.stopPropagation();
     setRecomputingIds(prev => new Set([...prev, beat.id]));
     try {
-      await fetch(`/api/beats/${beat.id}/recompute-waveform`, {
+      const res = await fetch(`/api/beats/${beat.id}/recompute-waveform`, {
         method: "POST",
         credentials: "include",
       });
-      setTimeout(() => loadData(), 1000);
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        console.warn(`Waveform failed for beat ${beat.id}:`, err.error);
+      }
+      await loadData();
     } catch {
       // silent
     } finally {
@@ -604,11 +608,14 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
       setRecomputeAllProgress({ current: i + 1, total: pending.length });
       setRecomputingIds(prev => new Set([...prev, b.id]));
       try {
-        await fetch(`/api/beats/${b.id}/recompute-waveform`, { method: "POST", credentials: "include" });
-        await new Promise<void>(resolve => setTimeout(resolve, 800));
+        const res = await fetch(`/api/beats/${b.id}/recompute-waveform`, { method: "POST", credentials: "include" });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          console.warn(`Beat ${b.id} waveform failed:`, err.error);
+        }
         await loadData();
-      } catch {
-        // silent
+      } catch (e) {
+        console.warn(`Beat ${b.id} waveform error:`, e);
       } finally {
         setRecomputingIds(prev => { const next = new Set(prev); next.delete(b.id); return next; });
       }

@@ -175,9 +175,17 @@ router.post("/:id/recompute-waveform", requireAdmin, async (req: Request, res: R
     const { preview_url } = beatRes.rows[0];
     if (!preview_url) return res.status(400).json({ error: "Beat has no preview URL" });
     await pool.query("UPDATE beats SET waveform_data = NULL WHERE id = $1", [beatId]);
-    res.json({ success: true, status: "computing" });
-    triggerWaveformComputation(beatId, preview_url).catch(() => {});
+    const data = await computeWaveformFromUrl(preview_url);
+    if (data && data.length > 0) {
+      await pool.query("UPDATE beats SET waveform_data = $1 WHERE id = $2", [JSON.stringify(data), beatId]);
+      console.log(`Waveform recomputed for beat ${beatId} — ${data.length} bars`);
+      res.json({ success: true, status: "done", bars: data.length });
+    } else {
+      console.error(`Waveform recompute returned null for beat ${beatId}`);
+      res.status(500).json({ error: "Waveform computation failed — ffmpeg returned no data. Check that the preview URL is reachable." });
+    }
   } catch (error) {
+    console.error("Recompute waveform error:", error);
     res.status(500).json({ error: "Chyba při přepočtu waveformu" });
   }
 });
