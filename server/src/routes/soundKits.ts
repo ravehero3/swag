@@ -21,7 +21,7 @@ router.get("/", async (_req: Request, res: Response) => {
     const result = await pool.query(
       "SELECT id, title, description, type, price, is_free, number_of_sounds, tags, COALESCE(NULLIF(preview_url, ''), preview_urls[1]) AS preview_url, preview_urls, file_url, artwork_url, legal_info, author_info, is_published, order_index, created_at FROM sound_kits WHERE is_published = true ORDER BY order_index ASC, created_at DESC"
     );
-    res.set("Cache-Control", "public, max-age=300, stale-while-revalidate=60");
+    res.set("Cache-Control", "no-store, no-cache, must-revalidate");
     res.json(result.rows);
   } catch (error) {
     console.error("Error fetching sound kits:", error);

@@ -38,7 +38,7 @@ router.get("/", async (req: Request, res: Response) => {
     
     query += " ORDER BY created_at DESC";
     const result = await pool.query(query, params);
-    res.set("Cache-Control", "public, max-age=300, stale-while-revalidate=60");
+    res.set("Cache-Control", "no-store, no-cache, must-revalidate");
     res.json(result.rows);
   } catch (error) {
     res.status(500).json({ error: "Chyba při načítání beatů" });

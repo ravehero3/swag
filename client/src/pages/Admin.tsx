@@ -836,7 +836,11 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
 
   const handleDelete = async (id: number) => {
     if (!confirm("Opravdu smazat?")) return;
-    await fetch(`/api/beats/${id}`, { method: "DELETE", credentials: "include" });
+    const res = await fetch(`/api/beats/${id}`, { method: "DELETE", credentials: "include" });
+    if (!res.ok) {
+      alert("Chyba při mazání beatu");
+      return;
+    }
     onRefresh();
   };
 
@@ -1497,7 +1501,11 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
 
   const handleDelete = async (id: number) => {
     if (!confirm("Opravdu smazat?")) return;
-    await fetch(`/api/sound-kits/${id}`, { method: "DELETE", credentials: "include" });
+    const res = await fetch(`/api/sound-kits/${id}`, { method: "DELETE", credentials: "include" });
+    if (!res.ok) {
+      alert("Chyba při mazání kitu");
+      return;
+    }
     onRefresh();
   };
 
