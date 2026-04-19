@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState, useEffect, useRef, createContext, useContext } from "react";
+import { lazy, Suspense, useState, useEffect, useRef, useCallback, createContext, useContext, RefObject } from "react";
 import { Route, Switch, useLocation, Redirect } from "wouter";
 import Header from "./components/Header.js";
 import ExtendedFooter from "./components/ExtendedFooter.js";
@@ -60,7 +60,16 @@ export interface PreviewPlayerItem {
 interface PreviewPlayerContext {
   currentItem: PreviewPlayerItem | null;
   isPlaying: boolean;
+  isLooping: boolean;
+  isShuffling: boolean;
   playPreview: (item: PreviewPlayerItem, queue?: PreviewPlayerItem[]) => Promise<void>;
+  handlePlayPause: () => void;
+  handlePrevious: () => void;
+  handleNext: () => void;
+  handleToggleLoop: () => void;
+  handleToggleShuffle: () => void;
+  audioRef: RefObject<HTMLAudioElement>;
+  setPreviewMeta: (isSaved: boolean, onToggleSave?: () => void) => void;
 }
 
 interface AppContextType {
@@ -101,7 +110,16 @@ export const AppContext = createContext<AppContextType>({
   previewPlayer: {
     currentItem: null,
     isPlaying: false,
+    isLooping: false,
+    isShuffling: false,
     playPreview: async () => {},
+    handlePlayPause: () => {},
+    handlePrevious: () => {},
+    handleNext: () => {},
+    handleToggleLoop: () => {},
+    handleToggleShuffle: () => {},
+    audioRef: { current: null } as RefObject<HTMLAudioElement>,
+    setPreviewMeta: () => {},
   },
 });
 
@@ -140,7 +158,9 @@ function App() {
   const previewCurrentItemRef = useRef<PreviewPlayerItem | null>(null);
   const previewQueueRef = useRef<PreviewPlayerItem[]>([]);
   const isPreviewShufflingRef = useRef(false);
-  const [location] = useLocation();
+  const [previewIsSaved, setPreviewIsSaved] = useState(false);
+  const previewOnToggleSaveRef = useRef<(() => void) | undefined>(undefined);
+  const [location, setLocation] = useLocation();
 
   useEffect(() => {
     document.body.style.paddingTop = "42px";
@@ -330,8 +350,13 @@ function App() {
   };
 
   const handlePreviewPrevious = () => {
+    const audio = previewAudioRef.current;
     const currentItem = previewCurrentItemRef.current;
     if (!currentItem) return;
+    if (audio && audio.currentTime > 3) {
+      audio.currentTime = 0;
+      return;
+    }
     const queue = previewQueueRef.current.length ? previewQueueRef.current : [currentItem];
     const currentIndex = queue.findIndex(
       (item) =>
@@ -368,14 +393,29 @@ function App() {
   };
 
   const handlePreviewBuyClick = (item: PreviewPlayerItem) => {
-    addToCart({
-      productId: item.id,
-      productType: item.product_type,
-      title: item.title,
-      price: Number(item.price),
-      artworkUrl: item.artwork_url || "/uploads/artwork/metallic-logo.png",
-    });
+    if (item.product_type === "beat") {
+      setLocation(`/produkt/beat/${item.id}`);
+    } else {
+      addToCart({
+        productId: item.id,
+        productType: item.product_type,
+        title: item.title,
+        price: Number(item.price),
+        artworkUrl: item.artwork_url || "/uploads/artwork/metallic-logo.png",
+      });
+    }
   };
+
+  const handlePreviewToggleSave = useCallback(() => {
+    if (previewOnToggleSaveRef.current) {
+      previewOnToggleSaveRef.current();
+    }
+  }, []);
+
+  const setPreviewMeta = useCallback((isSaved: boolean, onToggleSave?: () => void) => {
+    setPreviewIsSaved(isSaved);
+    previewOnToggleSaveRef.current = onToggleSave;
+  }, []);
 
   useEffect(() => {
     if (!authLoading) {
@@ -387,7 +427,7 @@ function App() {
   const isPokladnaPage = location === "/pokladna";
 
   return (
-    <AppContext.Provider value={{ user, setUser, authLoading, cart, addToCart, removeFromCart, clearCart, isCartOpen, setIsCartOpen, isNewsletterOpen, setIsNewsletterOpen, settings, refreshSettings, savedCount, refreshSavedCount, previewPlayer: { currentItem: previewCurrentItem, isPlaying: isPreviewPlaying, playPreview } }}>
+    <AppContext.Provider value={{ user, setUser, authLoading, cart, addToCart, removeFromCart, clearCart, isCartOpen, setIsCartOpen, isNewsletterOpen, setIsNewsletterOpen, settings, refreshSettings, savedCount, refreshSavedCount, previewPlayer: { currentItem: previewCurrentItem, isPlaying: isPreviewPlaying, isLooping: isPreviewLooping, isShuffling: isPreviewShuffling, playPreview, handlePlayPause: handlePreviewPlayPause, handlePrevious: handlePreviewPrevious, handleNext: handlePreviewNext, handleToggleLoop: () => setIsPreviewLooping((v) => !v), handleToggleShuffle: () => setIsPreviewShuffling((v) => !v), audioRef: previewAudioRef, setPreviewMeta } }}>
       <div style={{ minHeight: "100vh", background: "#000", display: "flex", flexDirection: "column" }}>
         <audio
           ref={previewAudioRef}
@@ -447,6 +487,8 @@ function App() {
             onToggleShuffle={() => setIsPreviewShuffling((value) => !value)}
             onBuyClick={handlePreviewBuyClick}
             audioRef={previewAudioRef}
+            isSaved={previewIsSaved}
+            onToggleSave={handlePreviewToggleSave}
           />
         )}
       </div>

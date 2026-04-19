@@ -4,7 +4,6 @@ import { useApp } from "../App.js";
 import { useScrollAnimation } from "../hooks/useScrollAnimation.js";
 import { useSEO } from "../hooks/useSEO.js";
 import ContractModal from "../components/ContractModal.js";
-import MusicPlayer from "../components/MusicPlayer.js";
 import SoundWave from "../components/SoundWave.js";
 import SoundKitsDock from "../components/SoundKitsDock.js";
 import ShareModal from "../components/ShareModal.js";
@@ -149,9 +148,6 @@ function Home() {
   const [highlightedBeat, setHighlightedBeat] = useState<Beat | null>(null);
   const [beatsLoading, setBeatsLoading] = useState(true);
   const [currentBeat, setCurrentBeat] = useState<Beat | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isLooping, setIsLooping] = useState(false);
-  const [isShuffling, setIsShuffling] = useState(false);
   const [savedBeats, setSavedBeats] = useState<Set<number>>(new Set());
   const [poppingHearts, setPoppingHearts] = useState<Set<number>>(new Set());
   const [contractModalBeat, setContractModalBeat] = useState<Beat | null>(null);
@@ -171,14 +167,17 @@ function Home() {
   const [draggingComment, setDraggingComment] = useState<{ id: number; xPct: number } | null>(null);
   const [usernameInput, setUsernameInput] = useState("");
   const [savingUsername, setSavingUsername] = useState(false);
-  const audioRef = useRef<HTMLAudioElement>(null);
   const waveRef = useRef<HTMLDivElement>(null);
   const commentTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastTriggeredCommentRef = useRef<number | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const beatsListRef = useScrollAnimation();
   const soundKitsRef = useScrollAnimation();
-  const { user, setUser, addToCart, settings, refreshSavedCount } = useApp() as any;
+  const { user, setUser, addToCart, settings, refreshSavedCount, previewPlayer } = useApp() as any;
+  const audioRef = previewPlayer.audioRef;
+  const isPlaying = previewPlayer.isPlaying;
+  const isLooping = previewPlayer.isLooping;
+  const isShuffling = previewPlayer.isShuffling;
   useSEO("home");
 
   // Determine if we're on home page or beaty page
@@ -230,10 +229,24 @@ function Home() {
   }, [user]);
 
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.loop = isLooping;
+    const globalItem = previewPlayer.currentItem;
+    if (!globalItem || globalItem.product_type !== "beat") {
+      return;
     }
-  }, [isLooping]);
+    const found = beats.find(b => b.id === globalItem.id) ?? highlightedBeat ?? null;
+    setCurrentBeat(prev => {
+      if (prev?.id === globalItem.id) return prev;
+      return found;
+    });
+  }, [previewPlayer.currentItem]);
+
+  useEffect(() => {
+    if (!currentBeat) return;
+    const isSaved = savedBeats.has(currentBeat.id);
+    previewPlayer.setPreviewMeta(isSaved, () => {
+      toggleSave(currentBeat);
+    });
+  }, [currentBeat, savedBeats]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -379,79 +392,51 @@ function Home() {
     }
   };
 
+  const getBeatsQueue = () => {
+    const allBeats = highlightedBeat
+      ? [highlightedBeat, ...beats.filter(b => b.id !== highlightedBeat.id)]
+      : beats;
+    return allBeats.map(b => ({
+      id: b.id,
+      title: b.title,
+      price: b.price,
+      preview_url: b.preview_url || "",
+      artwork_url: b.artwork_url || "",
+      product_type: "beat" as const,
+    }));
+  };
+
   const playBeat = async (beat: Beat) => {
-    if (currentBeat?.id === beat.id) {
-      if (isPlaying) {
-        audioRef.current?.pause();
-        setIsPlaying(false);
-      } else {
-        try {
-          await audioRef.current?.play();
-          setIsPlaying(true);
-        } catch (err) {
-          console.error("Audio resume failed:", err);
-          setIsPlaying(false);
+    const item = {
+      id: beat.id,
+      title: beat.title,
+      price: beat.price,
+      preview_url: beat.preview_url || "",
+      artwork_url: beat.artwork_url || "",
+      product_type: "beat" as const,
+    };
+    setCurrentBeat(beat);
+    await previewPlayer.playPreview(item, getBeatsQueue());
+    fetch(`/api/beats/${beat.id}/play`, { method: "POST" })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.play_count != null) {
+          setBeatStats(prev => prev ? { ...prev, plays: data.play_count } : prev);
         }
-      }
-    } else {
-      setCurrentBeat(beat);
-      if (audioRef.current) {
-        audioRef.current.src = beat.preview_url || "";
-        try {
-          await audioRef.current.play();
-          setIsPlaying(true);
-        } catch (err) {
-          console.error("Audio play failed:", err);
-          setIsPlaying(false);
-        }
-      }
-      fetch(`/api/beats/${beat.id}/play`, { method: "POST" })
-        .then(r => r.ok ? r.json() : null)
-        .then(data => {
-          if (data?.play_count != null) {
-            setBeatStats(prev => prev ? { ...prev, plays: data.play_count } : prev);
-          }
-        })
-        .catch(() => {});
-    }
+      })
+      .catch(() => {});
   };
 
   const handlePlayPause = () => {
-    if (currentBeat) {
-      playBeat(currentBeat);
-    }
+    previewPlayer.handlePlayPause();
   };
 
   const handlePrevious = () => {
-    if (!currentBeat) return;
-    if (audioRef.current && audioRef.current.currentTime > 3) {
-      audioRef.current.currentTime = 0;
-      return;
-    }
-    const allBeats = highlightedBeat ? [highlightedBeat, ...beats.filter(b => b.id !== highlightedBeat.id)] : beats;
-    const currentIndex = allBeats.findIndex(b => b.id === currentBeat.id);
-    const prevIndex = currentIndex > 0 ? currentIndex - 1 : allBeats.length - 1;
-    playBeat(allBeats[prevIndex]);
+    previewPlayer.handlePrevious();
   };
 
   const handleNext = () => {
-    if (!currentBeat) return;
-    const allBeats = highlightedBeat ? [highlightedBeat, ...beats.filter(b => b.id !== highlightedBeat.id)] : beats;
-    const currentIndex = allBeats.findIndex(b => b.id === currentBeat.id);
-    
-    if (isShuffling) {
-      const randomIndex = Math.floor(Math.random() * allBeats.length);
-      playBeat(allBeats[randomIndex]);
-    } else {
-      const nextIndex = currentIndex < allBeats.length - 1 ? currentIndex + 1 : 0;
-      playBeat(allBeats[nextIndex]);
-    }
-  };
-
-  const handleAudioEnded = () => {
-    if (!isLooping) {
-      handleNext();
-    }
+    previewPlayer.handleNext();
   };
 
   const openContractModal = (beat: Beat) => {
@@ -630,14 +615,6 @@ function Home() {
           .mobile-only-video-section { display: none !important; }
         }
       `}</style>
-      <audio
-        ref={audioRef}
-        onEnded={handleAudioEnded}
-        onError={() => {
-          console.error("Audio error: failed to load", audioRef.current?.src);
-          setIsPlaying(false);
-        }}
-      />
 
       <div className="mobile-video-container desktop-main-video" style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative", background: "#000", minHeight: "600px" }}>
         <video
@@ -1683,21 +1660,6 @@ function Home() {
         />
       )}
 
-      <MusicPlayer
-        currentBeat={currentBeat}
-        isPlaying={isPlaying}
-        isLooping={isLooping}
-        isShuffling={isShuffling}
-        onPlayPause={handlePlayPause}
-        onPrevious={handlePrevious}
-        onNext={handleNext}
-        onToggleLoop={() => setIsLooping(!isLooping)}
-        onToggleShuffle={() => setIsShuffling(!isShuffling)}
-        onBuyClick={openContractModal}
-        audioRef={audioRef}
-        isSaved={currentBeat ? savedBeats.has(currentBeat.id) : false}
-        onToggleSave={() => currentBeat && toggleSave(currentBeat)}
-      />
 
       {shareBeat && (
         <ShareModal

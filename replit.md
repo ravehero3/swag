@@ -74,4 +74,12 @@ Imported from Replit Agent and configured for Replit with Node.js 20, PostgreSQL
 
 ## Audio Preview UX
 
-The app now has a shared preview player in `client/src/App.tsx` that renders the bottom `MusicPlayer` bar for non-admin/non-checkout pages. Sound kits, product detail previews, saved items, and account saved products should route preview clicks through this shared player so beats and sound kits use the same playback UX.
+The app has a fully persistent global audio player that survives page navigation:
+
+- **Single `<audio>` element** lives in `App.tsx` (the `previewAudioRef`). No page-level audio elements should exist.
+- **Global `MusicPlayer` bar** is rendered once in `App.tsx` outside of all routes — it stays mounted across all navigation.
+- **`previewPlayer` context** (exposed via `useApp()`) provides: `currentItem`, `isPlaying`, `isLooping`, `isShuffling`, `playPreview`, `handlePlayPause`, `handlePrevious`, `handleNext`, `handleToggleLoop`, `handleToggleShuffle`, `audioRef`, and `setPreviewMeta`.
+- **`setPreviewMeta(isSaved, onToggleSave)`** lets page-specific components (e.g. Home.tsx) inject save state and the save/unsave callback into the global player bar without coupling the player to a specific page.
+- Home.tsx no longer has a local `<audio>` or `<MusicPlayer>`. It calls `previewPlayer.playPreview()` and syncs `currentBeat` with `previewPlayer.currentItem` via `useEffect`.
+- Beaty.tsx still has its own local player (can be migrated similarly in a future pass).
+- The `onBuyClick` handler in the global player navigates to the beat product detail page for beats, and adds to cart for sound kits.
