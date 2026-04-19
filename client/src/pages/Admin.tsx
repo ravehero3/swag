@@ -452,12 +452,23 @@ const PRICE_TYPES_BEAT = [
 
 type BeatPriceType = typeof PRICE_TYPES_BEAT[number]["id"];
 
-function BeatWaveformSparkline({ data }: { data: number[] }) {
-  const N = 40;
-  const W = 80;
-  const H = 18;
-  const gap = 0.7;
-  const barW = (W - gap * (N - 1)) / N;
+function getBeatWaveformQuality(data: number[]): { label: string; color: string } {
+  if (!data || data.length < 10) return { label: "nízká", color: "#e53935" };
+  const avg = data.reduce((a, b) => a + b, 0) / data.length;
+  const max = Math.max(...data);
+  const nonZero = data.filter(v => v > 0.01).length / data.length;
+  if (max < 0.1 || nonZero < 0.3) return { label: "nízká", color: "#e53935" };
+  if (avg > 0.35 && nonZero > 0.8 && data.length >= 100) return { label: "výborná", color: "#4caf50" };
+  if (avg > 0.2 && nonZero > 0.6) return { label: "dobrá", color: "#7cb342" };
+  return { label: "střední", color: "#f9a825" };
+}
+
+function BeatWaveformSparkline({ data, hovered }: { data: number[]; hovered?: boolean }) {
+  const N = 60;
+  const W = 130;
+  const H = 28;
+  const gap = 0.6;
+  const barW = Math.max(0.5, (W - gap * (N - 1)) / N);
   const step = data.length / N;
   const bars = Array.from({ length: N }, (_, i) => {
     const start = Math.floor(i * step);
@@ -467,18 +478,21 @@ function BeatWaveformSparkline({ data }: { data: number[] }) {
     return end > start ? sum / (end - start) : 0;
   });
   const mid = H / 2;
-  const topMax = mid - 1;
-  const botMax = mid * 0.38;
+  const topMax = mid - 1.5;
+  const botMax = mid * 0.4;
+  const quality = getBeatWaveformQuality(data);
+  const barFill = hovered ? quality.color : "rgba(255,255,255,0.42)";
+  const barFillBot = hovered ? quality.color + "44" : "rgba(255,255,255,0.12)";
   return (
-    <svg width={W} height={H} style={{ display: "block", flexShrink: 0 }}>
+    <svg width={W} height={H} style={{ display: "block", flexShrink: 0, transition: "opacity 150ms", opacity: hovered ? 1 : 0.75 }}>
       {bars.map((v, i) => {
         const x = i * (barW + gap);
-        const topH = Math.max(0.5, v * topMax);
-        const botH = Math.max(0.3, v * botMax);
+        const topH = Math.max(0.8, v * topMax);
+        const botH = Math.max(0.4, v * botMax);
         return (
           <g key={i}>
-            <rect x={x} y={mid - topH} width={barW} height={topH} fill="rgba(255,255,255,0.38)" rx={0.4} />
-            <rect x={x} y={mid} width={barW} height={botH} fill="rgba(255,255,255,0.13)" rx={0.4} />
+            <rect x={x} y={mid - topH} width={barW} height={topH} fill={barFill} rx={0.5} style={{ transition: "fill 150ms" }} />
+            <rect x={x} y={mid} width={barW} height={botH} fill={barFillBot} rx={0.5} style={{ transition: "fill 150ms" }} />
           </g>
         );
       })}
@@ -496,6 +510,7 @@ function WaveformModal({ beat, onClose }: { beat: Beat; onClose: () => void }) {
   const mid = H / 2;
   const topMax = mid - 2;
   const botMax = mid * 0.38;
+  const quality = getBeatWaveformQuality(data);
   return (
     <div
       style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center" }}
@@ -508,7 +523,11 @@ function WaveformModal({ beat, onClose }: { beat: Beat; onClose: () => void }) {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
           <div>
             <div style={{ fontSize: "14px", fontWeight: 600, color: "#fff", marginBottom: "2px" }}>{beat.title}</div>
-            <div style={{ fontSize: "11px", color: "#555" }}>{N} bodů · waveform_data</div>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: quality.color, boxShadow: `0 0 5px ${quality.color}` }} />
+              <span style={{ fontSize: "11px", color: quality.color, fontFamily: "monospace" }}>{quality.label}</span>
+              <span style={{ fontSize: "11px", color: "#444", fontFamily: "monospace" }}>· {N} bodů</span>
+            </div>
           </div>
           <button onClick={onClose} style={{ background: "none", border: "none", color: "#555", cursor: "pointer", fontSize: "20px", lineHeight: 1 }}>×</button>
         </div>
@@ -519,8 +538,8 @@ function WaveformModal({ beat, onClose }: { beat: Beat; onClose: () => void }) {
             const botH = Math.max(0.3, v * botMax);
             return (
               <g key={i}>
-                <rect x={x} y={mid - topH} width={barW} height={topH} fill="rgba(255,255,255,0.45)" rx={0.3} />
-                <rect x={x} y={mid} width={barW} height={botH} fill="rgba(255,255,255,0.14)" rx={0.3} />
+                <rect x={x} y={mid - topH} width={barW} height={topH} fill={quality.color} opacity={0.75} rx={0.3} />
+                <rect x={x} y={mid} width={barW} height={botH} fill={quality.color} opacity={0.22} rx={0.3} />
               </g>
             );
           })}
@@ -1228,23 +1247,31 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
               <td style={{ padding: "12px" }}>{beat.bpm}</td>
               <td style={{ padding: "12px" }}>{beat.is_published ? "Publikováno" : "Skryto"}</td>
               <td style={{ padding: "12px" }}>{beat.is_highlighted ? "Featured" : ""}</td>
-              <td style={{ padding: "12px" }} onClick={(e) => e.stopPropagation()}>
+              <td style={{ padding: "10px 12px" }} onClick={(e) => e.stopPropagation()}>
                 {!beat.preview_url ? (
-                  <span style={{ fontSize: "12px", color: "#444" }}>—</span>
-                ) : (beat.waveform_data && Array.isArray(beat.waveform_data)) ? (
-                  <div
-                    data-testid={`waveform-status-${beat.id}`}
-                    style={{ display: "inline-flex", alignItems: "center", gap: "6px", cursor: "pointer" }}
-                    title="Kliknutím zobrazit detail"
-                    onClick={(e) => { e.stopPropagation(); setExpandedWaveformBeat(beat); }}
-                  >
-                    <BeatWaveformSparkline data={beat.waveform_data} />
-                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ flexShrink: 0 }}>
-                      <circle cx="5" cy="5" r="4" fill="#4caf50" />
-                      <path d="M3 5l1.5 1.5L7.5 3.5" stroke="#000" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </div>
-                ) : recomputingIds.has(beat.id) ? (
+                  <span style={{ fontSize: "12px", color: "#333" }}>—</span>
+                ) : (beat.waveform_data && Array.isArray(beat.waveform_data)) ? (() => {
+                  const quality = getBeatWaveformQuality(beat.waveform_data);
+                  const isHov = hoveredBeatId === beat.id;
+                  return (
+                    <div
+                      data-testid={`waveform-status-${beat.id}`}
+                      style={{ display: "inline-flex", flexDirection: "column", gap: "3px", cursor: "pointer" }}
+                      title={`${beat.waveform_data.length} bodů · kliknutím detail`}
+                      onClick={(e) => { e.stopPropagation(); setExpandedWaveformBeat(beat); }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                        <BeatWaveformSparkline data={beat.waveform_data} hovered={isHov} />
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                        <div style={{ width: "5px", height: "5px", borderRadius: "50%", background: quality.color, flexShrink: 0, boxShadow: isHov ? `0 0 4px ${quality.color}` : "none", transition: "box-shadow 150ms" }} />
+                        <span style={{ fontSize: "10px", color: isHov ? quality.color : "#444", fontFamily: "monospace", transition: "color 150ms", letterSpacing: "0.3px" }}>
+                          {quality.label} · {beat.waveform_data.length} bodů
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })() : recomputingIds.has(beat.id) ? (
                   <span style={{ fontSize: "12px", color: "#888" }}>Spouštím…</span>
                 ) : (
                   <button
