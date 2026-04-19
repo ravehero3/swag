@@ -1118,6 +1118,56 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
               )}
             </div>
 
+            <div style={{ gridColumn: "1 / -1" }}>
+              <label style={{ display: "block", marginBottom: "8px" }}>Beat ZIP soubor (ke stažení po zakoupení)</label>
+              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                <input
+                  type="file"
+                  accept=".zip,.rar"
+                  disabled={uploading["beat"]}
+                  onChange={async (e) => {
+                    if (e.target.files?.[0]) {
+                      const url = await uploadFile(e.target.files[0], "beat");
+                      if (url) setForm(f => ({ ...f, fileUrl: url as string }));
+                    }
+                  }}
+                  style={{ flex: 1 }}
+                  data-testid="input-file-beat-zip"
+                />
+                <button
+                  type="button"
+                  className="btn btn-admin"
+                  onClick={() => setB2PickerFor("beat")}
+                  style={{ whiteSpace: "nowrap", fontSize: "12px" }}
+                  data-testid="button-browse-b2-beat"
+                >
+                  Browse B2
+                </button>
+              </div>
+              <UploadProgressBar type="beat" />
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", margin: "10px 0 6px" }}>
+                <div style={{ flex: 1, height: "1px", background: "#333" }} />
+                <span style={{ fontSize: "11px", color: "#555", whiteSpace: "nowrap" }}>nebo Google Drive URL</span>
+                <div style={{ flex: 1, height: "1px", background: "#333" }} />
+              </div>
+              <input
+                type="url"
+                placeholder="https://drive.google.com/drive/folders/..."
+                value={form.fileUrl?.startsWith("https://") || form.fileUrl?.startsWith("http://") ? form.fileUrl : ""}
+                onChange={(e) => setForm({ ...form, fileUrl: e.target.value })}
+                style={{ width: "100%", padding: "8px 10px", background: "#111", border: "1px solid #333", color: "#fff", borderRadius: "3px", fontSize: "13px", boxSizing: "border-box" }}
+                data-testid="input-gdrive-url-beat"
+              />
+              <p style={{ fontSize: "11px", color: "#555", marginTop: "5px" }}>
+                Nastav sdílení složky: Sdílet → Kdokoli se odkazem → Prohlížeč
+              </p>
+              {form.fileUrl && !uploading["beat"] && (
+                <div style={{ marginTop: "6px" }}>
+                  <span style={{ fontSize: "12px", color: "#4caf50" }}>✓ {form.fileUrl}</span>
+                </div>
+              )}
+            </div>
+
             <div>
               <label style={{ display: "block", marginBottom: "8px" }}>Trackout (ZIP)</label>
               <button
@@ -1381,6 +1431,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
               }
             }
             if (b2PickerFor === "trackout") setForm(f => ({ ...f, trackoutUrl: key }));
+            if (b2PickerFor === "beat") setForm(f => ({ ...f, fileUrl: key }));
           }}
           onClose={() => setB2PickerFor(null)}
         />

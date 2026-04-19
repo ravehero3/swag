@@ -285,15 +285,25 @@ router.get("/:id/download", requireAuth, async (req: Request, res: Response) => 
   try {
     const beatId = req.params.id;
 
-    const result = await pool.query("SELECT preview_url FROM beats WHERE id = $1", [beatId]);
+    const result = await pool.query("SELECT file_url, preview_url FROM beats WHERE id = $1", [beatId]);
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "Beat nenalezen" });
     }
-    if (!result.rows[0].preview_url) {
+
+    const { file_url, preview_url } = result.rows[0];
+    const fileUrl: string | null = file_url || preview_url;
+
+    if (!fileUrl) {
       return res.status(404).json({ error: "Soubor není dostupný" });
     }
 
-    res.json({ downloadUrl: result.rows[0].preview_url });
+    // If it's already a full URL (Google Drive, etc.) return it directly
+    if (fileUrl.startsWith("https://") || fileUrl.startsWith("http://")) {
+      return res.json({ downloadUrl: fileUrl });
+    }
+
+    const url = await generateDownloadUrl(STORAGE_BUCKETS.ZIPS, fileUrl);
+    res.json({ downloadUrl: url });
   } catch (error) {
     res.status(500).json({ error: "Chyba při generování odkazu ke stažení" });
   }
