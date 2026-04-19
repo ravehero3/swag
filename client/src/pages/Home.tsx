@@ -673,14 +673,14 @@ function Home() {
               <div style={{ position: "relative", flexShrink: 0 }} className="highlight-artwork-container">
                 <style>{`
                   @keyframes hacPlayPulse {
-                    0%, 100% { box-shadow: 0 0 0 1px rgba(255,255,255,0.28), 0 8px 32px rgba(0,0,0,0.4), inset 0 1.5px 0 rgba(255,255,255,0.7), inset 0 -1px 0 rgba(0,0,0,0.15); }
-                    50% { box-shadow: 0 0 0 1px rgba(255,255,255,0.45), 0 8px 40px rgba(0,0,0,0.5), inset 0 1.5px 0 rgba(255,255,255,0.85), inset 0 -1px 0 rgba(0,0,0,0.15); }
+                    0%, 100% { box-shadow: inset 0 0 0 1px rgba(255,255,255,0.32), 0 8px 32px rgba(0,0,0,0.4), inset 0 1.5px 0 rgba(255,255,255,0.7), inset 0 -1px 0 rgba(0,0,0,0.15); }
+                    50% { box-shadow: inset 0 0 0 1px rgba(255,255,255,0.50), 0 8px 40px rgba(0,0,0,0.5), inset 0 1.5px 0 rgba(255,255,255,0.85), inset 0 -1px 0 rgba(0,0,0,0.15); }
                   }
                   .hac-play-overlay {
                     position: absolute; top: 50%; left: 50%;
                     width: 66px; height: 66px; border-radius: 50%; border: none;
                     background: transparent; backdrop-filter: blur(1px); -webkit-backdrop-filter: blur(1px);
-                    box-shadow: 0 0 0 1px rgba(255,255,255,0.14);
+                    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.20);
                     color: #fff; font-size: 20px; cursor: pointer;
                     display: flex; align-items: center; justify-content: center;
                     z-index: 4;
