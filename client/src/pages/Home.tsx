@@ -606,9 +606,28 @@ function Home() {
           .desktop-only { display: none !important; }
           .mobile-only { display: flex !important; }
           .mobile-only-flex { display: flex !important; }
-          .home-beat-title-col { width: auto !important; flex: 1 !important; min-width: 0 !important; margin-right: 4px !important; }
-          .home-beat-title-col > div:first-child { font-size: 15px !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-          .home-beat-buy-btn { min-width: 0 !important; padding: 8px 10px 8px 12px !important; font-size: 11px !important; }
+          .home-featured-section { margin-top: -72px !important; margin-bottom: 32px !important; }
+          .home-featured-inner { width: 100% !important; flex-direction: column !important; gap: 16px !important; align-items: stretch !important; margin-bottom: 16px !important; }
+          .home-featured-artwork { width: min(72vw, 280px) !important; margin: 0 auto !important; }
+          .home-featured-artwork img { width: 100% !important; height: auto !important; aspect-ratio: 1 / 1 !important; }
+          .home-featured-info { width: 100% !important; min-width: 0 !important; }
+          .home-featured-info h2 { font-size: 24px !important; max-width: 100% !important; overflow-wrap: anywhere !important; }
+          .home-featured-actions { flex-wrap: wrap !important; gap: 8px !important; }
+          .home-beats-list { margin-top: 32px !important; margin-bottom: 36px !important; }
+          .home-beat-list-header { padding: 8px 8px 6px 8px !important; gap: 10px !important; margin-top: 0 !important; }
+          .home-beat-header-title { width: auto !important; flex: 1 !important; min-width: 0 !important; margin-right: 0 !important; }
+          .home-beat-header-separator { left: 64px !important; right: 8px !important; }
+          .home-beat-row { min-height: 64px !important; padding: 8px !important; gap: 10px !important; align-items: center !important; }
+          .home-beat-row-separator { left: 64px !important; right: 8px !important; }
+          .home-beat-artwork img { width: 44px !important; height: 44px !important; }
+          .home-beat-title-col { width: auto !important; flex: 1 1 auto !important; min-width: 0 !important; max-width: none !important; margin-right: 0 !important; gap: 3px !important; overflow: hidden !important; }
+          .home-beat-title-col > div:first-child { font-size: 16px !important; line-height: 1.16 !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; max-width: 100% !important; }
+          .home-beat-row-actions { margin-left: 4px !important; margin-right: 0 !important; gap: 6px !important; flex-shrink: 0 !important; }
+          .home-beat-dl-btn, .home-beat-share-btn { display: none !important; }
+          .home-beat-row-actions .mobile-only { width: 32px !important; height: 32px !important; padding: 6px !important; flex-shrink: 0 !important; }
+          .home-beat-buy-btn { min-width: 78px !important; height: 34px !important; padding: 8px !important; margin-left: 0 !important; justify-content: center !important; font-size: 11px !important; }
+          .home-beat-buy-btn > div { display: none !important; }
+          .home-beat-buy-btn > span { margin-left: 0 !important; padding-right: 0 !important; white-space: nowrap !important; }
           .home-beat-header-title { width: auto !important; flex: 1 !important; }
         }
         @media (min-width: 769px) {
@@ -668,9 +687,9 @@ function Home() {
       
       <div style={{ padding: "0 20px" }} className="fade-in-grid">
         {displayedHighlight && (
-          <div className="fade-in-section delay-2" style={{ marginBottom: "48px", display: "flex", justifyContent: "center", marginTop: "-116px", position: "relative", zIndex: 50 }}>
-            <div style={{ display: "flex", gap: "48px", alignItems: "flex-start", marginBottom: "32px", width: "1000px", position: "relative", zIndex: 50 }}>
-              <div style={{ position: "relative", flexShrink: 0 }} className="highlight-artwork-container">
+          <div className="fade-in-section delay-2 home-featured-section" style={{ marginBottom: "48px", display: "flex", justifyContent: "center", marginTop: "-116px", position: "relative", zIndex: 50 }}>
+            <div className="home-featured-inner" style={{ display: "flex", gap: "48px", alignItems: "flex-start", marginBottom: "32px", width: "1000px", position: "relative", zIndex: 50 }}>
+              <div style={{ position: "relative", flexShrink: 0 }} className="highlight-artwork-container home-featured-artwork">
                 <style>{`
                   @keyframes hacPlayPulse {
                     0%, 100% { box-shadow: inset 0 0 0 1px rgba(255,255,255,0.32), 0 8px 32px rgba(0,0,0,0.4), inset 0 1.5px 0 rgba(255,255,255,0.7), inset 0 -1px 0 rgba(0,0,0,0.15); }
@@ -727,7 +746,7 @@ function Home() {
                 </button>
               </div>
 
-              <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-start", flex: 1 }}>
+              <div className="home-featured-info" style={{ display: "flex", flexDirection: "column", justifyContent: "flex-start", flex: 1 }}>
                 <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "6px" }}>
                   <span style={{ fontSize: "12px", fontFamily: "Work Sans, sans-serif", color: "#999" }}>
                     {currentBeat && currentBeat.id === displayedHighlight.id && isPlaying ? "Nyní hraje" : currentBeat ? "Naposledy hrán" : "Beat týdne"}
@@ -741,7 +760,7 @@ function Home() {
                   <h2 style={{ fontSize: "30px", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontWeight: "400", lineHeight: "1.1", position: "relative", zIndex: 10, margin: 0 }}>
                     {displayedHighlight.title}
                   </h2>
-                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <div className="home-featured-actions" style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                     <button
                       onClick={() => openContractModal(displayedHighlight)}
                       className="btn-bounce"
@@ -1084,7 +1103,7 @@ function Home() {
         )}
 
 
-        <div ref={beatsListRef} className="scroll-fade-section" style={{ marginBottom: "48px", maxWidth: "1200px", margin: "0 auto", marginTop: "60px" }}>
+        <div ref={beatsListRef} className="scroll-fade-section home-beats-list" style={{ marginBottom: "48px", maxWidth: "1200px", margin: "0 auto", marginTop: "60px" }}>
           {otherBeats.length === 0 && !highlightedBeat ? (
             <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "8px" }}>
               {Array(4).fill(null).map((_, index) => (
@@ -1111,14 +1130,14 @@ function Home() {
             </div>
           ) : (
             <>
-              <div style={{ display: "flex", alignItems: "center", padding: "16px 16px 8px 16px", gap: "16px", marginTop: "16px", position: "relative" }}>
+              <div className="home-beat-list-header" style={{ display: "flex", alignItems: "center", padding: "16px 16px 8px 16px", gap: "16px", marginTop: "16px", position: "relative" }}>
                 {/* matches the mobile-hide heart button wrapper in each row */}
                 <div className="mobile-hide" style={{ width: "28px", flexShrink: 0, marginRight: "-4px" }} />
                 {/* matches artwork image */}
                 <div style={{ width: "48px", flexShrink: 0 }} />
                 {/* NÁZEV — matches title column */}
                 <div className="home-beat-header-title" style={{ width: "240px", minWidth: "240px", maxWidth: "240px", flexShrink: 0, marginRight: "12px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666" }}>NÁZEV</div>
-                <div style={{ position: "absolute", bottom: 0, left: "80px", right: "16px", height: "1px", background: "#333" }} />
+                <div className="home-beat-header-separator" style={{ position: "absolute", bottom: 0, left: "80px", right: "16px", height: "1px", background: "#333" }} />
                 {/* BPM — matches beat bpm column */}
                 <div className="desktop-only" style={{ width: "100px", flexShrink: 0 }}><button onClick={() => { setSortBy(sortBy === "bpm" ? "bpm" : "bpm"); setSortAsc(sortBy === "bpm" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0, textAlign: "left", width: "100%" }}>BPM {sortBy === "bpm" && (sortAsc ? "↑" : "↓")}</button></div>
                 {/* KEY — matches beat key column */}
@@ -1129,6 +1148,7 @@ function Home() {
               {(sortBy && sortBy === "bpm" ? [...otherBeats].sort((a, b) => sortAsc ? a.bpm - b.bpm : b.bpm - a.bpm) : sortBy && sortBy === "key" ? [...otherBeats].sort((a, b) => sortAsc ? a.key.localeCompare(b.key) : b.key.localeCompare(a.key)) : otherBeats).map((beat) => (
             <div
               key={beat.id}
+              className="home-beat-row"
               onClick={() => playBeat(beat)}
               style={{
                 display: "flex",
@@ -1165,7 +1185,7 @@ function Home() {
                 if (separator) separator.style.opacity = "1";
               }}
             >
-              <div data-separator style={{ position: "absolute", bottom: 0, left: "144px", right: "16px", height: "1px", background: "#333", opacity: 1, transition: "opacity 0.15s ease" }} />
+              <div data-separator className="home-beat-row-separator" style={{ position: "absolute", bottom: 0, left: "144px", right: "16px", height: "1px", background: "#333", opacity: 1, transition: "opacity 0.15s ease" }} />
               <div className="mobile-hide" style={{ position: "relative", display: "flex", alignItems: "center", gap: "16px", marginRight: "-4px" }}>
                 <button
                   onClick={(e) => {
@@ -1209,7 +1229,7 @@ function Home() {
                   </svg>
                 </button>
               </div>
-              <div style={{ flexShrink: 0 }}>
+              <div className="home-beat-artwork" style={{ flexShrink: 0 }}>
                 <img
                   src={beat.artwork_url || "/uploads/artwork/metallic-logo.png"}
                   alt={beat.title}
@@ -1271,7 +1291,7 @@ function Home() {
                 </div>
               )}
 
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginLeft: "auto", marginRight: "16px" }}>
+              <div className="home-beat-row-actions" style={{ display: "flex", alignItems: "center", gap: "8px", marginLeft: "auto", marginRight: "16px" }}>
                 <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "4px" }}>
                   <button
                     onClick={(e) => {

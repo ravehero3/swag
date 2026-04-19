@@ -655,18 +655,28 @@ function Beaty() {
         }
 
         @media (max-width: 768px) {
-          .beat-row { gap: 8px !important; padding: 6px 8px !important; }
+          .beaty-hero-video { min-height: 320px !important; margin-bottom: 24px !important; }
+          .beat-list { margin-top: 32px !important; margin-bottom: 36px !important; }
+          .beat-list-header { padding: 8px 8px 6px 8px !important; gap: 10px !important; margin-top: 0 !important; }
+          .beat-header-separator { left: 64px !important; right: 8px !important; }
+          .beat-row { min-height: 64px !important; gap: 10px !important; padding: 8px !important; align-items: center !important; }
+          .beat-row-separator { left: 64px !important; right: 8px !important; }
+          .beat-artwork img { width: 44px !important; height: 44px !important; }
           .beat-title-col {
             width: auto !important;
             min-width: 0 !important;
             max-width: none !important;
-            flex: 1 !important;
+            flex: 1 1 auto !important;
             margin-right: 0 !important;
+            gap: 3px !important;
           }
-          .beat-title-col-text { font-size: 14px !important; }
-          .beat-row-actions { margin-right: 4px !important; gap: 4px !important; }
-          .beat-buy-btn { min-width: 70px !important; padding: 8px 4px 8px 8px !important; margin-left: 0 !important; }
-          .beat-buy-price { padding-right: 4px !important; }
+          .beat-title-col-text { font-size: 16px !important; line-height: 1.16 !important; }
+          .beat-row-actions { margin-left: 4px !important; margin-right: 0 !important; gap: 6px !important; flex-shrink: 0 !important; }
+          .beat-download-btn, .beat-share-btn { display: none !important; }
+          .beat-row-actions .mobile-only { width: 32px !important; height: 32px !important; padding: 6px !important; flex-shrink: 0 !important; }
+          .beat-buy-btn { min-width: 78px !important; height: 34px !important; padding: 8px !important; margin-left: 0 !important; justify-content: center !important; font-size: 11px !important; }
+          .beat-buy-btn > div { display: none !important; }
+          .beat-buy-price { margin-left: 0 !important; padding-right: 0 !important; white-space: nowrap !important; }
 
           .featured-beat-inner {
             flex-direction: column !important;
@@ -723,7 +733,7 @@ function Beaty() {
         }}
       />
 
-      <div style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative", background: "#000", minHeight: "600px" }}>
+      <div className="beaty-hero-video" style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative", background: "#000", minHeight: "600px" }}>
         <video
           key={settings?.beaty_video}
           src={settings?.beaty_video || "/uploads/beaty-video.mov"}
@@ -1202,7 +1212,7 @@ function Beaty() {
           </div>
         )}
 
-        <div ref={beatsListRef} className="scroll-fade-section" style={{ marginBottom: "48px", maxWidth: "1200px", margin: "0 auto", marginTop: "60px" }}>
+        <div ref={beatsListRef} className="scroll-fade-section beat-list" style={{ marginBottom: "48px", maxWidth: "1200px", margin: "0 auto", marginTop: "60px" }}>
           {otherBeats.length === 0 && !displayedHighlight ? (
             <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "8px" }}>
               {Array(4).fill(null).map((_, index) => (
@@ -1229,14 +1239,14 @@ function Beaty() {
             </div>
           ) : (
             <>
-              <div style={{ display: "flex", alignItems: "center", padding: "16px 16px 8px 16px", gap: "16px", marginTop: "16px", position: "relative" }}>
+              <div className="beat-list-header" style={{ display: "flex", alignItems: "center", padding: "16px 16px 8px 16px", gap: "16px", marginTop: "16px", position: "relative" }}>
                 {/* matches the mobile-hide heart button wrapper in each row */}
                 <div className="mobile-hide" style={{ width: "28px", flexShrink: 0, marginRight: "-4px" }} />
                 {/* matches artwork image */}
                 <div style={{ width: "48px", flexShrink: 0 }} />
                 {/* NÁZEV — matches title column */}
                 <div className="beat-title-col" style={{ width: "240px", minWidth: "240px", maxWidth: "240px", flexShrink: 0, marginRight: "12px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666" }}>NÁZEV</div>
-                <div style={{ position: "absolute", bottom: 0, left: "80px", right: "16px", height: "1px", background: "#333" }} />
+                <div className="beat-header-separator" style={{ position: "absolute", bottom: 0, left: "80px", right: "16px", height: "1px", background: "#333" }} />
                 {/* BPM — matches beat bpm column */}
                 <div className="desktop-only" style={{ width: "100px", flexShrink: 0 }}><button onClick={() => { setSortBy("bpm"); setSortAsc(sortBy === "bpm" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0, textAlign: "left", width: "100%" }}>BPM {sortBy === "bpm" && (sortAsc ? "↑" : "↓")}</button></div>
                 {/* KEY — matches beat key column */}
@@ -1282,7 +1292,7 @@ function Beaty() {
                 if (separator) separator.style.opacity = "1";
               }}
             >
-              <div data-separator style={{ position: "absolute", bottom: 0, left: "80px", right: "16px", height: "1px", background: "#333", opacity: 1, transition: "opacity 0.15s ease" }} />
+              <div data-separator className="beat-row-separator" style={{ position: "absolute", bottom: 0, left: "80px", right: "16px", height: "1px", background: "#333", opacity: 1, transition: "opacity 0.15s ease" }} />
               <div className="mobile-hide" style={{ position: "relative", display: "flex", alignItems: "center", gap: "6px", marginRight: "-4px" }}>
                 <button
                   onClick={(e) => {
@@ -1335,7 +1345,7 @@ function Beaty() {
                 <span style={{ fontSize: "10px", color: "transparent", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", minWidth: "20px", letterSpacing: "0.02em" }}>0</span>
               )}
               </div>
-              <div style={{ flexShrink: 0 }}>
+              <div className="beat-artwork" style={{ flexShrink: 0 }}>
                 <img
                   src={beat.artwork_url || "/uploads/artwork/metallic-logo.png"}
                   alt={beat.title}
@@ -1422,6 +1432,7 @@ function Beaty() {
                       e.stopPropagation();
                       downloadPreview(beat);
                     }}
+                    className="beat-download-btn"
                     style={{
                       background: "#111111",
                       border: "1px solid #333",
@@ -1525,6 +1536,7 @@ function Beaty() {
                   onClick={(e) => {
                     e.stopPropagation();
                   }}
+                  className="beat-share-btn"
                   style={{
                     background: "#111111",
                     border: "1px solid #333",
