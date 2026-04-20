@@ -641,7 +641,7 @@ function Home() {
         <video
           ref={videoRef}
           key={settings?.home_video}
-          src={settings?.home_video || "/uploads/voodoo808-video.mov"}
+          src={settings?.home_video || "/voodoo808-video.mov"}
           autoPlay
           loop
           muted
@@ -667,7 +667,7 @@ function Home() {
       {/* Mobile-only video — shown only on screens ≤768px */}
       <div className="mobile-only-video-section" style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginBottom: "24px", overflow: "hidden", position: "relative", background: "#000" }}>
         <video
-          src="/uploads/mobile-home-video.mov"
+          src="/mobile-home-video.mov"
           autoPlay
           loop
           muted

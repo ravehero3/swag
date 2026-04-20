@@ -2839,6 +2839,7 @@ function SEOTab({ settings, onRefresh }: any) {
   const [values, setValues] = useState<Record<string, string>>({
     home_video: settings.home_video || "",
     beaty_video: settings.beaty_video || "",
+    zvuky_video: settings.zvuky_video || "",
     seo_site_name: settings.seo_site_name || "VOODOO808",
     seo_og_image: settings.seo_og_image || "",
     seo_home_title: settings.seo_home_title || "",
@@ -2861,6 +2862,7 @@ function SEOTab({ settings, onRefresh }: any) {
   const [b2VideoPickerFor, setB2VideoPickerFor] = useState<string | null>(null);
   const homeVideoInputRef = useRef<HTMLInputElement>(null);
   const beatyVideoInputRef = useRef<HTMLInputElement>(null);
+  const zvukyVideoInputRef = useRef<HTMLInputElement>(null);
 
   const uploadVideo = async (file: File, field: string) => {
     setVideoUploading(prev => ({ ...prev, [field]: true }));
@@ -2997,13 +2999,14 @@ function SEOTab({ settings, onRefresh }: any) {
         <div style={{ fontSize: "12px", color: "#888", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "14px", borderBottom: "1px solid #1a1a1a", paddingBottom: "10px" }}>
           Videa
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "14px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px", marginBottom: "14px" }}>
           <VideoField field="home_video" label="Video – Domovská stránka" hint="Přehrává se na pozadí úvodní stránky" inputRef={homeVideoInputRef} />
           <VideoField field="beaty_video" label="Video – Beaty stránka" hint="Přehrává se na pozadí stránky s beaty" inputRef={beatyVideoInputRef} />
+          <VideoField field="zvuky_video" label="Video – Přihlásit se / Zvuky" hint="Přehrává se na pozadí přihlašovacích stránek" inputRef={zvukyVideoInputRef} />
         </div>
         <button
           className="btn btn-filled"
-          onClick={() => saveKeys("videos", ["home_video", "beaty_video"])}
+          onClick={() => saveKeys("videos", ["home_video", "beaty_video", "zvuky_video"])}
           disabled={saving["videos"]}
           style={{ opacity: saving["videos"] ? 0.6 : 1 }}
           data-testid="button-save-videos"

@@ -190,6 +190,7 @@ export async function initDatabase() {
         ('header_logo', '/uploads/artwork/voodoo808-logo.png'),
         ('beaty_video_main', '/uploads/artwork/voodoo808-video.mp4'),
         ('beaty_video_alt', '/uploads/hrad-na-web.mov'),
+        ('zvuky_video', '/hrad-na-web.mov'),
         ('seo_site_name', 'VOODOO808'),
         ('seo_og_image', ''),
         ('seo_home_title', 'VOODOO808 – Beaty a Zvuky pro Hudební Producenty'),

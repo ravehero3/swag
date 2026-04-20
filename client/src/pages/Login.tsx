@@ -116,7 +116,7 @@ function Login() {
       <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 0, pointerEvents: "none", overflow: "hidden" }}>
         <video
           key={settings?.zvuky_video}
-          src={settings?.zvuky_video || "/uploads/hrad-na-web.mov"}
+          src={settings?.zvuky_video || "/hrad-na-web.mov"}
           autoPlay
           muted
           loop
