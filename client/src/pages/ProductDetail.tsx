@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useRoute, useLocation } from "wouter";
 import { useApp } from "../App.js";
 import ShareModal from "../components/ShareModal.js";
+import MiniWavePlayer from "../components/MiniWavePlayer.js";
 
 interface ProductData {
   id: number;
@@ -124,7 +125,7 @@ function ProductDetail() {
         .pd-artwork img {
           width: 100%;
           height: 100%;
-          object-fit: cover;
+          object-fit: contain;
           object-position: center;
           border-radius: 4px;
           display: block;
@@ -134,7 +135,7 @@ function ProductDetail() {
           width: min(100%, calc(100vh - 138px));
           max-width: 620px;
           aspect-ratio: 1 / 1;
-          background: #050505;
+          background: #000;
           overflow: hidden;
           border-radius: 4px;
         }
@@ -171,7 +172,7 @@ function ProductDetail() {
             height: 100%;
             max-width: 100%;
             max-height: 100%;
-            object-fit: cover;
+            object-fit: contain;
             border-radius: 0;
           }
           .pd-artwork-frame {
@@ -281,47 +282,71 @@ function ProductDetail() {
             >
               {previews.length > 1 ? "Ukázky" : "Ukázka"}
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-              {previews.map((url, idx) => {
-                const productType = params?.type === "beat" ? "beat" : "sound_kit";
-                const isCurrent =
-                  previewPlayer.currentItem?.id === product.id &&
-                  previewPlayer.currentItem?.product_type === productType &&
-                  previewPlayer.currentItem?.preview_url === url;
-                return (
-                  <button
-                    key={url}
-                    onClick={() => playProductPreview(url)}
-                    className="voodoo-play-surface"
-                    style={{
-                      width: "100%",
-                      padding: "14px 16px",
-                      background: isCurrent && previewPlayer.isPlaying ? "#fff" : "#0d0d0d",
-                      color: isCurrent && previewPlayer.isPlaying ? "#000" : "#fff",
-                      border: "1px solid #333",
-                      borderRadius: "4px",
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      fontSize: "12px",
-                      letterSpacing: "0.08em",
-                      textTransform: "uppercase",
-                      position: "relative",
-                    }}
-                    data-testid={`button-play-preview-${idx}`}
-                  >
-                    <span>{previews.length > 1 ? `Přehrát ukázku ${idx + 1}` : "Přehrát ukázku"}</span>
-                    <span style={{ position: "relative", width: "36px", height: "36px", flexShrink: 0, display: "block" }}>
-                      <span className={`voodoo-play-ring is-visible`} style={{ "--voodoo-play-size": "36px" } as any} />
-                      <span className={`voodoo-play-button is-visible${isCurrent && previewPlayer.isPlaying ? " is-playing" : ""}`} style={{ "--voodoo-play-size": "36px", "--voodoo-play-font-size": "13px", paddingLeft: isCurrent && previewPlayer.isPlaying ? 0 : "2px" } as any}>
-                        {isCurrent && previewPlayer.isPlaying ? "⏸" : "▶"}
+            {params?.type === "beat" ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                {previews.map((url, idx) => {
+                  const productType = "beat";
+                  const isCurrent =
+                    previewPlayer.currentItem?.id === product.id &&
+                    previewPlayer.currentItem?.product_type === productType &&
+                    previewPlayer.currentItem?.preview_url === url;
+                  return (
+                    <button
+                      key={url}
+                      onClick={() => playProductPreview(url)}
+                      className="voodoo-play-surface"
+                      style={{
+                        width: "100%",
+                        padding: "14px 16px",
+                        background: isCurrent && previewPlayer.isPlaying ? "#fff" : "#0d0d0d",
+                        color: isCurrent && previewPlayer.isPlaying ? "#000" : "#fff",
+                        border: "1px solid #333",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        fontSize: "12px",
+                        letterSpacing: "0.08em",
+                        textTransform: "uppercase",
+                        position: "relative",
+                      }}
+                      data-testid={`button-play-preview-${idx}`}
+                    >
+                      <span>{previews.length > 1 ? `Přehrát ukázku ${idx + 1}` : "Přehrát ukázku"}</span>
+                      <span style={{ position: "relative", width: "36px", height: "36px", flexShrink: 0, display: "block" }}>
+                        <span className={`voodoo-play-ring is-visible`} style={{ "--voodoo-play-size": "36px" } as any} />
+                        <span className={`voodoo-play-button is-visible${isCurrent && previewPlayer.isPlaying ? " is-playing" : ""}`} style={{ "--voodoo-play-size": "36px", "--voodoo-play-font-size": "13px", paddingLeft: isCurrent && previewPlayer.isPlaying ? 0 : "2px" } as any}>
+                          {isCurrent && previewPlayer.isPlaying ? "⏸" : "▶"}
+                        </span>
                       </span>
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+                {previews.map((url, idx) => (
+                  <div
+                    key={url}
+                    style={{
+                      padding: "14px 16px 12px 16px",
+                      background: "#0d0d0d",
+                      border: "1px solid #222",
+                      borderRadius: "4px",
+                    }}
+                    data-testid={`waveform-preview-${idx}`}
+                  >
+                    {previews.length > 1 && (
+                      <div style={{ fontSize: "10px", color: "#555", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "10px" }}>
+                        Ukázka {idx + 1}
+                      </div>
+                    )}
+                    <MiniWavePlayer url={url} />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 

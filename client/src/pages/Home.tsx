@@ -621,13 +621,15 @@ function Home() {
           .home-beat-row-separator { left: 64px !important; right: 8px !important; }
           .home-beat-artwork img { width: 44px !important; height: 44px !important; }
           .home-beat-title-col { width: auto !important; flex: 1 1 auto !important; min-width: 0 !important; max-width: none !important; margin-right: 0 !important; gap: 3px !important; overflow: hidden !important; }
-          .home-beat-title-col > div:first-child { font-size: 16px !important; line-height: 1.16 !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; max-width: 100% !important; }
-          .home-beat-row-actions { margin-left: 4px !important; margin-right: 0 !important; gap: 6px !important; flex-shrink: 0 !important; }
-          .home-beat-dl-btn, .home-beat-share-btn { display: none !important; }
-          .home-beat-row-actions .mobile-only { width: 32px !important; height: 32px !important; padding: 6px !important; flex-shrink: 0 !important; }
-          .home-beat-buy-btn { min-width: 78px !important; height: 34px !important; padding: 8px !important; margin-left: 0 !important; justify-content: center !important; font-size: 11px !important; }
-          .home-beat-buy-btn > div { display: none !important; }
-          .home-beat-buy-btn > span { margin-left: 0 !important; padding-right: 0 !important; white-space: nowrap !important; }
+          .home-beat-title-col > div:first-child { font-size: 13px !important; line-height: 1.2 !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; max-width: 100% !important; }
+          .home-beat-row-actions { margin-left: 4px !important; margin-right: 0 !important; gap: 4px !important; flex-shrink: 0 !important; }
+          .home-beat-dl-btn, .home-beat-share-btn { display: flex !important; }
+          .home-beat-row-actions .mobile-only { width: 30px !important; height: 30px !important; padding: 5px !important; flex-shrink: 0 !important; }
+          .home-beat-buy-btn { min-width: 0 !important; width: 32px !important; height: 32px !important; padding: 0 !important; margin-left: 0 !important; justify-content: center !important; font-size: 11px !important; overflow: hidden !important; }
+          .home-beat-buy-btn > div { display: flex !important; margin-left: 0 !important; }
+          .home-beat-buy-btn > div svg { margin-left: 0 !important; }
+          .home-beat-buy-btn > div > span { display: none !important; }
+          .home-beat-buy-btn > span { display: none !important; }
           .home-beat-header-title { width: auto !important; flex: 1 !important; }
         }
         @media (min-width: 769px) {
