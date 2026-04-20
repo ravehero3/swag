@@ -73,6 +73,27 @@ function Header() {
       </Link>
 
       <div style={{ display: "flex", alignItems: "center", gap: "12px", position: "relative", zIndex: 10, paddingRight: "12px" }}>
+        {user?.isAdmin && (
+          <Link href="/admin?tab=orders" className="header-link">
+            <span
+              style={{
+                fontSize: "12px",
+                fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+                fontWeight: 700,
+                color: "#24e053",
+                transition: "transform 0.2s ease",
+                transform: hoveredIcon === "admin" ? "scale(1.02)" : "scale(1)",
+                display: "inline-block",
+                padding: "8px 0",
+              }}
+              onMouseEnter={() => setHoveredIcon("admin")}
+              onMouseLeave={() => setHoveredIcon(null)}
+            >
+              SPRÁVCE ESHOPU
+            </span>
+          </Link>
+        )}
+
         <Link href={user ? "/ucet" : "/prihlasit-se"} className="header-link">
           <div
             style={{
@@ -100,27 +121,6 @@ function Header() {
             </svg>
           </div>
         </Link>
-
-        {user?.isAdmin && (
-          <Link href="/admin?tab=orders" className="header-link">
-            <span
-              style={{
-                fontSize: "12px",
-                fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
-                fontWeight: 700,
-                color: "#24e053",
-                transition: "transform 0.2s ease",
-                transform: hoveredIcon === "admin" ? "scale(1.02)" : "scale(1)",
-                display: "inline-block",
-                padding: "8px 0",
-              }}
-              onMouseEnter={() => setHoveredIcon("admin")}
-              onMouseLeave={() => setHoveredIcon(null)}
-            >
-              SPRÁVCE ESHOPU
-            </span>
-          </Link>
-        )}
 
         <div className="heart-btn header-link" style={{ position: "relative", display: "flex", alignItems: "center" }}>
           <Link href="/ulozeno">
