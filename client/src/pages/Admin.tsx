@@ -237,6 +237,21 @@ interface Beat {
   waveform_data?: number[] | null;
 }
 
+interface StagedBeat {
+  localId: string;
+  file: File;
+  status: "pending" | "uploading" | "done" | "error";
+  progress: number;
+  previewUrl: string;
+  errorMsg: string;
+  title: string;
+  artist: string;
+  bpm: string;
+  key: string;
+  price: string;
+  isPublished: boolean;
+}
+
 interface SoundKit {
   id: number;
   title: string;
@@ -651,6 +666,97 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   const [expandedWaveformBeat, setExpandedWaveformBeat] = useState<Beat | null>(null);
   const [ffmpegHealth, setFfmpegHealth] = useState<{ ok: boolean; version: string; source: string; durationMs: number } | null | "loading">("loading");
   const previewAudioRef = useRef<HTMLAudioElement | null>(null);
+  const [stagedBeats, setStagedBeats] = useState<StagedBeat[]>([]);
+  const [showBulkZone, setShowBulkZone] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [bulkCreating, setBulkCreating] = useState(false);
+  const bulkFileInputRef = useRef<HTMLInputElement>(null);
+
+  const fileToTitle = (file: File) =>
+    file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ").trim();
+
+  const uploadStagedBeat = async (localId: string, file: File) => {
+    setStagedBeats(prev => prev.map(b => b.localId === localId ? { ...b, status: "uploading", progress: 0 } : b));
+    try {
+      const ext = file.name.split(".").pop() || "mp3";
+      const contentType = file.type || "audio/mpeg";
+      const presignRes = await fetch(
+        `/api/upload/presign?type=preview&ext=${encodeURIComponent(ext)}&contentType=${encodeURIComponent(contentType)}`,
+        { credentials: "include" }
+      );
+      if (!presignRes.ok) throw new Error("Presign failed");
+      const { presignedUrl, publicUrl } = await presignRes.json();
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", presignedUrl, true);
+        xhr.setRequestHeader("Content-Type", contentType);
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) {
+            const pct = Math.round((e.loaded / e.total) * 100);
+            setStagedBeats(prev => prev.map(b => b.localId === localId ? { ...b, progress: pct } : b));
+          }
+        };
+        xhr.onload = () => xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error(`Upload failed: ${xhr.status}`));
+        xhr.onerror = () => reject(new Error("Network error"));
+        xhr.send(file);
+      });
+      setStagedBeats(prev => prev.map(b => b.localId === localId ? { ...b, status: "done", progress: 100, previewUrl: publicUrl } : b));
+    } catch (err) {
+      setStagedBeats(prev => prev.map(b => b.localId === localId ? { ...b, status: "error", errorMsg: String(err) } : b));
+    }
+  };
+
+  const handleBulkFiles = (files: FileList | File[]) => {
+    const audioFiles = Array.from(files).filter(f => f.type.startsWith("audio/") || /\.(mp3|wav|aiff|flac|ogg|m4a)$/i.test(f.name));
+    if (audioFiles.length === 0) return;
+    const newStaged: StagedBeat[] = audioFiles.map(file => ({
+      localId: Math.random().toString(36).slice(2),
+      file,
+      status: "pending" as const,
+      progress: 0,
+      previewUrl: "",
+      errorMsg: "",
+      title: fileToTitle(file),
+      artist: "VOODOO808",
+      bpm: "140",
+      key: "C",
+      price: "5000",
+      isPublished: false,
+    }));
+    setStagedBeats(prev => [...prev, ...newStaged]);
+    newStaged.forEach(b => uploadStagedBeat(b.localId, b.file));
+  };
+
+  const handleBulkCreate = async () => {
+    const ready = stagedBeats.filter(b => b.status === "done");
+    if (ready.length === 0) return;
+    setBulkCreating(true);
+    try {
+      const payload = ready.map(b => ({
+        title: b.title || b.file.name,
+        artist: b.artist,
+        bpm: b.bpm ? parseInt(b.bpm) : null,
+        key: b.key || null,
+        price: b.price ? parseFloat(b.price) : 0,
+        previewUrl: b.previewUrl,
+        isPublished: b.isPublished,
+        tags: [],
+      }));
+      const res = await fetch("/api/beats/bulk-create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error("Create failed");
+      setStagedBeats(prev => prev.filter(b => b.status !== "done"));
+      onRefresh();
+    } catch (err) {
+      alert("Chyba při vytváření beatů: " + String(err));
+    } finally {
+      setBulkCreating(false);
+    }
+  };
 
   const checkFfmpegHealth = async () => {
     setFfmpegHealth("loading");
@@ -983,9 +1089,160 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
 
   return (
     <div>
-      <button className="btn btn-admin" onClick={() => { setShowForm(!showForm); setEditing(null); }} style={{ marginBottom: "16px" }}>
-        {showForm ? "Zrušit" : "Přidat beat"}
-      </button>
+      <div style={{ display: "flex", gap: "10px", marginBottom: "16px", flexWrap: "wrap" }}>
+        <button className="btn btn-admin" onClick={() => { setShowForm(!showForm); setEditing(null); }}>
+          {showForm ? "Zrušit" : "Přidat beat"}
+        </button>
+        <button className="btn btn-admin" onClick={() => setShowBulkZone(v => !v)} style={{ borderColor: "#0B99FC", color: "#0B99FC" }}>
+          {showBulkZone ? "Zavřít hromadný upload" : "⬆ Hromadný upload"}
+        </button>
+      </div>
+
+      {showBulkZone && (
+        <div style={{ marginBottom: "24px" }}>
+          <div
+            onDragOver={e => { e.preventDefault(); setIsDragOver(true); }}
+            onDragLeave={() => setIsDragOver(false)}
+            onDrop={e => { e.preventDefault(); setIsDragOver(false); handleBulkFiles(e.dataTransfer.files); }}
+            onClick={() => bulkFileInputRef.current?.click()}
+            style={{
+              border: `2px dashed ${isDragOver ? "#0B99FC" : "#333"}`,
+              borderRadius: "6px",
+              padding: "36px 24px",
+              textAlign: "center",
+              cursor: "pointer",
+              background: isDragOver ? "rgba(11,153,252,0.06)" : "#111",
+              transition: "all 0.15s ease",
+              marginBottom: stagedBeats.length > 0 ? "16px" : "0",
+            }}
+          >
+            <div style={{ fontSize: "32px", marginBottom: "8px" }}>🎵</div>
+            <div style={{ color: "#aaa", fontSize: "14px" }}>Přetáhněte audio soubory sem nebo klikněte pro výběr</div>
+            <div style={{ color: "#555", fontSize: "12px", marginTop: "4px" }}>MP3, WAV, AIFF, FLAC — více souborů najednou</div>
+            <input
+              ref={bulkFileInputRef}
+              type="file"
+              multiple
+              accept="audio/*,.mp3,.wav,.aiff,.flac,.ogg,.m4a"
+              style={{ display: "none" }}
+              onChange={e => { if (e.target.files) handleBulkFiles(e.target.files); e.target.value = ""; }}
+            />
+          </div>
+
+          {stagedBeats.length > 0 && (
+            <div>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
+                <thead>
+                  <tr style={{ borderBottom: "1px solid #2a2a2a", color: "#666", fontSize: "11px", textTransform: "uppercase" }}>
+                    <th style={{ padding: "8px 10px", textAlign: "left", fontWeight: 500 }}>Soubor / Název</th>
+                    <th style={{ padding: "8px 10px", textAlign: "left", fontWeight: 500, width: "80px" }}>BPM</th>
+                    <th style={{ padding: "8px 10px", textAlign: "left", fontWeight: 500, width: "70px" }}>Tónina</th>
+                    <th style={{ padding: "8px 10px", textAlign: "left", fontWeight: 500, width: "90px" }}>Cena (CZK)</th>
+                    <th style={{ padding: "8px 10px", textAlign: "center", fontWeight: 500, width: "80px" }}>Publik.</th>
+                    <th style={{ padding: "8px 10px", width: "30px" }}></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {stagedBeats.map(b => (
+                    <tr key={b.localId} style={{ borderBottom: "1px solid #1a1a1a" }}>
+                      <td style={{ padding: "8px 10px" }}>
+                        {b.status === "uploading" || b.status === "pending" ? (
+                          <div>
+                            <div style={{ color: "#888", fontSize: "12px", marginBottom: "4px" }}>{b.file.name}</div>
+                            <div style={{ height: "4px", background: "#222", borderRadius: "2px", overflow: "hidden" }}>
+                              <div style={{ height: "100%", width: `${b.progress}%`, background: "linear-gradient(90deg,#0B99FC,#4cc3ff)", transition: "width 200ms" }} />
+                            </div>
+                            <div style={{ fontSize: "11px", color: "#555", marginTop: "2px" }}>{b.progress}%</div>
+                          </div>
+                        ) : b.status === "error" ? (
+                          <div>
+                            <div style={{ color: "#ff4444", fontSize: "12px" }}>{b.file.name}</div>
+                            <div style={{ color: "#ff4444", fontSize: "11px" }}>{b.errorMsg}</div>
+                          </div>
+                        ) : (
+                          <input
+                            value={b.title}
+                            onChange={e => setStagedBeats(prev => prev.map(x => x.localId === b.localId ? { ...x, title: e.target.value } : x))}
+                            style={{ width: "100%", background: "#1a1a1a", border: "1px solid #2a2a2a", color: "#fff", padding: "6px 8px", borderRadius: "3px", fontSize: "13px" }}
+                            placeholder="Název beatu"
+                          />
+                        )}
+                      </td>
+                      <td style={{ padding: "8px 10px" }}>
+                        <input
+                          value={b.bpm}
+                          onChange={e => setStagedBeats(prev => prev.map(x => x.localId === b.localId ? { ...x, bpm: e.target.value } : x))}
+                          style={{ width: "100%", background: "#1a1a1a", border: "1px solid #2a2a2a", color: "#fff", padding: "6px 8px", borderRadius: "3px", fontSize: "13px" }}
+                          placeholder="BPM"
+                          type="number"
+                          disabled={b.status !== "done"}
+                        />
+                      </td>
+                      <td style={{ padding: "8px 10px" }}>
+                        <input
+                          value={b.key}
+                          onChange={e => setStagedBeats(prev => prev.map(x => x.localId === b.localId ? { ...x, key: e.target.value } : x))}
+                          style={{ width: "100%", background: "#1a1a1a", border: "1px solid #2a2a2a", color: "#fff", padding: "6px 8px", borderRadius: "3px", fontSize: "13px" }}
+                          placeholder="Tónina"
+                          disabled={b.status !== "done"}
+                        />
+                      </td>
+                      <td style={{ padding: "8px 10px" }}>
+                        <input
+                          value={b.price}
+                          onChange={e => setStagedBeats(prev => prev.map(x => x.localId === b.localId ? { ...x, price: e.target.value } : x))}
+                          style={{ width: "100%", background: "#1a1a1a", border: "1px solid #2a2a2a", color: "#fff", padding: "6px 8px", borderRadius: "3px", fontSize: "13px" }}
+                          placeholder="Cena"
+                          type="number"
+                          disabled={b.status !== "done"}
+                        />
+                      </td>
+                      <td style={{ padding: "8px 10px", textAlign: "center" }}>
+                        <input
+                          type="checkbox"
+                          checked={b.isPublished}
+                          onChange={e => setStagedBeats(prev => prev.map(x => x.localId === b.localId ? { ...x, isPublished: e.target.checked } : x))}
+                          disabled={b.status !== "done"}
+                        />
+                      </td>
+                      <td style={{ padding: "8px 10px" }}>
+                        <button
+                          onClick={() => setStagedBeats(prev => prev.filter(x => x.localId !== b.localId))}
+                          style={{ background: "none", border: "none", color: "#555", cursor: "pointer", fontSize: "16px", lineHeight: 1 }}
+                          title="Odebrat"
+                        >×</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              <div style={{ marginTop: "14px", display: "flex", alignItems: "center", gap: "16px" }}>
+                <button
+                  className="btn btn-filled"
+                  onClick={handleBulkCreate}
+                  disabled={bulkCreating || stagedBeats.filter(b => b.status === "done").length === 0}
+                  style={{ opacity: bulkCreating || stagedBeats.filter(b => b.status === "done").length === 0 ? 0.5 : 1 }}
+                >
+                  {bulkCreating ? "Vytváří se..." : `Vytvořit ${stagedBeats.filter(b => b.status === "done").length} beatů`}
+                </button>
+                <button
+                  className="btn btn-admin"
+                  onClick={() => setStagedBeats([])}
+                  style={{ color: "#666", borderColor: "#333" }}
+                >
+                  Vymazat vše
+                </button>
+                {stagedBeats.some(b => b.status === "uploading" || b.status === "pending") && (
+                  <span style={{ color: "#888", fontSize: "12px" }}>
+                    Nahrávám {stagedBeats.filter(b => b.status === "uploading" || b.status === "pending").length} souborů…
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {showForm && (
         <form onSubmit={handleSubmit} style={{ marginBottom: "24px", padding: "16px", border: "1px solid #333", borderRadius: "3px" }}>

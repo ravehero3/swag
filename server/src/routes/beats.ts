@@ -256,6 +256,34 @@ router.post("/:id/waveform", requireAdmin, async (req: Request, res: Response) =
   }
 });
 
+router.post("/bulk-create", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const beats = req.body;
+    if (!Array.isArray(beats) || beats.length === 0) {
+      return res.status(400).json({ error: "Žádné beaty k vytvoření" });
+    }
+    const results = [];
+    for (const b of beats) {
+      const { title, artist, bpm, key, price, previewUrl, fileUrl, artworkUrl, tags, isPublished } = b;
+      const beatTags = Array.isArray(tags) ? tags.slice(0, 3) : [];
+      const result = await pool.query(
+        `INSERT INTO beats (title, artist, bpm, key, price, preview_url, file_url, artwork_url, tags, is_published, is_highlighted)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, false) RETURNING *`,
+        [title, artist || "VOODOO808", bpm || null, key || null, price || 0, previewUrl || null, fileUrl || null, artworkUrl || null, beatTags, isPublished ?? false]
+      );
+      const beat = result.rows[0];
+      results.push(beat);
+      if (beat.id && previewUrl) {
+        triggerWaveformComputation(beat.id, previewUrl).catch(() => {});
+      }
+    }
+    res.json(results);
+  } catch (error) {
+    console.error("Error bulk creating beats:", error);
+    res.status(500).json({ error: "Chyba při hromadném vytváření beatů" });
+  }
+});
+
 router.post("/bulk-delete", requireAdmin, async (req: Request, res: Response) => {
   try {
     const { ids } = req.body;
