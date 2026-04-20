@@ -248,6 +248,7 @@ interface SoundKit {
   tags: string[];
   preview_url: string;
   preview_urls: string[];
+  preview_labels: string[];
   file_url: string;
   artwork_url: string;
   legal_info: string;
@@ -1463,6 +1464,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
     tags: [] as string[],
     previewUrl: "",
     previewUrls: [] as string[],
+    previewLabels: [] as string[],
     fileUrl: "",
     artworkUrl: "",
     legalInfo: "",
@@ -1524,6 +1526,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
         tags: editing.tags || [],
         previewUrl: editing.preview_url || "",
         previewUrls: editing.preview_urls || [],
+        previewLabels: editing.preview_labels || [],
         fileUrl: editing.file_url || "",
         artworkUrl: editing.artwork_url || "",
         legalInfo: editing.legal_info || "",
@@ -1542,7 +1545,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
     if (res.ok) {
       setShowForm(false);
       setEditing(null);
-      setForm({ title: "", description: "", type: "drum_kit", price: 899, priceType: "kit", isFree: false, numberOfSounds: 0, tags: [], previewUrl: "", previewUrls: [], fileUrl: "", artworkUrl: "", legalInfo: "", authorInfo: "", isPublished: true });
+      setForm({ title: "", description: "", type: "drum_kit", price: 899, priceType: "kit", isFree: false, numberOfSounds: 0, tags: [], previewUrl: "", previewUrls: [], previewLabels: [], fileUrl: "", artworkUrl: "", legalInfo: "", authorInfo: "", isPublished: true });
       onRefresh();
     } else {
       const errorData = await res.json().catch(() => ({}));
@@ -1795,9 +1798,31 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
                     </span>
                     <button
                       type="button"
-                      onClick={() => setForm(f => ({ ...f, previewUrls: f.previewUrls.filter((_, i) => i !== idx) }))}
+                      onClick={() => setForm(f => ({
+                        ...f,
+                        previewUrls: f.previewUrls.filter((_, i) => i !== idx),
+                        previewLabels: f.previewLabels.filter((_, i) => i !== idx),
+                      }))}
                       style={{ background: "none", border: "1px solid #444", color: "#888", padding: "2px 8px", cursor: "pointer", borderRadius: "3px", fontSize: "13px", flexShrink: 0 }}
                     >×</button>
+                  </div>
+                  <div style={{ marginBottom: "10px" }}>
+                    <label style={{ display: "block", fontSize: "10px", color: "#555", letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: "6px" }}>Popis ukázky</label>
+                    <select
+                      value={form.previewLabels[idx] || ""}
+                      onChange={(e) => setForm(f => {
+                        const labels = [...f.previewLabels];
+                        labels[idx] = e.target.value;
+                        return { ...f, previewLabels: labels };
+                      })}
+                      style={{ width: "100%", background: "#111", border: "1px solid #333", color: "#ccc", padding: "6px 8px", borderRadius: "3px", fontSize: "12px" }}
+                    >
+                      <option value="">— vyberte popis —</option>
+                      <option value="Melodie tohohle beatu je ze zvuků z tohohle kitu">Melodie tohohle beatu je ze zvuků z tohohle kitu</option>
+                      <option value="Drums tohohle beatu jsou ze zvuků z tohohle kitu">Drums tohohle beatu jsou ze zvuků z tohohle kitu</option>
+                      <option value="Jeden ze zvuků v tomhle kitu">Jeden ze zvuků v tomhle kitu</option>
+                      <option value="Další zvuk z kitu">Další zvuk z kitu</option>
+                    </select>
                   </div>
                   {/* Inline audio player */}
                   <audio controls src={url} style={{ width: "100%", height: "36px" }} />
@@ -1840,7 +1865,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
                   onChange={async (e) => {
                     if (e.target.files?.[0]) {
                       const url = await uploadFile(e.target.files[0], "preview");
-                      if (url) setForm(f => ({ ...f, previewUrls: [...f.previewUrls, url as string] }));
+                      if (url) setForm(f => ({ ...f, previewUrls: [...f.previewUrls, url as string], previewLabels: [...f.previewLabels, ""] }));
                     }
                   }}
                   style={{ width: "100%", opacity: uploading["preview"] ? 0.4 : 1 }}

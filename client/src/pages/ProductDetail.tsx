@@ -14,6 +14,7 @@ interface ProductData {
   artwork_url: string;
   preview_url?: string;
   preview_urls?: string[];
+  preview_labels?: string[];
   description?: string;
   number_of_sounds?: number;
   type?: string;
@@ -264,7 +265,22 @@ function ProductDetail() {
           {product.number_of_sounds ? <span>Zvuků: {product.number_of_sounds}</span> : null}
           {product.type && <span>{typeLabels[product.type] || product.type}</span>}
           {product.tags && product.tags.length > 0 && (
-            <span>{product.tags.join(", ")}</span>
+            <span
+              aria-label={`Tagy: ${product.tags.join(", ")}`}
+              style={{
+                position: "absolute",
+                width: "1px",
+                height: "1px",
+                padding: 0,
+                margin: "-1px",
+                overflow: "hidden",
+                clip: "rect(0,0,0,0)",
+                whiteSpace: "nowrap",
+                border: 0,
+              }}
+            >
+              {product.tags.join(", ")}
+            </span>
           )}
         </div>
 
@@ -316,8 +332,17 @@ function ProductDetail() {
                       <span>{previews.length > 1 ? `Přehrát ukázku ${idx + 1}` : "Přehrát ukázku"}</span>
                       <span style={{ position: "relative", width: "36px", height: "36px", flexShrink: 0, display: "block" }}>
                         <span className={`voodoo-play-ring is-visible`} style={{ "--voodoo-play-size": "36px" } as any} />
-                        <span className={`voodoo-play-button is-visible${isCurrent && previewPlayer.isPlaying ? " is-playing" : ""}`} style={{ "--voodoo-play-size": "36px", "--voodoo-play-font-size": "13px", paddingLeft: isCurrent && previewPlayer.isPlaying ? 0 : "2px" } as any}>
-                          {isCurrent && previewPlayer.isPlaying ? "⏸" : "▶"}
+                        <span className={`voodoo-play-button is-visible${isCurrent && previewPlayer.isPlaying ? " is-playing" : ""}`} style={{ "--voodoo-play-size": "36px", "--voodoo-play-font-size": "13px", paddingLeft: 0, display: "flex", alignItems: "center", justifyContent: "center" } as any}>
+                          {isCurrent && previewPlayer.isPlaying ? (
+                            <svg width="11" height="11" viewBox="0 0 10 10" fill="currentColor" style={{ display: "block" }}>
+                              <rect x="1" y="0" width="3" height="10" />
+                              <rect x="6" y="0" width="3" height="10" />
+                            </svg>
+                          ) : (
+                            <svg width="11" height="11" viewBox="0 0 10 10" fill="currentColor" style={{ display: "block", marginLeft: "1px" }}>
+                              <polygon points="1,0 10,5 1,10" />
+                            </svg>
+                          )}
                         </span>
                       </span>
                     </button>
@@ -337,12 +362,12 @@ function ProductDetail() {
                     }}
                     data-testid={`waveform-preview-${idx}`}
                   >
-                    {previews.length > 1 && (
-                      <div style={{ fontSize: "10px", color: "#555", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: "10px" }}>
-                        Ukázka {idx + 1}
+                    {(product.preview_labels?.[idx] || previews.length > 1) && (
+                      <div style={{ fontSize: "11px", color: "#555", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: "10px" }}>
+                        {product.preview_labels?.[idx] || `Ukázka ${idx + 1}`}
                       </div>
                     )}
-                    <MiniWavePlayer url={url} />
+                    <MiniWavePlayer url={url} label={product.preview_labels?.[idx] ? "" : undefined} />
                   </div>
                 ))}
               </div>

@@ -470,13 +470,20 @@ input::placeholder, textarea::placeholder {
     white-space: nowrap !important;
   }
 
-  /* Buy button: compact — bag icon only, no min-width */
+  /* Buy button: icon only, no price on mobile */
   .player-buy-btn {
     min-width: 0 !important;
-    padding: 5px 8px 5px 10px !important;
-    height: 26px !important;
-    font-size: 10px !important;
+    width: 32px !important;
+    height: 32px !important;
+    padding: 0 !important;
+    justify-content: center !important;
     flex-shrink: 0 !important;
+  }
+  .player-buy-btn > span:last-child {
+    display: none !important;
+  }
+  .player-buy-btn > div {
+    margin-left: 0 !important;
   }
 
   /* Controls: only prev, play, next — loop and shuffle already hidden */

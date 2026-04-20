@@ -93,6 +93,8 @@ export async function initDatabase() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
 
+      ALTER TABLE sound_kits ADD COLUMN IF NOT EXISTS preview_labels TEXT[] DEFAULT ARRAY[]::TEXT[];
+
       CREATE TABLE IF NOT EXISTS orders (
         id SERIAL PRIMARY KEY,
         user_id INTEGER REFERENCES users(id),

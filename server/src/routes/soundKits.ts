@@ -69,16 +69,17 @@ router.post("/", requireAdmin, async (req: Request, res: Response) => {
   try {
     const { 
       title, description, type, price, isFree, numberOfSounds, 
-      tags, previewUrl, previewUrls, fileUrl, artworkUrl, legalInfo, authorInfo, isPublished 
+      tags, previewUrl, previewUrls, previewLabels, fileUrl, artworkUrl, legalInfo, authorInfo, isPublished 
     } = req.body;
     const normalizedPreviewUrls = normalizePreviewUrls(previewUrl, previewUrls);
     
     const result = await pool.query(
       `INSERT INTO sound_kits (title, description, type, price, is_free, number_of_sounds, 
-       tags, preview_url, preview_urls, file_url, artwork_url, legal_info, author_info, is_published)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *`,
+       tags, preview_url, preview_urls, preview_labels, file_url, artwork_url, legal_info, author_info, is_published)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *`,
       [title, description, type, price || 0, isFree || false, numberOfSounds || 0, 
-       tags || [], normalizedPreviewUrls[0] || null, normalizedPreviewUrls, fileUrl, artworkUrl, legalInfo, authorInfo, isPublished || false]
+       tags || [], normalizedPreviewUrls[0] || null, normalizedPreviewUrls, previewLabels || [],
+       fileUrl, artworkUrl, legalInfo, authorInfo, isPublished || false]
     );
     res.json(result.rows[0]);
   } catch (error) {
@@ -91,17 +92,17 @@ router.put("/:id", requireAdmin, async (req: Request, res: Response) => {
   try {
     const { 
       title, description, type, price, isFree, numberOfSounds, 
-      tags, previewUrl, previewUrls, fileUrl, artworkUrl, legalInfo, authorInfo, isPublished 
+      tags, previewUrl, previewUrls, previewLabels, fileUrl, artworkUrl, legalInfo, authorInfo, isPublished 
     } = req.body;
     const normalizedPreviewUrls = normalizePreviewUrls(previewUrl, previewUrls);
     
     const result = await pool.query(
       `UPDATE sound_kits SET title = $1, description = $2, type = $3, price = $4, 
        is_free = $5, number_of_sounds = $6, tags = $7, preview_url = $8, preview_urls = $9,
-       file_url = $10, artwork_url = $11, legal_info = $12, author_info = $13, is_published = $14
-       WHERE id = $15 RETURNING *`,
+       preview_labels = $10, file_url = $11, artwork_url = $12, legal_info = $13, author_info = $14, is_published = $15
+       WHERE id = $16 RETURNING *`,
       [title, description, type, price, isFree, numberOfSounds, tags, 
-       normalizedPreviewUrls[0] || null, normalizedPreviewUrls,
+       normalizedPreviewUrls[0] || null, normalizedPreviewUrls, previewLabels || [],
        fileUrl, artworkUrl, legalInfo, authorInfo, isPublished, req.params.id]
     );
     res.json(result.rows[0]);

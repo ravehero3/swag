@@ -399,7 +399,16 @@ function MusicPlayer({
               flexShrink: 0,
             }}
           >
-            {isPlaying ? "⏸" : "▶"}
+            {isPlaying ? (
+              <svg width="14" height="14" viewBox="0 0 10 10" fill="currentColor" style={{ display: "block" }}>
+                <rect x="1" y="0" width="3" height="10" />
+                <rect x="6" y="0" width="3" height="10" />
+              </svg>
+            ) : (
+              <svg width="14" height="14" viewBox="0 0 10 10" fill="currentColor" style={{ display: "block", marginLeft: "1px" }}>
+                <polygon points="1,0 10,5 1,10" />
+              </svg>
+            )}
           </button>
 
           <button
