@@ -454,9 +454,14 @@ input::placeholder, textarea::placeholder {
     min-width: 0 !important;
   }
 
-  /* Hide save heart on mobile */
+  /* Show save heart on mobile */
   .player-save-btn {
-    display: none !important;
+    display: flex !important;
+    padding: 4px !important;
+  }
+  .player-save-btn svg {
+    width: 16px !important;
+    height: 16px !important;
   }
 
   /* Title: compact, truncated */
@@ -497,8 +502,10 @@ input::placeholder, textarea::placeholder {
     padding: 5px !important;
   }
 
-  /* Hide loop (first) and shuffle (last) */
+  /* Hide loop, prev, next, shuffle — keep only play/pause */
   .music-player-controls button:first-child,
+  .music-player-controls button:nth-child(2),
+  .music-player-controls button:nth-child(4),
   .music-player-controls button:last-child {
     display: none !important;
   }
@@ -516,9 +523,18 @@ input::placeholder, textarea::placeholder {
     margin: 0 !important;
   }
 
-  /* Right section (volume, download, share): fully hidden on mobile */
+  /* Right section: show on mobile (volume stays hidden via its own rule) */
   .player-right-section {
-    display: none !important;
+    display: flex !important;
+    flex: 0 0 auto !important;
+    gap: 0 !important;
+  }
+  .player-right-section button {
+    padding: 6px !important;
+  }
+  .player-right-section button svg {
+    width: 16px !important;
+    height: 16px !important;
   }
 }
 
