@@ -360,8 +360,13 @@ async function resolveDownloadItems(items: any[]): Promise<DownloadItem[]> {
     let downloadUrl: string | null = null;
     if (fileKey) {
       try {
-        // Pre-signed URL valid for 30 days
-        downloadUrl = await generateDownloadUrl(STORAGE_BUCKETS.ZIPS, fileKey, 30 * 24 * 60 * 60);
+        // If it's already a full URL (Google Drive, etc.) use it directly
+        if (fileKey.startsWith("https://") || fileKey.startsWith("http://")) {
+          downloadUrl = fileKey;
+        } else {
+          // Otherwise treat as a B2 object key — generate a pre-signed URL valid for 30 days
+          downloadUrl = await generateDownloadUrl(STORAGE_BUCKETS.ZIPS, fileKey, 30 * 24 * 60 * 60);
+        }
       } catch (err) {
         console.error(`[Email] Could not generate download URL for key ${fileKey}:`, err);
       }
