@@ -1478,6 +1478,13 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
   const [uploadError, setUploadError] = useState<Record<string, string>>({});
   const [b2PickerFor, setB2PickerFor] = useState<string | null>(null);
   const [hoveredKitId, setHoveredKitId] = useState<number | null>(null);
+  const formRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (showForm && formRef.current) {
+      formRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [showForm]);
 
   const handleSelectAll = () => {
     if (selectedKits.length === kits.length) {
@@ -1717,6 +1724,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
       </button>
 
       {showForm && (
+        <div ref={formRef}>
         <form onSubmit={handleSubmit} style={{ marginBottom: "24px", padding: "16px", border: "1px solid #333", borderRadius: "3px" }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
             <div>
@@ -1937,6 +1945,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
             <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}><input type="checkbox" checked={form.isPublished} onChange={(e) => setForm({ ...form, isPublished: e.target.checked })} /> <span>Publikovat</span></label>
           </div>
         </form>
+        </div>
       )}
 
       {selectedKits.length > 0 && (
