@@ -437,7 +437,7 @@ input::placeholder, textarea::placeholder {
     top: 0 !important;
   }
 
-  /* Left section: tighter gap, no overflow */
+  /* Left section: fill all available space */
   .player-left-section {
     gap: 8px !important;
     overflow: hidden !important;
@@ -445,7 +445,7 @@ input::placeholder, textarea::placeholder {
     min-width: 0 !important;
   }
 
-  /* Info row: single line, no wrap, clipped */
+  /* Info row: single line, truncated */
   .player-info-wrap {
     gap: 6px !important;
     overflow: hidden !important;
@@ -454,14 +454,10 @@ input::placeholder, textarea::placeholder {
     min-width: 0 !important;
   }
 
-  /* Show save heart on mobile */
-  .player-save-btn {
-    display: flex !important;
-    padding: 4px !important;
-  }
-  .player-save-btn svg {
-    width: 16px !important;
-    height: 16px !important;
+  /* Hide save, buy buttons on mobile */
+  .player-save-btn,
+  .player-buy-btn {
+    display: none !important;
   }
 
   /* Title: compact, truncated */
@@ -475,31 +471,13 @@ input::placeholder, textarea::placeholder {
     white-space: nowrap !important;
   }
 
-  /* Buy button: icon only, no price on mobile */
-  .player-buy-btn {
-    min-width: 0 !important;
-    width: 32px !important;
-    height: 32px !important;
-    padding: 0 !important;
-    justify-content: center !important;
-    flex-shrink: 0 !important;
-  }
-  .player-buy-btn > span:last-child {
-    display: none !important;
-  }
-  .player-buy-btn > div {
-    margin-left: 0 !important;
-  }
-
-  /* Controls: only prev, play, next — loop and shuffle already hidden */
+  /* Controls: hide all except play/pause, push to bottom-right corner */
   .music-player-controls {
-    gap: 2px !important;
     flex-shrink: 0 !important;
-    margin-right: 0 !important;
-  }
-
-  .music-player-controls button {
-    padding: 5px !important;
+    gap: 0 !important;
+    align-self: flex-end !important;
+    padding-bottom: 10px !important;
+    padding-right: 10px !important;
   }
 
   /* Hide loop, prev, next, shuffle — keep only play/pause */
@@ -510,31 +488,17 @@ input::placeholder, textarea::placeholder {
     display: none !important;
   }
 
-  .music-player-controls button svg {
-    width: 14px !important;
-    height: 14px !important;
-  }
-
-  /* Play/pause circle: slightly smaller */
+  /* Play/pause circle */
   .music-player-controls button:nth-child(3) {
     width: 34px !important;
     height: 34px !important;
-    font-size: 15px !important;
     margin: 0 !important;
+    padding: 0 !important;
   }
 
-  /* Right section: show on mobile (volume stays hidden via its own rule) */
+  /* Hide right section entirely (volume, download, share) */
   .player-right-section {
-    display: flex !important;
-    flex: 0 0 auto !important;
-    gap: 0 !important;
-  }
-  .player-right-section button {
-    padding: 6px !important;
-  }
-  .player-right-section button svg {
-    width: 16px !important;
-    height: 16px !important;
+    display: none !important;
   }
 }
 
