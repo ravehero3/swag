@@ -39,22 +39,40 @@ function Payment() {
       <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
 
         <section>
-          <h2 style={h2Style}>1. Zpracovatel plateb</h2>
+          <h2 style={h2Style}>1. Aktuálně dostupné způsoby platby</h2>
           <p style={pStyle}>
-            Veškeré platby na tomto webu jsou zpracovávány prostřednictvím platební brány
-            <strong style={{ color: "#ccc" }}> GoPay, s.r.o.</strong>, IČO: 26046768, se sídlem Platnéřská 191/4,
-            110 00 Praha 1, zapsané v obchodním rejstříku vedeném Krajským soudem v Českých Budějovicích,
-            oddíl C, vložka 11030.
+            Momentálně přijímáme platby <strong style={{ color: "#ccc" }}>bankovním převodem</strong> na
+            náš český účet vedený u České spořitelny:
+          </p>
+          <p style={{ ...pStyle, fontFamily: "monospace", color: "#ddd" }}>
+            Číslo účtu: <strong style={{ color: "#fff" }}>2845557133/0800</strong>
           </p>
           <p style={pStyle}>
-            GoPay je držitelem licence vydané Českou národní bankou pro poskytování platebních služeb
-            (číslo licence 2491/2009-B) a podléhá jejímu dohledu.
+            Platební brána <strong style={{ color: "#ccc" }}>GoPay</strong> (karta, Apple Pay, Google Pay,
+            online převod) je v procesu schvalování a bude zpřístupněna ihned po dokončení integrace.
           </p>
         </section>
 
         <section style={sectionStyle}>
-          <h2 style={h2Style}>2. Přijímané platební metody</h2>
-          <p style={{ ...pStyle, marginBottom: "10px" }}>Přijímáme následující způsoby platby:</p>
+          <h2 style={h2Style}>2. Průběh platby bankovním převodem</h2>
+          <p style={pStyle}>
+            Po dokončení objednávky obdržíte na obrazovce i emailem všechny údaje k převodu (číslo účtu,
+            částku, variabilní symbol a zprávu pro příjemce). Variabilní symbol odpovídá číslu vaší
+            objednávky a je nezbytný pro spárování platby.
+          </p>
+          <p style={pStyle}>
+            Jakmile platba dorazí na náš účet (obvykle do 1–2 pracovních dnů), zašleme vám na email
+            odkaz ke stažení zakoupených souborů a kopii licenční smlouvy. Stav objednávky můžete
+            sledovat ve svém účtu.
+          </p>
+        </section>
+
+        <section style={sectionStyle}>
+          <h2 style={h2Style}>3. Připravované platební metody (GoPay)</h2>
+          <p style={pStyle}>
+            Po schválení od společnosti <strong style={{ color: "#ccc" }}>GoPay, s.r.o.</strong>, IČO: 26046768,
+            zpřístupníme tyto okamžité způsoby platby:
+          </p>
           <ul style={{ paddingLeft: "20px", margin: 0 }}>
             <li style={liStyle}>Platební karty Visa, Mastercard a Maestro</li>
             <li style={liStyle}>Bankovní převod online (Rychlá platba)</li>
@@ -62,20 +80,8 @@ function Payment() {
             <li style={liStyle}>Apple Pay</li>
           </ul>
           <p style={{ ...pStyle, marginTop: "12px" }}>
-            Dostupnost konkrétních metod může záviset na vaší bance a nastavení prohlížeče.
-          </p>
-        </section>
-
-        <section style={sectionStyle}>
-          <h2 style={h2Style}>3. Průběh platby</h2>
-          <p style={pStyle}>
-            Po potvrzení objednávky budete přesměrováni na zabezpečenou platební bránu GoPay, kde zvolíte
-            způsob platby a transakci dokončíte. Po úspěšném zaplacení vám přijde potvrzovací email se
-            stažením digitálního obsahu. Celý proces trvá typicky méně než 2 minuty.
-          </p>
-          <p style={pStyle}>
-            V případě přerušení připojení nebo technické chyby během platby vás systém vrátí na stránku
-            košíku a platba nebude odečtena. Zkuste transakci opakovat nebo kontaktujte podporu.
+            GoPay je držitelem licence vydané Českou národní bankou pro poskytování platebních služeb
+            (číslo licence 2491/2009-B) a podléhá jejímu dohledu.
           </p>
         </section>
 

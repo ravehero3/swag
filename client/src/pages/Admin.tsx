@@ -2414,10 +2414,22 @@ function OrdersList({ orders, onRefresh }: { orders: any[]; onRefresh: () => voi
     onRefresh();
   };
 
+  const handleMarkPaid = async (e: React.MouseEvent, id: number) => {
+    e.stopPropagation();
+    if (!confirm(`Označit objednávku #${id} jako zaplacenou? Zákazníkovi bude odeslán email s odkazem ke stažení a smlouvou.`)) return;
+    await fetch(`/api/orders/${id}/status`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ status: "completed" }),
+    });
+    onRefresh();
+  };
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-      <div style={{ display: "grid", gridTemplateColumns: "60px 1fr 120px 90px 100px 120px", gap: "8px", padding: "8px", fontSize: "11px", color: "#555", textTransform: "uppercase", letterSpacing: "0.06em", borderBottom: "1px solid #1a1a1a" }}>
-        <div>ID</div><div>Email / Kupující</div><div>Celkem</div><div>Status</div><div>Datum</div><div>Akce</div>
+      <div style={{ display: "grid", gridTemplateColumns: "60px 1fr 110px 110px 110px 100px 180px", gap: "8px", padding: "8px", fontSize: "11px", color: "#555", textTransform: "uppercase", letterSpacing: "0.06em", borderBottom: "1px solid #1a1a1a" }}>
+        <div>ID</div><div>Email / Kupující</div><div>Celkem</div><div>Platba</div><div>Status</div><div>Datum</div><div>Akce</div>
       </div>
       {orders.map((order: any) => {
         const isPaid = order.status === "paid" || order.status === "completed";
@@ -2426,7 +2438,7 @@ function OrdersList({ orders, onRefresh }: { orders: any[]; onRefresh: () => voi
         const isExpanded = expandedId === order.id;
         return (
           <div key={order.id} style={{ border: "1px solid #1a1a1a", borderRadius: "3px", overflow: "hidden" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "60px 1fr 120px 90px 100px 120px", gap: "8px", padding: "10px 8px", alignItems: "center", background: isExpanded ? "#161616" : "transparent", cursor: "pointer" }}
+            <div style={{ display: "grid", gridTemplateColumns: "60px 1fr 110px 110px 110px 100px 180px", gap: "8px", padding: "10px 8px", alignItems: "center", background: isExpanded ? "#161616" : "transparent", cursor: "pointer" }}
               onClick={() => setExpandedId(isExpanded ? null : order.id)}>
               <div style={{ fontSize: "12px", color: "#666" }}>#{order.id}</div>
               <div>
@@ -2435,17 +2447,32 @@ function OrdersList({ orders, onRefresh }: { orders: any[]; onRefresh: () => voi
               </div>
               <div style={{ fontSize: "13px", fontWeight: 600 }}>{Number(order.total).toLocaleString("cs-CZ")} Kč</div>
               <div>
+                <span style={{ fontSize: "11px", padding: "3px 7px", borderRadius: "3px", background: order.payment_method === "bank_transfer" ? "rgba(120,170,255,0.10)" : "rgba(255,255,255,0.04)", color: order.payment_method === "bank_transfer" ? "#9bb8ff" : "#888", border: `1px solid ${order.payment_method === "bank_transfer" ? "rgba(120,170,255,0.25)" : "#2a2a2a"}` }}>
+                  {order.payment_method === "bank_transfer" ? "převod" : (order.payment_method || "gopay")}
+                </span>
+              </div>
+              <div>
                 <span style={{ fontSize: "11px", padding: "3px 7px", borderRadius: "3px", background: isPaid ? "rgba(36,224,83,0.12)" : "rgba(255,255,255,0.05)", color: isPaid ? "#24e053" : "#888", border: `1px solid ${isPaid ? "rgba(36,224,83,0.3)" : "#2a2a2a"}` }}>
                   {order.status}
                 </span>
               </div>
               <div style={{ fontSize: "12px", color: "#666" }}>{new Date(order.created_at).toLocaleDateString("cs-CZ")}</div>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px", justifyContent: "flex-end" }}>
                 <span style={{ fontSize: "12px", color: "#555" }}>{isExpanded ? "▲" : "▼"}</span>
+                {!isPaid && (
+                  <button
+                    onClick={(e) => handleMarkPaid(e, order.id)}
+                    data-testid={`button-mark-paid-${order.id}`}
+                    style={{ background: "rgba(36,224,83,0.08)", border: "1px solid rgba(36,224,83,0.3)", borderRadius: "3px", color: "#24e053", fontSize: "11px", padding: "3px 8px", cursor: "pointer", whiteSpace: "nowrap" }}
+                    title="Označit jako zaplacené a odeslat email se soubory"
+                  >
+                    ✓ Zaplaceno
+                  </button>
+                )}
                 <button
                   onClick={(e) => handleDelete(e, order.id)}
                   data-testid={`button-delete-order-${order.id}`}
-                  style={{ background: "none", border: "1px solid #3a1a1a", borderRadius: "3px", color: "#884444", fontSize: "11px", padding: "2px 8px", cursor: "pointer" }}
+                  style={{ background: "none", border: "1px solid #3a1a1a", borderRadius: "3px", color: "#884444", fontSize: "11px", padding: "3px 8px", cursor: "pointer" }}
                   title="Smazat objednávku"
                 >
                   Smazat

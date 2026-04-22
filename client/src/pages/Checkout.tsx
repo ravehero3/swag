@@ -12,6 +12,8 @@ function Checkout() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [freeSuccess, setFreeSuccess] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"gopay" | "bank_transfer">("bank_transfer");
+  const [bankInstructions, setBankInstructions] = useState<any>(null);
   const [, navigate] = useLocation();
 
   const [promoCode, setPromoCode] = useState("");
@@ -131,11 +133,27 @@ function Checkout() {
           buyerLegalName,
           buyerArtistName,
           buyerAddress,
+          paymentMethod,
         }),
       });
 
       if (!orderRes.ok) throw new Error("Chyba při vytváření objednávky");
       const order = await orderRes.json();
+
+      if (paymentMethod === "bank_transfer") {
+        const btRes = await fetch(`/api/orders/${order.id}/bank-transfer`, {
+          method: "POST",
+          credentials: "include",
+        });
+        if (!btRes.ok) {
+          const btData = await btRes.json();
+          throw new Error(btData.error || "Chyba při zahájení platby");
+        }
+        const btData = await btRes.json();
+        clearCart();
+        setBankInstructions(btData);
+        return;
+      }
 
       const payRes = await fetch(`/api/orders/${order.id}/pay`, {
         method: "POST",
@@ -183,6 +201,74 @@ function Checkout() {
           </p>
           <button className="btn btn-bounce" onClick={() => navigate(user ? "/ucet" : "/")} style={{ borderRadius: "4px" }}>
             {user ? "Přejít na účet" : "Zpět na hlavní stránku"}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (bankInstructions) {
+    const bi = bankInstructions;
+    const copyRow = (label: string, value: string, testId: string) => (
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid #1a1a1a", gap: "12px" }}>
+        <span style={{ fontSize: "12px", color: "#888" }}>{label}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <span data-testid={testId} style={{ fontSize: "14px", color: "#fff", fontFamily: "monospace", fontWeight: 600 }}>{value}</span>
+          <button
+            type="button"
+            onClick={() => navigator.clipboard?.writeText(value)}
+            style={{ background: "none", border: "1px solid #2a2a2a", borderRadius: "3px", color: "#888", fontSize: "11px", padding: "3px 8px", cursor: "pointer" }}
+            title="Kopírovat"
+          >
+            kopírovat
+          </button>
+        </div>
+      </div>
+    );
+    return (
+      <div className="fade-in" style={{
+        minHeight: "calc(100vh - 42px)",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        padding: "20px"
+      }}>
+        <div style={{ maxWidth: "560px", width: "100%" }}>
+          <h1 style={{ marginBottom: "8px", textAlign: "center" }}>Pokyny k platbě</h1>
+          <p style={{ color: "#666", fontSize: "13px", textAlign: "center", marginBottom: "28px", lineHeight: 1.6 }}>
+            Objednávka <strong style={{ color: "#fff" }}>#{bi.orderId}</strong> byla vytvořena.
+            Pošlete prosím částku na náš účet pomocí bankovního převodu.
+            Stejné pokyny jsme vám zaslali na <strong style={{ color: "#fff" }}>{email}</strong>.
+          </p>
+
+          <div style={{ border: "1px solid #2a2a2a", borderRadius: "4px", padding: "18px", marginBottom: "16px", background: "#0d0d0d" }}>
+            <div style={{ fontSize: "10px", color: "#666", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "8px" }}>Údaje k platbě</div>
+            {copyRow("Číslo účtu", bi.accountNumber, "text-account-number")}
+            {copyRow("Částka", `${bi.amount} ${bi.currency}`, "text-amount")}
+            {copyRow("Variabilní symbol", bi.variableSymbol, "text-variable-symbol")}
+            {copyRow("Zpráva pro příjemce", bi.messageForRecipient, "text-message")}
+          </div>
+
+          <div style={{ border: "1px solid #3a2a10", background: "rgba(245,158,11,0.06)", borderRadius: "4px", padding: "12px 14px", marginBottom: "20px" }}>
+            <div style={{ fontSize: "12px", color: "#f5b150", lineHeight: 1.6 }}>
+              <strong>Důležité:</strong> Bez správně vyplněného variabilního symbolu nebudeme schopni
+              vaši platbu spárovat s objednávkou. Soubory a licenční smlouvu vám pošleme na email
+              jakmile platba dorazí na účet (obvykle do 1–2 pracovních dnů).
+            </div>
+          </div>
+
+          <p style={{ color: "#555", fontSize: "12px", textAlign: "center", marginBottom: "16px" }}>
+            Stav objednávky můžete sledovat ve svém účtu.
+          </p>
+
+          <button
+            className="btn btn-bounce"
+            onClick={() => navigate("/ucet")}
+            data-testid="button-go-to-account"
+            style={{ width: "100%", borderRadius: "4px" }}
+          >
+            Přejít na účet
           </button>
         </div>
       </div>
@@ -349,6 +435,78 @@ function Checkout() {
           </div>
           {promoError && <p style={{ color: "#ff4444", fontSize: "12px", marginTop: "4px" }}>{promoError}</p>}
           {discount > 0 && <p style={{ color: "#24e053", fontSize: "12px", marginTop: "4px" }}>Sleva {discount}% aplikována!</p>}
+        </div>
+
+        <div style={{ marginBottom: "24px", padding: "16px", border: "1px solid #333", borderRadius: "4px" }}>
+          <h3 style={{ marginBottom: "12px", fontSize: "14px" }}>Způsob platby</h3>
+
+          <label
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              gap: "12px",
+              padding: "12px",
+              border: paymentMethod === "bank_transfer" ? "1px solid #fff" : "1px solid #2a2a2a",
+              borderRadius: "4px",
+              cursor: "pointer",
+              marginBottom: "8px",
+              background: paymentMethod === "bank_transfer" ? "#161616" : "transparent",
+            }}
+            data-testid="option-bank-transfer"
+          >
+            <input
+              type="radio"
+              name="paymentMethod"
+              value="bank_transfer"
+              checked={paymentMethod === "bank_transfer"}
+              onChange={() => setPaymentMethod("bank_transfer")}
+              style={{ marginTop: "3px" }}
+            />
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: "14px", color: "#fff", marginBottom: "2px" }}>Bankovní převod</div>
+              <div style={{ fontSize: "12px", color: "#888", lineHeight: 1.5 }}>
+                Po dokončení obdržíte údaje k převodu (číslo účtu a variabilní symbol).
+                Soubory a licenční smlouvu vám zašleme na email po přijetí platby (1–2 prac. dny).
+              </div>
+            </div>
+          </label>
+
+          <label
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              gap: "12px",
+              padding: "12px",
+              border: "1px solid #2a2a2a",
+              borderRadius: "4px",
+              cursor: "not-allowed",
+              opacity: 0.55,
+              background: "transparent",
+            }}
+            data-testid="option-gopay"
+            title="GoPay je momentálně mimo provoz"
+          >
+            <input
+              type="radio"
+              name="paymentMethod"
+              value="gopay"
+              checked={false}
+              disabled
+              readOnly
+              style={{ marginTop: "3px" }}
+            />
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: "14px", color: "#aaa", marginBottom: "2px" }}>
+                GoPay – karta, Apple Pay, Google Pay, online převod
+                <span style={{ marginLeft: "8px", fontSize: "11px", color: "#f5b150", background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.25)", borderRadius: "3px", padding: "2px 6px", whiteSpace: "nowrap" }}>
+                  čekáme na schválení
+                </span>
+              </div>
+              <div style={{ fontSize: "12px", color: "#666", lineHeight: 1.5 }}>
+                Okamžitá platba kartou nebo přes platební bránu. Zatím není k dispozici – aktivujeme po schválení od GoPay.
+              </div>
+            </div>
+          </label>
         </div>
 
         <form onSubmit={handleSubmit}>

@@ -706,6 +706,101 @@ export async function sendContractEmail(orderId: number): Promise<void> {
   }
 }
 
+export async function sendBankTransferInstructionsEmail(orderId: number): Promise<void> {
+  const apiKey = process.env.RESEND_API_KEY || process.env.RESEND_API;
+  if (!apiKey) {
+    console.log(`[Email] RESEND_API_KEY not configured, skipping bank transfer email for order ${orderId}`);
+    return;
+  }
+
+  const orderRes = await pool.query("SELECT * FROM orders WHERE id = $1", [orderId]);
+  if (orderRes.rows.length === 0) return;
+  const order = orderRes.rows[0];
+
+  const items: any[] = Array.isArray(order.items) ? order.items : [];
+  const total = formatPriceCzech(Number(order.total));
+  const variableSymbol = String(order.id);
+  const accountNumber = "2845557133/0800";
+  const messageForRecipient = `VOODOO808 ${order.id}`;
+
+  const itemsRows = items.map((it: any) =>
+    `<tr><td style="padding:6px 0;color:#ccc;">${it.title || "Položka"}</td><td style="padding:6px 0;text-align:right;color:#ccc;">${formatPriceCzech(Number(it.price) || 0)}</td></tr>`
+  ).join("");
+
+  const html = `
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;background:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#ddd;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;background:#111;border:1px solid #222;border-radius:6px;padding:32px;">
+        <tr><td>
+          <h1 style="margin:0 0 8px;font-size:22px;font-weight:500;color:#fff;letter-spacing:-0.01em;">Pokyny k platbě – objednávka #${order.id}</h1>
+          <p style="margin:0 0 24px;color:#888;font-size:14px;line-height:1.6;">
+            Děkujeme za vaši objednávku. Pro dokončení nákupu prosím odešlete níže uvedenou částku
+            bankovním převodem na náš účet. Po přijetí platby vám obratem zašleme odkaz ke stažení
+            a licenční smlouvu na váš email.
+          </p>
+
+          <div style="border:1px solid #2a2a2a;border-radius:4px;padding:18px;margin-bottom:18px;background:#0d0d0d;">
+            <div style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">Údaje k platbě</div>
+            <table width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;color:#ddd;">
+              <tr><td style="padding:6px 0;color:#888;width:45%;">Číslo účtu</td><td style="padding:6px 0;color:#fff;font-weight:600;font-family:monospace;">${accountNumber}</td></tr>
+              <tr><td style="padding:6px 0;color:#888;">Částka</td><td style="padding:6px 0;color:#fff;font-weight:600;">${total}</td></tr>
+              <tr><td style="padding:6px 0;color:#888;">Variabilní symbol</td><td style="padding:6px 0;color:#fff;font-weight:600;font-family:monospace;">${variableSymbol}</td></tr>
+              <tr><td style="padding:6px 0;color:#888;">Zpráva pro příjemce</td><td style="padding:6px 0;color:#fff;font-family:monospace;">${messageForRecipient}</td></tr>
+              <tr><td style="padding:6px 0;color:#888;">Měna</td><td style="padding:6px 0;color:#ddd;">CZK</td></tr>
+            </table>
+          </div>
+
+          <div style="border:1px solid #2a2a2a;border-radius:4px;padding:18px;margin-bottom:18px;background:#0d0d0d;">
+            <div style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">Položky objednávky</div>
+            <table width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;">
+              ${itemsRows}
+              <tr><td style="padding:10px 0 0;border-top:1px solid #222;color:#fff;font-weight:600;">Celkem</td><td style="padding:10px 0 0;border-top:1px solid #222;text-align:right;color:#fff;font-weight:600;">${total}</td></tr>
+            </table>
+          </div>
+
+          <div style="border:1px solid #3a2a10;background:rgba(245,158,11,0.06);border-radius:4px;padding:14px;margin-bottom:18px;">
+            <div style="font-size:13px;color:#f5b150;line-height:1.6;">
+              <strong>Důležité:</strong> Bez správně vyplněného variabilního symbolu (<strong style="font-family:monospace;">${variableSymbol}</strong>)
+              nebudeme schopni vaši platbu spárovat s objednávkou.
+            </div>
+          </div>
+
+          <p style="margin:0 0 8px;color:#888;font-size:13px;line-height:1.7;">
+            Soubory a licenční smlouvu vám pošleme na <strong style="color:#ddd;">${order.email}</strong>
+            jakmile platba dorazí na účet (obvykle do 1–2 pracovních dnů).
+          </p>
+          <p style="margin:0 0 0;color:#666;font-size:12px;line-height:1.7;">
+            Otázky? Napište nám na <a href="mailto:info@voodoo808.com" style="color:#aaa;">info@voodoo808.com</a>.
+          </p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body></html>`;
+
+  const fromAddress = process.env.RESEND_FROM || "VOODOO808 <info@voodoo808.com>";
+  const resend = new Resend(apiKey);
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: fromAddress,
+      to: [order.email],
+      subject: `Pokyny k platbě – Objednávka #${orderId} | VOODOO808`,
+      html,
+    });
+    if (error) {
+      console.error(`[Email] Bank transfer email error for order ${orderId}:`, error);
+    } else {
+      console.log(`[Email] Bank transfer instructions sent for order ${orderId}, id: ${data?.id}`);
+    }
+  } catch (err) {
+    console.error(`[Email] Failed to send bank transfer email for order ${orderId}:`, err);
+  }
+}
+
 export async function sendPasswordResetEmail(email: string, token: string): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY || process.env.RESEND_API;
   if (!apiKey) {

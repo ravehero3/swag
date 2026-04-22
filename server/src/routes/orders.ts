@@ -1,7 +1,14 @@
 import { Router, Request, Response } from "express";
 import { pool } from "../db.js";
 import { requireAuth, requireAdmin } from "../middleware/auth.js";
-import { sendContractEmail } from "../email.js";
+import { sendContractEmail, sendBankTransferInstructionsEmail } from "../email.js";
+
+export const BANK_TRANSFER_DETAILS = {
+  accountNumber: "2845557133/0800",
+  bankName: "Česká spořitelna",
+  currency: "CZK",
+  holderName: "VOODOO808",
+};
 
 const router = Router();
 
@@ -28,13 +35,14 @@ router.get("/my", requireAuth, async (req: Request, res: Response) => {
 
 router.post("/", async (req: Request, res: Response) => {
   try {
-    const { email, items, total, buyerLegalName, buyerArtistName, buyerAddress } = req.body;
+    const { email, items, total, buyerLegalName, buyerArtistName, buyerAddress, paymentMethod } = req.body;
     const userId = req.session.userId || null;
-    
+    const method = paymentMethod === "bank_transfer" ? "bank_transfer" : "gopay";
+
     const result = await pool.query(
-      `INSERT INTO orders (user_id, email, items, total, status, buyer_legal_name, buyer_artist_name, buyer_address)
-       VALUES ($1, $2, $3, $4, 'pending', $5, $6, $7) RETURNING *`,
-      [userId, email, JSON.stringify(items), total, buyerLegalName || null, buyerArtistName || null, buyerAddress || null]
+      `INSERT INTO orders (user_id, email, items, total, status, buyer_legal_name, buyer_artist_name, buyer_address, payment_method)
+       VALUES ($1, $2, $3, $4, 'pending', $5, $6, $7, $8) RETURNING *`,
+      [userId, email, JSON.stringify(items), total, buyerLegalName || null, buyerArtistName || null, buyerAddress || null, method]
     );
     
     res.json(result.rows[0]);
@@ -127,6 +135,48 @@ router.post("/:id/pay", requireAuth, async (req: Request, res: Response) => {
   } catch (error) {
     console.error("GoPay payment error:", error);
     res.status(500).json({ error: "Chyba při vytváření platby" });
+  }
+});
+
+router.post("/:id/bank-transfer", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const orderId = parseInt(req.params.id, 10);
+
+    const orderResult = await pool.query(
+      "SELECT * FROM orders WHERE id = $1 AND user_id = $2",
+      [orderId, req.session.userId]
+    );
+
+    if (orderResult.rows.length === 0) {
+      return res.status(404).json({ error: "Objednávka nenalezena" });
+    }
+
+    const order = orderResult.rows[0];
+
+    if (order.status === "completed" || order.status === "paid") {
+      return res.status(400).json({ error: "Objednávka je již zaplacena" });
+    }
+
+    await pool.query(
+      "UPDATE orders SET status = 'awaiting_payment', payment_method = 'bank_transfer' WHERE id = $1",
+      [orderId]
+    );
+
+    sendBankTransferInstructionsEmail(orderId).catch((err) => {
+      console.error("[Email] Bank transfer instructions email error:", err);
+    });
+
+    return res.json({
+      success: true,
+      orderId: order.id,
+      variableSymbol: String(order.id),
+      amount: Number(order.total),
+      ...BANK_TRANSFER_DETAILS,
+      messageForRecipient: `VOODOO808 ${order.id}`,
+    });
+  } catch (error) {
+    console.error("Bank transfer error:", error);
+    res.status(500).json({ error: "Chyba při zpracování bankovního převodu" });
   }
 });
 

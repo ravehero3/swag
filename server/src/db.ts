@@ -273,6 +273,7 @@ export async function initDatabase() {
       ALTER TABLE orders ADD COLUMN IF NOT EXISTS buyer_legal_name VARCHAR(255);
       ALTER TABLE orders ADD COLUMN IF NOT EXISTS buyer_artist_name VARCHAR(255);
       ALTER TABLE orders ADD COLUMN IF NOT EXISTS buyer_address TEXT;
+      ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method VARCHAR(50) DEFAULT 'gopay';
       ALTER TABLE license_types ADD COLUMN IF NOT EXISTS contract_template TEXT;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(500);
       ALTER TABLE users ADD COLUMN IF NOT EXISTS username VARCHAR(50);
