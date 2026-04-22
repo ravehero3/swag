@@ -247,7 +247,13 @@ function Zvuky() {
 
       {/* Content — above video */}
       <div style={{ position: "relative", zIndex: 2, paddingTop: "100px" }}>
-        {loading ? null : kits.length > 0 ? (
+        {loading ? (
+          <div style={{ textAlign: "center", padding: "100px 20px" }}>
+            <p style={{ color: "#555", fontSize: "11px", letterSpacing: "0.15em", textTransform: "uppercase", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", margin: 0 }}>
+              Načítání…
+            </p>
+          </div>
+        ) : kits.length > 0 ? (
           <div style={{ width: "100%", marginBottom: "48px" }}>
             <ProductsGrid
               products={products}
