@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import starsBgUrl from "@assets/stars_background_voodoo808_1776877846494.jpg";
 import { useLocation } from "wouter";
 import { useApp } from "../App.js";
 import { useScrollAnimation } from "../hooks/useScrollAnimation.js";
@@ -736,11 +737,41 @@ function Home() {
                     .hac-blur-ring { opacity: 1 !important; transform: translate(-50%, -50%) scale(1) !important; }
                   }
                 `}</style>
+                <div
+                  aria-hidden="true"
+                  style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    width: "360px",
+                    height: "360px",
+                    transform: "translate(-50%, -50%)",
+                    pointerEvents: "none",
+                    zIndex: 0,
+                    overflow: "hidden",
+                    WebkitMaskImage: "radial-gradient(ellipse at center, #000 25%, rgba(0,0,0,0.6) 55%, rgba(0,0,0,0) 80%)",
+                    maskImage: "radial-gradient(ellipse at center, #000 25%, rgba(0,0,0,0.6) 55%, rgba(0,0,0,0) 80%)",
+                  }}
+                >
+                  <img
+                    src={starsBgUrl}
+                    alt=""
+                    style={{
+                      position: "absolute",
+                      top: "50%",
+                      left: "50%",
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      transform: "translate(-50%, -50%) rotate(90deg)",
+                    }}
+                  />
+                </div>
                 <img
                   src={displayedHighlight.artwork_url || "/uploads/artwork/metallic-logo.png"}
                   alt={displayedHighlight.title}
                   onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
-                  style={{ width: "200px", height: "200px", objectFit: "cover", border: "1px solid #666", borderRadius: "4px", display: "block" }}
+                  style={{ position: "relative", zIndex: 1, width: "200px", height: "200px", objectFit: "cover", border: "1px solid #666", borderRadius: "4px", display: "block" }}
                 />
                 <div className="hac-blur-ring" />
                 <button
