@@ -6,6 +6,7 @@ import path from "path";
 import { requireAdmin } from "../middleware/auth.js";
 import { uploadFile, generatePresignedUploadUrl, listFiles, STORAGE_BUCKETS, VIDEO_PREFIX, getPublicUrl } from "../lib/storage.js";
 import stream from "stream";
+import sharp from "sharp";
 import { pool } from "../db.js";
 interface PendingUpload {
   id: number;
@@ -185,10 +186,45 @@ router.post("/", requireAdmin, upload.single("file"), async (req: Request, res: 
   }
 
   const ext = req.file.originalname.split('.').pop()?.toLowerCase() || 'zip';
-  const key = `${uuidv4()}.${ext}`;
+  let key = `${uuidv4()}.${ext}`;
 
-  // Artwork + preview: upload to ARTWORK bucket (Cloudflare R2 when configured, B2 fallback)
-  if (type === "artwork" || type === "preview") {
+  // Artwork: normalize to a 1500x1500 square JPEG so it always renders cleanly
+  // regardless of source dimensions (no top/bottom cropping, predictable size).
+  if (type === "artwork") {
+    try {
+      const bucket = STORAGE_BUCKETS.ARTWORK;
+      const isImage = (req.file.mimetype || "").startsWith("image/");
+      let bodyBuffer: Buffer;
+      let contentType = req.file.mimetype || "application/octet-stream";
+
+      if (isImage) {
+        bodyBuffer = await sharp(req.file.path)
+          .rotate() // honor EXIF orientation
+          .resize(1500, 1500, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 1 } })
+          .jpeg({ quality: 88, mozjpeg: true })
+          .toBuffer();
+        contentType = "image/jpeg";
+        key = `${uuidv4()}.jpg`;
+      } else {
+        bodyBuffer = fs.readFileSync(req.file.path);
+      }
+
+      await uploadFile(bucket, key, bodyBuffer, contentType);
+      fs.unlinkSync(req.file.path);
+      const url = getPublicUrl(bucket, key);
+      res.json({ url, key, bucket, size: bodyBuffer.length });
+      console.log(`✅ artwork uploaded (normalized): ${url}`);
+      return;
+    } catch (error) {
+      if (req.file.path && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+      console.error("artwork upload failed:", error);
+      res.status(500).json({ error: "artwork upload failed", detail: String(error) });
+      return;
+    }
+  }
+
+  // Preview: upload to ARTWORK bucket (Cloudflare R2 when configured, B2 fallback)
+  if (type === "preview") {
     try {
       const bucket = STORAGE_BUCKETS.ARTWORK;
       const fileStream = fs.createReadStream(req.file.path);
@@ -196,12 +232,12 @@ router.post("/", requireAdmin, upload.single("file"), async (req: Request, res: 
       fs.unlinkSync(req.file.path);
       const url = getPublicUrl(bucket, key);
       res.json({ url, key, bucket, size: req.file.size });
-      console.log(`✅ ${type} uploaded: ${url}`);
+      console.log(`✅ preview uploaded: ${url}`);
       return;
     } catch (error) {
       if (req.file.path && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
-      console.error(`${type} upload failed:`, error);
-      res.status(500).json({ error: `${type} upload failed`, detail: String(error) });
+      console.error("preview upload failed:", error);
+      res.status(500).json({ error: "preview upload failed", detail: String(error) });
       return;
     }
   }

@@ -116,31 +116,15 @@ function ProductDetail() {
           overflow: hidden;
         }
         .pd-artwork {
+          position: relative;
           width: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 48px;
+          padding: 100px;
           flex-shrink: 0;
           overflow: hidden;
-        }
-        .pd-artwork img {
-          width: 100%;
-          height: 100%;
-          object-fit: contain;
-          object-position: center;
-          border-radius: 4px;
-          display: block;
-          flex-shrink: 0;
-        }
-        .pd-artwork-frame {
-          position: relative;
-          width: min(100%, calc(100vh - 138px));
-          max-width: 620px;
-          aspect-ratio: 1 / 1;
           background: #000;
-          overflow: hidden;
-          border-radius: 4px;
         }
         .pd-artwork-bg {
           position: absolute;
@@ -151,23 +135,40 @@ function ProductDetail() {
         }
         .pd-artwork-bg img {
           position: absolute;
-          top: 50%;
-          left: 50%;
+          inset: 0;
           width: 100%;
           height: 100%;
           object-fit: cover;
-          transform: translate(-50%, -50%) rotate(90deg);
+          object-position: center;
         }
         .pd-artwork-bg::after {
           content: "";
           position: absolute;
           inset: 0;
-          background: radial-gradient(ellipse at center, rgba(0,0,0,0) 25%, rgba(0,0,0,0.55) 60%, #000 100%);
+          background:
+            linear-gradient(to right,  #000 0%, rgba(0,0,0,0) 18%, rgba(0,0,0,0) 82%, #000 100%),
+            linear-gradient(to bottom, #000 0%, rgba(0,0,0,0) 18%, rgba(0,0,0,0) 82%, #000 100%),
+            radial-gradient(ellipse at center, rgba(0,0,0,0) 35%, rgba(0,0,0,0.55) 70%, #000 100%);
           pointer-events: none;
+        }
+        .pd-artwork-frame {
+          position: relative;
+          z-index: 1;
+          width: min(100%, calc(100vh - 242px));
+          max-width: 520px;
+          aspect-ratio: 1 / 1;
+          overflow: hidden;
+          border-radius: 4px;
         }
         .pd-artwork-frame > img {
           position: relative;
           z-index: 1;
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          object-position: center;
+          display: block;
+          border-radius: 4px;
         }
         .pd-divider {
           width: 1px;
@@ -192,22 +193,17 @@ function ProductDetail() {
           }
           .pd-artwork {
             width: 100%;
-            padding: 0;
+            padding: 40px;
             flex-shrink: 0;
             aspect-ratio: 1 / 1;
             overflow: hidden;
           }
-          .pd-artwork img {
-            width: 100%;
-            height: 100%;
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-            border-radius: 0;
-          }
           .pd-artwork-frame {
             width: 100%;
             max-width: none;
+            border-radius: 0;
+          }
+          .pd-artwork-frame > img {
             border-radius: 0;
           }
           .pd-divider {
