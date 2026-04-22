@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import starsBgUrl from "@assets/stars_background_voodoo808_1776877846494.jpg";
 import { useRoute, useLocation } from "wouter";
 import { useApp } from "../App.js";
 import ShareModal from "../components/ShareModal.js";
@@ -133,12 +134,40 @@ function ProductDetail() {
           flex-shrink: 0;
         }
         .pd-artwork-frame {
+          position: relative;
           width: min(100%, calc(100vh - 138px));
           max-width: 620px;
           aspect-ratio: 1 / 1;
           background: #000;
           overflow: hidden;
           border-radius: 4px;
+        }
+        .pd-artwork-bg {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          pointer-events: none;
+          z-index: 0;
+        }
+        .pd-artwork-bg img {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          transform: translate(-50%, -50%) rotate(90deg);
+        }
+        .pd-artwork-bg::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(ellipse at center, rgba(0,0,0,0) 25%, rgba(0,0,0,0.55) 60%, #000 100%);
+          pointer-events: none;
+        }
+        .pd-artwork-frame > img {
+          position: relative;
+          z-index: 1;
         }
         .pd-divider {
           width: 1px;
@@ -195,6 +224,9 @@ function ProductDetail() {
       {/* Left half — artwork */}
       <div className="pd-artwork">
         <div className="pd-artwork-frame">
+        <div className="pd-artwork-bg" aria-hidden="true">
+          <img src={starsBgUrl} alt="" />
+        </div>
         <img
           src={product.artwork_url || "/uploads/artwork/metallic-logo.png"}
           alt={product.title}
