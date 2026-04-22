@@ -483,9 +483,12 @@ async function ensureDbInitialized() {
     try {
       await initDatabase();
       await seedAdmin();
-      // Configure B2 CORS so browsers can fetch audio directly (silent fail)
+      // Configure CORS on storage buckets so browsers can fetch audio/images directly (silent fail)
       if (STORAGE_BUCKETS.PREVIEWS) {
         configureBucketCors(STORAGE_BUCKETS.PREVIEWS).catch(() => {});
+      }
+      if (STORAGE_BUCKETS.ARTWORK && STORAGE_BUCKETS.ARTWORK !== STORAGE_BUCKETS.PREVIEWS) {
+        configureBucketCors(STORAGE_BUCKETS.ARTWORK).catch(() => {});
       }
       dbInitialized = true;
     } catch (err) {

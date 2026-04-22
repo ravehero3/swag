@@ -23,10 +23,6 @@
       "destination": "server/src/prod.ts"
     },
     {
-      "source": "/uploads/(.*)",
-      "destination": "server/src/prod.ts"
-    },
-    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

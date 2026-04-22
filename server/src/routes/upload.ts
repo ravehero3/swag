@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 import fs from "fs";
 import path from "path";
 import { requireAdmin } from "../middleware/auth.js";
-import { uploadFile, generatePresignedUploadUrl, listFiles, STORAGE_BUCKETS, VIDEO_PREFIX } from "../lib/storage.js";
+import { uploadFile, generatePresignedUploadUrl, listFiles, STORAGE_BUCKETS, VIDEO_PREFIX, getPublicUrl } from "../lib/storage.js";
 import stream from "stream";
 import { pool } from "../db.js";
 interface PendingUpload {
@@ -135,21 +135,13 @@ router.delete("/pending/:id", requireAdmin, async (req: Request, res: Response) 
   }
 });
 
-function getPublicUrl(bucket: string, key: string): string {
-  if (process.env.B2_PUBLIC_BASE_URL) {
-    return `${process.env.B2_PUBLIC_BASE_URL}/${key}`;
-  }
-  const endpoint = process.env.B2_ENDPOINT || "";
-  return `https://${endpoint}/${bucket}/${key}`;
-}
-
 // Return the full public URL for a given key + bucket type (preview or artwork)
 router.get("/public-url", requireAdmin, (req: Request, res: Response) => {
   const { key, type } = req.query as { key: string; type: string };
   if (!key || !type) return res.status(400).json({ error: "Missing key or type" });
   const isPublic = type === "preview" || type === "artwork";
   if (!isPublic) return res.status(400).json({ error: "Only preview/artwork types have public URLs" });
-  const bucket = type === "preview" ? STORAGE_BUCKETS.PREVIEWS : STORAGE_BUCKETS.ZIPS;
+  const bucket = STORAGE_BUCKETS.ARTWORK;
   res.json({ url: getPublicUrl(bucket, key) });
 });
 
@@ -195,20 +187,20 @@ router.post("/", requireAdmin, upload.single("file"), async (req: Request, res: 
   const ext = req.file.originalname.split('.').pop()?.toLowerCase() || 'zip';
   const key = `${uuidv4()}.${ext}`;
 
-  // Artwork + preview: upload to B2 (previews bucket) so URLs persist across deployments
+  // Artwork + preview: upload to ARTWORK bucket (Cloudflare R2 when configured, B2 fallback)
   if (type === "artwork" || type === "preview") {
     try {
-      const bucket = STORAGE_BUCKETS.PREVIEWS;
+      const bucket = STORAGE_BUCKETS.ARTWORK;
       const fileStream = fs.createReadStream(req.file.path);
       await uploadFile(bucket, key, fileStream, req.file.mimetype);
       fs.unlinkSync(req.file.path);
       const url = getPublicUrl(bucket, key);
       res.json({ url, key, bucket, size: req.file.size });
-      console.log(`✅ ${type} uploaded to B2: ${url}`);
+      console.log(`✅ ${type} uploaded: ${url}`);
       return;
     } catch (error) {
       if (req.file.path && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
-      console.error(`${type} B2 upload failed:`, error);
+      console.error(`${type} upload failed:`, error);
       res.status(500).json({ error: `${type} upload failed`, detail: String(error) });
       return;
     }
