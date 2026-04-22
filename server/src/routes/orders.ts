@@ -27,8 +27,92 @@ router.get("/my", requireAuth, async (req: Request, res: Response) => {
       "SELECT * FROM orders WHERE user_id = $1 ORDER BY created_at DESC",
       [req.session.userId]
     );
-    res.json(result.rows);
+
+    // For paid orders, attach the current download URL for each item so the
+    // account page can show a "Stáhnout" link (Google Drive URL or signed B2 URL).
+    const orders = result.rows;
+    const isPaid = (status: string) => status === "completed" || status === "paid";
+
+    // Collect all (productType, productId) pairs we need to look up.
+    const beatIds = new Set<number>();
+    const kitIds = new Set<number>();
+    for (const o of orders) {
+      if (!isPaid(o.status)) continue;
+      const items = Array.isArray(o.items) ? o.items : [];
+      for (const it of items) {
+        if (!it || !it.productId) continue;
+        if (it.productType === "beat") beatIds.add(Number(it.productId));
+        else if (it.productType === "sound_kit" || it.productType === "kit") kitIds.add(Number(it.productId));
+      }
+    }
+
+    const beatMap = new Map<number, { file_url: string; trackout_url: string | null; artwork_url: string | null; title: string }>();
+    if (beatIds.size > 0) {
+      const r = await pool.query(
+        "SELECT id, title, file_url, trackout_url, artwork_url FROM beats WHERE id = ANY($1::int[])",
+        [Array.from(beatIds)]
+      );
+      for (const row of r.rows) beatMap.set(row.id, row);
+    }
+
+    const kitMap = new Map<number, { file_url: string; artwork_url: string | null; title: string }>();
+    if (kitIds.size > 0) {
+      const r = await pool.query(
+        "SELECT id, title, file_url, artwork_url FROM sound_kits WHERE id = ANY($1::int[])",
+        [Array.from(kitIds)]
+      );
+      for (const row of r.rows) kitMap.set(row.id, row);
+    }
+
+    // Helper: given a stored file_url (Google Drive URL, full http URL, or B2 key),
+    // return the URL the customer should use to access the file.
+    async function resolveDownload(fileUrl: string | null | undefined): Promise<string | null> {
+      if (!fileUrl) return null;
+      // External URL (Google Drive, Dropbox, etc.) — return as-is
+      if (/^https?:\/\//i.test(fileUrl)) return fileUrl;
+      // Local public path
+      if (fileUrl.startsWith("/")) return fileUrl;
+      // Otherwise treat as a B2 ZIP key — generate a fresh signed URL (legacy)
+      try {
+        const { generateDownloadUrl, STORAGE_BUCKETS } = await import("../lib/storage.js");
+        return await generateDownloadUrl(STORAGE_BUCKETS.ZIPS, fileUrl, 7 * 24 * 60 * 60);
+      } catch {
+        return null;
+      }
+    }
+
+    const enriched = await Promise.all(
+      orders.map(async (o: any) => {
+        if (!isPaid(o.status)) return o;
+        const items = Array.isArray(o.items) ? o.items : [];
+        const itemsOut = await Promise.all(
+          items.map(async (it: any) => {
+            if (!it || !it.productId) return it;
+            let product: any = null;
+            let trackoutUrl: string | null = null;
+            if (it.productType === "beat") {
+              product = beatMap.get(Number(it.productId));
+              trackoutUrl = product ? product.trackout_url : null;
+            } else if (it.productType === "sound_kit" || it.productType === "kit") {
+              product = kitMap.get(Number(it.productId));
+            }
+            const downloadUrl = product ? await resolveDownload(product.file_url) : null;
+            const trackoutDownloadUrl = trackoutUrl ? await resolveDownload(trackoutUrl) : null;
+            return {
+              ...it,
+              artwork_url: product?.artwork_url || it.artwork_url || null,
+              downloadUrl,
+              trackoutDownloadUrl,
+            };
+          })
+        );
+        return { ...o, items: itemsOut };
+      })
+    );
+
+    res.json(enriched);
   } catch (error) {
+    console.error("Orders fetch error:", error);
     res.status(500).json({ error: "Chyba při načítání objednávek" });
   }
 });

@@ -8,6 +8,9 @@ interface OrderItem {
   title: string;
   price: number;
   productType: string;
+  artwork_url?: string | null;
+  downloadUrl?: string | null;
+  trackoutDownloadUrl?: string | null;
 }
 
 interface Order {
@@ -465,13 +468,43 @@ export default function Ucet() {
                     
                     <div style={{ borderTop: "1px solid #222", paddingTop: "16px" }}>
                       <p style={{ color: "#666", fontSize: "12px", marginBottom: "12px" }}>POLOŽKY</p>
-                      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                         {items.length === 0 ? (
                           <p style={{ color: "#555", fontSize: "14px", margin: 0 }}>—</p>
                         ) : items.map((item, idx) => (
-                          <div key={`${item.productId ?? idx}-${idx}`} style={{ display: "flex", justifyContent: "space-between", color: "#ccc", fontSize: "14px" }}>
-                            <span>{item.title || "—"}</span>
-                            <span>{item.price} CZK</span>
+                          <div
+                            key={`${item.productId ?? idx}-${idx}`}
+                            style={{ display: "flex", justifyContent: "space-between", alignItems: "center", color: "#ccc", fontSize: "14px", gap: "12px", flexWrap: "wrap" }}
+                          >
+                            <span style={{ flex: "1 1 auto", minWidth: 0 }}>{item.title || "—"}</span>
+                            <div style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
+                              {isPaid && item.downloadUrl && (
+                                <a
+                                  href={item.downloadUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  data-testid={`link-download-${order.id}-${item.productId ?? idx}`}
+                                  style={{ padding: "4px 12px", background: "#24e053", color: "#000", borderRadius: "4px", fontSize: "12px", fontWeight: 500, textDecoration: "none", whiteSpace: "nowrap" }}
+                                >
+                                  Stáhnout
+                                </a>
+                              )}
+                              {isPaid && item.trackoutDownloadUrl && (
+                                <a
+                                  href={item.trackoutDownloadUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  data-testid={`link-trackout-${order.id}-${item.productId ?? idx}`}
+                                  style={{ padding: "4px 12px", background: "transparent", color: "#24e053", border: "1px solid #24e053", borderRadius: "4px", fontSize: "12px", fontWeight: 500, textDecoration: "none", whiteSpace: "nowrap" }}
+                                >
+                                  Trackout
+                                </a>
+                              )}
+                              {isPaid && !item.downloadUrl && (
+                                <span style={{ color: "#666", fontSize: "12px" }}>Odkaz připravujeme</span>
+                              )}
+                              <span style={{ color: "#fff", minWidth: "70px", textAlign: "right" }}>{item.price} CZK</span>
+                            </div>
                           </div>
                         ))}
                       </div>
