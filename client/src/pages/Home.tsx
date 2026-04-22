@@ -1266,13 +1266,43 @@ function Home() {
                   </svg>
                 </button>
               </div>
-              <div className="home-beat-artwork" style={{ flexShrink: 0 }}>
+              <div className="home-beat-artwork" style={{ flexShrink: 0, position: "relative" }}>
+                <div
+                  aria-hidden="true"
+                  style={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    width: "104px",
+                    height: "104px",
+                    transform: "translate(-50%, -50%)",
+                    pointerEvents: "none",
+                    zIndex: 0,
+                    overflow: "hidden",
+                    WebkitMaskImage: "radial-gradient(ellipse at center, #000 22%, rgba(0,0,0,0.55) 55%, rgba(0,0,0,0) 80%)",
+                    maskImage: "radial-gradient(ellipse at center, #000 22%, rgba(0,0,0,0.55) 55%, rgba(0,0,0,0) 80%)",
+                  }}
+                >
+                  <img
+                    src={starsBgUrl}
+                    alt=""
+                    style={{
+                      position: "absolute",
+                      top: "50%",
+                      left: "50%",
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      transform: "translate(-50%, -50%) rotate(90deg)",
+                    }}
+                  />
+                </div>
                 <img
                   src={beat.artwork_url || "/uploads/artwork/metallic-logo.png"}
                   alt={beat.title}
                   loading="lazy"
                   onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
-                  style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "4px" }}
+                  style={{ position: "relative", zIndex: 1, width: "48px", height: "48px", objectFit: "cover", borderRadius: "4px", display: "block" }}
                 />
               </div>
               <div className="home-beat-title-col" style={{ width: "240px", marginRight: "12px", display: "flex", flexDirection: "column", gap: "4px" }}>
