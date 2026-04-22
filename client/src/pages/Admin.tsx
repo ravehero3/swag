@@ -1377,72 +1377,40 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
             </div>
 
             <div style={{ gridColumn: "1 / -1" }}>
-              <label style={{ display: "block", marginBottom: "8px" }}>Beat ZIP soubor (ke stažení po zakoupení)</label>
-              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                <input
-                  type="file"
-                  accept=".zip,.rar"
-                  disabled={uploading["beat"]}
-                  onChange={async (e) => {
-                    if (e.target.files?.[0]) {
-                      const url = await uploadFile(e.target.files[0], "beat");
-                      if (url) setForm(f => ({ ...f, fileUrl: url as string }));
-                    }
-                  }}
-                  style={{ flex: 1 }}
-                  data-testid="input-file-beat-zip"
-                />
-                <button
-                  type="button"
-                  className="btn btn-admin"
-                  onClick={() => setB2PickerFor("beat")}
-                  style={{ whiteSpace: "nowrap", fontSize: "12px" }}
-                  data-testid="button-browse-b2-beat"
-                >
-                  Browse B2
-                </button>
-              </div>
-              <UploadProgressBar type="beat" />
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", margin: "10px 0 6px" }}>
-                <div style={{ flex: 1, height: "1px", background: "#333" }} />
-                <span style={{ fontSize: "11px", color: "#555", whiteSpace: "nowrap" }}>nebo Google Drive URL</span>
-                <div style={{ flex: 1, height: "1px", background: "#333" }} />
-              </div>
+              <label style={{ display: "block", marginBottom: "8px" }}>Google Drive URL beatu (ke stažení po zakoupení)</label>
               <input
                 type="url"
                 placeholder="https://drive.google.com/drive/folders/..."
-                value={form.fileUrl?.startsWith("https://") || form.fileUrl?.startsWith("http://") ? form.fileUrl : ""}
+                value={form.fileUrl || ""}
                 onChange={(e) => setForm({ ...form, fileUrl: e.target.value })}
                 style={{ width: "100%", padding: "8px 10px", background: "#111", border: "1px solid #333", color: "#fff", borderRadius: "3px", fontSize: "13px", boxSizing: "border-box" }}
                 data-testid="input-gdrive-url-beat"
               />
               <p style={{ fontSize: "11px", color: "#555", marginTop: "5px" }}>
-                Nastav sdílení složky: Sdílet → Kdokoli se odkazem → Prohlížeč
+                Nastav sdílení: Sdílet → Kdokoli s odkazem → Prohlížeč
               </p>
-              {form.fileUrl && !uploading["beat"] && (
+              {form.fileUrl && (
                 <div style={{ marginTop: "6px" }}>
                   <span style={{ fontSize: "12px", color: "#4caf50" }}>✓ {form.fileUrl}</span>
                 </div>
               )}
             </div>
 
-            <div>
-              <label style={{ display: "block", marginBottom: "8px" }}>Trackout (ZIP)</label>
-              <button
-                type="button"
-                className="btn btn-admin"
-                onClick={() => setB2PickerFor("trackout")}
-                style={{ whiteSpace: "nowrap", fontSize: "12px" }}
-                data-testid="button-browse-b2-trackout"
-              >
-                Browse B2
-              </button>
-              <div style={{ marginTop: "6px" }}>
-                {form.trackoutUrl && (
-                  <span style={{ fontSize: "12px", color: "#4caf50" }}>✓ {uploadedNames["trackout"] || form.trackoutUrl}</span>
-                )}
-                {!form.trackoutUrl && <UploadStatus type="trackout" url={form.trackoutUrl} />}
-              </div>
+            <div style={{ gridColumn: "1 / -1" }}>
+              <label style={{ display: "block", marginBottom: "8px" }}>Google Drive URL trackoutu (volitelné)</label>
+              <input
+                type="url"
+                placeholder="https://drive.google.com/drive/folders/..."
+                value={form.trackoutUrl || ""}
+                onChange={(e) => setForm({ ...form, trackoutUrl: e.target.value })}
+                style={{ width: "100%", padding: "8px 10px", background: "#111", border: "1px solid #333", color: "#fff", borderRadius: "3px", fontSize: "13px", boxSizing: "border-box" }}
+                data-testid="input-gdrive-url-trackout"
+              />
+              {form.trackoutUrl && (
+                <div style={{ marginTop: "6px" }}>
+                  <span style={{ fontSize: "12px", color: "#4caf50" }}>✓ {form.trackoutUrl}</span>
+                </div>
+              )}
             </div>
           </div>
           <button
@@ -2144,37 +2112,19 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
               <UploadProgressBar type="preview" />
             </div>
             <div>
-              <label style={{ display: "block", marginBottom: "8px" }}>ZIP/RAR soubor</label>
-              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                <input type="file" accept=".zip,.rar" onChange={async (e) => { if (e.target.files?.[0]) { const url = await uploadFile(e.target.files[0], "kit"); setForm({ ...form, fileUrl: url as string }); } }} style={{ flex: 1 }} />
-                <button
-                  type="button"
-                  className="btn btn-admin"
-                  onClick={() => setB2PickerFor("kit")}
-                  style={{ whiteSpace: "nowrap", fontSize: "12px" }}
-                  data-testid="button-browse-b2-kit"
-                >
-                  Browse B2
-                </button>
-              </div>
-              <UploadProgressBar type="kit" />
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", margin: "10px 0 6px" }}>
-                <div style={{ flex: 1, height: "1px", background: "#333" }} />
-                <span style={{ fontSize: "11px", color: "#555", whiteSpace: "nowrap" }}>nebo Google Drive URL</span>
-                <div style={{ flex: 1, height: "1px", background: "#333" }} />
-              </div>
+              <label style={{ display: "block", marginBottom: "8px" }}>Google Drive URL kitu (ke stažení po zakoupení)</label>
               <input
                 type="url"
                 placeholder="https://drive.google.com/drive/folders/..."
-                value={form.fileUrl?.startsWith("https://") || form.fileUrl?.startsWith("http://") ? form.fileUrl : ""}
+                value={form.fileUrl || ""}
                 onChange={(e) => setForm({ ...form, fileUrl: e.target.value })}
                 style={{ width: "100%", padding: "8px 10px", background: "#111", border: "1px solid #333", color: "#fff", borderRadius: "3px", fontSize: "13px", boxSizing: "border-box" }}
                 data-testid="input-gdrive-url"
               />
               <p style={{ fontSize: "11px", color: "#555", marginTop: "5px" }}>
-                Nastav sdílení složky: Sdílet → Kdokoli se odkazem → Prohlížeč
+                Nastav sdílení: Sdílet → Kdokoli s odkazem → Prohlížeč
               </p>
-              {form.fileUrl && !uploading["kit"] && (
+              {form.fileUrl && (
                 <div style={{ marginTop: "6px" }}>
                   <span style={{ fontSize: "12px", color: "#4caf50" }}>✓ {form.fileUrl}</span>
                 </div>
