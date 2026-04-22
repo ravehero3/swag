@@ -645,7 +645,7 @@ function Home() {
       <div className="mobile-video-container desktop-main-video" style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative", background: "#000", minHeight: "600px" }}>
         <video
           ref={videoRef}
-          src="/uploads/voodoo808-video.mov"
+          src="/uploads/voodoo808-video.mp4"
           autoPlay
           loop
           muted
@@ -654,7 +654,7 @@ function Home() {
           onLoadedData={(e) => { (e.target as HTMLVideoElement).play().catch(() => {}); }}
           style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", background: "#000" }}
         >
-          <source src="/uploads/voodoo808-video.mov" type="video/mp4" />
+          <source src="/uploads/voodoo808-video.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
         <div
@@ -673,7 +673,7 @@ function Home() {
       {/* Mobile-only video — shown only on screens ≤768px */}
       <div className="mobile-only-video-section" style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginBottom: "24px", overflow: "hidden", position: "relative", background: "#000" }}>
         <video
-          src="/uploads/mobile-home-video.mov"
+          src="/uploads/mobile-home-video.mp4"
           autoPlay
           loop
           muted
@@ -681,7 +681,7 @@ function Home() {
           preload="auto"
           style={{ width: "100%", display: "block", objectFit: "cover", background: "#000" }}
         >
-          <source src="/uploads/mobile-home-video.mov" type="video/mp4" />
+          <source src="/uploads/mobile-home-video.mp4" type="video/mp4" />
         </video>
         <div
           style={{
