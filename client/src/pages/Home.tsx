@@ -568,7 +568,11 @@ function Home() {
 
   if (beatsLoading) {
     return (
-      <div style={{ background: "#000", minHeight: "100vh" }} />
+      <div style={{ background: "#000", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <p style={{ color: "#555", fontSize: "11px", letterSpacing: "0.15em", textTransform: "uppercase", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", margin: 0 }}>
+          Načítání…
+        </p>
+      </div>
     );
   }
 
