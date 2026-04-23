@@ -148,41 +148,69 @@ app.get("/api/gdrive/check", async (req: any, res: any) => {
   else if (idParam) { id = idParam[1]; kind = "file"; }
   else return res.status(400).json({ ok: false, error: "Toto nevypadá jako Google Drive odkaz" });
 
-  const probeUrl = kind === "folder"
-    ? `https://drive.google.com/drive/folders/${id}`
-    : `https://drive.google.com/uc?id=${id}&export=download`;
+  // Probe order: prefer the public file/folder viewer, which reliably returns
+  // 200 (public) or 302→accounts.google.com (private). The /uc?export=download
+  // endpoint returns 404 for many file kinds even when the file IS public, so
+  // we never rely on it as the primary probe.
+  const probeUrls = kind === "folder"
+    ? [`https://drive.google.com/drive/folders/${id}`]
+    : [
+        `https://drive.google.com/file/d/${id}/view`,
+        `https://drive.google.com/uc?id=${id}`,
+      ];
 
-  try {
+  const probeOnce = async (probeUrl: string) => {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 8000);
-    const r = await fetch(probeUrl, {
-      method: "GET",
-      redirect: "manual",
-      signal: controller.signal,
-      headers: { "User-Agent": "Mozilla/5.0 (compatible; voodoo808-link-check/1.0)" },
-    });
-    clearTimeout(timer);
+    try {
+      const r = await fetch(probeUrl, {
+        method: "GET",
+        redirect: "manual",
+        signal: controller.signal,
+        headers: {
+          // A real-browser UA — Drive sometimes serves different responses to
+          // unknown UAs (including spurious 404s).
+          "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0 Safari/537.36",
+          "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+          "Accept-Language": "en-US,en;q=0.9",
+        },
+      });
+      return r;
+    } finally {
+      clearTimeout(timer);
+    }
+  };
 
-    // Drive returns 200 (folder page) or 302/303 (file download redirect) when public.
-    // Restricted items return 200 with a sign-in interstitial OR 401/403/404.
-    if (r.status >= 300 && r.status < 400) {
-      return res.json({ ok: true, message: `Veřejně dostupné (${kind})`, status: r.status });
+  try {
+    let lastStatus = 0;
+    for (const probeUrl of probeUrls) {
+      const r = await probeOnce(probeUrl);
+      lastStatus = r.status;
+
+      // 3xx without a Location pointing at the sign-in page = public file.
+      if (r.status >= 300 && r.status < 400) {
+        const loc = r.headers.get("location") || "";
+        if (/accounts\.google\.com|ServiceLogin|signin/i.test(loc)) {
+          return res.status(200).json({ ok: false, error: "Odkaz vyžaduje přihlášení (přepni sdílení na 'Kdokoli s odkazem')" });
+        }
+        return res.json({ ok: true, message: `Veřejně dostupné (${kind})`, status: r.status });
+      }
+      if (r.status === 200) {
+        const body = await r.text().catch(() => "");
+        const blocked = /accounts\.google\.com\/v3\/signin|"signinUrl"|ServiceLogin/i.test(body)
+          || /Pot.{0,2}ebujete povolen|Need permission|Access Denied/i.test(body);
+        if (blocked) return res.status(200).json({ ok: false, error: "Odkaz není veřejný — nastav Sdílet → Kdokoli s odkazem" });
+        return res.json({ ok: true, message: `Veřejně dostupné (${kind})`, status: r.status });
+      }
+      if (r.status === 401 || r.status === 403) {
+        return res.status(200).json({ ok: false, error: "Odkaz vyžaduje přihlášení (přepni sdílení na 'Kdokoli s odkazem')" });
+      }
+      // 404 from one probe — try the next probe before giving up.
+      if (r.status !== 404) {
+        return res.status(200).json({ ok: false, error: `Neočekávaný stav (${r.status})` });
+      }
     }
-    if (r.status === 200) {
-      // Body sniff to detect the sign-in wall
-      const body = await r.text().catch(() => "");
-      const blocked = /accounts\.google\.com\/v3\/signin|"signinUrl"|ServiceLogin/i.test(body)
-        || /Pot.{0,2}ebujete povolen|Need permission|Access Denied/i.test(body);
-      if (blocked) return res.status(200).json({ ok: false, error: "Odkaz není veřejný — nastav Sdílet → Kdokoli s odkazem" });
-      return res.json({ ok: true, message: `Veřejně dostupné (${kind})`, status: r.status });
-    }
-    if (r.status === 401 || r.status === 403) {
-      return res.status(200).json({ ok: false, error: "Odkaz vyžaduje přihlášení (přepni sdílení na 'Kdokoli s odkazem')" });
-    }
-    if (r.status === 404) {
-      return res.status(200).json({ ok: false, error: "Odkaz nenalezen (404). Zkontroluj URL." });
-    }
-    return res.status(200).json({ ok: false, error: `Neočekávaný stav (${r.status})` });
+    return res.status(200).json({ ok: false, error: `Odkaz nenalezen (${lastStatus}). Zkontroluj URL a sdílení.` });
   } catch (e: any) {
     return res.status(200).json({ ok: false, error: e?.name === "AbortError" ? "Časový limit ověření vypršel" : (e?.message || "Chyba při ověření") });
   }

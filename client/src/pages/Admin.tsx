@@ -1954,12 +1954,24 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
               try {
                 const data = JSON.parse(xhr.responseText);
                 setUploadProgress(prev => ({ ...prev, [type]: 100 }));
+                if (!data || typeof data.url !== "string" || !data.url) {
+                  // Server claimed success but didn't return a usable URL — surface
+                  // the raw response so we can see exactly what production sent back.
+                  reject(new Error(`Server vrátil 2xx bez URL. Odpověď: ${xhr.responseText.slice(0, 400)}`));
+                  return;
+                }
                 resolve(data.url);
               } catch (e) {
-                reject(new Error("Invalid response"));
+                reject(new Error(`Invalid response: ${xhr.responseText.slice(0, 200)}`));
               }
             } else {
-              reject(new Error(`Server ${xhr.status}: ${xhr.responseText}`));
+              // Try to extract a structured error from the JSON body
+              let detail = xhr.responseText.slice(0, 400);
+              try {
+                const j = JSON.parse(xhr.responseText);
+                detail = j.error || j.detail || detail;
+              } catch {}
+              reject(new Error(`Server ${xhr.status}: ${detail}`));
             }
           };
           xhr.send(formData);
@@ -2007,6 +2019,9 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : 'Upload failed';
       setUploadError(prev => ({ ...prev, [type]: errorMsg }));
+      // Reset the progress bar so the user doesn't see a green "✓ Nahráno" banner
+      // while an error is also being displayed.
+      setUploadProgress(prev => ({ ...prev, [type]: 0 }));
       return '';
     } finally {
       setUploading(prev => ({ ...prev, [type]: false }));
