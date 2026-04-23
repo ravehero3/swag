@@ -103,6 +103,84 @@ app.use(passport.session());
 
 app.use("/uploads", express.static(path.join(__dirname, "../../public/uploads")));
 
+// --- Public Google Drive link verification ----------------------------------
+// Called from the admin UI's "Ověřit odkaz" badge to confirm that a paste-in
+// Drive URL is publicly reachable BEFORE the kit/beat is saved. Probes the
+// public file/folder viewer (with a real-browser User-Agent + Accept headers,
+// because Drive returns spurious 404s to unknown UAs) and falls back to a
+// secondary endpoint so a single quirky 404 doesn't fail the whole check.
+app.get("/api/gdrive/check", async (req: any, res: any) => {
+  const url = (req.query.url as string || "").trim();
+  if (!url) return res.status(400).json({ ok: false, error: "Missing url" });
+
+  let id = "";
+  let kind: "folder" | "file" = "file";
+  const folderMatch = url.match(/\/(?:folders|drive\/folders|drive\/u\/\d+\/folders)\/([a-zA-Z0-9_-]{10,})/);
+  const fileMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]{10,})/);
+  const idParam = url.match(/[?&]id=([a-zA-Z0-9_-]{10,})/);
+  if (folderMatch) { id = folderMatch[1]; kind = "folder"; }
+  else if (fileMatch) { id = fileMatch[1]; kind = "file"; }
+  else if (idParam) { id = idParam[1]; kind = "file"; }
+  else return res.status(400).json({ ok: false, error: "Toto nevypadá jako Google Drive odkaz" });
+
+  const probeUrls = kind === "folder"
+    ? [`https://drive.google.com/drive/folders/${id}`]
+    : [
+        `https://drive.google.com/file/d/${id}/view`,
+        `https://drive.google.com/uc?id=${id}`,
+      ];
+
+  const probeOnce = async (probeUrl: string) => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8000);
+    try {
+      return await fetch(probeUrl, {
+        method: "GET",
+        redirect: "manual",
+        signal: controller.signal,
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0 Safari/537.36",
+          "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+          "Accept-Language": "en-US,en;q=0.9",
+        },
+      });
+    } finally {
+      clearTimeout(timer);
+    }
+  };
+
+  try {
+    let lastStatus = 0;
+    for (const probeUrl of probeUrls) {
+      const r = await probeOnce(probeUrl);
+      lastStatus = r.status;
+      if (r.status >= 300 && r.status < 400) {
+        const loc = r.headers.get("location") || "";
+        if (/accounts\.google\.com|ServiceLogin|signin/i.test(loc)) {
+          return res.status(200).json({ ok: false, error: "Odkaz vyžaduje přihlášení (přepni sdílení na 'Kdokoli s odkazem')" });
+        }
+        return res.json({ ok: true, message: `Veřejně dostupné (${kind})`, status: r.status });
+      }
+      if (r.status === 200) {
+        const body = await r.text().catch(() => "");
+        const blocked = /accounts\.google\.com\/v3\/signin|"signinUrl"|ServiceLogin/i.test(body)
+          || /Pot.{0,2}ebujete povolen|Need permission|Access Denied/i.test(body);
+        if (blocked) return res.status(200).json({ ok: false, error: "Odkaz není veřejný — nastav Sdílet → Kdokoli s odkazem" });
+        return res.json({ ok: true, message: `Veřejně dostupné (${kind})`, status: r.status });
+      }
+      if (r.status === 401 || r.status === 403) {
+        return res.status(200).json({ ok: false, error: "Odkaz vyžaduje přihlášení (přepni sdílení na 'Kdokoli s odkazem')" });
+      }
+      if (r.status !== 404) {
+        return res.status(200).json({ ok: false, error: `Neočekávaný stav (${r.status})` });
+      }
+    }
+    return res.status(200).json({ ok: false, error: `Odkaz nenalezen (${lastStatus}). Zkontroluj URL a sdílení.` });
+  } catch (e: any) {
+    return res.status(200).json({ ok: false, error: e?.name === "AbortError" ? "Časový limit ověření vypršel" : (e?.message || "Chyba při ověření") });
+  }
+});
+
 app.use("/api/auth", authRoutes);
 app.use("/api/leads", leadsRoutes);
 app.use("/api/beats", beatsRoutes);
