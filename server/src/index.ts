@@ -129,6 +129,65 @@ app.use("/api/licenses", licensesRoutes);
 app.use("/api/admin", adminLicensesRoutes);
 app.use("/api/beats", commentsRoutes);
 
+// Verify a Google Drive folder/file URL is publicly accessible.
+// Drive blocks HEAD on the canonical URL but the file-id endpoints follow a
+// predictable pattern: an "anyone with the link" item returns 200/30x; a
+// restricted one returns 401/403/404.
+app.get("/api/gdrive/check", async (req: any, res: any) => {
+  const url = (req.query.url as string || "").trim();
+  if (!url) return res.status(400).json({ ok: false, error: "Missing url" });
+
+  // Extract folder/file id
+  let id = "";
+  let kind: "folder" | "file" = "file";
+  const folderMatch = url.match(/\/(?:folders|drive\/folders|drive\/u\/\d+\/folders)\/([a-zA-Z0-9_-]{10,})/);
+  const fileMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]{10,})/);
+  const idParam = url.match(/[?&]id=([a-zA-Z0-9_-]{10,})/);
+  if (folderMatch) { id = folderMatch[1]; kind = "folder"; }
+  else if (fileMatch) { id = fileMatch[1]; kind = "file"; }
+  else if (idParam) { id = idParam[1]; kind = "file"; }
+  else return res.status(400).json({ ok: false, error: "Toto nevypadá jako Google Drive odkaz" });
+
+  const probeUrl = kind === "folder"
+    ? `https://drive.google.com/drive/folders/${id}`
+    : `https://drive.google.com/uc?id=${id}&export=download`;
+
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8000);
+    const r = await fetch(probeUrl, {
+      method: "GET",
+      redirect: "manual",
+      signal: controller.signal,
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; voodoo808-link-check/1.0)" },
+    });
+    clearTimeout(timer);
+
+    // Drive returns 200 (folder page) or 302/303 (file download redirect) when public.
+    // Restricted items return 200 with a sign-in interstitial OR 401/403/404.
+    if (r.status >= 300 && r.status < 400) {
+      return res.json({ ok: true, message: `Veřejně dostupné (${kind})`, status: r.status });
+    }
+    if (r.status === 200) {
+      // Body sniff to detect the sign-in wall
+      const body = await r.text().catch(() => "");
+      const blocked = /accounts\.google\.com\/v3\/signin|"signinUrl"|ServiceLogin/i.test(body)
+        || /Pot.{0,2}ebujete povolen|Need permission|Access Denied/i.test(body);
+      if (blocked) return res.status(200).json({ ok: false, error: "Odkaz není veřejný — nastav Sdílet → Kdokoli s odkazem" });
+      return res.json({ ok: true, message: `Veřejně dostupné (${kind})`, status: r.status });
+    }
+    if (r.status === 401 || r.status === 403) {
+      return res.status(200).json({ ok: false, error: "Odkaz vyžaduje přihlášení (přepni sdílení na 'Kdokoli s odkazem')" });
+    }
+    if (r.status === 404) {
+      return res.status(200).json({ ok: false, error: "Odkaz nenalezen (404). Zkontroluj URL." });
+    }
+    return res.status(200).json({ ok: false, error: `Neočekávaný stav (${r.status})` });
+  } catch (e: any) {
+    return res.status(200).json({ ok: false, error: e?.name === "AbortError" ? "Časový limit ověření vypršel" : (e?.message || "Chyba při ověření") });
+  }
+});
+
 async function seedAdmin() {
   try {
     const email = 'admin@voodoo808.com';

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useApp } from "../App.js";
 import { useLocation } from "wouter";
 import ProductsGrid from "../components/ProductsGrid.js";
+import { preloadWaveform, seedWaveformCache } from "../lib/waveformCache.js";
 
 interface SoundKit {
   id: number;
@@ -15,6 +16,7 @@ interface SoundKit {
   preview_url: string;
   preview_urls?: string[];
   artwork_url: string;
+  waveform_data?: number[] | null;
 }
 
 const typeLabels: Record<string, string> = {
@@ -37,6 +39,18 @@ function prefetchKits(): Promise<SoundKit[]> {
       .then((res) => res.json())
       .then((data: SoundKit[]) => {
         _kitsCache = Array.isArray(data) && data.length > 0 ? data : [];
+        // Seed waveform cache so the player draws the same wave as for beats.
+        // For kits without precomputed data, schedule background extraction
+        // and persist the result via the kit-aware POST endpoint.
+        _kitsCache.forEach((kit, i) => {
+          const url = (Array.isArray(kit.preview_urls) && kit.preview_urls[0]) || kit.preview_url;
+          if (!url) return;
+          if (kit.waveform_data && Array.isArray(kit.waveform_data)) {
+            seedWaveformCache(url, kit.waveform_data);
+          } else {
+            setTimeout(() => preloadWaveform(url, kit.id, "sound_kit"), i * 120);
+          }
+        });
         return _kitsCache;
       })
       .catch(() => {

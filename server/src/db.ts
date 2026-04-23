@@ -270,6 +270,7 @@ export async function initDatabase() {
       ALTER TABLE sound_kits ADD COLUMN IF NOT EXISTS number_of_sounds INTEGER DEFAULT 0;
       ALTER TABLE sound_kits ADD COLUMN IF NOT EXISTS preview_urls TEXT[] DEFAULT '{}';
       ALTER TABLE sound_kits ADD COLUMN IF NOT EXISTS order_index INTEGER DEFAULT 0;
+      ALTER TABLE sound_kits ADD COLUMN IF NOT EXISTS waveform_data JSONB;
       ALTER TABLE orders ADD COLUMN IF NOT EXISTS buyer_legal_name VARCHAR(255);
       ALTER TABLE orders ADD COLUMN IF NOT EXISTS buyer_artist_name VARCHAR(255);
       ALTER TABLE orders ADD COLUMN IF NOT EXISTS buyer_address TEXT;

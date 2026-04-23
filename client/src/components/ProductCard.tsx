@@ -160,6 +160,15 @@ export default function ProductCard({
         <img
           src={images[0] || "/uploads/artwork/metallic-logo.png"}
           alt={name}
+          referrerPolicy="no-referrer"
+          decoding="async"
+          loading="lazy"
+          onError={(e) => {
+            const img = e.currentTarget as HTMLImageElement;
+            if (img.src.indexOf("/uploads/artwork/metallic-logo.png") === -1) {
+              img.src = "/uploads/artwork/metallic-logo.png";
+            }
+          }}
           style={{ width: "100%", height: "100%", objectFit: compactArtwork ? "cover" : "contain", objectPosition: "center", borderRadius: compactArtwork ? "4px" : 0 }}
         />
 

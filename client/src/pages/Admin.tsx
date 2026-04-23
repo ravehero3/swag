@@ -270,6 +270,7 @@ interface SoundKit {
   author_info: string;
   is_published: boolean;
   order_index?: number;
+  waveform_data?: number[] | null;
 }
 
 interface LicenseType {
@@ -632,6 +633,69 @@ function WaveformModal({ beat, onClose }: { beat: Beat; onClose: () => void }) {
           <span>konec</span>
         </div>
       </div>
+    </div>
+  );
+}
+
+// Validates a Google Drive folder/file URL: shape check + reachability via server-side proxy.
+// Renders a coloured badge so the admin can immediately see whether the link is set up correctly.
+function GDriveLinkStatus({ url }: { url: string }) {
+  const [state, setState] = useState<{ status: "idle" | "checking" | "ok" | "warn" | "bad"; message: string }>({ status: "idle", message: "" });
+
+  const driveIdMatch = (() => {
+    if (!url) return null;
+    const m = url.match(/\/(?:folders|file\/d|drive\/folders|drive\/u\/\d+\/folders)\/([a-zA-Z0-9_-]{10,})/);
+    if (m) return { id: m[1], kind: url.includes("/folders") ? "folder" : "file" };
+    const idParam = url.match(/[?&]id=([a-zA-Z0-9_-]{10,})/);
+    if (idParam) return { id: idParam[1], kind: "file" };
+    return null;
+  })();
+
+  const verify = async () => {
+    if (!url) return;
+    setState({ status: "checking", message: "Ověřuji…" });
+    try {
+      const res = await fetch(`/api/gdrive/check?url=${encodeURIComponent(url)}`, { credentials: "include" });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.ok) {
+        setState({ status: "ok", message: data.message || "Odkaz je veřejně dostupný" });
+      } else {
+        setState({ status: "bad", message: data.error || `Nedostupné (HTTP ${res.status})` });
+      }
+    } catch (e: any) {
+      setState({ status: "bad", message: e?.message || "Chyba při ověření" });
+    }
+  };
+
+  if (!url) return null;
+
+  // Format check first (fast, no network)
+  if (!driveIdMatch) {
+    return (
+      <div style={{ marginTop: "6px", fontSize: "12px", color: "#ff9800", display: "flex", alignItems: "center", gap: "8px" }}>
+        <span>⚠</span><span>Toto nevypadá jako Google Drive URL</span>
+      </div>
+    );
+  }
+
+  const colour = state.status === "ok" ? "#4caf50" : state.status === "bad" ? "#ff5252" : state.status === "checking" ? "#0B99FC" : "#888";
+  const icon = state.status === "ok" ? "✓" : state.status === "bad" ? "✗" : state.status === "checking" ? "…" : "?";
+
+  return (
+    <div style={{ marginTop: "6px", display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+      <span style={{ fontSize: "12px", color: colour, display: "inline-flex", alignItems: "center", gap: "6px" }}>
+        <span style={{ width: "16px", display: "inline-block", textAlign: "center" }}>{icon}</span>
+        <span>{state.status === "idle" ? `Drive ${driveIdMatch.kind} • ${driveIdMatch.id.slice(0, 10)}…` : state.message}</span>
+      </span>
+      <button
+        type="button"
+        onClick={verify}
+        disabled={state.status === "checking"}
+        style={{ background: "transparent", border: "1px solid #333", color: "#aaa", padding: "2px 8px", borderRadius: "3px", fontSize: "11px", cursor: state.status === "checking" ? "default" : "pointer" }}
+        data-testid="button-verify-gdrive"
+      >
+        {state.status === "idle" ? "Ověřit dostupnost" : "Ověřit znovu"}
+      </button>
     </div>
   );
 }
@@ -1389,11 +1453,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
               <p style={{ fontSize: "11px", color: "#555", marginTop: "5px" }}>
                 Nastav sdílení: Sdílet → Kdokoli s odkazem → Prohlížeč
               </p>
-              {form.fileUrl && (
-                <div style={{ marginTop: "6px" }}>
-                  <span style={{ fontSize: "12px", color: "#4caf50" }}>✓ {form.fileUrl}</span>
-                </div>
-              )}
+              <GDriveLinkStatus url={form.fileUrl || ""} />
             </div>
 
             <div style={{ gridColumn: "1 / -1" }}>
@@ -1406,11 +1466,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                 style={{ width: "100%", padding: "8px 10px", background: "#111", border: "1px solid #333", color: "#fff", borderRadius: "3px", fontSize: "13px", boxSizing: "border-box" }}
                 data-testid="input-gdrive-url-trackout"
               />
-              {form.trackoutUrl && (
-                <div style={{ marginTop: "6px" }}>
-                  <span style={{ fontSize: "12px", color: "#4caf50" }}>✓ {form.trackoutUrl}</span>
-                </div>
-              )}
+              <GDriveLinkStatus url={form.trackoutUrl || ""} />
             </div>
           </div>
           <button
@@ -1703,6 +1759,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
   const [uploadError, setUploadError] = useState<Record<string, string>>({});
   const [b2PickerFor, setB2PickerFor] = useState<string | null>(null);
   const [hoveredKitId, setHoveredKitId] = useState<number | null>(null);
+  const [recomputingKitIds, setRecomputingKitIds] = useState<Set<number>>(new Set());
   const formRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -2124,19 +2181,37 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
               <p style={{ fontSize: "11px", color: "#555", marginTop: "5px" }}>
                 Nastav sdílení: Sdílet → Kdokoli s odkazem → Prohlížeč
               </p>
-              {form.fileUrl && (
-                <div style={{ marginTop: "6px" }}>
-                  <span style={{ fontSize: "12px", color: "#4caf50" }}>✓ {form.fileUrl}</span>
-                </div>
-              )}
+              <GDriveLinkStatus url={form.fileUrl || ""} />
             </div>
             <div>
               <label style={{ display: "block", marginBottom: "8px" }}>Artwork</label>
-              <input type="file" accept="image/*" onChange={async (e) => { if (e.target.files?.[0]) { const url = await uploadFile(e.target.files[0], "artwork"); setForm({ ...form, artworkUrl: url as string }); } }} style={{ width: "100%" }} />
+              <input
+                type="file"
+                accept="image/*"
+                disabled={uploading["artwork"]}
+                onChange={async (e) => {
+                  if (e.target.files?.[0]) {
+                    const url = await uploadFile(e.target.files[0], "artwork");
+                    if (url) setForm(f => ({ ...f, artworkUrl: url as string }));
+                  }
+                }}
+                style={{ width: "100%", opacity: uploading["artwork"] ? 0.4 : 1 }}
+              />
               <UploadProgressBar type="artwork" />
+              {uploadError["artwork"] && (
+                <div style={{ marginTop: "6px", fontSize: "12px", color: "#ff5252" }}>Chyba při nahrávání: {uploadError["artwork"]}</div>
+              )}
               {form.artworkUrl && !uploading["artwork"] && (
                 <div style={{ display: "flex", gap: "10px", alignItems: "flex-start", marginTop: "8px" }}>
-                  <img src={form.artworkUrl} alt="artwork preview" style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "3px" }} />
+                  <img
+                    src={form.artworkUrl}
+                    alt="artwork preview"
+                    referrerPolicy="no-referrer"
+                    decoding="async"
+                    loading="lazy"
+                    style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "3px", background: "#111" }}
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = "0.3"; }}
+                  />
                   <button
                     type="button"
                     onClick={() => setForm(f => ({ ...f, artworkUrl: "" }))}
@@ -2249,6 +2324,34 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
                   title="Posunout dolů"
                   style={{ background: "transparent", border: "1px solid #333", color: rowIdx === sortedArr.length - 1 ? "#333" : "#888", cursor: rowIdx === sortedArr.length - 1 ? "default" : "pointer", padding: "4px 7px", borderRadius: "3px", marginRight: "8px", fontSize: "12px" }}
                 >▼</button>
+                <button
+                  className="btn btn-admin"
+                  onClick={async () => {
+                    if (!kit.preview_url) { alert("Kit nemá preview URL"); return; }
+                    setRecomputingKitIds(prev => new Set([...prev, kit.id]));
+                    try {
+                      const data = await computeWaveformInBrowser(kit.preview_url);
+                      if (data && data.length > 0) {
+                        await fetch(`/api/sound-kits/${kit.id}/waveform`, {
+                          method: "POST", credentials: "include",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ data }),
+                        });
+                        onRefresh();
+                      } else {
+                        alert("Waveform se nepodařilo vygenerovat — zkontroluj, že je preview URL přístupné.");
+                      }
+                    } finally {
+                      setRecomputingKitIds(prev => { const n = new Set(prev); n.delete(kit.id); return n; });
+                    }
+                  }}
+                  disabled={recomputingKitIds.has(kit.id) || !kit.preview_url}
+                  title={kit.waveform_data ? "Přegenerovat waveform" : "Vygenerovat waveform"}
+                  style={{ marginRight: "8px", color: kit.waveform_data ? "#4caf50" : "#0B99FC", borderColor: kit.waveform_data ? "#4caf50" : "#0B99FC" }}
+                  data-testid={`button-waveform-kit-${kit.id}`}
+                >
+                  {recomputingKitIds.has(kit.id) ? "Generuji…" : (kit.waveform_data ? "♪ OK" : "♪ Generovat")}
+                </button>
                 <button className="btn btn-admin" onClick={() => { setEditing(kit); setShowForm(true); }} style={{ marginRight: "8px" }} data-testid={`button-edit-kit-${kit.id}`}>Upravit</button>
                 <button className="btn btn-admin" onClick={() => handleDelete(kit.id)} style={{ color: "#333", borderColor: "#333" }} data-testid={`button-delete-kit-${kit.id}`}>Smazat</button>
               </td>

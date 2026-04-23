@@ -2,8 +2,23 @@ import { Router, Request, Response } from "express";
 import { pool } from "../db.js";
 import { requireAdmin, requireAuth } from "../middleware/auth.js";
 import { generateDownloadUrl, STORAGE_BUCKETS } from "../lib/storage.js";
+import { computeWaveformFromUrl } from "../lib/waveform.js";
 
 const router = Router();
+
+async function triggerKitWaveformComputation(kitId: number, previewUrl: string) {
+  try {
+    const existing = await pool.query("SELECT waveform_data FROM sound_kits WHERE id = $1", [kitId]);
+    if (existing.rows[0]?.waveform_data) return;
+    const data = await computeWaveformFromUrl(previewUrl);
+    if (data) {
+      await pool.query("UPDATE sound_kits SET waveform_data = $1 WHERE id = $2", [JSON.stringify(data), kitId]);
+      console.log(`Waveform computed for sound kit ${kitId}`);
+    }
+  } catch (e) {
+    console.error(`Waveform computation failed for sound kit ${kitId}:`, e);
+  }
+}
 
 function normalizePreviewUrls(previewUrl?: string, previewUrls?: string[]) {
   const urls = [
@@ -19,7 +34,7 @@ function normalizePreviewUrls(previewUrl?: string, previewUrls?: string[]) {
 router.get("/", async (_req: Request, res: Response) => {
   try {
     const result = await pool.query(
-      "SELECT id, title, description, type, price, is_free, number_of_sounds, tags, COALESCE(NULLIF(preview_url, ''), preview_urls[1]) AS preview_url, preview_urls, file_url, artwork_url, legal_info, author_info, is_published, order_index, created_at FROM sound_kits WHERE is_published = true ORDER BY order_index ASC, created_at DESC"
+      "SELECT id, title, description, type, price, is_free, number_of_sounds, tags, COALESCE(NULLIF(preview_url, ''), preview_urls[1]) AS preview_url, preview_urls, file_url, artwork_url, legal_info, author_info, is_published, order_index, waveform_data, created_at FROM sound_kits WHERE is_published = true ORDER BY order_index ASC, created_at DESC"
     );
     res.set("Cache-Control", "no-store, no-cache, must-revalidate");
     res.json(result.rows);
@@ -81,7 +96,11 @@ router.post("/", requireAdmin, async (req: Request, res: Response) => {
        tags || [], normalizedPreviewUrls[0] || null, normalizedPreviewUrls, previewLabels || [],
        fileUrl, artworkUrl, legalInfo, authorInfo, isPublished || false]
     );
-    res.json(result.rows[0]);
+    const kit = result.rows[0];
+    res.json(kit);
+    if (kit.id && normalizedPreviewUrls[0]) {
+      triggerKitWaveformComputation(kit.id, normalizedPreviewUrls[0]).catch(() => {});
+    }
   } catch (error) {
     console.error("Error creating sound kit:", error);
     res.status(500).json({ error: "Chyba při vytváření kitu" });
@@ -99,15 +118,59 @@ router.put("/:id", requireAdmin, async (req: Request, res: Response) => {
     const result = await pool.query(
       `UPDATE sound_kits SET title = $1, description = $2, type = $3, price = $4, 
        is_free = $5, number_of_sounds = $6, tags = $7, preview_url = $8, preview_urls = $9,
-       preview_labels = $10, file_url = $11, artwork_url = $12, legal_info = $13, author_info = $14, is_published = $15
+       preview_labels = $10, file_url = $11, artwork_url = $12, legal_info = $13, author_info = $14, is_published = $15,
+       waveform_data = CASE WHEN $17::varchar IS DISTINCT FROM preview_url THEN NULL ELSE waveform_data END
        WHERE id = $16 RETURNING *`,
       [title, description, type, price, isFree, numberOfSounds, tags, 
        normalizedPreviewUrls[0] || null, normalizedPreviewUrls, previewLabels || [],
-       fileUrl, artworkUrl, legalInfo, authorInfo, isPublished, req.params.id]
+       fileUrl, artworkUrl, legalInfo, authorInfo, isPublished, req.params.id, normalizedPreviewUrls[0] || null]
     );
-    res.json(result.rows[0]);
+    const kit = result.rows[0];
+    res.json(kit);
+    if (kit?.id && normalizedPreviewUrls[0]) {
+      triggerKitWaveformComputation(kit.id, normalizedPreviewUrls[0]).catch(() => {});
+    }
   } catch (error) {
+    console.error("Error updating sound kit:", error);
     res.status(500).json({ error: "Chyba při aktualizaci kitu" });
+  }
+});
+
+// Save waveform data computed by the client
+router.post("/:id/waveform", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { data } = req.body;
+    if (!Array.isArray(data) || data.length === 0) {
+      return res.status(400).json({ error: "Invalid waveform data" });
+    }
+    await pool.query("UPDATE sound_kits SET waveform_data = $1 WHERE id = $2", [JSON.stringify(data), req.params.id]);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při ukládání waveform dat" });
+  }
+});
+
+// Recompute on demand (admin button)
+router.post("/:id/recompute-waveform", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const kitId = parseInt(req.params.id, 10);
+    if (isNaN(kitId)) return res.status(400).json({ error: "Invalid kit id" });
+    const kitRes = await pool.query("SELECT preview_url, preview_urls FROM sound_kits WHERE id = $1", [kitId]);
+    if (kitRes.rows.length === 0) return res.status(404).json({ error: "Kit not found" });
+    const { preview_url, preview_urls } = kitRes.rows[0];
+    const url: string | undefined = preview_url || (Array.isArray(preview_urls) ? preview_urls[0] : undefined);
+    if (!url) return res.status(400).json({ error: "Kit has no preview URL" });
+    await pool.query("UPDATE sound_kits SET waveform_data = NULL WHERE id = $1", [kitId]);
+    const data = await computeWaveformFromUrl(url);
+    if (data && data.length > 0) {
+      await pool.query("UPDATE sound_kits SET waveform_data = $1 WHERE id = $2", [JSON.stringify(data), kitId]);
+      res.json({ success: true, status: "done", bars: data.length });
+    } else {
+      res.status(500).json({ error: "Waveform computation failed — ffmpeg returned no data. Check that the preview URL is reachable." });
+    }
+  } catch (error) {
+    console.error("Recompute kit waveform error:", error);
+    res.status(500).json({ error: "Chyba při přepočtu waveformu" });
   }
 });
 

@@ -79,14 +79,15 @@ export function seedWaveformCache(url: string, data: number[]): void {
   cache.set(url, data);
 }
 
-export async function preloadWaveform(url: string, beatId?: number): Promise<void> {
+export async function preloadWaveform(url: string, itemId?: number, productType: "beat" | "sound_kit" = "beat"): Promise<void> {
   if (!url || cache.has(url) || inFlight.has(url)) return;
   inFlight.add(url);
   try {
     const result = await extractWaveform(url);
     cache.set(url, result);
-    if (result && beatId) {
-      fetch(`/api/beats/${beatId}/waveform`, {
+    if (result && itemId) {
+      const endpoint = productType === "sound_kit" ? `/api/sound-kits/${itemId}/waveform` : `/api/beats/${itemId}/waveform`;
+      fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ data: result }),
