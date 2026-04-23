@@ -700,6 +700,63 @@ function GDriveLinkStatus({ url }: { url: string }) {
   );
 }
 
+function ArtworkPreview({ url, onDelete, testId }: { url: string; onDelete: () => void; testId: string }) {
+  const [bust, setBust] = useState(0);
+  const [status, setStatus] = useState<"loading" | "ok" | "error">("loading");
+  useEffect(() => { setStatus("loading"); }, [url, bust]);
+  const cacheBustedSrc = bust > 0 ? `${url}${url.includes("?") ? "&" : "?"}_=${bust}` : url;
+  return (
+    <div style={{ marginTop: "8px", padding: "10px", background: "#0f0f0f", border: "1px solid #2a2a2a", borderRadius: "4px" }}>
+      <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
+        <img
+          src={cacheBustedSrc}
+          alt="artwork preview"
+          referrerPolicy="no-referrer"
+          decoding="async"
+          loading="lazy"
+          onLoad={() => setStatus("ok")}
+          onError={() => setStatus("error")}
+          style={{
+            width: "96px", height: "96px", objectFit: "cover", borderRadius: "3px",
+            background: "#111", border: status === "error" ? "1px solid #ff5252" : "1px solid #2a2a2a",
+            opacity: status === "error" ? 0.3 : 1,
+          }}
+        />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          {status === "loading" && (
+            <div style={{ fontSize: "12px", color: "#888" }}>Načítám náhled…</div>
+          )}
+          {status === "ok" && (
+            <div style={{ fontSize: "12px", color: "#4caf50", marginBottom: "4px" }}>✓ Obrázek načten – tak ho uvidí návštěvníci</div>
+          )}
+          {status === "error" && (
+            <div style={{ fontSize: "12px", color: "#ff5252", marginBottom: "6px", lineHeight: 1.4 }}>
+              ⚠ Náhled selhal. Soubor je nahraný, ale prohlížeč ho nedokáže načíst z této URL.<br />
+              Nejčastější příčina: chybí nebo je špatně nastavená proměnná <code style={{ background: "#222", padding: "1px 4px", borderRadius: "2px" }}>R2_PUBLIC_BASE_URL</code> (Cloudflare R2 public dev URL nebo custom doména).
+            </div>
+          )}
+          <div style={{ fontSize: "11px", color: "#666", wordBreak: "break-all", marginBottom: "8px" }}>
+            <a href={url} target="_blank" rel="noreferrer" style={{ color: "#0B99FC", textDecoration: "none" }}>{url}</a>
+          </div>
+          <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+            <button
+              type="button"
+              onClick={() => setBust(Date.now())}
+              style={{ background: "none", border: "1px solid #444", color: "#aaa", padding: "4px 10px", borderRadius: "3px", fontSize: "12px", cursor: "pointer" }}
+            >Zkusit znovu</button>
+            <button
+              type="button"
+              onClick={onDelete}
+              style={{ background: "none", border: "1px solid #444", color: "#888", padding: "4px 10px", borderRadius: "3px", fontSize: "12px", cursor: "pointer" }}
+              data-testid={testId}
+            >Smazat obrázek</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh, loadData }: any) {
   const [form, setForm] = useState({
     title: "",
@@ -1428,15 +1485,11 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
               <UploadProgressBar type="artwork" />
               <div style={{ marginTop: "6px" }}><UploadStatus type="artwork" url={form.artworkUrl} /></div>
               {form.artworkUrl && !uploading["artwork"] && (
-                <div style={{ display: "flex", gap: "10px", alignItems: "flex-start", marginTop: "8px" }}>
-                  <img src={form.artworkUrl} alt="artwork preview" style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "3px" }} />
-                  <button
-                    type="button"
-                    onClick={() => setForm(f => ({ ...f, artworkUrl: "" }))}
-                    style={{ background: "none", border: "1px solid #444", color: "#888", padding: "4px 10px", borderRadius: "3px", fontSize: "12px", cursor: "pointer", marginTop: "4px" }}
-                    data-testid="button-delete-artwork-beat"
-                  >Smazat obrázek</button>
-                </div>
+                <ArtworkPreview
+                  url={form.artworkUrl}
+                  onDelete={() => setForm(f => ({ ...f, artworkUrl: "" }))}
+                  testId="button-delete-artwork-beat"
+                />
               )}
             </div>
 
@@ -2202,23 +2255,11 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
                 <div style={{ marginTop: "6px", fontSize: "12px", color: "#ff5252" }}>Chyba při nahrávání: {uploadError["artwork"]}</div>
               )}
               {form.artworkUrl && !uploading["artwork"] && (
-                <div style={{ display: "flex", gap: "10px", alignItems: "flex-start", marginTop: "8px" }}>
-                  <img
-                    src={form.artworkUrl}
-                    alt="artwork preview"
-                    referrerPolicy="no-referrer"
-                    decoding="async"
-                    loading="lazy"
-                    style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "3px", background: "#111" }}
-                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = "0.3"; }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setForm(f => ({ ...f, artworkUrl: "" }))}
-                    style={{ background: "none", border: "1px solid #444", color: "#888", padding: "4px 10px", borderRadius: "3px", fontSize: "12px", cursor: "pointer", marginTop: "4px" }}
-                    data-testid="button-delete-artwork-kit"
-                  >Smazat obrázek</button>
-                </div>
+                <ArtworkPreview
+                  url={form.artworkUrl}
+                  onDelete={() => setForm(f => ({ ...f, artworkUrl: "" }))}
+                  testId="button-delete-artwork-kit"
+                />
               )}
             </div>
           </div>

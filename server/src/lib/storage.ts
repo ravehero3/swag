@@ -54,8 +54,19 @@ function clientFor(bucket: string): S3Client {
 
 // Build a public URL for an object in a known bucket.
 export function getPublicUrl(bucket: string, key: string): string {
-  if (R2_ENABLED && bucket === process.env.R2_BUCKET && process.env.R2_PUBLIC_BASE_URL) {
-    return `${process.env.R2_PUBLIC_BASE_URL.replace(/\/$/, "")}/${key}`;
+  if (R2_ENABLED && bucket === process.env.R2_BUCKET) {
+    if (process.env.R2_PUBLIC_BASE_URL) {
+      return `${process.env.R2_PUBLIC_BASE_URL.replace(/\/$/, "")}/${key}`;
+    }
+    // R2 is enabled but no public base URL is configured. The R2 S3 endpoint
+    // (https://<account>.r2.cloudflarestorage.com) requires AWS-SigV4 auth
+    // and cannot be loaded directly by a browser, so returning it would yield
+    // a "successful upload, broken preview" experience. Fail loudly instead.
+    throw new Error(
+      "R2_PUBLIC_BASE_URL is not set. Configure your Cloudflare R2 public dev URL " +
+      "(https://pub-<hash>.r2.dev) or a custom domain bound to the bucket, otherwise " +
+      "uploaded artwork cannot be served to browsers."
+    );
   }
   if (process.env.B2_PUBLIC_BASE_URL && bucket === process.env.B2_PREVIEW_BUCKET) {
     return `${process.env.B2_PUBLIC_BASE_URL}/${key}`;
