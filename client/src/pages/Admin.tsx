@@ -426,7 +426,7 @@ function Admin() {
             onClick={() => setTab(t as any)}
             style={tab !== t ? { borderColor: "#333", color: "#666" } : {}}
           >
-            {t === "beats" ? "Beaty" : t === "kits" ? "Zvuky" : t === "orders" ? "Objednávky" : t === "zakaznici" ? "Zákazníci" : t === "licenses" ? "Licence" : t === "emails" ? "Emaily" : t === "promo" ? "Promo kódy" : t === "komentare" ? "Komentáře" : t === "ig_stories" ? "IG Stories" : "SEO"}
+            {t === "beats" ? "Beaty" : t === "kits" ? "Zvuky" : t === "orders" ? "Objednávky" : t === "zakaznici" ? "Zákazníci" : t === "licenses" ? "Licence" : t === "emails" ? "Emaily" : t === "promo" ? "Promo kódy" : t === "komentare" ? "Komentáře" : t === "ig_stories" ? "IG Stories" : t === "artworks" ? "Artworks" : "SEO"}
           </button>
         ))}
       </div>
