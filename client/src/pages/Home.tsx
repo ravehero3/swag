@@ -1667,81 +1667,9 @@ function Home() {
           </div>
         </div>
 
-        {isHomePage && (
-          <div className="mobile-hide-dock" style={{ 
-            backgroundImage: "url(/uploads/artwork/dock-bg-computer.jpg)", 
-            backgroundSize: "100% auto", 
-            backgroundPosition: "bottom center", 
-            backgroundRepeat: "no-repeat",
-            width: "100vw",
-            marginLeft: "calc(-50vw + 50%)",
-            marginTop: "100px",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            pointerEvents: "none",
-            position: "relative"
-          }}>
-            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "260px", background: "linear-gradient(to bottom, #000 0%, transparent 100%)", zIndex: 2, pointerEvents: "none" }} />
-            <div style={{
-              width: "100%",
-              textAlign: "center",
-              zIndex: 20,
-              opacity: showTitle ? 1 : 0,
-              transform: showTitle ? "translateY(0)" : "translateY(28px)",
-              transition: "opacity 0.45s ease-out, transform 0.45s ease-out",
-              marginTop: "-10px"
-            }}>
-                  <h2 style={{
-                    color: "#fff",
-                    fontSize: "42px",
-                    fontFamily: "'Clash Display', sans-serif",
-                    fontWeight: "600",
-                    letterSpacing: "0",
-                    margin: 0,
-                    lineHeight: "1.1",
-                    textTransform: "uppercase",
-                    transition: "all 0.3s ease",
-                  }}>
-                    PRO VŠECHNY<br />
-                    HUDEBNÍ PRODUCENTY<br />
-                  </h2>
-                </div>
-
-                <div ref={soundKitsRef} className="fade-in-section delay-4 scroll-fade-section" style={{ marginTop: "42px", marginBottom: "0px", width: "100%", display: "flex", justifyContent: "center", position: "relative", zIndex: 5, pointerEvents: "auto" }}>
-                  <div style={{ 
-                    width: "100%", 
-                    height: "1000px", 
-                    position: "relative",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "flex-end",
-                    alignItems: "center",
-                    paddingBottom: "-15px"
-                  }}>
-                    <div style={{ 
-                      display: "flex", 
-                      justifyContent: "center",
-                      width: "100%",
-                      padding: "0 20px"
-                    }}>
-                      <SoundKitsDock
-                        items={testSoundKits.map((kit) => ({
-                          id: kit.id,
-                          name: kit.title,
-                          image: kit.artwork_url || "/uploads/artwork/metallic-logo.png",
-                          price: kit.price,
-                          isFree: kit.is_free,
-                          onClick: () => {
-                            setLocation("/zvuky");
-                          },
-                        }))}
-                      />
-                    </div>
-                  </div>
-                </div>
-          </div>
-        )}
+        {/* Removed: "PRO VŠECHNY HUDEBNÍ PRODUCENTY" section with the
+            computer background image and the SoundKitsDock — no longer
+            shown on the home page. */}
 
       </div>
 

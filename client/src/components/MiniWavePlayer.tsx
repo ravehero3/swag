@@ -3,6 +3,33 @@ import { getWaveform, preloadWaveform } from "../lib/waveformCache.js";
 
 const BAR_COUNT = 480;
 
+// Deterministic skeleton waveform shown while real peaks load. We layer
+// a couple of low-frequency sines plus a hashed jitter so it reads as a
+// realistic-looking wave shape (not a flat bar or a spinner) but is the
+// exact same on every render — no flicker.
+let _skeletonCache: number[] | null = null;
+function getSkeletonPeaks(count: number): number[] {
+  if (_skeletonCache && _skeletonCache.length === count) return _skeletonCache;
+  const out: number[] = new Array(count);
+  for (let i = 0; i < count; i++) {
+    const t = i / count;
+    // Smooth body envelope (fade in/out at the edges, fuller in the middle).
+    const envelope = 0.45 + 0.35 * Math.sin(Math.PI * t);
+    // A few overlaid sines give it a music-like texture.
+    const wave =
+      0.55 +
+      0.20 * Math.sin(t * Math.PI * 14) +
+      0.12 * Math.sin(t * Math.PI * 33 + 1.3) +
+      0.08 * Math.sin(t * Math.PI * 71 + 0.7);
+    // Cheap deterministic jitter (no Math.random — must be stable).
+    const jitter = (Math.sin(i * 12.9898) * 43758.5453) % 1;
+    const j = (jitter < 0 ? jitter + 1 : jitter) * 0.20;
+    out[i] = Math.max(0.05, Math.min(1, envelope * (wave + j) * 0.85));
+  }
+  _skeletonCache = out;
+  return out;
+}
+
 interface MiniWavePlayerProps {
   url: string;
   label?: string;
@@ -14,7 +41,6 @@ function MiniWavePlayer({ url, label }: MiniWavePlayerProps) {
   const rafRef = useRef<number>(0);
   const progressRef = useRef<number>(0);
   const peaksRef = useRef<number[]>([]);
-  const isLoadingRef = useRef<boolean>(true);
   const lastUrlRef = useRef<string>("");
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -85,14 +111,11 @@ function MiniWavePlayer({ url, label }: MiniWavePlayerProps) {
     const cached = getWaveform(src);
     if (cached !== undefined) {
       peaksRef.current = cached ?? [];
-      isLoadingRef.current = false;
       return;
     }
     peaksRef.current = [];
-    isLoadingRef.current = true;
     await preloadWaveform(src);
     if (lastUrlRef.current === src) {
-      isLoadingRef.current = false;
       const result = getWaveform(src);
       if (result) peaksRef.current = result;
     }
@@ -160,49 +183,32 @@ function MiniWavePlayer({ url, label }: MiniWavePlayerProps) {
     const barW = Math.max(1, slotW * 0.55);
     const gap = slotW - barW;
 
-    if (isLoadingRef.current) {
-      const t = Date.now() / 1000;
-      const numBars = 7;
-      const iconBarW = 3;
-      const iconGap = 4;
-      const totalIconW = numBars * iconBarW + (numBars - 1) * iconGap;
-      const startX = (W - totalIconW) / 2;
-      const heightProfile = [0.30, 0.55, 0.78, 1.0, 0.78, 0.55, 0.30];
-      const pulse = 0.70 + Math.sin(t * 2.2) * 0.30;
-      for (let i = 0; i < numBars; i++) {
-        const phase = (i / numBars) * Math.PI * 2;
-        const ripple = 0.85 + Math.sin(t * 3.5 + phase) * 0.15;
-        const topAmp = heightProfile[i] * topMaxAmp * 0.62 * pulse * ripple;
-        const botAmp = heightProfile[i] * botMaxAmp * 0.62 * pulse * ripple;
-        const x = startX + i * (iconBarW + iconGap);
-        const barH = Math.max(topAmp + botAmp, 3);
-        const barY = divY - topAmp;
-        const radius = iconBarW / 2;
-        cx.fillStyle = `rgba(255,255,255,0.70)`;
-        cx.beginPath();
-        if (cx.roundRect) cx.roundRect(x, barY, iconBarW, barH, radius);
-        else cx.rect(x, barY, iconBarW, barH);
-        cx.fill();
-      }
-      cx.fillStyle = "#000";
-      cx.fillRect(0, divY, W, 1);
-      return;
-    }
-
+    // While the real peaks load (or if they failed to load), draw a static
+    // skeleton waveform that spans the full width using a deterministic
+    // pseudo-random pattern. This ensures the user sees a wave from the very
+    // first paint instead of a loading indicator.
     const peaks = peaksRef.current;
-    if (peaks.length === 0) return;
+    const isSkeleton = peaks.length === 0;
+    const sourcePeaks: number[] = isSkeleton ? getSkeletonPeaks(count) : peaks;
 
     const prog = progressRef.current;
     const playheadBar = prog * count;
     const radius = Math.min(barW / 2, 1.5);
 
+    // Tone the skeleton waveform down so it reads as "loading data" rather
+    // than a real waveform — but it's still a full waveform shape.
+    const baseTopAlpha = isSkeleton ? 0.18 : 0.28;
+    const baseBotAlpha = isSkeleton ? 0.08 : 0.13;
+    const playedTopAlpha = isSkeleton ? 0.18 : 0.85;
+    const playedBotAlpha = isSkeleton ? 0.08 : 0.61;
+
     for (let i = 0; i < count; i++) {
       const x = i * slotW + gap / 2;
-      const peak = peaks[i];
+      const peak = sourcePeaks[i] ?? 0;
       const topAmp = Math.max(peak * topMaxAmp, 1.2);
       const botAmp = Math.max(peak * botMaxAmp, 0.5);
-      const isPlayed = i < playheadBar;
-      const isHead = Math.abs(i - playheadBar) < 1.2;
+      const isPlayed = !isSkeleton && i < playheadBar;
+      const isHead = !isSkeleton && Math.abs(i - playheadBar) < 1.2;
       const topBarY = divY - topAmp;
       const botBarY = divY;
 
@@ -213,13 +219,13 @@ function MiniWavePlayer({ url, label }: MiniWavePlayerProps) {
         else cx.rect(x, topBarY, barW, topAmp + botAmp);
         cx.fill();
       } else {
-        cx.fillStyle = isPlayed ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.28)";
+        cx.fillStyle = `rgba(255,255,255,${isPlayed ? playedTopAlpha : baseTopAlpha})`;
         cx.beginPath();
         if (cx.roundRect) cx.roundRect(x, topBarY, barW, topAmp, radius);
         else cx.rect(x, topBarY, barW, topAmp);
         cx.fill();
 
-        cx.fillStyle = isPlayed ? "rgba(255,255,255,0.61)" : "rgba(255,255,255,0.13)";
+        cx.fillStyle = `rgba(255,255,255,${isPlayed ? playedBotAlpha : baseBotAlpha})`;
         cx.beginPath();
         if (cx.roundRect) cx.roundRect(x, botBarY, barW, botAmp, radius);
         else cx.rect(x, botBarY, barW, botAmp);
