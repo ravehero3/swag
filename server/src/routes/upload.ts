@@ -90,11 +90,73 @@ async function verifyPublicUrl(url: string): Promise<{ ok: true } | { ok: false;
 
 const router = Router();
 
+// Translate the raw R2 SignatureDoesNotMatch / InvalidAccessKey error plus
+// length/whitespace observations into a step-by-step instruction the operator
+// can act on, in Czech (the user's language).
+function buildCredsDiagnosis(env: any, uploadError: string | null): string {
+  const lines: string[] = [];
+  lines.push(`Nahrávání selhalo: ${uploadError || "neznámá chyba"}`);
+
+  const whitespaceProblem =
+    env.R2_ACCOUNT_ID_LEN !== env.R2_ACCOUNT_ID_TRIMMED_LEN ||
+    env.R2_ACCESS_KEY_ID_LEN !== env.R2_ACCESS_KEY_ID_TRIMMED_LEN ||
+    env.R2_SECRET_ACCESS_KEY_LEN !== env.R2_SECRET_ACCESS_KEY_TRIMMED_LEN;
+
+  if (whitespaceProblem) {
+    lines.push(
+      "PROBLÉM: Aspoň jedna z proměnných má mezeru/nový řádek na konci nebo začátku. " +
+      "Server je nyní automaticky odstřihává, ale i tak doporučuji ve Vercelu " +
+      "proměnnou smazat a pečlivě vložit znovu (bez Enteru na konci)."
+    );
+  }
+
+  // Cloudflare R2: account ID = 32 hex chars, access key ID = 32 hex chars,
+  // secret access key = 64 hex chars. If anything is way off, the wrong field
+  // was probably pasted.
+  if (env.R2_ACCOUNT_ID_TRIMMED_LEN && env.R2_ACCOUNT_ID_TRIMMED_LEN !== 32) {
+    lines.push(
+      `R2_ACCOUNT_ID má ${env.R2_ACCOUNT_ID_TRIMMED_LEN} znaků, ale Cloudflare account ID má vždy 32. ` +
+      `Najdete ho v Cloudflare → R2 → vpravo nahoře pod "Account ID".`
+    );
+  }
+  if (env.R2_ACCESS_KEY_ID_TRIMMED_LEN && env.R2_ACCESS_KEY_ID_TRIMMED_LEN !== 32) {
+    lines.push(
+      `R2_ACCESS_KEY_ID má ${env.R2_ACCESS_KEY_ID_TRIMMED_LEN} znaků, ale R2 Access Key ID má vždy 32. ` +
+      `Vytvořte/zkopírujte v Cloudflare → R2 → "Manage R2 API Tokens" → pole "Access Key ID".`
+    );
+  }
+  if (env.R2_SECRET_ACCESS_KEY_TRIMMED_LEN && env.R2_SECRET_ACCESS_KEY_TRIMMED_LEN !== 64) {
+    lines.push(
+      `R2_SECRET_ACCESS_KEY má ${env.R2_SECRET_ACCESS_KEY_TRIMMED_LEN} znaků, ale R2 Secret Access Key má vždy 64. ` +
+      `Pravděpodobně jste zkopíroval(a) jiné pole — potřebujete pole "Secret Access Key" (NE "Token Value" ani "API Token").`
+    );
+  }
+
+  if (lines.length === 1) {
+    // Délky sedí, whitespace OK → tajný klíč prostě nepatří k access key ID.
+    lines.push(
+      "Délky kláves sedí, ale R2 podpis nesouhlasí. To znamená, že R2_ACCESS_KEY_ID a R2_SECRET_ACCESS_KEY " +
+      "nejsou ze stejné dvojice — typicky jste vygeneroval(a) nový API token v Cloudflare a zkopíroval(a) " +
+      "jen jedno z polí. Vytvořte v R2 → Manage R2 API Tokens nový token, zkopírujte ZÁROVEŇ Access Key ID " +
+      "i Secret Access Key (zobrazí se jen jednou) a oba aktualizujte ve Vercelu."
+    );
+  }
+
+  lines.push("Po úpravě proměnných ve Vercelu nezapomeňte spustit nový deploy (Redeploy → bez cache).");
+  return lines.join(" • ");
+}
+
 // Admin diagnostic: uploads a 1×1 test JPEG to the artwork bucket and then
 // fetches the resulting public URL back, returning the full picture of what's
 // configured and what works. Use this to debug "upload says success but image
 // won't render" issues without guessing.
 router.get("/diag/artwork", requireAdmin, async (_req: Request, res: Response) => {
+  // Compute lengths (and trimmed-length deltas) of credentials so the operator
+  // can spot wrong-field-pasted (e.g. R2 access key IDs are 32 hex chars,
+  // secrets are 64) or stray-whitespace problems WITHOUT ever leaking values.
+  const rawSecret = process.env.R2_SECRET_ACCESS_KEY || "";
+  const rawAccessId = process.env.R2_ACCESS_KEY_ID || "";
+  const rawAccountId = process.env.R2_ACCOUNT_ID || "";
   const env = {
     R2_ACCOUNT_ID: !!process.env.R2_ACCOUNT_ID,
     R2_ACCESS_KEY_ID: !!process.env.R2_ACCESS_KEY_ID,
@@ -104,6 +166,12 @@ router.get("/diag/artwork", requireAdmin, async (_req: Request, res: Response) =
     B2_PREVIEW_BUCKET: process.env.B2_PREVIEW_BUCKET || null,
     B2_PUBLIC_BASE_URL: process.env.B2_PUBLIC_BASE_URL || null,
     B2_ENDPOINT: process.env.B2_ENDPOINT || null,
+    R2_ACCOUNT_ID_LEN: rawAccountId.length,
+    R2_ACCESS_KEY_ID_LEN: rawAccessId.length,
+    R2_SECRET_ACCESS_KEY_LEN: rawSecret.length,
+    R2_ACCOUNT_ID_TRIMMED_LEN: rawAccountId.trim().length,
+    R2_ACCESS_KEY_ID_TRIMMED_LEN: rawAccessId.trim().length,
+    R2_SECRET_ACCESS_KEY_TRIMMED_LEN: rawSecret.trim().length,
   };
 
   const bucket = STORAGE_BUCKETS.ARTWORK;
@@ -137,7 +205,7 @@ router.get("/diag/artwork", requireAdmin, async (_req: Request, res: Response) =
     publicFetch: verification,
     diagnosis:
       !uploadOk
-        ? "Upload to bucket FAILED — check credentials (R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY) and bucket name (R2_BUCKET)."
+        ? buildCredsDiagnosis(env, uploadError)
         : verification.ok
         ? "OK — uploads work AND the public URL is loadable. Artwork should render in the browser."
         : "Upload works, but the public URL is NOT loadable. Likely causes: (1) Cloudflare R2 bucket public access is OFF — enable the R2.dev subdomain or attach a custom domain in the Cloudflare dashboard. (2) R2_PUBLIC_BASE_URL on Vercel does not match the bucket's actual public URL.",
