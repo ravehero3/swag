@@ -757,6 +757,81 @@ function ArtworkPreview({ url, onDelete, testId }: { url: string; onDelete: () =
   );
 }
 
+// Admin diagnostic: round-trips a 1×1 test JPEG through the artwork bucket and
+// reports back exactly which knob is wrong (missing env var, R2 bucket not
+// public, wrong base URL, etc.). Use when artwork uploads "succeed" but the
+// image won't display.
+function ArtworkStorageDiag() {
+  const [state, setState] = useState<{ status: "idle" | "running" | "done"; data?: any; error?: string }>({ status: "idle" });
+
+  const run = async () => {
+    setState({ status: "running" });
+    try {
+      const r = await fetch("/api/upload/diag/artwork", { credentials: "include" });
+      const data = await r.json().catch(() => ({}));
+      setState({ status: "done", data });
+    } catch (e: any) {
+      setState({ status: "done", error: e?.message || String(e) });
+    }
+  };
+
+  const data = state.data;
+  const env = data?.env;
+  const fetchOk = data?.publicFetch?.ok;
+  const fetchDetail = data?.publicFetch?.detail;
+  const overallOk = data?.uploadOk && fetchOk;
+
+  return (
+    <div style={{ marginTop: "14px", padding: "12px", background: "#0f0f0f", border: "1px solid #2a2a2a", borderRadius: "4px" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", flexWrap: "wrap" }}>
+        <div style={{ fontSize: "12px", color: "#888" }}>
+          Diagnostika úložiště pro artwork (Cloudflare R2 / Backblaze B2)
+        </div>
+        <button
+          type="button"
+          onClick={run}
+          disabled={state.status === "running"}
+          style={{ background: "transparent", border: "1px solid #333", color: "#aaa", padding: "4px 10px", borderRadius: "3px", fontSize: "11px", cursor: state.status === "running" ? "default" : "pointer" }}
+          data-testid="button-diag-artwork-storage"
+        >
+          {state.status === "running" ? "Testuji…" : "Otestovat úložiště"}
+        </button>
+      </div>
+
+      {state.status === "done" && state.error && (
+        <div style={{ marginTop: "10px", fontSize: "12px", color: "#ff5252" }}>Chyba: {state.error}</div>
+      )}
+
+      {state.status === "done" && data && (
+        <div style={{ marginTop: "10px", fontSize: "12px", color: "#ddd", lineHeight: 1.5 }}>
+          <div style={{ marginBottom: "6px", fontWeight: 600, color: overallOk ? "#4caf50" : "#ff9800" }}>
+            {overallOk ? "✓ Vše v pořádku — artwork se uloží i zobrazí." : "✗ Něco je špatně nakonfigurováno."}
+          </div>
+          <div style={{ background: "#070707", padding: "8px 10px", borderRadius: "3px", border: "1px solid #1f1f1f", fontFamily: "monospace", fontSize: "11px", color: "#bbb", whiteSpace: "pre-wrap", wordBreak: "break-all" }}>
+{`Bucket:               ${data.bucket}
+Upload to bucket:     ${data.uploadOk ? "OK" : "FAIL"}${data.uploadError ? "  → " + data.uploadError : ""}
+Public URL returned:  ${data.publicUrl || "(none)"}
+Public fetch:         ${fetchOk ? "OK" : "FAIL  → " + (fetchDetail || "n/a")}
+
+R2_ACCOUNT_ID:        ${env?.R2_ACCOUNT_ID ? "set" : "MISSING"}
+R2_ACCESS_KEY_ID:     ${env?.R2_ACCESS_KEY_ID ? "set" : "MISSING"}
+R2_SECRET_ACCESS_KEY: ${env?.R2_SECRET_ACCESS_KEY ? "set" : "MISSING"}
+R2_BUCKET:            ${env?.R2_BUCKET || "MISSING"}
+R2_PUBLIC_BASE_URL:   ${env?.R2_PUBLIC_BASE_URL || "MISSING"}
+
+B2_PREVIEW_BUCKET:    ${env?.B2_PREVIEW_BUCKET || "(none)"}
+B2_PUBLIC_BASE_URL:   ${env?.B2_PUBLIC_BASE_URL || "(none)"}
+B2_ENDPOINT:          ${env?.B2_ENDPOINT || "(none)"}`}
+          </div>
+          <div style={{ marginTop: "8px", fontSize: "12px", color: overallOk ? "#888" : "#ff9800" }}>
+            {data.diagnosis}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh, loadData }: any) {
   const [form, setForm] = useState({
     title: "",
@@ -1033,6 +1108,12 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
       if (editing.artwork_url) derivedNames["artwork"] = extractFilename(editing.artwork_url);
       if (editing.trackout_url) derivedNames["trackout"] = extractFilename(editing.trackout_url);
       setUploadedNames(derivedNames);
+      // Clear stale progress/error from a previous upload so the green
+      // "✓ Nahráno – bezpečné pokračovat" bar doesn't appear before the user
+      // has uploaded anything for THIS item.
+      setUploadProgress({});
+      setUploadError({});
+      setUploading({});
       setShowForm(true);
     }
   }, [editing, setShowForm]);
@@ -1875,6 +1956,12 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
         authorInfo: editing.author_info || "",
         isPublished: editing.is_published,
       });
+      // Clear stale progress/error from a previous upload so the green
+      // "✓ Nahráno – bezpečné pokračovat" bar doesn't appear before the user
+      // has uploaded anything for THIS kit.
+      setUploadProgress({});
+      setUploadError({});
+      setUploading({});
       setShowForm(true);
     }
   }, [editing, setShowForm]);
@@ -2276,6 +2363,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
                   testId="button-delete-artwork-kit"
                 />
               )}
+              <ArtworkStorageDiag />
             </div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "16px" }}>
