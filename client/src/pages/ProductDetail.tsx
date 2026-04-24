@@ -4,6 +4,7 @@ import { useRoute, useLocation } from "wouter";
 import { useApp } from "../App.js";
 import ShareModal from "../components/ShareModal.js";
 import MiniWavePlayer from "../components/MiniWavePlayer.js";
+import { BeatArtwork } from "@/components/BeatArtwork";
 
 interface ProductData {
   id: number;
@@ -223,12 +224,13 @@ function ProductDetail() {
         <div className="pd-artwork-bg" aria-hidden="true">
           <img src={starsBgUrl} alt="" />
         </div>
-        <img
-          src={product.artwork_url || "/uploads/artwork/metallic-logo.png"}
+        <BeatArtwork
+          artworkUrl={product.artwork_url}
           alt={product.title}
-          onError={(e) => {
-            (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png";
-          }}
+          width="100%"
+          height="100%"
+          borderRadius={0}
+          applyEffects={params?.type === "beat"}
         />
         </div>
       </div>

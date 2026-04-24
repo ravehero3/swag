@@ -8,6 +8,7 @@ import ContractModal from "../components/ContractModal.js";
 import SoundWave from "../components/SoundWave.js";
 import SoundKitsDock from "../components/SoundKitsDock.js";
 import ShareModal from "../components/ShareModal.js";
+import { BeatArtwork } from "@/components/BeatArtwork";
 
 interface Beat {
   id: number;
@@ -771,11 +772,13 @@ function Home() {
                     }}
                   />
                 </div>
-                <img
-                  src={displayedHighlight.artwork_url || "/uploads/artwork/metallic-logo.png"}
+                <BeatArtwork
+                  artworkUrl={displayedHighlight.artwork_url}
                   alt={displayedHighlight.title}
-                  onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
-                  style={{ position: "relative", zIndex: 1, width: "200px", height: "200px", objectFit: "cover", border: "1px solid #666", borderRadius: "4px", display: "block" }}
+                  width={200}
+                  height={200}
+                  borderRadius={4}
+                  style={{ position: "relative", zIndex: 1, border: "1px solid #666" }}
                 />
                 <div className="hac-blur-ring" />
                 <button
@@ -1301,12 +1304,13 @@ function Home() {
                     }}
                   />
                 </div>
-                <img
-                  src={beat.artwork_url || "/uploads/artwork/metallic-logo.png"}
+                <BeatArtwork
+                  artworkUrl={beat.artwork_url}
                   alt={beat.title}
-                  loading="lazy"
-                  onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
-                  style={{ position: "relative", zIndex: 1, width: "48px", height: "48px", objectFit: "cover", borderRadius: "4px", display: "block" }}
+                  width={48}
+                  height={48}
+                  borderRadius={4}
+                  style={{ position: "relative", zIndex: 1 }}
                 />
               </div>
               <div className="home-beat-title-col" style={{ width: "240px", marginRight: "12px", display: "flex", flexDirection: "column", gap: "4px" }}>

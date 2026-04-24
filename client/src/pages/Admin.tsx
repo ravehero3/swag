@@ -1,6 +1,13 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useApp } from "../App.js";
 import { useLocation } from "wouter";
+import {
+  BeatArtwork,
+  parseArtworkConfig,
+  DEFAULT_ARTWORK_CONFIG,
+  type ArtworkConfig,
+  type BlendMode,
+} from "@/components/BeatArtwork";
 
 interface B2File {
   key: string;
@@ -291,10 +298,10 @@ function Admin() {
   const [, navigate] = useLocation();
   const initialTab = (() => {
     const p = new URLSearchParams(window.location.search).get("tab");
-    const valid = ["beats", "kits", "orders", "licenses", "emails", "promo", "seo", "ig_stories", "zakaznici", "komentare"];
-    return (valid.includes(p || "") ? p : "orders") as "beats" | "kits" | "orders" | "licenses" | "emails" | "promo" | "seo" | "ig_stories" | "zakaznici" | "komentare";
+    const valid = ["beats", "kits", "orders", "licenses", "emails", "promo", "seo", "ig_stories", "zakaznici", "komentare", "artworks"];
+    return (valid.includes(p || "") ? p : "orders") as "beats" | "kits" | "orders" | "licenses" | "emails" | "promo" | "seo" | "ig_stories" | "zakaznici" | "komentare" | "artworks";
   })();
-  const [tab, setTab] = useState<"beats" | "kits" | "orders" | "licenses" | "emails" | "promo" | "seo" | "ig_stories" | "zakaznici" | "komentare">(initialTab);
+  const [tab, setTab] = useState<"beats" | "kits" | "orders" | "licenses" | "emails" | "promo" | "seo" | "ig_stories" | "zakaznici" | "komentare" | "artworks">(initialTab);
   const [beats, setBeats] = useState<Beat[]>([]);
   const [kits, setKits] = useState<SoundKit[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
@@ -412,7 +419,7 @@ function Admin() {
       <h1 style={{ marginBottom: "24px", color: "#666" }}>Admin Panel</h1>
 
       <div style={{ display: "flex", gap: "12px", marginBottom: "24px", flexWrap: "wrap", justifyContent: "center" }}>
-        {["beats", "kits", "orders", "zakaznici", "licenses", "emails", "promo", "seo", "ig_stories", "komentare"].map((t) => (
+        {["beats", "kits", "orders", "zakaznici", "licenses", "emails", "promo", "seo", "ig_stories", "komentare", "artworks"].map((t) => (
           <button
             key={t}
             className={tab === t ? "btn btn-filled" : "btn btn-admin"}
@@ -457,6 +464,7 @@ function Admin() {
         {tab === "seo" && <SEOTab settings={settings} onRefresh={refreshSettings} />}
         {tab === "ig_stories" && <IGStoriesTab settings={settings} onRefresh={refreshSettings} />}
         {tab === "komentare" && <KomentareTab />}
+        {tab === "artworks" && <ArtworksTab settings={settings} onRefresh={refreshSettings} beats={beats} />}
       </div>
     </div>
   );
@@ -5268,6 +5276,476 @@ function KomentareTab() {
           </tbody>
         </table>
       )}
+    </div>
+  );
+}
+
+// ============================================================================
+// ARTWORKS TAB — site-wide beat artwork configuration:
+//   1) Default fallback artwork (shown when a beat has no artwork uploaded)
+//   2) Color overlay with selectable blend mode (multiply/screen/etc.)
+//   3) CSS filters: B&W, sepia, brightness, contrast, saturation, hue, blur
+//   4) Quick presets (Cinematic, B&W, Vintage, Cyberpunk, Neon, Mono…)
+//   5) Live preview against real beat artworks before saving
+// All effects are applied via CSS at render time, so changes are instant and
+// reversible — original images on R2 are never modified.
+// ============================================================================
+
+const BLEND_MODES: { value: BlendMode; label: string; hint: string }[] = [
+  { value: "normal",       label: "Normální (žádné prolnutí)", hint: "Barva jen překryje obrázek." },
+  { value: "multiply",     label: "Multiply (násobit)",         hint: "Ztmavuje obrázek tónem barvy. Bílá zmizí." },
+  { value: "screen",       label: "Screen (rozjasnit)",         hint: "Zesvětluje obrázek tónem barvy. Černá zmizí." },
+  { value: "overlay",      label: "Overlay (překryv)",          hint: "Zesílí kontrast a podbarví obrázek." },
+  { value: "darken",       label: "Darken (jen tmavší)",        hint: "Nahradí jen místa světlejší než barva." },
+  { value: "lighten",      label: "Lighten (jen světlejší)",    hint: "Nahradí jen místa tmavší než barva." },
+  { value: "color-dodge",  label: "Color Dodge",                hint: "Silné rozzáření barvou." },
+  { value: "color-burn",   label: "Color Burn",                 hint: "Silné ztmavení barvou." },
+  { value: "hard-light",   label: "Hard Light",                 hint: "Drsný kontrast jako reflektor." },
+  { value: "soft-light",   label: "Soft Light",                 hint: "Jemný kontrast jako difúzní světlo." },
+  { value: "difference",   label: "Difference",                 hint: "Invertuje podle vzdálenosti barev." },
+  { value: "exclusion",    label: "Exclusion",                  hint: "Mírnější verze Difference." },
+  { value: "hue",          label: "Hue (odstín)",               hint: "Použije odstín barvy, sytost a jas zachová." },
+  { value: "saturation",   label: "Saturation",                 hint: "Použije sytost barvy, odstín a jas zachová." },
+  { value: "color",        label: "Color (kolorování)",         hint: "Probarví obrázek (jako tonování fotografie)." },
+  { value: "luminosity",   label: "Luminosity",                 hint: "Použije jas barvy, odstín a sytost obrázku zachová." },
+];
+
+const ARTWORK_PRESETS: { name: string; config: ArtworkConfig }[] = [
+  {
+    name: "Bez efektu",
+    config: DEFAULT_ARTWORK_CONFIG,
+  },
+  {
+    name: "Černobílé",
+    config: {
+      ...DEFAULT_ARTWORK_CONFIG,
+      filter: { ...DEFAULT_ARTWORK_CONFIG.filter, grayscale: 100, contrast: 110 },
+    },
+  },
+  {
+    name: "Sépiové",
+    config: {
+      ...DEFAULT_ARTWORK_CONFIG,
+      filter: { ...DEFAULT_ARTWORK_CONFIG.filter, sepia: 80, brightness: 95 },
+    },
+  },
+  {
+    name: "Vintage",
+    config: {
+      ...DEFAULT_ARTWORK_CONFIG,
+      overlay: { enabled: true, color: "#704214", opacity: 25, blendMode: "soft-light" },
+      filter: { ...DEFAULT_ARTWORK_CONFIG.filter, sepia: 30, contrast: 110, saturate: 80 },
+    },
+  },
+  {
+    name: "Cinematic",
+    config: {
+      ...DEFAULT_ARTWORK_CONFIG,
+      overlay: { enabled: true, color: "#0a1a3a", opacity: 35, blendMode: "soft-light" },
+      filter: { ...DEFAULT_ARTWORK_CONFIG.filter, contrast: 120, saturate: 85, brightness: 90 },
+    },
+  },
+  {
+    name: "Cyberpunk",
+    config: {
+      ...DEFAULT_ARTWORK_CONFIG,
+      overlay: { enabled: true, color: "#ff00ff", opacity: 25, blendMode: "screen" },
+      filter: { ...DEFAULT_ARTWORK_CONFIG.filter, saturate: 140, contrast: 115, hueRotate: 15 },
+    },
+  },
+  {
+    name: "Neon",
+    config: {
+      ...DEFAULT_ARTWORK_CONFIG,
+      overlay: { enabled: true, color: "#00ffd0", opacity: 30, blendMode: "color-dodge" },
+      filter: { ...DEFAULT_ARTWORK_CONFIG.filter, saturate: 150, brightness: 105 },
+    },
+  },
+  {
+    name: "Tmavý mono",
+    config: {
+      ...DEFAULT_ARTWORK_CONFIG,
+      overlay: { enabled: true, color: "#000000", opacity: 35, blendMode: "multiply" },
+      filter: { ...DEFAULT_ARTWORK_CONFIG.filter, grayscale: 100, contrast: 120, brightness: 85 },
+    },
+  },
+  {
+    name: "Krvavý",
+    config: {
+      ...DEFAULT_ARTWORK_CONFIG,
+      overlay: { enabled: true, color: "#a40000", opacity: 30, blendMode: "multiply" },
+      filter: { ...DEFAULT_ARTWORK_CONFIG.filter, contrast: 115, saturate: 110 },
+    },
+  },
+  {
+    name: "Inverze",
+    config: {
+      ...DEFAULT_ARTWORK_CONFIG,
+      filter: { ...DEFAULT_ARTWORK_CONFIG.filter, invert: 100 },
+    },
+  },
+];
+
+function ArtworksTab({ settings, onRefresh, beats }: { settings: Record<string, string>; onRefresh: () => Promise<void>; beats: Beat[] }) {
+  // Initialize from server-loaded settings; fallback to defaults if nothing
+  // has ever been saved.
+  const initial = useMemo(() => parseArtworkConfig(settings?.artwork_config), [settings?.artwork_config]);
+  const [config, setConfig] = useState<ArtworkConfig>(initial);
+  const [saving, setSaving] = useState(false);
+  const [savedAt, setSavedAt] = useState<number | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Pick up to 6 real beat artworks for the live-preview row, so the operator
+  // sees how the chosen overlay/filter actually looks against the catalog —
+  // not a single contrived sample.
+  const sampleArtworks = useMemo(() => {
+    const withArt = beats.filter((b) => b.artwork_url).slice(0, 6).map((b) => ({ url: b.artwork_url, title: b.title }));
+    if (withArt.length === 0) {
+      return [{ url: config.defaultArtworkUrl, title: "Výchozí" }];
+    }
+    return withArt;
+  }, [beats, config.defaultArtworkUrl]);
+
+  const isDirty = JSON.stringify(config) !== JSON.stringify(initial);
+
+  const updateOverlay = (patch: Partial<ArtworkConfig["overlay"]>) =>
+    setConfig((c) => ({ ...c, overlay: { ...c.overlay, ...patch } }));
+
+  const updateFilter = (patch: Partial<ArtworkConfig["filter"]>) =>
+    setConfig((c) => ({ ...c, filter: { ...c.filter, ...patch } }));
+
+  const handleDefaultArtworkUpload = async (file: File) => {
+    setUploading(true);
+    setUploadError(null);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("type", "artwork");
+      const res = await fetch("/api/upload", { method: "POST", credentials: "include", body: fd });
+      const data = await res.json();
+      if (!res.ok || !data.url) {
+        throw new Error(data?.error || "Nahrávání selhalo");
+      }
+      setConfig((c) => ({ ...c, defaultArtworkUrl: data.url }));
+    } catch (e: any) {
+      setUploadError(e?.message || String(e));
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const res = await fetch("/api/admin/settings", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key: "artwork_config", value: JSON.stringify(config) }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data?.error || `HTTP ${res.status}`);
+      }
+      await onRefresh();
+      setSavedAt(Date.now());
+    } catch (e: any) {
+      alert("Uložení selhalo: " + (e?.message || String(e)));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const sectionStyle: React.CSSProperties = {
+    padding: "16px",
+    background: "#0a0a0a",
+    border: "1px solid #1f1f1f",
+    borderRadius: "4px",
+    marginBottom: "16px",
+    textAlign: "left",
+  };
+  const labelStyle: React.CSSProperties = { display: "block", fontSize: "12px", color: "#888", marginBottom: "6px", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif" };
+  const sectionTitleStyle: React.CSSProperties = { fontSize: "14px", fontWeight: 600, color: "#ddd", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.05em" };
+
+  return (
+    <div style={{ textAlign: "left" }}>
+      {/* ── Header / save bar ───────────────────────────────────────── */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", flexWrap: "wrap", gap: "10px" }}>
+        <div>
+          <h2 style={{ margin: 0, fontSize: "18px", color: "#fff" }}>Artworks</h2>
+          <div style={{ fontSize: "12px", color: "#666", marginTop: "4px" }}>
+            Výchozí obrázek pro beaty bez artworku, barevný překryv a filtry. Změny se projeví všude, kde se beat zobrazuje.
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+          {savedAt && Date.now() - savedAt < 4000 && (
+            <span style={{ fontSize: "12px", color: "#4caf50" }}>✓ Uloženo</span>
+          )}
+          <button
+            type="button"
+            className="btn btn-admin"
+            onClick={() => setConfig(initial)}
+            disabled={!isDirty || saving}
+            style={{ borderColor: "#333", color: isDirty ? "#aaa" : "#444" }}
+            data-testid="button-artworks-revert"
+          >
+            Vrátit změny
+          </button>
+          <button
+            type="button"
+            className="btn btn-filled"
+            onClick={handleSave}
+            disabled={!isDirty || saving}
+            data-testid="button-artworks-save"
+          >
+            {saving ? "Ukládám…" : "Uložit nastavení"}
+          </button>
+        </div>
+      </div>
+
+      {/* ── Live preview ────────────────────────────────────────────── */}
+      <div style={sectionStyle}>
+        <div style={sectionTitleStyle}>Náhled na opravdových beatech</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: "12px" }}>
+          {sampleArtworks.map((s, i) => (
+            <div key={i} style={{ background: "#000", borderRadius: "4px", overflow: "hidden", border: "1px solid #1f1f1f" }}>
+              <BeatArtwork
+                artworkUrl={s.url}
+                alt={s.title}
+                width="100%"
+                height={140}
+                borderRadius={0}
+                applyEffects={true}
+                configOverride={config}
+                testId={`preview-artwork-${i}`}
+              />
+              <div style={{ padding: "6px 8px", fontSize: "10px", color: "#666", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                {s.title}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{ fontSize: "11px", color: "#555", marginTop: "10px" }}>
+          Náhled používá živé nastavení vlevo. Po kliknutí na "Uložit nastavení" se efekt aplikuje na všechny beaty na webu.
+        </div>
+      </div>
+
+      {/* ── Default fallback artwork ─────────────────────────────────── */}
+      <div style={sectionStyle}>
+        <div style={sectionTitleStyle}>Výchozí artwork (pro beaty bez vlastního)</div>
+        <div style={{ display: "flex", gap: "16px", alignItems: "flex-start", flexWrap: "wrap" }}>
+          <div style={{ width: "180px", flexShrink: 0 }}>
+            <BeatArtwork
+              artworkUrl={config.defaultArtworkUrl}
+              alt="Výchozí artwork"
+              width={180}
+              height={180}
+              borderRadius={6}
+              applyEffects={false}
+              configOverride={config}
+              testId="preview-default-artwork"
+            />
+            <div style={{ fontSize: "10px", color: "#444", marginTop: "6px", textAlign: "center" }}>BEZ efektu (originál)</div>
+          </div>
+          <div style={{ flex: 1, minWidth: "240px" }}>
+            <label style={labelStyle}>Nahrát nový výchozí obrázek</label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              disabled={uploading}
+              onChange={(e) => e.target.files?.[0] && handleDefaultArtworkUpload(e.target.files[0])}
+              style={{ width: "100%", color: "#aaa", fontSize: "12px" }}
+              data-testid="input-default-artwork-upload"
+            />
+            {uploading && <div style={{ fontSize: "12px", color: "#888", marginTop: "8px" }}>Nahrávám…</div>}
+            {uploadError && <div style={{ fontSize: "12px", color: "#ff5252", marginTop: "8px" }}>Chyba: {uploadError}</div>}
+            <div style={{ fontSize: "11px", color: "#555", marginTop: "10px", lineHeight: 1.5 }}>
+              Doporučení: čtvercový PNG/JPG aspoň 1500×1500 px. Tento obrázek se zobrazí všude, kde beat nemá svůj vlastní artwork. Po nahrání nezapomeňte kliknout na "Uložit nastavení".
+            </div>
+            <div style={{ marginTop: "10px", fontSize: "11px", color: "#666", wordBreak: "break-all" }}>
+              <span style={{ color: "#444" }}>URL:</span> {config.defaultArtworkUrl}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Quick presets ────────────────────────────────────────────── */}
+      <div style={sectionStyle}>
+        <div style={sectionTitleStyle}>Rychlé předvolby</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(110px, 1fr))", gap: "8px" }}>
+          {ARTWORK_PRESETS.map((p) => {
+            const isActive = JSON.stringify(p.config) === JSON.stringify({ ...config, defaultArtworkUrl: p.config.defaultArtworkUrl });
+            return (
+              <button
+                key={p.name}
+                type="button"
+                onClick={() => setConfig({ ...p.config, defaultArtworkUrl: config.defaultArtworkUrl })}
+                style={{
+                  padding: "0",
+                  background: "transparent",
+                  border: isActive ? "2px solid #fff" : "1px solid #333",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                  overflow: "hidden",
+                  fontFamily: "inherit",
+                }}
+                data-testid={`button-preset-${p.name}`}
+              >
+                <BeatArtwork
+                  artworkUrl={sampleArtworks[0]?.url}
+                  alt={p.name}
+                  width="100%"
+                  height={70}
+                  borderRadius={0}
+                  applyEffects={true}
+                  configOverride={p.config}
+                />
+                <div style={{ padding: "5px 4px", fontSize: "10px", color: "#aaa", textAlign: "center", background: "#0a0a0a" }}>
+                  {p.name}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── Overlay controls ─────────────────────────────────────────── */}
+      <div style={sectionStyle}>
+        <div style={sectionTitleStyle}>Barevný překryv (overlay)</div>
+        <label style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px", cursor: "pointer" }}>
+          <input
+            type="checkbox"
+            checked={config.overlay.enabled}
+            onChange={(e) => updateOverlay({ enabled: e.target.checked })}
+            data-testid="input-overlay-enabled"
+          />
+          <span style={{ fontSize: "13px", color: "#ddd" }}>Zapnout překryv</span>
+        </label>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "16px", opacity: config.overlay.enabled ? 1 : 0.4 }}>
+          <div>
+            <label style={labelStyle}>Barva překryvu</label>
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <input
+                type="color"
+                value={config.overlay.color}
+                onChange={(e) => updateOverlay({ color: e.target.value })}
+                disabled={!config.overlay.enabled}
+                style={{ width: "44px", height: "32px", padding: 0, border: "1px solid #333", background: "#000", cursor: "pointer" }}
+                data-testid="input-overlay-color"
+              />
+              <input
+                type="text"
+                value={config.overlay.color}
+                onChange={(e) => updateOverlay({ color: e.target.value })}
+                disabled={!config.overlay.enabled}
+                style={{ flex: 1, background: "#000", border: "1px solid #333", color: "#aaa", padding: "6px 8px", fontSize: "12px", fontFamily: "monospace" }}
+                placeholder="#000000"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label style={labelStyle}>Sytost překryvu: {config.overlay.opacity}%</label>
+            <input
+              type="range"
+              min={0}
+              max={100}
+              value={config.overlay.opacity}
+              onChange={(e) => updateOverlay({ opacity: Number(e.target.value) })}
+              disabled={!config.overlay.enabled}
+              style={{ width: "100%" }}
+              data-testid="input-overlay-opacity"
+            />
+          </div>
+
+          <div style={{ gridColumn: "1 / -1" }}>
+            <label style={labelStyle}>Režim prolínání</label>
+            <select
+              value={config.overlay.blendMode}
+              onChange={(e) => updateOverlay({ blendMode: e.target.value as BlendMode })}
+              disabled={!config.overlay.enabled}
+              style={{ width: "100%", background: "#000", border: "1px solid #333", color: "#ddd", padding: "8px", fontSize: "13px" }}
+              data-testid="input-overlay-blend"
+            >
+              {BLEND_MODES.map((m) => (
+                <option key={m.value} value={m.value}>{m.label}</option>
+              ))}
+            </select>
+            <div style={{ fontSize: "11px", color: "#555", marginTop: "6px" }}>
+              {BLEND_MODES.find((m) => m.value === config.overlay.blendMode)?.hint}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Filter controls ──────────────────────────────────────────── */}
+      <div style={sectionStyle}>
+        <div style={sectionTitleStyle}>Filtry</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "16px" }}>
+          <FilterSlider label="Černobílé" suffix="%" min={0} max={100} value={config.filter.grayscale} onChange={(v) => updateFilter({ grayscale: v })} testId="input-filter-grayscale" />
+          <FilterSlider label="Sépie"     suffix="%" min={0} max={100} value={config.filter.sepia}     onChange={(v) => updateFilter({ sepia: v })}     testId="input-filter-sepia" />
+          <FilterSlider label="Sytost"    suffix="%" min={0} max={200} value={config.filter.saturate}  onChange={(v) => updateFilter({ saturate: v })}  resetTo={100} testId="input-filter-saturate" />
+          <FilterSlider label="Jas"       suffix="%" min={0} max={200} value={config.filter.brightness} onChange={(v) => updateFilter({ brightness: v })} resetTo={100} testId="input-filter-brightness" />
+          <FilterSlider label="Kontrast"  suffix="%" min={0} max={200} value={config.filter.contrast}  onChange={(v) => updateFilter({ contrast: v })}  resetTo={100} testId="input-filter-contrast" />
+          <FilterSlider label="Posun odstínu" suffix="°" min={0} max={360} value={config.filter.hueRotate} onChange={(v) => updateFilter({ hueRotate: v })} testId="input-filter-hue" />
+          <FilterSlider label="Rozmazání" suffix="px" min={0} max={20}  value={config.filter.blur}      onChange={(v) => updateFilter({ blur: v })}      testId="input-filter-blur" />
+          <FilterSlider label="Inverze"   suffix="%" min={0} max={100} value={config.filter.invert}    onChange={(v) => updateFilter({ invert: v })}    testId="input-filter-invert" />
+        </div>
+      </div>
+
+      {/* ── Sticky save bar at bottom for long pages ─────────────────── */}
+      <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "16px" }}>
+        <button
+          type="button"
+          className="btn btn-admin"
+          onClick={() => setConfig(DEFAULT_ARTWORK_CONFIG)}
+          style={{ borderColor: "#333", color: "#aaa" }}
+          data-testid="button-artworks-reset-defaults"
+        >
+          Reset na výchozí (vše)
+        </button>
+        <button
+          type="button"
+          className="btn btn-filled"
+          onClick={handleSave}
+          disabled={!isDirty || saving}
+          data-testid="button-artworks-save-bottom"
+        >
+          {saving ? "Ukládám…" : "Uložit nastavení"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function FilterSlider({
+  label, suffix, min, max, value, onChange, resetTo, testId,
+}: {
+  label: string; suffix: string; min: number; max: number; value: number; onChange: (v: number) => void; resetTo?: number; testId?: string;
+}) {
+  const isAtRest = resetTo == null ? value === 0 : value === resetTo;
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "6px" }}>
+        <span style={{ fontSize: "12px", color: "#888" }}>{label}</span>
+        <span style={{ fontSize: "11px", color: isAtRest ? "#444" : "#aaa", fontFamily: "monospace" }}>
+          {value}{suffix}
+        </span>
+      </div>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        style={{ width: "100%" }}
+        data-testid={testId}
+      />
     </div>
   );
 }

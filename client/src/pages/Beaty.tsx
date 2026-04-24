@@ -8,6 +8,7 @@ import DownloadModal from "../components/DownloadModal.js";
 import MusicPlayer from "../components/MusicPlayer.js";
 import SoundWave from "../components/SoundWave.js";
 import { preloadWaveform, seedWaveformCache } from "../lib/waveformCache.js";
+import { BeatArtwork } from "@/components/BeatArtwork";
 import ProductsGrid from "../components/ProductsGrid.js";
 import SoundKitsDock from "../components/SoundKitsDock.js";
 
@@ -802,12 +803,14 @@ function Beaty() {
                     .hac-blur-ring { opacity: 1 !important; transform: translate(-50%, -50%) scale(1) !important; }
                   }
                 `}</style>
-                <img
-                  src={displayedHighlight.artwork_url || "/uploads/artwork/metallic-logo.png"}
+                <BeatArtwork
+                  artworkUrl={displayedHighlight.artwork_url}
                   alt={displayedHighlight.title}
-                  onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
+                  width={200}
+                  height={200}
+                  borderRadius={4}
                   className="featured-beat-artwork-img"
-                  style={{ width: "200px", height: "200px", objectFit: "cover", border: "1px solid #666", borderRadius: "4px", display: "block" }}
+                  style={{ border: "1px solid #666" }}
                 />
                 <div className="hac-blur-ring" />
                 <button
@@ -1344,15 +1347,14 @@ function Beaty() {
                 <span style={{ fontSize: "10px", color: "transparent", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", minWidth: "20px", letterSpacing: "0.02em" }}>0</span>
               )}
               </div>
-              <div className="beat-artwork" style={{ flexShrink: 0 }}>
-                <img
-                  src={beat.artwork_url || "/uploads/artwork/metallic-logo.png"}
-                  alt={beat.title}
-                  loading="lazy"
-                  onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
-                  style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "4px" }}
-                />
-              </div>
+              <BeatArtwork
+                artworkUrl={beat.artwork_url}
+                alt={beat.title}
+                width={48}
+                height={48}
+                borderRadius={4}
+                className="beat-artwork"
+              />
               <div className="beat-title-col" style={{ width: "240px", minWidth: "240px", maxWidth: "240px", flexShrink: 0, marginRight: "12px", display: "flex", flexDirection: "column", gap: "4px", overflow: "hidden" }}>
                 <div className="beat-title-col-text" style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "20px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{beat.title}</div>
                 <div className="mobile-only-flex" style={{ display: "none", gap: "8px", alignItems: "center" }}>
