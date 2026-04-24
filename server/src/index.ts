@@ -408,7 +408,12 @@ app.get("/api/settings", async (_req, res) => {
   try {
     const result = await pool.query("SELECT key, value FROM settings");
     const settings = result.rows.reduce((acc, row) => ({ ...acc, [row.key]: row.value }), {});
-    res.set("Cache-Control", "public, max-age=3600, stale-while-revalidate=300");
+    // Settings are mutated from the admin panel and must take effect immediately
+    // on the public site (artwork overlay/filter, default artwork, SEO, etc.).
+    // Disable HTTP caching so the browser/CDN never serves a stale response.
+    res.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+    res.set("Pragma", "no-cache");
+    res.set("Expires", "0");
     res.json(settings);
   } catch (error) {
     res.status(500).json({ error: "Chyba při načítání nastavení" });
