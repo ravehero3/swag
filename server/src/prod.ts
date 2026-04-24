@@ -163,8 +163,16 @@ app.get("/api/gdrive/check", async (req: any, res: any) => {
       }
       if (r.status === 200) {
         const body = await r.text().catch(() => "");
-        const blocked = /accounts\.google\.com\/v3\/signin|"signinUrl"|ServiceLogin/i.test(body)
-          || /Pot.{0,2}ebujete povolen|Need permission|Access Denied/i.test(body);
+        // IMPORTANT: Do NOT match generic strings like "signinUrl" / "ServiceLogin" /
+        // "/v3/signin" — these appear in the page chrome of EVERY Drive page (the
+        // "Sign in" button in the top-right), so matching them gives false negatives
+        // on perfectly public folders/files. Only the explicit "request access"
+        // interstitial markup is a reliable signal of a private item.
+        const blocked =
+          /Pot[rř]ebujete (?:opr[aá]vn[eě]n[ií]|povolen)/i.test(body) ||
+          /Need (?:access|permission)|Request access|You need (?:access|permission)/i.test(body) ||
+          /Access Denied|nem[aá]te opr[aá]vn[eě]n/i.test(body) ||
+          /docs-homescreen-gb-container[\s\S]*requestAccess/i.test(body);
         if (blocked) return res.status(200).json({ ok: false, error: "Odkaz není veřejný — nastav Sdílet → Kdokoli s odkazem" });
         return res.json({ ok: true, message: `Veřejně dostupné (${kind})`, status: r.status });
       }
