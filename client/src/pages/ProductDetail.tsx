@@ -129,7 +129,13 @@ function ProductDetail() {
         }
         .pd-artwork-bg {
           position: absolute;
-          inset: 0;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          /* Roughly 2x the artwork-frame size, centered behind it. */
+          width: min(96%, calc((100vh - 242px) * 2));
+          max-width: 1040px;
+          aspect-ratio: 1 / 1;
           overflow: hidden;
           pointer-events: none;
           z-index: 0;
@@ -146,10 +152,13 @@ function ProductDetail() {
           content: "";
           position: absolute;
           inset: 0;
+          /* Vignette that fades the stars into the surrounding black on every
+             edge and corner. The radial gradient handles the corners; the two
+             linear gradients handle the straight edges. */
           background:
-            linear-gradient(to right,  #000 0%, rgba(0,0,0,0) 18%, rgba(0,0,0,0) 82%, #000 100%),
-            linear-gradient(to bottom, #000 0%, rgba(0,0,0,0) 18%, rgba(0,0,0,0) 82%, #000 100%),
-            radial-gradient(ellipse at center, rgba(0,0,0,0) 35%, rgba(0,0,0,0.55) 70%, #000 100%);
+            radial-gradient(ellipse at center, rgba(0,0,0,0) 30%, rgba(0,0,0,0.45) 55%, rgba(0,0,0,0.85) 80%, #000 100%),
+            linear-gradient(to right,  #000 0%, rgba(0,0,0,0) 22%, rgba(0,0,0,0) 78%, #000 100%),
+            linear-gradient(to bottom, #000 0%, rgba(0,0,0,0) 22%, rgba(0,0,0,0) 78%, #000 100%);
           pointer-events: none;
         }
         .pd-artwork-frame {
@@ -220,10 +229,12 @@ function ProductDetail() {
 
       {/* Left half — artwork */}
       <div className="pd-artwork">
-        <div className="pd-artwork-frame">
+        {/* Stars background sits behind the artwork frame, sized to ~2x the
+            frame and faded into surrounding black on every edge/corner. */}
         <div className="pd-artwork-bg" aria-hidden="true">
           <img src={starsBgUrl} alt="" />
         </div>
+        <div className="pd-artwork-frame">
         <BeatArtwork
           artworkUrl={product.artwork_url}
           alt={product.title}
