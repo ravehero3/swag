@@ -44,7 +44,105 @@ const upload = multer({
   }
 });
 
+// Quickly verify that a public URL we just constructed is actually loadable
+// by an unauthenticated client (i.e. real browser users). Tries HEAD first,
+// falls back to a tiny ranged GET because some object stores (notably the
+// R2 .r2.dev public dev domain) return 405 / 404 for HEAD even on objects
+// that GET correctly.
+async function verifyPublicUrl(url: string): Promise<{ ok: true } | { ok: false; detail: string }> {
+  const tryFetch = async (method: "HEAD" | "GET") => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8000);
+    try {
+      const r = await fetch(url, {
+        method,
+        // For GET we only need the first byte to confirm content is served.
+        headers: method === "GET" ? { Range: "bytes=0-0" } : {},
+        signal: controller.signal,
+        redirect: "follow",
+      });
+      const ct = r.headers.get("content-type") || "";
+      return { status: r.status, contentType: ct };
+    } finally {
+      clearTimeout(timer);
+    }
+  };
+
+  try {
+    const head = await tryFetch("HEAD");
+    if (head.status >= 200 && head.status < 300) {
+      return { ok: true };
+    }
+    // HEAD failed — many public CDNs (R2 .r2.dev) reject HEAD; verify with a
+    // 1-byte ranged GET before declaring the URL broken.
+    const get = await tryFetch("GET");
+    if (get.status >= 200 && get.status < 300) {
+      return { ok: true };
+    }
+    return {
+      ok: false,
+      detail: `HEAD ${head.status}, GET ${get.status} (content-type: ${get.contentType || "n/a"})`,
+    };
+  } catch (e: any) {
+    return { ok: false, detail: e?.name === "AbortError" ? "verification timeout (8s)" : (e?.message || String(e)) };
+  }
+}
+
 const router = Router();
+
+// Admin diagnostic: uploads a 1×1 test JPEG to the artwork bucket and then
+// fetches the resulting public URL back, returning the full picture of what's
+// configured and what works. Use this to debug "upload says success but image
+// won't render" issues without guessing.
+router.get("/diag/artwork", requireAdmin, async (_req: Request, res: Response) => {
+  const env = {
+    R2_ACCOUNT_ID: !!process.env.R2_ACCOUNT_ID,
+    R2_ACCESS_KEY_ID: !!process.env.R2_ACCESS_KEY_ID,
+    R2_SECRET_ACCESS_KEY: !!process.env.R2_SECRET_ACCESS_KEY,
+    R2_BUCKET: process.env.R2_BUCKET || null,
+    R2_PUBLIC_BASE_URL: process.env.R2_PUBLIC_BASE_URL || null,
+    B2_PREVIEW_BUCKET: process.env.B2_PREVIEW_BUCKET || null,
+    B2_PUBLIC_BASE_URL: process.env.B2_PUBLIC_BASE_URL || null,
+    B2_ENDPOINT: process.env.B2_ENDPOINT || null,
+  };
+
+  const bucket = STORAGE_BUCKETS.ARTWORK;
+  const testKey = `diag/test-${Date.now()}.jpg`;
+  let publicUrl = "";
+  let uploadOk = false;
+  let uploadError: string | null = null;
+  let verification: { ok: true } | { ok: false; detail: string } = { ok: false, detail: "not run" };
+
+  try {
+    // Smallest valid JPEG (~125 bytes) — a single black pixel.
+    const tinyJpeg = await sharp({
+      create: { width: 1, height: 1, channels: 3, background: { r: 0, g: 0, b: 0 } },
+    }).jpeg().toBuffer();
+
+    await uploadFile(bucket, testKey, tinyJpeg, "image/jpeg");
+    uploadOk = true;
+    publicUrl = getPublicUrl(bucket, testKey);
+    verification = await verifyPublicUrl(publicUrl);
+  } catch (e: any) {
+    uploadError = e?.message || String(e);
+  }
+
+  res.json({
+    bucket,
+    env,
+    testKey,
+    publicUrl,
+    uploadOk,
+    uploadError,
+    publicFetch: verification,
+    diagnosis:
+      !uploadOk
+        ? "Upload to bucket FAILED — check credentials (R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY) and bucket name (R2_BUCKET)."
+        : verification.ok
+        ? "OK — uploads work AND the public URL is loadable. Artwork should render in the browser."
+        : "Upload works, but the public URL is NOT loadable. Likely causes: (1) Cloudflare R2 bucket public access is OFF — enable the R2.dev subdomain or attach a custom domain in the Cloudflare dashboard. (2) R2_PUBLIC_BASE_URL on Vercel does not match the bucket's actual public URL.",
+  });
+});
 
 router.get("/b2-credentials", requireAdmin, (req: Request, res: Response) => {
   if (!process.env.B2_KEY_ID || !process.env.B2_KEY_SECRET || !process.env.B2_ENDPOINT) {
@@ -212,8 +310,31 @@ router.post("/", requireAdmin, upload.single("file"), async (req: Request, res: 
       await uploadFile(bucket, key, bodyBuffer, contentType);
       fs.unlinkSync(req.file.path);
       const url = getPublicUrl(bucket, key);
+
+      // CRITICAL: verify the uploaded artwork is actually publicly fetchable
+      // BEFORE returning success. Otherwise we get the silent-failure mode
+      // where the storage PUT succeeds but the public URL is dead (R2 bucket
+      // not public, R2_PUBLIC_BASE_URL pointing at the wrong domain, B2
+      // bucket private, etc.) — the admin sees "✓ Nahráno" but the image
+      // never renders. Fail loudly with an actionable message instead.
+      const verification = await verifyPublicUrl(url);
+      if (!verification.ok) {
+        console.error(`❌ artwork uploaded but public URL is not loadable: ${url} — ${verification.detail}`);
+        res.status(502).json({
+          error:
+            "Soubor se nahrál, ale veřejná URL nefunguje. Nejčastější příčina: " +
+            "Cloudflare R2 bucket nemá zapnutý veřejný přístup, nebo proměnná " +
+            "R2_PUBLIC_BASE_URL na Vercelu je špatně nastavená.",
+          detail: verification.detail,
+          attemptedUrl: url,
+          bucket,
+          key,
+        });
+        return;
+      }
+
       res.json({ url, key, bucket, size: bodyBuffer.length });
-      console.log(`✅ artwork uploaded (normalized): ${url}`);
+      console.log(`✅ artwork uploaded + verified loadable: ${url}`);
       return;
     } catch (error) {
       if (req.file.path && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
