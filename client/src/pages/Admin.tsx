@@ -5422,8 +5422,7 @@ function ArtworksTab({ settings, onRefresh, beats }: { settings: Record<string, 
     try {
       const fd = new FormData();
       fd.append("file", file);
-      fd.append("type", "artwork");
-      const res = await fetch("/api/upload", { method: "POST", credentials: "include", body: fd });
+      const res = await fetch("/api/upload?type=artwork", { method: "POST", credentials: "include", body: fd });
       const data = await res.json();
       if (!res.ok || !data.url) {
         throw new Error(data?.error || "Nahrávání selhalo");
