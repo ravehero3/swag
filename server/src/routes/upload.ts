@@ -364,13 +364,37 @@ router.post("/", requireAdmin, upload.single("file"), async (req: Request, res: 
       let contentType = req.file.mimetype || "application/octet-stream";
 
       if (isImage) {
-        bodyBuffer = await sharp(req.file.path)
-          .rotate() // honor EXIF orientation
-          .resize(1500, 1500, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 1 } })
-          .jpeg({ quality: 88, mozjpeg: true })
-          .toBuffer();
-        contentType = "image/jpeg";
-        key = `${uuidv4()}.jpg`;
+        // Decide output format based on whether the source image has an alpha
+        // channel. PNG/WebP with transparency (e.g. cover-art mockups on a
+        // transparent background) MUST stay PNG — JPEG has no alpha and would
+        // flatten transparent pixels to solid black, which is exactly the bug
+        // we're fixing here. JPEGs and other opaque sources stay as compact
+        // JPEG to keep file sizes small.
+        const src = sharp(req.file.path).rotate(); // honor EXIF orientation
+        const meta = await src.metadata();
+        const hasAlpha = !!meta.hasAlpha;
+
+        const resized = src.resize(1500, 1500, {
+          fit: "contain",
+          // Transparent padding when alpha exists, black otherwise.
+          background: hasAlpha
+            ? { r: 0, g: 0, b: 0, alpha: 0 }
+            : { r: 0, g: 0, b: 0, alpha: 1 },
+        });
+
+        if (hasAlpha) {
+          bodyBuffer = await resized
+            .png({ compressionLevel: 9, adaptiveFiltering: true })
+            .toBuffer();
+          contentType = "image/png";
+          key = `${uuidv4()}.png`;
+        } else {
+          bodyBuffer = await resized
+            .jpeg({ quality: 88, mozjpeg: true })
+            .toBuffer();
+          contentType = "image/jpeg";
+          key = `${uuidv4()}.jpg`;
+        }
       } else {
         bodyBuffer = fs.readFileSync(req.file.path);
       }
