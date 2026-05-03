@@ -578,8 +578,25 @@ function Home() {
 
   if (beats.length === 0 && !highlightedBeat) {
     return (
-      <div style={{ background: "#000", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff" }}>
-        <div className="fade-in" style={{ textAlign: "center", padding: "100px 20px" }}>
+      <div style={{ background: "#000", minHeight: "100vh" }}>
+        <div style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative", background: "#000", minHeight: "600px" }}>
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="auto"
+            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", background: "#000", opacity: 0.5, minHeight: "600px" }}
+          >
+            <source src="/uploads/hrad-na-web.mp4" type="video/mp4" />
+          </video>
+          <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%)", pointerEvents: "none" }} />
+          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none", zIndex: 2 }}>
+            <img src="/uploads/artwork/voodoo808-main-logo.png" alt="VOODOO808" style={{ width: "clamp(260px, 40vw, 560px)", height: "auto", display: "block" }} />
+          </div>
+          <div style={{ position: "absolute", bottom: 0, left: 0, width: "100%", height: "166px", background: "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 100%)", pointerEvents: "none", zIndex: 3 }} />
+        </div>
+        <div className="fade-in" style={{ textAlign: "center", padding: "60px 20px", color: "#fff" }}>
           <p style={{ opacity: 0.6, fontSize: "14px", letterSpacing: "1px" }}>Žádné beaty nebyly nalezeny.</p>
         </div>
       </div>
@@ -645,18 +662,26 @@ function Home() {
       <div className="mobile-video-container desktop-main-video" style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative", background: "#000", minHeight: "600px" }}>
         <video
           ref={videoRef}
-          src="/uploads/voodoo808-video.mp4"
+          src="/uploads/hrad-na-web.mp4"
           autoPlay
           loop
           muted
           playsInline
           preload="auto"
           onLoadedData={(e) => { (e.target as HTMLVideoElement).play().catch(() => {}); }}
-          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", background: "#000" }}
+          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", background: "#000", opacity: 0.5 }}
         >
-          <source src="/uploads/voodoo808-video.mp4" type="video/mp4" />
+          <source src="/uploads/hrad-na-web.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
+        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none", zIndex: 2 }}>
+          <img
+            src="/uploads/artwork/voodoo808-main-logo.png"
+            alt="VOODOO808"
+            style={{ width: "clamp(260px, 40vw, 560px)", height: "auto", display: "block" }}
+          />
+        </div>
         <div
           style={{
             position: "absolute",
@@ -666,6 +691,7 @@ function Home() {
             height: "166px",
             background: "linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 100%)",
             pointerEvents: "none",
+            zIndex: 3,
           }}
         />
       </div>

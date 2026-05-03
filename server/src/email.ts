@@ -440,7 +440,7 @@ function buildFreePreviewHtml(introText: string, items: DownloadItem[], appUrl: 
     <tr><td align="center">
       <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
         <tr><td style="padding:0 0 32px 0;text-align:center;border-bottom:1px solid #222;">
-          <img src="${appUrl}/uploads/artwork/voodoo808-logo.png" alt="VOODOO808" width="180" style="display:inline-block;height:auto;max-width:180px;filter:invert(1);"/>
+          <img src="${appUrl}/uploads/artwork/voodoo808-main-logo.png" alt="VOODOO808" width="220" style="display:inline-block;height:auto;max-width:220px;"/>
         </td></tr>
         <tr><td style="padding:32px 0 8px 0;">
           <p style="margin:0 0 12px 0;font-size:22px;font-weight:700;color:#fff;">Vaše soubory jsou připraveny!</p>
@@ -518,7 +518,7 @@ function buildPurchaseEmailHtml(
           <!-- Header -->
           <tr>
             <td style="padding:0 0 32px 0;text-align:center;border-bottom:1px solid #222;">
-              <img src="${appUrl}/uploads/artwork/voodoo808-logo.png" alt="VOODOO808" width="180" style="display:inline-block;height:auto;max-width:180px;filter:invert(1);"/>
+              <img src="${appUrl}/uploads/artwork/voodoo808-main-logo.png" alt="VOODOO808" width="220" style="display:inline-block;height:auto;max-width:220px;"/>
             </td>
           </tr>
 
