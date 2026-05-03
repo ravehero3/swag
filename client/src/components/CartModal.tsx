@@ -62,7 +62,7 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
             position: "fixed",
             top: 0, left: 0, right: 0, bottom: 0,
             backgroundColor: "rgba(13, 13, 13, 0.5)",
-            zIndex: 9998,
+            zIndex: 20000,
             animation: "fadeIn 0.3s ease-out",
           }}
           onClick={onClose}
@@ -79,7 +79,7 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
               display: "flex",
               flexDirection: "column",
               animation: "slideInRight 0.3s ease-out",
-              zIndex: 9999,
+              zIndex: 20001,
               borderLeft: "1px solid #333",
             }}
             onClick={(e) => e.stopPropagation()}
