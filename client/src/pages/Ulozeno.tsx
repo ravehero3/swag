@@ -141,7 +141,7 @@ function Ulozeno() {
       productType: item.item_type as "beat" | "sound_kit",
       title: item.item_data.title,
       price: Number(item.item_data.price),
-      artworkUrl: item.item_data.artwork_url || "/uploads/artwork/metallic-logo.png",
+      artworkUrl: item.item_data.artwork_url || null,
     });
 
     // Phase 1: flash the button green

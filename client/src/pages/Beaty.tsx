@@ -531,7 +531,7 @@ function Beaty() {
         productType: "beat",
         title: `${beat.title} (${license.name})`,
         price: license.price,
-        artworkUrl: beat.artwork_url || "/uploads/artwork/metallic-logo.png",
+        artworkUrl: beat.artwork_url || null,
         licenseTypeId: license.id ? Number(license.id) : null,
       });
     }

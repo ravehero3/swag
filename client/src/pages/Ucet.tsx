@@ -219,11 +219,11 @@ export default function Ucet() {
   const handleAddToCart = (item: any, e: React.MouseEvent) => {
     e.stopPropagation();
     addToCart({
-      id: item.item_id,
+      productId: item.item_data?.id || item.item_id,
+      productType: item.item_type as "beat" | "sound_kit",
       title: item.item_data?.title,
-      price: item.item_data?.price,
-      type: item.item_type,
-      artwork_url: item.item_data?.artwork_url,
+      price: Number(item.item_data?.price || 0),
+      artworkUrl: item.item_data?.artwork_url || null,
     });
   };
 

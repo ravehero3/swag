@@ -1,12 +1,13 @@
 import { useApp } from "../App.js";
 import { useEffect, useState } from "react";
+import { BeatArtwork } from "./BeatArtwork.js";
 
 interface CartItem {
   productId: number;
   productType: string;
   title: string;
   price: number;
-  artworkUrl: string;
+  artworkUrl?: string | null;
 }
 
 interface CartModalProps {
@@ -165,10 +166,13 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                         border: "1px solid #333",
                       }}
                     >
-                      <img
-                        src={item.artworkUrl}
+                      <BeatArtwork
+                        artworkUrl={item.artworkUrl}
                         alt={item.title}
-                        style={{ width: "60px", height: "60px", objectFit: "cover", borderRadius: "2px", flexShrink: 0 }}
+                        width={60}
+                        height={60}
+                        borderRadius={2}
+                        applyEffects={item.productType === "beat"}
                       />
                       <div style={{ flex: 1 }}>
                         <div style={{ fontSize: "14px", fontWeight: "bold", marginBottom: "4px" }}>

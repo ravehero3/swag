@@ -41,7 +41,7 @@ interface CartItem {
   productType: "beat" | "sound_kit";
   title: string;
   price: number;
-  artworkUrl: string;
+  artworkUrl?: string | null;
   licenseTypeId?: number | null;
 }
 
@@ -401,7 +401,7 @@ function App() {
         productType: item.product_type,
         title: item.title,
         price: Number(item.price),
-        artworkUrl: item.artwork_url || "/uploads/artwork/metallic-logo.png",
+        artworkUrl: item.artwork_url || null,
       });
     }
   };
