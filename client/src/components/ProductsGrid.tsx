@@ -13,6 +13,7 @@ interface Product {
   type?: string;
   isFree?: boolean;
   typeLabel?: string;
+  hasPreview?: boolean;
 }
 
 interface ProductsGridProps {
@@ -99,7 +100,7 @@ export default function ProductsGrid({
             type={product.type}
             isFree={product.isFree}
             isPlaying={currentPlayingId === product.id && isPlaying}
-            onPlayClick={onPlayClick ? () => onPlayClick(product.id) : undefined}
+            onPlayClick={onPlayClick && product.hasPreview !== false ? () => onPlayClick(product.id) : undefined}
             typeLabel={product.typeLabel}
             onAddToCart={onAddToCart}
             compactArtwork={compactCards}

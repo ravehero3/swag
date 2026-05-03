@@ -204,6 +204,7 @@ function Zvuky() {
     type: kit.type,
     isFree: kit.is_free,
     typeLabel: typeLabels[kit.type] || kit.type,
+    hasPreview: !!getKitPreviewUrl(kit),
   }));
 
   return (
