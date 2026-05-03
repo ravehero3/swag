@@ -432,7 +432,7 @@ function buildFreePreviewHtml(introText: string, items: DownloadItem[], appUrl: 
       </td>
     </tr>`).join("");
 
-  const displayIntro = introText || "Děkujeme za zájem! Níže najdete přímé odkazy ke stažení vašich souborů zdarma. Každý odkaz je platný 30 dní.";
+  const displayIntro = introText || "Děkujeme za zájem! Níže najdete přímé odkazy ke stažení vašich souborů zdarma. Soubory jsou dostupné kdykoliv — odkaz nevyprší.";
 
   return `<!DOCTYPE html><html lang="cs"><head><meta charset="UTF-8"/></head>
 <body style="margin:0;padding:0;background:#0a0a0a;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
@@ -931,7 +931,7 @@ export async function sendFreeDownloadEmail(lead: { id: number; email: string; i
             <td style="padding:32px 0 8px 0;">
               <p style="margin:0 0 12px 0;font-size:22px;font-weight:700;color:#fff;">Vaše soubory jsou připraveny!</p>
               <p style="margin:0;font-size:15px;color:#aaa;line-height:1.6;">
-                Děkujeme za zájem! Níže najdete přímé odkazy ke stažení vašich souborů zdarma. Každý odkaz je platný <strong style="color:#fff;">30 dní</strong>.
+                Děkujeme za zájem! Níže najdete přímé odkazy ke stažení vašich souborů zdarma. Soubory jsou dostupné kdykoliv — <strong style="color:#fff;">odkaz nevyprší</strong>.
               </p>
             </td>
           </tr>
