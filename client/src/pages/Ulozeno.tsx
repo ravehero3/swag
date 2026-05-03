@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useApp } from "../App.js";
 import { Link, useLocation } from "wouter";
+import { BeatArtwork } from "../components/BeatArtwork.js";
 
 interface SavedItem {
   id: number;
@@ -390,11 +391,13 @@ function Ulozeno() {
                   >
                     {/* Artwork */}
                     <div className="voodoo-play-surface" style={{ position: "relative", width: "100%", aspectRatio: "1/1", marginBottom: "12px", overflow: "hidden", borderRadius: "4px", background: "#050505" }}>
-                      <img
-                        src={item.item_data.artwork_url || "/uploads/artwork/metallic-logo.png"}
+                      <BeatArtwork
+                        artworkUrl={item.item_data.artwork_url}
                         alt={item.item_data.title}
-                        onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
-                        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                        width="100%"
+                        height="100%"
+                        borderRadius={0}
+                        applyEffects={item.item_type === "beat"}
                       />
                       {/* Play button */}
                       {previewUrl && (
