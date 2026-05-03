@@ -98,6 +98,7 @@ function ProductDetail() {
     .filter(Boolean)));
 
   const typeLabels: Record<string, string> = {
+    free: "FREE",
     drum_kit: "Drum Kit",
     one_shot_kit: "One Shot Kit",
     loop_kit: "Loop Kit",

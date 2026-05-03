@@ -94,7 +94,7 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
   const zvukyTextColor = settings?.ig_zvuky_text_color || "#ffffff";
   const zvukyShowHoverCard = settings?.ig_zvuky_show_hover_card === "true";
   const zvukyHoverShowSounds = settings?.ig_zvuky_hover_show_sounds !== "false";
-  const zvukyTypeLabels: Record<string, string> = { drum_kit: "Drum Kit", one_shot_kit: "One Shot Kit", loop_kit: "Loop Kit", one_shot_bundle: "One Shot Bundle", drum_kit_bundle: "Drum Kit Bundle" };
+  const zvukyTypeLabels: Record<string, string> = { drum_kit: "Drum Kit", one_shot_kit: "One Shot Kit", loop_kit: "Loop Kit", one_shot_bundle: "One Shot Bundle", drum_kit_bundle: "Drum Kit Bundle", free: "FREE" };
   const zvukyShowArtworkBg = settings?.ig_zvuky_show_artwork_bg === "true";
   const zvukyLogoInvert = settings?.ig_zvuky_logo_invert === "true";
   const zvukyLayers: { id: string; visible: boolean; y?: number; mode?: string; imageUrl?: string | null; align?: string }[] = (() => {

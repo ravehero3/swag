@@ -25,6 +25,7 @@ const typeLabels: Record<string, string> = {
   loop_kit: "Loop Kit",
   one_shot_bundle: "One Shot Bundle",
   drum_kit_bundle: "Drum Kit Bundle",
+  free: "FREE",
 };
 
 // Module-level cache — starts fetching the moment this file is imported,

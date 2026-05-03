@@ -2187,6 +2187,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
                 <option value="gross_beat_bank">Gross Beat Bank</option>
                 <option value="loopy">Loopy</option>
                 <option value="vyhodny_bundle">Výhodný Bundle</option>
+                <option value="free">FREE</option>
               </select>
             </div>
             <div style={{ gridColumn: "1 / -1" }}>
@@ -4385,7 +4386,7 @@ function IGStoriesTab({ settings, onRefresh }: any) {
                     {/* Pill body */}
                     <div style={{ background: "rgba(10,10,10,0.92)", border: "1px solid #333", borderRadius: "5px", padding: "5px 7px", backdropFilter: "blur(8px)", position: "relative", zIndex: 2 }}>
                       {(() => {
-                        const kitTypeLabels: Record<string, string> = { drum_kit: "Drum Kit", one_shot_kit: "One Shot Kit", loop_kit: "Loop Kit", one_shot_bundle: "One Shot Bundle", drum_kit_bundle: "Drum Kit Bundle" };
+                        const kitTypeLabels: Record<string, string> = { drum_kit: "Drum Kit", one_shot_kit: "One Shot Kit", loop_kit: "Loop Kit", one_shot_bundle: "One Shot Bundle", drum_kit_bundle: "Drum Kit Bundle", free: "FREE" };
                         return <div style={{ fontSize: "5px", color: "#666", marginBottom: "2px" }}>{(kitTypeLabels[previewKit?.type] || "Sound Kit").toUpperCase()}</div>;
                       })()}
                       <div style={{ fontSize: "7px", fontWeight: 700, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: "2px" }}>{zvukyPreviewTitle}</div>
