@@ -337,6 +337,34 @@ router.post("/:id/notify", async (req: Request, res: Response) => {
   }
 });
 
+router.delete("/:id/cancel", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const orderId = parseInt(req.params.id, 10);
+
+    const orderResult = await pool.query(
+      "SELECT * FROM orders WHERE id = $1 AND user_id = $2",
+      [orderId, req.session.userId]
+    );
+
+    if (orderResult.rows.length === 0) {
+      return res.status(404).json({ error: "Objednávka nenalezena" });
+    }
+
+    const order = orderResult.rows[0];
+    const cancelableStatuses = ["pending", "awaiting_payment"];
+
+    if (!cancelableStatuses.includes(order.status)) {
+      return res.status(400).json({ error: "Tuto objednávku nelze zrušit — již byla zaplacena nebo zpracována." });
+    }
+
+    await pool.query("UPDATE orders SET status = 'cancelled' WHERE id = $1", [orderId]);
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Cancel order error:", error);
+    res.status(500).json({ error: "Chyba při rušení objednávky" });
+  }
+});
+
 router.put("/:id/status", requireAdmin, async (req: Request, res: Response) => {
   try {
     const { status } = req.body;

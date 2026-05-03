@@ -28,6 +28,8 @@ export default function Ucet() {
   const [savedItems, setSavedItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [payingOrderId, setPayingOrderId] = useState<number | null>(null);
+  const [cancellingOrderId, setCancellingOrderId] = useState<number | null>(null);
+  const [confirmCancelId, setConfirmCancelId] = useState<number | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
@@ -172,6 +174,27 @@ export default function Ucet() {
     previewPlayer.playPreview(previewItem, queue);
   };
 
+  const handleCancelOrder = async (orderId: number) => {
+    setCancellingOrderId(orderId);
+    try {
+      const res = await fetch(`/api/orders/${orderId}/cancel`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setOrders((prev) => prev.map((o) => o.id === orderId ? { ...o, status: "cancelled" } : o));
+        setConfirmCancelId(null);
+      } else {
+        alert(data.error || "Nepodařilo se zrušit objednávku.");
+      }
+    } catch {
+      alert("Chyba při rušení objednávky.");
+    } finally {
+      setCancellingOrderId(null);
+    }
+  };
+
   const handlePayOrder = async (orderId: number) => {
     setPayingOrderId(orderId);
     try {
@@ -278,6 +301,28 @@ export default function Ucet() {
           opacity: 0.5;
           cursor: not-allowed;
           transform: none;
+        }
+        .ucet-cancel-btn {
+          background: transparent;
+          color: #ef4444;
+          border: 1px solid #ef4444;
+          padding: 8px 16px;
+          font-size: 12px;
+          font-weight: 500;
+          border-radius: 4px;
+          cursor: pointer;
+          letter-spacing: 0.5px;
+          transition: background 0.2s ease, color 0.2s ease;
+          white-space: nowrap;
+          font-family: inherit;
+        }
+        .ucet-cancel-btn:hover {
+          background: #ef4444;
+          color: #fff;
+        }
+        .ucet-cancel-btn:disabled {
+          opacity: 0.4;
+          cursor: not-allowed;
         }
         .ucet-add-cart-btn {
           width: 100%;
@@ -424,9 +469,13 @@ export default function Ucet() {
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
               {orders.map((order) => {
                 const isPaid = order.status === "completed" || order.status === "paid";
+                const isCancelled = order.status === "cancelled";
+                const isPending = !isPaid && !isCancelled;
+                const statusColor = isPaid ? "#24e053" : isCancelled ? "#ef4444" : "#facc15";
+                const statusLabel = isPaid ? "Dokončeno" : isCancelled ? "Zrušeno" : "Čeká na platbu";
                 const items: OrderItem[] = Array.isArray(order.items) ? order.items : [];
                 return (
-                  <div key={order.id} className="ucet-order-card">
+                  <div key={order.id} className="ucet-order-card" style={{ opacity: isCancelled ? 0.6 : 1 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px", flexWrap: "wrap", gap: "16px" }}>
                       <div>
                         <p style={{ color: "#666", fontSize: "12px", margin: "0 0 4px 0" }}>ČÍSLO OBJEDNÁVKY</p>
@@ -438,22 +487,16 @@ export default function Ucet() {
                       </div>
                       <div>
                         <p style={{ color: "#666", fontSize: "12px", margin: "0 0 4px 0" }}>STAV</p>
-                        <p style={{ 
-                          color: isPaid ? "#24e053" : "#facc15", 
-                          fontSize: "14px", 
-                          margin: 0,
-                          textTransform: "uppercase",
-                          letterSpacing: "1px"
-                        }}>
-                          {isPaid ? "Dokončeno" : "Čeká na platbu"}
+                        <p style={{ color: statusColor, fontSize: "14px", margin: 0, textTransform: "uppercase", letterSpacing: "1px" }}>
+                          {statusLabel}
                         </p>
                       </div>
                       <div>
                         <p style={{ color: "#666", fontSize: "12px", margin: "0 0 4px 0" }}>CELKEM</p>
                         <p style={{ color: "#fff", fontSize: "16px", margin: 0, fontWeight: "500" }}>{Number(order.total).toFixed(0)} CZK</p>
                       </div>
-                      {!isPaid && (
-                        <div style={{ display: "flex", alignItems: "flex-end" }}>
+                      {isPending && (
+                        <div style={{ display: "flex", alignItems: "flex-end", gap: "8px" }}>
                           <button
                             className="ucet-pay-btn"
                             disabled={payingOrderId === order.id}
@@ -462,6 +505,33 @@ export default function Ucet() {
                           >
                             {payingOrderId === order.id ? "Přesměrování..." : "Zaplatit přes GoPay"}
                           </button>
+                          {confirmCancelId === order.id ? (
+                            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                              <span style={{ fontSize: "12px", color: "#aaa", whiteSpace: "nowrap" }}>Opravdu zrušit?</span>
+                              <button
+                                className="ucet-cancel-btn"
+                                disabled={cancellingOrderId === order.id}
+                                onClick={() => handleCancelOrder(order.id)}
+                                data-testid={`button-confirm-cancel-${order.id}`}
+                              >
+                                {cancellingOrderId === order.id ? "..." : "Ano, zrušit"}
+                              </button>
+                              <button
+                                onClick={() => setConfirmCancelId(null)}
+                                style={{ background: "transparent", border: "1px solid #333", color: "#666", padding: "8px 10px", borderRadius: "4px", cursor: "pointer", fontSize: "12px", fontFamily: "inherit" }}
+                              >
+                                Ne
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              className="ucet-cancel-btn"
+                              onClick={() => setConfirmCancelId(order.id)}
+                              data-testid={`button-cancel-order-${order.id}`}
+                            >
+                              Zrušit
+                            </button>
+                          )}
                         </div>
                       )}
                     </div>
