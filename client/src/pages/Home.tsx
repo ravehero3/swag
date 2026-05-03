@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
+import { toAudioProxyUrl } from "../lib/audioProxy.js";
 import { useApp } from "../App.js";
 import { useScrollAnimation } from "../hooks/useScrollAnimation.js";
 import { useSEO } from "../hooks/useSEO.js";
@@ -460,7 +461,7 @@ function Home() {
   const downloadPreview = async (beat: Beat) => {
     if (!beat.preview_url) return;
     try {
-      const response = await fetch(beat.preview_url);
+      const response = await fetch(toAudioProxyUrl(beat.preview_url));
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -472,7 +473,7 @@ function Home() {
       URL.revokeObjectURL(url);
     } catch {
       const a = document.createElement("a");
-      a.href = beat.preview_url;
+      a.href = toAudioProxyUrl(beat.preview_url);
       a.download = `${beat.title} (VOODOO808.COM).mp3`;
       document.body.appendChild(a);
       a.click();

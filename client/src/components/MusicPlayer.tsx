@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import ShareModal from "./ShareModal.js";
+import { toAudioProxyUrl } from "../lib/audioProxy.js";
 
 interface Beat {
   id: number;
@@ -80,7 +81,7 @@ function MusicPlayer({
   const handleDownload = useCallback(async () => {
     if (!currentBeat?.preview_url) return;
     try {
-      const response = await fetch(currentBeat.preview_url);
+      const response = await fetch(toAudioProxyUrl(currentBeat.preview_url));
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -92,7 +93,7 @@ function MusicPlayer({
       URL.revokeObjectURL(url);
     } catch {
       const a = document.createElement("a");
-      a.href = currentBeat.preview_url;
+      a.href = toAudioProxyUrl(currentBeat.preview_url);
       a.download = `${currentBeat.title} (VOODOO808.COM).mp3`;
       document.body.appendChild(a);
       a.click();

@@ -440,23 +440,37 @@ app.get("/api/audio-proxy", async (req: any, res: any) => {
 
   const b2Endpoint = process.env.B2_ENDPOINT || "";
   const b2PublicBase = process.env.B2_PUBLIC_BASE_URL || "";
+  const r2PublicBase = process.env.R2_PUBLIC_BASE_URL || "";
   const isAllowed =
     url.includes("backblazeb2.com") ||
+    url.includes("r2.dev") ||
+    url.includes("cloudflarestorage.com") ||
     (b2Endpoint && url.includes(b2Endpoint)) ||
-    (b2PublicBase && url.startsWith(b2PublicBase));
+    (b2PublicBase && url.startsWith(b2PublicBase)) ||
+    (r2PublicBase && url.startsWith(r2PublicBase));
   if (!isAllowed) return res.status(403).json({ error: "URL not allowed" });
 
   try {
-    const upstream = await fetch(url, {
-      headers: { "User-Agent": "VOODOO808-Server/1.0" },
-    });
-    if (!upstream.ok) return res.status(upstream.status).end();
+    const upstreamHeaders: Record<string, string> = {
+      "User-Agent": "VOODOO808-Server/1.0",
+    };
+    const rangeHeader = req.headers["range"];
+    if (rangeHeader) upstreamHeaders["Range"] = rangeHeader;
+
+    const upstream = await fetch(url, { headers: upstreamHeaders });
+    if (!upstream.ok && upstream.status !== 206) return res.status(upstream.status).end();
 
     res.setHeader("Content-Type", upstream.headers.get("content-type") || "audio/mpeg");
+    res.setHeader("Accept-Ranges", "bytes");
     res.setHeader("Cache-Control", "public, max-age=86400");
     res.setHeader("Access-Control-Allow-Origin", "*");
+
     const cl = upstream.headers.get("content-length");
     if (cl) res.setHeader("Content-Length", cl);
+    const cr = upstream.headers.get("content-range");
+    if (cr) res.setHeader("Content-Range", cr);
+
+    res.status(upstream.status);
 
     if (!upstream.body) return res.status(500).end();
     const reader = (upstream.body as any).getReader();

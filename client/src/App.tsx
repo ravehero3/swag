@@ -1,5 +1,6 @@
 import { lazy, Suspense, useState, useEffect, useRef, useCallback, createContext, useContext, RefObject } from "react";
 import { Route, Switch, useLocation, Redirect } from "wouter";
+import { toAudioProxyUrl } from "./lib/audioProxy.js";
 import Header from "./components/Header.js";
 import ExtendedFooter from "./components/ExtendedFooter.js";
 import Footer from "./components/Footer.js";
@@ -311,7 +312,7 @@ function App() {
 
     setPreviewCurrentItem(item);
     previewCurrentItemRef.current = item;
-    audio.src = item.preview_url;
+    audio.src = toAudioProxyUrl(item.preview_url);
     audio.load();
     try {
       await audio.play();
