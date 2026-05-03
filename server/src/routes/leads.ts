@@ -21,9 +21,11 @@ router.post("/", async (req: Request, res: Response) => {
 
     const lead = result.rows[0];
 
-    sendFreeDownloadEmail(lead).catch((err) => {
+    try {
+      await sendFreeDownloadEmail(lead);
+    } catch (err) {
       console.error("[Email] Free download email error:", err);
-    });
+    }
 
     return res.json({ success: true, id: lead.id });
   } catch (error) {

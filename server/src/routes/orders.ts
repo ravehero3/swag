@@ -246,9 +246,11 @@ router.post("/:id/bank-transfer", requireAuth, async (req: Request, res: Respons
       [orderId]
     );
 
-    sendBankTransferInstructionsEmail(orderId).catch((err) => {
+    try {
+      await sendBankTransferInstructionsEmail(orderId);
+    } catch (err) {
       console.error("[Email] Bank transfer instructions email error:", err);
-    });
+    }
 
     return res.json({
       success: true,
@@ -288,9 +290,11 @@ router.post("/:id/claim-free", requireAuth, async (req: Request, res: Response) 
       [orderId]
     );
 
-    sendContractEmail(orderId).catch((err) => {
+    try {
+      await sendContractEmail(orderId);
+    } catch (err) {
       console.error("[Email] Free download email error:", err);
-    });
+    }
 
     return res.json({ success: true });
   } catch (error) {
@@ -318,9 +322,11 @@ router.post("/:id/notify", async (req: Request, res: Response) => {
           "UPDATE orders SET status = 'completed' WHERE id = $1",
           [orderId]
         );
-        sendContractEmail(orderId).catch((err) => {
+        try {
+          await sendContractEmail(orderId);
+        } catch (err) {
           console.error("[Email] Contract email error:", err);
-        });
+        }
       }
     }
 
