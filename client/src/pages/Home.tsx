@@ -592,7 +592,7 @@ function Home() {
           </video>
           <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%)", pointerEvents: "none" }} />
           <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none", zIndex: 2 }}>
-            <img src="/uploads/artwork/voodoo808-main-logo.png" alt="VOODOO808" style={{ width: "clamp(260px, 40vw, 560px)", height: "auto", display: "block" }} />
+            <img src="/uploads/artwork/voodoo808-main-logo.png" alt="VOODOO808" style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }} />
           </div>
           <div style={{ position: "absolute", bottom: 0, left: 0, width: "100%", height: "166px", background: "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 100%)", pointerEvents: "none", zIndex: 3 }} />
         </div>
@@ -679,7 +679,7 @@ function Home() {
           <img
             src="/uploads/artwork/voodoo808-main-logo.png"
             alt="VOODOO808"
-            style={{ width: "clamp(260px, 40vw, 560px)", height: "auto", display: "block" }}
+            style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
           />
         </div>
         <div
