@@ -463,11 +463,11 @@ export default function Ucet() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "48px" }}>
         <section>
           <h2 style={{ fontSize: "24px", marginBottom: "24px", fontWeight: "400" }}>Moje objednávky</h2>
-          {orders.length === 0 ? (
+          {orders.filter((o) => Number(o.total) > 0 && o.payment_method !== "free").length === 0 ? (
             <p style={{ color: "#666" }}>Zatím nemáte žádné objednávky.</p>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-              {orders.map((order) => {
+              {orders.filter((o) => Number(o.total) > 0 && o.payment_method !== "free").map((order) => {
                 const isPaid = order.status === "completed" || order.status === "paid";
                 const isCancelled = order.status === "cancelled";
                 const isPending = !isPaid && !isCancelled;

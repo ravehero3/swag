@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { BeatArtwork } from "./BeatArtwork.js";
 
 interface Beat {
   id: number;
@@ -148,11 +149,13 @@ function ContractModal({ beat, isOpen, onClose, onAddToCart, onPlay, isPlaying }
             <div style={{ padding: "24px", borderBottom: "1px solid #333" }}>
               <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
                 <div className="voodoo-play-surface" style={{ position: "relative", flexShrink: 0, width: "100px", height: "100px", overflow: "hidden", borderRadius: "4px" }}>
-                  <img
-                    src={beat.artwork_url || "/uploads/artwork/metallic-logo.png"}
+                  <BeatArtwork
+                    artworkUrl={beat.artwork_url}
                     alt={beat.title}
-                    onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
-                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                    width="100%"
+                    height="100%"
+                    borderRadius={0}
+                    loading="eager"
                   />
                   <div className={`voodoo-play-ring${isPlaying ? " is-visible" : ""}`} style={{ "--voodoo-play-size": "44px" } as any} />
                   <button

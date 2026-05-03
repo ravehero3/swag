@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import ShareModal from "./ShareModal.js";
 import { toAudioProxyUrl } from "../lib/audioProxy.js";
+import { BeatArtwork } from "./BeatArtwork.js";
 
 interface Beat {
   id: number;
@@ -213,12 +214,14 @@ function MusicPlayer({
         </div>
 
         <div className="player-left-section" style={{ display: "flex", alignItems: "center", gap: "16px", flex: 1, position: "relative" }}>
-          <img
-            src={currentBeat.artwork_url || "/uploads/artwork/metallic-logo.png"}
+          <BeatArtwork
+            artworkUrl={currentBeat.artwork_url}
             alt={currentBeat.title}
-            onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
-            className="player-artwork"
-            style={{ width: "84px", height: "84px", objectFit: "cover", borderRadius: "2px", marginLeft: "-16px", marginRight: "0" }}
+            width={84}
+            height={84}
+            borderRadius={2}
+            loading="eager"
+            style={{ marginLeft: "-16px", marginRight: "0", flexShrink: 0 }}
           />
           <div className="player-info-wrap" style={{ flex: 1, display: "flex", alignItems: "center", gap: "12px" }}>
             <div className="player-title" style={{ fontWeight: "bold", fontSize: "18px" }}>{currentBeat.title}</div>

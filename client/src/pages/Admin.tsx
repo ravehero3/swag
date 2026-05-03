@@ -2632,6 +2632,18 @@ function OrdersList({ orders, onRefresh }: { orders: any[]; onRefresh: () => voi
     onRefresh();
   };
 
+  const handleCancel = async (e: React.MouseEvent, id: number) => {
+    e.stopPropagation();
+    if (!confirm(`Zrušit objednávku #${id}?`)) return;
+    await fetch(`/api/orders/${id}/status`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ status: "cancelled" }),
+    });
+    onRefresh();
+  };
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
       <div style={{ display: "grid", gridTemplateColumns: "60px 1fr 110px 110px 110px 100px 180px", gap: "8px", padding: "8px", fontSize: "11px", color: "#555", textTransform: "uppercase", letterSpacing: "0.06em", borderBottom: "1px solid #1a1a1a" }}>
@@ -2665,7 +2677,7 @@ function OrdersList({ orders, onRefresh }: { orders: any[]; onRefresh: () => voi
               <div style={{ fontSize: "12px", color: "#666" }}>{new Date(order.created_at).toLocaleDateString("cs-CZ")}</div>
               <div style={{ display: "flex", alignItems: "center", gap: "6px", justifyContent: "flex-end" }}>
                 <span style={{ fontSize: "12px", color: "#555" }}>{isExpanded ? "▲" : "▼"}</span>
-                {!isPaid && (
+                {!isPaid && order.status !== "cancelled" && (
                   <button
                     onClick={(e) => handleMarkPaid(e, order.id)}
                     data-testid={`button-mark-paid-${order.id}`}
@@ -2673,6 +2685,16 @@ function OrdersList({ orders, onRefresh }: { orders: any[]; onRefresh: () => voi
                     title="Označit jako zaplacené a odeslat email se soubory"
                   >
                     ✓ Zaplaceno
+                  </button>
+                )}
+                {order.status !== "cancelled" && (
+                  <button
+                    onClick={(e) => handleCancel(e, order.id)}
+                    data-testid={`button-cancel-order-admin-${order.id}`}
+                    style={{ background: "none", border: "1px solid rgba(239,68,68,0.4)", borderRadius: "3px", color: "#ef4444", fontSize: "11px", padding: "3px 8px", cursor: "pointer", whiteSpace: "nowrap" }}
+                    title="Zrušit objednávku"
+                  >
+                    Zrušit
                   </button>
                 )}
                 <button
