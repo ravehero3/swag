@@ -25,10 +25,10 @@ function Checkout() {
   const isFreeOrder = finalTotal === 0;
 
   useEffect(() => {
-    if (cart.length === 0 && !success && !freeSuccess) {
+    if (cart.length === 0 && !success && !freeSuccess && !bankInstructions) {
       navigate("/kosik");
     }
-  }, [cart.length, success, freeSuccess]);
+  }, [cart.length, success, freeSuccess, bankInstructions]);
 
   useEffect(() => {
     if (user?.email) {
