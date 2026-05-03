@@ -529,8 +529,7 @@ function buildPurchaseEmailHtml(
                 Platba přijata — díky za nákup!
               </p>
               <p style="margin:0;font-size:15px;color:#aaa;line-height:1.6;">
-                Objednávka #${order.id} ze dne ${datum} je potvrzena.
-                Níže najdete odkazy ke stažení vašich souborů. Každý odkaz je platný <strong style="color:#fff;">30 dní</strong>.
+                ${customIntroText || `Objednávka #${order.id} ze dne ${datum} je potvrzena. Níže najdete odkazy ke stažení vašich souborů.`}
               </p>
             </td>
           </tr>
@@ -598,6 +597,30 @@ function buildPurchaseEmailHtml(
 </html>`;
 }
 
+async function fetchEmailTemplate(key: string): Promise<{ subject: string; intro_text: string } | null> {
+  try {
+    const res = await pool.query("SELECT subject, intro_text FROM email_templates WHERE key = $1", [key]);
+    return res.rows[0] || null;
+  } catch {
+    return null;
+  }
+}
+
+function getOrderTemplateKey(items: any[], total: number): string {
+  if (Number(total) === 0) return "free_download";
+  const beats = items.filter((i: any) => i.productType === "beat").length;
+  const kits = items.filter((i: any) => i.productType === "sound_kit").length;
+  if (beats > 0 && kits > 0) return "mixed";
+  if (beats > 1) return "beats_multiple";
+  if (beats === 1) return "beat_single";
+  if (kits > 1) return "kits_multiple";
+  return "kit_single";
+}
+
+function fillTemplatePlaceholders(text: string, orderId: number, datum: string): string {
+  return text.replace(/\{id\}/g, String(orderId)).replace(/\{datum\}/g, datum);
+}
+
 export async function sendContractEmail(orderId: number): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY || process.env.RESEND_API;
   if (!apiKey) {
@@ -623,9 +646,18 @@ export async function sendContractEmail(orderId: number): Promise<void> {
 
   const downloadItems = await resolveDownloadItems(items);
 
+  const templateKey = getOrderTemplateKey(items, order.total);
+  const tpl = await fetchEmailTemplate(templateKey);
+  const emailSubject = tpl?.subject
+    ? fillTemplatePlaceholders(tpl.subject, orderId, datum)
+    : `Platba přijata – Objednávka #${orderId} | VOODOO808`;
+  const introText = tpl?.intro_text
+    ? fillTemplatePlaceholders(tpl.intro_text, orderId, datum)
+    : undefined;
+
   const resend = new Resend(apiKey);
 
-  const emailHtml = buildPurchaseEmailHtml(order, downloadItems, datum, appUrl);
+  const emailHtml = buildPurchaseEmailHtml(order, downloadItems, datum, appUrl, introText);
 
   const attachments: { filename: string; content: string; contentType?: string }[] = [];
   const beatItems = items.filter((i: any) => i.productType === "beat" || i.productType === "sound_kit");
@@ -683,7 +715,7 @@ export async function sendContractEmail(orderId: number): Promise<void> {
     const payload: any = {
       from: fromAddress,
       to: [order.email],
-      subject: `Platba přijata – Objednávka #${orderId} | VOODOO808`,
+      subject: emailSubject,
       html: emailHtml,
     };
 
@@ -885,6 +917,9 @@ export async function sendFreeDownloadEmail(lead: { id: number; email: string; i
 
   const downloadItems = await resolveDownloadItems(items);
   const datum = formatDateCzech(new Date());
+  const tpl = await fetchEmailTemplate("free_download");
+  const emailSubject = tpl?.subject || "Vaše soubory zdarma – VOODOO808";
+  const introText = tpl?.intro_text || "Děkujeme za zájem! Níže najdete přímé odkazy ke stažení vašich souborů. Soubory jsou dostupné kdykoliv — odkaz nevyprší.";
   const resend = new Resend(apiKey);
   const fromAddress = process.env.RESEND_FROM || "VOODOO808 <info@voodoo808.com>";
 
@@ -931,7 +966,7 @@ export async function sendFreeDownloadEmail(lead: { id: number; email: string; i
             <td style="padding:32px 0 8px 0;">
               <p style="margin:0 0 12px 0;font-size:22px;font-weight:700;color:#fff;">Vaše soubory jsou připraveny!</p>
               <p style="margin:0;font-size:15px;color:#aaa;line-height:1.6;">
-                Děkujeme za zájem! Níže najdete přímé odkazy ke stažení vašich souborů zdarma. Soubory jsou dostupné kdykoliv — <strong style="color:#fff;">odkaz nevyprší</strong>.
+                ${introText}
               </p>
             </td>
           </tr>
@@ -971,7 +1006,7 @@ export async function sendFreeDownloadEmail(lead: { id: number; email: string; i
     const { data, error } = await resend.emails.send({
       from: fromAddress,
       to: [lead.email],
-      subject: `Vaše soubory zdarma – VOODOO808`,
+      subject: emailSubject,
       html: emailHtml,
     });
     if (error) {
