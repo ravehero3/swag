@@ -9,3 +9,5 @@ public/uploads/beats/*
 public/uploads/kits/*
 public/uploads/previews/*
 !public/uploads/artwork/
+.cache/
+attached_assets/
