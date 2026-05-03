@@ -121,7 +121,7 @@ router.post("/", async (req: Request, res: Response) => {
   try {
     const { email, items, total, buyerLegalName, buyerArtistName, buyerAddress, paymentMethod } = req.body;
     const userId = req.session.userId || null;
-    const method = paymentMethod === "bank_transfer" ? "bank_transfer" : "gopay";
+    const method = paymentMethod === "bank_transfer" ? "bank_transfer" : paymentMethod === "free" ? "free" : "gopay";
 
     const result = await pool.query(
       `INSERT INTO orders (user_id, email, items, total, status, buyer_legal_name, buyer_artist_name, buyer_address, payment_method)

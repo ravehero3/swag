@@ -82,16 +82,35 @@ function Checkout() {
         price: 0,
       }));
 
-      const res = await fetch("/api/leads", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ email, items }),
-      });
+      if (user) {
+        const orderRes = await fetch("/api/orders", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ email, items, total: 0, paymentMethod: "free" }),
+        });
+        if (!orderRes.ok) throw new Error("Chyba při vytváření objednávky");
+        const order = await orderRes.json();
 
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Chyba při zpracování");
+        const claimRes = await fetch(`/api/orders/${order.id}/claim-free`, {
+          method: "POST",
+          credentials: "include",
+        });
+        if (!claimRes.ok) {
+          const claimData = await claimRes.json();
+          throw new Error(claimData.error || "Chyba při zpracování");
+        }
+      } else {
+        const res = await fetch("/api/leads", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ email, items }),
+        });
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || "Chyba při zpracování");
+        }
       }
 
       clearCart();

@@ -145,14 +145,16 @@ function Zvuky() {
   };
 
   const handleAddToCart = (kit: SoundKit) => {
-    if (kit.is_free) return;
     addToCart({
       productId: kit.id,
       productType: "sound_kit",
       title: kit.title,
-      price: Number(kit.price),
+      price: kit.is_free ? 0 : Number(kit.price),
       artworkUrl: kit.artwork_url || "/uploads/artwork/metallic-logo.png",
     });
+    if (kit.is_free) {
+      setLocation("/pokladna");
+    }
   };
 
   const showToast = (text: string, saved: boolean) => {

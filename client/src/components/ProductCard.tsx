@@ -273,7 +273,36 @@ export default function ProductCard({
               <span style={{ marginLeft: "auto", fontWeight: 500, paddingRight: "8px" }}>{price} CZK</span>
             </button>
           )}
-          {isFree && (
+          {isFree && onAddToCart && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onAddToCart(id); }}
+              className="add-to-cart-btn"
+              data-testid={`button-download-free-${id}`}
+              style={{
+                padding: "8px 16px",
+                background: "#000",
+                color: "#24e053",
+                border: "none",
+                fontSize: "12px",
+                fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+                fontWeight: 500,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                borderRadius: "4px",
+                height: "32px",
+                outline: "none",
+                boxShadow: "inset 0 0 0 0.5px #24e053",
+                WebkitAppearance: "none",
+                appearance: "none",
+                boxSizing: "border-box",
+              }}
+            >
+              STÁHNOUT
+            </button>
+          )}
+          {isFree && !onAddToCart && (
             <span style={{ fontWeight: "bold", fontSize: "14px", color: "#999" }}>ZDARMA</span>
           )}
           {!isFree && !onAddToCart && (
