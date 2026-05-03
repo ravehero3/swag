@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import heroImage from "@assets/voodoo808com_1777810148683.jpg";
 import { useLocation, Link } from "wouter";
 import { useApp } from "../App.js";
 import { useScrollAnimation } from "../hooks/useScrollAnimation.js";
@@ -734,17 +735,12 @@ function Beaty() {
         }}
       />
 
-      <div className="beaty-hero-video" style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative", background: "#000", minHeight: "600px" }}>
-        <video
-          src="/uploads/beaty-video.mp4"
-          autoPlay
-          loop
-          muted
-          playsInline
-          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", background: "#000" }}
-        >
-          Your browser does not support the video tag.
-        </video>
+      <div className="beaty-hero-video" style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative", background: "#000", height: "clamp(520px, 70vh, 900px)" }}>
+        <img
+          src={heroImage}
+          alt="VOODOO808"
+          style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", display: "block" }}
+        />
         <div
           style={{
             position: "absolute",
