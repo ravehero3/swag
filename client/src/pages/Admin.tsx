@@ -2670,9 +2670,21 @@ function OrdersList({ orders, onRefresh }: { orders: any[]; onRefresh: () => voi
                 </span>
               </div>
               <div>
-                <span style={{ fontSize: "11px", padding: "3px 7px", borderRadius: "3px", background: isPaid ? "rgba(36,224,83,0.12)" : "rgba(255,255,255,0.05)", color: isPaid ? "#24e053" : "#888", border: `1px solid ${isPaid ? "rgba(36,224,83,0.3)" : "#2a2a2a"}` }}>
-                  {order.status}
-                </span>
+                {(() => {
+                  const s = order.status;
+                  const isPaidS = s === "paid" || s === "completed";
+                  const isAwaitingS = s === "awaiting_payment";
+                  const isCancelledS = s === "cancelled";
+                  const bg = isPaidS ? "rgba(36,224,83,0.12)" : isAwaitingS ? "rgba(129,140,248,0.12)" : isCancelledS ? "rgba(239,68,68,0.10)" : "rgba(255,255,255,0.05)";
+                  const color = isPaidS ? "#24e053" : isAwaitingS ? "#818cf8" : isCancelledS ? "#ef4444" : "#888";
+                  const border = isPaidS ? "rgba(36,224,83,0.3)" : isAwaitingS ? "rgba(129,140,248,0.35)" : isCancelledS ? "rgba(239,68,68,0.3)" : "#2a2a2a";
+                  const label = isPaidS ? "zaplaceno" : isAwaitingS ? "čeká na ověření" : isCancelledS ? "zrušeno" : s;
+                  return (
+                    <span style={{ fontSize: "11px", padding: "3px 7px", borderRadius: "3px", background: bg, color, border: `1px solid ${border}` }}>
+                      {label}
+                    </span>
+                  );
+                })()}
               </div>
               <div style={{ fontSize: "12px", color: "#666" }}>{new Date(order.created_at).toLocaleDateString("cs-CZ")}</div>
               <div style={{ display: "flex", alignItems: "center", gap: "6px", justifyContent: "flex-end" }}>
@@ -2763,8 +2775,8 @@ function OrdersList({ orders, onRefresh }: { orders: any[]; onRefresh: () => voi
 }
 
 function OrdersTab({ orders, onRefresh }: any) {
-  const totalRevenue = orders.reduce((s: number, o: any) => s + (Number(o.total) || 0), 0);
   const paidOrders = orders.filter((o: any) => o.status === "paid" || o.status === "completed");
+  const totalRevenue = paidOrders.reduce((s: number, o: any) => s + (Number(o.total) || 0), 0);
   const avgOrder = paidOrders.length > 0 ? Math.round(totalRevenue / paidOrders.length) : 0;
 
   const statCard = (label: string, value: string, sub?: string) => (

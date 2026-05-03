@@ -372,7 +372,16 @@ router.put("/:id/status", requireAdmin, async (req: Request, res: Response) => {
       "UPDATE orders SET status = $1 WHERE id = $2 RETURNING *",
       [status, req.params.id]
     );
-    res.json(result.rows[0]);
+    const updatedOrder = result.rows[0];
+    if (!updatedOrder) return res.status(404).json({ error: "Objednávka nenalezena" });
+    if (status === "completed" || status === "paid") {
+      try {
+        await sendContractEmail(updatedOrder.id);
+      } catch (err) {
+        console.error("[Email] Contract email on admin approval error:", err);
+      }
+    }
+    res.json(updatedOrder);
   } catch (error) {
     res.status(500).json({ error: "Chyba při aktualizaci objednávky" });
   }

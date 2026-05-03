@@ -470,9 +470,11 @@ export default function Ucet() {
               {orders.filter((o) => Number(o.total) > 0 && o.payment_method !== "free").map((order) => {
                 const isPaid = order.status === "completed" || order.status === "paid";
                 const isCancelled = order.status === "cancelled";
-                const isPending = !isPaid && !isCancelled;
-                const statusColor = isPaid ? "#24e053" : isCancelled ? "#ef4444" : "#facc15";
-                const statusLabel = isPaid ? "Dokončeno" : isCancelled ? "Zrušeno" : "Čeká na platbu";
+                const isAwaitingBankTransfer = order.status === "awaiting_payment" && order.payment_method === "bank_transfer";
+                const isPendingGoPay = !isPaid && !isCancelled && !isAwaitingBankTransfer;
+                const canCancel = !isPaid && !isCancelled;
+                const statusColor = isPaid ? "#24e053" : isCancelled ? "#ef4444" : isAwaitingBankTransfer ? "#818cf8" : "#facc15";
+                const statusLabel = isPaid ? "Dokončeno" : isCancelled ? "Zrušeno" : isAwaitingBankTransfer ? "Čeká na ověření platby" : "Čeká na platbu";
                 const items: OrderItem[] = Array.isArray(order.items) ? order.items : [];
                 return (
                   <div key={order.id} className="ucet-order-card" style={{ opacity: isCancelled ? 0.6 : 1 }}>
@@ -495,42 +497,51 @@ export default function Ucet() {
                         <p style={{ color: "#666", fontSize: "12px", margin: "0 0 4px 0" }}>CELKEM</p>
                         <p style={{ color: "#fff", fontSize: "16px", margin: 0, fontWeight: "500" }}>{Number(order.total).toFixed(0)} CZK</p>
                       </div>
-                      {isPending && (
-                        <div style={{ display: "flex", alignItems: "flex-end", gap: "8px" }}>
-                          <button
-                            className="ucet-pay-btn"
-                            disabled={payingOrderId === order.id}
-                            onClick={() => handlePayOrder(order.id)}
-                            data-testid={`button-pay-order-${order.id}`}
-                          >
-                            {payingOrderId === order.id ? "Přesměrování..." : "Zaplatit přes GoPay"}
-                          </button>
-                          {confirmCancelId === order.id ? (
-                            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                              <span style={{ fontSize: "12px", color: "#aaa", whiteSpace: "nowrap" }}>Opravdu zrušit?</span>
+                      {(isPendingGoPay || isAwaitingBankTransfer) && (
+                        <div style={{ display: "flex", alignItems: "flex-end", gap: "8px", flexWrap: "wrap" }}>
+                          {isPendingGoPay && (
+                            <button
+                              className="ucet-pay-btn"
+                              disabled={payingOrderId === order.id}
+                              onClick={() => handlePayOrder(order.id)}
+                              data-testid={`button-pay-order-${order.id}`}
+                            >
+                              {payingOrderId === order.id ? "Přesměrování..." : "Zaplatit přes GoPay"}
+                            </button>
+                          )}
+                          {isAwaitingBankTransfer && (
+                            <div style={{ fontSize: "12px", color: "#818cf8", background: "rgba(129,140,248,0.08)", border: "1px solid rgba(129,140,248,0.25)", borderRadius: "4px", padding: "8px 14px", lineHeight: "1.5" }}>
+                              Platba bankovním převodem čeká na ověření administrátorem.
+                            </div>
+                          )}
+                          {canCancel && (
+                            confirmCancelId === order.id ? (
+                              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                                <span style={{ fontSize: "12px", color: "#aaa", whiteSpace: "nowrap" }}>Opravdu zrušit?</span>
+                                <button
+                                  className="ucet-cancel-btn"
+                                  disabled={cancellingOrderId === order.id}
+                                  onClick={() => handleCancelOrder(order.id)}
+                                  data-testid={`button-confirm-cancel-${order.id}`}
+                                >
+                                  {cancellingOrderId === order.id ? "..." : "Ano, zrušit"}
+                                </button>
+                                <button
+                                  onClick={() => setConfirmCancelId(null)}
+                                  style={{ background: "transparent", border: "1px solid #333", color: "#666", padding: "8px 10px", borderRadius: "4px", cursor: "pointer", fontSize: "12px", fontFamily: "inherit" }}
+                                >
+                                  Ne
+                                </button>
+                              </div>
+                            ) : (
                               <button
                                 className="ucet-cancel-btn"
-                                disabled={cancellingOrderId === order.id}
-                                onClick={() => handleCancelOrder(order.id)}
-                                data-testid={`button-confirm-cancel-${order.id}`}
+                                onClick={() => setConfirmCancelId(order.id)}
+                                data-testid={`button-cancel-order-${order.id}`}
                               >
-                                {cancellingOrderId === order.id ? "..." : "Ano, zrušit"}
+                                Zrušit
                               </button>
-                              <button
-                                onClick={() => setConfirmCancelId(null)}
-                                style={{ background: "transparent", border: "1px solid #333", color: "#666", padding: "8px 10px", borderRadius: "4px", cursor: "pointer", fontSize: "12px", fontFamily: "inherit" }}
-                              >
-                                Ne
-                              </button>
-                            </div>
-                          ) : (
-                            <button
-                              className="ucet-cancel-btn"
-                              onClick={() => setConfirmCancelId(order.id)}
-                              data-testid={`button-cancel-order-${order.id}`}
-                            >
-                              Zrušit
-                            </button>
+                            )
                           )}
                         </div>
                       )}
