@@ -9,7 +9,7 @@ import DownloadModal from "../components/DownloadModal.js";
 import MusicPlayer from "../components/MusicPlayer.js";
 import SoundWave from "../components/SoundWave.js";
 import { preloadWaveform, seedWaveformCache } from "../lib/waveformCache.js";
-import { BeatArtwork } from "@/components/BeatArtwork";
+import { BeatArtwork } from "../components/BeatArtwork.js";
 import ProductsGrid from "../components/ProductsGrid.js";
 import SoundKitsDock from "../components/SoundKitsDock.js";
 
@@ -26,6 +26,7 @@ interface Beat {
   is_highlighted?: boolean;
   waveform_data?: number[];
   play_count?: number;
+  product_type?: "beat" | "sound_kit";
 }
 
 

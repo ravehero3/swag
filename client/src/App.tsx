@@ -55,7 +55,7 @@ export interface PreviewPlayerItem {
   price: number;
   preview_url: string;
   artwork_url: string;
-  product_type: "beat" | "sound_kit";
+  product_type?: "beat" | "sound_kit";
 }
 
 interface PreviewPlayerContext {
@@ -394,12 +394,13 @@ function App() {
   };
 
   const handlePreviewBuyClick = (item: PreviewPlayerItem) => {
-    if (item.product_type === "beat") {
+    const productType = item.product_type ?? "beat";
+    if (productType === "beat") {
       setLocation(`/produkt/beat/${item.id}`);
     } else {
       addToCart({
         productId: item.id,
-        productType: item.product_type,
+        productType: productType,
         title: item.title,
         price: Number(item.price),
         artworkUrl: item.artwork_url || null,

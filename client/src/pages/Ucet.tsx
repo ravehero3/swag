@@ -19,6 +19,7 @@ interface Order {
   status: string;
   created_at: string;
   items: OrderItem[];
+  payment_method?: string;
 }
 
 export default function Ucet() {

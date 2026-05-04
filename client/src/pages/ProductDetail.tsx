@@ -3,7 +3,7 @@ import { useRoute, useLocation } from "wouter";
 import { useApp } from "../App.js";
 import ShareModal from "../components/ShareModal.js";
 import MiniWavePlayer from "../components/MiniWavePlayer.js";
-import { BeatArtwork } from "@/components/BeatArtwork";
+import { BeatArtwork } from "../components/BeatArtwork.js";
 
 interface ProductData {
   id: number;

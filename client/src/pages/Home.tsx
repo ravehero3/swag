@@ -8,7 +8,7 @@ import ContractModal from "../components/ContractModal.js";
 import SoundWave from "../components/SoundWave.js";
 import SoundKitsDock from "../components/SoundKitsDock.js";
 import ShareModal from "../components/ShareModal.js";
-import { BeatArtwork } from "@/components/BeatArtwork";
+import { BeatArtwork } from "../components/BeatArtwork.js";
 
 interface Beat {
   id: number;
