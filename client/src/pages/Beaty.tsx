@@ -12,30 +12,7 @@ import { preloadWaveform, seedWaveformCache } from "../lib/waveformCache.js";
 import { BeatArtwork } from "../components/BeatArtwork.js";
 import ProductsGrid from "../components/ProductsGrid.js";
 import SoundKitsDock from "../components/SoundKitsDock.js";
-
-interface Beat {
-  id: number;
-  title: string;
-  artist?: string;
-  bpm: number;
-  key: string;
-  price: number;
-  preview_url: string;
-  artwork_url: string;
-  tags?: string[];
-  is_highlighted?: boolean;
-  waveform_data?: number[];
-  play_count?: number;
-  product_type?: "beat" | "sound_kit";
-}
-
-
-interface LicenseOption {
-  id: string;
-  name: string;
-  format: string;
-  price: number | "NEGOTIATE";
-}
+import type { Beat, LicenseOption } from "../types/beat.js";
 
 interface SoundKit {
   id: number;

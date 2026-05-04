@@ -2,19 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import ShareModal from "./ShareModal.js";
 import { toAudioProxyUrl } from "../lib/audioProxy.js";
 import { BeatArtwork } from "./BeatArtwork.js";
-
-interface Beat {
-  id: number;
-  title: string;
-  artist?: string;
-  bpm: number;
-  key: string;
-  price: number;
-  preview_url: string;
-  artwork_url: string;
-  is_highlighted?: boolean;
-  product_type?: "beat" | "sound_kit";
-}
+import type { Beat } from "../types/beat.js";
 
 interface MusicPlayerProps {
   currentBeat: Beat | null;

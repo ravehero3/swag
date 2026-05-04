@@ -1,24 +1,6 @@
 import { useState, useEffect } from "react";
 import { BeatArtwork } from "./BeatArtwork.js";
-
-interface Beat {
-  id: number;
-  title: string;
-  artist?: string;
-  bpm: number;
-  key: string;
-  price: number;
-  preview_url: string;
-  artwork_url: string;
-  is_highlighted?: boolean;
-}
-
-interface LicenseOption {
-  id: string;
-  name: string;
-  format: string;
-  price: number | "NEGOTIATE";
-}
+import type { Beat, LicenseOption } from "../types/beat.js";
 
 interface ContractModalProps {
   beat: Beat;

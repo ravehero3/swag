@@ -9,27 +9,7 @@ import SoundWave from "../components/SoundWave.js";
 import SoundKitsDock from "../components/SoundKitsDock.js";
 import ShareModal from "../components/ShareModal.js";
 import { BeatArtwork } from "../components/BeatArtwork.js";
-
-interface Beat {
-  id: number;
-  title: string;
-  artist?: string;
-  bpm: number;
-  key: string;
-  price: number;
-  preview_url: string;
-  artwork_url: string;
-  tags?: string[];
-  is_highlighted?: boolean;
-}
-
-
-interface LicenseOption {
-  id: string;
-  name: string;
-  format: string;
-  price: number | "NEGOTIATE";
-}
+import type { Beat, LicenseOption } from "../types/beat.js";
 
 interface SoundKit {
   id: number;
