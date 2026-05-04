@@ -7,7 +7,7 @@ import {
   DEFAULT_ARTWORK_CONFIG,
   type ArtworkConfig,
   type BlendMode,
-} from "@/components/BeatArtwork";
+} from "../components/BeatArtwork.js";
 
 interface B2File {
   key: string;
@@ -5491,10 +5491,10 @@ function ArtworksTab({ settings, onRefresh, beats }: { settings: Record<string, 
   const isDirty = JSON.stringify(config) !== JSON.stringify(initial);
 
   const updateOverlay = (patch: Partial<ArtworkConfig["overlay"]>) =>
-    setConfig((c) => ({ ...c, overlay: { ...c.overlay, ...patch } }));
+    setConfig((c: ArtworkConfig) => ({ ...c, overlay: { ...c.overlay, ...patch } }));
 
   const updateFilter = (patch: Partial<ArtworkConfig["filter"]>) =>
-    setConfig((c) => ({ ...c, filter: { ...c.filter, ...patch } }));
+    setConfig((c: ArtworkConfig) => ({ ...c, filter: { ...c.filter, ...patch } }));
 
   const handleDefaultArtworkUpload = async (file: File) => {
     setUploading(true);
@@ -5507,7 +5507,7 @@ function ArtworksTab({ settings, onRefresh, beats }: { settings: Record<string, 
       if (!res.ok || !data.url) {
         throw new Error(data?.error || "Nahrávání selhalo");
       }
-      setConfig((c) => ({ ...c, defaultArtworkUrl: data.url }));
+      setConfig((c: ArtworkConfig) => ({ ...c, defaultArtworkUrl: data.url }));
     } catch (e: any) {
       setUploadError(e?.message || String(e));
     } finally {

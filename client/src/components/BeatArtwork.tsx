@@ -1,4 +1,4 @@
-import { useApp } from "@/App";
+import { useApp } from "../App.js";
 
 // Site-wide artwork configuration. Stored as a single JSON blob in the
 // `settings` table under key `artwork_config`. Loaded once into AppContext
