@@ -2674,12 +2674,13 @@ function OrdersList({ orders, onRefresh }: { orders: any[]; onRefresh: () => voi
                 {(() => {
                   const s = order.status;
                   const isPaidS = s === "paid" || s === "completed";
+                  const isFreeS = isPaidS && Number(order.total) === 0;
                   const isAwaitingS = s === "awaiting_payment";
                   const isCancelledS = s === "cancelled";
-                  const bg = isPaidS ? "rgba(36,224,83,0.12)" : isAwaitingS ? "rgba(129,140,248,0.12)" : isCancelledS ? "rgba(239,68,68,0.10)" : "rgba(255,255,255,0.05)";
-                  const color = isPaidS ? "#24e053" : isAwaitingS ? "#818cf8" : isCancelledS ? "#ef4444" : "#888";
-                  const border = isPaidS ? "rgba(36,224,83,0.3)" : isAwaitingS ? "rgba(129,140,248,0.35)" : isCancelledS ? "rgba(239,68,68,0.3)" : "#2a2a2a";
-                  const label = isPaidS ? "zaplaceno" : isAwaitingS ? "čeká na ověření" : isCancelledS ? "zrušeno" : s;
+                  const bg = isFreeS ? "rgba(100,180,255,0.10)" : isPaidS ? "rgba(36,224,83,0.12)" : isAwaitingS ? "rgba(129,140,248,0.12)" : isCancelledS ? "rgba(239,68,68,0.10)" : "rgba(255,255,255,0.05)";
+                  const color = isFreeS ? "#64b4ff" : isPaidS ? "#24e053" : isAwaitingS ? "#818cf8" : isCancelledS ? "#ef4444" : "#888";
+                  const border = isFreeS ? "rgba(100,180,255,0.3)" : isPaidS ? "rgba(36,224,83,0.3)" : isAwaitingS ? "rgba(129,140,248,0.35)" : isCancelledS ? "rgba(239,68,68,0.3)" : "#2a2a2a";
+                  const label = isFreeS ? "soubory odeslány" : isPaidS ? "zaplaceno" : isAwaitingS ? "čeká na ověření" : isCancelledS ? "zrušeno" : s;
                   return (
                     <span style={{ fontSize: "11px", padding: "3px 7px", borderRadius: "3px", background: bg, color, border: `1px solid ${border}` }}>
                       {label}
@@ -2776,7 +2777,8 @@ function OrdersList({ orders, onRefresh }: { orders: any[]; onRefresh: () => voi
 }
 
 function OrdersTab({ orders, onRefresh }: any) {
-  const paidOrders = orders.filter((o: any) => o.status === "paid" || o.status === "completed");
+  const allCompletedOrders = orders.filter((o: any) => o.status === "paid" || o.status === "completed");
+  const paidOrders = allCompletedOrders.filter((o: any) => Number(o.total) > 0);
   const totalRevenue = paidOrders.reduce((s: number, o: any) => s + (Number(o.total) || 0), 0);
   const avgOrder = paidOrders.length > 0 ? Math.round(totalRevenue / paidOrders.length) : 0;
   const pendingBankOrders = orders.filter((o: any) => o.status === "awaiting_payment" && o.payment_method === "bank_transfer");
@@ -2794,7 +2796,7 @@ function OrdersTab({ orders, onRefresh }: any) {
       {/* Summary stats */}
       <div style={{ display: "flex", gap: "12px", marginBottom: "24px" }}>
         {statCard("Celkové tržby", `${totalRevenue.toLocaleString("cs-CZ")} Kč`, `${orders.length} objednávek celkem`)}
-        {statCard("Zaplaceno", `${paidOrders.length}`, `z ${orders.length} objednávek`)}
+        {statCard("Zaplaceno", `${paidOrders.length}`, `z ${orders.length} objednávek (bez stažení zdarma)`)}
         {statCard("Průměrná objednávka", avgOrder > 0 ? `${avgOrder.toLocaleString("cs-CZ")} Kč` : "—", "zaplacené objednávky")}
       </div>
 
