@@ -261,8 +261,9 @@ app.get("/api/admin/config-check", requireAdmin, (_req, res) => {
     { key: "B2_PUBLIC_BASE_URL", label: "B2 Public Base URL",          group: "Backblaze B2", required: true },
     { key: "RESEND_API_KEY",     label: "Resend API Key",              group: "Email",        required: true },
     { key: "RESEND_FROM",        label: "Resend odesílatel",           group: "Email",        required: true },
-    { key: "GOPAY_ID",           label: "GoPay ID",                    group: "Platby",       required: true },
-    { key: "GOPAY_SECRET",       label: "GoPay Secret",                group: "Platby",       required: true },
+    { key: "GOPAY_GOID",          label: "GoPay GoID",                  group: "Platby",       required: true },
+    { key: "GOPAY_CLIENT_ID",    label: "GoPay Client ID",             group: "Platby",       required: true },
+    { key: "GOPAY_CLIENT_SECRET",label: "GoPay Client Secret",         group: "Platby",       required: true },
     { key: "APP_URL",            label: "APP_URL (produkční doména)",  group: "Nasazení",     required: false },
   ];
 
