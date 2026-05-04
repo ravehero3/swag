@@ -2,15 +2,22 @@ import { S3Client, PutObjectCommand, GetObjectCommand, ListObjectsV2Command, Put
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import type { Readable } from "stream";
 
-// Pasting credentials into the Vercel UI frequently introduces invisible
-// trailing whitespace or a stray newline. SigV4 signs the literal string, so
-// even a single trailing space → SignatureDoesNotMatch. Trim defensively.
 const envTrim = (v: string | undefined) => (v == null ? v : v.trim());
+
+// Cloudflare R2 credentials
 const R2_ACCOUNT_ID = envTrim(process.env.R2_ACCOUNT_ID);
 const R2_ACCESS_KEY_ID = envTrim(process.env.R2_ACCESS_KEY_ID);
 const R2_SECRET_ACCESS_KEY = envTrim(process.env.R2_SECRET_ACCESS_KEY);
-const R2_BUCKET = envTrim(process.env.R2_BUCKET);
 const R2_PUBLIC_BASE_URL = envTrim(process.env.R2_PUBLIC_BASE_URL);
+
+// R2 bucket names (can be the same bucket with different key prefixes, or separate buckets)
+const R2_PREVIEW_BUCKET = envTrim(process.env.R2_PREVIEW_BUCKET);
+const R2_ZIP_BUCKET = envTrim(process.env.R2_ZIP_BUCKET);
+const R2_ARTWORK_BUCKET = envTrim(process.env.R2_ARTWORK_BUCKET);
+// Legacy single-bucket env var (used as fallback for all types)
+const R2_BUCKET = envTrim(process.env.R2_BUCKET);
+
+// Backblaze B2 credentials (kept as fallback)
 const B2_ENDPOINT = envTrim(process.env.B2_ENDPOINT);
 const B2_KEY_ID = envTrim(process.env.B2_KEY_ID);
 const B2_KEY_SECRET = envTrim(process.env.B2_KEY_SECRET);
@@ -19,28 +26,15 @@ const B2_ZIP_BUCKET = envTrim(process.env.B2_ZIP_BUCKET);
 const B2_VIDEO_BUCKET = envTrim(process.env.B2_VIDEO_BUCKET);
 const B2_PUBLIC_BASE_URL = envTrim(process.env.B2_PUBLIC_BASE_URL);
 
-// Backblaze B2 (S3-compatible) — used for ZIPs and (legacy) previews/videos
-const b2Client = new S3Client({
-  endpoint: `https://${B2_ENDPOINT}`,
-  region: "us-east-1",
-  credentials: {
-    accessKeyId: B2_KEY_ID!,
-    secretAccessKey: B2_KEY_SECRET!,
-  },
-  requestChecksumCalculation: "WHEN_REQUIRED",
-  responseChecksumValidation: "WHEN_REQUIRED",
-  forcePathStyle: true,
-});
-
-// Cloudflare R2 (S3-compatible) — used for artwork + audio previews (zero egress fees)
-const R2_ENABLED = !!(
+export const R2_IS_ENABLED = !!(
   R2_ACCOUNT_ID &&
   R2_ACCESS_KEY_ID &&
   R2_SECRET_ACCESS_KEY &&
-  R2_BUCKET
+  (R2_PREVIEW_BUCKET || R2_BUCKET)
 );
 
-const r2Client = R2_ENABLED
+// Cloudflare R2 client
+const r2Client = R2_IS_ENABLED
   ? new S3Client({
       endpoint: `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
       region: "auto",
@@ -53,36 +47,70 @@ const r2Client = R2_ENABLED
     })
   : null;
 
+// Backblaze B2 client (fallback)
+const b2Client = new S3Client({
+  endpoint: `https://${B2_ENDPOINT}`,
+  region: "us-east-1",
+  credentials: {
+    accessKeyId: B2_KEY_ID!,
+    secretAccessKey: B2_KEY_SECRET!,
+  },
+  requestChecksumCalculation: "WHEN_REQUIRED",
+  responseChecksumValidation: "WHEN_REQUIRED",
+  forcePathStyle: true,
+});
+
+// Resolved bucket names — R2 takes priority over B2
+const resolvedPreviewBucket = R2_IS_ENABLED
+  ? (R2_PREVIEW_BUCKET || R2_BUCKET)!
+  : B2_PREVIEW_BUCKET!;
+
+const resolvedZipBucket = R2_IS_ENABLED
+  ? (R2_ZIP_BUCKET || R2_BUCKET)!
+  : B2_ZIP_BUCKET!;
+
+const resolvedArtworkBucket = R2_IS_ENABLED
+  ? (R2_ARTWORK_BUCKET || R2_PREVIEW_BUCKET || R2_BUCKET)!
+  : B2_PREVIEW_BUCKET!;
+
+const resolvedVideoBucket = R2_IS_ENABLED
+  ? (R2_PREVIEW_BUCKET || R2_BUCKET)!
+  : (B2_VIDEO_BUCKET || B2_PREVIEW_BUCKET)!;
+
 export const STORAGE_BUCKETS = {
-  PREVIEWS: B2_PREVIEW_BUCKET!,
-  ZIPS: B2_ZIP_BUCKET!,
-  VIDEOS: B2_VIDEO_BUCKET || B2_PREVIEW_BUCKET!,
-  // Artwork + audio previews route here when R2 is configured; otherwise fall back to B2 previews bucket.
-  ARTWORK: R2_ENABLED ? R2_BUCKET! : B2_PREVIEW_BUCKET!,
+  PREVIEWS: resolvedPreviewBucket,
+  ZIPS: resolvedZipBucket,
+  ARTWORK: resolvedArtworkBucket,
+  VIDEOS: resolvedVideoBucket,
 };
 
-export const VIDEO_PREFIX = B2_VIDEO_BUCKET ? "" : "videos/";
+export const VIDEO_PREFIX = (!R2_IS_ENABLED && !B2_VIDEO_BUCKET) ? "videos/" : "";
 
-// Pick the right S3 client based on bucket name.
+// Set of R2 bucket names for routing decisions
+const r2Buckets = new Set([
+  R2_PREVIEW_BUCKET,
+  R2_ZIP_BUCKET,
+  R2_ARTWORK_BUCKET,
+  R2_BUCKET,
+].filter(Boolean));
+
+function isR2Bucket(bucket: string): boolean {
+  return R2_IS_ENABLED && r2Buckets.has(bucket);
+}
+
 function clientFor(bucket: string): S3Client {
-  if (R2_ENABLED && bucket === R2_BUCKET) return r2Client!;
-  return b2Client;
+  return isR2Bucket(bucket) ? r2Client! : b2Client;
 }
 
 // Build a public URL for an object in a known bucket.
 export function getPublicUrl(bucket: string, key: string): string {
-  if (R2_ENABLED && bucket === R2_BUCKET) {
+  if (isR2Bucket(bucket)) {
     if (R2_PUBLIC_BASE_URL) {
       return `${R2_PUBLIC_BASE_URL.replace(/\/$/, "")}/${key}`;
     }
-    // R2 is enabled but no public base URL is configured. The R2 S3 endpoint
-    // (https://<account>.r2.cloudflarestorage.com) requires AWS-SigV4 auth
-    // and cannot be loaded directly by a browser, so returning it would yield
-    // a "successful upload, broken preview" experience. Fail loudly instead.
     throw new Error(
       "R2_PUBLIC_BASE_URL is not set. Configure your Cloudflare R2 public dev URL " +
-      "(https://pub-<hash>.r2.dev) or a custom domain bound to the bucket, otherwise " +
-      "uploaded artwork cannot be served to browsers."
+      "(https://pub-<hash>.r2.dev) or a custom domain bound to the bucket."
     );
   }
   if (B2_PUBLIC_BASE_URL && bucket === B2_PREVIEW_BUCKET) {
@@ -185,5 +213,3 @@ export async function configureBucketCors(bucket: string): Promise<void> {
     console.warn(`CORS setup skipped for ${bucket}:`, (err as Error).message);
   }
 }
-
-export const R2_IS_ENABLED = R2_ENABLED;
