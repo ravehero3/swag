@@ -298,10 +298,10 @@ function Admin() {
   const [, navigate] = useLocation();
   const initialTab = (() => {
     const p = new URLSearchParams(window.location.search).get("tab");
-    const valid = ["beats", "kits", "orders", "licenses", "emails", "promo", "seo", "ig_stories", "zakaznici", "komentare", "artworks"];
-    return (valid.includes(p || "") ? p : "orders") as "beats" | "kits" | "orders" | "licenses" | "emails" | "promo" | "seo" | "ig_stories" | "zakaznici" | "komentare" | "artworks";
+    const valid = ["beats", "kits", "orders", "licenses", "emails", "promo", "seo", "ig_stories", "zakaznici", "komentare", "artworks", "konfigurace"];
+    return (valid.includes(p || "") ? p : "orders") as "beats" | "kits" | "orders" | "licenses" | "emails" | "promo" | "seo" | "ig_stories" | "zakaznici" | "komentare" | "artworks" | "konfigurace";
   })();
-  const [tab, setTab] = useState<"beats" | "kits" | "orders" | "licenses" | "emails" | "promo" | "seo" | "ig_stories" | "zakaznici" | "komentare" | "artworks">(initialTab);
+  const [tab, setTab] = useState<"beats" | "kits" | "orders" | "licenses" | "emails" | "promo" | "seo" | "ig_stories" | "zakaznici" | "komentare" | "artworks" | "konfigurace">(initialTab);
   const [beats, setBeats] = useState<Beat[]>([]);
   const [kits, setKits] = useState<SoundKit[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
@@ -419,14 +419,14 @@ function Admin() {
       <h1 style={{ marginBottom: "24px", color: "#666" }}>Admin Panel</h1>
 
       <div style={{ display: "flex", gap: "12px", marginBottom: "24px", flexWrap: "wrap", justifyContent: "center" }}>
-        {["beats", "kits", "orders", "zakaznici", "licenses", "emails", "promo", "seo", "ig_stories", "komentare", "artworks"].map((t) => (
+        {["beats", "kits", "orders", "zakaznici", "licenses", "emails", "promo", "seo", "ig_stories", "komentare", "artworks", "konfigurace"].map((t) => (
           <button
             key={t}
             className={tab === t ? "btn btn-filled" : "btn btn-admin"}
             onClick={() => setTab(t as any)}
             style={tab !== t ? { borderColor: "#333", color: "#666" } : {}}
           >
-            {t === "beats" ? "Beaty" : t === "kits" ? "Zvuky" : t === "orders" ? "Objednávky" : t === "zakaznici" ? "Zákazníci" : t === "licenses" ? "Licence" : t === "emails" ? "Emaily" : t === "promo" ? "Promo kódy" : t === "komentare" ? "Komentáře" : t === "ig_stories" ? "IG Stories" : t === "artworks" ? "Artworks" : "SEO"}
+            {t === "beats" ? "Beaty" : t === "kits" ? "Zvuky" : t === "orders" ? "Objednávky" : t === "zakaznici" ? "Zákazníci" : t === "licenses" ? "Licence" : t === "emails" ? "Emaily" : t === "promo" ? "Promo kódy" : t === "komentare" ? "Komentáře" : t === "ig_stories" ? "IG Stories" : t === "artworks" ? "Artworks" : t === "konfigurace" ? "⚙ Konfigurace" : "SEO"}
           </button>
         ))}
       </div>
@@ -465,6 +465,7 @@ function Admin() {
         {tab === "ig_stories" && <IGStoriesTab settings={settings} onRefresh={refreshSettings} />}
         {tab === "komentare" && <KomentareTab />}
         {tab === "artworks" && <ArtworksTab settings={settings} onRefresh={refreshSettings} beats={beats} />}
+        {tab === "konfigurace" && <KonfiguraceTab />}
       </div>
     </div>
   );
@@ -5797,6 +5798,105 @@ function ArtworksTab({ settings, onRefresh, beats }: { settings: Record<string, 
           {saving ? "Ukládám…" : "Uložit nastavení"}
         </button>
       </div>
+    </div>
+  );
+}
+
+function KonfiguraceTab() {
+  const [items, setItems] = useState<{ key: string; label: string; group: string; required: boolean; set: boolean }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/admin/config-check", { credentials: "include" })
+      .then((r) => r.json())
+      .then((data) => { setItems(data); setLoading(false); })
+      .catch(() => { setError("Nepodařilo se načíst konfiguraci."); setLoading(false); });
+  }, []);
+
+  const groups = items.reduce<Record<string, typeof items>>((acc, item) => {
+    if (!acc[item.group]) acc[item.group] = [];
+    acc[item.group].push(item);
+    return acc;
+  }, {});
+
+  const missing = items.filter((i) => i.required && !i.set);
+  const allOk = missing.length === 0;
+
+  const rowStyle: React.CSSProperties = {
+    display: "flex", alignItems: "center", justifyContent: "space-between",
+    padding: "10px 14px", borderBottom: "1px solid #1a1a1a",
+  };
+  const labelStyle: React.CSSProperties = { fontSize: "13px", color: "#bbb" };
+  const keyStyle: React.CSSProperties = { fontSize: "11px", color: "#555", fontFamily: "monospace", marginTop: "2px" };
+
+  return (
+    <div data-testid="tab-konfigurace">
+      <h2 style={{ marginBottom: "6px", color: "#ccc", fontSize: "18px" }}>Konfigurace prostředí</h2>
+      <p style={{ marginBottom: "24px", color: "#555", fontSize: "13px" }}>
+        Přehled environment variables potřebných pro správný chod webu — zkontroluj je v nastavení Vercelu / Replitu.
+      </p>
+
+      {loading && <p style={{ color: "#555" }}>Načítám…</p>}
+      {error && <p style={{ color: "#e55" }}>{error}</p>}
+
+      {!loading && !error && (
+        <>
+          <div style={{
+            padding: "12px 16px", marginBottom: "24px", borderRadius: "6px",
+            background: allOk ? "#0a1f0a" : "#1f0a0a",
+            border: `1px solid ${allOk ? "#1a4d1a" : "#4d1a1a"}`,
+            display: "flex", alignItems: "center", gap: "10px",
+          }} data-testid="config-status-banner">
+            <span style={{ fontSize: "20px" }}>{allOk ? "✅" : "⚠️"}</span>
+            <span style={{ fontSize: "13px", color: allOk ? "#5d5" : "#e77" }}>
+              {allOk
+                ? "Všechny povinné proměnné jsou nastaveny."
+                : `${missing.length} povinná proměnná${missing.length > 1 ? " nejsou nastaveny" : " není nastavena"}: ${missing.map((m) => m.key).join(", ")}`}
+            </span>
+          </div>
+
+          {Object.entries(groups).map(([group, groupItems]) => (
+            <div key={group} style={{ marginBottom: "24px" }}>
+              <div style={{ fontSize: "11px", color: "#444", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "8px", paddingLeft: "14px" }}>
+                {group}
+              </div>
+              <div style={{ border: "1px solid #222", borderRadius: "6px", overflow: "hidden" }}>
+                {groupItems.map((item) => (
+                  <div key={item.key} style={rowStyle} data-testid={`config-row-${item.key}`}>
+                    <div>
+                      <div style={labelStyle}>{item.label}</div>
+                      <div style={keyStyle}>{item.key}</div>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
+                      {!item.required && (
+                        <span style={{ fontSize: "10px", color: "#444", border: "1px solid #2a2a2a", borderRadius: "3px", padding: "1px 5px" }}>
+                          volitelné
+                        </span>
+                      )}
+                      <span style={{
+                        fontSize: "12px", fontWeight: 600, padding: "3px 10px", borderRadius: "4px",
+                        background: item.set ? "#0d2b0d" : (item.required ? "#2b0d0d" : "#1a1a1a"),
+                        color: item.set ? "#4caf50" : (item.required ? "#e55" : "#555"),
+                        border: `1px solid ${item.set ? "#1a4d1a" : (item.required ? "#4d1a1a" : "#2a2a2a")}`,
+                      }} data-testid={`config-status-${item.key}`}>
+                        {item.set ? "Nastaveno" : "Chybí"}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+
+          <div style={{ padding: "16px", background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: "6px", fontSize: "12px", color: "#444", lineHeight: "1.8" }}>
+            <div style={{ color: "#555", marginBottom: "8px", fontWeight: 600 }}>Jak přidat chybějící proměnné na Vercelu:</div>
+            <div>1. Přejdi do <span style={{ color: "#666", fontFamily: "monospace" }}>vercel.com → projekt → Settings → Environment Variables</span></div>
+            <div>2. Přidej každou chybějící proměnnou pro prostředí <span style={{ color: "#666", fontFamily: "monospace" }}>Production</span></div>
+            <div>3. Znovu nasaď projekt (<span style={{ color: "#666", fontFamily: "monospace" }}>Redeploy</span>) — proměnné se načtou až po restartu</div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

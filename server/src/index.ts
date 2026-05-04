@@ -247,6 +247,36 @@ async function seedAdmin() {
   }
 }
 
+app.get("/api/admin/config-check", requireAdmin, (_req, res) => {
+  const checks = [
+    { key: "DATABASE_URL",       label: "PostgreSQL databáze",         group: "Databáze",    required: true },
+    { key: "SESSION_SECRET",     label: "Session secret",              group: "Databáze",    required: true },
+    { key: "GOOGLE_CLIENT_ID",   label: "Google OAuth – Client ID",    group: "Google OAuth", required: false },
+    { key: "GOOGLE_CLIENT_SECRET", label: "Google OAuth – Secret",     group: "Google OAuth", required: false },
+    { key: "B2_ENDPOINT",        label: "B2 Endpoint",                 group: "Backblaze B2", required: true },
+    { key: "B2_KEY_ID",          label: "B2 Key ID",                   group: "Backblaze B2", required: true },
+    { key: "B2_KEY_SECRET",      label: "B2 Key Secret",               group: "Backblaze B2", required: true },
+    { key: "B2_PREVIEW_BUCKET",  label: "B2 Preview Bucket",           group: "Backblaze B2", required: true },
+    { key: "B2_ZIP_BUCKET",      label: "B2 ZIP Bucket",               group: "Backblaze B2", required: true },
+    { key: "B2_PUBLIC_BASE_URL", label: "B2 Public Base URL",          group: "Backblaze B2", required: true },
+    { key: "RESEND_API_KEY",     label: "Resend API Key",              group: "Email",        required: true },
+    { key: "RESEND_FROM",        label: "Resend odesílatel",           group: "Email",        required: true },
+    { key: "GOPAY_ID",           label: "GoPay ID",                    group: "Platby",       required: true },
+    { key: "GOPAY_SECRET",       label: "GoPay Secret",                group: "Platby",       required: true },
+    { key: "APP_URL",            label: "APP_URL (produkční doména)",  group: "Nasazení",     required: false },
+  ];
+
+  const result = checks.map(({ key, label, group, required }) => ({
+    key,
+    label,
+    group,
+    required,
+    set: !!process.env[key] && process.env[key]!.trim() !== "",
+  }));
+
+  res.json(result);
+});
+
 app.get("/api/admin/comments", requireAdmin, async (_req, res) => {
   try {
     const result = await pool.query(
