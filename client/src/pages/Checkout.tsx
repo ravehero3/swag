@@ -511,33 +511,28 @@ function Checkout() {
               alignItems: "flex-start",
               gap: "12px",
               padding: "12px",
-              border: "1px solid #2a2a2a",
+              border: `1px solid ${paymentMethod === "gopay" ? "rgba(255,255,255,0.25)" : "#2a2a2a"}`,
               borderRadius: "4px",
-              cursor: "not-allowed",
-              opacity: 0.55,
-              background: "transparent",
+              cursor: "pointer",
+              background: paymentMethod === "gopay" ? "rgba(255,255,255,0.03)" : "transparent",
+              transition: "border-color 0.15s, background 0.15s",
             }}
             data-testid="option-gopay"
-            title="GoPay je momentálně mimo provoz"
           >
             <input
               type="radio"
               name="paymentMethod"
               value="gopay"
-              checked={false}
-              disabled
-              readOnly
+              checked={paymentMethod === "gopay"}
+              onChange={() => setPaymentMethod("gopay")}
               style={{ marginTop: "3px" }}
             />
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: "14px", color: "#aaa", marginBottom: "2px" }}>
+              <div style={{ fontSize: "14px", color: "#fff", marginBottom: "2px" }}>
                 GoPay – karta, Apple Pay, Google Pay, online převod
-                <span style={{ marginLeft: "8px", fontSize: "11px", color: "#f5b150", background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.25)", borderRadius: "3px", padding: "2px 6px", whiteSpace: "nowrap" }}>
-                  čekáme na schválení
-                </span>
               </div>
-              <div style={{ fontSize: "12px", color: "#666", lineHeight: 1.5 }}>
-                Okamžitá platba kartou nebo přes platební bránu. Zatím není k dispozici – aktivujeme po schválení od GoPay.
+              <div style={{ fontSize: "12px", color: "#888", lineHeight: 1.5 }}>
+                Okamžitá platba kartou nebo přes platební bránu. Po kliknutí budete přesměrováni na zabezpečenou platební bránu GoPay.
               </div>
             </div>
           </label>

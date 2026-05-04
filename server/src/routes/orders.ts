@@ -223,7 +223,7 @@ router.post("/:id/pay", async (req: Request, res: Response) => {
       order_number: String(order.id),
       order_description: `Objednávka #${order.id}`,
       items,
-      return_url: `${domain}/ucet`,
+      return_url: `${domain}/platba-status?orderId=${order.id}`,
       notify_url: `${domain}/api/orders/${order.id}/notify`,
       lang: "CS",
     };
@@ -319,6 +319,23 @@ router.post("/:id/claim-free", requireAuth, async (req: Request, res: Response) 
   } catch (error) {
     console.error("Claim free error:", error);
     res.status(500).json({ error: "Chyba při zpracování" });
+  }
+});
+
+router.get("/:id/status", async (req: Request, res: Response) => {
+  try {
+    const orderId = parseInt(req.params.id, 10);
+    if (isNaN(orderId)) return res.status(400).json({ error: "Invalid order ID" });
+
+    const result = await pool.query(
+      "SELECT id, status, total, items, email, created_at FROM orders WHERE id = $1",
+      [orderId]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ error: "Objednávka nenalezena" });
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při načítání stavu objednávky" });
   }
 });
 
