@@ -163,6 +163,11 @@ export function BeatArtwork({
           objectFit: "cover",
           display: "block",
           filter: filterString || undefined,
+          // Safari fix: forces a unique GPU compositing layer per image,
+          // preventing Safari from reusing cached textures across different
+          // <img> elements with the same dimensions (shows "wrong" artwork).
+          transform: "translateZ(0)",
+          WebkitTransform: "translateZ(0)",
         }}
       />
       {showOverlay && (
