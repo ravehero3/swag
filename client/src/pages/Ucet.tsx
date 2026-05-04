@@ -599,6 +599,66 @@ export default function Ucet() {
         </section>
 
         <section>
+          <h2 style={{ fontSize: "24px", marginBottom: "24px", fontWeight: "400" }}>Stažení zdarma</h2>
+          {orders.filter((o) => Number(o.total) === 0 || o.payment_method === "free").length === 0 ? (
+            <p style={{ color: "#666" }}>Zatím nemáte žádná stažení zdarma.</p>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              {orders.filter((o) => Number(o.total) === 0 || o.payment_method === "free").map((order) => {
+                const isPaid = order.status === "completed" || order.status === "paid";
+                const items: OrderItem[] = Array.isArray(order.items) ? order.items : [];
+                return (
+                  <div key={order.id} className="ucet-order-card" data-testid={`card-free-order-${order.id}`}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px", flexWrap: "wrap", gap: "16px" }}>
+                      <div>
+                        <p style={{ color: "#666", fontSize: "12px", margin: "0 0 4px 0" }}>DATUM</p>
+                        <p style={{ color: "#fff", fontSize: "16px", margin: 0 }}>{new Date(order.created_at).toLocaleDateString("cs-CZ")}</p>
+                      </div>
+                      <div>
+                        <span style={{ padding: "4px 12px", background: "#24e053", color: "#000", borderRadius: "4px", fontSize: "12px", fontWeight: 700, letterSpacing: "0.05em" }}>
+                          ZDARMA
+                        </span>
+                      </div>
+                    </div>
+                    <div style={{ borderTop: "1px solid #222", paddingTop: "16px" }}>
+                      <p style={{ color: "#666", fontSize: "12px", marginBottom: "12px" }}>POLOŽKY</p>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                        {items.length === 0 ? (
+                          <p style={{ color: "#555", fontSize: "14px", margin: 0 }}>—</p>
+                        ) : items.map((item, idx) => (
+                          <div
+                            key={`${item.productId ?? idx}-${idx}`}
+                            style={{ display: "flex", justifyContent: "space-between", alignItems: "center", color: "#ccc", fontSize: "14px", gap: "12px", flexWrap: "wrap" }}
+                          >
+                            <span style={{ flex: "1 1 auto", minWidth: 0 }}>{item.title || "—"}</span>
+                            <div style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
+                              {isPaid && item.downloadUrl && (
+                                <a
+                                  href={item.downloadUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  data-testid={`link-free-download-${order.id}-${item.productId ?? idx}`}
+                                  style={{ padding: "4px 12px", background: "#24e053", color: "#000", borderRadius: "4px", fontSize: "12px", fontWeight: 500, textDecoration: "none", whiteSpace: "nowrap" }}
+                                >
+                                  Stáhnout
+                                </a>
+                              )}
+                              {isPaid && !item.downloadUrl && (
+                                <span style={{ color: "#666", fontSize: "12px" }}>Odkaz připravujeme</span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
+        <section>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
             <h2 style={{ fontSize: "24px", margin: 0, fontWeight: "400" }}>Uložené produkty</h2>
             <Link href="/ulozeno" style={{ color: "#24e053", fontSize: "14px", textDecoration: "none" }}>Zobrazit vše</Link>

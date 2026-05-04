@@ -666,7 +666,8 @@ export async function sendContractEmail(orderId: number): Promise<void> {
   const emailHtml = buildPurchaseEmailHtml(order, downloadItems, datum, appUrl, introText);
 
   const attachments: { filename: string; content: string; contentType?: string }[] = [];
-  const beatItems = items.filter((i: any) => i.productType === "beat" || i.productType === "sound_kit");
+  const isFreeOrder = Number(order.total) === 0 || order.payment_method === "free";
+  const beatItems = isFreeOrder ? [] : items.filter((i: any) => i.productType === "beat" || i.productType === "sound_kit");
 
   for (const item of beatItems) {
     const licenseTypeId = item.licenseTypeId;
