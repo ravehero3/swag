@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import starsBgUrl from "@assets/stars_background_voodoo808_1776877846494.jpg";
 import { useRoute, useLocation } from "wouter";
 import { useApp } from "../App.js";
 import ShareModal from "../components/ShareModal.js";
@@ -141,13 +140,18 @@ function ProductDetail() {
           pointer-events: none;
           z-index: 0;
         }
-        .pd-artwork-bg img {
+        .pd-artwork-bg-stars {
           position: absolute;
           inset: 0;
           width: 100%;
           height: 100%;
-          object-fit: cover;
-          object-position: center;
+          background-image:
+            radial-gradient(circle, rgba(255,255,255,0.85) 1px, transparent 1px),
+            radial-gradient(circle, rgba(255,255,255,0.5) 1px, transparent 1px),
+            radial-gradient(circle, rgba(255,255,255,0.35) 1px, transparent 1px);
+          background-size: 80px 80px, 40px 40px, 120px 120px;
+          background-position: 0 0, 20px 20px, 10px 10px;
+          background-color: #000;
         }
         .pd-artwork-bg::after {
           content: "";
@@ -233,7 +237,7 @@ function ProductDetail() {
         {/* Stars background sits behind the artwork frame, sized to ~2x the
             frame and faded into surrounding black on every edge/corner. */}
         <div className="pd-artwork-bg" aria-hidden="true">
-          <img src={starsBgUrl} alt="" />
+          <div className="pd-artwork-bg-stars" />
         </div>
         <div className="pd-artwork-frame">
         <BeatArtwork
