@@ -57,6 +57,10 @@ RESEND_FROM = "VOODOO808 <info@voodoo808.com>"
 B2_PUBLIC_BASE_URL = "https://f003.backblazeb2.com/file/beats-previews"
 R2_ACCOUNT_ID = "0e0b3b634421c2c84355527824499206"
 R2_ACCESS_KEY_ID = "c1ef9ee50809c2ed58f368feedf690a4"
+R2_BUCKET = "voodoo808-artwork"
+R2_PREVIEW_BUCKET = "voodoo808-artwork"
+R2_ARTWORK_BUCKET = "voodoo808-artwork"
+R2_PUBLIC_BASE_URL = "https://pub-d76fe36aa64e499799449fa12ed516d1.r2.dev"
 
 [userenv.production]
 NODE_ENV = "production"
