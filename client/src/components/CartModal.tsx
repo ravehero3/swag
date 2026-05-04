@@ -173,6 +173,7 @@ function CartModal({ isOpen, onClose }: CartModalProps) {
                         height={60}
                         borderRadius={2}
                         applyEffects={item.productType === "beat"}
+                        loading="eager"
                       />
                       <div style={{ flex: 1 }}>
                         <div style={{ fontSize: "14px", fontWeight: "bold", marginBottom: "4px" }}>

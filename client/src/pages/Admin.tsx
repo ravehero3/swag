@@ -2778,6 +2778,7 @@ function OrdersTab({ orders, onRefresh }: any) {
   const paidOrders = orders.filter((o: any) => o.status === "paid" || o.status === "completed");
   const totalRevenue = paidOrders.reduce((s: number, o: any) => s + (Number(o.total) || 0), 0);
   const avgOrder = paidOrders.length > 0 ? Math.round(totalRevenue / paidOrders.length) : 0;
+  const pendingBankOrders = orders.filter((o: any) => o.status === "awaiting_payment" && o.payment_method === "bank_transfer");
 
   const statCard = (label: string, value: string, sub?: string) => (
     <div style={{ flex: 1, padding: "20px", border: "1px solid #222", borderRadius: "4px", textAlign: "left", minWidth: 0 }}>
@@ -2795,6 +2796,48 @@ function OrdersTab({ orders, onRefresh }: any) {
         {statCard("Zaplaceno", `${paidOrders.length}`, `z ${orders.length} objednávek`)}
         {statCard("Průměrná objednávka", avgOrder > 0 ? `${avgOrder.toLocaleString("cs-CZ")} Kč` : "—", "zaplacené objednávky")}
       </div>
+
+      {/* Pending bank transfer alert */}
+      {pendingBankOrders.length > 0 && (
+        <div style={{
+          marginBottom: "20px",
+          border: "1px solid rgba(251,191,36,0.35)",
+          borderRadius: "4px",
+          background: "rgba(251,191,36,0.06)",
+          padding: "16px 20px",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: pendingBankOrders.length > 0 ? "12px" : 0 }}>
+            <span style={{ fontSize: "15px" }}>⏳</span>
+            <span style={{ fontSize: "13px", fontWeight: 700, color: "#fbbf24", letterSpacing: "0.04em", textTransform: "uppercase" }}>
+              Čeká na ověření — {pendingBankOrders.length} {pendingBankOrders.length === 1 ? "bankovní převod" : pendingBankOrders.length < 5 ? "bankovní převody" : "bankovních převodů"}
+            </span>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            {pendingBankOrders.map((o: any) => (
+              <div key={o.id} style={{
+                display: "flex", alignItems: "center", gap: "12px",
+                padding: "10px 14px",
+                background: "rgba(0,0,0,0.3)",
+                borderRadius: "3px",
+                border: "1px solid rgba(251,191,36,0.15)",
+              }}>
+                <span style={{ fontSize: "11px", color: "#666", minWidth: 36 }}>#{o.id}</span>
+                <span style={{ fontSize: "13px", color: "#ccc", flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{o.email}</span>
+                <span style={{ fontSize: "13px", fontWeight: 600, color: "#fff", marginRight: "4px" }}>{Number(o.total).toLocaleString("cs-CZ")} Kč</span>
+                <span style={{ fontSize: "11px", color: "#888" }}>
+                  {o.created_at ? new Date(o.created_at).toLocaleDateString("cs-CZ", { day: "numeric", month: "short" }) : ""}
+                </span>
+                <span style={{ fontSize: "11px", color: "#fbbf24", background: "rgba(251,191,36,0.12)", border: "1px solid rgba(251,191,36,0.3)", borderRadius: "3px", padding: "2px 8px", whiteSpace: "nowrap" }}>
+                  převod · čeká
+                </span>
+              </div>
+            ))}
+          </div>
+          <div style={{ marginTop: "10px", fontSize: "11px", color: "#666" }}>
+            Ověř přijetí plateb v internetovém bankovnictví a potvrď je v seznamu objednávek níže.
+          </div>
+        </div>
+      )}
 
       {/* Chart */}
       <div style={{ border: "1px solid #222", borderRadius: "4px", padding: "20px 12px 8px", marginBottom: "24px" }}>

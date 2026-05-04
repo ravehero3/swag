@@ -136,14 +136,14 @@ router.post("/", async (req: Request, res: Response) => {
   }
 });
 
-router.post("/:id/pay", requireAuth, async (req: Request, res: Response) => {
+router.post("/:id/pay", async (req: Request, res: Response) => {
   try {
     const orderId = parseInt(req.params.id, 10);
+    const userId = req.session?.userId || null;
 
-    const orderResult = await pool.query(
-      "SELECT * FROM orders WHERE id = $1 AND user_id = $2",
-      [orderId, req.session.userId]
-    );
+    const orderResult = userId
+      ? await pool.query("SELECT * FROM orders WHERE id = $1 AND user_id = $2", [orderId, userId])
+      : await pool.query("SELECT * FROM orders WHERE id = $1 AND user_id IS NULL", [orderId]);
 
     if (orderResult.rows.length === 0) {
       return res.status(404).json({ error: "Objednávka nenalezena" });
@@ -222,14 +222,14 @@ router.post("/:id/pay", requireAuth, async (req: Request, res: Response) => {
   }
 });
 
-router.post("/:id/bank-transfer", requireAuth, async (req: Request, res: Response) => {
+router.post("/:id/bank-transfer", async (req: Request, res: Response) => {
   try {
     const orderId = parseInt(req.params.id, 10);
+    const userId = req.session?.userId || null;
 
-    const orderResult = await pool.query(
-      "SELECT * FROM orders WHERE id = $1 AND user_id = $2",
-      [orderId, req.session.userId]
-    );
+    const orderResult = userId
+      ? await pool.query("SELECT * FROM orders WHERE id = $1 AND user_id = $2", [orderId, userId])
+      : await pool.query("SELECT * FROM orders WHERE id = $1 AND user_id IS NULL", [orderId]);
 
     if (orderResult.rows.length === 0) {
       return res.status(404).json({ error: "Objednávka nenalezena" });

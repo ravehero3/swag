@@ -125,10 +125,6 @@ function Checkout() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) {
-      setError("Pro dokončení objednávky se musíte přihlásit.");
-      return;
-    }
     setLoading(true);
     setError("");
     try {
