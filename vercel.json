@@ -1,19 +1,25 @@
 {
   "version": 2,
-  "buildCommand": "vite build",
   "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist/public"
+      }
+    },
     {
       "src": "server/src/index.ts",
       "use": "@vercel/node",
       "config": {
-        "includeFiles": ["dist/public/**", "public/**"]
+        "includeFiles": ["public/**"]
       }
     }
   ],
   "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/server/src/index.ts"
-    }
+    { "src": "/api/(.*)", "dest": "/server/src/index.ts" },
+    { "src": "/uploads/(.*)", "dest": "/server/src/index.ts" },
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
