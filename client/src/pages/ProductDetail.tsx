@@ -23,7 +23,7 @@ interface ProductData {
 }
 
 function ProductDetail() {
-  const [, params] = useRoute("/produkt/:type/:id");
+  const [, params] = useRoute<{ type: string; id: string }>("/produkt/:type/:id");
   const [, setLocation] = useLocation();
   const { addToCart, previewPlayer } = useApp() as any;
   const [product, setProduct] = useState<ProductData | null>(null);
