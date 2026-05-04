@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "node_modules/.bin/tsx server/src/index.ts",
-    "build": "vite build && tsc --project server/tsconfig.json --skipLibCheck",
+    "build": "vite build && node build-server.mjs",
     "seed-admin": "npx tsx server/src/seed-admin.ts",
     "start": "node dist/server/index.js",
     "vercel-build": "vite build && tsc --project server/tsconfig.json --skipLibCheck",

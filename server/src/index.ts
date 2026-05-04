@@ -622,18 +622,16 @@ async function startServer() {
   if (process.env.NODE_ENV !== "production") {
     const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
-      configFile: path.join(__dirname, "../../vite.config.ts"),
+      configFile: path.join(process.cwd(), "vite.config.ts"),
       server: { middlewareMode: true, allowedHosts: true },
       appType: "spa",
-      root: path.join(__dirname, "../../client"),
+      root: path.join(process.cwd(), "client"),
     });
     app.use(vite.middlewares);
   } else {
-    const publicPath = path.join(__dirname, "../../dist/public");
+    const publicPath = path.join(process.cwd(), "dist/public");
     app.use(express.static(publicPath));
-    
-    // API routes are already handled above by app.use("/api/...", ...)
-    // This catch-all should only handle frontend routing
+
     app.get("*", (req, res, next) => {
       if (req.path.startsWith('/api/') || req.path.startsWith('/uploads/')) {
         return res.status(404).json({ error: "API endpoint nenalezen" });
