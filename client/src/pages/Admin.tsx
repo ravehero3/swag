@@ -9,111 +9,12 @@ import {
   type BlendMode,
 } from "../components/BeatArtwork.js";
 
-interface B2File {
-  key: string;
-  size: number;
-  lastModified: string | undefined;
-}
-
 function formatBytes(bytes: number): string {
   if (bytes === 0) return "0 B";
   const k = 1024;
   const sizes = ["B", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
-}
-
-function B2FilePicker({ onSelect, onClose }: { onSelect: (key: string) => void | Promise<void>; onClose: () => void }) {
-  const [files, setFiles] = useState<B2File[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [search, setSearch] = useState("");
-
-  useEffect(() => {
-    fetch("/api/upload/b2-files", { credentials: "include" })
-      .then(r => r.ok ? r.json() : Promise.reject(r.statusText))
-      .then(data => { setFiles(data); setLoading(false); })
-      .catch(err => { setError(String(err)); setLoading(false); });
-  }, []);
-
-  const filtered = files.filter(f => f.key.toLowerCase().includes(search.toLowerCase()));
-
-  return (
-    <div
-      style={{
-        position: "fixed", inset: 0, background: "rgba(13,13,13,0.85)",
-        zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center",
-      }}
-      onClick={onClose}
-    >
-      <div
-        style={{
-          background: "#161616", border: "1px solid #333", borderRadius: "6px",
-          padding: "24px", width: "640px", maxHeight: "80vh", display: "flex",
-          flexDirection: "column", gap: "16px",
-        }}
-        onClick={e => e.stopPropagation()}
-      >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <h3 style={{ margin: 0, fontSize: "16px" }}>Vybrat soubor z Backblaze</h3>
-          <button onClick={onClose} style={{ background: "none", border: "none", color: "#888", cursor: "pointer", fontSize: "20px" }}>×</button>
-        </div>
-
-        <input
-          autoFocus
-          placeholder="Hledat soubor..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          style={{ width: "100%", padding: "10px 12px", background: "#1a1a1a", border: "1px solid #333", color: "#fff", borderRadius: "4px" }}
-        />
-
-        <div style={{ overflowY: "auto", flex: 1, border: "1px solid #222", borderRadius: "4px" }}>
-          {loading && (
-            <div style={{ padding: "24px", textAlign: "center", color: "#888" }}>Načítám soubory z B2...</div>
-          )}
-          {error && (
-            <div style={{ padding: "24px", textAlign: "center", color: "#ff4444" }}>Chyba: {error}</div>
-          )}
-          {!loading && !error && filtered.length === 0 && (
-            <div style={{ padding: "24px", textAlign: "center", color: "#888" }}>
-              {files.length === 0 ? "V bucketu nejsou žádné soubory. Nahrajte ZIP přímo do Backblaze." : "Žádné výsledky."}
-            </div>
-          )}
-          {!loading && !error && filtered.map(file => (
-            <div
-              key={file.key}
-              onClick={() => { onSelect(file.key); onClose(); }}
-              style={{
-                display: "flex", justifyContent: "space-between", alignItems: "center",
-                padding: "12px 16px", borderBottom: "1px solid #1e1e1e",
-                cursor: "pointer", transition: "background 150ms",
-              }}
-              onMouseEnter={e => (e.currentTarget.style.background = "#1a1a1a")}
-              onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
-            >
-              <div style={{ flex: 1, overflow: "hidden" }}>
-                <div style={{ fontSize: "13px", color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                  {file.key}
-                </div>
-                {file.lastModified && (
-                  <div style={{ fontSize: "11px", color: "#666", marginTop: "2px" }}>
-                    {new Date(file.lastModified).toLocaleString("cs-CZ")}
-                  </div>
-                )}
-              </div>
-              <div style={{ fontSize: "12px", color: "#888", marginLeft: "16px", whiteSpace: "nowrap" }}>
-                {formatBytes(file.size)}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div style={{ fontSize: "12px", color: "#555" }}>
-          {!loading && !error && `${filtered.length} / ${files.length} souborů`}
-        </div>
-      </div>
-    </div>
-  );
 }
 
 interface B2VideoFile {
@@ -863,7 +764,6 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   const [uploadedNames, setUploadedNames] = useState<Record<string, string>>({});
   const [uploadError, setUploadError] = useState<Record<string, string>>({});
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
-  const [b2PickerFor, setB2PickerFor] = useState<string | null>(null);
   const [hoveredBeatId, setHoveredBeatId] = useState<number | null>(null);
   const [previewBeatId, setPreviewBeatId] = useState<number | null>(null);
   const [recomputingIds, setRecomputingIds] = useState<Set<number>>(new Set());
@@ -1541,15 +1441,6 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                   }}
                   style={{ flex: 1 }}
                 />
-                <button
-                  type="button"
-                  className="btn btn-admin"
-                  onClick={() => setB2PickerFor("preview")}
-                  style={{ whiteSpace: "nowrap", fontSize: "12px" }}
-                  data-testid="button-browse-b2-preview"
-                >
-                  Browse B2
-                </button>
               </div>
               <UploadProgressBar type="preview" />
               <div style={{ marginTop: "6px" }}><UploadStatus type="preview" url={form.previewUrl} /></div>
@@ -1843,25 +1734,6 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
         </tbody>
       </table>
 
-      {b2PickerFor && (
-        <B2FilePicker
-          onSelect={async (key) => {
-            if (b2PickerFor === "preview") {
-              try {
-                const res = await fetch(`/api/upload/public-url?key=${encodeURIComponent(key)}&type=preview`, { credentials: "include" });
-                const data = await res.json();
-                setForm(f => ({ ...f, previewUrl: data.url || key }));
-              } catch {
-                setForm(f => ({ ...f, previewUrl: key }));
-              }
-            }
-            if (b2PickerFor === "trackout") setForm(f => ({ ...f, trackoutUrl: key }));
-            if (b2PickerFor === "beat") setForm(f => ({ ...f, fileUrl: key }));
-          }}
-          onClose={() => setB2PickerFor(null)}
-        />
-      )}
-
       {expandedWaveformBeat && (
         <WaveformModal beat={expandedWaveformBeat} onClose={() => setExpandedWaveformBeat(null)} />
       )}
@@ -1900,7 +1772,6 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
   const [uploading, setUploading] = useState<Record<string, boolean>>({});
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
   const [uploadError, setUploadError] = useState<Record<string, string>>({});
-  const [b2PickerFor, setB2PickerFor] = useState<string | null>(null);
   const [hoveredKitId, setHoveredKitId] = useState<number | null>(null);
   const [recomputingKitIds, setRecomputingKitIds] = useState<Set<number>>(new Set());
   const formRef = useRef<HTMLDivElement>(null);
@@ -2514,14 +2385,6 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
         </tbody>
       </table>
 
-      {b2PickerFor && (
-        <B2FilePicker
-          onSelect={(key) => {
-            if (b2PickerFor === "kit") setForm(f => ({ ...f, fileUrl: key }));
-          }}
-          onClose={() => setB2PickerFor(null)}
-        />
-      )}
     </div>
   );
 }

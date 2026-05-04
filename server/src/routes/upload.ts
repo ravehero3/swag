@@ -212,32 +212,6 @@ router.get("/diag/artwork", requireAdmin, async (_req: Request, res: Response) =
   });
 });
 
-router.get("/b2-credentials", requireAdmin, (req: Request, res: Response) => {
-  if (!process.env.B2_KEY_ID || !process.env.B2_KEY_SECRET || !process.env.B2_ENDPOINT) {
-    return res.status(500).json({ error: "B2 config missing" });
-  }
-  res.json({
-    keyId: process.env.B2_KEY_ID,
-    applicationKey: process.env.B2_KEY_SECRET,
-    endpoint: `https://${process.env.B2_ENDPOINT}`,
-  });
-});
-
-// List files in the ZIP bucket (for B2 file picker)
-router.get("/b2-files", requireAdmin, async (req: Request, res: Response) => {
-  try {
-    const files = await listFiles(STORAGE_BUCKETS.ZIPS);
-    const sorted = files.sort((a, b) => {
-      const aTime = a.lastModified ? a.lastModified.getTime() : 0;
-      const bTime = b.lastModified ? b.lastModified.getTime() : 0;
-      return bTime - aTime;
-    });
-    res.json(sorted);
-  } catch (error) {
-    console.error("B2 list error:", error);
-    res.status(500).json({ error: "Failed to list B2 files", detail: String(error) });
-  }
-});
 
 // List video files from B2
 router.get("/b2-videos", requireAdmin, async (req: Request, res: Response) => {
