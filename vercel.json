@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "buildCommand": "vite build",
+  "builds": [
+    {
+      "src": "server/src/index.ts",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["dist/public/**", "public/**"]
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/server/src/index.ts"
+    }
+  ]
+}

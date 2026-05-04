@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import heroImage from "@assets/voodoo808com_1777810148683.jpg";
 import { useLocation, Link } from "wouter";
 import { toAudioProxyUrl } from "../lib/audioProxy.js";
 import { useApp } from "../App.js";
