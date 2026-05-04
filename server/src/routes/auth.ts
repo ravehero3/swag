@@ -6,16 +6,11 @@ import multer from "multer";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import { requireAuth, requireAdmin } from "../middleware/auth.js";
-import { uploadFile, STORAGE_BUCKETS } from "../lib/storage.js";
+import { uploadFile, getPublicUrl, STORAGE_BUCKETS } from "../lib/storage.js";
 import { sendPasswordResetEmail } from "../email.js";
 
 function getAvatarPublicUrl(key: string): string {
-  if (process.env.B2_PUBLIC_BASE_URL) {
-    return `${process.env.B2_PUBLIC_BASE_URL}/${key}`;
-  }
-  const endpoint = process.env.B2_ENDPOINT || "";
-  const bucket = STORAGE_BUCKETS.PREVIEWS;
-  return `https://${endpoint}/${bucket}/${key}`;
+  return getPublicUrl(STORAGE_BUCKETS.PREVIEWS, key);
 }
 
 const avatarUpload = multer({
