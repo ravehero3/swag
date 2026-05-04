@@ -51,11 +51,12 @@ function Checkout() {
   }, [user]);
 
   const applyPromoCode = async () => {
+    if (!promoCode.trim()) return;
     try {
       const res = await fetch("/api/promo-codes/validate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: promoCode }),
+        body: JSON.stringify({ code: promoCode.trim() }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -422,14 +423,26 @@ function Checkout() {
               <span>{item.price} CZK</span>
             </div>
           ))}
+          {discount > 0 && (
+            <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderTop: "1px solid #222", color: "#888", fontSize: "13px" }}>
+              <span>Mezisoučet</span>
+              <span>{total} CZK</span>
+            </div>
+          )}
+          {discount > 0 && (
+            <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", color: "#24e053", fontSize: "13px" }}>
+              <span>Sleva ({discount}%) – {promoCode.toUpperCase()}</span>
+              <span>−{Math.round(total * discount / 100)} CZK</span>
+            </div>
+          )}
           <div
             style={{
               display: "flex",
               justifyContent: "space-between",
               padding: "12px 0",
               fontWeight: "bold",
-              borderTop: discount > 0 ? "1px solid #333" : "none",
-              marginTop: discount > 0 ? "8px" : "0",
+              borderTop: "1px solid #333",
+              marginTop: "8px",
             }}
           >
             <span>Celkem</span>
@@ -442,11 +455,17 @@ function Checkout() {
           <div style={{ display: "flex", gap: "8px" }}>
             <input
               value={promoCode}
-              onChange={(e) => setPromoCode(e.target.value)}
+              onChange={(e) => { setPromoCode(e.target.value); if (discount > 0) { setDiscount(0); setPromoError(""); } }}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); applyPromoCode(); } }}
               placeholder="Zadejte kód"
               style={{ flex: 1, borderRadius: "4px" }}
+              disabled={discount > 0}
             />
-            <button type="button" className="btn" onClick={applyPromoCode} style={{ borderRadius: "4px" }}>Použít</button>
+            {discount > 0 ? (
+              <button type="button" className="btn" onClick={() => { setDiscount(0); setPromoCode(""); setPromoError(""); }} style={{ borderRadius: "4px", background: "#222", color: "#888" }}>Odebrat</button>
+            ) : (
+              <button type="button" className="btn" onClick={applyPromoCode} style={{ borderRadius: "4px" }}>Použít</button>
+            )}
           </div>
           {promoError && <p style={{ color: "#ff4444", fontSize: "12px", marginTop: "4px" }}>{promoError}</p>}
           {discount > 0 && <p style={{ color: "#24e053", fontSize: "12px", marginTop: "4px" }}>Sleva {discount}% aplikována!</p>}

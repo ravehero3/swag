@@ -119,16 +119,35 @@ router.get("/my", requireAuth, async (req: Request, res: Response) => {
 
 router.post("/", async (req: Request, res: Response) => {
   try {
-    const { email, items, total, buyerLegalName, buyerArtistName, buyerAddress, paymentMethod } = req.body;
+    const { email, items, buyerLegalName, buyerArtistName, buyerAddress, paymentMethod, promoCode } = req.body;
     const userId = req.session.userId || null;
     const method = paymentMethod === "bank_transfer" ? "bank_transfer" : paymentMethod === "free" ? "free" : "gopay";
 
+    const rawItems: any[] = Array.isArray(items) ? items : [];
+    const rawTotal = rawItems.reduce((sum: number, it: any) => sum + (Number(it.price) || 0), 0);
+
+    let discountPercent = 0;
+    let appliedPromoCode: string | null = null;
+
+    if (promoCode && typeof promoCode === "string" && promoCode.trim().length > 0) {
+      const promoRes = await pool.query(
+        "SELECT discount_percent FROM promo_codes WHERE UPPER(code) = UPPER($1) AND is_active = true",
+        [promoCode.trim()]
+      );
+      if (promoRes.rows.length > 0) {
+        discountPercent = promoRes.rows[0].discount_percent;
+        appliedPromoCode = promoCode.trim().toUpperCase();
+      }
+    }
+
+    const finalTotal = Math.round(rawTotal * (1 - discountPercent / 100) * 100) / 100;
+
     const result = await pool.query(
-      `INSERT INTO orders (user_id, email, items, total, status, buyer_legal_name, buyer_artist_name, buyer_address, payment_method)
-       VALUES ($1, $2, $3, $4, 'pending', $5, $6, $7, $8) RETURNING *`,
-      [userId, email, JSON.stringify(items), total, buyerLegalName || null, buyerArtistName || null, buyerAddress || null, method]
+      `INSERT INTO orders (user_id, email, items, total, status, buyer_legal_name, buyer_artist_name, buyer_address, payment_method, promo_code, discount_percent)
+       VALUES ($1, $2, $3, $4, 'pending', $5, $6, $7, $8, $9, $10) RETURNING *`,
+      [userId, email, JSON.stringify(rawItems), finalTotal, buyerLegalName || null, buyerArtistName || null, buyerAddress || null, method, appliedPromoCode, discountPercent]
     );
-    
+
     res.json(result.rows[0]);
   } catch (error) {
     console.error("Error creating order:", error);
