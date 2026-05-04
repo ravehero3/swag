@@ -4,7 +4,7 @@ import { BeatArtwork } from "./BeatArtwork.js";
 interface Beat {
   id: number;
   title: string;
-  artist: string;
+  artist?: string;
   bpm: number;
   key: string;
   price: number;
