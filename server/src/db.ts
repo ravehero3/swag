@@ -183,7 +183,8 @@ export async function initDatabase() {
         ('kit_single', 'Sound Kit – 1 kus', 'Platba přijata – Objednávka #{id} | VOODOO808', 'Objednávka #{id} ze dne {datum} je potvrzena. Níže najdete odkaz ke stažení vašeho sound kitu. Odkaz je platný 30 dní.'),
         ('kits_multiple', 'Sound Kity – více kusů', 'Platba přijata – Objednávka #{id} | VOODOO808', 'Objednávka #{id} ze dne {datum} je potvrzena. Níže najdete odkazy ke stažení vašich sound kitů. Každý odkaz je platný 30 dní.'),
         ('free_download', 'Stažení zdarma', 'Vaše soubory zdarma – VOODOO808', 'Děkujeme za zájem! Níže najdete přímé odkazy ke stažení vašich souborů. Soubory jsou také dostupné ve vašem účtu.'),
-        ('mixed', 'Beaty + Sound Kity + Zdarma (mix)', 'Platba přijata – Objednávka #{id} | VOODOO808', 'Objednávka #{id} ze dne {datum} je potvrzena. Níže najdete odkazy ke stažení všech zakoupených souborů. Každý odkaz je platný 30 dní.')
+        ('mixed', 'Beaty + Sound Kity + Zdarma (mix)', 'Platba přijata – Objednávka #{id} | VOODOO808', 'Objednávka #{id} ze dne {datum} je potvrzena. Níže najdete odkazy ke stažení všech zakoupených souborů. Každý odkaz je platný 30 dní.'),
+        ('bank_transfer_reminder', 'Připomínka – bankovní převod', 'Připomínka: Vaše objednávka #{id} čeká na platbu | VOODOO808', 'Připomínáme, že vaše objednávka #{id} stále čeká na přijetí platby bankovním převodem. Níže znovu uvádíme platební údaje. Pokud jste platbu již odeslali, tento email ignorujte.')
       ON CONFLICT (key) DO NOTHING;
 
       INSERT INTO settings (key, value) VALUES 
@@ -275,6 +276,7 @@ export async function initDatabase() {
       ALTER TABLE orders ADD COLUMN IF NOT EXISTS buyer_artist_name VARCHAR(255);
       ALTER TABLE orders ADD COLUMN IF NOT EXISTS buyer_address TEXT;
       ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method VARCHAR(50) DEFAULT 'gopay';
+      ALTER TABLE orders ADD COLUMN IF NOT EXISTS reminder_sent_at TIMESTAMP;
       ALTER TABLE license_types ADD COLUMN IF NOT EXISTS contract_template TEXT;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(500);
       ALTER TABLE users ADD COLUMN IF NOT EXISTS username VARCHAR(50);

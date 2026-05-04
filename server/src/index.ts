@@ -18,6 +18,7 @@ import { requireAuth, requireAdmin } from "./middleware/auth.js";
 import bcrypt from "bcryptjs";
 import { configureBucketCors, STORAGE_BUCKETS } from "./lib/storage.js";
 import { computeWaveformFromUrl } from "./lib/waveform.js";
+import { sendBankTransferReminderEmail } from "./email.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -527,6 +528,30 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   next(err);
 });
 
+async function sendOverdueBankTransferReminders() {
+  try {
+    const result = await pool.query(
+      `SELECT id FROM orders
+       WHERE status = 'awaiting_payment'
+         AND payment_method = 'bank_transfer'
+         AND reminder_sent_at IS NULL
+         AND created_at < NOW() - INTERVAL '3 days'`
+    );
+    for (const row of result.rows) {
+      try {
+        await sendBankTransferReminderEmail(row.id);
+      } catch (e) {
+        console.error(`[Reminder] Failed for order ${row.id}:`, e);
+      }
+    }
+    if (result.rows.length > 0) {
+      console.log(`[Reminder] Sent bank transfer reminders for ${result.rows.length} order(s).`);
+    }
+  } catch (e) {
+    console.error("[Reminder] Background job error:", e);
+  }
+}
+
 async function computeMissingWaveforms() {
   try {
     const result = await pool.query(
@@ -559,6 +584,9 @@ async function startServer() {
   await seedAdmin();
 
   computeMissingWaveforms().catch(() => {});
+
+  sendOverdueBankTransferReminders().catch(() => {});
+  setInterval(() => sendOverdueBankTransferReminders().catch(() => {}), 24 * 60 * 60 * 1000);
 
   if (process.env.NODE_ENV !== "production") {
     const { createServer: createViteServer } = await import("vite");

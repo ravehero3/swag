@@ -386,19 +386,18 @@ async function resolveDownloadItems(items: any[]): Promise<DownloadItem[]> {
 export function buildPreviewEmailHtml(key: string, introText: string, appUrl: string): string {
   const datum = "3. dubna 2026";
 
-  const isFree = key === "free";
-  const isKit = key.includes("kit") || key.includes("kits");
+  const isFree = key === "free_download";
 
   const sampleItems: DownloadItem[] = isFree
     ? [
         { title: "Dark Trap Vol. 1", productType: "sound_kit", price: 0, downloadUrl: "#" },
       ]
-    : key === "beats"
+    : key === "beats_multiple"
     ? [
         { title: "Neon Nights", productType: "beat", price: 1490, downloadUrl: "#" },
         { title: "Midnight Drive", productType: "beat", price: 990, downloadUrl: "#" },
       ]
-    : key === "kits"
+    : key === "kits_multiple"
     ? [
         { title: "Dark Trap Vol. 1", productType: "sound_kit", price: 890, downloadUrl: "#" },
         { title: "808 Essentials", productType: "sound_kit", price: 690, downloadUrl: "#" },
@@ -414,6 +413,13 @@ export function buildPreviewEmailHtml(key: string, introText: string, appUrl: st
 
   if (isFree) {
     return buildFreePreviewHtml(introText, sampleItems, appUrl);
+  }
+  if (key === "bank_transfer_reminder") {
+    return buildBankTransferReminderHtml(
+      { id: 1234, total: 1490, email: "zakaznik@example.com", items: sampleItems },
+      appUrl,
+      introText,
+    );
   }
   return buildPurchaseEmailHtml(sampleOrder, sampleItems, datum, appUrl, introText);
 }
@@ -738,6 +744,115 @@ export async function sendContractEmail(orderId: number): Promise<void> {
   }
 }
 
+function buildBankTransferReminderHtml(order: any, appUrl: string, customIntroText?: string): string {
+  const items: any[] = Array.isArray(order.items) ? order.items : [];
+  const total = formatPriceCzech(Number(order.total));
+  const variableSymbol = String(order.id);
+  const accountNumber = "2845557133/0800";
+  const messageForRecipient = `VOODOO808 ${order.id}`;
+
+  const itemsRows = items.map((it: any) =>
+    `<tr><td style="padding:6px 0;color:#ccc;">${it.title || "Položka"}</td><td style="padding:6px 0;text-align:right;color:#ccc;">${formatPriceCzech(Number(it.price) || 0)}</td></tr>`
+  ).join("");
+
+  const introText = customIntroText || `Připomínáme, že vaše objednávka #${order.id} stále čeká na přijetí platby bankovním převodem. Níže znovu uvádíme platební údaje. Pokud jste platbu již odeslali, tento email ignorujte.`;
+
+  return `<!DOCTYPE html>
+<html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"/></head>
+<body style="margin:0;padding:0;background:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#ddd;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:40px 0;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
+        <tr><td style="padding:0 0 32px 0;text-align:center;border-bottom:1px solid #222;">
+          <img src="${appUrl}/uploads/artwork/voodoo808-main-logo.png" alt="VOODOO808" width="200" style="display:inline-block;height:auto;max-width:200px;"/>
+        </td></tr>
+        <tr><td style="padding:28px 0 8px 0;">
+          <p style="margin:0 0 8px 0;font-size:22px;font-weight:700;color:#fff;letter-spacing:-0.01em;">Připomínka k platbě – objednávka #${order.id}</p>
+          <p style="margin:0;font-size:14px;color:#888;line-height:1.6;">${introText}</p>
+        </td></tr>
+        <tr><td style="padding:24px 0 0 0;">
+          <div style="border:1px solid #2a2a2a;border-radius:4px;padding:18px;margin-bottom:16px;background:#111;">
+            <div style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">Údaje k platbě</div>
+            <table width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;">
+              <tr><td style="padding:6px 0;color:#888;width:45%;">Číslo účtu</td><td style="padding:6px 0;color:#fff;font-weight:600;font-family:monospace;">${accountNumber}</td></tr>
+              <tr><td style="padding:6px 0;color:#888;">Částka</td><td style="padding:6px 0;color:#fff;font-weight:600;">${total}</td></tr>
+              <tr><td style="padding:6px 0;color:#888;">Variabilní symbol</td><td style="padding:6px 0;color:#fff;font-weight:600;font-family:monospace;">${variableSymbol}</td></tr>
+              <tr><td style="padding:6px 0;color:#888;">Zpráva pro příjemce</td><td style="padding:6px 0;color:#fff;font-family:monospace;">${messageForRecipient}</td></tr>
+            </table>
+          </div>
+          <div style="border:1px solid #2a2a2a;border-radius:4px;padding:18px;margin-bottom:16px;background:#111;">
+            <div style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">Položky objednávky</div>
+            <table width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;">
+              ${itemsRows}
+              <tr><td style="padding:10px 0 0;border-top:1px solid #222;color:#fff;font-weight:600;">Celkem</td><td style="padding:10px 0 0;border-top:1px solid #222;text-align:right;color:#fff;font-weight:600;">${total}</td></tr>
+            </table>
+          </div>
+          <div style="border:1px solid #3a2a10;background:rgba(245,158,11,0.06);border-radius:4px;padding:14px;margin-bottom:16px;">
+            <div style="font-size:13px;color:#f5b150;line-height:1.6;">
+              <strong>Důležité:</strong> Bez variabilního symbolu <strong style="font-family:monospace;">${variableSymbol}</strong> nemůžeme platbu spárovat s objednávkou.
+            </div>
+          </div>
+          <p style="margin:0;color:#666;font-size:12px;line-height:1.7;">
+            Otázky? Napište nám na <a href="mailto:info@voodoo808.com" style="color:#aaa;">info@voodoo808.com</a>.
+          </p>
+        </td></tr>
+        <tr><td style="padding:32px 0 0;border-top:1px solid #222;margin-top:24px;">
+          <p style="margin:0;font-size:11px;color:#444;text-align:center;line-height:1.7;">
+            VOODOO808 &bull; Vojtěch Vojkovský &bull;
+            <a href="mailto:info@voodoo808.com" style="color:#555;text-decoration:none;">info@voodoo808.com</a>
+          </p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body></html>`;
+}
+
+export async function sendBankTransferReminderEmail(orderId: number): Promise<void> {
+  const apiKey = process.env.RESEND_API_KEY || process.env.RESEND_API;
+  if (!apiKey) {
+    console.log(`[Email] RESEND_API_KEY not configured, skipping reminder email for order ${orderId}`);
+    return;
+  }
+
+  const orderRes = await pool.query("SELECT * FROM orders WHERE id = $1", [orderId]);
+  if (orderRes.rows.length === 0) return;
+  const order = orderRes.rows[0];
+
+  const appUrl = process.env.APP_URL ||
+    (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : "https://voodoo808.com");
+
+  const tpl = await fetchEmailTemplate("bank_transfer_reminder");
+  const datum = formatDateCzech(new Date(order.created_at || Date.now()));
+  const emailSubject = tpl?.subject
+    ? fillTemplatePlaceholders(tpl.subject, orderId, datum)
+    : `Připomínka: Vaše objednávka #${orderId} čeká na platbu | VOODOO808`;
+  const introText = tpl?.intro_text
+    ? fillTemplatePlaceholders(tpl.intro_text, orderId, datum)
+    : undefined;
+
+  const html = buildBankTransferReminderHtml(order, appUrl, introText);
+  const fromAddress = process.env.RESEND_FROM || "VOODOO808 <info@voodoo808.com>";
+  const resend = new Resend(apiKey);
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: fromAddress,
+      to: [order.email],
+      subject: emailSubject,
+      html,
+    });
+    if (error) {
+      console.error(`[Email] Reminder email error for order ${orderId}:`, error);
+    } else {
+      console.log(`[Email] Bank transfer reminder sent for order ${orderId}, id: ${data?.id}`);
+      await pool.query("UPDATE orders SET reminder_sent_at = NOW() WHERE id = $1", [orderId]);
+    }
+  } catch (err) {
+    console.error(`[Email] Failed to send reminder for order ${orderId}:`, err);
+  }
+}
+
 export async function sendBankTransferInstructionsEmail(orderId: number): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY || process.env.RESEND_API;
   if (!apiKey) {
@@ -748,6 +863,9 @@ export async function sendBankTransferInstructionsEmail(orderId: number): Promis
   const orderRes = await pool.query("SELECT * FROM orders WHERE id = $1", [orderId]);
   if (orderRes.rows.length === 0) return;
   const order = orderRes.rows[0];
+
+  const appUrl = process.env.APP_URL ||
+    (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : "https://voodoo808.com");
 
   const items: any[] = Array.isArray(order.items) ? order.items : [];
   const total = formatPriceCzech(Number(order.total));
@@ -761,12 +879,15 @@ export async function sendBankTransferInstructionsEmail(orderId: number): Promis
 
   const html = `
 <!DOCTYPE html>
-<html><head><meta charset="utf-8"></head>
+<html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"/></head>
 <body style="margin:0;padding:0;background:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#ddd;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:40px 16px;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:40px 0;">
     <tr><td align="center">
-      <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;background:#111;border:1px solid #222;border-radius:6px;padding:32px;">
-        <tr><td>
+      <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
+        <tr><td style="padding:0 0 32px 0;text-align:center;border-bottom:1px solid #222;">
+          <img src="${appUrl}/uploads/artwork/voodoo808-main-logo.png" alt="VOODOO808" width="200" style="display:inline-block;height:auto;max-width:200px;"/>
+        </td></tr>
+        <tr><td style="padding:28px 0 8px 0;">
           <h1 style="margin:0 0 8px;font-size:22px;font-weight:500;color:#fff;letter-spacing:-0.01em;">Pokyny k platbě – objednávka #${order.id}</h1>
           <p style="margin:0 0 24px;color:#888;font-size:14px;line-height:1.6;">
             Děkujeme za vaši objednávku. Pro dokončení nákupu prosím odešlete níže uvedenou částku
@@ -854,7 +975,7 @@ export async function sendPasswordResetEmail(email: string, token: string): Prom
     <tr><td align="center">
       <table width="520" cellpadding="0" cellspacing="0" style="background:#111;border:1px solid #222;border-radius:6px;overflow:hidden;max-width:520px;width:100%;">
         <tr><td style="padding:40px 40px 0;text-align:center;">
-          <p style="margin:0 0 4px;font-size:11px;letter-spacing:0.15em;color:#555;text-transform:uppercase;">VOODOO808</p>
+          <img src="${appUrl}/uploads/artwork/voodoo808-main-logo.png" alt="VOODOO808" width="180" style="display:inline-block;height:auto;max-width:180px;margin-bottom:20px;"/>
           <h1 style="margin:0 0 32px;font-size:22px;font-weight:500;color:#fff;letter-spacing:-0.01em;">Reset hesla</h1>
         </td></tr>
         <tr><td style="padding:0 40px 40px;">
@@ -959,7 +1080,7 @@ export async function sendFreeDownloadEmail(lead: { id: number; email: string; i
         <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
           <tr>
             <td style="padding:0 0 32px 0;text-align:center;border-bottom:1px solid #222;">
-              <span style="font-size:26px;font-weight:900;letter-spacing:3px;color:#fff;text-transform:uppercase;">VOODOO808</span>
+              <img src="${appUrl}/uploads/artwork/voodoo808-main-logo.png" alt="VOODOO808" width="220" style="display:inline-block;height:auto;max-width:220px;"/>
             </td>
           </tr>
           <tr>

@@ -4856,6 +4856,7 @@ const EMAIL_SCENARIOS: { key: string; label: string; description: string }[] = [
   { key: "kits_multiple", label: "Sound Kity – více kusů", description: "Zákazník kupuje více sound kitů" },
   { key: "free_download", label: "Stažení zdarma", description: "Zákazník stahuje zdarma (cena = 0 CZK)" },
   { key: "mixed", label: "Mix (beaty + kity + zdarma)", description: "Zákazník kupuje kombinaci beatů, kitů a/nebo zdarma souborů" },
+  { key: "bank_transfer_reminder", label: "Připomínka – bankovní převod", description: "Automaticky odesláno zákazníkovi, pokud platba bankovním převodem nedorazí do 3 dnů" },
 ];
 
 function EmailsTab() {
