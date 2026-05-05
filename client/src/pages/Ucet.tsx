@@ -206,7 +206,7 @@ export default function Ucet() {
       });
       const data = await res.json();
       if (res.ok && data.gw_url) {
-        window.location.href = data.gw_url;
+        window.location.href = `/gopay-redirect?url=${encodeURIComponent(data.gw_url)}`;
       } else {
         alert(data.error || "Nepodařilo se zahájit platbu.");
       }

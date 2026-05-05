@@ -202,7 +202,7 @@ function Checkout() {
       clearCart();
 
       if (payData.gw_url) {
-        window.location.href = payData.gw_url;
+        window.location.href = `/gopay-redirect?url=${encodeURIComponent(payData.gw_url)}`;
       } else {
         setSuccess(true);
       }
