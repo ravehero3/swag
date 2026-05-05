@@ -191,8 +191,14 @@ router.post("/:id/pay", async (req: Request, res: Response) => {
     console.log(`[GoPay] mode=${isSandbox ? "SANDBOX" : "PRODUCTION"} NODE_ENV=${process.env.NODE_ENV} GOPAY_SANDBOX=${process.env.GOPAY_SANDBOX}`);
     const gopay = new GoPay(clientId, clientSecret, isSandbox);
 
+    // APP_URL takes priority; then use Replit's auto-set domain variables.
+    // REPLIT_DOMAINS is set in production deployments (comma-separated list).
+    // REPLIT_DEV_DOMAIN is set in the development workspace.
     const domain = process.env.APP_URL ||
-      (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : "http://localhost:5000");
+      (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(",")[0].trim()}` : null) ||
+      (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : null) ||
+      "http://localhost:5000";
+    console.log(`[GoPay] return/notify domain: ${domain}`);
 
     const items: Array<{ name: string; amount: number; count: number }> = [];
     if (Array.isArray(order.items)) {
