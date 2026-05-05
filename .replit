@@ -64,3 +64,4 @@ R2_PUBLIC_BASE_URL = "https://pub-d76fe36aa64e499799449fa12ed516d1.r2.dev"
 
 [userenv.production]
 NODE_ENV = "production"
+GOPAY_SANDBOX = "true"

@@ -185,7 +185,10 @@ router.post("/:id/pay", async (req: Request, res: Response) => {
     }
 
     const { GoPay } = await import("gopay-nodejs");
-    const isSandbox = process.env.NODE_ENV !== "production";
+    // GOPAY_SANDBOX=true forces sandbox mode regardless of NODE_ENV.
+    // Set this in production secrets when testing with sandbox credentials.
+    const isSandbox = process.env.GOPAY_SANDBOX === "true" || process.env.NODE_ENV !== "production";
+    console.log(`[GoPay] mode=${isSandbox ? "SANDBOX" : "PRODUCTION"} NODE_ENV=${process.env.NODE_ENV} GOPAY_SANDBOX=${process.env.GOPAY_SANDBOX}`);
     const gopay = new GoPay(clientId, clientSecret, isSandbox);
 
     const domain = process.env.APP_URL ||
@@ -229,11 +232,16 @@ router.post("/:id/pay", async (req: Request, res: Response) => {
     };
 
     const payment = await gopay.createPayment(paymentData);
+    console.log("[GoPay] createPayment response:", JSON.stringify(payment));
 
-    if (payment && payment.gw_url) {
+    if (payment && typeof payment === "object" && payment.gw_url) {
       return res.json({ gw_url: payment.gw_url, payment_id: payment.id });
     }
 
+    // The gopay-nodejs library returns a string like "StatusCode: 401, message: ..."
+    // on auth failure instead of throwing — surface it clearly.
+    const detail = typeof payment === "string" ? payment : JSON.stringify(payment);
+    console.error("[GoPay] Payment creation failed. Response:", detail);
     return res.status(500).json({ error: "Nepodařilo se vytvořit platbu. Zkuste to prosím znovu." });
   } catch (error) {
     console.error("GoPay payment error:", error);
