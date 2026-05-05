@@ -283,10 +283,17 @@ app.get("/api/admin/diag/gopay", requireAdmin, async (_req, res) => {
   const clientSecret = process.env.GOPAY_CLIENT_SECRET;
   const goId = process.env.GOPAY_GOID;
   const isSandbox = process.env.GOPAY_SANDBOX === "true" || process.env.NODE_ENV !== "production";
-  const domain = process.env.APP_URL ||
+  function normaliseDomain(raw: string): string {
+    let d = raw.trim().replace(/\/+$/, "");
+    if (!/^https?:\/\//i.test(d)) d = `https://${d}`;
+    return d;
+  }
+
+  const rawDomain = process.env.APP_URL ||
     (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(",")[0].trim()}` : null) ||
     (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : null) ||
     "http://localhost:5000";
+  const domain = normaliseDomain(rawDomain);
 
   const config = {
     clientIdSet: !!clientId,
@@ -294,6 +301,7 @@ app.get("/api/admin/diag/gopay", requireAdmin, async (_req, res) => {
     goIdSet: !!goId,
     isSandbox,
     apiUrl: isSandbox ? "https://gw.sandbox.gopay.com/api" : "https://gate.gopay.cz/api",
+    rawAppUrl: process.env.APP_URL || "(not set)",
     domain,
     appUrlVar: process.env.APP_URL ? "APP_URL" : (process.env.REPLIT_DOMAINS ? "REPLIT_DOMAINS" : (process.env.REPLIT_DEV_DOMAIN ? "REPLIT_DEV_DOMAIN" : "fallback")),
     nodeEnv: process.env.NODE_ENV || "(not set)",

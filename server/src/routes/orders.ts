@@ -191,14 +191,23 @@ router.post("/:id/pay", async (req: Request, res: Response) => {
     console.log(`[GoPay] mode=${isSandbox ? "SANDBOX" : "PRODUCTION"} NODE_ENV=${process.env.NODE_ENV} GOPAY_SANDBOX=${process.env.GOPAY_SANDBOX}`);
     const gopay = new GoPay(clientId, clientSecret, isSandbox);
 
+    // Build and normalise the base domain for return/notify URLs.
+    // Handles: missing protocol, trailing slashes, whitespace.
+    function normaliseDomain(raw: string): string {
+      let d = raw.trim().replace(/\/+$/, ""); // strip trailing slashes
+      if (!/^https?:\/\//i.test(d)) d = `https://${d}`; // ensure protocol
+      return d;
+    }
+
     // APP_URL takes priority; then use Replit's auto-set domain variables.
     // REPLIT_DOMAINS is set in production deployments (comma-separated list).
     // REPLIT_DEV_DOMAIN is set in the development workspace.
-    const domain = process.env.APP_URL ||
+    const rawDomain = process.env.APP_URL ||
       (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(",")[0].trim()}` : null) ||
       (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : null) ||
       "http://localhost:5000";
-    console.log(`[GoPay] return/notify domain: ${domain}`);
+    const domain = normaliseDomain(rawDomain);
+    console.log(`[GoPay] APP_URL env raw="${process.env.APP_URL}" normalised domain="${domain}"`);
 
     const items: Array<{ name: string; amount: number; count: number }> = [];
     if (Array.isArray(order.items)) {
@@ -219,6 +228,11 @@ router.post("/:id/pay", async (req: Request, res: Response) => {
       });
     }
 
+    const returnUrl = `${domain}/platba-status?orderId=${order.id}`;
+    const notifyUrl = `${domain}/api/orders/${order.id}/notify`;
+    console.log(`[GoPay] return_url="${returnUrl}"`);
+    console.log(`[GoPay] notify_url="${notifyUrl}"`);
+
     const paymentData = {
       payer: {
         contact: { email: order.email },
@@ -232,8 +246,8 @@ router.post("/:id/pay", async (req: Request, res: Response) => {
       order_number: String(order.id),
       order_description: `Objednávka #${order.id}`,
       items,
-      return_url: `${domain}/platba-status?orderId=${order.id}`,
-      notify_url: `${domain}/api/orders/${order.id}/notify`,
+      return_url: returnUrl,
+      notify_url: notifyUrl,
       lang: "CS",
     };
 

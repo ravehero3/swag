@@ -5673,6 +5673,7 @@ interface GopayDiag {
   goIdSet: boolean;
   isSandbox: boolean;
   apiUrl: string;
+  rawAppUrl: string;
   domain: string;
   appUrlVar: string;
   nodeEnv: string;
@@ -5851,6 +5852,13 @@ function GopayDiagPanel() {
               {row("GoPay API URL", diag.apiUrl)}
               {row("NODE_ENV", diag.nodeEnv)}
               {row("GOPAY_SANDBOX", diag.gopaySandboxEnv)}
+              {row("APP_URL (raw)", (
+                <span style={{ color: diag.rawAppUrl === "(not set)" ? "#e55" : diag.rawAppUrl !== diag.domain ? "#f5b150" : "#aaa" }}>
+                  {diag.rawAppUrl}
+                  {diag.rawAppUrl === "(not set)" && " ⚠ není nastaveno — GoPay dostane špatnou URL!"}
+                  {diag.rawAppUrl !== "(not set)" && diag.rawAppUrl !== diag.domain && " ⚠ bylo opraveno (viz níže)"}
+                </span>
+              ))}
               {row("Return URL doména", (
                 <span style={{ color: diag.domain.startsWith("http://localhost") ? "#e55" : "#aaa" }}>
                   {diag.domain}
