@@ -5682,6 +5682,8 @@ interface GopayDiag {
   paymentTestOk: boolean;
   paymentTestDetail: string | null;
   paymentTestUrl?: string;
+  allRejected?: boolean;
+  goId?: string;
 }
 
 function GopayDiagPanel() {
@@ -5805,28 +5807,37 @@ function GopayDiagPanel() {
                       )}
                     </div>
                   )}
-                  {!diag.paymentTestOk && diag.paymentTestDetail && diag.paymentTestDetail.includes("return_url") && (
+                  {!diag.paymentTestOk && diag.allRejected && (
                     <div style={{ marginTop: "10px", padding: "14px", background: "#1a1000", border: "1px solid #4d3000", borderRadius: "4px", fontSize: "12px", color: "#f5b150", lineHeight: 1.9 }}>
-                      <div style={{ fontWeight: 700, marginBottom: "8px", fontSize: "13px" }}>⚠ Co to znamená a co teď udělat:</div>
-                      <div style={{ color: "#e8c97a", marginBottom: "6px" }}>
-                        GoPay (sandbox i ostrý) vyžaduje, aby doména tvého e-shopu byla ověřena jejich týmem, než jim lze posílat platby.
-                        Toto <strong>není chyba v kódu</strong> — kód funguje správně, GoPay jen ještě nezná tvou doménu.
+                      <div style={{ fontWeight: 700, marginBottom: "6px", fontSize: "13px" }}>⚠ Všechny URL varianty odmítnuty — nutná aktivace domény</div>
+                      <div style={{ color: "#e8c97a", marginBottom: "10px", lineHeight: 1.7 }}>
+                        GoPay zamítl <strong>všechny kombinace</strong> (https/http, www/bez www) — toto <strong>není chyba v kódu</strong>.
+                        Doména musí být aktivována GoPay týmem. Jde o jejich povinný Krok 4.
                       </div>
-                      <div style={{ borderTop: "1px solid #4d3000", paddingTop: "10px", marginTop: "4px" }}>
-                        <div style={{ color: "#fff", fontWeight: 600, marginBottom: "6px" }}>Krok 4 v GoPay portálu: Pošli email na integrace@gopay.cz</div>
-                        <div style={{ background: "#0d0d00", border: "1px solid #3d2d00", borderRadius: "4px", padding: "10px 14px", fontFamily: "monospace", fontSize: "11px", color: "#ccc", lineHeight: 2 }}>
-                          <div><span style={{ color: "#888" }}>Předmět:</span> Ověření integrace – {diag.domain}</div>
-                          <div style={{ marginTop: "6px", color: "#bbb" }}>
+                      <div style={{ borderTop: "1px solid #4d3000", paddingTop: "12px" }}>
+                        <div style={{ color: "#fff", fontWeight: 700, marginBottom: "8px" }}>
+                          Pošli email na <span style={{ fontFamily: "monospace", color: "#ffd080" }}>integrace@gopay.cz</span>
+                        </div>
+                        <div style={{ background: "#0d0a00", border: "1px solid #3d2d00", borderRadius: "4px", padding: "12px 14px", fontSize: "11px", color: "#ccc", lineHeight: 2.1 }}>
+                          <div style={{ color: "#888", marginBottom: "4px" }}>── zkopíruj tento email ──</div>
+                          <div><span style={{ color: "#666" }}>Předmět:</span> Aktivace integrace GoPay API – voodoo808.com</div>
+                          <div style={{ marginTop: "8px" }}>
                             Dobrý den,<br />
-                            žádám o ověření integrace GoPay pro e-shop na doméně <strong>{diag.domain}</strong>.<br />
-                            GoID: <strong>{diag.goIdSet ? "(viz GOPAY_GOID v env)" : "—"}</strong><br />
-                            Propojení přes API (gopay-nodejs).<br />
-                            Prosím o aktivaci sandbox prostředí a povolení return URL:<br />
-                            <strong>{diag.domain}/platba-status</strong>
+                            chci aktivovat GoPay platební bránu přes API pro e-shop <strong>voodoo808.com</strong>.<br />
+                            <br />
+                            GoID: <strong>{diag.goId || "8323139649"}</strong><br />
+                            Propojení: vlastní API integrace (gopay-nodejs, Node.js).<br />
+                            <br />
+                            Prosím o povolení těchto return URL adres:<br />
+                            <strong>https://voodoo808.com/platba-status</strong><br />
+                            <strong>https://www.voodoo808.com/platba-status</strong><br />
+                            <strong>https://voodoo808.com/api/orders/*/notify</strong><br />
+                            <br />
+                            Děkuji.
                           </div>
                         </div>
-                        <div style={{ marginTop: "8px", color: "#888" }}>
-                          Po odpovědi od GoPay spusť test znovu — Krok 2 se zezelená.
+                        <div style={{ marginTop: "10px", color: "#888", fontSize: "11px" }}>
+                          GoPay odpoví do 1 pracovního dne (integrace@gopay.cz). Po aktivaci spusť test znovu — Krok 2 se zezelená a platby začnou fungovat.
                         </div>
                       </div>
                     </div>

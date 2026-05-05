@@ -333,8 +333,8 @@ app.get("/api/admin/diag/gopay", requireAdmin, async (_req, res) => {
     if (!urlVariants.includes(httpVariant)) urlVariants.push(httpVariant);
 
     let paymentTestOk = false;
-    let paymentTestDetail = "";
     let paymentTestUrl = "";
+    const paymentAttempts: { url: string; ok: boolean; detail: string }[] = [];
 
     for (const tryUrl of urlVariants) {
       const testPaymentData = {
@@ -352,18 +352,18 @@ app.get("/api/admin/diag/gopay", requireAdmin, async (_req, res) => {
       const testPayment = await (gopay as any).createPayment(testPaymentData);
       const ok = testPayment && typeof testPayment === "object" && !!testPayment.gw_url;
       const detail = typeof testPayment === "string" ? testPayment : JSON.stringify(testPayment);
+      paymentAttempts.push({ url: tryUrl, ok, detail });
       if (ok) {
         paymentTestOk = true;
-        paymentTestDetail = detail;
         paymentTestUrl = tryUrl;
         break;
       }
-      // keep last error detail
-      paymentTestDetail = `[${tryUrl}] → ${detail}`;
-      paymentTestUrl = tryUrl;
     }
 
-    return res.json({ ...config, tokenOk: true, tokenError: null, paymentTestOk, paymentTestDetail, paymentTestUrl });
+    const paymentTestDetail = paymentAttempts.map(a => `[${a.url}] → ${a.ok ? "OK" : a.detail}`).join("\n");
+    const allRejected = !paymentTestOk && paymentAttempts.every(a => !a.ok);
+
+    return res.json({ ...config, tokenOk: true, tokenError: null, paymentTestOk, paymentTestDetail, paymentTestUrl, allRejected, goId: goId?.slice(0, 4) + "…" + goId?.slice(-4) });
   } catch (e: any) {
     return res.json({ ...config, tokenOk: false, tokenError: e?.message || String(e), paymentTestOk: false, paymentTestDetail: null });
   }
