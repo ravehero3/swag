@@ -2,6 +2,10 @@ import { useState, useEffect } from "react";
 import { useApp } from "../App.js";
 import { useLocation } from "wouter";
 
+function formatCzechPrice(amount: number): string {
+  return amount.toLocaleString("cs-CZ", { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + " Kč";
+}
+
 function Checkout() {
   const { cart, user, clearCart } = useApp() as any;
   const [email, setEmail] = useState(user?.email || "");
@@ -19,6 +23,9 @@ function Checkout() {
   const [promoCode, setPromoCode] = useState("");
   const [discount, setDiscount] = useState(0);
   const [promoError, setPromoError] = useState("");
+
+  const [agreeVop, setAgreeVop] = useState(false);
+  const [agreeDigital, setAgreeDigital] = useState(false);
 
   const total = cart.reduce((sum: number, item: any) => sum + Number(item.price), 0);
   const finalTotal = total * (1 - discount / 100);
@@ -126,6 +133,14 @@ function Checkout() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!agreeVop) {
+      setError("Prosím potvrďte souhlas s obchodními podmínkami.");
+      return;
+    }
+    if (!agreeDigital) {
+      setError("Prosím potvrďte souhlas se ztrátou práva na odstoupení od smlouvy pro digitální obsah.");
+      return;
+    }
     setLoading(true);
     setError("");
     try {
@@ -198,17 +213,53 @@ function Checkout() {
     }
   };
 
+  const s = {
+    page: {
+      minHeight: "calc(100vh - 42px)",
+      display: "flex" as const,
+      flexDirection: "column" as const,
+      justifyContent: "center" as const,
+      alignItems: "center" as const,
+      padding: "40px 20px",
+    },
+    card: { maxWidth: "520px", width: "100%" },
+    section: {
+      marginBottom: "16px",
+      padding: "18px",
+      border: "1px solid #222",
+      borderRadius: "4px",
+      background: "#080808",
+    },
+    sectionLabel: {
+      fontSize: "10px",
+      letterSpacing: "0.1em",
+      textTransform: "uppercase" as const,
+      color: "#555",
+      marginBottom: "12px",
+    },
+    divider: { borderTop: "1px solid #1a1a1a", margin: "8px 0" },
+    row: {
+      display: "flex" as const,
+      justifyContent: "space-between" as const,
+      padding: "7px 0",
+      fontSize: "14px",
+    },
+    label12: { display: "block" as const, marginBottom: "4px", fontSize: "12px", color: "#888" },
+    hint: { fontSize: "11px", color: "#555", marginTop: "4px", lineHeight: 1.5 },
+    checkRow: {
+      display: "flex" as const,
+      alignItems: "flex-start" as const,
+      gap: "10px",
+      padding: "10px 0",
+    },
+    checkLabel: { fontSize: "13px", color: "#aaa", lineHeight: 1.55, cursor: "pointer" as const },
+    link: { color: "#fff", textDecoration: "underline" as const },
+  };
+
   if (freeSuccess) {
     return (
-      <div className="fade-in" style={{
-        minHeight: "calc(100vh - 42px)",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        padding: "20px"
-      }}>
-        <div style={{ maxWidth: "500px", width: "100%", textAlign: "center" }}>
+      <div className="fade-in" style={s.page}>
+        <div style={{ ...s.card, textAlign: "center" }}>
           <h1 style={{ marginBottom: "24px" }}>Soubory jsou na cestě!</h1>
           <p style={{ color: "#666", marginBottom: "24px" }}>
             Na email <strong style={{ color: "#fff" }}>{email}</strong> jsme odeslali odkaz ke stažení.
@@ -244,14 +295,7 @@ function Checkout() {
       </div>
     );
     return (
-      <div className="fade-in" style={{
-        minHeight: "calc(100vh - 42px)",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        padding: "20px"
-      }}>
+      <div className="fade-in" style={s.page}>
         <div style={{ maxWidth: "560px", width: "100%" }}>
           <h1 style={{ marginBottom: "8px", textAlign: "center" }}>Pokyny k platbě</h1>
           <p style={{ color: "#666", fontSize: "13px", textAlign: "center", marginBottom: "28px", lineHeight: 1.6 }}>
@@ -295,15 +339,8 @@ function Checkout() {
 
   if (success) {
     return (
-      <div className="fade-in" style={{
-        minHeight: "calc(100vh - 42px)",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        padding: "20px"
-      }}>
-        <div style={{ maxWidth: "500px", width: "100%", textAlign: "center" }}>
+      <div className="fade-in" style={s.page}>
+        <div style={{ ...s.card, textAlign: "center" }}>
           <h1 style={{ marginBottom: "24px" }}>Objednávka vytvořena!</h1>
           <p style={{ color: "#666", marginBottom: "24px" }}>
             Děkujeme za vaši objednávku. Na email {email} vám zašleme pokyny k platbě a po jejím přijetí odkaz ke stažení.
@@ -318,53 +355,35 @@ function Checkout() {
 
   if (isFreeOrder) {
     return (
-      <div className="fade-in" style={{
-        minHeight: "calc(100vh - 42px)",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        padding: "20px"
-      }}>
-        <div style={{ maxWidth: "500px", width: "100%" }}>
+      <div className="fade-in" style={s.page}>
+        <div style={s.card}>
           <h1 style={{ marginBottom: "8px", textAlign: "center" }}>Stažení zdarma</h1>
           <p style={{ color: "#555", fontSize: "13px", textAlign: "center", marginBottom: "28px" }}>
             Zadejte váš email a soubory vám zašleme okamžitě
           </p>
 
-          <div style={{ marginBottom: "24px", padding: "16px", border: "1px solid #333", borderRadius: "4px" }}>
-            <h3 style={{ marginBottom: "12px" }}>Shrnutí</h3>
+          <div style={s.section}>
+            <div style={s.sectionLabel}>Shrnutí</div>
             {cart.map((item: any) => (
-              <div
-                key={`${item.productType}-${item.productId}`}
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  padding: "8px 0",
-                  borderBottom: "1px solid #222",
-                }}
-              >
-                <span>{item.title}</span>
+              <div key={`${item.productType}-${item.productId}`} style={{ ...s.row, borderBottom: "1px solid #1a1a1a" }}>
+                <span style={{ color: "#ccc" }}>{item.title}</span>
                 <span style={{ color: "#24e053" }}>Zdarma</span>
               </div>
             ))}
-            <div style={{ display: "flex", justifyContent: "space-between", padding: "12px 0", fontWeight: "bold" }}>
+            <div style={{ ...s.row, fontWeight: 600, color: "#fff", paddingTop: "12px" }}>
               <span>Celkem</span>
-              <span style={{ color: "#24e053" }}>0 CZK</span>
+              <span style={{ color: "#24e053" }}>0 Kč</span>
             </div>
           </div>
 
           <form onSubmit={handleFreeSubmit}>
             {error && (
-              <div style={{ color: "#ff4444", marginBottom: "16px", padding: "12px", border: "1px solid #ff4444", borderRadius: "4px" }}>
+              <div style={{ color: "#ff4444", marginBottom: "16px", padding: "12px", border: "1px solid #333", borderRadius: "4px", fontSize: "14px" }}>
                 {error}
               </div>
             )}
-
             <div style={{ marginBottom: "24px" }}>
-              <label style={{ display: "block", marginBottom: "4px", fontSize: "12px", color: "#999" }}>
-                Email pro doručení *
-              </label>
+              <label style={s.label12}>Email pro doručení *</label>
               <input
                 type="email"
                 value={email}
@@ -374,11 +393,8 @@ function Checkout() {
                 data-testid="input-email-free"
                 style={{ width: "100%", borderRadius: "4px" }}
               />
-              <p style={{ fontSize: "12px", color: "#666", marginTop: "6px" }}>
-                Na tento email zašleme odkaz ke stažení okamžitě po potvrzení
-              </p>
+              <p style={s.hint}>Na tento email zašleme odkaz ke stažení okamžitě po potvrzení</p>
             </div>
-
             <button
               type="submit"
               className="btn btn-filled btn-bounce"
@@ -398,62 +414,45 @@ function Checkout() {
   }
 
   return (
-    <div className="fade-in" style={{
-      minHeight: "calc(100vh - 42px)",
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "center",
-      alignItems: "center",
-      padding: "20px"
-    }}>
-      <div style={{ maxWidth: "500px", width: "100%" }}>
-        <h1 style={{ marginBottom: "24px", textAlign: "center" }}>Dokončení objednávky</h1>
+    <div className="fade-in" style={s.page}>
+      <div style={s.card}>
+        <h1 style={{ marginBottom: "24px", textAlign: "center", fontSize: "22px", letterSpacing: "-0.02em" }}>
+          Dokončení objednávky
+        </h1>
 
-        <div style={{ marginBottom: "24px", padding: "16px", border: "1px solid #333", borderRadius: "4px" }}>
-          <h3 style={{ marginBottom: "12px" }}>Shrnutí objednávky</h3>
+        {/* Order summary */}
+        <div style={s.section}>
+          <div style={s.sectionLabel}>Shrnutí objednávky</div>
           {cart.map((item: any) => (
-            <div
-              key={`${item.productType}-${item.productId}`}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                padding: "8px 0",
-                borderBottom: "1px solid #222",
-              }}
-            >
-              <span>{item.title}</span>
-              <span>{item.price} CZK</span>
+            <div key={`${item.productType}-${item.productId}`} style={{ ...s.row, borderBottom: "1px solid #1a1a1a", color: "#ccc" }}>
+              <span style={{ flex: 1, paddingRight: "12px" }}>{item.title}</span>
+              <span style={{ whiteSpace: "nowrap", color: "#fff" }}>{formatCzechPrice(Number(item.price))}</span>
             </div>
           ))}
           {discount > 0 && (
-            <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderTop: "1px solid #222", color: "#888", fontSize: "13px" }}>
-              <span>Mezisoučet</span>
-              <span>{total} CZK</span>
-            </div>
+            <>
+              <div style={{ ...s.row, color: "#666", fontSize: "13px" }}>
+                <span>Mezisoučet</span>
+                <span>{formatCzechPrice(total)}</span>
+              </div>
+              <div style={{ ...s.row, color: "#24e053", fontSize: "13px" }}>
+                <span>Sleva ({discount}%) – {promoCode.toUpperCase()}</span>
+                <span>−{formatCzechPrice(Math.round(total * discount / 100))}</span>
+              </div>
+            </>
           )}
-          {discount > 0 && (
-            <div style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", color: "#24e053", fontSize: "13px" }}>
-              <span>Sleva ({discount}%) – {promoCode.toUpperCase()}</span>
-              <span>−{Math.round(total * discount / 100)} CZK</span>
-            </div>
-          )}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              padding: "12px 0",
-              fontWeight: "bold",
-              borderTop: "1px solid #333",
-              marginTop: "8px",
-            }}
-          >
-            <span>Celkem</span>
-            <span>{finalTotal} CZK</span>
+          <div style={{ ...s.row, fontWeight: 700, color: "#fff", borderTop: "1px solid #2a2a2a", marginTop: "6px", paddingTop: "12px", fontSize: "15px" }}>
+            <span>Celkem k úhradě</span>
+            <span>{formatCzechPrice(finalTotal)}</span>
+          </div>
+          <div style={{ fontSize: "11px", color: "#444", marginTop: "6px", textAlign: "right" }}>
+            Cena konečná — nejsme plátci DPH
           </div>
         </div>
 
-        <div style={{ marginBottom: "24px", padding: "16px", border: "1px solid #333", borderRadius: "4px" }}>
-          <label style={{ display: "block", marginBottom: "8px", fontSize: "12px", color: "#999" }}>Promo kód</label>
+        {/* Promo code */}
+        <div style={s.section}>
+          <label style={s.label12}>Promo kód</label>
           <div style={{ display: "flex", gap: "8px" }}>
             <input
               value={promoCode}
@@ -470,11 +469,12 @@ function Checkout() {
             )}
           </div>
           {promoError && <p style={{ color: "#ff4444", fontSize: "12px", marginTop: "4px" }}>{promoError}</p>}
-          {discount > 0 && <p style={{ color: "#24e053", fontSize: "12px", marginTop: "4px" }}>Sleva {discount}% aplikována!</p>}
+          {discount > 0 && <p style={{ color: "#24e053", fontSize: "12px", marginTop: "4px" }}>Sleva {discount}% aplikována</p>}
         </div>
 
-        <div style={{ marginBottom: "24px", padding: "16px", border: "1px solid #333", borderRadius: "4px" }}>
-          <h3 style={{ marginBottom: "12px", fontSize: "14px" }}>Způsob platby</h3>
+        {/* Payment method */}
+        <div style={s.section}>
+          <div style={s.sectionLabel}>Způsob platby</div>
 
           <label
             style={{
@@ -482,25 +482,19 @@ function Checkout() {
               alignItems: "flex-start",
               gap: "12px",
               padding: "12px",
-              border: paymentMethod === "bank_transfer" ? "1px solid #fff" : "1px solid #2a2a2a",
+              border: paymentMethod === "bank_transfer" ? "1px solid rgba(255,255,255,0.25)" : "1px solid #2a2a2a",
               borderRadius: "4px",
               cursor: "pointer",
               marginBottom: "8px",
-              background: paymentMethod === "bank_transfer" ? "#161616" : "transparent",
+              background: paymentMethod === "bank_transfer" ? "#111" : "transparent",
+              transition: "border-color 0.15s",
             }}
             data-testid="option-bank-transfer"
           >
-            <input
-              type="radio"
-              name="paymentMethod"
-              value="bank_transfer"
-              checked={paymentMethod === "bank_transfer"}
-              onChange={() => setPaymentMethod("bank_transfer")}
-              style={{ marginTop: "3px" }}
-            />
+            <input type="radio" name="paymentMethod" value="bank_transfer" checked={paymentMethod === "bank_transfer"} onChange={() => setPaymentMethod("bank_transfer")} style={{ marginTop: "3px" }} />
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: "14px", color: "#fff", marginBottom: "2px" }}>Bankovní převod</div>
-              <div style={{ fontSize: "12px", color: "#888", lineHeight: 1.5 }}>
+              <div style={{ fontSize: "12px", color: "#666", lineHeight: 1.5 }}>
                 Po dokončení obdržíte údaje k převodu (číslo účtu a variabilní symbol).
                 Soubory a licenční smlouvu vám zašleme na email po přijetí platby (1–2 prac. dny).
               </div>
@@ -516,24 +510,17 @@ function Checkout() {
               border: `1px solid ${paymentMethod === "gopay" ? "rgba(255,255,255,0.25)" : "#2a2a2a"}`,
               borderRadius: "4px",
               cursor: "pointer",
-              background: paymentMethod === "gopay" ? "rgba(255,255,255,0.03)" : "transparent",
-              transition: "border-color 0.15s, background 0.15s",
+              background: paymentMethod === "gopay" ? "#111" : "transparent",
+              transition: "border-color 0.15s",
             }}
             data-testid="option-gopay"
           >
-            <input
-              type="radio"
-              name="paymentMethod"
-              value="gopay"
-              checked={paymentMethod === "gopay"}
-              onChange={() => setPaymentMethod("gopay")}
-              style={{ marginTop: "3px" }}
-            />
+            <input type="radio" name="paymentMethod" value="gopay" checked={paymentMethod === "gopay"} onChange={() => setPaymentMethod("gopay")} style={{ marginTop: "3px" }} />
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: "14px", color: "#fff", marginBottom: "2px" }}>
                 GoPay – karta, Apple Pay, Google Pay, online převod
               </div>
-              <div style={{ fontSize: "12px", color: "#888", lineHeight: 1.5 }}>
+              <div style={{ fontSize: "12px", color: "#666", lineHeight: 1.5 }}>
                 Okamžitá platba kartou nebo přes platební bránu. Po kliknutí budete přesměrováni na zabezpečenou platební bránu GoPay.
               </div>
             </div>
@@ -541,93 +528,125 @@ function Checkout() {
         </div>
 
         <form onSubmit={handleSubmit}>
+          {/* Contact info */}
+          <div style={s.section}>
+            <div style={s.sectionLabel}>Kontaktní a fakturační údaje</div>
+
+            <div style={{ marginBottom: "14px" }}>
+              <label style={s.label12}>Email pro doručení *</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                placeholder="vas@email.cz"
+                data-testid="input-email"
+                style={{ width: "100%", borderRadius: "4px" }}
+              />
+              <p style={s.hint}>Na tento email vám zašleme odkaz ke stažení a kopii licenční smlouvy</p>
+            </div>
+
+            <div style={{ marginBottom: "14px" }}>
+              <label style={s.label12}>Celé jméno a příjmení (právní jméno) *</label>
+              <input
+                type="text"
+                value={buyerLegalName}
+                onChange={(e) => setBuyerLegalName(e.target.value)}
+                required
+                placeholder="Jan Novák"
+                data-testid="input-legal-name"
+                style={{ width: "100%", borderRadius: "4px" }}
+              />
+              <p style={s.hint}>Vaše skutečné jméno pro licenční smlouvu</p>
+            </div>
+
+            <div style={{ marginBottom: "14px" }}>
+              <label style={s.label12}>Umělecké jméno *</label>
+              <input
+                type="text"
+                value={buyerArtistName}
+                onChange={(e) => setBuyerArtistName(e.target.value)}
+                required
+                placeholder="YourArtistName"
+                data-testid="input-artist-name"
+                style={{ width: "100%", borderRadius: "4px" }}
+              />
+              <p style={s.hint}>Umělecký pseudonym — bude uveden v licenční smlouvě</p>
+            </div>
+
+            <div>
+              <label style={s.label12}>Adresa trvalého bydliště *</label>
+              <input
+                type="text"
+                value={buyerAddress}
+                onChange={(e) => setBuyerAddress(e.target.value)}
+                required
+                placeholder="Ulice 123, Praha 1, 110 00"
+                data-testid="input-address"
+                style={{ width: "100%", borderRadius: "4px" }}
+              />
+              <p style={s.hint}>Adresa pro licenční smlouvu dle občanského zákoníku</p>
+            </div>
+          </div>
+
+          {/* Legal consents */}
+          <div style={s.section}>
+            <div style={s.sectionLabel}>Souhlasy *</div>
+
+            <div style={s.checkRow}>
+              <input
+                id="agree-vop"
+                type="checkbox"
+                checked={agreeVop}
+                onChange={e => setAgreeVop(e.target.checked)}
+                style={{ marginTop: "2px", flexShrink: 0, cursor: "pointer" }}
+              />
+              <label htmlFor="agree-vop" style={s.checkLabel}>
+                Souhlasím s{" "}
+                <a href="/pravni-informace" target="_blank" style={s.link}>Všeobecnými obchodními podmínkami</a>{" "}
+                a{" "}
+                <a href="/pravni-informace" target="_blank" style={s.link}>Zásadami ochrany osobních údajů</a>{" "}
+                VOODOO808. *
+              </label>
+            </div>
+
+            <div style={{ ...s.divider }} />
+
+            <div style={s.checkRow}>
+              <input
+                id="agree-digital"
+                type="checkbox"
+                checked={agreeDigital}
+                onChange={e => setAgreeDigital(e.target.checked)}
+                style={{ marginTop: "2px", flexShrink: 0, cursor: "pointer" }}
+              />
+              <label htmlFor="agree-digital" style={s.checkLabel}>
+                Beru na vědomí, že okamžikem zpřístupnění digitálního obsahu ke stažení
+                ztrácím právo na odstoupení od smlouvy dle{" "}
+                <span style={{ color: "#666" }}>§ 1837 písm. l) občanského zákoníku</span>. *
+              </label>
+            </div>
+          </div>
+
           {error && (
-            <div style={{ color: "#ff4444", marginBottom: "16px", padding: "12px", border: "1px solid #ff4444", borderRadius: "4px" }}>
+            <div style={{ color: "#ff4444", marginBottom: "16px", padding: "12px", border: "1px solid #333", borderRadius: "4px", fontSize: "14px", lineHeight: 1.5 }}>
               {error}
             </div>
           )}
-
-          <div style={{ marginBottom: "16px" }}>
-            <label style={{ display: "block", marginBottom: "4px", fontSize: "12px", color: "#999" }}>
-              Email pro doručení *
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              placeholder="vas@email.cz"
-              data-testid="input-email"
-              style={{ width: "100%", borderRadius: "4px" }}
-            />
-            <p style={{ fontSize: "12px", color: "#666", marginTop: "6px" }}>
-              Na tento email vám zašleme odkaz ke stažení a kopii licenční smlouvy po zaplacení
-            </p>
-          </div>
-
-          <div style={{ marginBottom: "16px" }}>
-            <label style={{ display: "block", marginBottom: "4px", fontSize: "12px", color: "#999" }}>
-              Právní jméno (celé jméno a příjmení) *
-            </label>
-            <input
-              type="text"
-              value={buyerLegalName}
-              onChange={(e) => setBuyerLegalName(e.target.value)}
-              required
-              placeholder="Jan Novák"
-              data-testid="input-legal-name"
-              style={{ width: "100%", borderRadius: "4px" }}
-            />
-            <p style={{ fontSize: "12px", color: "#666", marginTop: "4px" }}>
-              Vaše skutečné jméno pro licenční smlouvu
-            </p>
-          </div>
-
-          <div style={{ marginBottom: "16px" }}>
-            <label style={{ display: "block", marginBottom: "4px", fontSize: "12px", color: "#999" }}>
-              Umělecké jméno *
-            </label>
-            <input
-              type="text"
-              value={buyerArtistName}
-              onChange={(e) => setBuyerArtistName(e.target.value)}
-              required
-              placeholder="YourArtistName"
-              data-testid="input-artist-name"
-              style={{ width: "100%", borderRadius: "4px" }}
-            />
-          </div>
-
-          <div style={{ marginBottom: "24px" }}>
-            <label style={{ display: "block", marginBottom: "4px", fontSize: "12px", color: "#999" }}>
-              Adresa trvalého bydliště *
-            </label>
-            <input
-              type="text"
-              value={buyerAddress}
-              onChange={(e) => setBuyerAddress(e.target.value)}
-              required
-              placeholder="Ulice 123, Praha 1, 110 00"
-              data-testid="input-address"
-              style={{ width: "100%", borderRadius: "4px" }}
-            />
-            <p style={{ fontSize: "12px", color: "#666", marginTop: "4px" }}>
-              Adresa pro licenční smlouvu
-            </p>
-          </div>
 
           <button
             type="submit"
             className="btn btn-filled btn-bounce"
             disabled={loading}
             data-testid="button-submit-order"
-            style={{ width: "100%", borderRadius: "4px" }}
+            style={{ width: "100%", borderRadius: "4px", fontSize: "15px", padding: "14px" }}
           >
-            {loading ? "Zpracování..." : `Zaplatit ${finalTotal} CZK`}
+            {loading ? "Zpracování…" : `Zaplatit ${formatCzechPrice(finalTotal)}`}
           </button>
-          <p style={{ fontSize: "11px", color: "#555", textAlign: "center", marginTop: "12px", lineHeight: "1.5" }}>
-            Dokončením objednávky souhlasíte s licenčními podmínkami VOODOO808.
-            Kopii smlouvy s vašimi údaji obdržíte emailem.
+
+          <p style={{ fontSize: "11px", color: "#444", textAlign: "center", marginTop: "12px", lineHeight: 1.6 }}>
+            Odesláním objednávky uzavíráte licenční smlouvu s VOODOO808 (Vojtěch Vojkovský).
+            Kopii smlouvy obdržíte na zadaný email.
           </p>
         </form>
       </div>

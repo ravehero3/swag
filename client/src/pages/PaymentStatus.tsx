@@ -45,12 +45,36 @@ export default function PaymentStatus() {
   const [status, setStatus] = useState<Status>("loading");
   const [order, setOrder] = useState<any>(null);
   const [gopayChecked, setGopayChecked] = useState(false);
+  const [retrying, setRetrying] = useState(false);
+  const [retryError, setRetryError] = useState("");
   const pollCountRef = useRef(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const resolvedRef = useRef(false);
 
   const params = new URLSearchParams(window.location.search);
   const orderId = params.get("orderId");
+
+  const handleRetry = async () => {
+    if (!orderId || retrying) return;
+    setRetrying(true);
+    setRetryError("");
+    try {
+      const res = await fetch(`/api/orders/${orderId}/retry-payment`, {
+        method: "POST",
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Chyba při opakování platby");
+      if (data.gw_url) {
+        window.location.href = data.gw_url;
+      } else {
+        throw new Error("Nepodařilo se získat odkaz na platební bránu");
+      }
+    } catch (err: any) {
+      setRetryError(err.message);
+      setRetrying(false);
+    }
+  };
 
   const resolve = (s: Status, orderData?: any) => {
     if (resolvedRef.current && s === "paid") {
@@ -324,13 +348,28 @@ export default function PaymentStatus() {
           </h2>
           <p style={{ color: "#666", fontSize: "14px", lineHeight: 1.6 }}>
             Objednávka <strong style={{ color: "#fff" }}>#{orderId}</strong> byla zrušena nebo platba nebyla dokončena.
+            Vaše objednávka je stále uložena — platbu můžete zkusit znovu.
           </p>
 
           <div style={dividerStyle} />
 
+          {retryError && (
+            <div style={{ color: "#ff4444", fontSize: "13px", padding: "10px 12px", border: "1px solid #3a1a1a", borderRadius: "4px", marginBottom: "12px", background: "rgba(255,68,68,0.06)" }}>
+              {retryError}
+            </div>
+          )}
+
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             <button
               className="btn btn-filled btn-bounce"
+              onClick={handleRetry}
+              disabled={retrying}
+              style={{ width: "100%", borderRadius: "4px" }}
+            >
+              {retrying ? "Přesměrovávám na GoPay…" : "Zkusit platbu znovu"}
+            </button>
+            <button
+              className="btn btn-bounce"
               onClick={() => navigate("/kosik")}
               style={{ width: "100%", borderRadius: "4px" }}
             >
@@ -339,7 +378,7 @@ export default function PaymentStatus() {
             <button
               className="btn btn-bounce"
               onClick={() => navigate("/")}
-              style={{ width: "100%", borderRadius: "4px" }}
+              style={{ width: "100%", borderRadius: "4px", color: "#555", borderColor: "#1a1a1a" }}
             >
               Zpět na hlavní stránku
             </button>
@@ -357,14 +396,31 @@ export default function PaymentStatus() {
           Něco se pokazilo
         </h2>
         <p style={{ color: "#666", fontSize: "14px", lineHeight: 1.6 }}>
-          Nepodařilo se načíst stav vaší objednávky. Pokud byla platba odečtena, kontaktujte nás a my vám pomůžeme.
+          Nepodařilo se načíst stav vaší objednávky. Pokud byla platba odečtena, kontaktujte nás na{" "}
+          <a href="mailto:info@voodoo808.com" style={{ color: "#aaa" }}>info@voodoo808.com</a>.
         </p>
 
         <div style={dividerStyle} />
 
+        {retryError && (
+          <div style={{ color: "#ff4444", fontSize: "13px", padding: "10px 12px", border: "1px solid #3a1a1a", borderRadius: "4px", marginBottom: "12px", background: "rgba(255,68,68,0.06)" }}>
+            {retryError}
+          </div>
+        )}
+
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          {orderId && (
+            <button
+              className="btn btn-filled btn-bounce"
+              onClick={handleRetry}
+              disabled={retrying}
+              style={{ width: "100%", borderRadius: "4px" }}
+            >
+              {retrying ? "Přesměrovávám na GoPay…" : "Zkusit platbu znovu"}
+            </button>
+          )}
           <button
-            className="btn btn-filled btn-bounce"
+            className="btn btn-bounce"
             onClick={() => navigate("/ucet")}
             style={{ width: "100%", borderRadius: "4px" }}
           >
@@ -373,7 +429,7 @@ export default function PaymentStatus() {
           <button
             className="btn btn-bounce"
             onClick={() => navigate("/")}
-            style={{ width: "100%", borderRadius: "4px" }}
+            style={{ width: "100%", borderRadius: "4px", color: "#555", borderColor: "#1a1a1a" }}
           >
             Zpět na hlavní stránku
           </button>

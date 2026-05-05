@@ -279,6 +279,109 @@ router.post("/:id/pay", async (req: Request, res: Response) => {
   }
 });
 
+// Allow customer to retry payment on a cancelled/failed order.
+// Resets the order to pending, clears the old GoPay payment ID, and creates
+// a fresh GoPay payment. Uses a suffixed order_number so GoPay accepts it.
+router.post("/:id/retry-payment", async (req: Request, res: Response) => {
+  try {
+    const orderId = parseInt(req.params.id, 10);
+    if (isNaN(orderId)) return res.status(400).json({ error: "Invalid order ID" });
+
+    const orderResult = await pool.query("SELECT * FROM orders WHERE id = $1", [orderId]);
+    if (orderResult.rows.length === 0) {
+      return res.status(404).json({ error: "Objednávka nenalezena" });
+    }
+
+    const order = orderResult.rows[0];
+
+    if (order.status === "completed" || order.status === "paid") {
+      return res.status(400).json({ error: "Objednávka je již zaplacena" });
+    }
+
+    if (Number(order.total) <= 0) {
+      return res.status(400).json({ error: "Tuto objednávku nelze znovu zaplatit" });
+    }
+
+    const clientId = process.env.GOPAY_CLIENT_ID;
+    const clientSecret = process.env.GOPAY_CLIENT_SECRET;
+    const goId = process.env.GOPAY_GOID;
+
+    if (!clientId || !clientSecret || !goId) {
+      return res.status(503).json({ error: "Platební brána není nakonfigurována." });
+    }
+
+    // Reset order back to pending before creating a new payment
+    await pool.query(
+      "UPDATE orders SET status = 'pending', gopay_payment_id = NULL WHERE id = $1",
+      [orderId]
+    );
+
+    const { GoPay } = await import("gopay-nodejs");
+    const isSandbox = process.env.GOPAY_SANDBOX === "true" || process.env.NODE_ENV !== "production";
+    const gopay = new GoPay(clientId, clientSecret, isSandbox);
+
+    function normaliseDomain(raw: string): string {
+      let d = raw.trim().replace(/\/+$/, "");
+      if (!/^https?:\/\//i.test(d)) d = `https://${d}`;
+      return d;
+    }
+
+    const rawDomain = process.env.APP_URL ||
+      (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(",")[0].trim()}` : null) ||
+      (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : null) ||
+      "http://localhost:5000";
+    const domain = normaliseDomain(rawDomain);
+
+    const items: Array<{ name: string; amount: number; count: number }> = [];
+    if (Array.isArray(order.items)) {
+      for (const item of order.items) {
+        items.push({ name: item.title || "Produkt", amount: Math.round(Number(item.price) * 100), count: 1 });
+      }
+    }
+    if (items.length === 0) {
+      items.push({ name: `Objednávka #${order.id}`, amount: Math.round(Number(order.total) * 100), count: 1 });
+    }
+
+    const returnUrl = `${domain}/platba-status?orderId=${order.id}`;
+    const notifyUrl = `${domain}/api/orders/${order.id}/notify`;
+
+    // Suffix order_number with timestamp so GoPay doesn't reject it as a duplicate
+    const retryOrderNumber = `${order.id}-r${Date.now()}`;
+
+    const paymentData = {
+      payer: { contact: { email: order.email } },
+      target: { type: "ACCOUNT", goid: parseInt(goId, 10) },
+      amount: Math.round(Number(order.total) * 100),
+      currency: "CZK",
+      order_number: retryOrderNumber,
+      order_description: `Objednávka #${order.id} (opakovaná platba)`,
+      items,
+      return_url: returnUrl,
+      notify_url: notifyUrl,
+      lang: "CS",
+    };
+
+    const payment = await gopay.createPayment(paymentData);
+    console.log(`[GoPay] retry-payment order=${orderId} response:`, JSON.stringify(payment));
+
+    if (payment && typeof payment === "object" && payment.gw_url) {
+      if (payment.id) {
+        await pool.query("UPDATE orders SET gopay_payment_id = $1 WHERE id = $2", [payment.id, order.id]);
+      }
+      return res.json({ gw_url: payment.gw_url, payment_id: payment.id });
+    }
+
+    const detail = typeof payment === "string" ? payment : JSON.stringify(payment);
+    console.error("[GoPay] retry-payment failed:", detail);
+    // Revert order status back to cancelled on failure
+    await pool.query("UPDATE orders SET status = 'cancelled' WHERE id = $1", [orderId]);
+    return res.status(500).json({ error: "Nepodařilo se znovu vytvořit platbu.", gopayDetail: detail });
+  } catch (error) {
+    console.error("retry-payment error:", error);
+    res.status(500).json({ error: "Chyba při opakování platby" });
+  }
+});
+
 router.post("/:id/bank-transfer", async (req: Request, res: Response) => {
   try {
     const orderId = parseInt(req.params.id, 10);
