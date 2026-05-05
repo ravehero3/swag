@@ -301,17 +301,40 @@ app.get("/api/admin/diag/gopay", requireAdmin, async (_req, res) => {
   };
 
   if (!clientId || !clientSecret || !goId) {
-    return res.json({ ...config, tokenOk: false, tokenError: "Chybí přihlašovací údaje GoPay (GOPAY_CLIENT_ID, GOPAY_CLIENT_SECRET nebo GOPAY_GOID)." });
+    return res.json({ ...config, tokenOk: false, tokenError: "Chybí přihlašovací údaje GoPay (GOPAY_CLIENT_ID, GOPAY_CLIENT_SECRET nebo GOPAY_GOID).", paymentTestOk: false, paymentTestDetail: null });
   }
 
   try {
     const { GoPay } = await import("gopay-nodejs");
     const gopay = new GoPay(clientId, clientSecret, isSandbox);
+
+    // Step 1: token test
     const token = await (gopay as any).getToken();
     const tokenOk = typeof token === "string" && token.length > 0 && !token.startsWith("StatusCode:");
-    return res.json({ ...config, tokenOk, tokenError: tokenOk ? null : `GoPay vrátil: ${token}` });
+    if (!tokenOk) {
+      return res.json({ ...config, tokenOk: false, tokenError: `GoPay vrátil: ${token}`, paymentTestOk: false, paymentTestDetail: null });
+    }
+
+    // Step 2: full payment creation test with 1 CZK
+    const testPaymentData = {
+      payer: { contact: { email: "diag@voodoo808.com" } },
+      target: { type: "ACCOUNT", goid: parseInt(goId, 10) },
+      amount: 100,
+      currency: "CZK",
+      order_number: `DIAG-${Date.now()}`,
+      order_description: "Diagnostický test platby",
+      items: [{ name: "Test", amount: 100, count: 1 }],
+      return_url: `${domain}/platba-status?test=1`,
+      notify_url: `${domain}/api/orders/diag-notify`,
+      lang: "CS",
+    };
+    const testPayment = await (gopay as any).createPayment(testPaymentData);
+    const paymentTestOk = testPayment && typeof testPayment === "object" && !!testPayment.gw_url;
+    const paymentTestDetail = typeof testPayment === "string" ? testPayment : JSON.stringify(testPayment);
+
+    return res.json({ ...config, tokenOk: true, tokenError: null, paymentTestOk, paymentTestDetail });
   } catch (e: any) {
-    return res.json({ ...config, tokenOk: false, tokenError: e?.message || String(e) });
+    return res.json({ ...config, tokenOk: false, tokenError: e?.message || String(e), paymentTestOk: false, paymentTestDetail: null });
   }
 });
 

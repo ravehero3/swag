@@ -5679,6 +5679,8 @@ interface GopayDiag {
   gopaySandboxEnv: string;
   tokenOk: boolean;
   tokenError: string | null;
+  paymentTestOk: boolean;
+  paymentTestDetail: string | null;
 }
 
 function GopayDiagPanel() {
@@ -5741,16 +5743,17 @@ function GopayDiagPanel() {
 
         {ran && !loading && diag && (
           <div style={{ padding: "16px" }}>
+            {/* Token result */}
             <div style={{
-              display: "flex", alignItems: "center", gap: "10px", padding: "12px 14px", marginBottom: "16px",
+              display: "flex", alignItems: "flex-start", gap: "10px", padding: "12px 14px", marginBottom: "10px",
               borderRadius: "5px",
               background: diag.tokenOk ? "#0a1f0a" : "#1f0a0a",
               border: `1px solid ${diag.tokenOk ? "#1a4d1a" : "#4d1a1a"}`,
-            }} data-testid="gopay-diag-result">
-              <span style={{ fontSize: "18px" }}>{diag.tokenOk ? "✅" : "❌"}</span>
+            }} data-testid="gopay-diag-token-result">
+              <span style={{ fontSize: "16px", flexShrink: 0 }}>{diag.tokenOk ? "✅" : "❌"}</span>
               <div>
                 <div style={{ fontSize: "13px", fontWeight: 600, color: diag.tokenOk ? "#4caf50" : "#e55" }}>
-                  {diag.tokenOk ? "GoPay OAuth token získán — přihlašovací údaje fungují." : "Nepodařilo se získat GoPay token."}
+                  Krok 1 – OAuth token: {diag.tokenOk ? "OK" : "SELHAL"}
                 </div>
                 {diag.tokenError && (
                   <div style={{ fontSize: "11px", color: "#e77", marginTop: "4px", fontFamily: "monospace", wordBreak: "break-all" }}>
@@ -5759,6 +5762,41 @@ function GopayDiagPanel() {
                 )}
               </div>
             </div>
+
+            {/* Payment creation result */}
+            {diag.tokenOk && (
+              <div style={{
+                display: "flex", alignItems: "flex-start", gap: "10px", padding: "12px 14px", marginBottom: "16px",
+                borderRadius: "5px",
+                background: diag.paymentTestOk ? "#0a1f0a" : "#1f0a0a",
+                border: `1px solid ${diag.paymentTestOk ? "#1a4d1a" : "#4d1a1a"}`,
+              }} data-testid="gopay-diag-payment-result">
+                <span style={{ fontSize: "16px", flexShrink: 0 }}>{diag.paymentTestOk ? "✅" : "❌"}</span>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: "13px", fontWeight: 600, color: diag.paymentTestOk ? "#4caf50" : "#e55" }}>
+                    Krok 2 – Vytvoření platby (1 CZK test): {diag.paymentTestOk ? "OK — GoPay přijal platbu" : "SELHAL — GoPay odmítl platbu"}
+                  </div>
+                  {diag.paymentTestDetail && !diag.paymentTestOk && (
+                    <div style={{ fontSize: "11px", color: "#e77", marginTop: "6px", fontFamily: "monospace", wordBreak: "break-all", whiteSpace: "pre-wrap", background: "#0d0d0d", padding: "8px", borderRadius: "4px" }}>
+                      {diag.paymentTestDetail}
+                    </div>
+                  )}
+                  {diag.paymentTestOk && (
+                    <div style={{ fontSize: "11px", color: "#5c5", marginTop: "4px" }}>
+                      Platební brána funguje správně. Testovací platba byla vytvořena, ale nebyla dokončena — to je v pořádku.
+                    </div>
+                  )}
+                  {!diag.paymentTestOk && diag.paymentTestDetail && diag.paymentTestDetail.includes("return_url") && (
+                    <div style={{ marginTop: "10px", padding: "10px", background: "#1a1000", border: "1px solid #4d3000", borderRadius: "4px", fontSize: "12px", color: "#f5b150", lineHeight: 1.7 }}>
+                      <strong>⚠ Příčina: return_url není povolena v GoPay portálu.</strong><br />
+                      Přihlas se do GoPay (sandbox nebo ostrý) → Integrace → Povolené URL adresy
+                      a přidej: <span style={{ fontFamily: "monospace", color: "#fff" }}>https://www.voodoo808.com</span><br />
+                      Poté spusť test znovu.
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             <div style={{ borderTop: "1px solid #1a1a1a" }}>
               {row("Režim", <span style={{ color: diag.isSandbox ? "#f5a623" : "#4caf50", fontWeight: 600 }}>{diag.isSandbox ? "SANDBOX (testovací)" : "PRODUCTION (ostrý)"}</span>)}
@@ -5777,19 +5815,25 @@ function GopayDiagPanel() {
               {row("GOPAY_GOID", diag.goIdSet ? "✓ nastaveno" : <span style={{ color: "#e55" }}>✗ chybí</span>)}
             </div>
 
-            {!diag.tokenOk && (
+            {(!diag.tokenOk || !diag.paymentTestOk) && (
               <div style={{ marginTop: "16px", padding: "12px 14px", background: "#111", borderRadius: "5px", fontSize: "12px", color: "#666", lineHeight: "1.9" }}>
-                <div style={{ color: "#888", fontWeight: 600, marginBottom: "6px" }}>Jak opravit na Vercelu:</div>
+                <div style={{ color: "#888", fontWeight: 600, marginBottom: "6px" }}>Jak opravit:</div>
                 {diag.domain.startsWith("http://localhost") && (
                   <div>• Nastav <span style={{ color: "#aaa", fontFamily: "monospace" }}>APP_URL = https://www.voodoo808.com</span> v Vercel → Settings → Environment Variables → Production</div>
                 )}
                 {!diag.clientIdSet && <div>• Nastav <span style={{ color: "#aaa", fontFamily: "monospace" }}>GOPAY_CLIENT_ID</span> v Vercel → Production</div>}
                 {!diag.clientSecretSet && <div>• Nastav <span style={{ color: "#aaa", fontFamily: "monospace" }}>GOPAY_CLIENT_SECRET</span> v Vercel → Production</div>}
                 {!diag.goIdSet && <div>• Nastav <span style={{ color: "#aaa", fontFamily: "monospace" }}>GOPAY_GOID</span> v Vercel → Production</div>}
-                {diag.clientIdSet && diag.clientSecretSet && diag.goIdSet && !diag.domain.startsWith("http://localhost") && (
-                  <div>• Přihlašovací údaje jsou nastaveny, ale token selhal. Zkontroluj, že <span style={{ color: "#aaa", fontFamily: "monospace" }}>GOPAY_SANDBOX</span> odpovídá druhu credentials (sandbox vs. ostrý účet) a že GoID, Client ID a Secret jsou ze stejného GoPay účtu.</div>
+                {diag.tokenOk && !diag.paymentTestOk && diag.paymentTestDetail && diag.paymentTestDetail.includes("return_url") && (
+                  <div>• <strong style={{ color: "#aaa" }}>Přihlas se do GoPay merchant portálu</strong> a přidej doménu <span style={{ color: "#aaa", fontFamily: "monospace" }}>https://www.voodoo808.com</span> jako povolenou return URL adresu.</div>
                 )}
-                <div>• Po každé změně proveď <span style={{ color: "#aaa", fontFamily: "monospace" }}>Redeploy</span> na Vercelu a pak spusť test znovu.</div>
+                {diag.tokenOk && !diag.paymentTestOk && diag.paymentTestDetail && !diag.paymentTestDetail.includes("return_url") && (
+                  <div>• Token OK, ale vytvoření platby selhalo. Zkontroluj detail chyby výše — může jít o problém s GoID nebo konfigurací účtu.</div>
+                )}
+                {!diag.tokenOk && diag.clientIdSet && diag.clientSecretSet && diag.goIdSet && !diag.domain.startsWith("http://localhost") && (
+                  <div>• Přihlašovací údaje jsou nastaveny, ale token selhal. Zkontroluj, že <span style={{ color: "#aaa", fontFamily: "monospace" }}>GOPAY_SANDBOX</span> odpovídá druhu credentials.</div>
+                )}
+                <div>• Po každé změně v GoPay portálu nebo Vercelu spusť test znovu.</div>
               </div>
             )}
           </div>

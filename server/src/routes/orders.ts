@@ -244,11 +244,14 @@ router.post("/:id/pay", async (req: Request, res: Response) => {
       return res.json({ gw_url: payment.gw_url, payment_id: payment.id });
     }
 
-    // The gopay-nodejs library returns a string like "StatusCode: 401, message: ..."
-    // on auth failure instead of throwing — surface it clearly.
+    // The gopay-nodejs library returns a string like "StatusCode: 409, message: ..."
+    // on failure instead of throwing — surface the full detail to aid debugging.
     const detail = typeof payment === "string" ? payment : JSON.stringify(payment);
     console.error("[GoPay] Payment creation failed. Response:", detail);
-    return res.status(500).json({ error: "Nepodařilo se vytvořit platbu. Zkuste to prosím znovu." });
+    return res.status(500).json({
+      error: "Nepodařilo se vytvořit platbu. Zkuste to prosím znovu.",
+      gopayDetail: detail,
+    });
   } catch (error) {
     console.error("GoPay payment error:", error);
     res.status(500).json({ error: "Chyba při vytváření platby" });

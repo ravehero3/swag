@@ -178,7 +178,9 @@ function Checkout() {
 
       if (!payRes.ok) {
         const payData = await payRes.json();
-        throw new Error(payData.error || "Chyba při zahájení platby");
+        const msg = payData.error || "Chyba při zahájení platby";
+        const detail = payData.gopayDetail ? `\n\nDetail: ${payData.gopayDetail}` : "";
+        throw new Error(msg + detail);
       }
 
       const payData = await payRes.json();
