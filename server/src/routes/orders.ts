@@ -22,12 +22,16 @@ async function createGoPayPayment(
   basePaymentData: Record<string, any>,
   orderId: number,
 ): Promise<any> {
+  // GoPay API requires return_url and notification_url nested inside a "callback" object.
+  // Using top-level return_url / notify_url causes silent rejection or error 111.
   const paymentData = {
     ...basePaymentData,
-    return_url: GOPAY_RETURN_URL,
-    notify_url: GOPAY_NOTIFY_URL,
+    callback: {
+      return_url: GOPAY_RETURN_URL,
+      notification_url: GOPAY_NOTIFY_URL,
+    },
   };
-  console.log(`[GoPay] Creating payment for order ${orderId} with return_url="${GOPAY_RETURN_URL}" notify_url="${GOPAY_NOTIFY_URL}"`);
+  console.log(`[GoPay] Creating payment for order ${orderId} with callback.return_url="${GOPAY_RETURN_URL}" callback.notification_url="${GOPAY_NOTIFY_URL}"`);
   const payment = await gopay.createPayment(paymentData);
   console.log(`[GoPay] createPayment response:`, JSON.stringify(payment));
   return payment;
