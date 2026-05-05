@@ -5674,6 +5674,7 @@ interface GopayDiag {
   isSandbox: boolean;
   apiUrl: string;
   rawAppUrl: string;
+  gopayReturnDomain: string;
   domain: string;
   appUrlVar: string;
   nodeEnv: string;
@@ -5852,14 +5853,19 @@ function GopayDiagPanel() {
               {row("GoPay API URL", diag.apiUrl)}
               {row("NODE_ENV", diag.nodeEnv)}
               {row("GOPAY_SANDBOX", diag.gopaySandboxEnv)}
-              {row("APP_URL (raw)", (
-                <span style={{ color: diag.rawAppUrl === "(not set)" ? "#e55" : diag.rawAppUrl !== diag.domain ? "#f5b150" : "#aaa" }}>
+              {row("APP_URL", (
+                <span style={{ color: diag.rawAppUrl === "(not set)" ? "#e55" : "#aaa" }}>
                   {diag.rawAppUrl}
-                  {diag.rawAppUrl === "(not set)" && " ⚠ není nastaveno — GoPay dostane špatnou URL!"}
-                  {diag.rawAppUrl !== "(not set)" && diag.rawAppUrl !== diag.domain && " ⚠ bylo opraveno (viz níže)"}
+                  {diag.rawAppUrl === "(not set)" && " ⚠ není nastaveno"}
                 </span>
               ))}
-              {row("Return URL doména", (
+              {row("GOPAY_RETURN_DOMAIN", (
+                <span style={{ color: diag.gopayReturnDomain === "(not set)" ? "#666" : "#24e053" }}>
+                  {diag.gopayReturnDomain}
+                  {diag.gopayReturnDomain === "(not set)" && " (volitelné — nastavit pro fix chyby 111)"}
+                </span>
+              ))}
+              {row("Aktivní return URL doména", (
                 <span style={{ color: diag.domain.startsWith("http://localhost") ? "#e55" : "#aaa" }}>
                   {diag.domain}
                   {diag.domain.startsWith("http://localhost") && " ⚠ GoPay odmítá localhost — nastav APP_URL"}

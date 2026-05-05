@@ -10,6 +10,107 @@ export const BANK_TRANSFER_DETAILS = {
   holderName: "VOODOO808",
 };
 
+// ── GoPay return-URL helpers ─────────────────────────────────────────────────
+//
+// GoPay validates return_url / notify_url against the "URL prodejního místa"
+// whitelist in the merchant portal.  The most common mismatch is www vs non-www
+// (e.g. APP_URL = "https://www.voodoo808.com" but GoPay registered without www).
+//
+// Strategy:
+//  1. If GOPAY_RETURN_DOMAIN is set, use it unconditionally — no probing needed.
+//  2. Otherwise build the domain from APP_URL / Replit env vars.
+//  3. On a payment attempt: if GoPay returns error 111 on return_url, automatically
+//     retry with the www ↔ non-www alternative and cache the winner in memory.
+//     The cache resets on server restart; this is fine because probing only costs
+//     one extra createPayment call the first time there is a www mismatch.
+
+let _gopayWorkingDomain: string | null = null;  // in-process cache
+
+export function normaliseDomain(raw: string): string {
+  let d = raw.trim().replace(/\/+$/, "");
+  if (!/^https?:\/\//i.test(d)) d = `https://${d}`;
+  return d;
+}
+
+export function buildBaseDomain(): string {
+  // GOPAY_RETURN_DOMAIN — explicit override for the return/notify URL base.
+  // Set this in Vercel env vars to exactly the domain registered in GoPay portal.
+  if (process.env.GOPAY_RETURN_DOMAIN) return normaliseDomain(process.env.GOPAY_RETURN_DOMAIN);
+
+  // Use the cached working domain from a previous successful payment
+  if (_gopayWorkingDomain) return _gopayWorkingDomain;
+
+  const raw = process.env.APP_URL ||
+    (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(",")[0].trim()}` : null) ||
+    (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : null) ||
+    "http://localhost:5000";
+  return normaliseDomain(raw);
+}
+
+/** Return the www ↔ non-www alternative of a domain string. */
+function alternativeDomain(domain: string): string {
+  if (domain.includes("://www.")) return domain.replace("://www.", "://");
+  const proto = domain.startsWith("https") ? "https" : "http";
+  const host = domain.replace(/^https?:\/\//, "");
+  return `${proto}://www.${host}`;
+}
+
+function isError111(response: any): boolean {
+  const s = typeof response === "string" ? response : JSON.stringify(response ?? "");
+  return s.includes('"error_code":111') || s.includes('"error_code": 111');
+}
+
+/**
+ * Try to create a GoPay payment, automatically falling back to the www/non-www
+ * domain variant if GoPay returns error 111 (return_url not whitelisted).
+ * Caches the winning domain for subsequent payments.
+ */
+async function createGoPayPaymentWithFallback(
+  gopay: any,
+  basePaymentData: Record<string, any>,
+  primaryDomain: string,
+  orderId: number,
+): Promise<{ payment: any; domain: string; triedVariants: string[] }> {
+  const variants = [primaryDomain, alternativeDomain(primaryDomain)];
+  const triedVariants: string[] = [];
+
+  for (const domain of variants) {
+    const returnUrl = `${domain}/platba-status?orderId=${orderId}`;
+    const notifyUrl = `${domain}/api/orders/${orderId}/notify`;
+    const paymentData = { ...basePaymentData, return_url: returnUrl, notify_url: notifyUrl };
+
+    console.log(`[GoPay] Trying return_url="${returnUrl}"`);
+    triedVariants.push(domain);
+
+    const payment = await gopay.createPayment(paymentData);
+    console.log(`[GoPay] createPayment response (domain=${domain}):`, JSON.stringify(payment));
+
+    if (payment && typeof payment === "object" && payment.gw_url) {
+      // Success — cache the working domain so we skip the probe next time
+      _gopayWorkingDomain = domain;
+      console.log(`[GoPay] Working domain cached: ${domain}`);
+      return { payment, domain, triedVariants };
+    }
+
+    if (!isError111(payment)) {
+      // Different error — no point trying alternative domain
+      return { payment, domain, triedVariants };
+    }
+
+    console.log(`[GoPay] error 111 on domain=${domain}, trying alternative…`);
+  }
+
+  // Both variants failed with error 111
+  const lastDomain = variants[variants.length - 1];
+  const payment = await gopay.createPayment({
+    ...basePaymentData,
+    return_url: `${lastDomain}/platba-status?orderId=${orderId}`,
+    notify_url: `${lastDomain}/api/orders/${orderId}/notify`,
+  });
+  return { payment, domain: lastDomain, triedVariants };
+}
+// ────────────────────────────────────────────────────────────────────────────
+
 const router = Router();
 
 router.get("/", requireAdmin, async (_req: Request, res: Response) => {
@@ -185,94 +286,58 @@ router.post("/:id/pay", async (req: Request, res: Response) => {
     }
 
     const { GoPay } = await import("gopay-nodejs");
-    // GOPAY_SANDBOX=true forces sandbox mode regardless of NODE_ENV.
-    // Set this in production secrets when testing with sandbox credentials.
     const isSandbox = process.env.GOPAY_SANDBOX === "true" || process.env.NODE_ENV !== "production";
     console.log(`[GoPay] mode=${isSandbox ? "SANDBOX" : "PRODUCTION"} NODE_ENV=${process.env.NODE_ENV} GOPAY_SANDBOX=${process.env.GOPAY_SANDBOX}`);
     const gopay = new GoPay(clientId, clientSecret, isSandbox);
 
-    // Build and normalise the base domain for return/notify URLs.
-    // Handles: missing protocol, trailing slashes, whitespace.
-    function normaliseDomain(raw: string): string {
-      let d = raw.trim().replace(/\/+$/, ""); // strip trailing slashes
-      if (!/^https?:\/\//i.test(d)) d = `https://${d}`; // ensure protocol
-      return d;
-    }
-
-    // APP_URL takes priority; then use Replit's auto-set domain variables.
-    // REPLIT_DOMAINS is set in production deployments (comma-separated list).
-    // REPLIT_DEV_DOMAIN is set in the development workspace.
-    const rawDomain = process.env.APP_URL ||
-      (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(",")[0].trim()}` : null) ||
-      (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : null) ||
-      "http://localhost:5000";
-    const domain = normaliseDomain(rawDomain);
-    console.log(`[GoPay] APP_URL env raw="${process.env.APP_URL}" normalised domain="${domain}"`);
+    const primaryDomain = buildBaseDomain();
+    console.log(`[GoPay] primary domain="${primaryDomain}" (GOPAY_RETURN_DOMAIN=${process.env.GOPAY_RETURN_DOMAIN || "not set"} APP_URL=${process.env.APP_URL || "not set"})`);
 
     const items: Array<{ name: string; amount: number; count: number }> = [];
     if (Array.isArray(order.items)) {
       for (const item of order.items) {
-        items.push({
-          name: item.title || "Produkt",
-          amount: Math.round(Number(item.price) * 100),
-          count: 1,
-        });
+        items.push({ name: item.title || "Produkt", amount: Math.round(Number(item.price) * 100), count: 1 });
       }
     }
-
     if (items.length === 0) {
-      items.push({
-        name: `Objednávka #${order.id}`,
-        amount: Math.round(Number(order.total) * 100),
-        count: 1,
-      });
+      items.push({ name: `Objednávka #${order.id}`, amount: Math.round(Number(order.total) * 100), count: 1 });
     }
 
-    const returnUrl = `${domain}/platba-status?orderId=${order.id}`;
-    const notifyUrl = `${domain}/api/orders/${order.id}/notify`;
-    console.log(`[GoPay] return_url="${returnUrl}"`);
-    console.log(`[GoPay] notify_url="${notifyUrl}"`);
-
-    const paymentData = {
-      payer: {
-        contact: { email: order.email },
-      },
-      target: {
-        type: "ACCOUNT",
-        goid: parseInt(goId, 10),
-      },
+    const basePaymentData = {
+      payer: { contact: { email: order.email } },
+      target: { type: "ACCOUNT", goid: parseInt(goId, 10) },
       amount: Math.round(Number(order.total) * 100),
       currency: "CZK",
       order_number: String(order.id),
       order_description: `Objednávka #${order.id}`,
       items,
-      return_url: returnUrl,
-      notify_url: notifyUrl,
       lang: "CS",
     };
 
-    const payment = await gopay.createPayment(paymentData);
-    console.log("[GoPay] createPayment response:", JSON.stringify(payment));
+    const { payment, domain: workingDomain, triedVariants } = await createGoPayPaymentWithFallback(
+      gopay, basePaymentData, primaryDomain, order.id
+    );
 
     if (payment && typeof payment === "object" && payment.gw_url) {
-      // Persist the GoPay payment ID so we can query status directly later
       if (payment.id) {
-        await pool.query(
-          "UPDATE orders SET gopay_payment_id = $1 WHERE id = $2",
-          [payment.id, order.id]
-        );
+        await pool.query("UPDATE orders SET gopay_payment_id = $1 WHERE id = $2", [payment.id, order.id]);
       }
       return res.json({ gw_url: payment.gw_url, payment_id: payment.id });
     }
 
-    // The gopay-nodejs library returns a string like "StatusCode: 409, message: ..."
-    // on failure instead of throwing — surface the full detail to aid debugging.
     const detail = typeof payment === "string" ? payment : JSON.stringify(payment);
-    console.error("[GoPay] Payment creation failed. Response:", detail);
-    return res.status(500).json({
-      error: "Nepodařilo se vytvořit platbu. Zkuste to prosím znovu.",
-      gopayDetail: detail,
-    });
+    console.error("[GoPay] Payment creation failed. Tried variants:", triedVariants, "Response:", detail);
+
+    // Build a helpful error message explaining what to do about error 111
+    let userError = "Nepodařilo se vytvořit platbu. Zkuste to prosím znovu.";
+    let guidance = "";
+    if (isError111(payment)) {
+      guidance = `Chyba 111 (return_url): GoPay odmítl tyto URL jako newhitelistované: ${triedVariants.map(v => v + "/platba-status").join(", ")}. ` +
+        `Nastavte proměnnou GOPAY_RETURN_DOMAIN na přesnou doménu, která je zaregistrována v GoPay portálu ` +
+        `(https://gate.gopay.cz/gopay-partner/ → Nastavení → URL prodejního místa). ` +
+        `Příklad: GOPAY_RETURN_DOMAIN=https://www.voodoo808.com`;
+    }
+    return res.status(500).json({ error: userError, gopayDetail: detail, guidance: guidance || undefined });
   } catch (error) {
     console.error("GoPay payment error:", error);
     res.status(500).json({ error: "Chyba při vytváření platby" });
@@ -320,17 +385,7 @@ router.post("/:id/retry-payment", async (req: Request, res: Response) => {
     const isSandbox = process.env.GOPAY_SANDBOX === "true" || process.env.NODE_ENV !== "production";
     const gopay = new GoPay(clientId, clientSecret, isSandbox);
 
-    function normaliseDomain(raw: string): string {
-      let d = raw.trim().replace(/\/+$/, "");
-      if (!/^https?:\/\//i.test(d)) d = `https://${d}`;
-      return d;
-    }
-
-    const rawDomain = process.env.APP_URL ||
-      (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(",")[0].trim()}` : null) ||
-      (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : null) ||
-      "http://localhost:5000";
-    const domain = normaliseDomain(rawDomain);
+    const primaryDomain = buildBaseDomain();
 
     const items: Array<{ name: string; amount: number; count: number }> = [];
     if (Array.isArray(order.items)) {
@@ -342,13 +397,10 @@ router.post("/:id/retry-payment", async (req: Request, res: Response) => {
       items.push({ name: `Objednávka #${order.id}`, amount: Math.round(Number(order.total) * 100), count: 1 });
     }
 
-    const returnUrl = `${domain}/platba-status?orderId=${order.id}`;
-    const notifyUrl = `${domain}/api/orders/${order.id}/notify`;
-
     // Suffix order_number with timestamp so GoPay doesn't reject it as a duplicate
     const retryOrderNumber = `${order.id}-r${Date.now()}`;
 
-    const paymentData = {
+    const basePaymentData = {
       payer: { contact: { email: order.email } },
       target: { type: "ACCOUNT", goid: parseInt(goId, 10) },
       amount: Math.round(Number(order.total) * 100),
@@ -356,12 +408,12 @@ router.post("/:id/retry-payment", async (req: Request, res: Response) => {
       order_number: retryOrderNumber,
       order_description: `Objednávka #${order.id} (opakovaná platba)`,
       items,
-      return_url: returnUrl,
-      notify_url: notifyUrl,
       lang: "CS",
     };
 
-    const payment = await gopay.createPayment(paymentData);
+    const { payment, triedVariants } = await createGoPayPaymentWithFallback(
+      gopay, basePaymentData, primaryDomain, order.id
+    );
     console.log(`[GoPay] retry-payment order=${orderId} response:`, JSON.stringify(payment));
 
     if (payment && typeof payment === "object" && payment.gw_url) {
@@ -372,10 +424,14 @@ router.post("/:id/retry-payment", async (req: Request, res: Response) => {
     }
 
     const detail = typeof payment === "string" ? payment : JSON.stringify(payment);
-    console.error("[GoPay] retry-payment failed:", detail);
-    // Revert order status back to cancelled on failure
+    console.error("[GoPay] retry-payment failed. Tried:", triedVariants, "Response:", detail);
     await pool.query("UPDATE orders SET status = 'cancelled' WHERE id = $1", [orderId]);
-    return res.status(500).json({ error: "Nepodařilo se znovu vytvořit platbu.", gopayDetail: detail });
+
+    let guidance = "";
+    if (isError111(payment)) {
+      guidance = `Chyba 111: GoPay odmítl URL ${triedVariants.map(v => v + "/platba-status").join(", ")}. Nastavte GOPAY_RETURN_DOMAIN.`;
+    }
+    return res.status(500).json({ error: "Nepodařilo se znovu vytvořit platbu.", gopayDetail: detail, guidance: guidance || undefined });
   } catch (error) {
     console.error("retry-payment error:", error);
     res.status(500).json({ error: "Chyba při opakování platby" });

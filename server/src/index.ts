@@ -264,7 +264,8 @@ app.get("/api/admin/config-check", requireAdmin, (_req, res) => {
     { key: "GOPAY_CLIENT_ID",     label: "GoPay Client ID",              group: "Platby",       required: true },
     { key: "GOPAY_CLIENT_SECRET", label: "GoPay Client Secret",          group: "Platby",       required: true },
     { key: "GOPAY_SANDBOX",       label: "GoPay Sandbox mode (true/false)", group: "Platby",    required: false },
-    { key: "APP_URL",             label: "APP_URL (produkční doména, nutné pro GoPay)", group: "Nasazení", required: true },
+    { key: "APP_URL",             label: "APP_URL (produkční doména)",                  group: "Nasazení", required: true },
+    { key: "GOPAY_RETURN_DOMAIN", label: "GOPAY_RETURN_DOMAIN (přepíše doménu pro GoPay return_url — nastavit pokud GoPay dává chybu 111)", group: "Platby", required: false },
   ];
 
   const result = checks.map(({ key, label, group, required }) => ({
@@ -289,11 +290,18 @@ app.get("/api/admin/diag/gopay", requireAdmin, async (_req, res) => {
     return d;
   }
 
-  const rawDomain = process.env.APP_URL ||
+  const rawDomain = process.env.GOPAY_RETURN_DOMAIN ||
+    process.env.APP_URL ||
     (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(",")[0].trim()}` : null) ||
     (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : null) ||
     "http://localhost:5000";
   const domain = normaliseDomain(rawDomain);
+
+  const domainSource = process.env.GOPAY_RETURN_DOMAIN ? "GOPAY_RETURN_DOMAIN"
+    : process.env.APP_URL ? "APP_URL"
+    : process.env.REPLIT_DOMAINS ? "REPLIT_DOMAINS"
+    : process.env.REPLIT_DEV_DOMAIN ? "REPLIT_DEV_DOMAIN"
+    : "fallback (localhost)";
 
   const config = {
     clientIdSet: !!clientId,
@@ -302,8 +310,9 @@ app.get("/api/admin/diag/gopay", requireAdmin, async (_req, res) => {
     isSandbox,
     apiUrl: isSandbox ? "https://gw.sandbox.gopay.com/api" : "https://gate.gopay.cz/api",
     rawAppUrl: process.env.APP_URL || "(not set)",
+    gopayReturnDomain: process.env.GOPAY_RETURN_DOMAIN || "(not set)",
     domain,
-    appUrlVar: process.env.APP_URL ? "APP_URL" : (process.env.REPLIT_DOMAINS ? "REPLIT_DOMAINS" : (process.env.REPLIT_DEV_DOMAIN ? "REPLIT_DEV_DOMAIN" : "fallback")),
+    appUrlVar: domainSource,
     nodeEnv: process.env.NODE_ENV || "(not set)",
     gopaySandboxEnv: process.env.GOPAY_SANDBOX || "(not set)",
   };
