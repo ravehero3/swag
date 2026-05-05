@@ -5787,11 +5787,29 @@ function GopayDiagPanel() {
                     </div>
                   )}
                   {!diag.paymentTestOk && diag.paymentTestDetail && diag.paymentTestDetail.includes("return_url") && (
-                    <div style={{ marginTop: "10px", padding: "10px", background: "#1a1000", border: "1px solid #4d3000", borderRadius: "4px", fontSize: "12px", color: "#f5b150", lineHeight: 1.7 }}>
-                      <strong>⚠ Příčina: return_url není povolena v GoPay portálu.</strong><br />
-                      Přihlas se do GoPay (sandbox nebo ostrý) → Integrace → Povolené URL adresy
-                      a přidej: <span style={{ fontFamily: "monospace", color: "#fff" }}>https://www.voodoo808.com</span><br />
-                      Poté spusť test znovu.
+                    <div style={{ marginTop: "10px", padding: "14px", background: "#1a1000", border: "1px solid #4d3000", borderRadius: "4px", fontSize: "12px", color: "#f5b150", lineHeight: 1.9 }}>
+                      <div style={{ fontWeight: 700, marginBottom: "8px", fontSize: "13px" }}>⚠ Co to znamená a co teď udělat:</div>
+                      <div style={{ color: "#e8c97a", marginBottom: "6px" }}>
+                        GoPay (sandbox i ostrý) vyžaduje, aby doména tvého e-shopu byla ověřena jejich týmem, než jim lze posílat platby.
+                        Toto <strong>není chyba v kódu</strong> — kód funguje správně, GoPay jen ještě nezná tvou doménu.
+                      </div>
+                      <div style={{ borderTop: "1px solid #4d3000", paddingTop: "10px", marginTop: "4px" }}>
+                        <div style={{ color: "#fff", fontWeight: 600, marginBottom: "6px" }}>Krok 4 v GoPay portálu: Pošli email na integrace@gopay.cz</div>
+                        <div style={{ background: "#0d0d00", border: "1px solid #3d2d00", borderRadius: "4px", padding: "10px 14px", fontFamily: "monospace", fontSize: "11px", color: "#ccc", lineHeight: 2 }}>
+                          <div><span style={{ color: "#888" }}>Předmět:</span> Ověření integrace – {diag.domain}</div>
+                          <div style={{ marginTop: "6px", color: "#bbb" }}>
+                            Dobrý den,<br />
+                            žádám o ověření integrace GoPay pro e-shop na doméně <strong>{diag.domain}</strong>.<br />
+                            GoID: <strong>{diag.goIdSet ? "(viz GOPAY_GOID v env)" : "—"}</strong><br />
+                            Propojení přes API (gopay-nodejs).<br />
+                            Prosím o aktivaci sandbox prostředí a povolení return URL:<br />
+                            <strong>{diag.domain}/platba-status</strong>
+                          </div>
+                        </div>
+                        <div style={{ marginTop: "8px", color: "#888" }}>
+                          Po odpovědi od GoPay spusť test znovu — Krok 2 se zezelená.
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
