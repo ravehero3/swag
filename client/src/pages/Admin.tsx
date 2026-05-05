@@ -5681,6 +5681,7 @@ interface GopayDiag {
   tokenError: string | null;
   paymentTestOk: boolean;
   paymentTestDetail: string | null;
+  paymentTestUrl?: string;
 }
 
 function GopayDiagPanel() {
@@ -5782,8 +5783,26 @@ function GopayDiagPanel() {
                     </div>
                   )}
                   {diag.paymentTestOk && (
-                    <div style={{ fontSize: "11px", color: "#5c5", marginTop: "4px" }}>
-                      Platební brána funguje správně. Testovací platba byla vytvořena, ale nebyla dokončena — to je v pořádku.
+                    <div style={{ marginTop: "6px" }}>
+                      <div style={{ fontSize: "11px", color: "#5c5", marginBottom: "6px" }}>
+                        Platební brána funguje. Testovací platba přijata GoPay.
+                      </div>
+                      {diag.paymentTestUrl && diag.paymentTestUrl !== diag.domain && (
+                        <div style={{ padding: "10px 12px", background: "#1a1000", border: "1px solid #4d3000", borderRadius: "4px", fontSize: "12px", color: "#f5b150", lineHeight: 1.8 }}>
+                          <strong>⚠ Funguje jiná URL než APP_URL!</strong><br />
+                          GoPay přijal: <span style={{ fontFamily: "monospace", color: "#fff" }}>{diag.paymentTestUrl}</span><br />
+                          Tvůj APP_URL: <span style={{ fontFamily: "monospace", color: "#e55" }}>{diag.domain}</span><br />
+                          <span style={{ color: "#e8c97a" }}>
+                            Oprav v Vercel → Settings → Environment Variables → Production:<br />
+                            <span style={{ fontFamily: "monospace", color: "#fff" }}>APP_URL = {diag.paymentTestUrl}</span>
+                          </span>
+                        </div>
+                      )}
+                      {diag.paymentTestUrl && diag.paymentTestUrl === diag.domain && (
+                        <div style={{ fontSize: "11px", color: "#5c5" }}>
+                          APP_URL je správně nastaven na <span style={{ fontFamily: "monospace" }}>{diag.domain}</span>.
+                        </div>
+                      )}
                     </div>
                   )}
                   {!diag.paymentTestOk && diag.paymentTestDetail && diag.paymentTestDetail.includes("return_url") && (

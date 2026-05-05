@@ -315,24 +315,55 @@ app.get("/api/admin/diag/gopay", requireAdmin, async (_req, res) => {
       return res.json({ ...config, tokenOk: false, tokenError: `GoPay vrátil: ${token}`, paymentTestOk: false, paymentTestDetail: null });
     }
 
-    // Step 2: full payment creation test with 1 CZK
-    const testPaymentData = {
-      payer: { contact: { email: "diag@voodoo808.com" } },
-      target: { type: "ACCOUNT", goid: parseInt(goId, 10) },
-      amount: 100,
-      currency: "CZK",
-      order_number: `DIAG-${Date.now()}`,
-      order_description: "Diagnostický test platby",
-      items: [{ name: "Test", amount: 100, count: 1 }],
-      return_url: `${domain}/platba-status?test=1`,
-      notify_url: `${domain}/api/orders/diag-notify`,
-      lang: "CS",
-    };
-    const testPayment = await (gopay as any).createPayment(testPaymentData);
-    const paymentTestOk = testPayment && typeof testPayment === "object" && !!testPayment.gw_url;
-    const paymentTestDetail = typeof testPayment === "string" ? testPayment : JSON.stringify(testPayment);
+    // Step 2: full payment creation test with 1 CZK — try registered domain first, then APP_URL
+    // GoPay validates return_url against the "URL prodejního místa" registered in their system.
+    // If APP_URL has www. but GoPay registered without www (or vice versa), it will return error 111.
+    const urlVariants: string[] = [];
+    urlVariants.push(domain); // primary (from APP_URL / env)
+    // Also try without www if domain has it, or with www if it doesn't
+    if (domain.includes("://www.")) {
+      urlVariants.push(domain.replace("://www.", "://"));
+    } else {
+      const proto = domain.startsWith("https") ? "https" : "http";
+      const host = domain.replace(/^https?:\/\//, "");
+      urlVariants.push(`${proto}://www.${host}`);
+    }
+    // Also try http variant since GoPay sandbox may have registered http
+    const httpVariant = domain.replace(/^https/, "http").replace("://www.", "://");
+    if (!urlVariants.includes(httpVariant)) urlVariants.push(httpVariant);
 
-    return res.json({ ...config, tokenOk: true, tokenError: null, paymentTestOk, paymentTestDetail });
+    let paymentTestOk = false;
+    let paymentTestDetail = "";
+    let paymentTestUrl = "";
+
+    for (const tryUrl of urlVariants) {
+      const testPaymentData = {
+        payer: { contact: { email: "diag@voodoo808.com" } },
+        target: { type: "ACCOUNT", goid: parseInt(goId, 10) },
+        amount: 100,
+        currency: "CZK",
+        order_number: `DIAG-${Date.now()}`,
+        order_description: "Diagnostický test platby",
+        items: [{ name: "Test", amount: 100, count: 1 }],
+        return_url: `${tryUrl}/platba-status?test=1`,
+        notify_url: `${tryUrl}/api/orders/diag-notify`,
+        lang: "CS",
+      };
+      const testPayment = await (gopay as any).createPayment(testPaymentData);
+      const ok = testPayment && typeof testPayment === "object" && !!testPayment.gw_url;
+      const detail = typeof testPayment === "string" ? testPayment : JSON.stringify(testPayment);
+      if (ok) {
+        paymentTestOk = true;
+        paymentTestDetail = detail;
+        paymentTestUrl = tryUrl;
+        break;
+      }
+      // keep last error detail
+      paymentTestDetail = `[${tryUrl}] → ${detail}`;
+      paymentTestUrl = tryUrl;
+    }
+
+    return res.json({ ...config, tokenOk: true, tokenError: null, paymentTestOk, paymentTestDetail, paymentTestUrl });
   } catch (e: any) {
     return res.json({ ...config, tokenOk: false, tokenError: e?.message || String(e), paymentTestOk: false, paymentTestDetail: null });
   }
