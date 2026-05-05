@@ -61,7 +61,7 @@ R2_BUCKET = "voodoo808-artwork"
 R2_PREVIEW_BUCKET = "voodoo808-artwork"
 R2_ARTWORK_BUCKET = "voodoo808-artwork"
 R2_PUBLIC_BASE_URL = "https://pub-d76fe36aa64e499799449fa12ed516d1.r2.dev"
+GOPAY_SANDBOX = "true"
 
 [userenv.production]
 NODE_ENV = "production"
-GOPAY_SANDBOX = "true"
