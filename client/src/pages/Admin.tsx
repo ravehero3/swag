@@ -5667,6 +5667,138 @@ function ArtworksTab({ settings, onRefresh, beats }: { settings: Record<string, 
   );
 }
 
+interface GopayDiag {
+  clientIdSet: boolean;
+  clientSecretSet: boolean;
+  goIdSet: boolean;
+  isSandbox: boolean;
+  apiUrl: string;
+  domain: string;
+  appUrlVar: string;
+  nodeEnv: string;
+  gopaySandboxEnv: string;
+  tokenOk: boolean;
+  tokenError: string | null;
+}
+
+function GopayDiagPanel() {
+  const [diag, setDiag] = useState<GopayDiag | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [ran, setRan] = useState(false);
+
+  const run = async () => {
+    setLoading(true);
+    setRan(true);
+    try {
+      const r = await fetch("/api/admin/diag/gopay", { credentials: "include" });
+      setDiag(await r.json());
+    } catch {
+      setDiag(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const mono: React.CSSProperties = { fontFamily: "monospace", fontSize: "12px", color: "#aaa" };
+  const row = (label: string, value: React.ReactNode) => (
+    <div style={{ display: "flex", gap: "12px", padding: "8px 0", borderBottom: "1px solid #1a1a1a", alignItems: "flex-start" }}>
+      <span style={{ fontSize: "12px", color: "#555", width: "200px", flexShrink: 0 }}>{label}</span>
+      <span style={mono}>{value}</span>
+    </div>
+  );
+
+  return (
+    <div style={{ marginBottom: "32px" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+        <div style={{ fontSize: "11px", color: "#444", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+          GoPay — živý test připojení
+        </div>
+        <button
+          className="btn btn-admin"
+          onClick={run}
+          disabled={loading}
+          data-testid="button-test-gopay"
+          style={{ fontSize: "12px" }}
+        >
+          {loading ? "Testuji…" : "▶ Spustit test"}
+        </button>
+      </div>
+
+      <div style={{ border: "1px solid #222", borderRadius: "6px", overflow: "hidden" }}>
+        {!ran && (
+          <div style={{ padding: "20px", color: "#444", fontSize: "13px", textAlign: "center" }}>
+            Klikni na „Spustit test" pro ověření GoPay připojení živě ze serveru.
+          </div>
+        )}
+
+        {ran && loading && (
+          <div style={{ padding: "20px", color: "#555", fontSize: "13px", textAlign: "center" }}>Testuji připojení k GoPay…</div>
+        )}
+
+        {ran && !loading && !diag && (
+          <div style={{ padding: "20px", color: "#e55", fontSize: "13px" }}>Chyba při načítání diagnostiky — zkontroluj, zda jsi přihlášen jako admin.</div>
+        )}
+
+        {ran && !loading && diag && (
+          <div style={{ padding: "16px" }}>
+            <div style={{
+              display: "flex", alignItems: "center", gap: "10px", padding: "12px 14px", marginBottom: "16px",
+              borderRadius: "5px",
+              background: diag.tokenOk ? "#0a1f0a" : "#1f0a0a",
+              border: `1px solid ${diag.tokenOk ? "#1a4d1a" : "#4d1a1a"}`,
+            }} data-testid="gopay-diag-result">
+              <span style={{ fontSize: "18px" }}>{diag.tokenOk ? "✅" : "❌"}</span>
+              <div>
+                <div style={{ fontSize: "13px", fontWeight: 600, color: diag.tokenOk ? "#4caf50" : "#e55" }}>
+                  {diag.tokenOk ? "GoPay OAuth token získán — přihlašovací údaje fungují." : "Nepodařilo se získat GoPay token."}
+                </div>
+                {diag.tokenError && (
+                  <div style={{ fontSize: "11px", color: "#e77", marginTop: "4px", fontFamily: "monospace", wordBreak: "break-all" }}>
+                    {diag.tokenError}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div style={{ borderTop: "1px solid #1a1a1a" }}>
+              {row("Režim", <span style={{ color: diag.isSandbox ? "#f5a623" : "#4caf50", fontWeight: 600 }}>{diag.isSandbox ? "SANDBOX (testovací)" : "PRODUCTION (ostrý)"}</span>)}
+              {row("GoPay API URL", diag.apiUrl)}
+              {row("NODE_ENV", diag.nodeEnv)}
+              {row("GOPAY_SANDBOX", diag.gopaySandboxEnv)}
+              {row("Return URL doména", (
+                <span style={{ color: diag.domain.startsWith("http://localhost") ? "#e55" : "#aaa" }}>
+                  {diag.domain}
+                  {diag.domain.startsWith("http://localhost") && " ⚠ GoPay odmítá localhost — nastav APP_URL"}
+                  {!diag.domain.startsWith("http://localhost") && ` (zdroj: ${diag.appUrlVar})`}
+                </span>
+              ))}
+              {row("GOPAY_CLIENT_ID", diag.clientIdSet ? "✓ nastaveno" : <span style={{ color: "#e55" }}>✗ chybí</span>)}
+              {row("GOPAY_CLIENT_SECRET", diag.clientSecretSet ? "✓ nastaveno" : <span style={{ color: "#e55" }}>✗ chybí</span>)}
+              {row("GOPAY_GOID", diag.goIdSet ? "✓ nastaveno" : <span style={{ color: "#e55" }}>✗ chybí</span>)}
+            </div>
+
+            {!diag.tokenOk && (
+              <div style={{ marginTop: "16px", padding: "12px 14px", background: "#111", borderRadius: "5px", fontSize: "12px", color: "#666", lineHeight: "1.9" }}>
+                <div style={{ color: "#888", fontWeight: 600, marginBottom: "6px" }}>Jak opravit na Vercelu:</div>
+                {diag.domain.startsWith("http://localhost") && (
+                  <div>• Nastav <span style={{ color: "#aaa", fontFamily: "monospace" }}>APP_URL = https://www.voodoo808.com</span> v Vercel → Settings → Environment Variables → Production</div>
+                )}
+                {!diag.clientIdSet && <div>• Nastav <span style={{ color: "#aaa", fontFamily: "monospace" }}>GOPAY_CLIENT_ID</span> v Vercel → Production</div>}
+                {!diag.clientSecretSet && <div>• Nastav <span style={{ color: "#aaa", fontFamily: "monospace" }}>GOPAY_CLIENT_SECRET</span> v Vercel → Production</div>}
+                {!diag.goIdSet && <div>• Nastav <span style={{ color: "#aaa", fontFamily: "monospace" }}>GOPAY_GOID</span> v Vercel → Production</div>}
+                {diag.clientIdSet && diag.clientSecretSet && diag.goIdSet && !diag.domain.startsWith("http://localhost") && (
+                  <div>• Přihlašovací údaje jsou nastaveny, ale token selhal. Zkontroluj, že <span style={{ color: "#aaa", fontFamily: "monospace" }}>GOPAY_SANDBOX</span> odpovídá druhu credentials (sandbox vs. ostrý účet) a že GoID, Client ID a Secret jsou ze stejného GoPay účtu.</div>
+                )}
+                <div>• Po každé změně proveď <span style={{ color: "#aaa", fontFamily: "monospace" }}>Redeploy</span> na Vercelu a pak spusť test znovu.</div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function KonfiguraceTab() {
   const [items, setItems] = useState<{ key: string; label: string; group: string; required: boolean; set: boolean }[]>([]);
   const [loading, setLoading] = useState(true);
@@ -5701,6 +5833,8 @@ function KonfiguraceTab() {
       <p style={{ marginBottom: "24px", color: "#555", fontSize: "13px" }}>
         Přehled environment variables potřebných pro správný chod webu — zkontroluj je v nastavení Vercelu / Replitu.
       </p>
+
+      <GopayDiagPanel />
 
       {loading && <p style={{ color: "#555" }}>Načítám…</p>}
       {error && <p style={{ color: "#e55" }}>{error}</p>}

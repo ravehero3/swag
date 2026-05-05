@@ -249,22 +249,22 @@ async function seedAdmin() {
 
 app.get("/api/admin/config-check", requireAdmin, (_req, res) => {
   const checks = [
-    { key: "DATABASE_URL",       label: "PostgreSQL databáze",         group: "Databáze",    required: true },
-    { key: "SESSION_SECRET",     label: "Session secret",              group: "Databáze",    required: true },
-    { key: "GOOGLE_CLIENT_ID",   label: "Google OAuth – Client ID",    group: "Google OAuth", required: false },
-    { key: "GOOGLE_CLIENT_SECRET", label: "Google OAuth – Secret",     group: "Google OAuth", required: false },
-    { key: "B2_ENDPOINT",        label: "B2 Endpoint",                 group: "Backblaze B2", required: true },
-    { key: "B2_KEY_ID",          label: "B2 Key ID",                   group: "Backblaze B2", required: true },
-    { key: "B2_KEY_SECRET",      label: "B2 Key Secret",               group: "Backblaze B2", required: true },
-    { key: "B2_PREVIEW_BUCKET",  label: "B2 Preview Bucket",           group: "Backblaze B2", required: true },
-    { key: "B2_ZIP_BUCKET",      label: "B2 ZIP Bucket",               group: "Backblaze B2", required: true },
-    { key: "B2_PUBLIC_BASE_URL", label: "B2 Public Base URL",          group: "Backblaze B2", required: true },
-    { key: "RESEND_API_KEY",     label: "Resend API Key",              group: "Email",        required: true },
-    { key: "RESEND_FROM",        label: "Resend odesílatel",           group: "Email",        required: true },
-    { key: "GOPAY_GOID",          label: "GoPay GoID",                  group: "Platby",       required: true },
-    { key: "GOPAY_CLIENT_ID",    label: "GoPay Client ID",             group: "Platby",       required: true },
-    { key: "GOPAY_CLIENT_SECRET",label: "GoPay Client Secret",         group: "Platby",       required: true },
-    { key: "APP_URL",            label: "APP_URL (produkční doména)",  group: "Nasazení",     required: false },
+    { key: "DATABASE_URL",        label: "PostgreSQL databáze",          group: "Databáze",     required: true },
+    { key: "SESSION_SECRET",      label: "Session secret",               group: "Databáze",     required: true },
+    { key: "GOOGLE_CLIENT_ID",    label: "Google OAuth – Client ID",     group: "Google OAuth", required: false },
+    { key: "GOOGLE_CLIENT_SECRET",label: "Google OAuth – Secret",        group: "Google OAuth", required: false },
+    { key: "R2_ACCOUNT_ID",       label: "R2 Account ID",                group: "Cloudflare R2",required: true },
+    { key: "R2_ACCESS_KEY_ID",    label: "R2 Access Key ID",             group: "Cloudflare R2",required: true },
+    { key: "R2_SECRET_ACCESS_KEY",label: "R2 Secret Access Key",         group: "Cloudflare R2",required: true },
+    { key: "R2_BUCKET",           label: "R2 Bucket (artwork)",          group: "Cloudflare R2",required: true },
+    { key: "R2_PUBLIC_BASE_URL",  label: "R2 Public Base URL",           group: "Cloudflare R2",required: true },
+    { key: "RESEND_API_KEY",      label: "Resend API Key",               group: "Email",        required: true },
+    { key: "RESEND_FROM",         label: "Resend odesílatel",            group: "Email",        required: true },
+    { key: "GOPAY_GOID",          label: "GoPay GoID",                   group: "Platby",       required: true },
+    { key: "GOPAY_CLIENT_ID",     label: "GoPay Client ID",              group: "Platby",       required: true },
+    { key: "GOPAY_CLIENT_SECRET", label: "GoPay Client Secret",          group: "Platby",       required: true },
+    { key: "GOPAY_SANDBOX",       label: "GoPay Sandbox mode (true/false)", group: "Platby",    required: false },
+    { key: "APP_URL",             label: "APP_URL (produkční doména, nutné pro GoPay)", group: "Nasazení", required: true },
   ];
 
   const result = checks.map(({ key, label, group, required }) => ({
@@ -276,6 +276,43 @@ app.get("/api/admin/config-check", requireAdmin, (_req, res) => {
   }));
 
   res.json(result);
+});
+
+app.get("/api/admin/diag/gopay", requireAdmin, async (_req, res) => {
+  const clientId = process.env.GOPAY_CLIENT_ID;
+  const clientSecret = process.env.GOPAY_CLIENT_SECRET;
+  const goId = process.env.GOPAY_GOID;
+  const isSandbox = process.env.GOPAY_SANDBOX === "true" || process.env.NODE_ENV !== "production";
+  const domain = process.env.APP_URL ||
+    (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(",")[0].trim()}` : null) ||
+    (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : null) ||
+    "http://localhost:5000";
+
+  const config = {
+    clientIdSet: !!clientId,
+    clientSecretSet: !!clientSecret,
+    goIdSet: !!goId,
+    isSandbox,
+    apiUrl: isSandbox ? "https://gw.sandbox.gopay.com/api" : "https://gate.gopay.cz/api",
+    domain,
+    appUrlVar: process.env.APP_URL ? "APP_URL" : (process.env.REPLIT_DOMAINS ? "REPLIT_DOMAINS" : (process.env.REPLIT_DEV_DOMAIN ? "REPLIT_DEV_DOMAIN" : "fallback")),
+    nodeEnv: process.env.NODE_ENV || "(not set)",
+    gopaySandboxEnv: process.env.GOPAY_SANDBOX || "(not set)",
+  };
+
+  if (!clientId || !clientSecret || !goId) {
+    return res.json({ ...config, tokenOk: false, tokenError: "Chybí přihlašovací údaje GoPay (GOPAY_CLIENT_ID, GOPAY_CLIENT_SECRET nebo GOPAY_GOID)." });
+  }
+
+  try {
+    const { GoPay } = await import("gopay-nodejs");
+    const gopay = new GoPay(clientId, clientSecret, isSandbox);
+    const token = await (gopay as any).getToken();
+    const tokenOk = typeof token === "string" && token.length > 0 && !token.startsWith("StatusCode:");
+    return res.json({ ...config, tokenOk, tokenError: tokenOk ? null : `GoPay vrátil: ${token}` });
+  } catch (e: any) {
+    return res.json({ ...config, tokenOk: false, tokenError: e?.message || String(e) });
+  }
 });
 
 app.get("/api/admin/comments", requireAdmin, async (_req, res) => {
