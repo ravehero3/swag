@@ -19,6 +19,7 @@
   "routes": [
     { "src": "/api/(.*)", "dest": "/server/src/index.ts" },
     { "src": "/uploads/(.*)", "dest": "/server/src/index.ts" },
+    { "src": "/payment/(.*)", "dest": "/server/src/index.ts" },
     { "handle": "filesystem" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
