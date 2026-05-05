@@ -279,6 +279,7 @@ export async function initDatabase() {
       ALTER TABLE orders ADD COLUMN IF NOT EXISTS reminder_sent_at TIMESTAMP;
       ALTER TABLE orders ADD COLUMN IF NOT EXISTS promo_code TEXT;
       ALTER TABLE orders ADD COLUMN IF NOT EXISTS discount_percent INTEGER DEFAULT 0;
+      ALTER TABLE orders ADD COLUMN IF NOT EXISTS gopay_payment_id BIGINT;
       ALTER TABLE license_types ADD COLUMN IF NOT EXISTS contract_template TEXT;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(500);
       ALTER TABLE users ADD COLUMN IF NOT EXISTS username VARCHAR(50);

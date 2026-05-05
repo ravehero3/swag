@@ -255,6 +255,13 @@ router.post("/:id/pay", async (req: Request, res: Response) => {
     console.log("[GoPay] createPayment response:", JSON.stringify(payment));
 
     if (payment && typeof payment === "object" && payment.gw_url) {
+      // Persist the GoPay payment ID so we can query status directly later
+      if (payment.id) {
+        await pool.query(
+          "UPDATE orders SET gopay_payment_id = $1 WHERE id = $2",
+          [payment.id, order.id]
+        );
+      }
       return res.json({ gw_url: payment.gw_url, payment_id: payment.id });
     }
 
@@ -367,6 +374,86 @@ router.get("/:id/status", async (req: Request, res: Response) => {
     res.json(result.rows[0]);
   } catch (error) {
     res.status(500).json({ error: "Chyba při načítání stavu objednávky" });
+  }
+});
+
+// Actively query GoPay for the current payment status and sync it to the DB.
+// Called by the PaymentStatus page when the customer returns from the gateway.
+router.post("/:id/check-payment", async (req: Request, res: Response) => {
+  try {
+    const orderId = parseInt(req.params.id, 10);
+    if (isNaN(orderId)) return res.status(400).json({ error: "Invalid order ID" });
+
+    const result = await pool.query(
+      "SELECT id, status, gopay_payment_id FROM orders WHERE id = $1",
+      [orderId]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ error: "Objednávka nenalezena" });
+
+    const order = result.rows[0];
+
+    // Already finalised — return current status immediately
+    if (order.status === "completed" || order.status === "paid" || order.status === "cancelled") {
+      return res.json({ status: order.status, source: "db" });
+    }
+
+    // No GoPay payment ID stored yet — nothing to query
+    if (!order.gopay_payment_id) {
+      return res.json({ status: order.status, source: "db", note: "no_gopay_id" });
+    }
+
+    const clientId = process.env.GOPAY_CLIENT_ID;
+    const clientSecret = process.env.GOPAY_CLIENT_SECRET;
+
+    if (!clientId || !clientSecret) {
+      return res.json({ status: order.status, source: "db", note: "gopay_not_configured" });
+    }
+
+    const { GoPay } = await import("gopay-nodejs");
+    const isSandbox = process.env.GOPAY_SANDBOX === "true" || process.env.NODE_ENV !== "production";
+    const gopay = new GoPay(clientId, clientSecret, isSandbox);
+
+    const gopayStatus = await gopay.getStatus(order.gopay_payment_id);
+    console.log(`[GoPay] check-payment order=${orderId} payment=${order.gopay_payment_id} state=${gopayStatus?.state}`);
+
+    if (!gopayStatus || typeof gopayStatus !== "object") {
+      return res.json({ status: order.status, source: "db", note: "gopay_query_failed" });
+    }
+
+    // Map GoPay states to our order status
+    const gopayState: string = gopayStatus.state || "";
+    let newStatus: string | null = null;
+
+    if (gopayState === "PAID") {
+      newStatus = "completed";
+    } else if (gopayState === "PAYMENT_METHOD_CHOSEN" || gopayState === "AUTHORIZED") {
+      newStatus = "pending"; // still processing, no change needed
+    } else if (gopayState === "CANCELED" || gopayState === "TIMEOUTED" || gopayState === "REFUNDED") {
+      newStatus = "cancelled";
+    }
+
+    if (newStatus && newStatus !== order.status && newStatus !== "pending") {
+      await pool.query("UPDATE orders SET status = $1 WHERE id = $2", [newStatus, orderId]);
+      console.log(`[GoPay] check-payment updated order=${orderId} to status=${newStatus}`);
+
+      if (newStatus === "completed") {
+        try {
+          const { sendContractEmail } = await import("../email.js");
+          await sendContractEmail(orderId);
+        } catch (err) {
+          console.error("[GoPay] check-payment email error:", err);
+        }
+      }
+    }
+
+    return res.json({
+      status: newStatus ?? order.status,
+      gopayState,
+      source: "gopay",
+    });
+  } catch (error) {
+    console.error("check-payment error:", error);
+    res.status(500).json({ error: "Chyba při ověřování platby" });
   }
 });
 

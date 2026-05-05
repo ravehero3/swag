@@ -44,57 +44,130 @@ export default function PaymentStatus() {
   const [, navigate] = useLocation();
   const [status, setStatus] = useState<Status>("loading");
   const [order, setOrder] = useState<any>(null);
-  const [pollCount, setPollCount] = useState(0);
+  const [gopayChecked, setGopayChecked] = useState(false);
+  const pollCountRef = useRef(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const resolvedRef = useRef(false);
 
   const params = new URLSearchParams(window.location.search);
   const orderId = params.get("orderId");
 
+  const resolve = (s: Status, orderData?: any) => {
+    if (resolvedRef.current && s === "paid") {
+      resolvedRef.current = true;
+    } else if (!resolvedRef.current || s === "paid" || s === "cancelled" || s === "failed") {
+      resolvedRef.current = s === "paid" || s === "cancelled" || s === "failed";
+    }
+    setStatus(s);
+    if (orderData) setOrder(orderData);
+    if (s === "paid" || s === "cancelled" || s === "failed") {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    }
+  };
+
+  // Step 1: on load, immediately ask the server to query GoPay directly.
+  // This resolves the payment right away without waiting for a webhook.
   useEffect(() => {
     if (!orderId) {
-      setStatus("failed");
+      resolve("failed");
       return;
     }
 
-    const check = async () => {
+    const checkGoPay = async () => {
+      try {
+        const res = await fetch(`/api/orders/${orderId}/check-payment`, {
+          method: "POST",
+          credentials: "include",
+        });
+        if (!res.ok) throw new Error("check failed");
+        const data = await res.json();
+        setGopayChecked(true);
+
+        const s = data.status;
+        if (s === "completed" || s === "paid") {
+          resolve("paid");
+        } else if (s === "cancelled") {
+          resolve("cancelled");
+        } else {
+          resolve("pending");
+        }
+      } catch {
+        setGopayChecked(true);
+        resolve("pending");
+      }
+    };
+
+    checkGoPay();
+  }, [orderId]);
+
+  // Step 2: after the direct GoPay check, poll the DB order status every 3s
+  // as a fallback (covers webhook-based updates and edge cases).
+  useEffect(() => {
+    if (!orderId || !gopayChecked) return;
+
+    const checkDb = async () => {
       try {
         const res = await fetch(`/api/orders/${orderId}/status`, { credentials: "include" });
         if (!res.ok) throw new Error("not found");
         const data = await res.json();
-        setOrder(data);
 
         if (data.status === "completed" || data.status === "paid") {
-          setStatus("paid");
-          if (intervalRef.current) clearInterval(intervalRef.current);
+          resolve("paid", data);
         } else if (data.status === "cancelled") {
-          setStatus("cancelled");
-          if (intervalRef.current) clearInterval(intervalRef.current);
+          resolve("cancelled", data);
         } else {
-          setStatus("pending");
-          setPollCount(c => c + 1);
+          setOrder(data);
         }
       } catch {
-        setStatus("failed");
-        if (intervalRef.current) clearInterval(intervalRef.current);
+        // silently ignore DB poll failures — GoPay check already ran
       }
     };
 
-    check();
+    // Also re-query GoPay directly every 10s until resolved
+    const checkGoPayAgain = async () => {
+      try {
+        const res = await fetch(`/api/orders/${orderId}/check-payment`, {
+          method: "POST",
+          credentials: "include",
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        const s = data.status;
+        if (s === "completed" || s === "paid") resolve("paid");
+        else if (s === "cancelled") resolve("cancelled");
+      } catch {
+        // ignore
+      }
+    };
+
+    checkDb();
+
+    let tick = 0;
     intervalRef.current = setInterval(() => {
-      setPollCount(c => {
-        if (c >= 15) {
-          if (intervalRef.current) clearInterval(intervalRef.current);
-          return c;
-        }
-        check();
-        return c;
-      });
+      tick++;
+      pollCountRef.current = tick;
+
+      if (tick > 30) {
+        // Stop after ~90 seconds total
+        if (intervalRef.current) clearInterval(intervalRef.current);
+        return;
+      }
+
+      checkDb();
+
+      // Re-query GoPay directly every 5 ticks (~15s)
+      if (tick % 5 === 0) {
+        checkGoPayAgain();
+      }
     }, 3000);
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [orderId]);
+  }, [orderId, gopayChecked]);
 
   const containerStyle: React.CSSProperties = {
     minHeight: "calc(100vh - 42px)",
@@ -124,7 +197,7 @@ export default function PaymentStatus() {
           <div style={{ marginBottom: "24px" }}><Spinner /></div>
           <h2 style={{ fontSize: "22px", marginBottom: "10px", fontWeight: 600 }}>Ověřujeme platbu…</h2>
           <p style={{ color: "#555", fontSize: "14px", lineHeight: 1.6 }}>
-            Prosím vyčkejte, načítáme stav vaší objednávky.
+            Prosím vyčkejte, ověřujeme stav platby přímo u GoPay.
           </p>
         </div>
       </div>
