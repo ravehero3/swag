@@ -23,7 +23,7 @@ const router = Router();
 router.get("/", async (req: Request, res: Response) => {
   try {
     const { search, tag } = req.query;
-    let query = "SELECT id, title, artist, bpm, key, price, preview_url, artwork_url, trackout_url, tags, is_highlighted, waveform_data, play_count, created_at FROM beats WHERE is_published = true";
+    let query = "SELECT id, title, artist, bpm, key, price, preview_url, artwork_url, trackout_url, tags, is_highlighted, waveform_data, play_count, exclusive_sold, created_at FROM beats WHERE is_published = true";
     const params: any[] = [];
     
     if (tag) {

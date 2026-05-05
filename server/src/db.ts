@@ -265,6 +265,7 @@ export async function initDatabase() {
       ALTER TABLE beats ADD COLUMN IF NOT EXISTS is_highlighted BOOLEAN DEFAULT FALSE;
       ALTER TABLE beats ADD COLUMN IF NOT EXISTS waveform_data JSONB;
       ALTER TABLE beats ADD COLUMN IF NOT EXISTS play_count INTEGER DEFAULT 0;
+      ALTER TABLE beats ADD COLUMN IF NOT EXISTS exclusive_sold BOOLEAN DEFAULT FALSE;
       ALTER TABLE sound_kits ADD COLUMN IF NOT EXISTS legal_info TEXT;
       ALTER TABLE sound_kits ADD COLUMN IF NOT EXISTS author_info TEXT;
       ALTER TABLE sound_kits ADD COLUMN IF NOT EXISTS is_free BOOLEAN DEFAULT FALSE;
@@ -277,6 +278,7 @@ export async function initDatabase() {
       ALTER TABLE orders ADD COLUMN IF NOT EXISTS buyer_address TEXT;
       ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method VARCHAR(50) DEFAULT 'gopay';
       ALTER TABLE orders ADD COLUMN IF NOT EXISTS reminder_sent_at TIMESTAMP;
+      ALTER TABLE orders ADD COLUMN IF NOT EXISTS abandoned_email_sent BOOLEAN DEFAULT FALSE;
       ALTER TABLE orders ADD COLUMN IF NOT EXISTS promo_code TEXT;
       ALTER TABLE orders ADD COLUMN IF NOT EXISTS discount_percent INTEGER DEFAULT 0;
       ALTER TABLE orders ADD COLUMN IF NOT EXISTS gopay_payment_id BIGINT;

@@ -38,6 +38,25 @@ async function createGoPayPayment(
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
+async function markExclusiveSoldForOrder(orderId: number): Promise<void> {
+  try {
+    const orderRes = await pool.query("SELECT items FROM orders WHERE id = $1", [orderId]);
+    if (!orderRes.rows[0]) return;
+    const items: any[] = Array.isArray(orderRes.rows[0].items) ? orderRes.rows[0].items : [];
+    for (const item of items) {
+      if (item.productType !== "beat" || !item.licenseTypeId || !item.productId) continue;
+      const ltRes = await pool.query("SELECT name FROM license_types WHERE id = $1", [item.licenseTypeId]);
+      if (!ltRes.rows[0]) continue;
+      if ((ltRes.rows[0].name as string).toLowerCase().includes("exclusive")) {
+        await pool.query("UPDATE beats SET exclusive_sold = true WHERE id = $1", [item.productId]);
+        console.log(`[Exclusive] Beat ${item.productId} marked exclusive_sold (order ${orderId})`);
+      }
+    }
+  } catch (e) {
+    console.error(`[Exclusive] markExclusiveSoldForOrder failed for order ${orderId}:`, e);
+  }
+}
+
 const router = Router();
 
 router.get("/", requireAdmin, async (_req: Request, res: Response) => {
@@ -169,6 +188,21 @@ router.post("/", async (req: Request, res: Response) => {
     }
 
     const finalTotal = Math.round(rawTotal * (1 - discountPercent / 100) * 100) / 100;
+
+    // Block order if any beat's exclusive license has already been sold
+    for (const item of rawItems) {
+      if (item.productType !== "beat" || !item.licenseTypeId || !item.productId) continue;
+      const ltRes = await pool.query("SELECT name FROM license_types WHERE id = $1", [item.licenseTypeId]);
+      if (!ltRes.rows[0]) continue;
+      if ((ltRes.rows[0].name as string).toLowerCase().includes("exclusive")) {
+        const beatRes = await pool.query("SELECT title, exclusive_sold FROM beats WHERE id = $1", [item.productId]);
+        if (beatRes.rows[0]?.exclusive_sold) {
+          return res.status(409).json({
+            error: `Exkluzivní licence pro beat "${beatRes.rows[0].title || item.title || ''}" již byla prodána.`,
+          });
+        }
+      }
+    }
 
     const result = await pool.query(
       `INSERT INTO orders (user_id, email, items, total, status, buyer_legal_name, buyer_artist_name, buyer_address, payment_method, promo_code, discount_percent)
@@ -505,6 +539,7 @@ router.post("/:id/check-payment", async (req: Request, res: Response) => {
         } catch (err) {
           console.error("[GoPay] check-payment email error:", err);
         }
+        markExclusiveSoldForOrder(orderId).catch(() => {});
       }
     }
 
@@ -543,6 +578,7 @@ router.post("/:id/notify", async (req: Request, res: Response) => {
         } catch (err) {
           console.error("[Email] Contract email error:", err);
         }
+        markExclusiveSoldForOrder(orderId).catch(() => {});
       }
     }
 
@@ -596,6 +632,7 @@ router.put("/:id/status", requireAdmin, async (req: Request, res: Response) => {
       } catch (err) {
         console.error("[Email] Contract email on admin approval error:", err);
       }
+      markExclusiveSoldForOrder(updatedOrder.id).catch(() => {});
     }
     res.json(updatedOrder);
   } catch (error) {

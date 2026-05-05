@@ -7,7 +7,7 @@ import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import { requireAuth, requireAdmin } from "../middleware/auth.js";
 import { uploadFile, getPublicUrl, STORAGE_BUCKETS } from "../lib/storage.js";
-import { sendPasswordResetEmail } from "../email.js";
+import { sendPasswordResetEmail, sendWelcomeEmail } from "../email.js";
 
 function getAvatarPublicUrl(key: string): string {
   return getPublicUrl(STORAGE_BUCKETS.PREVIEWS, key);
@@ -68,7 +68,9 @@ router.post("/register", async (req: Request, res: Response) => {
     
     req.session.userId = result.rows[0].id;
     req.session.isAdmin = result.rows[0].is_admin;
-    
+
+    sendWelcomeEmail(email).catch(() => {});
+
     res.json({ user: { id: result.rows[0].id, email: result.rows[0].email, isAdmin: result.rows[0].is_admin } });
   } catch (error) {
     console.error("Registration error:", error);

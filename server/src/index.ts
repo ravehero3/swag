@@ -18,7 +18,8 @@ import { requireAuth, requireAdmin } from "./middleware/auth.js";
 import bcrypt from "bcryptjs";
 import { configureBucketCors, STORAGE_BUCKETS } from "./lib/storage.js";
 import { computeWaveformFromUrl } from "./lib/waveform.js";
-import { sendBankTransferReminderEmail } from "./email.js";
+import { sendBankTransferReminderEmail, sendWelcomeEmail, sendAbandonedCheckoutEmail } from "./email.js";
+import fs from "fs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -55,6 +56,7 @@ passport.use(
             [email, "google-auth-no-password", false]
           );
           user = insertRes.rows[0];
+          sendWelcomeEmail(email).catch(() => {});
         }
 
         return done(null, user);
@@ -706,6 +708,76 @@ app.get("/api/image-proxy", async (req: any, res: any) => {
   }
 });
 
+// ── Server-side OG meta tags for product pages ────────────────────────────────
+// Social scrapers (WhatsApp, Telegram, iMessage) don't execute JS, so we inject
+// OG tags server-side for /produkt/:type/:id before returning the SPA shell.
+app.get("/produkt/:type/:id", async (req: any, res: any) => {
+  const { type, id } = req.params;
+  const numericId = parseInt(id, 10);
+  try {
+    let title = "VOODOO808";
+    let description = "Prémiové beaty a zvukové sady pro hudební producenty.";
+    let image = "";
+    const appUrl = process.env.APP_URL || "https://voodoo808.com";
+    const pageUrl = `${appUrl}/produkt/${type}/${id}`;
+
+    if (!isNaN(numericId)) {
+      try {
+        if (type === "beat") {
+          const r = await pool.query("SELECT title, artist, bpm, key, artwork_url FROM beats WHERE id = $1 AND is_published = true", [numericId]);
+          if (r.rows[0]) {
+            const b = r.rows[0];
+            title = `${b.title} – VOODOO808`;
+            description = [b.artist && b.artist !== "VOODOO808" ? b.artist : null, b.bpm ? `${b.bpm} BPM` : null, b.key || null].filter(Boolean).join(" · ") || description;
+            image = b.artwork_url || "";
+          }
+        } else {
+          const r = await pool.query("SELECT title, type, artwork_url FROM sound_kits WHERE id = $1 AND is_published = true", [numericId]);
+          if (r.rows[0]) {
+            const k = r.rows[0];
+            title = `${k.title} – VOODOO808`;
+            description = `Prémiový ${k.type?.replace(/_/g, " ") || "sound kit"} ke stažení.`;
+            image = k.artwork_url || "";
+          }
+        }
+      } catch (_dbErr) { /* fall through to defaults */ }
+    }
+
+    const ogTags = `
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="VOODOO808" />
+    <meta property="og:title" content="${title.replace(/"/g, "&quot;")}" />
+    <meta property="og:description" content="${description.replace(/"/g, "&quot;")}" />
+    <meta property="og:url" content="${pageUrl}" />
+    ${image ? `<meta property="og:image" content="${image}" /><meta property="og:image:width" content="1200" /><meta property="og:image:height" content="1200" />` : ""}
+    <meta name="twitter:card" content="${image ? "summary_large_image" : "summary"}" />
+    <meta name="twitter:title" content="${title.replace(/"/g, "&quot;")}" />
+    <meta name="twitter:description" content="${description.replace(/"/g, "&quot;")}" />
+    ${image ? `<meta name="twitter:image" content="${image}" />` : ""}`;
+
+    const isProduction = process.env.NODE_ENV === "production";
+    const htmlPath = isProduction
+      ? path.join(process.cwd(), "dist/public/index.html")
+      : path.join(process.cwd(), "client/index.html");
+
+    let html: string;
+    if (fs.existsSync(htmlPath)) {
+      html = fs.readFileSync(htmlPath, "utf-8");
+      html = html.replace("</head>", `${ogTags}\n  </head>`);
+    } else {
+      // Fallback minimal HTML that loads Vite dev server assets
+      html = `<!DOCTYPE html><html lang="cs"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>${ogTags}<title>${title}</title></head><body><div id="root"></div><script type="module" src="/src/main.tsx"></script></body></html>`;
+    }
+
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.send(html);
+  } catch (err) {
+    console.error("[OG] Product page handler error:", err);
+    res.status(500).send("Server error");
+  }
+});
+// ─────────────────────────────────────────────────────────────────────────────
+
 // JSON error handler — ensures API routes always return JSON, never HTML
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error("Express error on", req.method, req.path, ":", err.message);
@@ -768,6 +840,30 @@ async function computeMissingWaveforms() {
   }
 }
 
+async function sendAbandonedCheckoutReminders() {
+  try {
+    const result = await pool.query(
+      `SELECT id FROM orders
+       WHERE status = 'pending'
+         AND payment_method = 'gopay'
+         AND (abandoned_email_sent IS NULL OR abandoned_email_sent = false)
+         AND created_at < NOW() - INTERVAL '2 hours'`
+    );
+    for (const row of result.rows) {
+      try {
+        await sendAbandonedCheckoutEmail(row.id);
+      } catch (e) {
+        console.error(`[Abandoned] Failed for order ${row.id}:`, e);
+      }
+    }
+    if (result.rows.length > 0) {
+      console.log(`[Abandoned] Sent abandoned checkout emails for ${result.rows.length} order(s).`);
+    }
+  } catch (e) {
+    console.error("[Abandoned] Background job error:", e);
+  }
+}
+
 async function startServer() {
   await initDatabase();
   await seedAdmin();
@@ -776,6 +872,9 @@ async function startServer() {
 
   sendOverdueBankTransferReminders().catch(() => {});
   setInterval(() => sendOverdueBankTransferReminders().catch(() => {}), 24 * 60 * 60 * 1000);
+
+  sendAbandonedCheckoutReminders().catch(() => {});
+  setInterval(() => sendAbandonedCheckoutReminders().catch(() => {}), 60 * 60 * 1000);
 
   if (process.env.NODE_ENV !== "production") {
     const { createServer: createViteServer } = await import("vite");
