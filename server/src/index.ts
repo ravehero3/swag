@@ -130,6 +130,79 @@ app.use("/api/licenses", licensesRoutes);
 app.use("/api/admin", adminLicensesRoutes);
 app.use("/api/beats", commentsRoutes);
 
+// ── GoPay return redirect ─────────────────────────────────────────────────────
+// GoPay redirects the customer to return_url?id=<payment_id> after payment.
+// We look up the order by gopay_payment_id and redirect to the status page.
+app.get("/payment/return", async (req: any, res: any) => {
+  const paymentId = req.query.id as string;
+  if (!paymentId) {
+    return res.redirect("/platba-status?error=missing_id");
+  }
+  try {
+    const result = await pool.query(
+      "SELECT id FROM orders WHERE gopay_payment_id = $1",
+      [paymentId]
+    );
+    if (result.rows.length === 0) {
+      console.warn(`[GoPay] /payment/return: no order found for payment_id=${paymentId}`);
+      return res.redirect("/platba-status?error=not_found");
+    }
+    const orderId = result.rows[0].id;
+    return res.redirect(`/platba-status?orderId=${orderId}`);
+  } catch (e) {
+    console.error("[GoPay] /payment/return error:", e);
+    return res.redirect("/platba-status?error=server_error");
+  }
+});
+
+// ── GoPay IPN notification ────────────────────────────────────────────────────
+// GoPay POSTs to notify_url with id=<payment_id> in the body when payment
+// state changes. We look up the order by gopay_payment_id and update status.
+app.post("/payment/notify", async (req: any, res: any) => {
+  res.status(200).send("OK");
+
+  const paymentId = req.body?.id;
+  if (!paymentId) return;
+
+  try {
+    const clientId = process.env.GOPAY_CLIENT_ID;
+    const clientSecret = process.env.GOPAY_CLIENT_SECRET;
+    if (!clientId || !clientSecret) return;
+
+    const orderResult = await pool.query(
+      "SELECT id, status FROM orders WHERE gopay_payment_id = $1",
+      [paymentId]
+    );
+    if (orderResult.rows.length === 0) {
+      console.warn(`[GoPay] /payment/notify: no order found for payment_id=${paymentId}`);
+      return;
+    }
+
+    const order = orderResult.rows[0];
+    if (order.status === "completed" || order.status === "paid") return;
+
+    const { GoPay } = await import("gopay-nodejs");
+    const isSandbox = process.env.GOPAY_SANDBOX === "true" || process.env.NODE_ENV !== "production";
+    const gopay = new GoPay(clientId, clientSecret, isSandbox);
+    const status = await gopay.getStatus(paymentId);
+    console.log(`[GoPay] /payment/notify order=${order.id} payment=${paymentId} state=${status?.state}`);
+
+    if (status?.state === "PAID") {
+      await pool.query("UPDATE orders SET status = 'completed' WHERE id = $1", [order.id]);
+      try {
+        const { sendContractEmail } = await import("./email.js");
+        await sendContractEmail(order.id);
+      } catch (err) {
+        console.error("[GoPay] /payment/notify contract email error:", err);
+      }
+    } else if (status?.state === "CANCELED" || status?.state === "TIMEOUTED") {
+      await pool.query("UPDATE orders SET status = 'cancelled' WHERE id = $1", [order.id]);
+    }
+  } catch (e) {
+    console.error("[GoPay] /payment/notify processing error:", e);
+  }
+});
+
 // Verify a Google Drive folder/file URL is publicly accessible.
 // Drive blocks HEAD on the canonical URL but the file-id endpoints follow a
 // predictable pattern: an "anyone with the link" item returns 200/30x; a
@@ -265,7 +338,6 @@ app.get("/api/admin/config-check", requireAdmin, (_req, res) => {
     { key: "GOPAY_CLIENT_SECRET", label: "GoPay Client Secret",          group: "Platby",       required: true },
     { key: "GOPAY_SANDBOX",       label: "GoPay Sandbox mode (true/false)", group: "Platby",    required: false },
     { key: "APP_URL",             label: "APP_URL (produkční doména)",                  group: "Nasazení", required: true },
-    { key: "GOPAY_RETURN_DOMAIN", label: "GOPAY_RETURN_DOMAIN (přepíše doménu pro GoPay return_url — nastavit pokud GoPay dává chybu 111)", group: "Platby", required: false },
   ];
 
   const result = checks.map(({ key, label, group, required }) => ({
@@ -674,7 +746,7 @@ async function sendOverdueBankTransferReminders() {
        WHERE status = 'awaiting_payment'
          AND payment_method = 'bank_transfer'
          AND reminder_sent_at IS NULL
-         AND created_at < NOW() - INTERVAL '3 days'`
+         AND created_at < NOW() - INTERVAL '48 hours'`
     );
     for (const row of result.rows) {
       try {
