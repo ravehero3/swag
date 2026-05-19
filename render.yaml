@@ -2,7 +2,7 @@ services:
   - type: web
     name: voodoo808-swag
     env: node
-    plan: starter
+    plan: free
     buildCommand: "npm install && npm run build"
     startCommand: "npm run start"
     envVars:
