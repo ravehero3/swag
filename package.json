@@ -9,7 +9,7 @@
     "dev": "node_modules/.bin/tsx server/src/index.ts",
     "build": "vite build && node build-server.mjs",
     "seed-admin": "npx tsx server/src/seed-admin.ts",
-    "start": "node dist/server/index.js",
+    "start": "node dist/index.cjs",
     "vercel-build": "vite build && tsc --project server/tsconfig.json --skipLibCheck",
     "db:push": "drizzle-kit push"
   },
