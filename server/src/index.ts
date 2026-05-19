@@ -24,6 +24,12 @@ import fs from "fs";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const isProduction = process.env.NODE_ENV === "production";
+const rootDir = isProduction
+  ? path.join(__dirname, "..")
+  : path.join(__dirname, "../..");
+
+
 const app = express();
 const PORT = process.env.PORT ? parseInt(process.env.PORT) : 5000;
 
@@ -118,8 +124,8 @@ app.use(passport.session());
 app.use("/uploads", (_req: any, res: any, next: any) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   next();
-}, express.static(path.join(__dirname, "../../public/uploads")));
-app.use(express.static(path.join(__dirname, "../../public")));
+}, express.static(path.join(rootDir, "public/uploads")));
+app.use(express.static(path.join(rootDir, "public")));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/leads", leadsRoutes);
@@ -886,7 +892,7 @@ async function startServer() {
     });
     app.use(vite.middlewares);
   } else {
-    const publicPath = path.join(process.cwd(), "dist/public");
+    const publicPath = path.join(rootDir, "dist/public");
     app.use(express.static(publicPath));
 
     app.get("*", (req, res, next) => {
