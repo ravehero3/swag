@@ -1,0 +1,50 @@
+services:
+  - type: web
+    name: voodoo808-swag
+    env: node
+    plan: starter
+    buildCommand: "npm install && npm run build"
+    startCommand: "npm run start"
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: APP_URL
+        sync: false
+      - key: NODE_ENV
+        value: production
+      - key: RESEND_API_KEY
+        sync: false
+      - key: B2_ENDPOINT
+        sync: false
+      - key: B2_KEY_ID
+        sync: false
+      - key: B2_KEY_SECRET
+        sync: false
+      - key: B2_PREVIEW_BUCKET
+        sync: false
+      - key: B2_ZIP_BUCKET
+        sync: false
+      - key: B2_PUBLIC_BASE_URL
+        sync: false
+      - key: R2_ACCOUNT_ID
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_BUCKET
+        sync: false
+      - key: R2_PUBLIC_BASE_URL
+        sync: false
+      - key: GOPAY_CLIENT_ID
+        sync: false
+      - key: GOPAY_CLIENT_SECRET
+        sync: false
+      - key: GOPAY_GOID
+        sync: false
