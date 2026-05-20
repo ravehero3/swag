@@ -199,7 +199,13 @@ function App() {
       }
     };
 
-    init();
+    init().then(() => {
+      // Trigger background preloading of other pages and assets after startup
+      setTimeout(() => {
+        import("./pages/Zvuky.js").catch(() => {});
+        import("./pages/ProductDetail.js").catch(() => {});
+      }, 1000);
+    });
   }, []);
 
   useEffect(() => {

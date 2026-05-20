@@ -44,6 +44,11 @@ function prefetchKits(): Promise<SoundKit[]> {
         // For kits without precomputed data, schedule background extraction
         // and persist the result via the kit-aware POST endpoint.
         _kitsCache.forEach((kit, i) => {
+          // Preload artwork image into browser cache
+          if (kit.artwork_url) {
+            const img = new Image();
+            img.src = kit.artwork_url;
+          }
           const url = (Array.isArray(kit.preview_urls) && kit.preview_urls[0]) || kit.preview_url;
           if (!url) return;
           if (kit.waveform_data && Array.isArray(kit.waveform_data)) {

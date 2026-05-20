@@ -190,8 +190,23 @@ function Home() {
       fetch(url).then((res) => res.json()).catch(() => []),
       fetch("/api/beats/highlighted").then((res) => res.json()).catch(() => null),
     ]).then(([beatsData, highlightedData]) => {
-      if (Array.isArray(beatsData)) setBeats(beatsData);
-      if (highlightedData && !highlightedData.error) setHighlightedBeat(highlightedData);
+      if (Array.isArray(beatsData)) {
+        setBeats(beatsData);
+        // Preload beat artwork images
+        beatsData.forEach((beat) => {
+          if (beat.artwork_url) {
+            const img = new Image();
+            img.src = beat.artwork_url;
+          }
+        });
+      }
+      if (highlightedData && !highlightedData.error) {
+        setHighlightedBeat(highlightedData);
+        if (highlightedData.artwork_url) {
+          const img = new Image();
+          img.src = highlightedData.artwork_url;
+        }
+      }
       setBeatsLoading(false);
     });
   }, [selectedTag]);
