@@ -1,41 +1,17 @@
 import { Resend } from "resend";
 import { pool } from "./db.js";
 import { generateDownloadUrl, STORAGE_BUCKETS } from "./lib/storage.js";
+import {
+  generateOrderItemContractPdf,
+  isContractEligibleItem,
+} from "./lib/contracts.js";
+import {
+  fillContractTemplate,
+  formatDateCzech,
+  formatPriceCzech,
+} from "./lib/contractTemplate.js";
 
-function formatDateCzech(date: Date): string {
-  const day = date.getDate();
-  const months = [
-    "ledna", "února", "března", "dubna", "května", "června",
-    "července", "srpna", "září", "října", "listopadu", "prosince"
-  ];
-  const month = months[date.getMonth()];
-  const year = date.getFullYear();
-  return `${day}. ${month} ${year}`;
-}
-
-function formatPriceCzech(amount: number): string {
-  return amount.toLocaleString("cs-CZ", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " Kč";
-}
-
-export function fillContractTemplate(
-  template: string,
-  data: {
-    datum: string;
-    pravniJmeno: string;
-    umeleckeJmeno: string;
-    adresa: string;
-    beatNazev: string;
-    cena: string;
-  }
-): string {
-  return template
-    .replace(/\{\{DATUM\}\}/g, data.datum)
-    .replace(/\{\{PRAVNI_JMENO\}\}/g, data.pravniJmeno)
-    .replace(/\{\{UMELECKE_JMENO\}\}/g, data.umeleckeJmeno)
-    .replace(/\{\{ADRESA\}\}/g, data.adresa)
-    .replace(/\{\{BEAT_NAZEV\}\}/g, data.beatNazev)
-    .replace(/\{\{CENA\}\}/g, data.cena);
-}
+export { fillContractTemplate, formatDateCzech, formatPriceCzech };
 
 export function contractToHtml(contractText: string, beatTitle: string, datum: string): string {
   // Escape HTML entities first
@@ -578,7 +554,7 @@ function buildPurchaseEmailHtml(
                 </p>
                 <p style="margin:0;font-size:13px;color:#888;line-height:1.6;">
                   Dokončením nákupu jste odsouhlasili licenční podmínky.
-                  Smlouva s vašimi údaji je přiložena k tomuto emailu pro vaši evidenci.
+                  Licenční smlouva ve formátu PDF je přiložena k tomuto emailu a je také ke stažení ve vašem účtu.
                   Žádná další akce z vaší strany není nutná.
                 </p>
               </div>
@@ -665,54 +641,21 @@ export async function sendContractEmail(orderId: number): Promise<void> {
 
   const emailHtml = buildPurchaseEmailHtml(order, downloadItems, datum, appUrl, introText);
 
-  const attachments: { filename: string; content: string; contentType?: string }[] = [];
+  const attachments: { filename: string; content: string; contentType: string }[] = [];
   const isFreeOrder = Number(order.total) === 0 || order.payment_method === "free";
-  const beatItems = isFreeOrder ? [] : items.filter((i: any) => i.productType === "beat" || i.productType === "sound_kit");
+  const contractItems = isFreeOrder ? [] : items.filter((i: any) => isContractEligibleItem(i));
 
-  for (const item of beatItems) {
-    const licenseTypeId = item.licenseTypeId;
-    let contractTemplate: string | null = null;
-    let licensePrice = item.price;
-
-    if (licenseTypeId) {
-      const ltRes = await pool.query(
-        "SELECT contract_template, price FROM license_types WHERE id = $1",
-        [licenseTypeId]
-      );
-      if (ltRes.rows.length > 0) {
-        contractTemplate = ltRes.rows[0].contract_template;
-        licensePrice = ltRes.rows[0].price;
-      }
-    }
-
-    if (!contractTemplate) {
-      const fallbackRes = await pool.query(
-        "SELECT contract_template FROM license_types WHERE contract_template IS NOT NULL AND is_active = true ORDER BY price DESC LIMIT 1"
-      );
-      if (fallbackRes.rows.length > 0) {
-        contractTemplate = fallbackRes.rows[0].contract_template;
-      }
-    }
-
-    if (!contractTemplate) {
+  for (const item of contractItems) {
+    const pdf = await generateOrderItemContractPdf(order, item);
+    if (!pdf) {
       console.log(`[Email] No contract template for order ${orderId}, item: ${item.title}`);
       continue;
     }
 
-    const filled = fillContractTemplate(contractTemplate, {
-      datum,
-      pravniJmeno: order.buyer_legal_name || order.email,
-      umeleckeJmeno: order.buyer_artist_name || order.email,
-      adresa: order.buyer_address || "—",
-      beatNazev: item.title || "—",
-      cena: formatPriceCzech(Number(licensePrice)),
-    });
-
-    const htmlContract = contractToHtml(filled, item.title, datum);
-
     attachments.push({
-      filename: `Licencni_smlouva_${(item.title || "beat").replace(/\s+/g, "_")}.html`,
-      content: Buffer.from(htmlContract, "utf-8").toString("base64"),
+      filename: pdf.filename,
+      content: pdf.buffer.toString("base64"),
+      contentType: "application/pdf",
     });
   }
 
@@ -727,9 +670,10 @@ export async function sendContractEmail(orderId: number): Promise<void> {
     };
 
     if (attachments.length > 0) {
-      payload.attachments = attachments.map(a => ({
+      payload.attachments = attachments.map((a) => ({
         filename: a.filename,
         content: a.content,
+        contentType: a.contentType,
       }));
     }
 
@@ -1155,7 +1099,6 @@ export function generateContractHtml(
   const filled = fillContractTemplate(template, data);
   return contractToHtml(filled, data.beatNazev, data.datum);
 }
-
 export async function sendWelcomeEmail(email: string): Promise<void> {
   const resend = new Resend(process.env.RESEND_API_KEY || "");
   const fromAddress = process.env.RESEND_FROM || "noreply@voodoo808.com";
@@ -1283,4 +1226,3 @@ export async function sendAbandonedCheckoutEmail(orderId: number): Promise<void>
   }
 }
 
-export { formatDateCzech, formatPriceCzech };

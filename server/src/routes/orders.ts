@@ -2,6 +2,10 @@ import { Router, Request, Response } from "express";
 import { pool } from "../db.js";
 import { requireAuth, requireAdmin } from "../middleware/auth.js";
 import { sendContractEmail, sendBankTransferInstructionsEmail } from "../email.js";
+import {
+  generateOrderItemContractPdf,
+  isContractEligibleItem,
+} from "../lib/contracts.js";
 
 export const BANK_TRANSFER_DETAILS = {
   accountNumber: "2845557133/0800",
@@ -133,7 +137,7 @@ router.get("/my", requireAuth, async (req: Request, res: Response) => {
         if (!isPaid(o.status)) return o;
         const items = Array.isArray(o.items) ? o.items : [];
         const itemsOut = await Promise.all(
-          items.map(async (it: any) => {
+          items.map(async (it: any, itemIndex: number) => {
             if (!it || !it.productId) return it;
             let product: any = null;
             let trackoutUrl: string | null = null;
@@ -145,11 +149,16 @@ router.get("/my", requireAuth, async (req: Request, res: Response) => {
             }
             const downloadUrl = product ? await resolveDownload(product.file_url) : null;
             const trackoutDownloadUrl = trackoutUrl ? await resolveDownload(trackoutUrl) : null;
+            const contractAvailable = isContractEligibleItem(it);
             return {
               ...it,
               artwork_url: product?.artwork_url || it.artwork_url || null,
               downloadUrl,
               trackoutDownloadUrl,
+              contractAvailable,
+              contractDownloadUrl: contractAvailable
+                ? `/api/orders/${o.id}/contract/${itemIndex}`
+                : null,
             };
           })
         );
@@ -161,6 +170,49 @@ router.get("/my", requireAuth, async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Orders fetch error:", error);
     res.status(500).json({ error: "Chyba při načítání objednávek" });
+  }
+});
+
+router.get("/:id/contract/:itemIndex", requireAuth, async (req: Request, res: Response) => {
+  try {
+    const orderId = parseInt(req.params.id, 10);
+    const itemIndex = parseInt(req.params.itemIndex, 10);
+    if (Number.isNaN(orderId) || Number.isNaN(itemIndex)) {
+      return res.status(400).json({ error: "Neplatné parametry" });
+    }
+
+    const orderRes = await pool.query(
+      "SELECT * FROM orders WHERE id = $1 AND user_id = $2",
+      [orderId, req.session.userId]
+    );
+    if (orderRes.rows.length === 0) {
+      return res.status(404).json({ error: "Objednávka nenalezena" });
+    }
+
+    const order = orderRes.rows[0];
+    const paid = order.status === "completed" || order.status === "paid";
+    if (!paid) {
+      return res.status(403).json({ error: "Licence je dostupná až po zaplacení objednávky" });
+    }
+
+    const items: any[] = Array.isArray(order.items) ? order.items : [];
+    const item = items[itemIndex];
+    if (!item) return res.status(404).json({ error: "Položka nenalezena" });
+    if (!isContractEligibleItem(item)) {
+      return res.status(400).json({ error: "Tato položka nemá licenční smlouvu" });
+    }
+
+    const pdf = await generateOrderItemContractPdf(order, item);
+    if (!pdf) {
+      return res.status(404).json({ error: "Šablona smlouvy není dostupná" });
+    }
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="${pdf.filename}"`);
+    res.send(pdf.buffer);
+  } catch (error) {
+    console.error("Contract download error:", error);
+    res.status(500).json({ error: "Chyba při generování smlouvy" });
   }
 });
 
@@ -178,7 +230,7 @@ router.post("/", async (req: Request, res: Response) => {
 
     if (promoCode && typeof promoCode === "string" && promoCode.trim().length > 0) {
       const promoRes = await pool.query(
-        "SELECT discount_percent FROM promo_codes WHERE UPPER(code) = UPPER($1) AND is_active = true",
+        "SELECT discount_percent FROM promo_codes WHERE UPPER(code) = UPPER($1) AND is_active = true AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)",
         [promoCode.trim()]
       );
       if (promoRes.rows.length > 0) {

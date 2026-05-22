@@ -20,6 +20,11 @@ import { configureBucketCors, STORAGE_BUCKETS } from "./lib/storage.js";
 import { computeWaveformFromUrl } from "./lib/waveform.js";
 import { sendBankTransferReminderEmail, sendWelcomeEmail, sendAbandonedCheckoutEmail } from "./email.js";
 import fs from "fs";
+import {
+  getAppBaseUrl,
+  getGoogleOAuthCallbackUrl,
+  alternateAppBaseUrl,
+} from "./lib/appUrl.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -42,9 +47,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID || "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
-      callbackURL: process.env.NODE_ENV === "production"
-        ? `${process.env.APP_URL || `https://${process.env.REPLIT_DEV_DOMAIN}`}/api/auth/google/callback`
-        : "/api/auth/google/callback",
+      callbackURL: getGoogleOAuthCallbackUrl(),
       proxy: true,
     },
     async (_accessToken, _refreshToken, profile, done) => {
@@ -356,6 +359,33 @@ app.get("/api/admin/config-check", requireAdmin, (_req, res) => {
   res.json(result);
 });
 
+app.get("/api/admin/diag/google-oauth", requireAdmin, (_req, res) => {
+  const base = getAppBaseUrl();
+  const alt = alternateAppBaseUrl(base);
+  const callbackUrl = getGoogleOAuthCallbackUrl();
+  const altCallback =
+    callbackUrl.startsWith("http")
+      ? `${alt}/api/auth/google/callback`
+      : "/api/auth/google/callback";
+
+  res.json({
+    nodeEnv: process.env.NODE_ENV || "(not set)",
+    appUrl: process.env.APP_URL || "(not set)",
+    googleCallbackUrlEnv: process.env.GOOGLE_CALLBACK_URL || "(not set)",
+    clientIdSet: !!process.env.GOOGLE_CLIENT_ID?.trim(),
+    clientSecretSet: !!process.env.GOOGLE_CLIENT_SECRET?.trim(),
+    baseUrl: base,
+    callbackUrl,
+    authorizedJavaScriptOrigins: [base, ...(alt !== base ? [alt] : [])],
+    authorizedRedirectUris: [
+      callbackUrl,
+      ...(altCallback !== callbackUrl ? [altCallback] : []),
+    ],
+    consoleUrl:
+      "https://console.cloud.google.com/apis/credentials",
+  });
+});
+
 app.get("/api/admin/diag/gopay", requireAdmin, async (_req, res) => {
   const clientId = process.env.GOPAY_CLIENT_ID;
   const clientSecret = process.env.GOPAY_CLIENT_SECRET;
@@ -470,15 +500,55 @@ app.post("/api/promo-codes/validate", async (req, res) => {
     const { code } = req.body;
     if (!code) return res.status(400).json({ error: "Kód je povinný" });
     const result = await pool.query(
-      "SELECT discount_percent FROM promo_codes WHERE code = $1 AND is_active = true",
+      "SELECT discount_percent FROM promo_codes WHERE code = $1 AND is_active = true AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)",
       [code.toUpperCase()]
     );
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: "Neplatný nebo neaktivní kód" });
+      return res.status(404).json({ error: "Neplatný, neaktivní nebo vypršený kód" });
     }
     res.json({ discountPercent: result.rows[0].discount_percent });
   } catch (error) {
     res.status(500).json({ error: "Chyba při ověřování kódu" });
+  }
+});
+
+// Register a dynamic visitor promo code
+app.post("/api/promo-codes/register-temp", async (req, res) => {
+  try {
+    const { code } = req.body;
+    if (!code || typeof code !== "string" || !code.startsWith("VOODOO")) {
+      return res.status(400).json({ error: "Neplatný kód" });
+    }
+    
+    // Get current special offer configuration from database
+    const settingsRes = await pool.query("SELECT key, value FROM settings WHERE key IN ('special_offer_enabled', 'special_offer_percentage', 'special_offer_duration_minutes')");
+    const settings = settingsRes.rows.reduce((acc, row) => ({ ...acc, [row.key]: row.value }), {} as Record<string, string>);
+    
+    if (settings.special_offer_enabled !== "true") {
+      return res.status(400).json({ error: "Speciální nabídka není aktivní" });
+    }
+    
+    const percentage = parseInt(settings.special_offer_percentage || "15", 10);
+    const durationMinutes = parseInt(settings.special_offer_duration_minutes || "45", 10);
+    
+    // Check if code already exists to avoid unique constraint violations
+    const existing = await pool.query("SELECT id FROM promo_codes WHERE code = $1", [code.toUpperCase()]);
+    if (existing.rows.length > 0) {
+      return res.json({ success: true, alreadyExists: true });
+    }
+    
+    // Calculate expiration timestamp
+    const expiresAt = new Date(Date.now() + durationMinutes * 60 * 1000);
+    
+    await pool.query(
+      "INSERT INTO promo_codes (code, discount_percent, is_active, expires_at) VALUES ($1, $2, true, $3)",
+      [code.toUpperCase(), percentage, expiresAt]
+    );
+    
+    res.json({ success: true, expiresAt });
+  } catch (error) {
+    console.error("Chyba při registraci dočasného promo kódu:", error);
+    res.status(500).json({ error: "Chyba serveru při registraci kódu" });
   }
 });
 
@@ -905,7 +975,7 @@ async function startServer() {
   });
 }
 
-// Initialize DB once for Vercel (not on every request)
+// Initialize DB once for Render (not on every request)
 let dbInitialized = false;
 let dbInitPromise: Promise<void> | null = null;
 
@@ -932,7 +1002,7 @@ async function ensureDbInitialized() {
   return dbInitPromise;
 }
 
-// Standard Vercel Node handler export
+// Standard Node handler export
 export default async (req: any, res: any) => {
   try {
     await ensureDbInitialized();

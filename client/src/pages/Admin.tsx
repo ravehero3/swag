@@ -199,10 +199,10 @@ function Admin() {
   const [, navigate] = useLocation();
   const initialTab = (() => {
     const p = new URLSearchParams(window.location.search).get("tab");
-    const valid = ["beats", "kits", "orders", "licenses", "emails", "promo", "seo", "ig_stories", "zakaznici", "komentare", "artworks", "konfigurace"];
-    return (valid.includes(p || "") ? p : "orders") as "beats" | "kits" | "orders" | "licenses" | "emails" | "promo" | "seo" | "ig_stories" | "zakaznici" | "komentare" | "artworks" | "konfigurace";
+    const valid = ["beats", "kits", "orders", "licenses", "emails", "promo", "slevy", "seo", "ig_stories", "zakaznici", "komentare", "artworks", "konfigurace"];
+    return (valid.includes(p || "") ? p : "orders") as "beats" | "kits" | "orders" | "licenses" | "emails" | "promo" | "slevy" | "seo" | "ig_stories" | "zakaznici" | "komentare" | "artworks" | "konfigurace";
   })();
-  const [tab, setTab] = useState<"beats" | "kits" | "orders" | "licenses" | "emails" | "promo" | "seo" | "ig_stories" | "zakaznici" | "komentare" | "artworks" | "konfigurace">(initialTab);
+  const [tab, setTab] = useState<"beats" | "kits" | "orders" | "licenses" | "emails" | "promo" | "slevy" | "seo" | "ig_stories" | "zakaznici" | "komentare" | "artworks" | "konfigurace">(initialTab);
   const [beats, setBeats] = useState<Beat[]>([]);
   const [kits, setKits] = useState<SoundKit[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
@@ -320,14 +320,14 @@ function Admin() {
       <h1 style={{ marginBottom: "24px", color: "#666" }}>Admin Panel</h1>
 
       <div style={{ display: "flex", gap: "12px", marginBottom: "24px", flexWrap: "wrap", justifyContent: "center" }}>
-        {["beats", "kits", "orders", "zakaznici", "licenses", "emails", "promo", "seo", "ig_stories", "komentare", "artworks", "konfigurace"].map((t) => (
+        {["beats", "kits", "orders", "zakaznici", "licenses", "emails", "promo", "slevy", "seo", "ig_stories", "komentare", "artworks", "konfigurace"].map((t) => (
           <button
             key={t}
             className={tab === t ? "btn btn-filled" : "btn btn-admin"}
             onClick={() => setTab(t as any)}
             style={tab !== t ? { borderColor: "#333", color: "#666" } : {}}
           >
-            {t === "beats" ? "Beaty" : t === "kits" ? "Zvuky" : t === "orders" ? "Objednávky" : t === "zakaznici" ? "Zákazníci" : t === "licenses" ? "Licence" : t === "emails" ? "Emaily" : t === "promo" ? "Promo kódy" : t === "komentare" ? "Komentáře" : t === "ig_stories" ? "IG Stories" : t === "artworks" ? "Artworks" : t === "konfigurace" ? "⚙ Konfigurace" : "SEO"}
+            {t === "beats" ? "Beaty" : t === "kits" ? "Zvuky" : t === "orders" ? "Objednávky" : t === "zakaznici" ? "Zákazníci" : t === "licenses" ? "Licence" : t === "emails" ? "Emaily" : t === "promo" ? "Promo kódy" : t === "slevy" ? "Slevy 💸" : t === "komentare" ? "Komentáře" : t === "ig_stories" ? "IG Stories" : t === "artworks" ? "Artworks" : t === "konfigurace" ? "⚙ Konfigurace" : "SEO"}
           </button>
         ))}
       </div>
@@ -362,6 +362,7 @@ function Admin() {
         {tab === "licenses" && <LicensesTab licenses={licenses} onRefresh={loadData} />}
         {tab === "emails" && <EmailsTab />}
         {tab === "promo" && <PromoCodesTab />}
+        {tab === "slevy" && <SlevyTab settings={settings} onRefresh={refreshSettings} />}
         {tab === "seo" && <SEOTab settings={settings} onRefresh={refreshSettings} />}
         {tab === "ig_stories" && <IGStoriesTab settings={settings} onRefresh={refreshSettings} />}
         {tab === "komentare" && <KomentareTab />}
@@ -1068,7 +1069,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     setUploadProgress(prev => ({ ...prev, [type]: 0 }));
 
     // Beat/kit/trackout/artwork: always go through server (reliable, handles auth)
-    // Preview audio: use direct B2 presign to bypass Vercel's 4.5 MB body limit
+    // Preview audio: use direct B2 presign to bypass hosting body size limit
     const isLargeFile = file.size > 50 * 1024 * 1024;
     const useServerUpload = isLargeFile || type === "beat" || type === "kit" || type === "trackout" || type === "artwork";
 
@@ -1894,7 +1895,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
     setUploadProgress(prev => ({ ...prev, [type]: 0 }));
 
     // Beat/kit/trackout/artwork: always go through server (reliable, handles auth)
-    // Preview audio: use direct B2 presign to bypass Vercel's 4.5 MB body limit
+    // Preview audio: use direct B2 presign to bypass hosting body size limit
     const isLargeFile = file.size > 50 * 1024 * 1024;
     const useServerUpload = isLargeFile || type === "beat" || type === "kit" || type === "trackout" || type === "artwork";
 
@@ -1944,7 +1945,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
           xhr.send(formData);
         });
       } else {
-        // Preview audio + small files: direct B2 presign to avoid Vercel body size limit
+        // Preview audio + small files: direct B2 presign to avoid hosting body size limit
         const ext = file.name.split('.').pop() || 'zip';
         const contentType = file.type || '';
 
@@ -2610,7 +2611,7 @@ function OrdersList({ orders, onRefresh }: { orders: any[]; onRefresh: () => voi
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                         <span style={{ fontSize: "13px" }}>{Number(item.price).toLocaleString("cs-CZ")} Kč</span>
-                        {item.productType === "beat" && (
+                        {(item.productType === "beat" || item.productType === "sound_kit" || item.productType === "kit") && (
                           <a
                             href={`/api/admin/orders/${order.id}/contract/${idx}`}
                             target="_blank"
@@ -2618,7 +2619,7 @@ function OrdersList({ orders, onRefresh }: { orders: any[]; onRefresh: () => voi
                             style={{ fontSize: "11px", color: "#aaa", border: "1px solid #2a2a2a", borderRadius: "3px", padding: "3px 8px", textDecoration: "none", background: "#161616" }}
                             onClick={(e) => e.stopPropagation()}
                           >
-                            📄 Smlouva
+                            📄 Licence PDF
                           </a>
                         )}
                       </div>
@@ -3273,6 +3274,180 @@ function SEOSection({
           <GooglePreview title={title} description={description} url={url} />
         </div>
       </div>
+    </div>
+  );
+}
+
+function SlevyTab({ settings, onRefresh }: any) {
+  const [values, setValues] = useState<Record<string, string>>({
+    special_offer_enabled: settings.special_offer_enabled || "false",
+    special_offer_percentage: settings.special_offer_percentage || "15",
+    special_offer_duration_minutes: settings.special_offer_duration_minutes || "45",
+    special_offer_text: settings.special_offer_text || "SPECIÁLNÍ AKCE! Omezená nabídka končí za chvíli. Využijte slevový kód:",
+  });
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const handleChange = (key: string, val: string) => setValues(prev => ({ ...prev, [key]: val }));
+
+  const saveSettings = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const keys = ["special_offer_enabled", "special_offer_percentage", "special_offer_duration_minutes", "special_offer_text"];
+      await Promise.all(keys.map(key =>
+        fetch("/api/admin/settings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ key, value: values[key] }),
+        })
+      ));
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+      onRefresh();
+    } catch (err) {
+      console.error("Failed to save special offer settings", err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const containerStyle: React.CSSProperties = {
+    background: "rgba(10, 10, 10, 0.6)",
+    backdropFilter: "blur(12px)",
+    WebkitBackdropFilter: "blur(12px)",
+    border: "1px solid rgba(255, 255, 255, 0.08)",
+    borderRadius: "12px",
+    padding: "24px",
+    boxShadow: "0 8px 32px 0 rgba(0, 0, 0, 0.37)",
+    maxWidth: "600px",
+    margin: "0 auto",
+  };
+
+  const inputStyle: React.CSSProperties = {
+    width: "100%",
+    background: "rgba(20, 20, 20, 0.8)",
+    border: "1px solid rgba(255, 255, 255, 0.1)",
+    color: "#fff",
+    padding: "10px 14px",
+    fontSize: "14px",
+    borderRadius: "6px",
+    fontFamily: "inherit",
+    boxSizing: "border-box",
+    marginTop: "6px",
+    outline: "none",
+    transition: "border-color 0.2s",
+  };
+
+  const selectStyle: React.CSSProperties = {
+    ...inputStyle,
+    cursor: "pointer",
+  };
+
+  const labelStyle: React.CSSProperties = {
+    display: "block",
+    fontSize: "12px",
+    color: "#aaa",
+    textTransform: "uppercase",
+    letterSpacing: "0.06em",
+    fontWeight: 600,
+  };
+
+  const groupStyle: React.CSSProperties = {
+    marginBottom: "20px",
+    textAlign: "left",
+  };
+
+  return (
+    <div style={{ padding: "20px 0" }} data-testid="tab-slevy">
+      <h2 style={{ color: "#fff", fontSize: "20px", marginBottom: "16px", textShadow: "0 0 10px rgba(255,0,128,0.3)" }}>
+        Správa speciální časově omezené slevy
+      </h2>
+      <p style={{ color: "#888", fontSize: "14px", marginBottom: "24px", lineHeight: "1.5" }}>
+        Nastavte parametry pro slevovou akci na stránce Zvuky. Každý zákazník obdrží unikátní kód, 
+        který expiruje za nastavený počet minut. Po vypršení se banner schová.
+      </p>
+
+      <form onSubmit={saveSettings} style={containerStyle}>
+        <div style={groupStyle}>
+          <label style={labelStyle}>Stav speciální nabídky</label>
+          <select
+            value={values.special_offer_enabled}
+            onChange={(e) => handleChange("special_offer_enabled", e.target.value)}
+            style={selectStyle}
+            data-testid="special-offer-enabled-select"
+          >
+            <option value="false">Vypnuto (Neaktivní)</option>
+            <option value="true">Zapnuto (Aktivní)</option>
+          </select>
+        </div>
+
+        <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
+          <div style={{ ...groupStyle, flex: "1 1 200px" }}>
+            <label style={labelStyle}>Výše slevy (%)</label>
+            <input
+              type="number"
+              min="1"
+              max="99"
+              value={values.special_offer_percentage}
+              onChange={(e) => handleChange("special_offer_percentage", e.target.value)}
+              style={inputStyle}
+              required
+              data-testid="special-offer-percentage-input"
+            />
+          </div>
+
+          <div style={{ ...groupStyle, flex: "1 1 200px" }}>
+            <label style={labelStyle}>Doba platnosti kódu (minuty)</label>
+            <input
+              type="number"
+              min="1"
+              max="1440"
+              value={values.special_offer_duration_minutes}
+              onChange={(e) => handleChange("special_offer_duration_minutes", e.target.value)}
+              style={inputStyle}
+              required
+              data-testid="special-offer-duration-input"
+            />
+          </div>
+        </div>
+
+        <div style={groupStyle}>
+          <label style={labelStyle}>Text na banneru</label>
+          <textarea
+            rows={3}
+            value={values.special_offer_text}
+            onChange={(e) => handleChange("special_offer_text", e.target.value)}
+            style={{ ...inputStyle, resize: "vertical" }}
+            required
+            data-testid="special-offer-text-textarea"
+          />
+          <span style={{ fontSize: "11px", color: "#666", marginTop: "4px", display: "block" }}>
+            Za tento text se automaticky připojí vygenerovaný slevový kód a odpočet (např. VOODOO8796).
+          </span>
+        </div>
+
+        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "24px" }}>
+          <button
+            type="submit"
+            disabled={saving}
+            className="btn btn-filled"
+            style={{
+              padding: "10px 24px",
+              boxShadow: "0 0 15px rgba(255, 0, 128, 0.4)",
+              background: "linear-gradient(45deg, #ff0080, #7928ca)",
+              border: "none",
+              cursor: "pointer",
+              transition: "transform 0.1s, opacity 0.2s",
+              opacity: saving ? 0.7 : 1,
+            }}
+            data-testid="save-special-offer-btn"
+          >
+            {saving ? "Ukládám..." : saved ? "Uloženo! ✓" : "Uložit nastavení"}
+          </button>
+        </div>
+      </form>
     </div>
   );
 }
@@ -5688,6 +5863,136 @@ interface GopayDiag {
   goId?: string;
 }
 
+interface GoogleOAuthDiag {
+  nodeEnv: string;
+  appUrl: string;
+  googleCallbackUrlEnv: string;
+  clientIdSet: boolean;
+  clientSecretSet: boolean;
+  baseUrl: string;
+  callbackUrl: string;
+  authorizedJavaScriptOrigins: string[];
+  authorizedRedirectUris: string[];
+  consoleUrl: string;
+}
+
+function GoogleOAuthDiagPanel() {
+  const [diag, setDiag] = useState<GoogleOAuthDiag | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [ran, setRan] = useState(false);
+
+  const run = async () => {
+    setLoading(true);
+    setRan(true);
+    try {
+      const r = await fetch("/api/admin/diag/google-oauth", { credentials: "include" });
+      setDiag(await r.json());
+    } catch {
+      setDiag(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const mono: React.CSSProperties = { fontFamily: "monospace", fontSize: "12px", color: "#aaa", wordBreak: "break-all" };
+  const copy = (text: string) => navigator.clipboard.writeText(text).catch(() => {});
+
+  return (
+    <div style={{ marginBottom: "32px" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+        <div style={{ fontSize: "11px", color: "#444", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+          Google přihlášení — OAuth redirect URI
+        </div>
+        <button
+          className="btn btn-admin"
+          onClick={run}
+          disabled={loading}
+          data-testid="button-test-google-oauth"
+          style={{ fontSize: "12px" }}
+        >
+          {loading ? "Načítám…" : "▶ Zobrazit URI pro Google Console"}
+        </button>
+      </div>
+
+      <div style={{ border: "1px solid #222", borderRadius: "6px", overflow: "hidden" }}>
+        {!ran && (
+          <div style={{ padding: "20px", color: "#444", fontSize: "13px", textAlign: "center" }}>
+            Chyba „nesplňuje zásady OAuth“ znamená, že redirect URI není zaregistrované v Google Cloud Console.
+            Klikni výše pro přesné URI, které musíš přidat.
+          </div>
+        )}
+        {ran && loading && (
+          <div style={{ padding: "20px", color: "#555", fontSize: "13px", textAlign: "center" }}>Načítám…</div>
+        )}
+        {ran && !loading && !diag && (
+          <div style={{ padding: "20px", color: "#e55", fontSize: "13px" }}>Chyba — přihlas se jako admin.</div>
+        )}
+        {ran && !loading && diag && (
+          <div style={{ padding: "16px" }}>
+            <div style={{
+              padding: "12px 14px", marginBottom: "14px", borderRadius: "5px",
+              background: diag.clientIdSet && diag.clientSecretSet ? "#0a1f0a" : "#1f0a0a",
+              border: `1px solid ${diag.clientIdSet && diag.clientSecretSet ? "#1a4d1a" : "#4d1a1a"}`,
+              fontSize: "13px", lineHeight: 1.7,
+            }}>
+              <div style={{ fontWeight: 600, color: diag.clientIdSet && diag.clientSecretSet ? "#4caf50" : "#e55", marginBottom: "6px" }}>
+                {diag.clientIdSet && diag.clientSecretSet
+                  ? "Credentials nastaveny — přidej redirect URI do Google Console"
+                  : "Chybí GOOGLE_CLIENT_ID nebo GOOGLE_CLIENT_SECRET v prostředí"}
+              </div>
+              <div style={{ color: "#888", fontSize: "12px" }}>
+                APP_URL: <span style={mono}>{diag.appUrl}</span> · NODE_ENV: <span style={mono}>{diag.nodeEnv}</span>
+              </div>
+            </div>
+
+            <div style={{ fontSize: "11px", color: "#666", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+              Authorized redirect URIs (zkopíruj do Google Cloud Console)
+            </div>
+            {diag.authorizedRedirectUris.map((uri) => (
+              <div
+                key={uri}
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px",
+                  padding: "10px 12px", marginBottom: "8px", background: "#111", borderRadius: "4px",
+                  border: uri === diag.callbackUrl ? "1px solid #0B99FC" : "1px solid #222",
+                }}
+              >
+                <span style={mono}>{uri}</span>
+                <button type="button" className="btn btn-admin" style={{ fontSize: "11px", flexShrink: 0 }} onClick={() => copy(uri)}>
+                  Kopírovat
+                </button>
+              </div>
+            ))}
+
+            <div style={{ fontSize: "11px", color: "#666", margin: "16px 0 8px", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+              Authorized JavaScript origins
+            </div>
+            {diag.authorizedJavaScriptOrigins.map((origin) => (
+              <div key={origin} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", padding: "8px 12px", marginBottom: "6px", background: "#0d0d0d", borderRadius: "4px" }}>
+                <span style={mono}>{origin}</span>
+                <button type="button" className="btn btn-admin" style={{ fontSize: "11px" }} onClick={() => copy(origin)}>Kopírovat</button>
+              </div>
+            ))}
+
+            <div style={{ marginTop: "16px", padding: "12px 14px", background: "#111", borderRadius: "5px", fontSize: "12px", color: "#888", lineHeight: 1.9 }}>
+              <div style={{ color: "#ccc", fontWeight: 600, marginBottom: "8px" }}>Postup v Google Cloud Console</div>
+              <div>1. Otevři <a href={diag.consoleUrl} target="_blank" rel="noopener noreferrer" style={{ color: "#0B99FC" }}>APIs &amp; Services → Credentials</a></div>
+              <div>2. Vyber OAuth 2.0 Client ID (typ Web application) — stejný jako <span style={mono}>GOOGLE_CLIENT_ID</span> v Renderu</div>
+              <div>3. Přidej výše uvedené <strong style={{ color: "#aaa" }}>Authorized redirect URIs</strong> a <strong style={{ color: "#aaa" }}>JavaScript origins</strong></div>
+              <div>4. Ulož, počkej ~5 minut, zkus přihlášení znovu</div>
+              {diag.googleCallbackUrlEnv !== "(not set)" && (
+                <div style={{ marginTop: "8px", color: "#f5b150" }}>
+                  Používáš GOOGLE_CALLBACK_URL override: <span style={mono}>{diag.googleCallbackUrlEnv}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function GopayDiagPanel() {
   const [diag, setDiag] = useState<GopayDiag | null>(null);
   const [loading, setLoading] = useState(false);
@@ -5797,7 +6102,7 @@ function GopayDiagPanel() {
                           GoPay přijal: <span style={{ fontFamily: "monospace", color: "#fff" }}>{diag.paymentTestUrl}</span><br />
                           Tvůj APP_URL: <span style={{ fontFamily: "monospace", color: "#e55" }}>{diag.domain}</span><br />
                           <span style={{ color: "#e8c97a" }}>
-                            Oprav v Vercel → Settings → Environment Variables → Production:<br />
+                            Oprav v Render → Environment:<br />
                             <span style={{ fontFamily: "monospace", color: "#fff" }}>APP_URL = {diag.paymentTestUrl}</span>
                           </span>
                         </div>
@@ -5881,11 +6186,11 @@ function GopayDiagPanel() {
               <div style={{ marginTop: "16px", padding: "12px 14px", background: "#111", borderRadius: "5px", fontSize: "12px", color: "#666", lineHeight: "1.9" }}>
                 <div style={{ color: "#888", fontWeight: 600, marginBottom: "6px" }}>Jak opravit:</div>
                 {diag.domain.startsWith("http://localhost") && (
-                  <div>• Nastav <span style={{ color: "#aaa", fontFamily: "monospace" }}>APP_URL = https://www.voodoo808.com</span> v Vercel → Settings → Environment Variables → Production</div>
+                  <div>• Nastav <span style={{ color: "#aaa", fontFamily: "monospace" }}>APP_URL = https://www.voodoo808.com</span> v Render → Environment</div>
                 )}
-                {!diag.clientIdSet && <div>• Nastav <span style={{ color: "#aaa", fontFamily: "monospace" }}>GOPAY_CLIENT_ID</span> v Vercel → Production</div>}
-                {!diag.clientSecretSet && <div>• Nastav <span style={{ color: "#aaa", fontFamily: "monospace" }}>GOPAY_CLIENT_SECRET</span> v Vercel → Production</div>}
-                {!diag.goIdSet && <div>• Nastav <span style={{ color: "#aaa", fontFamily: "monospace" }}>GOPAY_GOID</span> v Vercel → Production</div>}
+                {!diag.clientIdSet && <div>• Nastav <span style={{ color: "#aaa", fontFamily: "monospace" }}>GOPAY_CLIENT_ID</span> v Render</div>}
+                {!diag.clientSecretSet && <div>• Nastav <span style={{ color: "#aaa", fontFamily: "monospace" }}>GOPAY_CLIENT_SECRET</span> v Render</div>}
+                {!diag.goIdSet && <div>• Nastav <span style={{ color: "#aaa", fontFamily: "monospace" }}>GOPAY_GOID</span> v Render</div>}
                 {diag.tokenOk && !diag.paymentTestOk && diag.paymentTestDetail && diag.paymentTestDetail.includes("return_url") && (
                   <div>• <strong style={{ color: "#aaa" }}>Přihlas se do GoPay merchant portálu</strong> a přidej doménu <span style={{ color: "#aaa", fontFamily: "monospace" }}>https://www.voodoo808.com</span> jako povolenou return URL adresu.</div>
                 )}
@@ -5895,7 +6200,7 @@ function GopayDiagPanel() {
                 {!diag.tokenOk && diag.clientIdSet && diag.clientSecretSet && diag.goIdSet && !diag.domain.startsWith("http://localhost") && (
                   <div>• Přihlašovací údaje jsou nastaveny, ale token selhal. Zkontroluj, že <span style={{ color: "#aaa", fontFamily: "monospace" }}>GOPAY_SANDBOX</span> odpovídá druhu credentials.</div>
                 )}
-                <div>• Po každé změně v GoPay portálu nebo Vercelu spusť test znovu.</div>
+                <div>• Po každé změně v GoPay portálu nebo Renderu spusť test znovu.</div>
               </div>
             )}
           </div>
@@ -5937,8 +6242,10 @@ function KonfiguraceTab() {
     <div data-testid="tab-konfigurace">
       <h2 style={{ marginBottom: "6px", color: "#ccc", fontSize: "18px" }}>Konfigurace prostředí</h2>
       <p style={{ marginBottom: "24px", color: "#555", fontSize: "13px" }}>
-        Přehled environment variables potřebných pro správný chod webu — zkontroluj je v nastavení Vercelu / Replitu.
+        Přehled environment variables potřebných pro správný chod webu — zkontroluj je v nastavení Renderu.
       </p>
+
+      <GoogleOAuthDiagPanel />
 
       <GopayDiagPanel />
 
@@ -5995,10 +6302,10 @@ function KonfiguraceTab() {
           ))}
 
           <div style={{ padding: "16px", background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: "6px", fontSize: "12px", color: "#444", lineHeight: "1.8" }}>
-            <div style={{ color: "#555", marginBottom: "8px", fontWeight: 600 }}>Jak přidat chybějící proměnné na Vercelu:</div>
-            <div>1. Přejdi do <span style={{ color: "#666", fontFamily: "monospace" }}>vercel.com → projekt → Settings → Environment Variables</span></div>
-            <div>2. Přidej každou chybějící proměnnou pro prostředí <span style={{ color: "#666", fontFamily: "monospace" }}>Production</span></div>
-            <div>3. Znovu nasaď projekt (<span style={{ color: "#666", fontFamily: "monospace" }}>Redeploy</span>) — proměnné se načtou až po restartu</div>
+            <div style={{ color: "#555", marginBottom: "8px", fontWeight: 600 }}>Jak přidat chybějící proměnné na Renderu:</div>
+            <div>1. Přejdi do <span style={{ color: "#666", fontFamily: "monospace" }}>dashboard.render.com → projekt → Environment</span></div>
+            <div>2. Přidej každou chybějící proměnnou pod <span style={{ color: "#666", fontFamily: "monospace" }}>Environment Variables</span></div>
+            <div>3. Ulož změny — Render automaticky provede redeploy a načte nové proměnné</div>
           </div>
         </>
       )}

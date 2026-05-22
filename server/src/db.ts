@@ -222,7 +222,11 @@ export async function initDatabase() {
         ('ig_story_card_brightness', '0.18'),
         ('ig_story_card_shadow', 'true'),
         ('ig_story_card_shadow_amount', '24'),
-        ('ig_story_card_padding', '16')
+        ('ig_story_card_padding', '16'),
+        ('special_offer_enabled', 'false'),
+        ('special_offer_percentage', '15'),
+        ('special_offer_text', 'SPECIÁLNÍ AKCE! Omezená nabídka končí za chvíli. Využijte slevový kód:'),
+        ('special_offer_duration_minutes', '45')
       ON CONFLICT (key) DO NOTHING;
     `);
     
@@ -288,6 +292,7 @@ export async function initDatabase() {
       ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255);
       ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMPTZ;
       ALTER TABLE beat_comments ADD COLUMN IF NOT EXISTS time_offset NUMERIC DEFAULT 0;
+      ALTER TABLE promo_codes ADD COLUMN IF NOT EXISTS expires_at TIMESTAMP;
     `);
 
     console.log("Database initialized successfully");

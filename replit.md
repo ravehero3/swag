@@ -38,11 +38,18 @@ A full-stack e-commerce platform for music producers to buy beats and sound kits
 - `DATABASE_URL` — auto-set by Replit DB
 - `SESSION_SECRET` — session signing secret
 - `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` — Google OAuth
+- `GOOGLE_CALLBACK_URL` — optional override for OAuth redirect URI (defaults to `APP_URL/api/auth/google/callback`)
 - `B2_APPLICATION_KEY_ID` / `B2_APPLICATION_KEY` / `B2_ENDPOINT` / `B2_PUBLIC_BASE_URL` — Backblaze B2 storage
 - `STORAGE_BUCKETS_PREVIEWS` / `STORAGE_BUCKETS_FILES` — bucket names
 - `GOPAY_*` — GoPay payment gateway credentials
 - `RESEND_API_KEY` — email sending
 - `APP_URL` — production URL for OAuth callbacks
+
+### Google Sign-In setup
+1. [Google Cloud Console](https://console.cloud.google.com/apis/credentials) → your OAuth 2.0 Client (Web application).
+2. **Authorized JavaScript origins:** `https://voodoo808.com` (and `https://www.voodoo808.com` if you use www).
+3. **Authorized redirect URIs:** must match production exactly, e.g. `https://voodoo808.com/api/auth/google/callback` (register both www and non-www if users can land on either).
+4. Set `APP_URL` in Vercel/Replit to the same origin (no trailing slash). Admin → Konfigurace shows the live callback URL via the Google OAuth diagnostic panel.
 
 ## Port
 - Dev & prod: **5000**

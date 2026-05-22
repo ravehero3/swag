@@ -105,7 +105,7 @@ function buildCredsDiagnosis(env: any, uploadError: string | null): string {
   if (whitespaceProblem) {
     lines.push(
       "PROBLÉM: Aspoň jedna z proměnných má mezeru/nový řádek na konci nebo začátku. " +
-      "Server je nyní automaticky odstřihává, ale i tak doporučuji ve Vercelu " +
+      "Server je nyní automaticky odstřihává, ale i tak doporučuji v Renderu " +
       "proměnnou smazat a pečlivě vložit znovu (bez Enteru na konci)."
     );
   }
@@ -138,11 +138,11 @@ function buildCredsDiagnosis(env: any, uploadError: string | null): string {
       "Délky kláves sedí, ale R2 podpis nesouhlasí. To znamená, že R2_ACCESS_KEY_ID a R2_SECRET_ACCESS_KEY " +
       "nejsou ze stejné dvojice — typicky jste vygeneroval(a) nový API token v Cloudflare a zkopíroval(a) " +
       "jen jedno z polí. Vytvořte v R2 → Manage R2 API Tokens nový token, zkopírujte ZÁROVEŇ Access Key ID " +
-      "i Secret Access Key (zobrazí se jen jednou) a oba aktualizujte ve Vercelu."
+      "i Secret Access Key (zobrazí se jen jednou) a oba aktualizujte v Renderu."
     );
   }
 
-  lines.push("Po úpravě proměnných ve Vercelu nezapomeňte spustit nový deploy (Redeploy → bez cache).");
+  lines.push("Po úpravě proměnných v Renderu nezapomeňte spustit nový deploy.");
   return lines.join(" • ");
 }
 
@@ -208,7 +208,7 @@ router.get("/diag/artwork", requireAdmin, async (_req: Request, res: Response) =
         ? buildCredsDiagnosis(env, uploadError)
         : verification.ok
         ? "OK — uploads work AND the public URL is loadable. Artwork should render in the browser."
-        : "Upload works, but the public URL is NOT loadable. Likely causes: (1) Cloudflare R2 bucket public access is OFF — enable the R2.dev subdomain or attach a custom domain in the Cloudflare dashboard. (2) R2_PUBLIC_BASE_URL on Vercel does not match the bucket's actual public URL.",
+        : "Upload works, but the public URL is NOT loadable. Likely causes: (1) Cloudflare R2 bucket public access is OFF — enable the R2.dev subdomain or attach a custom domain in the Cloudflare dashboard. (2) R2_PUBLIC_BASE_URL on Render does not match the bucket's actual public URL.",
   });
 });
 
@@ -390,7 +390,7 @@ router.post("/", requireAdmin, upload.single("file"), async (req: Request, res: 
           error:
             "Soubor se nahrál, ale veřejná URL nefunguje. Nejčastější příčina: " +
             "Cloudflare R2 bucket nemá zapnutý veřejný přístup, nebo proměnná " +
-            "R2_PUBLIC_BASE_URL na Vercelu je špatně nastavená.",
+            "R2_PUBLIC_BASE_URL na Renderu je špatně nastavená.",
           detail: verification.detail,
           attemptedUrl: url,
           bucket,

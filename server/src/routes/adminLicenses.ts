@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import { pool } from "../db.js";
 import { requireAdmin } from "../middleware/auth.js";
 import { generateContractHtml, formatDateCzech, formatPriceCzech } from "../email.js";
+import { generateOrderItemContractPdf } from "../lib/contracts.js";
 
 const router = Router();
 
@@ -84,47 +85,39 @@ router.get("/orders/:id/contract/:itemIndex", requireAdmin, async (req: Request,
     const item = items[itemIndex];
     if (!item) return res.status(404).json({ error: "Položka nenalezena" });
 
-    let contractTemplate: string | null = null;
-    let licensePrice = item.price;
-
-    if (item.licenseTypeId) {
-      const ltRes = await pool.query(
-        "SELECT contract_template, price FROM license_types WHERE id = $1",
-        [item.licenseTypeId]
-      );
-      if (ltRes.rows.length > 0) {
-        contractTemplate = ltRes.rows[0].contract_template;
-        licensePrice = ltRes.rows[0].price;
-      }
-    }
-
-    if (!contractTemplate) {
-      const fallbackRes = await pool.query(
-        "SELECT contract_template FROM license_types WHERE contract_template IS NOT NULL AND is_active = true ORDER BY price DESC LIMIT 1"
-      );
-      if (fallbackRes.rows.length > 0) {
-        contractTemplate = fallbackRes.rows[0].contract_template;
-      }
-    }
-
-    if (!contractTemplate) {
-      return res.status(404).json({ error: "Šablona smlouvy není nastavena" });
-    }
-
+    const format = req.query.format === "html" ? "html" : "pdf";
     const orderDate = new Date(order.created_at || Date.now());
     const datum = formatDateCzech(orderDate);
 
-    const html = generateContractHtml(contractTemplate, {
-      datum,
-      pravniJmeno: order.buyer_legal_name || order.email,
-      umeleckeJmeno: order.buyer_artist_name || order.email,
-      adresa: order.buyer_address || "—",
-      beatNazev: item.title || "—",
-      cena: formatPriceCzech(Number(licensePrice)),
-    });
+    if (format === "html") {
+      const { resolveContractTemplate } = await import("../lib/contracts.js");
+      const { template, licensePrice } = await resolveContractTemplate(
+        item.licenseTypeId,
+        item.price
+      );
+      if (!template) {
+        return res.status(404).json({ error: "Šablona smlouvy není nastavena" });
+      }
+      const html = generateContractHtml(template, {
+        datum,
+        pravniJmeno: order.buyer_legal_name || order.email,
+        umeleckeJmeno: order.buyer_artist_name || order.email,
+        adresa: order.buyer_address || "—",
+        beatNazev: item.title || "—",
+        cena: formatPriceCzech(Number(licensePrice)),
+      });
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      return res.send(html);
+    }
 
-    res.setHeader("Content-Type", "text/html; charset=utf-8");
-    res.send(html);
+    const pdf = await generateOrderItemContractPdf(order, item);
+    if (!pdf) {
+      return res.status(404).json({ error: "Šablona smlouvy není nastavena" });
+    }
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="${pdf.filename}"`);
+    res.send(pdf.buffer);
   } catch (error) {
     console.error("Error generating contract:", error);
     res.status(500).json({ error: "Chyba při generování smlouvy" });

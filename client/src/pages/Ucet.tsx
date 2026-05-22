@@ -11,6 +11,8 @@ interface OrderItem {
   artwork_url?: string | null;
   downloadUrl?: string | null;
   trackoutDownloadUrl?: string | null;
+  contractAvailable?: boolean;
+  contractDownloadUrl?: string | null;
 }
 
 interface Order {
@@ -353,6 +355,22 @@ export default function Ucet() {
           color: #000;
           border-color: #24e053;
         }
+        .ucet-contract-btn {
+          padding: 4px 12px;
+          background: transparent;
+          color: #0B99FC;
+          border: 1px solid #0B99FC;
+          border-radius: 4px;
+          font-size: 12px;
+          font-weight: 500;
+          text-decoration: none;
+          white-space: nowrap;
+          transition: background 0.2s ease, color 0.2s ease;
+        }
+        .ucet-contract-btn:hover {
+          background: #0B99FC;
+          color: #000;
+        }
       `}} />
 
       <h1 style={{ fontSize: "32px", marginBottom: "32px", fontWeight: "400" }}>Můj účet</h1>
@@ -580,6 +598,15 @@ export default function Ucet() {
                                   style={{ padding: "4px 12px", background: "transparent", color: "#24e053", border: "1px solid #24e053", borderRadius: "4px", fontSize: "12px", fontWeight: 500, textDecoration: "none", whiteSpace: "nowrap" }}
                                 >
                                   Trackout
+                                </a>
+                              )}
+                              {isPaid && item.contractDownloadUrl && (
+                                <a
+                                  href={item.contractDownloadUrl}
+                                  className="ucet-contract-btn"
+                                  data-testid={`link-contract-${order.id}-${item.productId ?? idx}`}
+                                >
+                                  Licence (PDF)
                                 </a>
                               )}
                               {isPaid && !item.downloadUrl && (

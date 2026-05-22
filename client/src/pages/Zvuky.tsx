@@ -270,6 +270,7 @@ function Zvuky() {
 
       {/* Content — above video */}
       <div style={{ position: "relative", zIndex: 2, paddingTop: "100px" }}>
+        <SpecialOfferBanner settings={settings} />
         {loading ? (
           <div style={{ textAlign: "center", padding: "100px 20px" }}>
             <p style={{ color: "#555", fontSize: "11px", letterSpacing: "0.15em", textTransform: "uppercase", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", margin: 0 }}>
@@ -295,6 +296,220 @@ function Zvuky() {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function SpecialOfferBanner({ settings }: { settings: Record<string, string> }) {
+  const isEnabled = settings?.special_offer_enabled === "true";
+  const percentage = parseInt(settings?.special_offer_percentage || "15", 10);
+  const text = settings?.special_offer_text || "SPECIÁLNÍ AKCE! Omezená nabídka končí za chvíli. Využijte slevový kód:";
+  const durationMinutes = parseInt(settings?.special_offer_duration_minutes || "45", 10);
+
+  const [promoCode, setPromoCode] = useState<string | null>(null);
+  const [timeLeft, setTimeLeft] = useState<number>(0);
+  const [copied, setCopied] = useState(false);
+  const [isExpired, setIsExpired] = useState(false);
+
+  useEffect(() => {
+    if (!isEnabled) return;
+
+    // Check if permanently expired
+    if (localStorage.getItem("voodoo_special_offer_expired") === "true") {
+      setIsExpired(true);
+      return;
+    }
+
+    let code = localStorage.getItem("voodoo_temp_promo");
+    let expiresStr = localStorage.getItem("voodoo_temp_promo_expires");
+    let expiresAt = expiresStr ? parseInt(expiresStr, 10) : 0;
+
+    const registerCodeOnBackend = async (newCode: string) => {
+      try {
+        await fetch("/api/promo-codes/register-temp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ code: newCode }),
+        });
+      } catch (err) {
+        console.error("Chyba při registraci dočasného kódu:", err);
+      }
+    };
+
+    if (!code || !expiresAt || Date.now() > expiresAt) {
+      if (expiresAt && Date.now() > expiresAt) {
+        // Expired! Mark as expired forever
+        localStorage.setItem("voodoo_special_offer_expired", "true");
+        localStorage.removeItem("voodoo_temp_promo");
+        localStorage.removeItem("voodoo_temp_promo_expires");
+        setIsExpired(true);
+        return;
+      }
+
+      // Generate new code
+      const randomNum = Math.floor(1000 + Math.random() * 9000);
+      code = `VOODOO${randomNum}`;
+      expiresAt = Date.now() + durationMinutes * 60 * 1000;
+
+      localStorage.setItem("voodoo_temp_promo", code);
+      localStorage.setItem("voodoo_temp_promo_expires", expiresAt.toString());
+      
+      // Register with the backend database
+      registerCodeOnBackend(code);
+    }
+
+    setPromoCode(code);
+    setTimeLeft(Math.max(0, Math.floor((expiresAt - Date.now()) / 1000)));
+
+    const timer = setInterval(() => {
+      const remaining = Math.max(0, Math.floor((expiresAt! - Date.now()) / 1000));
+      setTimeLeft(remaining);
+      if (remaining <= 0) {
+        clearInterval(timer);
+        localStorage.setItem("voodoo_special_offer_expired", "true");
+        localStorage.removeItem("voodoo_temp_promo");
+        localStorage.removeItem("voodoo_temp_promo_expires");
+        setIsExpired(true);
+      }
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [isEnabled, durationMinutes]);
+
+  const handleCopy = () => {
+    if (!promoCode) return;
+    navigator.clipboard.writeText(promoCode);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  if (!isEnabled || isExpired || !promoCode || timeLeft <= 0) return null;
+
+  const min = Math.floor(timeLeft / 60);
+  const sec = timeLeft % 60;
+  const timeString = `${min.toString().padStart(2, "0")}:${sec.toString().padStart(2, "0")}`;
+
+  return (
+    <div style={{
+      maxWidth: "1100px",
+      margin: "0 auto 32px auto",
+      padding: "20px 24px",
+      borderRadius: "16px",
+      background: "linear-gradient(135deg, rgba(232, 48, 74, 0.15) 0%, rgba(20, 20, 20, 0.85) 100%)",
+      border: "1px solid rgba(232, 48, 74, 0.45)",
+      boxShadow: "0 8px 32px 0 rgba(232, 48, 74, 0.15), inset 0 0 12px rgba(232, 48, 74, 0.1)",
+      backdropFilter: "blur(12px)",
+      WebkitBackdropFilter: "blur(12px)",
+      display: "flex",
+      flexWrap: "wrap",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: "20px",
+      color: "#fff",
+      fontFamily: "Outfit, Inter, sans-serif",
+      position: "relative",
+      overflow: "hidden",
+    }}>
+      {/* Glow highlight */}
+      <div style={{
+        position: "absolute",
+        top: "-50%",
+        left: "-20%",
+        width: "50%",
+        height: "200%",
+        background: "radial-gradient(ellipse at center, rgba(232, 48, 74, 0.15) 0%, transparent 70%)",
+        pointerEvents: "none",
+      }} />
+
+      <div style={{ display: "flex", alignItems: "center", gap: "16px", flex: "1 1 500px", position: "relative", zIndex: 1 }}>
+        <div style={{
+          background: "rgba(232, 48, 74, 0.2)",
+          border: "1px solid rgba(232, 48, 74, 0.5)",
+          borderRadius: "50%",
+          width: "48px",
+          height: "48px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+          boxShadow: "0 0 10px rgba(232, 48, 74, 0.3)",
+        }}>
+          <span style={{ fontSize: "24px", fontWeight: "bold", color: "#e8304a" }}>%</span>
+        </div>
+        <div>
+          <h3 style={{ margin: "0 0 4px 0", fontSize: "16px", fontWeight: 700, letterSpacing: "0.5px" }}>
+            {percentage}% SLEVA PRO VÁS!
+          </h3>
+          <p style={{ margin: 0, fontSize: "13px", color: "#ccc", lineHeight: "1.4" }}>
+            {text}
+          </p>
+        </div>
+      </div>
+
+      <div style={{ display: "flex", alignItems: "center", gap: "16px", flexWrap: "wrap", position: "relative", zIndex: 1 }}>
+        {/* Countdown */}
+        <div style={{
+          background: "rgba(0, 0, 0, 0.4)",
+          border: "1px solid rgba(255, 255, 255, 0.1)",
+          borderRadius: "8px",
+          padding: "8px 16px",
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+        }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#e8304a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ animation: "pulse 1.5s infinite" }}>
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+          <span style={{ fontFamily: "monospace", fontSize: "18px", fontWeight: 700, color: "#e8304a", letterSpacing: "1px" }}>
+            {timeString}
+          </span>
+        </div>
+
+        {/* Promo code display + Copy button */}
+        <div style={{ display: "flex", gap: "2px" }}>
+          <div style={{
+            background: "rgba(255, 255, 255, 0.08)",
+            border: "1px solid rgba(255, 255, 255, 0.15)",
+            borderRight: "none",
+            borderRadius: "8px 0 0 8px",
+            padding: "8px 16px",
+            fontFamily: "monospace",
+            fontSize: "16px",
+            fontWeight: 700,
+            color: "#fff",
+            letterSpacing: "1px",
+            display: "flex",
+            alignItems: "center",
+          }}>
+            {promoCode}
+          </div>
+          <button
+            onClick={handleCopy}
+            style={{
+              background: copied ? "#22c55e" : "#e8304a",
+              color: "#fff",
+              border: "none",
+              borderRadius: "0 8px 8px 0",
+              padding: "8px 16px",
+              fontSize: "13px",
+              fontWeight: 600,
+              cursor: "pointer",
+              transition: "all 0.2s ease-in-out",
+              boxShadow: "0 4px 12px rgba(232, 48, 74, 0.2)",
+            }}
+          >
+            {copied ? "Kopírováno!" : "Kopírovat"}
+          </button>
+        </div>
+      </div>
+      <style>{`
+        @keyframes pulse {
+          0% { opacity: 0.6; }
+          50% { opacity: 1; }
+          100% { opacity: 0.6; }
+        }
+      `}</style>
     </div>
   );
 }

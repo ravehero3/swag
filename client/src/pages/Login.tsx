@@ -34,7 +34,7 @@ function Login() {
         data = JSON.parse(text);
       } catch (parseErr) {
         console.error("Failed to parse JSON:", parseErr);
-        throw new Error("Server vrátil neplatný formát dat (HTML místo JSON). Pravděpodobně chyba v routování na Vercelu.");
+        throw new Error("Server vrátil neplatný formát dat (HTML místo JSON). Pravděpodobně chyba v routování na hostingu.");
       }
 
       if (!res.ok) {
