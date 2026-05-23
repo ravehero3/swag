@@ -436,8 +436,8 @@ function App() {
 
   const isAdminPage = location === "/admin";
   const isPokladnaPage = location === "/pokladna";
-  const [specialOfferActive, setSpecialOfferActive] = useState(false);
-  const headerSpacerHeight = 42 + (specialOfferActive ? 42 : 0);
+  const [specialOfferBarHeight, setSpecialOfferBarHeight] = useState(0);
+  const headerSpacerHeight = 42 + specialOfferBarHeight;
 
   return (
     <AppContext.Provider value={{ user, setUser, authLoading, cart, addToCart, removeFromCart, clearCart, isCartOpen, setIsCartOpen, isNewsletterOpen, setIsNewsletterOpen, settings, refreshSettings, savedCount, refreshSavedCount, previewPlayer: { currentItem: previewCurrentItem, isPlaying: isPreviewPlaying, isLooping: isPreviewLooping, isShuffling: isPreviewShuffling, playPreview, handlePlayPause: handlePreviewPlayPause, handlePrevious: handlePreviewPrevious, handleNext: handlePreviewNext, handleToggleLoop: () => setIsPreviewLooping((v) => !v), handleToggleShuffle: () => setIsPreviewShuffling((v) => !v), audioRef: previewAudioRef, setPreviewMeta } }}>
@@ -449,7 +449,13 @@ function App() {
         />
         <Header />
         {!isAdminPage && (
-          <SpecialOfferBanner settings={settings} onActiveChange={setSpecialOfferActive} />
+          <SpecialOfferBanner
+            settings={settings}
+            onActiveChange={(active) => {
+              if (!active) setSpecialOfferBarHeight(0);
+            }}
+            onHeightChange={setSpecialOfferBarHeight}
+          />
         )}
         <div style={{ height: `${headerSpacerHeight}px`, flexShrink: 0 }} aria-hidden="true" />
         <main style={{ flex: 1, position: "relative", zIndex: 20 }} className="fade-in">
