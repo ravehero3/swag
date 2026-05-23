@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useApp } from "../App.js";
 import { useLocation } from "wouter";
+import { calculateOrderTotal } from "../lib/pricing.js";
 
 function formatCzechPrice(amount: number): string {
   return amount.toLocaleString("cs-CZ", { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + " Kč";
@@ -27,8 +28,19 @@ function Checkout() {
   const [agreeVop, setAgreeVop] = useState(false);
   const [agreeDigital, setAgreeDigital] = useState(false);
 
-  const total = cart.reduce((sum: number, item: any) => sum + Number(item.price), 0);
-  const finalTotal = total * (1 - discount / 100);
+  const cartItems = useMemo(
+    () =>
+      cart.map((item: any) => ({
+        price: Number(item.price) || 0,
+        productType: item.productType as string,
+      })),
+    [cart]
+  );
+  const { rawTotal: total, kitSubtotal, discountAmount, finalTotal } = useMemo(
+    () => calculateOrderTotal(cartItems, discount),
+    [cartItems, discount]
+  );
+  const hasKitsInCart = kitSubtotal > 0;
   const isFreeOrder = finalTotal === 0;
 
   useEffect(() => {
@@ -59,11 +71,22 @@ function Checkout() {
 
   const applyPromoCode = async () => {
     if (!promoCode.trim()) return;
+    if (!hasKitsInCart) {
+      setPromoError("Sleva platí pouze na zvukové kity (ne na beaty)");
+      setDiscount(0);
+      return;
+    }
     try {
       const res = await fetch("/api/promo-codes/validate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: promoCode.trim() }),
+        body: JSON.stringify({
+          code: promoCode.trim(),
+          items: cart.map((item: any) => ({
+            productType: item.productType,
+            price: item.price,
+          })),
+        }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -73,7 +96,7 @@ function Checkout() {
         setPromoError(data.error || "Neplatný kód");
         setDiscount(0);
       }
-    } catch (err) {
+    } catch {
       setPromoError("Chyba při ověřování kódu");
     }
   };
@@ -435,9 +458,13 @@ function Checkout() {
                 <span>Mezisoučet</span>
                 <span>{formatCzechPrice(total)}</span>
               </div>
+              <div style={{ ...s.row, color: "#888", fontSize: "12px" }}>
+                <span>Sleva na zvukové kity ({discount}%)</span>
+                <span>−{formatCzechPrice(discountAmount)}</span>
+              </div>
               <div style={{ ...s.row, color: "#24e053", fontSize: "13px" }}>
-                <span>Sleva ({discount}%) – {promoCode.toUpperCase()}</span>
-                <span>−{formatCzechPrice(Math.round(total * discount / 100))}</span>
+                <span>Kód {promoCode.toUpperCase()}</span>
+                <span />
               </div>
             </>
           )}
@@ -453,6 +480,9 @@ function Checkout() {
         {/* Promo code */}
         <div style={s.section}>
           <label style={s.label12}>Promo kód</label>
+          <p style={{ fontSize: "11px", color: "#666", margin: "0 0 8px 0", lineHeight: 1.5 }}>
+            Sleva platí pouze na zvukové kity, ne na beaty.
+          </p>
           <div style={{ display: "flex", gap: "8px" }}>
             <input
               value={promoCode}
@@ -469,7 +499,11 @@ function Checkout() {
             )}
           </div>
           {promoError && <p style={{ color: "#ff4444", fontSize: "12px", marginTop: "4px" }}>{promoError}</p>}
-          {discount > 0 && <p style={{ color: "#24e053", fontSize: "12px", marginTop: "4px" }}>Sleva {discount}% aplikována</p>}
+          {discount > 0 && (
+            <p style={{ color: "#24e053", fontSize: "12px", marginTop: "4px" }}>
+              Sleva {discount}% aplikována na zvukové kity
+            </p>
+          )}
         </div>
 
         {/* Payment method */}

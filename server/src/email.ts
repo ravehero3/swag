@@ -5,6 +5,7 @@ import {
   generateOrderItemContractPdf,
   isContractEligibleItem,
 } from "./lib/contracts.js";
+import { orderQualifiesForLicence } from "./lib/pricing.js";
 import {
   fillContractTemplate,
   formatDateCzech,
@@ -642,8 +643,9 @@ export async function sendContractEmail(orderId: number): Promise<void> {
   const emailHtml = buildPurchaseEmailHtml(order, downloadItems, datum, appUrl, introText);
 
   const attachments: { filename: string; content: string; contentType: string }[] = [];
-  const isFreeOrder = Number(order.total) === 0 || order.payment_method === "free";
-  const contractItems = isFreeOrder ? [] : items.filter((i: any) => isContractEligibleItem(i));
+  const contractItems = orderQualifiesForLicence(order)
+    ? items.filter((i: any) => isContractEligibleItem(i))
+    : [];
 
   for (const item of contractItems) {
     const pdf = await generateOrderItemContractPdf(order, item);

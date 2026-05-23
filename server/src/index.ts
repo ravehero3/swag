@@ -497,8 +497,17 @@ app.get("/api/promo-codes", requireAdmin, async (_req, res) => {
 
 app.post("/api/promo-codes/validate", async (req, res) => {
   try {
-    const { code } = req.body;
+    const { code, items } = req.body;
     if (!code) return res.status(400).json({ error: "Kód je povinný" });
+
+    const { isSoundKitType } = await import("./lib/pricing.js");
+    const cartItems: { productType?: string }[] = Array.isArray(items) ? items : [];
+    if (cartItems.length > 0 && !cartItems.some((it) => isSoundKitType(it.productType))) {
+      return res.status(400).json({
+        error: "Sleva platí pouze na zvukové kity (ne na beaty)",
+      });
+    }
+
     const result = await pool.query(
       "SELECT discount_percent FROM promo_codes WHERE code = $1 AND is_active = true AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)",
       [code.toUpperCase()]

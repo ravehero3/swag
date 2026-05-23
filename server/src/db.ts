@@ -225,7 +225,7 @@ export async function initDatabase() {
         ('ig_story_card_padding', '16'),
         ('special_offer_enabled', 'false'),
         ('special_offer_percentage', '15'),
-        ('special_offer_text', 'SPECIÁLNÍ AKCE! Omezená nabídka končí za chvíli. Využijte slevový kód:'),
+        ('special_offer_text', 'Sleva 15 % na vše pro hudební producenty'),
         ('special_offer_duration_minutes', '45')
       ON CONFLICT (key) DO NOTHING;
     `);
@@ -293,6 +293,13 @@ export async function initDatabase() {
       ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMPTZ;
       ALTER TABLE beat_comments ADD COLUMN IF NOT EXISTS time_offset NUMERIC DEFAULT 0;
       ALTER TABLE promo_codes ADD COLUMN IF NOT EXISTS expires_at TIMESTAMP;
+    `);
+
+    await client.query(`
+      UPDATE settings
+      SET value = 'Sleva 15 % na vše pro hudební producenty'
+      WHERE key = 'special_offer_text'
+        AND value = 'SPECIÁLNÍ AKCE! Omezená nabídka končí za chvíli. Využijte slevový kód:';
     `);
 
     console.log("Database initialized successfully");

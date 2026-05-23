@@ -2,6 +2,7 @@ import { lazy, Suspense, useState, useEffect, useRef, useCallback, createContext
 import { Route, Switch, useLocation, Redirect } from "wouter";
 import { toAudioProxyUrl } from "./lib/audioProxy.js";
 import Header from "./components/Header.js";
+import SpecialOfferBanner from "./components/SpecialOfferBanner.js";
 import ExtendedFooter from "./components/ExtendedFooter.js";
 import Footer from "./components/Footer.js";
 import CartModal from "./components/CartModal.js";
@@ -435,6 +436,8 @@ function App() {
 
   const isAdminPage = location === "/admin";
   const isPokladnaPage = location === "/pokladna";
+  const [specialOfferActive, setSpecialOfferActive] = useState(false);
+  const headerSpacerHeight = 42 + (specialOfferActive ? 42 : 0);
 
   return (
     <AppContext.Provider value={{ user, setUser, authLoading, cart, addToCart, removeFromCart, clearCart, isCartOpen, setIsCartOpen, isNewsletterOpen, setIsNewsletterOpen, settings, refreshSettings, savedCount, refreshSavedCount, previewPlayer: { currentItem: previewCurrentItem, isPlaying: isPreviewPlaying, isLooping: isPreviewLooping, isShuffling: isPreviewShuffling, playPreview, handlePlayPause: handlePreviewPlayPause, handlePrevious: handlePreviewPrevious, handleNext: handlePreviewNext, handleToggleLoop: () => setIsPreviewLooping((v) => !v), handleToggleShuffle: () => setIsPreviewShuffling((v) => !v), audioRef: previewAudioRef, setPreviewMeta } }}>
@@ -445,6 +448,10 @@ function App() {
           onError={() => setIsPreviewPlaying(false)}
         />
         <Header />
+        {!isAdminPage && (
+          <SpecialOfferBanner settings={settings} onActiveChange={setSpecialOfferActive} />
+        )}
+        <div style={{ height: `${headerSpacerHeight}px`, flexShrink: 0 }} aria-hidden="true" />
         <main style={{ flex: 1, position: "relative", zIndex: 20 }} className="fade-in">
           <Suspense fallback={<PageLoader />}>
             <Switch>

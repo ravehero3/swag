@@ -3283,7 +3283,7 @@ function SlevyTab({ settings, onRefresh }: any) {
     special_offer_enabled: settings.special_offer_enabled || "false",
     special_offer_percentage: settings.special_offer_percentage || "15",
     special_offer_duration_minutes: settings.special_offer_duration_minutes || "45",
-    special_offer_text: settings.special_offer_text || "SPECIÁLNÍ AKCE! Omezená nabídka končí za chvíli. Využijte slevový kód:",
+    special_offer_text: settings.special_offer_text || "Sleva 15 % na vše pro hudební producenty",
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);

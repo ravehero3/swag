@@ -6,6 +6,7 @@ import {
   generateOrderItemContractPdf,
   isContractEligibleItem,
 } from "../lib/contracts.js";
+import { calculateOrderTotal, orderQualifiesForLicence } from "../lib/pricing.js";
 
 export const BANK_TRANSFER_DETAILS = {
   accountNumber: "2845557133/0800",
@@ -149,7 +150,8 @@ router.get("/my", requireAuth, async (req: Request, res: Response) => {
             }
             const downloadUrl = product ? await resolveDownload(product.file_url) : null;
             const trackoutDownloadUrl = trackoutUrl ? await resolveDownload(trackoutUrl) : null;
-            const contractAvailable = isContractEligibleItem(it);
+            const contractAvailable =
+              orderQualifiesForLicence(o) && isContractEligibleItem(it);
             return {
               ...it,
               artwork_url: product?.artwork_url || it.artwork_url || null,
@@ -194,6 +196,9 @@ router.get("/:id/contract/:itemIndex", requireAuth, async (req: Request, res: Re
     if (!paid) {
       return res.status(403).json({ error: "Licence je dostupná až po zaplacení objednávky" });
     }
+    if (!orderQualifiesForLicence(order)) {
+      return res.status(403).json({ error: "Licence není vydávána pro bezplatné objednávky" });
+    }
 
     const items: any[] = Array.isArray(order.items) ? order.items : [];
     const item = items[itemIndex];
@@ -223,8 +228,6 @@ router.post("/", async (req: Request, res: Response) => {
     const method = paymentMethod === "bank_transfer" ? "bank_transfer" : paymentMethod === "free" ? "free" : "gopay";
 
     const rawItems: any[] = Array.isArray(items) ? items : [];
-    const rawTotal = rawItems.reduce((sum: number, it: any) => sum + (Number(it.price) || 0), 0);
-
     let discountPercent = 0;
     let appliedPromoCode: string | null = null;
 
@@ -239,7 +242,13 @@ router.post("/", async (req: Request, res: Response) => {
       }
     }
 
-    const finalTotal = Math.round(rawTotal * (1 - discountPercent / 100) * 100) / 100;
+    const { finalTotal, kitSubtotal } = calculateOrderTotal(rawItems, discountPercent);
+
+    if (appliedPromoCode && discountPercent > 0 && kitSubtotal === 0) {
+      return res.status(400).json({
+        error: "Sleva platí pouze na zvukové kity (ne na beaty)",
+      });
+    }
 
     // Block order if any beat's exclusive license has already been sold
     for (const item of rawItems) {
