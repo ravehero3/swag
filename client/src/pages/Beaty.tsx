@@ -164,8 +164,8 @@ function Beaty() {
       document.body.removeChild(a);
     }
   };
-  const [sortBy, setSortBy] = useState<"bpm" | "key" | "title" | null>("title");
-  const [sortAsc, setSortAsc] = useState(false);
+  const [sortBy, setSortBy] = useState<"bpm" | "key" | "title" | null>(null);
+  const [sortAsc, setSortAsc] = useState(true);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [showTitle, setShowTitle] = useState(false);
   const [comments, setComments] = useState<any[]>([]);
@@ -638,6 +638,72 @@ function Beaty() {
           100% { transform: scale(1); }
         }
         .heart-pop { animation: heartPop 0.35s ease-out forwards; }
+
+        .beats-glass-card {
+          background: linear-gradient(160deg, rgba(255,255,255,0.055) 0%, rgba(255,255,255,0.018) 40%, rgba(255,255,255,0.03) 100%);
+          border: 1px solid rgba(255,255,255,0.09);
+          border-top: 1px solid rgba(255,255,255,0.18);
+          border-radius: 20px;
+          backdrop-filter: blur(28px) saturate(1.5);
+          -webkit-backdrop-filter: blur(28px) saturate(1.5);
+          box-shadow:
+            0 24px 64px rgba(0,0,0,0.65),
+            0 4px 16px rgba(0,0,0,0.4),
+            inset 0 1px 0 rgba(255,255,255,0.09),
+            inset 0 0 0 0.5px rgba(255,255,255,0.04);
+          overflow: hidden;
+          position: relative;
+          padding-bottom: 8px;
+        }
+
+        .beats-glass-card::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 8%;
+          right: 8%;
+          height: 1px;
+          background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.22) 30%, rgba(255,255,255,0.35) 50%, rgba(255,255,255,0.22) 70%, transparent 100%);
+          pointer-events: none;
+          z-index: 1;
+        }
+
+        .beats-glass-card::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 80px;
+          background: linear-gradient(180deg, rgba(255,255,255,0.025) 0%, transparent 100%);
+          pointer-events: none;
+          border-radius: 20px 20px 0 0;
+          z-index: 0;
+        }
+
+        .beat-row-playing {
+          background: linear-gradient(90deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.03) 100%) !important;
+        }
+
+        .beat-track-number {
+          position: absolute;
+          top: 2px;
+          left: 2px;
+          font-size: 8px;
+          font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+          font-weight: 600;
+          color: rgba(255,255,255,0.6);
+          background: rgba(0,0,0,0.72);
+          padding: 1px 3px;
+          border-radius: 2px;
+          line-height: 1.3;
+          letter-spacing: 0.01em;
+          pointer-events: none;
+          backdrop-filter: blur(4px);
+          z-index: 2;
+          min-width: 14px;
+          text-align: center;
+        }
 
         .featured-beat-inner {
           display: flex;
@@ -1219,7 +1285,7 @@ function Beaty() {
         )}
 
         <div ref={beatsListRef} className="scroll-fade-section beat-list" style={{ marginBottom: "48px", maxWidth: "1200px", margin: "0 auto", marginTop: "60px" }}>
-          {otherBeats.length === 0 && !displayedHighlight ? (
+          {beats.length === 0 && !displayedHighlight ? (
             <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "8px" }}>
               {Array(4).fill(null).map((_, index) => (
                 <div
@@ -1244,7 +1310,7 @@ function Beaty() {
               ))}
             </div>
           ) : (
-            <>
+            <div className="beats-glass-card">
               <div className="beat-list-header" style={{ display: "flex", alignItems: "center", padding: "16px 16px 8px 16px", gap: "16px", marginTop: "16px", position: "relative" }}>
                 {/* matches the mobile-hide heart button wrapper in each row */}
                 <div className="mobile-hide" style={{ width: "28px", flexShrink: 0, marginRight: "-4px" }} />
@@ -1260,10 +1326,10 @@ function Beaty() {
                 {/* KEY — matches beat key column */}
                 <div className="desktop-only" style={{ width: "100px", flexShrink: 0 }}><button onClick={() => { setSortBy("key"); setSortAsc(sortBy === "key" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0, textAlign: "left", width: "100%" }}>KEY {sortBy === "key" && (sortAsc ? "↑" : "↓")}</button></div>
               </div>
-              {sortedBeats.map((beat) => (
+              {sortedBeats.map((beat, beatIndex) => (
             <div
               key={beat.id}
-              className="beat-row"
+              className={`beat-row${currentBeat?.id === beat.id ? " beat-row-playing" : ""}`}
               onClick={() => playBeat(beat)}
               style={{
                 display: "flex",
@@ -1353,14 +1419,17 @@ function Beaty() {
                 <span style={{ fontSize: "10px", color: "transparent", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", minWidth: "20px", letterSpacing: "0.02em" }}>0</span>
               )}
               </div>
-              <BeatArtwork
-                artworkUrl={beat.artwork_url}
-                alt={beat.title}
-                width={48}
-                height={48}
-                borderRadius={4}
-                className="beat-artwork"
-              />
+              <div style={{ position: "relative", flexShrink: 0 }}>
+                <BeatArtwork
+                  artworkUrl={beat.artwork_url}
+                  alt={beat.title}
+                  width={48}
+                  height={48}
+                  borderRadius={4}
+                  className="beat-artwork"
+                />
+                <span className="beat-track-number">{beatIndex + 1}</span>
+              </div>
               <div className="beat-title-col" style={{ width: "240px", minWidth: "240px", maxWidth: "240px", flexShrink: 0, marginRight: "12px", display: "flex", flexDirection: "column", gap: "4px", overflow: "hidden" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "6px", overflow: "hidden" }}>
                   <div className="beat-title-col-text" style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "20px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flexShrink: 1, minWidth: 0 }}>{beat.title}</div>
@@ -1679,7 +1748,7 @@ function Beaty() {
               </div>
             </div>
             ))}
-            </>
+            </div>
           )}
           
           <div className="fade-in-section delay-3" style={{ display: "flex", justifyContent: "center", gap: "16px", marginTop: "16px", marginBottom: "32px", marginLeft: "568px", position: "relative", zIndex: 9999, alignItems: "center", pointerEvents: "auto" }}>

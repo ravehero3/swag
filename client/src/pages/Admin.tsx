@@ -143,6 +143,7 @@ interface Beat {
   is_published: boolean;
   is_highlighted: boolean;
   waveform_data?: number[] | null;
+  order_index?: number;
 }
 
 interface StagedBeat {
@@ -777,6 +778,26 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   const [isDragOver, setIsDragOver] = useState(false);
   const [bulkCreating, setBulkCreating] = useState(false);
   const bulkFileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleBeatReorder = async (beatIdx: number, direction: "up" | "down") => {
+    const targetIdx = direction === "up" ? beatIdx - 1 : beatIdx + 1;
+    if (targetIdx < 0 || targetIdx >= beats.length) return;
+    const allSwaps: { id: number; orderIndex: number }[] = beats.map((b: Beat, i: number) => ({
+      id: b.id,
+      orderIndex: b.order_index ?? i * 10,
+    }));
+    const aOrder = allSwaps[beatIdx].orderIndex;
+    const bOrder = allSwaps[targetIdx].orderIndex;
+    allSwaps[beatIdx] = { ...allSwaps[beatIdx], orderIndex: bOrder };
+    allSwaps[targetIdx] = { ...allSwaps[targetIdx], orderIndex: aOrder };
+    const res = await fetch("/api/beats/reorder", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ swaps: allSwaps }),
+    });
+    if (res.ok) onRefresh();
+  };
 
   const fileToTitle = (file: File) =>
     file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ").trim();
@@ -1663,7 +1684,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
           </tr>
         </thead>
         <tbody>
-          {beats.map((beat: Beat) => (
+          {beats.map((beat: Beat, beatIdx: number) => (
             <tr
               key={beat.id}
               style={{
@@ -1751,6 +1772,26 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                 )}
               </td>
               <td style={{ padding: "12px", textAlign: "right" }} onClick={(e) => e.stopPropagation()}>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: "4px", marginRight: "8px", border: "1px solid #2a2a2a", borderRadius: "4px", overflow: "hidden" }}>
+                  <button
+                    onClick={() => handleBeatReorder(beatIdx, "up")}
+                    disabled={beatIdx === 0}
+                    data-testid={`button-beat-up-${beat.id}`}
+                    title="Posunout nahoru"
+                    style={{ background: "transparent", border: "none", color: beatIdx === 0 ? "#333" : "#666", cursor: beatIdx === 0 ? "default" : "pointer", padding: "4px 7px", fontSize: "12px", lineHeight: 1, transition: "color 0.15s" }}
+                    onMouseEnter={(e) => { if (beatIdx > 0) (e.currentTarget as HTMLButtonElement).style.color = "#fff"; }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = beatIdx === 0 ? "#333" : "#666"; }}
+                  >↑</button>
+                  <button
+                    onClick={() => handleBeatReorder(beatIdx, "down")}
+                    disabled={beatIdx === beats.length - 1}
+                    data-testid={`button-beat-down-${beat.id}`}
+                    title="Posunout dolů"
+                    style={{ background: "transparent", border: "none", color: beatIdx === beats.length - 1 ? "#333" : "#666", cursor: beatIdx === beats.length - 1 ? "default" : "pointer", padding: "4px 7px", fontSize: "12px", lineHeight: 1, transition: "color 0.15s" }}
+                    onMouseEnter={(e) => { if (beatIdx < beats.length - 1) (e.currentTarget as HTMLButtonElement).style.color = "#fff"; }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = beatIdx === beats.length - 1 ? "#333" : "#666"; }}
+                  >↓</button>
+                </div>
                 <button className="btn btn-admin" onClick={() => { setEditing(beat); setShowForm(true); }} style={{ marginRight: "8px" }} data-testid={`button-edit-beat-${beat.id}`}>Upravit</button>
                 <button className="btn btn-admin" onClick={() => handleDelete(beat.id)} style={{ color: "#333", borderColor: "#333" }} data-testid={`button-delete-beat-${beat.id}`}>Smazat</button>
               </td>

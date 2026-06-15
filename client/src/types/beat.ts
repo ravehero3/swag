@@ -12,6 +12,7 @@ export interface Beat {
   waveform_data?: number[] | null;
   play_count?: number;
   product_type?: "beat" | "sound_kit";
+  order_index?: number;
 }
 
 export interface LicenseOption {

@@ -36,7 +36,7 @@ router.get("/", async (req: Request, res: Response) => {
       params.push(`%${search}%`);
     }
     
-    query += " ORDER BY created_at DESC";
+    query += " ORDER BY order_index ASC NULLS LAST, created_at DESC";
     const result = await pool.query(query, params);
     res.set("Cache-Control", "no-store, no-cache, must-revalidate");
     res.json(result.rows);
@@ -58,9 +58,25 @@ router.get("/highlighted", async (_req: Request, res: Response) => {
   }
 });
 
+router.put("/reorder", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { swaps } = req.body;
+    if (!Array.isArray(swaps) || swaps.length === 0) {
+      return res.status(400).json({ error: "Swaps are required" });
+    }
+    for (const { id, orderIndex } of swaps) {
+      await pool.query("UPDATE beats SET order_index = $1 WHERE id = $2", [orderIndex, id]);
+    }
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Error reordering beats:", error);
+    res.status(500).json({ error: "Chyba při přeřazení beatů" });
+  }
+});
+
 router.get("/all", requireAdmin, async (_req: Request, res: Response) => {
   try {
-    const result = await pool.query("SELECT * FROM beats ORDER BY created_at DESC");
+    const result = await pool.query("SELECT * FROM beats ORDER BY order_index ASC NULLS LAST, created_at DESC");
     res.json(result.rows);
   } catch (error) {
     res.status(500).json({ error: "Chyba při načítání beatů" });
