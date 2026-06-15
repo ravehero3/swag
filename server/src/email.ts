@@ -459,6 +459,7 @@ function buildPurchaseEmailHtml(
   datum: string,
   appUrl: string,
   customIntroText?: string,
+  hasContracts?: boolean,
 ): string {
   const downloadRows = downloadItems.map(item => {
     const priceFormatted = formatPriceCzech(item.price);
@@ -484,7 +485,7 @@ function buildPurchaseEmailHtml(
       </tr>`;
   }).join("");
 
-  const hasBeatContracts = downloadItems.some(i => i.productType === "beat" || i.productType === "sound_kit");
+  const hasBeatContracts = hasContracts ?? downloadItems.some(i => i.productType === "beat" || i.productType === "sound_kit");
 
   return `<!DOCTYPE html>
 <html lang="cs">
@@ -640,12 +641,13 @@ export async function sendContractEmail(orderId: number): Promise<void> {
 
   const resend = new Resend(apiKey);
 
-  const emailHtml = buildPurchaseEmailHtml(order, downloadItems, datum, appUrl, introText);
-
-  const attachments: { filename: string; content: string; contentType: string }[] = [];
   const contractItems = orderQualifiesForLicence(order)
     ? items.filter((i: any) => isContractEligibleItem(i))
     : [];
+
+  const emailHtml = buildPurchaseEmailHtml(order, downloadItems, datum, appUrl, introText, contractItems.length > 0);
+
+  const attachments: { filename: string; content: string; contentType: string }[] = [];
 
   for (const item of contractItems) {
     const pdf = await generateOrderItemContractPdf(order, item);
@@ -1114,8 +1116,8 @@ export async function sendWelcomeEmail(email: string): Promise<void> {
     <tr><td align="center">
       <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#0a0a0a;border:1px solid #1a1a1a;border-radius:8px;overflow:hidden;">
         <tr>
-          <td style="padding:32px 40px 24px;border-bottom:1px solid #1a1a1a;">
-            <p style="margin:0;font-size:22px;font-weight:700;color:#fff;letter-spacing:0.05em;">VOODOO808</p>
+          <td style="padding:28px 40px 24px;border-bottom:1px solid #1a1a1a;text-align:center;">
+            <img src="${appUrl}/uploads/artwork/voodoo808-main-logo.png" alt="VOODOO808" width="180" style="display:inline-block;height:auto;max-width:180px;"/>
           </td>
         </tr>
         <tr>
@@ -1180,8 +1182,8 @@ export async function sendAbandonedCheckoutEmail(orderId: number): Promise<void>
     <tr><td align="center">
       <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#0a0a0a;border:1px solid #1a1a1a;border-radius:8px;overflow:hidden;">
         <tr>
-          <td style="padding:32px 40px 24px;border-bottom:1px solid #1a1a1a;">
-            <p style="margin:0;font-size:22px;font-weight:700;color:#fff;letter-spacing:0.05em;">VOODOO808</p>
+          <td style="padding:28px 40px 24px;border-bottom:1px solid #1a1a1a;text-align:center;">
+            <img src="${appUrl}/uploads/artwork/voodoo808-main-logo.png" alt="VOODOO808" width="180" style="display:inline-block;height:auto;max-width:180px;"/>
           </td>
         </tr>
         <tr>

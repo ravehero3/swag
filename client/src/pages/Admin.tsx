@@ -827,7 +827,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
       bpm: "140",
       key: "C",
       price: "5000",
-      isPublished: false,
+      isPublished: true,
     }));
     setStagedBeats(prev => [...prev, ...newStaged]);
     newStaged.forEach(b => uploadStagedBeat(b.localId, b.file));
@@ -990,6 +990,22 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
       onRefresh();
     } else {
       alert("Chyba při mazání beatů");
+    }
+  };
+
+  const handleBulkPublish = async () => {
+    if (selectedBeats.length === 0) return;
+    const res = await fetch("/api/beats/bulk-publish", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ ids: selectedBeats }),
+    });
+    if (res.ok) {
+      setSelectedBeats([]);
+      onRefresh();
+    } else {
+      alert("Chyba při zveřejňování beatů");
     }
   };
 
@@ -1519,8 +1535,16 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
       )}
 
       {selectedBeats.length > 0 && (
-        <div style={{ marginBottom: "16px", padding: "12px", background: "#1a1a1a", borderRadius: "3px", display: "flex", alignItems: "center", gap: "16px" }}>
-          <span data-testid="text-selected-count">{selectedBeats.length} vybráno</span>
+        <div style={{ marginBottom: "16px", padding: "12px", background: "#1a1a1a", borderRadius: "3px", display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
+          <span data-testid="text-selected-count" style={{ fontSize: "13px", color: "#aaa" }}>{selectedBeats.length} vybráno</span>
+          <button 
+            className="btn btn-admin" 
+            onClick={handleBulkPublish}
+            style={{ color: "#4caf50", borderColor: "#4caf50" }}
+            data-testid="button-bulk-publish-beats"
+          >
+            Zveřejnit vybrané
+          </button>
           <button 
             className="btn btn-admin" 
             onClick={handleBulkDelete} 
