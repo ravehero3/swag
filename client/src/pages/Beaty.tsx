@@ -682,7 +682,9 @@ function Beaty() {
         }
 
         .beat-row-playing {
-          background: linear-gradient(90deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.03) 100%) !important;
+          background: linear-gradient(90deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.04) 100%) !important;
+          outline: 1.5px solid rgba(255,255,255,0.40) !important;
+          border-radius: 4px !important;
         }
 
         .beat-track-number {
@@ -830,7 +832,7 @@ function Beaty() {
       
       <div style={{ padding: "0 20px" }} className="fade-in-grid">
         {displayedHighlight && (
-          <div className="fade-in-section delay-2 featured-beat-section" style={{ marginBottom: "48px", display: "flex", justifyContent: "center", marginTop: "-116px", position: "relative", zIndex: 50 }}>
+          <div className="fade-in-section delay-2 featured-beat-section" style={{ marginBottom: "48px", display: "flex", justifyContent: "center", marginTop: "-116px", position: "relative", zIndex: 50, minHeight: "330px" }}>
             <div className="featured-beat-inner">
               <div style={{ position: "relative", flexShrink: 0 }} className="highlight-artwork-container featured-beat-artwork">
                 <style>{`
@@ -1121,7 +1123,7 @@ function Beaty() {
         )}
 
         {/* Always-present container — reserves space so the beat list never jumps */}
-        <div style={{ maxWidth: "1200px", margin: "0 auto", minHeight: currentBeat ? undefined : "84px" }}>
+        <div style={{ maxWidth: "1200px", margin: "0 auto", minHeight: "100px" }}>
           {currentBeat && (
             <>
               {comments.length > 0 && (
@@ -1199,99 +1201,6 @@ function Beaty() {
               </SoundWave>
             </>
           )}
-        </div>
-
-        {/* Stats + comment input: slides in with max-height transition so the list below doesn't hard-jump */}
-        <div style={{
-          maxWidth: "1200px",
-          margin: "0 auto",
-          overflow: "hidden",
-          maxHeight: currentBeat && isPlaying ? "600px" : "0px",
-          transition: "max-height 0.35s ease",
-        }}>
-          {currentBeat && isPlaying && <div style={{ padding: "0 16px", marginTop: "8px", marginBottom: "8px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "12px" }}>
-              <span data-testid="text-beat-saves" style={{ fontSize: "12px", color: "#777", display: "flex", alignItems: "center", gap: "4px" }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ color: "#777" }}><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
-                {beatStats?.saves ?? 0}
-              </span>
-              <span data-testid="text-beat-comments" style={{ fontSize: "12px", color: "#777", display: "flex", alignItems: "center", gap: "4px" }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: "#777" }}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
-                {beatStats?.comments ?? 0}
-              </span>
-              <span data-testid="text-beat-plays" style={{ fontSize: "12px", color: "#777", display: "flex", alignItems: "center", gap: "4px" }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ color: "#777" }}><polygon points="5 3 19 12 5 21 5 3" /></svg>
-                {(beatStats?.plays ?? beatPlayCounts[currentBeat.id] ?? 0).toLocaleString()}
-              </span>
-            </div>
-            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-              <input
-                type="text"
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") handleCommentSubmit(); }}
-                placeholder={user ? "Napište komentář..." : "Pro komentáře se přihlaste"}
-                disabled={!user || submittingComment}
-                maxLength={200}
-                data-testid="input-beat-comment"
-                style={{ flex: 1, padding: "8px 16px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "20px", color: "#fff", fontSize: "13px", fontFamily: "inherit", outline: "none" }}
-              />
-              {user && (
-                <button
-                  onClick={handleCommentSubmit}
-                  disabled={!commentText.trim() || submittingComment}
-                  data-testid="button-submit-comment"
-                  style={{ padding: "8px 16px", background: commentText.trim() ? "#fff" : "#222", color: commentText.trim() ? "#000" : "#555", border: "none", borderRadius: "20px", fontSize: "13px", cursor: commentText.trim() ? "pointer" : "default", fontFamily: "inherit", transition: "all 0.2s" }}
-                >
-                  {submittingComment ? "..." : "Odeslat"}
-                </button>
-              )}
-            </div>
-            {commentText.length > 0 && (
-              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "4px", paddingRight: "4px" }}>
-                <span
-                  data-testid="text-comment-char-count"
-                  style={{ fontSize: "11px", color: commentText.length >= 180 ? (commentText.length >= 200 ? "#e55" : "#a87a30") : "#444" }}
-                >
-                  {commentText.length}/200
-                </span>
-              </div>
-            )}
-            {comments.length > 0 && (
-              <div style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "6px", maxHeight: "320px", overflowY: "auto" }}>
-                {comments.map((c: any) => (
-                  <div
-                    key={c.id}
-                    data-testid={`comment-item-${c.id}`}
-                    style={{ position: "relative", background: "#111", border: "1px solid #2a2a2a", borderRadius: "12px", padding: "8px 10px 8px 8px", width: "100%", boxSizing: "border-box" }}
-                    onMouseEnter={() => setHoveredCommentId(c.id)}
-                    onMouseLeave={() => setHoveredCommentId(null)}
-                  >
-                    <div style={{ display: "flex", gap: "8px", alignItems: "flex-start" }}>
-                      <div style={{ width: "22px", height: "22px", borderRadius: "50%", background: "#222", border: "1px solid #333", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "9px", color: "#666", overflow: "hidden", marginTop: "2px" }}>
-                        {c.avatar_url ? (
-                          <img src={c.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                        ) : (
-                          (c.username || c.email)?.[0]?.toUpperCase() || "?"
-                        )}
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: "2px" }}>
-                        <span style={{ fontSize: "11px", color: "#555", display: "block" }}>{c.username || c.email?.split("@")[0]}</span>
-                        <span style={{ fontSize: "13px", color: "#ccc", display: "block", wordBreak: "break-word", whiteSpace: "pre-wrap", lineHeight: "1.5" }}>{c.text}</span>
-                      </div>
-                    </div>
-                    {c.user_id === user?.id && hoveredCommentId === c.id && (
-                      <button
-                        onClick={() => handleDeleteComment(c.id)}
-                        data-testid={`button-delete-comment-${c.id}`}
-                        style={{ position: "absolute", top: "-6px", right: "-6px", width: "16px", height: "16px", borderRadius: "50%", background: "#333", border: "1px solid #555", color: "#aaa", fontSize: "10px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 0, lineHeight: 1 }}
-                      >×</button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>}
         </div>
 
         <div ref={beatsListRef} className="scroll-fade-section beat-list" style={{ marginBottom: "48px", maxWidth: "1200px", margin: "0 auto", marginTop: "60px" }}>
@@ -1856,6 +1765,101 @@ function Beaty() {
               </button>
           </div>
         </div>
+
+        {/* Stats + comments — placed BELOW the beat list so expanding never shifts the list */}
+        {currentBeat && (
+          <div style={{
+            maxWidth: "1200px",
+            margin: "0 auto",
+            overflow: "hidden",
+            maxHeight: isPlaying ? "600px" : "0px",
+            transition: "max-height 0.3s ease",
+          }}>
+            <div style={{ padding: "16px 16px 8px 16px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "12px" }}>
+                <span data-testid="text-beat-saves" style={{ fontSize: "12px", color: "#777", display: "flex", alignItems: "center", gap: "4px" }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ color: "#777" }}><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+                  {beatStats?.saves ?? 0}
+                </span>
+                <span data-testid="text-beat-comments" style={{ fontSize: "12px", color: "#777", display: "flex", alignItems: "center", gap: "4px" }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: "#777" }}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+                  {beatStats?.comments ?? 0}
+                </span>
+                <span data-testid="text-beat-plays" style={{ fontSize: "12px", color: "#777", display: "flex", alignItems: "center", gap: "4px" }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ color: "#777" }}><polygon points="5 3 19 12 5 21 5 3" /></svg>
+                  {(beatStats?.plays ?? beatPlayCounts[currentBeat.id] ?? 0).toLocaleString()}
+                </span>
+              </div>
+              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                <input
+                  type="text"
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") handleCommentSubmit(); }}
+                  placeholder={user ? "Napište komentář..." : "Pro komentáře se přihlaste"}
+                  disabled={!user || submittingComment}
+                  maxLength={200}
+                  data-testid="input-beat-comment"
+                  style={{ flex: 1, padding: "8px 16px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "20px", color: "#fff", fontSize: "13px", fontFamily: "inherit", outline: "none" }}
+                />
+                {user && (
+                  <button
+                    onClick={handleCommentSubmit}
+                    disabled={!commentText.trim() || submittingComment}
+                    data-testid="button-submit-comment"
+                    style={{ padding: "8px 16px", background: commentText.trim() ? "#fff" : "#222", color: commentText.trim() ? "#000" : "#555", border: "none", borderRadius: "20px", fontSize: "13px", cursor: commentText.trim() ? "pointer" : "default", fontFamily: "inherit", transition: "all 0.2s" }}
+                  >
+                    {submittingComment ? "..." : "Odeslat"}
+                  </button>
+                )}
+              </div>
+              {commentText.length > 0 && (
+                <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "4px", paddingRight: "4px" }}>
+                  <span
+                    data-testid="text-comment-char-count"
+                    style={{ fontSize: "11px", color: commentText.length >= 180 ? (commentText.length >= 200 ? "#e55" : "#a87a30") : "#444" }}
+                  >
+                    {commentText.length}/200
+                  </span>
+                </div>
+              )}
+              {comments.length > 0 && (
+                <div style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "6px", maxHeight: "320px", overflowY: "auto" }}>
+                  {comments.map((c: any) => (
+                    <div
+                      key={c.id}
+                      data-testid={`comment-item-${c.id}`}
+                      style={{ position: "relative", background: "#111", border: "1px solid #2a2a2a", borderRadius: "12px", padding: "8px 10px 8px 8px", width: "100%", boxSizing: "border-box" }}
+                      onMouseEnter={() => setHoveredCommentId(c.id)}
+                      onMouseLeave={() => setHoveredCommentId(null)}
+                    >
+                      <div style={{ display: "flex", gap: "8px", alignItems: "flex-start" }}>
+                        <div style={{ width: "22px", height: "22px", borderRadius: "50%", background: "#222", border: "1px solid #333", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "9px", color: "#666", overflow: "hidden", marginTop: "2px" }}>
+                          {c.avatar_url ? (
+                            <img src={c.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          ) : (
+                            (c.username || c.email)?.[0]?.toUpperCase() || "?"
+                          )}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: "2px" }}>
+                          <span style={{ fontSize: "11px", color: "#555", display: "block" }}>{c.username || c.email?.split("@")[0]}</span>
+                          <span style={{ fontSize: "13px", color: "#ccc", display: "block", wordBreak: "break-word", whiteSpace: "pre-wrap", lineHeight: "1.5" }}>{c.text}</span>
+                        </div>
+                      </div>
+                      {c.user_id === user?.id && hoveredCommentId === c.id && (
+                        <button
+                          onClick={() => handleDeleteComment(c.id)}
+                          data-testid={`button-delete-comment-${c.id}`}
+                          style={{ position: "absolute", top: "-6px", right: "-6px", width: "16px", height: "16px", borderRadius: "50%", background: "#333", border: "1px solid #555", color: "#aaa", fontSize: "10px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 0, lineHeight: 1 }}
+                        >×</button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {isHomePage && (
           <>
