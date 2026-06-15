@@ -164,7 +164,7 @@ function Beaty() {
       document.body.removeChild(a);
     }
   };
-  const [sortBy, setSortBy] = useState<"bpm" | "key" | null>(null);
+  const [sortBy, setSortBy] = useState<"bpm" | "key" | "title" | null>("title");
   const [sortAsc, setSortAsc] = useState(false);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [showTitle, setShowTitle] = useState(false);
@@ -585,15 +585,20 @@ function Beaty() {
   };
 
   const filteredBeats = beatLimit ? beats.slice(0, beatLimit) : beats;
-  // Always show the currently playing beat in the featured slot
-  const displayedHighlight = currentBeat ?? highlightedBeat;
-  // The list excludes whatever is in the featured slot; if a different beat is playing, original highlighted comes back into the list
-  const otherBeats = (() => {
-    const base = filteredBeats.filter((b) => b.id !== displayedHighlight?.id);
-    if (currentBeat && highlightedBeat && currentBeat.id !== highlightedBeat.id) {
-      return [highlightedBeat, ...base.filter(b => b.id !== highlightedBeat.id)];
-    }
-    return base;
+  // Featured slot always shows the admin-selected highlighted beat — never jumps to playing beat
+  const displayedHighlight = highlightedBeat;
+  // List always excludes only the highlighted beat; playing state is shown in-place via indicator
+  const otherBeats = filteredBeats.filter((b) => b.id !== highlightedBeat?.id);
+
+  const extractBeatNumber = (title: string): number => {
+    const matches = title.match(/\d+/g);
+    return matches ? parseInt(matches[matches.length - 1], 10) : 0;
+  };
+  const sortedBeats = (() => {
+    if (sortBy === "bpm") return [...otherBeats].sort((a: Beat, b: Beat) => sortAsc ? a.bpm - b.bpm : b.bpm - a.bpm);
+    if (sortBy === "key") return [...otherBeats].sort((a: Beat, b: Beat) => sortAsc ? (a.key || "").localeCompare(b.key || "") : (b.key || "").localeCompare(a.key || ""));
+    if (sortBy === "title") return [...otherBeats].sort((a: Beat, b: Beat) => sortAsc ? extractBeatNumber(a.title) - extractBeatNumber(b.title) : extractBeatNumber(b.title) - extractBeatNumber(a.title));
+    return otherBeats;
   })();
 
   if (beatsLoading) {
@@ -839,7 +844,7 @@ function Beaty() {
               <div className="featured-beat-info" style={{ display: "flex", flexDirection: "column", justifyContent: "flex-start", flex: 1 }}>
                 <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "6px" }}>
                   <span style={{ fontSize: "12px", fontFamily: "Work Sans, sans-serif", color: "#999" }}>
-                    {currentBeat && currentBeat.id === displayedHighlight?.id && isPlaying ? "Nyní hraje" : currentBeat ? "Naposledy hrán" : "Beat týdne"}
+                    {currentBeat?.id === highlightedBeat?.id && isPlaying ? "Nyní hraje" : "Beat týdne"}
                   </span>
                   <span style={{ fontSize: "12px", fontFamily: "Work Sans, sans-serif", color: "#666" }}>•</span>
                   <span style={{ fontSize: "12px", fontFamily: "Work Sans, sans-serif", color: "#666" }}>
@@ -1252,14 +1257,16 @@ function Beaty() {
                 {/* matches artwork image */}
                 <div style={{ width: "48px", flexShrink: 0 }} />
                 {/* NÁZEV — matches title column */}
-                <div className="beat-title-col" style={{ width: "240px", minWidth: "240px", maxWidth: "240px", flexShrink: 0, marginRight: "12px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666" }}>NÁZEV</div>
+                <div className="beat-title-col" style={{ width: "240px", minWidth: "240px", maxWidth: "240px", flexShrink: 0, marginRight: "12px" }}>
+                  <button onClick={() => { setSortBy("title"); setSortAsc(sortBy === "title" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0, textAlign: "left", width: "100%" }}>NÁZEV {sortBy === "title" && (sortAsc ? "↑" : "↓")}</button>
+                </div>
                 <div className="beat-header-separator" style={{ position: "absolute", bottom: 0, left: "80px", right: "16px", height: "1px", background: "#333" }} />
                 {/* BPM — matches beat bpm column */}
                 <div className="desktop-only" style={{ width: "100px", flexShrink: 0 }}><button onClick={() => { setSortBy("bpm"); setSortAsc(sortBy === "bpm" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0, textAlign: "left", width: "100%" }}>BPM {sortBy === "bpm" && (sortAsc ? "↑" : "↓")}</button></div>
                 {/* KEY — matches beat key column */}
                 <div className="desktop-only" style={{ width: "100px", flexShrink: 0 }}><button onClick={() => { setSortBy("key"); setSortAsc(sortBy === "key" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0, textAlign: "left", width: "100%" }}>KEY {sortBy === "key" && (sortAsc ? "↑" : "↓")}</button></div>
               </div>
-              {(sortBy && sortBy === "bpm" ? [...otherBeats].sort((a, b) => sortAsc ? a.bpm - b.bpm : b.bpm - a.bpm) : sortBy && sortBy === "key" ? [...otherBeats].sort((a, b) => sortAsc ? a.key.localeCompare(b.key) : b.key.localeCompare(a.key)) : otherBeats).map((beat) => (
+              {sortedBeats.map((beat) => (
             <div
               key={beat.id}
               className="beat-row"
