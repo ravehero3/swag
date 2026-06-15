@@ -1120,86 +1120,96 @@ function Beaty() {
           </div>
         )}
 
-        {currentBeat && (
-          <>
-            {comments.length > 0 && (
-              <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 16px 6px 16px", display: "flex", alignItems: "center", gap: "0" }}>
-                {comments.slice(0, 10).map((c: any, i: number) => (
-                  <div
-                    key={c.id}
-                    className="comment-avatar-wrap"
-                    style={{ marginLeft: i > 0 ? "-8px" : 0, zIndex: 10 - i }}
-                  >
-                    <div style={{ width: "26px", height: "26px", borderRadius: "50%", background: "#1a1a1a", border: "1.5px solid #333", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: "#666", overflow: "hidden", cursor: "pointer" }}>
-                      {c.avatar_url ? (
-                        <img src={c.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                      ) : (
-                        <span style={{ fontSize: "10px", color: "#888" }}>{(c.username || c.email)?.[0]?.toUpperCase() || "?"}</span>
-                      )}
+        {/* Always-present container — reserves space so the beat list never jumps */}
+        <div style={{ maxWidth: "1200px", margin: "0 auto", minHeight: currentBeat ? undefined : "84px" }}>
+          {currentBeat && (
+            <>
+              {comments.length > 0 && (
+                <div style={{ padding: "0 16px 6px 16px", display: "flex", alignItems: "center", gap: "0" }}>
+                  {comments.slice(0, 10).map((c: any, i: number) => (
+                    <div
+                      key={c.id}
+                      className="comment-avatar-wrap"
+                      style={{ marginLeft: i > 0 ? "-8px" : 0, zIndex: 10 - i }}
+                    >
+                      <div style={{ width: "26px", height: "26px", borderRadius: "50%", background: "#1a1a1a", border: "1.5px solid #333", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: "#666", overflow: "hidden", cursor: "pointer" }}>
+                        {c.avatar_url ? (
+                          <img src={c.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        ) : (
+                          <span style={{ fontSize: "10px", color: "#888" }}>{(c.username || c.email)?.[0]?.toUpperCase() || "?"}</span>
+                        )}
+                      </div>
+                      <div className="comment-tooltip" style={{ position: "absolute", bottom: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)", background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "6px", padding: "6px 10px", fontSize: "12px", color: "#ccc", minWidth: "160px", maxWidth: "420px", width: "max-content", wordBreak: "break-word", zIndex: 999, boxShadow: "0 4px 12px rgba(0,0,0,0.5)", whiteSpace: "normal" }}>
+                        <span style={{ color: "#555", marginRight: "6px" }}>{c.username || c.email?.split("@")[0]}</span>
+                        {c.text}
+                      </div>
                     </div>
-                    <div className="comment-tooltip" style={{ position: "absolute", bottom: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)", background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "6px", padding: "6px 10px", fontSize: "12px", color: "#ccc", minWidth: "160px", maxWidth: "420px", width: "max-content", wordBreak: "break-word", zIndex: 999, boxShadow: "0 4px 12px rgba(0,0,0,0.5)", whiteSpace: "normal" }}>
-                      <span style={{ color: "#555", marginRight: "6px" }}>{c.username || c.email?.split("@")[0]}</span>
-                      {c.text}
+                  ))}
+                </div>
+              )}
+              <SoundWave
+                audioRef={audioRef}
+                isPlaying={isPlaying}
+                audioUrl={currentBeat.preview_url}
+                isDraggingComment={isDraggingComment}
+                waveRef={waveContainerRef}
+              >
+                {comments.map((c: any) => {
+                  const isOwn = c.user_id === user?.id;
+                  const offset = typeof c.time_offset === 'number' ? c.time_offset : 0;
+                  return (
+                    <div
+                      key={c.id}
+                      style={{
+                        position: "absolute",
+                        left: `${offset * 100}%`,
+                        top: "50%",
+                        transform: "translate(-50%, -50%)",
+                        zIndex: draggingCommentId === c.id ? 200 : 50,
+                        pointerEvents: "all",
+                        userSelect: "none",
+                      }}
+                      onMouseDown={isOwn ? (e) => { e.stopPropagation(); handleCommentDragStart(e, c); } : undefined}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="waveform-comment-avatar" style={{
+                        width: "22px",
+                        height: "22px",
+                        borderRadius: "50%",
+                        background: "#1a1a1a",
+                        border: `1.5px solid ${isOwn ? '#888' : '#444'}`,
+                        overflow: "hidden",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: "9px",
+                        color: "#888",
+                        cursor: isOwn ? (draggingCommentId === c.id ? "grabbing" : "grab") : "default",
+                        boxShadow: "0 1px 6px rgba(0,0,0,0.7)",
+                      }}>
+                        {c.avatar_url ? (
+                          <img src={c.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        ) : (
+                          <span>{(c.username || c.email)?.[0]?.toUpperCase() || "?"}</span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-            <SoundWave
-              audioRef={audioRef}
-              isPlaying={isPlaying}
-              audioUrl={currentBeat.preview_url}
-              isDraggingComment={isDraggingComment}
-              waveRef={waveContainerRef}
-            >
-              {comments.map((c: any) => {
-                const isOwn = c.user_id === user?.id;
-                const offset = typeof c.time_offset === 'number' ? c.time_offset : 0;
-                return (
-                  <div
-                    key={c.id}
-                    style={{
-                      position: "absolute",
-                      left: `${offset * 100}%`,
-                      top: "50%",
-                      transform: "translate(-50%, -50%)",
-                      zIndex: draggingCommentId === c.id ? 200 : 50,
-                      pointerEvents: "all",
-                      userSelect: "none",
-                    }}
-                    onMouseDown={isOwn ? (e) => { e.stopPropagation(); handleCommentDragStart(e, c); } : undefined}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <div className="waveform-comment-avatar" style={{
-                      width: "22px",
-                      height: "22px",
-                      borderRadius: "50%",
-                      background: "#1a1a1a",
-                      border: `1.5px solid ${isOwn ? '#888' : '#444'}`,
-                      overflow: "hidden",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: "9px",
-                      color: "#888",
-                      cursor: isOwn ? (draggingCommentId === c.id ? "grabbing" : "grab") : "default",
-                      boxShadow: "0 1px 6px rgba(0,0,0,0.7)",
-                    }}>
-                      {c.avatar_url ? (
-                        <img src={c.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                      ) : (
-                        <span>{(c.username || c.email)?.[0]?.toUpperCase() || "?"}</span>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </SoundWave>
-          </>
-        )}
+                  );
+                })}
+              </SoundWave>
+            </>
+          )}
+        </div>
 
-        {currentBeat && isPlaying && (
-          <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0 16px", marginTop: "8px", marginBottom: "8px" }}>
+        {/* Stats + comment input: slides in with max-height transition so the list below doesn't hard-jump */}
+        <div style={{
+          maxWidth: "1200px",
+          margin: "0 auto",
+          overflow: "hidden",
+          maxHeight: currentBeat && isPlaying ? "600px" : "0px",
+          transition: "max-height 0.35s ease",
+        }}>
+          {currentBeat && isPlaying && <div style={{ padding: "0 16px", marginTop: "8px", marginBottom: "8px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "12px" }}>
               <span data-testid="text-beat-saves" style={{ fontSize: "12px", color: "#777", display: "flex", alignItems: "center", gap: "4px" }}>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ color: "#777" }}><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
@@ -1281,8 +1291,8 @@ function Beaty() {
                 ))}
               </div>
             )}
-          </div>
-        )}
+          </div>}
+        </div>
 
         <div ref={beatsListRef} className="scroll-fade-section beat-list" style={{ marginBottom: "48px", maxWidth: "1200px", margin: "0 auto", marginTop: "60px" }}>
           {beats.length === 0 && !displayedHighlight ? (
