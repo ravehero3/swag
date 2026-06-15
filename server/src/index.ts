@@ -189,7 +189,7 @@ app.post("/payment/notify", async (req: any, res: any) => {
     const order = orderResult.rows[0];
     if (order.status === "completed" || order.status === "paid") return;
 
-    const { GoPay } = await import("gopay-nodejs");
+    const { GoPay } = await import("./lib/gopay.js");
     const isSandbox = process.env.GOPAY_SANDBOX === "true" || process.env.NODE_ENV !== "production";
     const gopay = new GoPay(clientId, clientSecret, isSandbox);
     const status = await gopay.getStatus(paymentId);
@@ -429,7 +429,7 @@ app.get("/api/admin/diag/gopay", requireAdmin, async (_req, res) => {
   }
 
   try {
-    const { GoPay } = await import("gopay-nodejs");
+    const { GoPay } = await import("./lib/gopay.js");
     const gopay = new GoPay(clientId, clientSecret, isSandbox);
 
     // Step 1: token test

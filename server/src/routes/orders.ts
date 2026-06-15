@@ -307,7 +307,7 @@ router.post("/:id/pay", async (req: Request, res: Response) => {
       });
     }
 
-    const { GoPay } = await import("gopay-nodejs");
+    const { GoPay } = await import("../lib/gopay.js");
     const isSandbox = process.env.GOPAY_SANDBOX === "true" || process.env.NODE_ENV !== "production";
     console.log(`[GoPay] mode=${isSandbox ? "SANDBOX" : "PRODUCTION"} NODE_ENV=${process.env.NODE_ENV} GOPAY_SANDBOX=${process.env.GOPAY_SANDBOX}`);
     const gopay = new GoPay(clientId, clientSecret, isSandbox);
@@ -388,7 +388,7 @@ router.post("/:id/retry-payment", async (req: Request, res: Response) => {
       [orderId]
     );
 
-    const { GoPay } = await import("gopay-nodejs");
+    const { GoPay } = await import("../lib/gopay.js");
     const isSandbox = process.env.GOPAY_SANDBOX === "true" || process.env.NODE_ENV !== "production";
     const gopay = new GoPay(clientId, clientSecret, isSandbox);
 
@@ -566,7 +566,7 @@ router.post("/:id/check-payment", async (req: Request, res: Response) => {
       return res.json({ status: order.status, source: "db", note: "gopay_not_configured" });
     }
 
-    const { GoPay } = await import("gopay-nodejs");
+    const { GoPay } = await import("../lib/gopay.js");
     const isSandbox = process.env.GOPAY_SANDBOX === "true" || process.env.NODE_ENV !== "production";
     const gopay = new GoPay(clientId, clientSecret, isSandbox);
 
@@ -624,7 +624,7 @@ router.post("/:id/notify", async (req: Request, res: Response) => {
     const clientSecret = process.env.GOPAY_CLIENT_SECRET;
 
     if (clientId && clientSecret) {
-      const { GoPay } = await import("gopay-nodejs");
+      const { GoPay } = await import("../lib/gopay.js");
       const isSandbox = process.env.NODE_ENV !== "production";
       const gopay = new GoPay(clientId, clientSecret, isSandbox);
       const status = await gopay.getStatus(paymentId);
