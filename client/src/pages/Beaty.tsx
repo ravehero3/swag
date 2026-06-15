@@ -585,20 +585,14 @@ function Beaty() {
   };
 
   const filteredBeats = beatLimit ? beats.slice(0, beatLimit) : beats;
-  // Featured slot always shows the admin-selected highlighted beat — never jumps to playing beat
-  const displayedHighlight = highlightedBeat;
-  // List always excludes only the highlighted beat; playing state is shown in-place via indicator
-  const otherBeats = filteredBeats.filter((b) => b.id !== highlightedBeat?.id);
-
-  const extractBeatNumber = (title: string): number => {
-    const matches = title.match(/\d+/g);
-    return matches ? parseInt(matches[matches.length - 1], 10) : 0;
-  };
+  // Featured slot shows the currently playing beat; falls back to admin-highlighted beat when idle
+  const displayedHighlight = currentBeat ?? highlightedBeat;
+  // List always contains ALL beats — no beat is ever removed when it starts playing
   const sortedBeats = (() => {
-    if (sortBy === "bpm") return [...otherBeats].sort((a: Beat, b: Beat) => sortAsc ? a.bpm - b.bpm : b.bpm - a.bpm);
-    if (sortBy === "key") return [...otherBeats].sort((a: Beat, b: Beat) => sortAsc ? (a.key || "").localeCompare(b.key || "") : (b.key || "").localeCompare(a.key || ""));
-    if (sortBy === "title") return [...otherBeats].sort((a: Beat, b: Beat) => sortAsc ? extractBeatNumber(a.title) - extractBeatNumber(b.title) : extractBeatNumber(b.title) - extractBeatNumber(a.title));
-    return otherBeats;
+    if (sortBy === "bpm") return [...filteredBeats].sort((a: Beat, b: Beat) => sortAsc ? a.bpm - b.bpm : b.bpm - a.bpm);
+    if (sortBy === "key") return [...filteredBeats].sort((a: Beat, b: Beat) => sortAsc ? (a.key || "").localeCompare(b.key || "") : (b.key || "").localeCompare(a.key || ""));
+    if (sortBy === "title") return [...filteredBeats].sort((a: Beat, b: Beat) => { const cmp = a.title.localeCompare(b.title, undefined, { numeric: true, sensitivity: "base" }); return sortAsc ? cmp : -cmp; });
+    return filteredBeats;
   })();
 
   if (beatsLoading) {
@@ -844,7 +838,7 @@ function Beaty() {
               <div className="featured-beat-info" style={{ display: "flex", flexDirection: "column", justifyContent: "flex-start", flex: 1 }}>
                 <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "6px" }}>
                   <span style={{ fontSize: "12px", fontFamily: "Work Sans, sans-serif", color: "#999" }}>
-                    {currentBeat?.id === highlightedBeat?.id && isPlaying ? "Nyní hraje" : "Beat týdne"}
+                    {isPlaying ? "Nyní hraje" : displayedHighlight?.id === highlightedBeat?.id ? "Beat týdne" : "Naposledy hrán"}
                   </span>
                   <span style={{ fontSize: "12px", fontFamily: "Work Sans, sans-serif", color: "#666" }}>•</span>
                   <span style={{ fontSize: "12px", fontFamily: "Work Sans, sans-serif", color: "#666" }}>
@@ -1368,7 +1362,12 @@ function Beaty() {
                 className="beat-artwork"
               />
               <div className="beat-title-col" style={{ width: "240px", minWidth: "240px", maxWidth: "240px", flexShrink: 0, marginRight: "12px", display: "flex", flexDirection: "column", gap: "4px", overflow: "hidden" }}>
-                <div className="beat-title-col-text" style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "20px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{beat.title}</div>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px", overflow: "hidden" }}>
+                  <div className="beat-title-col-text" style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "20px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flexShrink: 1, minWidth: 0 }}>{beat.title}</div>
+                  {highlightedBeat?.id === beat.id && (
+                    <span style={{ fontSize: "9px", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", color: "#555", letterSpacing: "0.08em", textTransform: "uppercase", border: "1px solid #333", padding: "1px 5px", borderRadius: "3px", whiteSpace: "nowrap", flexShrink: 0 }}>beat týdne</span>
+                  )}
+                </div>
                 <div className="mobile-only-flex" style={{ display: "none", gap: "8px", alignItems: "center" }}>
                   {beat.bpm && <span style={{ fontSize: "11px", color: "#666", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif" }}>{beat.bpm} BPM</span>}
                   {beat.bpm && beat.key && <span style={{ fontSize: "11px", color: "#444" }}>·</span>}
