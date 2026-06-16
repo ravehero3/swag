@@ -67,7 +67,7 @@ const resolvedPreviewBucket = R2_IS_ENABLED
 
 const resolvedZipBucket = R2_IS_ENABLED
   ? (R2_ZIP_BUCKET || R2_BUCKET)!
-  : B2_ZIP_BUCKET!;
+  : (B2_ZIP_BUCKET || B2_PREVIEW_BUCKET)!;
 
 const resolvedArtworkBucket = R2_IS_ENABLED
   ? (R2_ARTWORK_BUCKET || R2_PREVIEW_BUCKET || R2_BUCKET)!

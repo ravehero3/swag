@@ -28,8 +28,6 @@ services:
         sync: false
       - key: B2_PREVIEW_BUCKET
         sync: false
-      - key: B2_ZIP_BUCKET
-        sync: false
       - key: B2_PUBLIC_BASE_URL
         sync: false
       - key: R2_ACCOUNT_ID
