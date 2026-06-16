@@ -639,6 +639,47 @@ function Beaty() {
         }
         .heart-pop { animation: heartPop 0.35s ease-out forwards; }
 
+        @keyframes eqBar1 {
+          0%,100% { height: 3px; }
+          30%     { height: 10px; }
+          60%     { height: 5px; }
+        }
+        @keyframes eqBar2 {
+          0%,100% { height: 8px; }
+          20%     { height: 3px; }
+          50%     { height: 11px; }
+          80%     { height: 4px; }
+        }
+        @keyframes eqBar3 {
+          0%,100% { height: 5px; }
+          40%     { height: 11px; }
+          70%     { height: 2px; }
+        }
+        .beat-eq-bars {
+          position: absolute;
+          top: 2px;
+          left: 2px;
+          display: flex;
+          align-items: flex-end;
+          gap: 1px;
+          background: rgba(0,0,0,0.72);
+          padding: 2px 3px 1px 3px;
+          border-radius: 2px;
+          backdrop-filter: blur(4px);
+          pointer-events: none;
+          height: 14px;
+        }
+        .beat-eq-bars span {
+          display: block;
+          width: 2px;
+          border-radius: 1px;
+          background: #fff;
+          transform-origin: bottom;
+        }
+        .beat-eq-bars span:nth-child(1) { animation: eqBar1 0.9s ease-in-out infinite; }
+        .beat-eq-bars span:nth-child(2) { animation: eqBar2 0.75s ease-in-out infinite; }
+        .beat-eq-bars span:nth-child(3) { animation: eqBar3 1.1s ease-in-out infinite; }
+
         .beats-glass-card {
           background: linear-gradient(160deg, rgba(255,255,255,0.055) 0%, rgba(255,255,255,0.018) 40%, rgba(255,255,255,0.03) 100%);
           border: 1px solid rgba(255,255,255,0.09);
@@ -1347,7 +1388,13 @@ function Beaty() {
                   borderRadius={4}
                   className="beat-artwork"
                 />
-                <span className="beat-track-number">{beatIndex + 1}</span>
+                {currentBeat?.id === beat.id && isPlaying ? (
+                  <div className="beat-eq-bars">
+                    <span /><span /><span />
+                  </div>
+                ) : (
+                  <span className="beat-track-number">{beatIndex + 1}</span>
+                )}
               </div>
               <div className="beat-title-col" style={{ width: "240px", minWidth: "240px", maxWidth: "240px", flexShrink: 0, marginRight: "12px", display: "flex", flexDirection: "column", gap: "4px", overflow: "hidden" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "6px", overflow: "hidden" }}>
