@@ -554,13 +554,7 @@ function Home() {
 
   const filteredBeats = beatLimit ? beats.slice(0, beatLimit) : beats;
   const displayedHighlight = currentBeat ?? highlightedBeat;
-  const otherBeats = (() => {
-    const base = filteredBeats.filter((b) => b.id !== displayedHighlight?.id);
-    if (currentBeat && highlightedBeat && currentBeat.id !== highlightedBeat.id) {
-      return [highlightedBeat, ...base.filter(b => b.id !== highlightedBeat.id)];
-    }
-    return base;
-  })();
+  const otherBeats = filteredBeats;
 
   if (beatsLoading) {
     return (
@@ -719,8 +713,8 @@ function Home() {
       </div>
       
       <div style={{ padding: "0 20px" }} className="fade-in-grid">
-        {displayedHighlight && (
-          <div className="fade-in-section delay-2 home-featured-section" style={{ marginBottom: "48px", display: "flex", justifyContent: "center", marginTop: "-116px", position: "relative", zIndex: 50 }}>
+          <div className="fade-in-section delay-2 home-featured-section" style={{ marginBottom: "48px", display: "flex", justifyContent: "center", marginTop: "-116px", position: "relative", zIndex: 50, minHeight: "330px" }}>
+          {displayedHighlight && (
             <div className="home-featured-inner" style={{ display: "flex", gap: "48px", alignItems: "flex-start", marginBottom: "32px", width: "1000px", position: "relative", zIndex: 50 }}>
               <div style={{ position: "relative", flexShrink: 0 }} className="highlight-artwork-container home-featured-artwork">
                 <style>{`
@@ -1009,9 +1003,10 @@ function Home() {
                 </button>
               )}
             </div>
+          )}
           </div>
-        )}
 
+        <div style={{ maxWidth: "1200px", margin: "0 auto", height: "130px" }}>
         {currentBeat && (
           <>
             <SoundWave audioRef={audioRef} isPlaying={isPlaying} audioUrl={currentBeat.preview_url} isDraggingComment={!!draggingComment} waveRef={waveRef}>
@@ -1136,7 +1131,7 @@ function Home() {
             </div>
           </>
         )}
-
+        </div>
 
         <div ref={beatsListRef} className="scroll-fade-section home-beats-list" style={{ marginBottom: "48px", maxWidth: "1200px", margin: "0 auto", marginTop: "60px" }}>
           {otherBeats.length === 0 && !highlightedBeat ? (
