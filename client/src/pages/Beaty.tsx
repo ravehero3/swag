@@ -872,8 +872,8 @@ function Beaty() {
       </div>
       
       <div style={{ padding: "0 20px" }} className="fade-in-grid">
-        {displayedHighlight && (
           <div className="fade-in-section delay-2 featured-beat-section" style={{ marginBottom: "48px", display: "flex", justifyContent: "center", marginTop: "-116px", position: "relative", zIndex: 50, minHeight: "330px" }}>
+          {displayedHighlight && (
             <div className="featured-beat-inner">
               <div style={{ position: "relative", flexShrink: 0 }} className="highlight-artwork-container featured-beat-artwork">
                 <style>{`
@@ -1160,11 +1160,11 @@ function Beaty() {
                 </button>
               )}
             </div>
+          )}
           </div>
-        )}
 
-        {/* Always-present container — reserves space so the beat list never jumps */}
-        <div style={{ maxWidth: "1200px", margin: "0 auto", minHeight: "100px" }}>
+        {/* Fixed-height container — height never changes so the beat list never moves */}
+        <div style={{ maxWidth: "1200px", margin: "0 auto", height: "130px" }}>
           {currentBeat && (
             <>
               {comments.length > 0 && (
