@@ -582,7 +582,7 @@ function Home() {
           </video>
           <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%)", pointerEvents: "none" }} />
           <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none", zIndex: 2 }}>
-            <img src="/uploads/artwork/voodoo808-main-logo.png" alt="VOODOO808" style={{ width: "clamp(240px, 32vw, 480px)", height: "auto", objectFit: "contain", display: "block" }} />
+            <img src="/uploads/artwork/voodoo808-main-logo.png" alt="VOODOO808" style={{ width: "min(1000px, 88vw)", height: "auto", objectFit: "contain", display: "block" }} />
           </div>
           <div style={{ position: "absolute", bottom: 0, left: 0, width: "100%", height: "120px", background: "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 100%)", pointerEvents: "none", zIndex: 3 }} />
         </div>
@@ -669,7 +669,7 @@ function Home() {
           <img
             src="/uploads/artwork/voodoo808-main-logo.png"
             alt="VOODOO808"
-            style={{ width: "clamp(240px, 32vw, 480px)", height: "auto", objectFit: "contain", display: "block" }}
+            style={{ width: "min(1000px, 88vw)", height: "auto", objectFit: "contain", display: "block" }}
           />
         </div>
         <div
@@ -1133,7 +1133,16 @@ function Home() {
         )}
         </div>
 
-        <div ref={beatsListRef} className="scroll-fade-section home-beats-list" style={{ marginBottom: "48px", maxWidth: "1200px", margin: "0 auto", marginTop: "60px" }}>
+        {/* Glassmorphism border wrapper — 1px gradient outline that fades dark→grey */}
+        <div style={{
+          maxWidth: "1200px",
+          margin: "60px auto 48px auto",
+          padding: "1px",
+          borderRadius: "18px",
+          background: "linear-gradient(160deg, rgba(80,80,80,0.22) 0%, rgba(30,30,30,0.08) 40%, rgba(50,50,50,0.14) 100%)",
+          boxShadow: "0 0 0 0.5px rgba(0,0,0,0.8), 0 24px 64px rgba(0,0,0,0.45)",
+        }}>
+        <div ref={beatsListRef} className="scroll-fade-section home-beats-list" style={{ marginBottom: "0", maxWidth: "none", margin: "0", marginTop: "0", borderRadius: "17px", background: "linear-gradient(160deg, rgba(18,18,18,0.82) 0%, rgba(8,8,8,0.92) 100%)", backdropFilter: "blur(28px)", WebkitBackdropFilter: "blur(28px)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04), inset 0 -1px 0 rgba(0,0,0,0.3)", overflow: "hidden" }}>
           {otherBeats.length === 0 && !highlightedBeat ? (
             <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "8px" }}>
               {Array(4).fill(null).map((_, index) => (
@@ -1622,6 +1631,7 @@ function Home() {
               </button>
           </div>
         </div>
+        </div>{/* end glassmorphism wrapper */}
 
         {/* Removed: "PRO VŠECHNY HUDEBNÍ PRODUCENTY" section with the
             computer background image and the SoundKitsDock — no longer
