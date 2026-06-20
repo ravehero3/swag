@@ -649,7 +649,7 @@ function Home() {
         }
       `}</style>
 
-      <div className="mobile-video-container desktop-main-video" style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "24px", overflow: "hidden", position: "relative", background: "#000", height: "clamp(320px, 52vh, 480px)" }}>
+      <div className="mobile-video-container desktop-main-video" style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "24px", overflow: "hidden", position: "relative", background: "#000", height: "clamp(420px, 64vh, 620px)" }}>
         <video
           ref={videoRef}
           src="/uploads/hrad-na-web.mp4"
@@ -665,7 +665,7 @@ function Home() {
           Your browser does not support the video tag.
         </video>
         <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none", zIndex: 2 }}>
+        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "flex-start", justifyContent: "center", paddingTop: "242px", pointerEvents: "none", zIndex: 2 }}>
           <img
             src="/uploads/artwork/voodoo808-main-logo.png"
             alt="VOODOO808"
