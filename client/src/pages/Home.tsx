@@ -569,22 +569,22 @@ function Home() {
   if (beats.length === 0 && !highlightedBeat) {
     return (
       <div style={{ background: "#000", minHeight: "100vh" }}>
-        <div style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative", background: "#000", minHeight: "600px" }}>
+        <div style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "24px", overflow: "hidden", position: "relative", background: "#000", height: "clamp(320px, 52vh, 480px)" }}>
           <video
             autoPlay
             loop
             muted
             playsInline
             preload="auto"
-            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", background: "#000", opacity: 0.5, minHeight: "600px" }}
+            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", background: "#000", opacity: 0.5 }}
           >
             <source src="/uploads/hrad-na-web.mp4" type="video/mp4" />
           </video>
           <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%)", pointerEvents: "none" }} />
           <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none", zIndex: 2 }}>
-            <img src="/uploads/artwork/voodoo808-main-logo.png" alt="VOODOO808" style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }} />
+            <img src="/uploads/artwork/voodoo808-main-logo.png" alt="VOODOO808" style={{ width: "clamp(240px, 32vw, 480px)", height: "auto", objectFit: "contain", display: "block" }} />
           </div>
-          <div style={{ position: "absolute", bottom: 0, left: 0, width: "100%", height: "166px", background: "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 100%)", pointerEvents: "none", zIndex: 3 }} />
+          <div style={{ position: "absolute", bottom: 0, left: 0, width: "100%", height: "120px", background: "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 100%)", pointerEvents: "none", zIndex: 3 }} />
         </div>
         <div className="fade-in" style={{ textAlign: "center", padding: "60px 20px", color: "#fff" }}>
           <p style={{ opacity: 0.6, fontSize: "14px", letterSpacing: "1px" }}>Žádné beaty nebyly nalezeny.</p>
@@ -649,7 +649,7 @@ function Home() {
         }
       `}</style>
 
-      <div className="mobile-video-container desktop-main-video" style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative", background: "#000", minHeight: "600px" }}>
+      <div className="mobile-video-container desktop-main-video" style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "24px", overflow: "hidden", position: "relative", background: "#000", height: "clamp(320px, 52vh, 480px)" }}>
         <video
           ref={videoRef}
           src="/uploads/hrad-na-web.mp4"
@@ -669,7 +669,7 @@ function Home() {
           <img
             src="/uploads/artwork/voodoo808-main-logo.png"
             alt="VOODOO808"
-            style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
+            style={{ width: "clamp(240px, 32vw, 480px)", height: "auto", objectFit: "contain", display: "block" }}
           />
         </div>
         <div
@@ -678,7 +678,7 @@ function Home() {
             bottom: 0,
             left: 0,
             width: "100%",
-            height: "166px",
+            height: "120px",
             background: "linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 100%)",
             pointerEvents: "none",
             zIndex: 3,

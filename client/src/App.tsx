@@ -53,8 +53,8 @@ export interface PreviewPlayerItem {
   id: number;
   title: string;
   artist?: string;
-  bpm: number;
-  key: string;
+  bpm?: number;
+  key?: string;
   price: number;
   preview_url: string;
   artwork_url: string;
