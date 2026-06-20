@@ -326,6 +326,15 @@ router.post("/bulk-publish", requireAdmin, async (req: Request, res: Response) =
   }
 });
 
+router.post("/publish-all", requireAdmin, async (_req: Request, res: Response) => {
+  try {
+    const result = await pool.query("UPDATE beats SET is_published = true WHERE is_published = false RETURNING id");
+    res.json({ updated: result.rowCount, message: `${result.rowCount} beatů bylo zveřejněno` });
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při zveřejňování všech beatů" });
+  }
+});
+
 router.post("/:id/play", async (req: Request, res: Response) => {
   try {
     const beatId = parseInt(req.params.id, 10);

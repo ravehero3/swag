@@ -1030,6 +1030,21 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     }
   };
 
+  const handlePublishAll = async () => {
+    if (!confirm("Zveřejnit všechny skryté beaty?")) return;
+    const res = await fetch("/api/beats/publish-all", {
+      method: "POST",
+      credentials: "include",
+    });
+    if (res.ok) {
+      const data = await res.json();
+      alert(data.message);
+      onRefresh();
+    } else {
+      alert("Chyba při zveřejňování beatů");
+    }
+  };
+
   useEffect(() => {
     if (editing) {
       const priceType: BeatPriceType = editing.price === 0 ? "promo" : "beat";
@@ -1245,6 +1260,11 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
         <button className="btn btn-admin" onClick={() => setShowBulkZone(v => !v)} style={{ borderColor: "#0B99FC", color: "#0B99FC" }}>
           {showBulkZone ? "Zavřít hromadný upload" : "⬆ Hromadný upload"}
         </button>
+        {beats.some((b: any) => !b.is_published) && (
+          <button className="btn btn-admin" onClick={handlePublishAll} style={{ borderColor: "#4caf50", color: "#4caf50" }}>
+            ✓ Publikovat vše skryté ({beats.filter((b: any) => !b.is_published).length})
+          </button>
+        )}
       </div>
 
       {showBulkZone && (
