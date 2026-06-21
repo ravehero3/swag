@@ -20,7 +20,7 @@ const R2_BUCKET = envTrim(process.env.R2_BUCKET);
 // Backblaze B2 credentials (kept as fallback)
 const B2_ENDPOINT = envTrim(process.env.B2_ENDPOINT);
 const B2_KEY_ID = envTrim(process.env.B2_KEY_ID);
-const B2_KEY_SECRET = envTrim(process.env.B2_KEY_SECRET);
+const B2_KEY_SECRET = envTrim(process.env.B2_APPLICATION_KEY || process.env.B2_KEY_SECRET);
 const B2_PREVIEW_BUCKET = envTrim(process.env.B2_PREVIEW_BUCKET);
 const B2_ZIP_BUCKET = envTrim(process.env.B2_ZIP_BUCKET);
 const B2_VIDEO_BUCKET = envTrim(process.env.B2_VIDEO_BUCKET);

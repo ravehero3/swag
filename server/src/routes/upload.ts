@@ -410,10 +410,10 @@ router.post("/", requireAdmin, upload.single("file"), async (req: Request, res: 
     }
   }
 
-  // Preview: upload to ARTWORK bucket (Cloudflare R2 when configured, B2 fallback)
+  // Preview: upload to PREVIEWS bucket (Cloudflare R2 when configured, B2 fallback)
   if (type === "preview") {
     try {
-      const bucket = STORAGE_BUCKETS.ARTWORK;
+      const bucket = STORAGE_BUCKETS.PREVIEWS;
       const fileStream = fs.createReadStream(req.file.path);
       await uploadFile(bucket, key, fileStream, req.file.mimetype);
       fs.unlinkSync(req.file.path);
