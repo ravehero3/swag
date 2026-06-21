@@ -1144,7 +1144,7 @@ function Home() {
         </div>
 
         {/* Glassmorphism border wrapper — 1px gradient outline that fades dark→grey */}
-        <div style={{
+        <div ref={beatsListRef} className="scroll-fade-section" style={{
           maxWidth: "1200px",
           margin: "60px auto 48px auto",
           padding: "1px",
@@ -1152,7 +1152,7 @@ function Home() {
           background: "linear-gradient(160deg, rgba(80,80,80,0.22) 0%, rgba(30,30,30,0.08) 40%, rgba(50,50,50,0.14) 100%)",
           boxShadow: "0 0 0 0.5px rgba(0,0,0,0.8), 0 24px 64px rgba(0,0,0,0.45)",
         }}>
-        <div ref={beatsListRef} className="scroll-fade-section home-beats-list" style={{ marginBottom: "0", maxWidth: "none", margin: "0", marginTop: "0", borderRadius: "17px", background: "linear-gradient(160deg, rgba(18,18,18,0.82) 0%, rgba(8,8,8,0.92) 100%)", backdropFilter: "blur(28px)", WebkitBackdropFilter: "blur(28px)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04), inset 0 -1px 0 rgba(0,0,0,0.3)", overflow: "hidden" }}>
+        <div className="home-beats-list" style={{ marginBottom: "0", maxWidth: "none", margin: "0", marginTop: "0", borderRadius: "17px", background: "linear-gradient(160deg, rgba(18,18,18,0.82) 0%, rgba(8,8,8,0.92) 100%)", backdropFilter: "blur(28px)", WebkitBackdropFilter: "blur(28px)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04), inset 0 -1px 0 rgba(0,0,0,0.3)", overflow: "hidden" }}>
           {otherBeats.length === 0 && !highlightedBeat ? (
             <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "8px" }}>
               {Array(4).fill(null).map((_, index) => (
