@@ -65,3 +65,6 @@ GOPAY_SANDBOX = "true"
 
 [userenv.production]
 NODE_ENV = "production"
+
+[userenv.development]
+SUPABASE_DATABASE_URL = "postgresql://postgres.coqomscjsdzdmsrlfahg:XK2YHOuYLaWtJJWu@aws-1-eu-central-1.pooler.supabase.com:5432/postgres"
