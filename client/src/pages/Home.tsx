@@ -586,7 +586,7 @@ function Home() {
           </video>
           <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%)", pointerEvents: "none" }} />
           <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none", zIndex: 2 }}>
-            <img src="/uploads/artwork/voodoo808-main-logo.png" alt="VOODOO808" className="hero-logo-img" />
+            <img src="/uploads/artwork/voodoo808-main-logo.png" alt="VOODOO808" className="hero-logo-img" style={{ width: "700px", maxWidth: "calc(100vw - 40px)", height: "auto", objectFit: "contain", display: "block" }} />
           </div>
           <div style={{ position: "absolute", bottom: 0, left: 0, width: "100%", height: "120px", background: "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 100%)", pointerEvents: "none", zIndex: 3 }} />
         </div>
@@ -613,7 +613,7 @@ function Home() {
         .comment-avatar-wrap:hover > div:first-child { transform: scale(2); }
         .comment-avatar-wrap .comment-tooltip { opacity: 0; pointer-events: none; transition: opacity 0.15s ease; }
         .comment-avatar-wrap:hover .comment-tooltip { opacity: 1 !important; }
-        .hero-logo-img { width: 1000px; height: auto; object-fit: contain; display: block; }
+        .hero-logo-img { width: 700px; height: auto; object-fit: contain; display: block; }
         @media (max-width: 1040px) {
           .hero-logo-img { width: calc(100vw - 40px); }
           .home-featured-inner { width: calc(100% - 40px) !important; }
