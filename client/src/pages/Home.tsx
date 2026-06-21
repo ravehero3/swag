@@ -582,7 +582,7 @@ function Home() {
           </video>
           <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%)", pointerEvents: "none" }} />
           <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none", zIndex: 2 }}>
-            <img src="/uploads/artwork/voodoo808-main-logo.png" alt="VOODOO808" style={{ width: "min(2400px, 96vw)", height: "auto", objectFit: "contain", display: "block" }} />
+            <img src="/uploads/artwork/voodoo808-main-logo.png" alt="VOODOO808" className="hero-logo-img" />
           </div>
           <div style={{ position: "absolute", bottom: 0, left: 0, width: "100%", height: "120px", background: "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 100%)", pointerEvents: "none", zIndex: 3 }} />
         </div>
@@ -609,6 +609,11 @@ function Home() {
         .comment-avatar-wrap:hover > div:first-child { transform: scale(2); }
         .comment-avatar-wrap .comment-tooltip { opacity: 0; pointer-events: none; transition: opacity 0.15s ease; }
         .comment-avatar-wrap:hover .comment-tooltip { opacity: 1 !important; }
+        .hero-logo-img { width: 1000px; height: auto; object-fit: contain; display: block; }
+        @media (max-width: 1040px) {
+          .hero-logo-img { width: calc(100vw - 40px); }
+          .home-featured-inner { width: calc(100% - 40px) !important; }
+        }
         @media (max-width: 768px) {
           .mobile-hide-dock { display: none !important; }
           .mobile-video-container { min-height: 320px !important; max-height: 60vh; }
@@ -618,12 +623,13 @@ function Home() {
           .desktop-only { display: none !important; }
           .mobile-only { display: flex !important; }
           .mobile-only-flex { display: flex !important; }
-          .home-featured-section { margin-top: -72px !important; margin-bottom: 32px !important; }
-          .home-featured-inner { width: 100% !important; flex-direction: column !important; gap: 16px !important; align-items: stretch !important; margin-bottom: 16px !important; }
-          .home-featured-artwork { width: min(72vw, 280px) !important; margin: 0 auto !important; }
+          .hero-logo-img { width: calc(100vw - 32px); }
+          .home-featured-section { margin-top: 12px !important; margin-bottom: 24px !important; min-height: 0 !important; }
+          .home-featured-inner { width: 100% !important; flex-direction: column !important; gap: 20px !important; align-items: stretch !important; margin-bottom: 16px !important; }
+          .home-featured-artwork { width: min(64vw, 220px) !important; margin: 0 auto !important; }
           .home-featured-artwork img { width: 100% !important; height: auto !important; aspect-ratio: 1 / 1 !important; }
-          .home-featured-info { width: 100% !important; min-width: 0 !important; }
-          .home-featured-info h2 { font-size: 24px !important; max-width: 100% !important; overflow-wrap: anywhere !important; }
+          .home-featured-info { width: 100% !important; min-width: 0 !important; padding: 0 4px !important; }
+          .home-featured-info h2 { font-size: 22px !important; max-width: 100% !important; overflow-wrap: anywhere !important; }
           .home-featured-actions { flex-wrap: wrap !important; gap: 8px !important; }
           .home-beats-list { margin-top: 32px !important; margin-bottom: 36px !important; }
           .home-beat-list-header { padding: 8px 8px 6px 8px !important; gap: 10px !important; margin-top: 0 !important; }
@@ -669,7 +675,7 @@ function Home() {
           <img
             src="/uploads/artwork/voodoo808-main-logo.png"
             alt="VOODOO808"
-            style={{ width: "min(2400px, 96vw)", height: "auto", objectFit: "contain", display: "block" }}
+            className="hero-logo-img"
           />
         </div>
         <div
@@ -715,7 +721,7 @@ function Home() {
       <div style={{ padding: "0 20px" }} className="fade-in-grid">
           <div className="fade-in-section delay-2 home-featured-section" style={{ marginBottom: "48px", display: "flex", justifyContent: "center", marginTop: "-116px", position: "relative", zIndex: 50, minHeight: "330px" }}>
           {displayedHighlight && (
-            <div className="home-featured-inner" style={{ display: "flex", gap: "48px", alignItems: "flex-start", marginBottom: "32px", width: "1000px", position: "relative", zIndex: 50 }}>
+            <div className="home-featured-inner" style={{ display: "flex", gap: "48px", alignItems: "flex-start", marginBottom: "32px", width: "1000px", maxWidth: "100%", position: "relative", zIndex: 50 }}>
               <div style={{ position: "relative", flexShrink: 0 }} className="highlight-artwork-container home-featured-artwork">
                 <style>{`
                   @keyframes hacPlayPulse {
