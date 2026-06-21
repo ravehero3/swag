@@ -230,7 +230,8 @@ function Home() {
     if (!globalItem || globalItem.product_type !== "beat") {
       return;
     }
-    const found = beats.find(b => b.id === globalItem.id) ?? highlightedBeat ?? null;
+    const found = beats.find(b => b.id === globalItem.id)
+      ?? (highlightedBeat?.id === globalItem.id ? highlightedBeat : null);
     setCurrentBeat(prev => {
       if (prev?.id === globalItem.id) return prev;
       return found;
@@ -412,16 +413,19 @@ function Home() {
       artwork_url: beat.artwork_url || "",
       product_type: "beat" as const,
     };
+    const isNewBeat = previewPlayer.currentItem?.id !== beat.id;
     setCurrentBeat(beat);
     await previewPlayer.playPreview(item, getBeatsQueue());
-    fetch(`/api/beats/${beat.id}/play`, { method: "POST" })
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (data?.play_count != null) {
-          setBeatStats(prev => prev ? { ...prev, plays: data.play_count } : prev);
-        }
-      })
-      .catch(() => {});
+    if (isNewBeat) {
+      fetch(`/api/beats/${beat.id}/play`, { method: "POST" })
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (data?.play_count != null) {
+            setBeatStats(prev => prev ? { ...prev, plays: data.play_count } : prev);
+          }
+        })
+        .catch(() => {});
+    }
   };
 
   const handlePlayPause = () => {
@@ -1184,9 +1188,9 @@ function Home() {
                 <div className="home-beat-header-title" style={{ width: "240px", minWidth: "240px", maxWidth: "240px", flexShrink: 0, marginRight: "12px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666" }}>NÁZEV</div>
                 <div className="home-beat-header-separator" style={{ position: "absolute", bottom: 0, left: "80px", right: "16px", height: "1px", background: "#333" }} />
                 {/* BPM — matches beat bpm column */}
-                <div className="desktop-only" style={{ width: "100px", flexShrink: 0 }}><button onClick={() => { setSortBy(sortBy === "bpm" ? "bpm" : "bpm"); setSortAsc(sortBy === "bpm" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0, textAlign: "left", width: "100%" }}>BPM {sortBy === "bpm" && (sortAsc ? "↑" : "↓")}</button></div>
+                <div className="desktop-only" style={{ width: "100px", flexShrink: 0 }}><button onClick={() => { if (sortBy === "bpm") { setSortAsc(a => !a); } else { setSortBy("bpm"); setSortAsc(true); } }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: sortBy === "bpm" ? "#fff" : "#666", cursor: "pointer", padding: 0, textAlign: "left", width: "100%" }}>BPM {sortBy === "bpm" ? (sortAsc ? "↑" : "↓") : ""}</button></div>
                 {/* KEY — matches beat key column */}
-                <div className="desktop-only" style={{ width: "100px", flexShrink: 0 }}><button onClick={() => { setSortBy(sortBy === "key" ? "key" : "key"); setSortAsc(sortBy === "key" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0, textAlign: "left", width: "100%" }}>KEY {sortBy === "key" && (sortAsc ? "↑" : "↓")}</button></div>
+                <div className="desktop-only" style={{ width: "100px", flexShrink: 0 }}><button onClick={() => { if (sortBy === "key") { setSortAsc(a => !a); } else { setSortBy("key"); setSortAsc(true); } }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: sortBy === "key" ? "#fff" : "#666", cursor: "pointer", padding: 0, textAlign: "left", width: "100%" }}>KEY {sortBy === "key" ? (sortAsc ? "↑" : "↓") : ""}</button></div>
                 {/* TAGY — matches tags column */}
                 <div className="desktop-only" style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", marginLeft: "12px" }}>TAGY</div>
               </div>

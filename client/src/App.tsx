@@ -162,6 +162,7 @@ function App() {
   const previewCurrentItemRef = useRef<PreviewPlayerItem | null>(null);
   const previewQueueRef = useRef<PreviewPlayerItem[]>([]);
   const isPreviewShufflingRef = useRef(false);
+  const isPlayPendingRef = useRef(false);
   const [previewIsSaved, setPreviewIsSaved] = useState(false);
   const previewOnToggleSaveRef = useRef<(() => void) | undefined>(undefined);
   const [location, setLocation] = useLocation();
@@ -307,28 +308,45 @@ function App() {
       if (!audio.paused) {
         audio.pause();
         setIsPreviewPlaying(false);
-      } else {
+      } else if (!isPlayPendingRef.current) {
+        isPlayPendingRef.current = true;
         try {
           await audio.play();
           setIsPreviewPlaying(true);
         } catch (err) {
           console.error("Preview resume failed:", err);
           setIsPreviewPlaying(false);
+        } finally {
+          isPlayPendingRef.current = false;
         }
       }
       return;
     }
 
+    if (isPlayPendingRef.current) return;
+    isPlayPendingRef.current = true;
     setPreviewCurrentItem(item);
     previewCurrentItemRef.current = item;
     audio.src = toAudioProxyUrl(item.preview_url);
     audio.load();
     try {
+      await new Promise<void>((resolve) => {
+        const onCanPlay = () => {
+          audio.removeEventListener("canplay", onCanPlay);
+          audio.removeEventListener("error", onCanPlay);
+          resolve();
+        };
+        audio.addEventListener("canplay", onCanPlay, { once: true });
+        audio.addEventListener("error", onCanPlay, { once: true });
+        setTimeout(resolve, 3000);
+      });
       await audio.play();
       setIsPreviewPlaying(true);
     } catch (err) {
       console.error("Preview play failed:", err, "| src:", item.preview_url);
       setIsPreviewPlaying(false);
+    } finally {
+      isPlayPendingRef.current = false;
     }
   };
 
@@ -349,7 +367,11 @@ function App() {
     } else {
       nextIndex = currentIndex >= 0 && currentIndex < queue.length - 1 ? currentIndex + 1 : 0;
     }
-    playPreview(queue[nextIndex], queue);
+    const nextItem = queue[nextIndex];
+    if (nextItem?.product_type === "beat" || !nextItem?.product_type) {
+      fetch(`/api/beats/${nextItem.id}/play`, { method: "POST" }).catch(() => {});
+    }
+    playPreview(nextItem, queue);
   };
 
   const handlePreviewPlayPause = () => {
