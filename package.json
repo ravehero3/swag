@@ -61,7 +61,8 @@
     "wouter": "^3.3.5"
   },
   "devDependencies": {
-    "@types/pdfkit": "^0.17.6"
+    "@types/pdfkit": "^0.17.6",
+    "drizzle-kit": "^0.31.10"
   },
   "overrides": {
     "fast-xml-parser": "^5.9.0"
