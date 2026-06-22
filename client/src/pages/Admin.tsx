@@ -744,12 +744,17 @@ B2_ENDPOINT:          ${env?.B2_ENDPOINT || "(none)"}`}
   );
 }
 
+const MUSICAL_KEYS = [
+  "C", "C#", "Db", "D", "D#", "Eb", "E", "F", "F#", "Gb", "G", "G#", "Ab", "A", "A#", "Bb", "B",
+  "Cm", "C#m", "Dbm", "Dm", "D#m", "Ebm", "Em", "Fm", "F#m", "Gbm", "Gm", "G#m", "Abm", "Am", "A#m", "Bbm", "Bm",
+];
+
 function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh, loadData }: any) {
   const [form, setForm] = useState({
     title: "",
     artist: "VOODOO808",
     bpm: 140,
-    key: "C",
+    key: "Cm",
     price: 5000,
     priceType: "beat" as BeatPriceType,
     previewUrl: "",
@@ -778,6 +783,11 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   const [isDragOver, setIsDragOver] = useState(false);
   const [bulkCreating, setBulkCreating] = useState(false);
   const bulkFileInputRef = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLDivElement>(null);
+  const previewFileInputRef = useRef<HTMLInputElement>(null);
+  const artworkFileInputRef = useRef<HTMLInputElement>(null);
+  const [isDragPreview, setIsDragPreview] = useState(false);
+  const [isDragArtwork, setIsDragArtwork] = useState(false);
 
   const handleBeatReorder = async (beatIdx: number, direction: "up" | "down") => {
     const targetIdx = direction === "up" ? beatIdx - 1 : beatIdx + 1;
@@ -1052,7 +1062,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
         title: editing.title,
         artist: editing.artist,
         bpm: editing.bpm,
-        key: editing.key,
+        key: editing.key || "Cm",
         price: editing.price,
         priceType,
         previewUrl: editing.preview_url || "",
@@ -1070,15 +1080,29 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
       if (editing.artwork_url) derivedNames["artwork"] = extractFilename(editing.artwork_url);
       if (editing.trackout_url) derivedNames["trackout"] = extractFilename(editing.trackout_url);
       setUploadedNames(derivedNames);
-      // Clear stale progress/error from a previous upload so the green
-      // "✓ Nahráno – bezpečné pokračovat" bar doesn't appear before the user
-      // has uploaded anything for THIS item.
       setUploadProgress({});
       setUploadError({});
       setUploading({});
       setShowForm(true);
     }
   }, [editing, setShowForm]);
+
+  useEffect(() => {
+    if (showForm && formRef.current) {
+      setTimeout(() => formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+    }
+  }, [showForm]);
+
+  const resetForm = () => {
+    setShowForm(false);
+    setEditing(null);
+    setForm({ title: "", artist: "VOODOO808", bpm: 140, key: "Cm", price: 5000, priceType: "beat", previewUrl: "", fileUrl: "", artworkUrl: "", trackoutUrl: "", tags: [], isPublished: true, isHighlighted: false });
+    setUploadedNames({});
+    setUploadProgress({});
+    setUploadError({});
+    setUploading({});
+    setTagInput("");
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1094,13 +1118,10 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     });
 
     if (res.ok) {
-      setShowForm(false);
-      setEditing(null);
-      setForm({ title: "", artist: "VOODOO808", bpm: 140, key: "C", price: 5000, priceType: "beat", previewUrl: "", fileUrl: "", artworkUrl: "", trackoutUrl: "", tags: [], isPublished: true, isHighlighted: false });
-      setUploadedNames({});
+      resetForm();
       loadData();
     } else {
-      const errorData = await res.json();
+      const errorData = await res.json().catch(() => ({}));
       alert(`Chyba: ${errorData.error || "Došlo k chybě při ukládání"}`);
     }
   };
@@ -1208,9 +1229,19 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     }
   };
 
+  const inputStyle: React.CSSProperties = {
+    width: "100%", padding: "9px 12px", background: "#111", border: "1px solid #2a2a2a",
+    color: "#fff", borderRadius: "6px", fontSize: "13px", boxSizing: "border-box",
+    outline: "none", transition: "border-color 0.15s",
+  };
+  const selectStyle: React.CSSProperties = { ...inputStyle, cursor: "pointer", appearance: "none" as any };
+  const labelStyle: React.CSSProperties = { display: "block", marginBottom: "6px", fontSize: "11px", fontWeight: 600, color: "#666", textTransform: "uppercase", letterSpacing: "0.6px" };
+  const sectionStyle: React.CSSProperties = { borderBottom: "1px solid #1e1e1e", paddingBottom: "20px", marginBottom: "20px" };
+  const sectionHeadStyle: React.CSSProperties = { fontSize: "10px", fontWeight: 700, color: "#444", textTransform: "uppercase", letterSpacing: "1.2px", marginBottom: "14px" };
+
   const UploadStatus = ({ type, url }: { type: string; url: string }) => {
-    if (uploading[type]) return <span style={{ fontSize: "12px", color: "#888" }}>⏳ Nahrávám...</span>;
-    if (uploadError[type]) return <span style={{ fontSize: "12px", color: "#ff4444" }}>✗ {uploadError[type]}</span>;
+    if (uploading[type]) return <span style={{ fontSize: "12px", color: "#888" }}>Nahrávám…</span>;
+    if (uploadError[type]) return <span style={{ fontSize: "12px", color: "#ff5252" }}>✗ {uploadError[type]}</span>;
     if (url) return <span style={{ fontSize: "12px", color: "#4caf50" }}>✓ {uploadedNames[type] || "Nahráno"}</span>;
     return null;
   };
@@ -1221,191 +1252,158 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     const isDone = !isUploading && pct >= 100;
     if (!isUploading && !isDone) return null;
     return (
-      <div style={{ marginTop: "8px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-          {isUploading ? (
-            <>
-              <span style={{ fontSize: "12px", color: "#aaa" }}>Nahrávám…</span>
-              <span style={{ fontSize: "12px", color: "#aaa" }}>{pct}%</span>
-            </>
-          ) : (
-            <>
-              <span style={{ fontSize: "12px", color: "#4caf50" }}>✓ Nahráno – bezpečné pokračovat</span>
-              <span style={{ fontSize: "12px", color: "#4caf50" }}>100%</span>
-            </>
-          )}
+      <div style={{ marginTop: "6px" }}>
+        <div style={{ height: "3px", background: "#1b1b1b", borderRadius: "999px", overflow: "hidden" }}>
+          <div style={{ height: "100%", width: `${pct}%`, background: isDone ? "linear-gradient(90deg,#2e7d32,#4caf50)" : "linear-gradient(90deg,#0B99FC,#4cc3ff)", transition: "width 200ms ease, background 300ms ease" }} />
         </div>
-        <div style={{ height: "10px", background: "#1b1b1b", borderRadius: "999px", overflow: "hidden", border: "1px solid #2a2a2a" }}>
-          <div
-            style={{
-              height: "100%",
-              width: `${pct}%`,
-              background: isDone
-                ? "linear-gradient(90deg, #2e7d32, #4caf50)"
-                : "linear-gradient(90deg, #0B99FC, #4cc3ff)",
-              transition: "width 200ms ease, background 300ms ease",
-            }}
-          />
+        <div style={{ marginTop: "3px", fontSize: "11px", color: isDone ? "#4caf50" : "#666" }}>
+          {isDone ? "✓ Nahráno" : `${pct}%`}
         </div>
+      </div>
+    );
+  };
+
+  const DropZone = ({
+    type, accept, label, hint, icon, onFile,
+    isDragging, setIsDragging, fileInputRef,
+    uploadedUrl, uploadedName,
+  }: {
+    type: string; accept: string; label: string; hint: string; icon: string;
+    onFile: (f: File) => void; isDragging: boolean; setIsDragging: (v: boolean) => void;
+    fileInputRef: React.RefObject<HTMLInputElement>; uploadedUrl?: string; uploadedName?: string;
+  }) => {
+    const isUp = uploading[type];
+    const hasError = !!uploadError[type];
+    const isDone = !isUp && (uploadProgress[type] ?? 0) >= 100;
+    const borderColor = isDragging ? "#0B99FC" : hasError ? "#ff5252" : isDone || uploadedUrl ? "#2e7d32" : "#2a2a2a";
+    return (
+      <div>
+        <div
+          onClick={() => !isUp && fileInputRef.current?.click()}
+          onDragOver={e => { e.preventDefault(); if (!isUp) setIsDragging(true); }}
+          onDragLeave={() => setIsDragging(false)}
+          onDrop={e => { e.preventDefault(); setIsDragging(false); if (!isUp && e.dataTransfer.files[0]) onFile(e.dataTransfer.files[0]); }}
+          style={{
+            border: `1.5px dashed ${borderColor}`, borderRadius: "8px", padding: "20px 16px",
+            textAlign: "center", cursor: isUp ? "not-allowed" : "pointer",
+            background: isDragging ? "rgba(11,153,252,0.05)" : isDone || uploadedUrl ? "rgba(46,125,50,0.04)" : "#0a0a0a",
+            transition: "all 0.15s ease", minHeight: "80px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "6px",
+          }}
+        >
+          <span style={{ fontSize: "22px" }}>{icon}</span>
+          <div style={{ fontSize: "12px", color: isUp ? "#555" : isDone || uploadedUrl ? "#4caf50" : "#888", lineHeight: 1.4 }}>
+            {isUp ? "Nahrávám…" : uploadedUrl ? (uploadedName || label) : label}
+          </div>
+          <div style={{ fontSize: "11px", color: "#444" }}>{hint}</div>
+        </div>
+        <input ref={fileInputRef} type="file" accept={accept} style={{ display: "none" }} onChange={e => { if (e.target.files?.[0]) { onFile(e.target.files[0]); e.target.value = ""; } }} />
+        <UploadProgressBar type={type} />
+        {uploadError[type] && <div style={{ fontSize: "11px", color: "#ff5252", marginTop: "4px" }}>{uploadError[type]}</div>}
       </div>
     );
   };
 
   return (
     <div>
-      <div style={{ display: "flex", gap: "10px", marginBottom: "16px", flexWrap: "wrap" }}>
-        <button className="btn btn-admin" onClick={() => { setShowForm(!showForm); setEditing(null); }}>
-          {showForm ? "Zrušit" : "Přidat beat"}
+      {/* ── Toolbar ── */}
+      <div style={{ display: "flex", gap: "8px", marginBottom: "20px", flexWrap: "wrap", alignItems: "center" }}>
+        <button
+          className="btn btn-filled"
+          onClick={() => { if (showForm) { resetForm(); } else { setEditing(null); setShowForm(true); } }}
+          data-testid="button-toggle-beat-form"
+          style={{ fontSize: "13px" }}
+        >
+          {showForm ? "× Zavřít formulář" : "+ Přidat beat"}
         </button>
-        <button className="btn btn-admin" onClick={() => setShowBulkZone(v => !v)} style={{ borderColor: "#0B99FC", color: "#0B99FC" }}>
-          {showBulkZone ? "Zavřít hromadný upload" : "⬆ Hromadný upload"}
+        <button className="btn btn-admin" onClick={() => setShowBulkZone(v => !v)} style={{ borderColor: "#0B99FC", color: "#0B99FC", fontSize: "13px" }}>
+          {showBulkZone ? "Zavřít bulk upload" : "⬆ Bulk upload"}
         </button>
         {beats.some((b: any) => !b.is_published) && (
-          <button className="btn btn-admin" onClick={handlePublishAll} style={{ borderColor: "#4caf50", color: "#4caf50" }}>
-            ✓ Publikovat vše skryté ({beats.filter((b: any) => !b.is_published).length})
+          <button className="btn btn-admin" onClick={handlePublishAll} style={{ borderColor: "#4caf50", color: "#4caf50", fontSize: "13px" }}>
+            ✓ Publikovat skryté ({beats.filter((b: any) => !b.is_published).length})
           </button>
         )}
+        <span style={{ marginLeft: "auto", fontSize: "12px", color: "#444" }}>{beats.length} beatů celkem</span>
       </div>
 
+      {/* ── Bulk upload zone ── */}
       {showBulkZone && (
-        <div style={{ marginBottom: "24px" }}>
+        <div style={{ marginBottom: "24px", padding: "20px", background: "#0a0a0a", border: "1px solid #1e1e1e", borderRadius: "10px" }}>
+          <div style={{ fontSize: "11px", fontWeight: 700, color: "#444", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "14px" }}>Hromadný upload</div>
           <div
             onDragOver={e => { e.preventDefault(); setIsDragOver(true); }}
             onDragLeave={() => setIsDragOver(false)}
             onDrop={e => { e.preventDefault(); setIsDragOver(false); handleBulkFiles(e.dataTransfer.files); }}
             onClick={() => bulkFileInputRef.current?.click()}
-            style={{
-              border: `2px dashed ${isDragOver ? "#0B99FC" : "#333"}`,
-              borderRadius: "6px",
-              padding: "36px 24px",
-              textAlign: "center",
-              cursor: "pointer",
-              background: isDragOver ? "rgba(11,153,252,0.06)" : "#111",
-              transition: "all 0.15s ease",
-              marginBottom: stagedBeats.length > 0 ? "16px" : "0",
-            }}
+            style={{ border: `1.5px dashed ${isDragOver ? "#0B99FC" : "#2a2a2a"}`, borderRadius: "8px", padding: "32px 24px", textAlign: "center", cursor: "pointer", background: isDragOver ? "rgba(11,153,252,0.05)" : "transparent", transition: "all 0.15s ease", marginBottom: stagedBeats.length > 0 ? "16px" : "0" }}
           >
-            <div style={{ fontSize: "32px", marginBottom: "8px" }}>🎵</div>
-            <div style={{ color: "#aaa", fontSize: "14px" }}>Přetáhněte audio soubory sem nebo klikněte pro výběr</div>
-            <div style={{ color: "#555", fontSize: "12px", marginTop: "4px" }}>MP3, WAV, AIFF, FLAC — více souborů najednou</div>
-            <input
-              ref={bulkFileInputRef}
-              type="file"
-              multiple
-              accept="audio/*,.mp3,.wav,.aiff,.flac,.ogg,.m4a"
-              style={{ display: "none" }}
-              onChange={e => { if (e.target.files) handleBulkFiles(e.target.files); e.target.value = ""; }}
-            />
+            <div style={{ fontSize: "28px", marginBottom: "8px" }}>🎵</div>
+            <div style={{ color: "#aaa", fontSize: "13px" }}>Přetáhněte audio soubory nebo klikněte</div>
+            <div style={{ color: "#444", fontSize: "11px", marginTop: "4px" }}>MP3, WAV, AIFF, FLAC — více souborů najednou</div>
+            <input ref={bulkFileInputRef} type="file" multiple accept="audio/*,.mp3,.wav,.aiff,.flac,.ogg,.m4a" style={{ display: "none" }} onChange={e => { if (e.target.files) handleBulkFiles(e.target.files); e.target.value = ""; }} />
           </div>
-
           {stagedBeats.length > 0 && (
             <div>
-              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px", marginBottom: "12px" }}>
                 <thead>
-                  <tr style={{ borderBottom: "1px solid #2a2a2a", color: "#666", fontSize: "11px", textTransform: "uppercase" }}>
-                    <th style={{ padding: "8px 10px", textAlign: "left", fontWeight: 500 }}>Soubor / Název</th>
-                    <th style={{ padding: "8px 10px", textAlign: "left", fontWeight: 500, width: "80px" }}>BPM</th>
-                    <th style={{ padding: "8px 10px", textAlign: "left", fontWeight: 500, width: "70px" }}>Tónina</th>
-                    <th style={{ padding: "8px 10px", textAlign: "left", fontWeight: 500, width: "90px" }}>Cena (CZK)</th>
-                    <th style={{ padding: "8px 10px", textAlign: "center", fontWeight: 500, width: "80px" }}>Publik.</th>
-                    <th style={{ padding: "8px 10px", width: "30px" }}></th>
+                  <tr style={{ borderBottom: "1px solid #1e1e1e", color: "#444", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                    <th style={{ padding: "8px 10px", textAlign: "left", fontWeight: 600 }}>Soubor / Název</th>
+                    <th style={{ padding: "8px 10px", textAlign: "left", fontWeight: 600, width: "80px" }}>BPM</th>
+                    <th style={{ padding: "8px 10px", textAlign: "left", fontWeight: 600, width: "80px" }}>Tónina</th>
+                    <th style={{ padding: "8px 10px", textAlign: "left", fontWeight: 600, width: "90px" }}>Cena Kč</th>
+                    <th style={{ padding: "8px 10px", textAlign: "center", fontWeight: 600, width: "70px" }}>Publik.</th>
+                    <th style={{ padding: "8px 10px", width: "28px" }}></th>
                   </tr>
                 </thead>
                 <tbody>
                   {stagedBeats.map(b => (
-                    <tr key={b.localId} style={{ borderBottom: "1px solid #1a1a1a" }}>
+                    <tr key={b.localId} style={{ borderBottom: "1px solid #111" }}>
                       <td style={{ padding: "8px 10px" }}>
                         {b.status === "uploading" || b.status === "pending" ? (
                           <div>
-                            <div style={{ color: "#888", fontSize: "12px", marginBottom: "4px" }}>{b.file.name}</div>
-                            <div style={{ height: "4px", background: "#222", borderRadius: "2px", overflow: "hidden" }}>
+                            <div style={{ color: "#666", fontSize: "11px", marginBottom: "4px" }}>{b.file.name}</div>
+                            <div style={{ height: "3px", background: "#1a1a1a", borderRadius: "2px", overflow: "hidden" }}>
                               <div style={{ height: "100%", width: `${b.progress}%`, background: "linear-gradient(90deg,#0B99FC,#4cc3ff)", transition: "width 200ms" }} />
                             </div>
-                            <div style={{ fontSize: "11px", color: "#555", marginTop: "2px" }}>{b.progress}%</div>
+                            <div style={{ fontSize: "10px", color: "#444", marginTop: "2px" }}>{b.progress}%</div>
                           </div>
                         ) : b.status === "error" ? (
                           <div>
-                            <div style={{ color: "#ff4444", fontSize: "12px" }}>{b.file.name}</div>
-                            <div style={{ color: "#ff4444", fontSize: "11px" }}>{b.errorMsg}</div>
+                            <div style={{ color: "#ff5252", fontSize: "11px" }}>{b.file.name}</div>
+                            <div style={{ color: "#ff5252", fontSize: "10px" }}>{b.errorMsg}</div>
                           </div>
                         ) : (
-                          <input
-                            value={b.title}
-                            onChange={e => setStagedBeats(prev => prev.map(x => x.localId === b.localId ? { ...x, title: e.target.value } : x))}
-                            style={{ width: "100%", background: "#1a1a1a", border: "1px solid #2a2a2a", color: "#fff", padding: "6px 8px", borderRadius: "3px", fontSize: "13px" }}
-                            placeholder="Název beatu"
-                          />
+                          <input value={b.title} onChange={e => setStagedBeats(prev => prev.map(x => x.localId === b.localId ? { ...x, title: e.target.value } : x))} style={{ ...inputStyle, padding: "5px 8px", fontSize: "12px" }} placeholder="Název beatu" />
                         )}
                       </td>
                       <td style={{ padding: "8px 10px" }}>
-                        <input
-                          value={b.bpm}
-                          onChange={e => setStagedBeats(prev => prev.map(x => x.localId === b.localId ? { ...x, bpm: e.target.value } : x))}
-                          style={{ width: "100%", background: "#1a1a1a", border: "1px solid #2a2a2a", color: "#fff", padding: "6px 8px", borderRadius: "3px", fontSize: "13px" }}
-                          placeholder="BPM"
-                          type="number"
-                          disabled={b.status !== "done"}
-                        />
+                        <input value={b.bpm} onChange={e => setStagedBeats(prev => prev.map(x => x.localId === b.localId ? { ...x, bpm: e.target.value } : x))} style={{ ...inputStyle, padding: "5px 8px", fontSize: "12px" }} placeholder="BPM" type="number" disabled={b.status !== "done"} />
                       </td>
                       <td style={{ padding: "8px 10px" }}>
-                        <input
-                          value={b.key}
-                          onChange={e => setStagedBeats(prev => prev.map(x => x.localId === b.localId ? { ...x, key: e.target.value } : x))}
-                          style={{ width: "100%", background: "#1a1a1a", border: "1px solid #2a2a2a", color: "#fff", padding: "6px 8px", borderRadius: "3px", fontSize: "13px" }}
-                          placeholder="Tónina"
-                          disabled={b.status !== "done"}
-                        />
+                        <select value={b.key} onChange={e => setStagedBeats(prev => prev.map(x => x.localId === b.localId ? { ...x, key: e.target.value } : x))} style={{ ...selectStyle, padding: "5px 8px", fontSize: "12px" }} disabled={b.status !== "done"}>
+                          {MUSICAL_KEYS.map(k => <option key={k} value={k}>{k}</option>)}
+                        </select>
                       </td>
                       <td style={{ padding: "8px 10px" }}>
-                        <input
-                          value={b.price}
-                          onChange={e => setStagedBeats(prev => prev.map(x => x.localId === b.localId ? { ...x, price: e.target.value } : x))}
-                          style={{ width: "100%", background: "#1a1a1a", border: "1px solid #2a2a2a", color: "#fff", padding: "6px 8px", borderRadius: "3px", fontSize: "13px" }}
-                          placeholder="Cena"
-                          type="number"
-                          disabled={b.status !== "done"}
-                        />
+                        <input value={b.price} onChange={e => setStagedBeats(prev => prev.map(x => x.localId === b.localId ? { ...x, price: e.target.value } : x))} style={{ ...inputStyle, padding: "5px 8px", fontSize: "12px" }} placeholder="Cena" type="number" disabled={b.status !== "done"} />
                       </td>
                       <td style={{ padding: "8px 10px", textAlign: "center" }}>
-                        <input
-                          type="checkbox"
-                          checked={b.isPublished}
-                          onChange={e => setStagedBeats(prev => prev.map(x => x.localId === b.localId ? { ...x, isPublished: e.target.checked } : x))}
-                          disabled={b.status !== "done"}
-                        />
+                        <input type="checkbox" checked={b.isPublished} onChange={e => setStagedBeats(prev => prev.map(x => x.localId === b.localId ? { ...x, isPublished: e.target.checked } : x))} disabled={b.status !== "done"} />
                       </td>
                       <td style={{ padding: "8px 10px" }}>
-                        <button
-                          onClick={() => setStagedBeats(prev => prev.filter(x => x.localId !== b.localId))}
-                          style={{ background: "none", border: "none", color: "#555", cursor: "pointer", fontSize: "16px", lineHeight: 1 }}
-                          title="Odebrat"
-                        >×</button>
+                        <button onClick={() => setStagedBeats(prev => prev.filter(x => x.localId !== b.localId))} style={{ background: "none", border: "none", color: "#444", cursor: "pointer", fontSize: "15px", lineHeight: 1 }} title="Odebrat">×</button>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-
-              <div style={{ marginTop: "14px", display: "flex", alignItems: "center", gap: "16px" }}>
-                <button
-                  className="btn btn-filled"
-                  onClick={handleBulkCreate}
-                  disabled={bulkCreating || stagedBeats.filter(b => b.status === "done").length === 0}
-                  style={{ opacity: bulkCreating || stagedBeats.filter(b => b.status === "done").length === 0 ? 0.5 : 1 }}
-                >
-                  {bulkCreating ? "Vytváří se..." : `Vytvořit ${stagedBeats.filter(b => b.status === "done").length} beatů`}
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <button className="btn btn-filled" onClick={handleBulkCreate} disabled={bulkCreating || stagedBeats.filter(b => b.status === "done").length === 0} style={{ opacity: bulkCreating || stagedBeats.filter(b => b.status === "done").length === 0 ? 0.45 : 1, fontSize: "13px" }}>
+                  {bulkCreating ? "Vytváří se…" : `Vytvořit ${stagedBeats.filter(b => b.status === "done").length} beatů`}
                 </button>
-                <button
-                  className="btn btn-admin"
-                  onClick={() => setStagedBeats([])}
-                  style={{ color: "#666", borderColor: "#333" }}
-                >
-                  Vymazat vše
-                </button>
+                <button className="btn btn-admin" onClick={() => setStagedBeats([])} style={{ color: "#555", borderColor: "#2a2a2a", fontSize: "13px" }}>Vymazat vše</button>
                 {stagedBeats.some(b => b.status === "uploading" || b.status === "pending") && (
-                  <span style={{ color: "#888", fontSize: "12px" }}>
-                    Nahrávám {stagedBeats.filter(b => b.status === "uploading" || b.status === "pending").length} souborů…
-                  </span>
+                  <span style={{ color: "#666", fontSize: "11px" }}>Nahrávám {stagedBeats.filter(b => b.status === "uploading" || b.status === "pending").length} souborů…</span>
                 )}
               </div>
             </div>
@@ -1413,223 +1411,216 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
         </div>
       )}
 
+      {/* ── Beat form ── */}
       {showForm && (
-        <form onSubmit={handleSubmit} style={{ marginBottom: "24px", padding: "16px", border: "1px solid #333", borderRadius: "3px" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-            <div>
-              <label style={{ display: "block", marginBottom: "8px" }}>Název</label>
-              <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required style={{ width: "100%" }} />
-            </div>
-            <div>
-              <label style={{ display: "block", marginBottom: "8px" }}>Umělec</label>
-              <input value={form.artist} onChange={(e) => setForm({ ...form, artist: e.target.value })} style={{ width: "100%" }} />
-            </div>
-            <div>
-              <label style={{ display: "block", marginBottom: "8px" }}>BPM</label>
-              <input type="number" value={form.bpm} onChange={(e) => setForm({ ...form, bpm: Number(e.target.value) })} style={{ width: "100%" }} />
-            </div>
-            <div>
-              <label style={{ display: "block", marginBottom: "8px" }}>Tónina</label>
-              <input value={form.key} onChange={(e) => setForm({ ...form, key: e.target.value })} style={{ width: "100%" }} />
-            </div>
-            <div>
-              <label style={{ display: "block", marginBottom: "8px" }}>Typ / Cena</label>
-              <div style={{ display: "flex", gap: "8px" }}>
-                {PRICE_TYPES_BEAT.map((pt) => (
-                  <button
-                    key={pt.id}
-                    type="button"
-                    onClick={() => setForm({ ...form, priceType: pt.id, price: pt.price })}
-                    style={{
-                      flex: 1,
-                      padding: "10px 8px",
-                      background: form.priceType === pt.id ? "#fff" : "#000",
-                      color: form.priceType === pt.id ? "#000" : "#fff",
-                      border: "1px solid #555",
-                      borderRadius: "4px",
-                      cursor: "pointer",
-                      fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
-                      fontSize: "13px",
-                      fontWeight: form.priceType === pt.id ? 600 : 400,
-                      textAlign: "center",
-                      transition: "background 0.15s, color 0.15s",
-                    }}
-                  >
-                    <div>{pt.label}</div>
-                    <div style={{ fontSize: "11px", opacity: 0.7, marginTop: "2px" }}>{pt.sublabel}</div>
-                  </button>
-                ))}
+        <div ref={formRef} style={{ marginBottom: "28px" }}>
+          <div style={{ background: "#080808", border: "1px solid #1e1e1e", borderRadius: "12px", overflow: "hidden" }}>
+            {/* Form header */}
+            <div style={{ padding: "18px 22px", borderBottom: "1px solid #1a1a1a", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div>
+                <div style={{ fontSize: "15px", fontWeight: 600, color: "#fff" }}>{editing ? "Upravit beat" : "Přidat nový beat"}</div>
+                {editing && <div style={{ fontSize: "11px", color: "#444", marginTop: "2px" }}>ID #{editing.id} · {editing.title}</div>}
               </div>
-            </div>
-            <div>
-              <label style={{ display: "block", marginBottom: "8px" }}>Publikovat</label>
-              <input type="checkbox" checked={form.isPublished} onChange={(e) => setForm({ ...form, isPublished: e.target.checked })} />
-            </div>
-            <div>
-              <label style={{ display: "block", marginBottom: "8px" }}>Zvýraznit (Featured)</label>
-              <input type="checkbox" checked={form.isHighlighted} onChange={(e) => setForm({ ...form, isHighlighted: e.target.checked })} />
-            </div>
-            <div style={{ gridColumn: "1 / -1" }}>
-              <label style={{ display: "block", marginBottom: "8px" }}>Tagy (max 3)</label>
-              <div style={{ display: "flex", gap: "8px" }}>
-                <input value={tagInput} onChange={(e) => setTagInput(e.target.value)} placeholder="Přidat tag" style={{ flex: 1 }} />
-                <button type="button" className="btn" onClick={() => { if (tagInput && form.tags.length < 3) { setForm({ ...form, tags: [...form.tags, tagInput] }); setTagInput(""); } }}>+</button>
-              </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", marginTop: "8px" }}>
-                {form.tags.map((tag, i) => (
-                  <span key={i} style={{ padding: "4px 8px", border: "1px solid #fff", fontSize: "12px" }}>
-                    {tag} <button type="button" onClick={() => setForm({ ...form, tags: form.tags.filter((_, j) => j !== i) })} style={{ background: "none", border: "none", color: "#fff", cursor: "pointer" }}>×</button>
-                  </span>
-                ))}
-              </div>
+              <button onClick={resetForm} style={{ background: "none", border: "1px solid #2a2a2a", color: "#555", width: "30px", height: "30px", borderRadius: "6px", cursor: "pointer", fontSize: "16px", display: "flex", alignItems: "center", justifyContent: "center", transition: "border-color 0.15s, color 0.15s" }} onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = "#555"; (e.currentTarget as HTMLButtonElement).style.color = "#aaa"; }} onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = "#2a2a2a"; (e.currentTarget as HTMLButtonElement).style.color = "#555"; }}>×</button>
             </div>
 
-            <div style={{ gridColumn: "1 / -1" }}>
-              <label style={{ display: "block", marginBottom: "8px" }}>Preview Audio</label>
-              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                <input
-                  type="file"
-                  accept="audio/*"
-                  disabled={uploading["preview"]}
-                  onChange={async (e) => {
-                    if (e.target.files?.[0]) {
-                      const url = await uploadFile(e.target.files[0], "preview");
-                      if (url) setForm(f => ({ ...f, previewUrl: url as string }));
-                    }
-                  }}
-                  style={{ flex: 1 }}
-                />
+            <form onSubmit={handleSubmit} style={{ padding: "22px" }}>
+              {/* Section 1: Základní informace */}
+              <div style={sectionStyle}>
+                <div style={sectionHeadStyle}>Základní informace</div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "14px" }}>
+                  <div style={{ gridColumn: "1 / -1" }}>
+                    <label style={labelStyle}>Název beatu *</label>
+                    <input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} required style={{ ...inputStyle, fontSize: "15px", padding: "10px 14px" }} placeholder="Např. Midnight Rain" data-testid="input-beat-title" />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Umělec</label>
+                    <input value={form.artist} onChange={e => setForm({ ...form, artist: e.target.value })} style={inputStyle} placeholder="VOODOO808" data-testid="input-beat-artist" />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>BPM</label>
+                    <input type="number" min={40} max={300} value={form.bpm} onChange={e => setForm({ ...form, bpm: Number(e.target.value) })} style={inputStyle} placeholder="140" data-testid="input-beat-bpm" />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Tónina</label>
+                    <select value={form.key} onChange={e => setForm({ ...form, key: e.target.value })} style={selectStyle} data-testid="select-beat-key">
+                      {MUSICAL_KEYS.map(k => <option key={k} value={k}>{k}</option>)}
+                    </select>
+                  </div>
+                </div>
               </div>
-              <UploadProgressBar type="preview" />
-              <div style={{ marginTop: "6px" }}><UploadStatus type="preview" url={form.previewUrl} /></div>
-              {form.previewUrl && (
-                <audio controls src={form.previewUrl} style={{ width: "100%", marginTop: "8px", height: "36px" }} />
-              )}
-            </div>
 
-            <div>
-              <label style={{ display: "block", marginBottom: "8px" }}>Artwork</label>
-              <input
-                type="file"
-                accept="image/*"
-                disabled={uploading["artwork"]}
-                onChange={async (e) => {
-                  if (e.target.files?.[0]) {
-                    const url = await uploadFile(e.target.files[0], "artwork");
-                    if (url) setForm(f => ({ ...f, artworkUrl: url as string }));
-                  }
-                }}
-                style={{ width: "100%" }}
-              />
-              <UploadProgressBar type="artwork" />
-              <div style={{ marginTop: "6px" }}><UploadStatus type="artwork" url={form.artworkUrl} /></div>
-              {form.artworkUrl && !uploading["artwork"] && (
-                <ArtworkPreview
-                  url={form.artworkUrl}
-                  onDelete={() => setForm(f => ({ ...f, artworkUrl: "" }))}
-                  testId="button-delete-artwork-beat"
-                />
-              )}
-            </div>
+              {/* Section 2: Cena */}
+              <div style={sectionStyle}>
+                <div style={sectionHeadStyle}>Cena</div>
+                <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
+                  {PRICE_TYPES_BEAT.map(pt => (
+                    <button key={pt.id} type="button" onClick={() => setForm({ ...form, priceType: pt.id, price: pt.price })} style={{ flex: 1, padding: "10px 12px", background: form.priceType === pt.id ? "#fff" : "transparent", color: form.priceType === pt.id ? "#000" : "#666", border: `1px solid ${form.priceType === pt.id ? "#fff" : "#2a2a2a"}`, borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: form.priceType === pt.id ? 600 : 400, transition: "all 0.15s" }}>
+                      <div>{pt.label}</div>
+                      <div style={{ fontSize: "11px", opacity: 0.6, marginTop: "2px" }}>{pt.sublabel}</div>
+                    </button>
+                  ))}
+                </div>
+                {form.priceType === "beat" && (
+                  <div>
+                    <label style={labelStyle}>Vlastní cena (Kč)</label>
+                    <div style={{ position: "relative" }}>
+                      <input type="number" min={0} value={form.price} onChange={e => setForm({ ...form, price: Number(e.target.value) })} style={{ ...inputStyle, paddingRight: "40px" }} placeholder="5000" data-testid="input-beat-price" />
+                      <span style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", fontSize: "12px", color: "#444", pointerEvents: "none" }}>Kč</span>
+                    </div>
+                  </div>
+                )}
+              </div>
 
-            <div style={{ gridColumn: "1 / -1" }}>
-              <label style={{ display: "block", marginBottom: "8px" }}>Google Drive URL beatu (ke stažení po zakoupení)</label>
-              <input
-                type="url"
-                placeholder="https://drive.google.com/drive/folders/..."
-                value={form.fileUrl || ""}
-                onChange={(e) => setForm({ ...form, fileUrl: e.target.value })}
-                style={{ width: "100%", padding: "8px 10px", background: "#111", border: "1px solid #333", color: "#fff", borderRadius: "3px", fontSize: "13px", boxSizing: "border-box" }}
-                data-testid="input-gdrive-url-beat"
-              />
-              <p style={{ fontSize: "11px", color: "#555", marginTop: "5px" }}>
-                Nastav sdílení: Sdílet → Kdokoli s odkazem → Prohlížeč
-              </p>
-              <GDriveLinkStatus url={form.fileUrl || ""} />
-            </div>
+              {/* Section 3: Soubory */}
+              <div style={sectionStyle}>
+                <div style={sectionHeadStyle}>Soubory</div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+                  <div>
+                    <label style={labelStyle}>Preview Audio *</label>
+                    <DropZone
+                      type="preview"
+                      accept="audio/*,.mp3,.wav,.aiff,.flac,.ogg,.m4a"
+                      label="Přetáhněte audio nebo klikněte"
+                      hint="MP3, WAV, AIFF, FLAC"
+                      icon="🎵"
+                      onFile={async (f) => { const url = await uploadFile(f, "preview"); if (url) setForm(ff => ({ ...ff, previewUrl: url as string })); }}
+                      isDragging={isDragPreview}
+                      setIsDragging={setIsDragPreview}
+                      fileInputRef={previewFileInputRef as any}
+                      uploadedUrl={form.previewUrl}
+                      uploadedName={uploadedNames["preview"]}
+                    />
+                    {form.previewUrl && !uploading["preview"] && (
+                      <div style={{ marginTop: "8px" }}>
+                        <audio controls src={form.previewUrl} style={{ width: "100%", height: "32px" }} />
+                        <button type="button" onClick={() => { setForm(f => ({ ...f, previewUrl: "" })); setUploadProgress(p => ({ ...p, preview: 0 })); setUploadedNames(n => { const c = { ...n }; delete c["preview"]; return c; }); }} style={{ marginTop: "6px", background: "none", border: "none", color: "#555", fontSize: "11px", cursor: "pointer", padding: 0 }}>× Odebrat</button>
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Artwork</label>
+                    <DropZone
+                      type="artwork"
+                      accept="image/*,.heic,.heif"
+                      label="Přetáhněte obrázek nebo klikněte"
+                      hint="JPG, PNG, HEIC · auto 1500×1500px"
+                      icon="🖼"
+                      onFile={async (f) => { const url = await uploadFile(f, "artwork"); if (url) setForm(ff => ({ ...ff, artworkUrl: url as string })); }}
+                      isDragging={isDragArtwork}
+                      setIsDragging={setIsDragArtwork}
+                      fileInputRef={artworkFileInputRef as any}
+                      uploadedUrl={form.artworkUrl}
+                      uploadedName={uploadedNames["artwork"]}
+                    />
+                    {form.artworkUrl && !uploading["artwork"] && (
+                      <ArtworkPreview url={form.artworkUrl} onDelete={() => { setForm(f => ({ ...f, artworkUrl: "" })); setUploadProgress(p => ({ ...p, artwork: 0 })); setUploadedNames(n => { const c = { ...n }; delete c["artwork"]; return c; }); }} testId="button-delete-artwork-beat" />
+                    )}
+                  </div>
+                </div>
+              </div>
 
-            <div style={{ gridColumn: "1 / -1" }}>
-              <label style={{ display: "block", marginBottom: "8px" }}>Google Drive URL trackoutu (volitelné)</label>
-              <input
-                type="url"
-                placeholder="https://drive.google.com/drive/folders/..."
-                value={form.trackoutUrl || ""}
-                onChange={(e) => setForm({ ...form, trackoutUrl: e.target.value })}
-                style={{ width: "100%", padding: "8px 10px", background: "#111", border: "1px solid #333", color: "#fff", borderRadius: "3px", fontSize: "13px", boxSizing: "border-box" }}
-                data-testid="input-gdrive-url-trackout"
-              />
-              <GDriveLinkStatus url={form.trackoutUrl || ""} />
-            </div>
+              {/* Section 4: Distribuce */}
+              <div style={sectionStyle}>
+                <div style={sectionHeadStyle}>Distribuce (Google Drive)</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                  <div>
+                    <label style={labelStyle}>URL beatu ke stažení *</label>
+                    <input type="url" placeholder="https://drive.google.com/drive/folders/…" value={form.fileUrl || ""} onChange={e => setForm({ ...form, fileUrl: e.target.value })} style={inputStyle} data-testid="input-gdrive-url-beat" />
+                    <p style={{ fontSize: "11px", color: "#444", marginTop: "5px", lineHeight: 1.5 }}>Nastav sdílení → Kdokoli s odkazem → Prohlížeč</p>
+                    <GDriveLinkStatus url={form.fileUrl || ""} />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>URL trackoutu <span style={{ color: "#333", fontWeight: 400 }}>(volitelné)</span></label>
+                    <input type="url" placeholder="https://drive.google.com/drive/folders/…" value={form.trackoutUrl || ""} onChange={e => setForm({ ...form, trackoutUrl: e.target.value })} style={inputStyle} data-testid="input-gdrive-url-trackout" />
+                    <GDriveLinkStatus url={form.trackoutUrl || ""} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 5: Tagy + Status */}
+              <div style={{ ...sectionStyle, borderBottom: "none", paddingBottom: 0, marginBottom: 0 }}>
+                <div style={sectionHeadStyle}>Tagy a viditelnost</div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+                  <div style={{ gridColumn: "1 / -1" }}>
+                    <label style={labelStyle}>Tagy <span style={{ color: "#333", fontWeight: 400 }}>(max 3)</span></label>
+                    <div style={{ display: "flex", gap: "8px" }}>
+                      <input
+                        value={tagInput}
+                        onChange={e => setTagInput(e.target.value)}
+                        onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); if (tagInput.trim() && form.tags.length < 3) { setForm({ ...form, tags: [...form.tags, tagInput.trim()] }); setTagInput(""); } } }}
+                        placeholder="Přidat tag… (Enter pro přidání)"
+                        style={{ ...inputStyle, flex: 1 }}
+                        disabled={form.tags.length >= 3}
+                        data-testid="input-beat-tag"
+                      />
+                      <button type="button" onClick={() => { if (tagInput.trim() && form.tags.length < 3) { setForm({ ...form, tags: [...form.tags, tagInput.trim()] }); setTagInput(""); } }} style={{ padding: "0 16px", background: "#1a1a1a", border: "1px solid #2a2a2a", color: "#aaa", borderRadius: "6px", cursor: "pointer", fontSize: "18px", flexShrink: 0 }}>+</button>
+                    </div>
+                    {form.tags.length > 0 && (
+                      <div style={{ display: "flex", gap: "6px", marginTop: "8px", flexWrap: "wrap" }}>
+                        {form.tags.map((tag, i) => (
+                          <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "4px 10px", background: "#141414", border: "1px solid #2a2a2a", borderRadius: "999px", fontSize: "12px", color: "#ccc" }}>
+                            {tag}
+                            <button type="button" onClick={() => setForm({ ...form, tags: form.tags.filter((_, j) => j !== i) })} style={{ background: "none", border: "none", color: "#555", cursor: "pointer", fontSize: "14px", lineHeight: 1, padding: "0 0 0 2px" }}>×</button>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Viditelnost</label>
+                    <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", padding: "10px 12px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "8px" }}>
+                      <input type="checkbox" checked={form.isPublished} onChange={e => setForm({ ...form, isPublished: e.target.checked })} style={{ width: "16px", height: "16px", cursor: "pointer", accentColor: "#4caf50" }} data-testid="checkbox-beat-published" />
+                      <span style={{ fontSize: "13px", color: form.isPublished ? "#4caf50" : "#666" }}>{form.isPublished ? "Publikováno" : "Skryto"}</span>
+                    </label>
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Featured</label>
+                    <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", padding: "10px 12px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "8px" }}>
+                      <input type="checkbox" checked={form.isHighlighted} onChange={e => setForm({ ...form, isHighlighted: e.target.checked })} style={{ width: "16px", height: "16px", cursor: "pointer", accentColor: "#f9a825" }} data-testid="checkbox-beat-highlighted" />
+                      <span style={{ fontSize: "13px", color: form.isHighlighted ? "#f9a825" : "#666" }}>{form.isHighlighted ? "⭐ Zvýrazněný" : "Normální"}</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              {/* Submit row */}
+              <div style={{ marginTop: "22px", paddingTop: "20px", borderTop: "1px solid #1a1a1a", display: "flex", gap: "10px", alignItems: "center" }}>
+                <button type="submit" className="btn btn-filled" disabled={Object.values(uploading).some(Boolean)} style={{ fontSize: "14px", padding: "10px 24px", opacity: Object.values(uploading).some(Boolean) ? 0.5 : 1 }} data-testid="button-submit-beat">
+                  {Object.values(uploading).some(Boolean) ? "Čekám na nahrání…" : editing ? "Uložit změny" : "Přidat beat"}
+                </button>
+                <button type="button" onClick={resetForm} style={{ background: "none", border: "1px solid #2a2a2a", color: "#555", padding: "10px 20px", borderRadius: "6px", cursor: "pointer", fontSize: "13px" }}>Zrušit</button>
+                {editing && (
+                  <button type="button" onClick={() => handleDelete(editing.id)} style={{ marginLeft: "auto", background: "none", border: "1px solid #2a2a2a", color: "#555", padding: "10px 14px", borderRadius: "6px", cursor: "pointer", fontSize: "12px" }} data-testid={`button-delete-beat-${editing.id}`}>Smazat beat</button>
+                )}
+              </div>
+            </form>
           </div>
-          <button
-            type="submit"
-            className="btn btn-filled"
-            style={{ marginTop: "16px" }}
-            disabled={Object.values(uploading).some(Boolean)}
-          >
-            {editing ? "Uložit změny" : "Přidat beat"}
-          </button>
-          {Object.values(uploading).some(Boolean) && (
-            <span style={{ marginLeft: "12px", fontSize: "13px", color: "#888" }}>Čekám na dokončení nahrávání...</span>
-          )}
-        </form>
-      )}
-
-      {selectedBeats.length > 0 && (
-        <div style={{ marginBottom: "16px", padding: "12px", background: "#1a1a1a", borderRadius: "3px", display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
-          <span data-testid="text-selected-count" style={{ fontSize: "13px", color: "#aaa" }}>{selectedBeats.length} vybráno</span>
-          <button 
-            className="btn btn-admin" 
-            onClick={handleBulkPublish}
-            style={{ color: "#4caf50", borderColor: "#4caf50" }}
-            data-testid="button-bulk-publish-beats"
-          >
-            Zveřejnit vybrané
-          </button>
-          <button 
-            className="btn btn-admin" 
-            onClick={handleBulkDelete} 
-            style={{ color: "#ff4444", borderColor: "#ff4444" }}
-            data-testid="button-bulk-delete-beats"
-          >
-            Smazat vybrané
-          </button>
-          <button 
-            className="btn btn-admin" 
-            onClick={() => setSelectedBeats([])}
-            data-testid="button-clear-selection"
-          >
-            Zrušit výběr
-          </button>
         </div>
       )}
 
-      {/* ffmpeg health check banner */}
+      {/* ── Selection bar ── */}
+      {selectedBeats.length > 0 && (
+        <div style={{ marginBottom: "16px", padding: "10px 14px", background: "#0d1a0d", border: "1px solid #1a3d1a", borderRadius: "8px", display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+          <span data-testid="text-selected-count" style={{ fontSize: "12px", color: "#4caf50", fontWeight: 600 }}>{selectedBeats.length} vybráno</span>
+          <button className="btn btn-admin" onClick={handleBulkPublish} style={{ color: "#4caf50", borderColor: "#4caf50", fontSize: "12px" }} data-testid="button-bulk-publish-beats">Zveřejnit</button>
+          <button className="btn btn-admin" onClick={handleBulkDelete} style={{ color: "#ff5252", borderColor: "#ff5252", fontSize: "12px" }} data-testid="button-bulk-delete-beats">Smazat</button>
+          <button className="btn btn-admin" onClick={() => setSelectedBeats([])} style={{ fontSize: "12px" }} data-testid="button-clear-selection">Zrušit výběr</button>
+        </div>
+      )}
+
+      {/* ── Status bars ── */}
       {(() => {
         const isLoading = ffmpegHealth === "loading";
         const health = ffmpegHealth !== "loading" ? ffmpegHealth : null;
-        const color = isLoading ? "#555" : health?.ok ? "#4caf50" : "#e53935";
-        const bg = isLoading ? "rgba(255,255,255,0.02)" : health?.ok ? "rgba(76,175,80,0.06)" : "rgba(229,57,53,0.08)";
-        const border = isLoading ? "#2a2a2a" : health?.ok ? "#1a3d1a" : "#4a1010";
-        const dot = isLoading ? "#555" : health?.ok ? "#4caf50" : "#e53935";
+        const ok = health?.ok;
         return (
-          <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "7px 12px", marginBottom: "6px", background: bg, border: `1px solid ${border}`, borderRadius: "4px" }}>
-            <div style={{ width: "7px", height: "7px", borderRadius: "50%", background: dot, flexShrink: 0, boxShadow: isLoading ? "none" : `0 0 6px ${dot}` }} />
-            <span style={{ fontSize: "11px", color, fontFamily: "monospace" }}>
-              {isLoading
-                ? "ffmpeg: ověřuji…"
-                : health?.ok
-                  ? `ffmpeg ${health.version} · ${health.source} · ${health.durationMs}ms`
-                  : `ffmpeg NEDOSTUPNÝ — ${health?.version ?? "unknown"} · ${health?.source ?? ""}`}
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "6px 12px", marginBottom: "6px", background: isLoading ? "rgba(255,255,255,0.01)" : ok ? "rgba(76,175,80,0.04)" : "rgba(229,57,53,0.06)", border: `1px solid ${isLoading ? "#1a1a1a" : ok ? "#1a3d1a" : "#3a1010"}`, borderRadius: "6px" }}>
+            <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: isLoading ? "#333" : ok ? "#4caf50" : "#e53935", flexShrink: 0, boxShadow: !isLoading ? `0 0 5px ${ok ? "#4caf50" : "#e53935"}` : "none" }} />
+            <span style={{ fontSize: "11px", color: isLoading ? "#444" : ok ? "#4caf50" : "#e53935", fontFamily: "monospace", flex: 1 }}>
+              {isLoading ? "ffmpeg: ověřuji…" : ok ? `ffmpeg ${health.version} · ${health.source}` : `ffmpeg NEDOSTUPNÝ — waveformy nebudou generovány`}
             </span>
-            <button
-              onClick={checkFfmpegHealth}
-              disabled={isLoading}
-              data-testid="button-check-ffmpeg-health"
-              style={{ marginLeft: "auto", background: "none", border: "1px solid #333", color: "#555", fontSize: "10px", padding: "2px 8px", borderRadius: "3px", cursor: isLoading ? "not-allowed" : "pointer", opacity: isLoading ? 0.4 : 1, letterSpacing: "0.5px" }}
-            >
-              {isLoading ? "…" : "Ověřit znovu"}
-            </button>
+            <button onClick={checkFfmpegHealth} disabled={isLoading} data-testid="button-check-ffmpeg-health" style={{ background: "none", border: "1px solid #222", color: "#444", fontSize: "10px", padding: "2px 7px", borderRadius: "4px", cursor: isLoading ? "not-allowed" : "pointer", opacity: isLoading ? 0.4 : 1 }}>{isLoading ? "…" : "Ověřit"}</button>
           </div>
         );
       })()}
@@ -1639,42 +1630,19 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
         const withPreview = beats.filter((b: Beat) => b.preview_url).length;
         const allReady = withWave >= withPreview && withPreview > 0;
         return (
-          <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "8px 12px", marginBottom: "8px", background: allReady ? "rgba(255,255,255,0.03)" : "rgba(255,200,50,0.05)", border: `1px solid ${allReady ? "#2a2a2a" : "#3a3000"}`, borderRadius: "4px" }}>
-            <div style={{ display: "flex", gap: "4px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "6px 12px", marginBottom: "14px", background: allReady ? "rgba(255,255,255,0.01)" : "rgba(255,200,50,0.03)", border: `1px solid ${allReady ? "#1a1a1a" : "#2a2000"}`, borderRadius: "6px" }}>
+            <div style={{ display: "flex", gap: "3px", flexShrink: 0 }}>
               {beats.filter((b: Beat) => b.preview_url).map((b: Beat) => (
-                <div
-                  key={b.id}
-                  title={b.title}
-                  style={{ width: "8px", height: "8px", borderRadius: "50%", background: (b.waveform_data && Array.isArray(b.waveform_data)) ? "#4caf50" : "#888", flexShrink: 0 }}
-                />
+                <div key={b.id} title={b.title} style={{ width: "6px", height: "6px", borderRadius: "50%", background: (b.waveform_data && Array.isArray(b.waveform_data)) ? "#4caf50" : "#333" }} />
               ))}
             </div>
-            <span style={{ fontSize: "12px", color: allReady ? "#888" : "#b8972a" }}>
-              {allReady
-                ? `Waveformy: ${withWave}/${withPreview} připraveno`
-                : `Waveformy: ${withWave}/${withPreview} připraveno — výpočet probíhá...`}
+            <span style={{ fontSize: "11px", color: allReady ? "#444" : "#8a6e1a", flex: 1 }}>
+              Waveformy: {withWave}/{withPreview} {allReady ? "vše připraveno" : "— výpočet probíhá…"}
             </span>
             {hasPendingWaveforms && (
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginLeft: "auto" }}>
-                {recomputeAllProgress ? (
-                  <span style={{ fontSize: "11px", color: "#b8972a" }}>
-                    Zpracovávám {recomputeAllProgress.current}/{recomputeAllProgress.total}…
-                  </span>
-                ) : (
-                  <span style={{ fontSize: "11px", color: "#555" }}>obnovení za 5 s</span>
-                )}
-                <button
-                  data-testid="button-recompute-all-waveforms"
-                  onClick={handleRecomputeAll}
-                  disabled={!!recomputeAllProgress}
-                  style={{
-                    background: "none", border: "1px solid #3a3000", color: recomputeAllProgress ? "#555" : "#b8972a",
-                    fontSize: "11px", padding: "3px 10px", borderRadius: "3px",
-                    cursor: recomputeAllProgress ? "not-allowed" : "pointer",
-                    whiteSpace: "nowrap",
-                    opacity: recomputeAllProgress ? 0.5 : 1,
-                  }}
-                >
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                {recomputeAllProgress && <span style={{ fontSize: "10px", color: "#8a6e1a" }}>{recomputeAllProgress.current}/{recomputeAllProgress.total}</span>}
+                <button data-testid="button-recompute-all-waveforms" onClick={handleRecomputeAll} disabled={!!recomputeAllProgress} style={{ background: "none", border: "1px solid #2a2000", color: recomputeAllProgress ? "#444" : "#8a6e1a", fontSize: "10px", padding: "2px 8px", borderRadius: "4px", cursor: recomputeAllProgress ? "not-allowed" : "pointer", opacity: recomputeAllProgress ? 0.5 : 1 }}>
                   {recomputeAllProgress ? `${recomputeAllProgress.current}/${recomputeAllProgress.total}` : "Přepočítat vše"}
                 </button>
               </div>
@@ -1683,142 +1651,127 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
         );
       })()}
 
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr style={{ borderBottom: "1px solid #333" }}>
-            <th style={{ textAlign: "left", padding: "12px", width: "40px" }}>
-              <input 
-                type="checkbox" 
-                checked={beats.length > 0 && selectedBeats.length === beats.length}
-                onChange={handleSelectAll}
-                data-testid="checkbox-select-all-beats"
-              />
-            </th>
-            <th style={{ textAlign: "left", padding: "12px", width: "56px" }}></th>
-            <th style={{ textAlign: "left", padding: "12px" }}>Název</th>
-            <th style={{ textAlign: "left", padding: "12px" }}>BPM</th>
-            <th style={{ textAlign: "left", padding: "12px" }}>Status</th>
-            <th style={{ textAlign: "left", padding: "12px" }}>Featured</th>
-            <th style={{ textAlign: "left", padding: "12px" }}>Waveform</th>
-            <th style={{ textAlign: "right", padding: "12px" }}>Akce</th>
-          </tr>
-        </thead>
-        <tbody>
-          {beats.map((beat: Beat, beatIdx: number) => (
-            <tr
-              key={beat.id}
-              style={{
-                borderBottom: "1px solid #222",
-                background: hoveredBeatId === beat.id ? "#161616" : "transparent",
-                cursor: "pointer",
-                transition: "background 150ms",
-              }}
-              onMouseEnter={() => setHoveredBeatId(beat.id)}
-              onMouseLeave={() => setHoveredBeatId(null)}
-              onClick={() => { setEditing(beat); setShowForm(true); }}
-              data-testid={`row-beat-${beat.id}`}
-            >
-              <td style={{ padding: "12px" }} onClick={(e) => e.stopPropagation()}>
-                <input 
-                  type="checkbox" 
-                  checked={selectedBeats.includes(beat.id)}
-                  onChange={() => handleSelectBeat(beat.id)}
-                  data-testid={`checkbox-beat-${beat.id}`}
-                />
-              </td>
-              <td style={{ padding: "8px 12px" }} onClick={(e) => toggleBeatPreview(beat, e)}>
-                <div style={{ position: "relative", width: "40px", height: "40px", cursor: beat.preview_url ? "pointer" : "default", flexShrink: 0 }} title={beat.preview_url ? (previewBeatId === beat.id ? "Pozastavit náhled" : "Přehrát náhled") : "Bez náhledu"}>
-                  {beat.artwork_url ? (
-                    <img
-                      src={beat.artwork_url}
-                      alt={beat.title}
-                      style={{ width: "40px", height: "40px", objectFit: "cover", borderRadius: "3px", display: "block", transition: "opacity 0.15s", opacity: previewBeatId === beat.id ? 0.55 : 1 }}
-                      onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
-                    />
-                  ) : (
-                    <div style={{ width: "40px", height: "40px", background: "#222", borderRadius: "3px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <span style={{ fontSize: "18px", color: "#444" }}>♪</span>
+      {/* ── Beat list ── */}
+      {beats.length === 0 ? (
+        <div style={{ padding: "48px 24px", textAlign: "center", border: "1px dashed #1e1e1e", borderRadius: "10px" }}>
+          <div style={{ fontSize: "32px", marginBottom: "12px" }}>🎵</div>
+          <div style={{ color: "#444", fontSize: "14px" }}>Žádné beaty. Přidejte první beat.</div>
+        </div>
+      ) : (
+        <div style={{ border: "1px solid #1a1a1a", borderRadius: "10px", overflow: "hidden" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr style={{ background: "#080808", borderBottom: "1px solid #1a1a1a" }}>
+                <th style={{ padding: "10px 14px", width: "36px" }}>
+                  <input type="checkbox" checked={beats.length > 0 && selectedBeats.length === beats.length} onChange={handleSelectAll} data-testid="checkbox-select-all-beats" style={{ cursor: "pointer", accentColor: "#4caf50" }} />
+                </th>
+                <th style={{ padding: "10px 8px", width: "52px" }}></th>
+                <th style={{ textAlign: "left", padding: "10px 8px", fontSize: "10px", fontWeight: 700, color: "#444", textTransform: "uppercase", letterSpacing: "0.6px" }}>Název</th>
+                <th style={{ textAlign: "left", padding: "10px 8px", fontSize: "10px", fontWeight: 700, color: "#444", textTransform: "uppercase", letterSpacing: "0.6px", width: "90px" }}>BPM / Key</th>
+                <th style={{ textAlign: "left", padding: "10px 8px", fontSize: "10px", fontWeight: 700, color: "#444", textTransform: "uppercase", letterSpacing: "0.6px", width: "80px" }}>Cena</th>
+                <th style={{ textAlign: "left", padding: "10px 8px", fontSize: "10px", fontWeight: 700, color: "#444", textTransform: "uppercase", letterSpacing: "0.6px", width: "110px" }}>Status</th>
+                <th style={{ textAlign: "left", padding: "10px 8px", fontSize: "10px", fontWeight: 700, color: "#444", textTransform: "uppercase", letterSpacing: "0.6px" }}>Waveform</th>
+                <th style={{ textAlign: "right", padding: "10px 14px", width: "120px" }}></th>
+              </tr>
+            </thead>
+            <tbody>
+              {beats.map((beat: Beat, beatIdx: number) => (
+                <tr
+                  key={beat.id}
+                  style={{ borderBottom: "1px solid #111", background: hoveredBeatId === beat.id ? "#0d0d0d" : "transparent", cursor: "pointer", transition: "background 120ms" }}
+                  onMouseEnter={() => setHoveredBeatId(beat.id)}
+                  onMouseLeave={() => setHoveredBeatId(null)}
+                  onClick={() => { setEditing(beat); setShowForm(true); }}
+                  data-testid={`row-beat-${beat.id}`}
+                >
+                  <td style={{ padding: "10px 14px" }} onClick={e => e.stopPropagation()}>
+                    <input type="checkbox" checked={selectedBeats.includes(beat.id)} onChange={() => handleSelectBeat(beat.id)} data-testid={`checkbox-beat-${beat.id}`} style={{ cursor: "pointer", accentColor: "#4caf50" }} />
+                  </td>
+                  <td style={{ padding: "8px" }} onClick={e => toggleBeatPreview(beat, e)}>
+                    <div style={{ position: "relative", width: "44px", height: "44px", cursor: beat.preview_url ? "pointer" : "default", flexShrink: 0, borderRadius: "6px", overflow: "hidden" }}>
+                      {beat.artwork_url ? (
+                        <img src={beat.artwork_url} alt={beat.title} style={{ width: "44px", height: "44px", objectFit: "cover", display: "block", transition: "opacity 0.15s", opacity: previewBeatId === beat.id ? 0.4 : 1 }} onError={e => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }} />
+                      ) : (
+                        <div style={{ width: "44px", height: "44px", background: "#161616", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <span style={{ fontSize: "18px", color: "#2a2a2a" }}>♪</span>
+                        </div>
+                      )}
+                      {beat.preview_url && (
+                        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: previewBeatId === beat.id ? "rgba(0,0,0,0.5)" : hoveredBeatId === beat.id ? "rgba(0,0,0,0.25)" : "transparent", transition: "background 0.15s" }}>
+                          {previewBeatId === beat.id ? (
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                          ) : hoveredBeatId === beat.id ? (
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="rgba(255,255,255,0.9)"><path d="M5 3l14 9-14 9V3z"/></svg>
+                          ) : null}
+                        </div>
+                      )}
                     </div>
-                  )}
-                  {beat.preview_url && (
-                    <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "3px", background: previewBeatId === beat.id ? "rgba(0,0,0,0.4)" : "transparent", transition: "background 0.15s" }}>
-                      {previewBeatId === beat.id ? (
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-                      ) : hoveredBeatId === beat.id ? (
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="rgba(255,255,255,0.85)"><path d="M5 3l14 9-14 9V3z"/></svg>
-                      ) : null}
-                    </div>
-                  )}
-                </div>
-              </td>
-              <td style={{ padding: "12px" }}>{beat.title}</td>
-              <td style={{ padding: "12px" }}>{beat.bpm}</td>
-              <td style={{ padding: "12px" }}>{beat.is_published ? "Publikováno" : "Skryto"}</td>
-              <td style={{ padding: "12px" }}>{beat.is_highlighted ? "Featured" : ""}</td>
-              <td style={{ padding: "10px 12px" }} onClick={(e) => e.stopPropagation()}>
-                {!beat.preview_url ? (
-                  <span style={{ fontSize: "12px", color: "#333" }}>—</span>
-                ) : (beat.waveform_data && Array.isArray(beat.waveform_data)) ? (() => {
-                  const quality = getBeatWaveformQuality(beat.waveform_data);
-                  const isHov = hoveredBeatId === beat.id;
-                  return (
-                    <div
-                      data-testid={`waveform-status-${beat.id}`}
-                      style={{ display: "inline-flex", flexDirection: "column", gap: "3px", cursor: "pointer" }}
-                      title={`${beat.waveform_data.length} bodů · kliknutím detail`}
-                      onClick={(e) => { e.stopPropagation(); setExpandedWaveformBeat(beat); }}
-                    >
-                      <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                        <BeatWaveformSparkline data={beat.waveform_data} hovered={isHov} />
+                  </td>
+                  <td style={{ padding: "10px 8px" }}>
+                    <div style={{ fontSize: "13px", fontWeight: 500, color: "#e0e0e0", marginBottom: "3px" }}>{beat.title}</div>
+                    <div style={{ fontSize: "11px", color: "#444" }}>{beat.artist}</div>
+                    {beat.tags && beat.tags.length > 0 && (
+                      <div style={{ display: "flex", gap: "4px", marginTop: "4px", flexWrap: "wrap" }}>
+                        {beat.tags.map((t: string, i: number) => (
+                          <span key={i} style={{ fontSize: "10px", color: "#555", background: "#111", border: "1px solid #1e1e1e", borderRadius: "999px", padding: "1px 7px" }}>{t}</span>
+                        ))}
                       </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                        <div style={{ width: "5px", height: "5px", borderRadius: "50%", background: quality.color, flexShrink: 0, boxShadow: isHov ? `0 0 4px ${quality.color}` : "none", transition: "box-shadow 150ms" }} />
-                        <span style={{ fontSize: "10px", color: isHov ? quality.color : "#444", fontFamily: "monospace", transition: "color 150ms", letterSpacing: "0.3px" }}>
-                          {quality.label} · {beat.waveform_data.length} bodů
-                        </span>
-                      </div>
+                    )}
+                  </td>
+                  <td style={{ padding: "10px 8px" }}>
+                    <div style={{ fontSize: "12px", color: "#ccc", fontFamily: "monospace" }}>{beat.bpm} BPM</div>
+                    <div style={{ fontSize: "11px", color: "#555", marginTop: "2px" }}>{beat.key}</div>
+                  </td>
+                  <td style={{ padding: "10px 8px" }}>
+                    <div style={{ fontSize: "12px", color: beat.price === 0 ? "#555" : "#ccc", fontFamily: "monospace" }}>{beat.price === 0 ? "Free" : `${beat.price.toLocaleString("cs-CZ")} Kč`}</div>
+                  </td>
+                  <td style={{ padding: "10px 8px" }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "10px", fontWeight: 600, padding: "2px 8px", borderRadius: "999px", background: beat.is_published ? "rgba(76,175,80,0.12)" : "rgba(255,255,255,0.04)", color: beat.is_published ? "#4caf50" : "#444", border: `1px solid ${beat.is_published ? "rgba(76,175,80,0.25)" : "#1e1e1e"}`, width: "fit-content" }}>
+                        <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: beat.is_published ? "#4caf50" : "#2a2a2a", flexShrink: 0 }} />
+                        {beat.is_published ? "Publik." : "Skryto"}
+                      </span>
+                      {beat.is_highlighted && (
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "10px", fontWeight: 600, padding: "2px 8px", borderRadius: "999px", background: "rgba(249,168,37,0.1)", color: "#f9a825", border: "1px solid rgba(249,168,37,0.2)", width: "fit-content" }}>⭐ Featured</span>
+                      )}
                     </div>
-                  );
-                })() : recomputingIds.has(beat.id) ? (
-                  <span style={{ fontSize: "12px", color: "#888" }}>Spouštím…</span>
-                ) : (
-                  <button
-                    data-testid={`button-recompute-waveform-${beat.id}`}
-                    onClick={(e) => handleRecomputeWaveform(beat, e)}
-                    style={{ background: "none", border: "1px solid #3a3000", color: "#b8972a", fontSize: "11px", padding: "3px 8px", borderRadius: "3px", cursor: "pointer" }}
-                  >
-                    ⏳ Výpočet
-                  </button>
-                )}
-              </td>
-              <td style={{ padding: "12px", textAlign: "right" }} onClick={(e) => e.stopPropagation()}>
-                <div style={{ display: "inline-flex", alignItems: "center", gap: "4px", marginRight: "8px", border: "1px solid #2a2a2a", borderRadius: "4px", overflow: "hidden" }}>
-                  <button
-                    onClick={() => handleBeatReorder(beatIdx, "up")}
-                    disabled={beatIdx === 0}
-                    data-testid={`button-beat-up-${beat.id}`}
-                    title="Posunout nahoru"
-                    style={{ background: "transparent", border: "none", color: beatIdx === 0 ? "#333" : "#666", cursor: beatIdx === 0 ? "default" : "pointer", padding: "4px 7px", fontSize: "12px", lineHeight: 1, transition: "color 0.15s" }}
-                    onMouseEnter={(e) => { if (beatIdx > 0) (e.currentTarget as HTMLButtonElement).style.color = "#fff"; }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = beatIdx === 0 ? "#333" : "#666"; }}
-                  >↑</button>
-                  <button
-                    onClick={() => handleBeatReorder(beatIdx, "down")}
-                    disabled={beatIdx === beats.length - 1}
-                    data-testid={`button-beat-down-${beat.id}`}
-                    title="Posunout dolů"
-                    style={{ background: "transparent", border: "none", color: beatIdx === beats.length - 1 ? "#333" : "#666", cursor: beatIdx === beats.length - 1 ? "default" : "pointer", padding: "4px 7px", fontSize: "12px", lineHeight: 1, transition: "color 0.15s" }}
-                    onMouseEnter={(e) => { if (beatIdx < beats.length - 1) (e.currentTarget as HTMLButtonElement).style.color = "#fff"; }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = beatIdx === beats.length - 1 ? "#333" : "#666"; }}
-                  >↓</button>
-                </div>
-                <button className="btn btn-admin" onClick={() => { setEditing(beat); setShowForm(true); }} style={{ marginRight: "8px" }} data-testid={`button-edit-beat-${beat.id}`}>Upravit</button>
-                <button className="btn btn-admin" onClick={() => handleDelete(beat.id)} style={{ color: "#333", borderColor: "#333" }} data-testid={`button-delete-beat-${beat.id}`}>Smazat</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+                  </td>
+                  <td style={{ padding: "10px 8px" }} onClick={e => e.stopPropagation()}>
+                    {!beat.preview_url ? (
+                      <span style={{ fontSize: "11px", color: "#2a2a2a" }}>—</span>
+                    ) : (beat.waveform_data && Array.isArray(beat.waveform_data)) ? (() => {
+                      const quality = getBeatWaveformQuality(beat.waveform_data);
+                      const isHov = hoveredBeatId === beat.id;
+                      return (
+                        <div data-testid={`waveform-status-${beat.id}`} style={{ display: "inline-flex", flexDirection: "column", gap: "3px", cursor: "pointer" }} title={`${beat.waveform_data.length} bodů`} onClick={e => { e.stopPropagation(); setExpandedWaveformBeat(beat); }}>
+                          <BeatWaveformSparkline data={beat.waveform_data} hovered={isHov} />
+                          <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                            <div style={{ width: "4px", height: "4px", borderRadius: "50%", background: quality.color, flexShrink: 0 }} />
+                            <span style={{ fontSize: "9px", color: isHov ? quality.color : "#333", fontFamily: "monospace", letterSpacing: "0.3px", transition: "color 120ms" }}>{quality.label}</span>
+                          </div>
+                        </div>
+                      );
+                    })() : recomputingIds.has(beat.id) ? (
+                      <span style={{ fontSize: "11px", color: "#555" }}>Počítám…</span>
+                    ) : (
+                      <button data-testid={`button-recompute-waveform-${beat.id}`} onClick={e => handleRecomputeWaveform(beat, e)} style={{ background: "none", border: "1px solid #2a2000", color: "#8a6e1a", fontSize: "10px", padding: "3px 8px", borderRadius: "4px", cursor: "pointer" }}>⏳ Výpočet</button>
+                    )}
+                  </td>
+                  <td style={{ padding: "10px 14px", textAlign: "right" }} onClick={e => e.stopPropagation()}>
+                    <div style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                      <div style={{ display: "inline-flex", border: "1px solid #1e1e1e", borderRadius: "6px", overflow: "hidden" }}>
+                        <button onClick={() => handleBeatReorder(beatIdx, "up")} disabled={beatIdx === 0} data-testid={`button-beat-up-${beat.id}`} title="Nahoru" style={{ background: "transparent", border: "none", color: beatIdx === 0 ? "#222" : "#444", cursor: beatIdx === 0 ? "default" : "pointer", padding: "5px 8px", fontSize: "11px", lineHeight: 1, transition: "color 0.12s" }} onMouseEnter={e => { if (beatIdx > 0) (e.currentTarget as HTMLButtonElement).style.color = "#aaa"; }} onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = beatIdx === 0 ? "#222" : "#444"; }}>↑</button>
+                        <button onClick={() => handleBeatReorder(beatIdx, "down")} disabled={beatIdx === beats.length - 1} data-testid={`button-beat-down-${beat.id}`} title="Dolů" style={{ background: "transparent", border: "none", borderLeft: "1px solid #1e1e1e", color: beatIdx === beats.length - 1 ? "#222" : "#444", cursor: beatIdx === beats.length - 1 ? "default" : "pointer", padding: "5px 8px", fontSize: "11px", lineHeight: 1, transition: "color 0.12s" }} onMouseEnter={e => { if (beatIdx < beats.length - 1) (e.currentTarget as HTMLButtonElement).style.color = "#aaa"; }} onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = beatIdx === beats.length - 1 ? "#222" : "#444"; }}>↓</button>
+                      </div>
+                      <button className="btn btn-admin" onClick={() => { setEditing(beat); setShowForm(true); }} style={{ fontSize: "11px", padding: "5px 10px" }} data-testid={`button-edit-beat-${beat.id}`}>Upravit</button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {expandedWaveformBeat && (
         <WaveformModal beat={expandedWaveformBeat} onClose={() => setExpandedWaveformBeat(null)} />
