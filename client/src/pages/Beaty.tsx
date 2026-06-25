@@ -585,8 +585,8 @@ function Beaty() {
   };
 
   const filteredBeats = beatLimit ? beats.slice(0, beatLimit) : beats;
-  // Featured slot shows the currently playing beat; falls back to admin-highlighted beat when idle
-  const displayedHighlight = currentBeat ?? highlightedBeat;
+  // Featured slot shows the currently playing beat; falls back to admin-highlighted beat, then first beat
+  const displayedHighlight = currentBeat ?? highlightedBeat ?? (beats.length > 0 ? beats[0] : null);
   // List always contains ALL beats — no beat is ever removed when it starts playing
   const sortedBeats = (() => {
     if (sortBy === "bpm") return [...filteredBeats].sort((a: Beat, b: Beat) => sortAsc ? a.bpm - b.bpm : b.bpm - a.bpm);
@@ -681,17 +681,10 @@ function Beaty() {
         .beat-eq-bars span:nth-child(3) { animation: eqBar3 1.1s ease-in-out infinite; }
 
         .beats-glass-card {
-          background: linear-gradient(160deg, rgba(255,255,255,0.055) 0%, rgba(255,255,255,0.018) 40%, rgba(255,255,255,0.03) 100%);
-          border: 1px solid rgba(255,255,255,0.09);
-          border-top: 1px solid rgba(255,255,255,0.18);
+          background: linear-gradient(160deg, rgba(255,255,255,0.025) 0%, rgba(255,255,255,0.008) 40%, rgba(255,255,255,0.012) 100%);
+          border: 1px solid rgba(255,255,255,0.07);
+          border-top: 1px solid rgba(255,255,255,0.10);
           border-radius: 20px;
-          backdrop-filter: blur(28px) saturate(1.5);
-          -webkit-backdrop-filter: blur(28px) saturate(1.5);
-          box-shadow:
-            0 24px 64px rgba(0,0,0,0.65),
-            0 4px 16px rgba(0,0,0,0.4),
-            inset 0 1px 0 rgba(255,255,255,0.09),
-            inset 0 0 0 0.5px rgba(255,255,255,0.04);
           overflow: hidden;
           position: relative;
           padding-bottom: 8px;
@@ -704,9 +697,9 @@ function Beaty() {
           left: 8%;
           right: 8%;
           height: 1px;
-          background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.22) 30%, rgba(255,255,255,0.35) 50%, rgba(255,255,255,0.22) 70%, transparent 100%);
+          background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.12) 30%, rgba(255,255,255,0.18) 50%, rgba(255,255,255,0.12) 70%, transparent 100%);
           pointer-events: none;
-          z-index: 1;
+          z-index: -1;
         }
 
         .beats-glass-card::after {
@@ -716,10 +709,10 @@ function Beaty() {
           left: 0;
           right: 0;
           height: 80px;
-          background: linear-gradient(180deg, rgba(255,255,255,0.025) 0%, transparent 100%);
+          background: linear-gradient(180deg, rgba(255,255,255,0.01) 0%, transparent 100%);
           pointer-events: none;
           border-radius: 20px 20px 0 0;
-          z-index: 0;
+          z-index: -1;
         }
 
         .beat-row-playing {
@@ -947,7 +940,7 @@ function Beaty() {
               <div className="featured-beat-info" style={{ display: "flex", flexDirection: "column", justifyContent: "flex-start", flex: 1 }}>
                 <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "6px" }}>
                   <span style={{ fontSize: "12px", fontFamily: "Work Sans, sans-serif", color: "#999" }}>
-                    {isPlaying ? "Nyní hraje" : displayedHighlight?.id === highlightedBeat?.id ? "Beat týdne" : "Naposledy hrán"}
+                    {isPlaying && currentBeat?.id === displayedHighlight?.id ? "Nyní hraje" : highlightedBeat?.id === displayedHighlight?.id ? "Beat týdne" : "Doporučeno"}
                   </span>
                   <span style={{ fontSize: "12px", fontFamily: "Work Sans, sans-serif", color: "#666" }}>•</span>
                   <span style={{ fontSize: "12px", fontFamily: "Work Sans, sans-serif", color: "#666" }}>
