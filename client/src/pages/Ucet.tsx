@@ -31,6 +31,28 @@ export default function Ucet() {
   const [savedItems, setSavedItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showDownloadBanner, setShowDownloadBanner] = useState(false);
+  const [downloadingItem, setDownloadingItem] = useState<string | null>(null);
+
+  const handleFetchDownload = async (orderId: number, productType: string, productId: number) => {
+    const key = `${orderId}-${productId}`;
+    setDownloadingItem(key);
+    try {
+      const endpoint = productType === "beat"
+        ? `/api/beats/${productId}/download`
+        : `/api/sound-kits/${productId}/download`;
+      const res = await fetch(endpoint, { credentials: "include" });
+      const data = await res.json();
+      if (res.ok && data.downloadUrl) {
+        window.open(data.downloadUrl, "_blank", "noopener,noreferrer");
+      } else {
+        alert(data.error || "Soubor není k dispozici.");
+      }
+    } catch {
+      alert("Chyba při stahování.");
+    } finally {
+      setDownloadingItem(null);
+    }
+  };
   const [payingOrderId, setPayingOrderId] = useState<number | null>(null);
   const [cancellingOrderId, setCancellingOrderId] = useState<number | null>(null);
   const [confirmCancelId, setConfirmCancelId] = useState<number | null>(null);
@@ -458,10 +480,15 @@ export default function Ucet() {
               onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
             >
               {avatarUrl ? (
-                <img src={avatarUrl} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                <img
+                  src={avatarUrl}
+                  alt="Avatar"
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  onError={() => setAvatarUrl(null)}
+                />
               ) : (
-                <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", color: "#444" }}>
-                  {user?.email?.[0]?.toUpperCase() || "?"}
+                <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%)", fontSize: "22px", fontWeight: 700, color: "#fff", letterSpacing: "-0.02em", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", userSelect: "none" }}>
+                  {user?.username?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || "?"}
                 </div>
               )}
               <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", opacity: 0, transition: "opacity 0.2s" }}
@@ -750,8 +777,42 @@ export default function Ucet() {
                                     <polyline points="7 10 12 15 17 10"/>
                                     <line x1="12" y1="15" x2="12" y2="3"/>
                                   </svg>
-                                  Stáhnout
+                                  Stáhnout zdarma
                                 </a>
+                              ) : item.productId ? (
+                                <button
+                                  data-testid={`button-free-download-${order.id}-${item.productId}`}
+                                  onClick={() => handleFetchDownload(order.id, item.productType, item.productId)}
+                                  disabled={downloadingItem === `${order.id}-${item.productId}`}
+                                  style={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "6px",
+                                    padding: "7px 16px",
+                                    background: "linear-gradient(135deg, #24e053 0%, #1bc447 100%)",
+                                    color: "#000",
+                                    borderRadius: "6px",
+                                    fontSize: "12px",
+                                    fontWeight: 600,
+                                    border: "none",
+                                    cursor: downloadingItem === `${order.id}-${item.productId}` ? "default" : "pointer",
+                                    whiteSpace: "nowrap",
+                                    letterSpacing: "0.03em",
+                                    boxShadow: "0 2px 12px rgba(36,224,83,0.25)",
+                                    opacity: downloadingItem === `${order.id}-${item.productId}` ? 0.6 : 1,
+                                    transition: "opacity 0.15s ease, transform 0.15s ease",
+                                    fontFamily: "inherit",
+                                  }}
+                                  onMouseEnter={e => { if (downloadingItem !== `${order.id}-${item.productId}`) { (e.currentTarget as HTMLButtonElement).style.opacity = "0.85"; (e.currentTarget as HTMLButtonElement).style.transform = "scale(1.03)"; } }}
+                                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.opacity = downloadingItem === `${order.id}-${item.productId}` ? "0.6" : "1"; (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)"; }}
+                                >
+                                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="7 10 12 15 17 10"/>
+                                    <line x1="12" y1="15" x2="12" y2="3"/>
+                                  </svg>
+                                  {downloadingItem === `${order.id}-${item.productId}` ? "Načítám…" : "Stáhnout zdarma"}
+                                </button>
                               ) : (
                                 <span style={{ color: "#555", fontSize: "12px", fontStyle: "italic" }}>Soubor brzy k dispozici</span>
                               )}
