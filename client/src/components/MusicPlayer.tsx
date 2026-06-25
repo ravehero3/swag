@@ -4,6 +4,14 @@ import { toAudioProxyUrl } from "../lib/audioProxy.js";
 import { BeatArtwork } from "./BeatArtwork.js";
 import type { Beat } from "../types/beat.js";
 
+interface QueueItem {
+  id: number;
+  title: string;
+  artwork_url: string;
+  price: number;
+  product_type?: string;
+}
+
 interface MusicPlayerProps {
   currentBeat: Beat | null;
   isPlaying: boolean;
@@ -18,6 +26,7 @@ interface MusicPlayerProps {
   audioRef?: React.RefObject<HTMLAudioElement>;
   isSaved?: boolean;
   onToggleSave?: () => void;
+  queue?: QueueItem[];
 }
 
 function MusicPlayer({
@@ -34,8 +43,10 @@ function MusicPlayer({
   audioRef,
   isSaved = false,
   onToggleSave,
+  queue = [],
 }: MusicPlayerProps) {
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showMobileQueue, setShowMobileQueue] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
@@ -496,6 +507,7 @@ function MusicPlayer({
                 .volume-slider-wrapper { display: none !important; }
                 .player-beat-meta { display: none !important; }
                 .player-time-display { display: none !important; }
+                .mobile-queue-btn { display: flex !important; }
               }
               .volume-slider {
                 -webkit-appearance: none;
@@ -677,8 +689,105 @@ function MusicPlayer({
             </svg>
           </button>
 
+          {/* Mobile queue toggle button — only visible on mobile */}
+          {queue.length > 1 && (
+            <button
+              onClick={() => setShowMobileQueue((v) => !v)}
+              className="mobile-queue-btn"
+              data-testid="button-mobile-queue"
+              title="Fronta"
+              style={{
+                background: showMobileQueue ? "rgba(255,255,255,0.1)" : "transparent",
+                border: "none",
+                color: "#fff",
+                cursor: "pointer",
+                padding: "8px",
+                borderRadius: "4px",
+                display: "none",
+                alignItems: "center",
+                justifyContent: "center",
+                transition: "background 0.2s",
+              }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="8" y1="6" x2="21" y2="6" />
+                <line x1="8" y1="12" x2="21" y2="12" />
+                <line x1="8" y1="18" x2="21" y2="18" />
+                <line x1="3" y1="6" x2="3.01" y2="6" />
+                <line x1="3" y1="12" x2="3.01" y2="12" />
+                <line x1="3" y1="18" x2="3.01" y2="18" />
+              </svg>
+            </button>
+          )}
+
         </div>
       </div>
+
+      {/* Mobile queue drawer */}
+      {showMobileQueue && queue.length > 1 && (
+        <div
+          className="mobile-queue-drawer"
+          style={{
+            position: "fixed",
+            bottom: "84px",
+            left: 0,
+            right: 0,
+            background: "rgba(10,10,10,0.97)",
+            backdropFilter: "blur(24px)",
+            borderTop: "1px solid #222",
+            zIndex: 9999,
+            maxHeight: "55vh",
+            overflowY: "auto",
+            animation: "queueSlideUp 0.28s cubic-bezier(0.34,1.2,0.64,1) forwards",
+          }}
+        >
+          <style>{`
+            @keyframes queueSlideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+            .mobile-queue-drawer::-webkit-scrollbar { width: 3px; }
+            .mobile-queue-drawer::-webkit-scrollbar-track { background: transparent; }
+            .mobile-queue-drawer::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+            .queue-track-row { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid #111; transition: background 0.15s; cursor: default; }
+            .queue-track-row.active { background: rgba(255,255,255,0.05); }
+            .queue-track-row:last-child { border-bottom: none; }
+          `}</style>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px 8px", borderBottom: "1px solid #1a1a1a" }}>
+            <span style={{ fontSize: "11px", color: "#555", textTransform: "uppercase", letterSpacing: "0.08em" }}>Fronta ({queue.length})</span>
+            <button onClick={() => setShowMobileQueue(false)} style={{ background: "none", border: "none", color: "#555", cursor: "pointer", padding: "2px" }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          {queue.map((item, idx) => {
+            const isActive = item.id === currentBeat?.id && item.product_type === (currentBeat as any)?.product_type;
+            return (
+              <div key={`${item.id}-${idx}`} className={`queue-track-row${isActive ? " active" : ""}`}>
+                <div style={{ position: "relative", flexShrink: 0 }}>
+                  {item.artwork_url ? (
+                    <img src={item.artwork_url} alt="" style={{ width: "40px", height: "40px", borderRadius: "4px", objectFit: "cover", display: "block" }} />
+                  ) : (
+                    <div style={{ width: "40px", height: "40px", borderRadius: "4px", background: "#1a1a1a" }} />
+                  )}
+                  {isActive && (
+                    <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.5)", borderRadius: "4px" }}>
+                      <svg width="14" height="14" viewBox="0 0 10 10" fill="#fff"><rect x="1" y="0" width="3" height="10"/><rect x="6" y="0" width="3" height="10"/></svg>
+                    </div>
+                  )}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: "13px", fontWeight: isActive ? 600 : 400, color: isActive ? "#fff" : "#ccc", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {item.title}
+                  </div>
+                  <div style={{ fontSize: "11px", color: "#555", marginTop: "2px" }}>
+                    {Math.floor(item.price)} CZK
+                  </div>
+                </div>
+                {isActive && (
+                  <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#fff", flexShrink: 0 }} />
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       <ShareModal
         product={{ id: currentBeat.id, title: currentBeat.title, price: currentBeat.price, artwork_url: currentBeat.artwork_url, preview_url: currentBeat.preview_url }}

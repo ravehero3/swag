@@ -590,8 +590,45 @@ function Home() {
           </div>
           <div style={{ position: "absolute", bottom: 0, left: 0, width: "100%", height: "120px", background: "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 100%)", pointerEvents: "none", zIndex: 3 }} />
         </div>
-        <div className="fade-in" style={{ textAlign: "center", padding: "60px 20px", color: "#fff" }}>
-          <p style={{ opacity: 0.6, fontSize: "14px", letterSpacing: "1px" }}>Žádné beaty nebyly nalezeny.</p>
+        <div className="fade-in" style={{ textAlign: "center", padding: "48px 20px 80px", color: "#fff" }}>
+          <style>{`
+            @keyframes emptyFadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+            .empty-state-card { animation: emptyFadeUp 0.55s 0.1s ease-out both; }
+            .empty-zvuky-btn { transition: background 0.2s, color 0.2s, box-shadow 0.2s; }
+            .empty-zvuky-btn:hover { background: #fff !important; color: #000 !important; box-shadow: 0 0 24px rgba(255,255,255,0.15) !important; }
+          `}</style>
+          <div className="empty-state-card" style={{ display: "inline-flex", flexDirection: "column", alignItems: "center", maxWidth: "400px", gap: "0" }}>
+            <div style={{ fontSize: "38px", marginBottom: "12px", lineHeight: 1 }}>🎛️</div>
+            <h2 style={{ fontSize: "22px", fontWeight: 700, letterSpacing: "-0.02em", marginBottom: "10px", color: "#fff" }}>
+              Beaty jsou na cestě
+            </h2>
+            <p style={{ color: "#555", fontSize: "14px", lineHeight: 1.65, marginBottom: "28px", maxWidth: "300px" }}>
+              Momentálně zde nejsou žádné beaty. Prozkoumej zatím naše zvukové kity plné samplů a drilů.
+            </p>
+            <a
+              href="/zvuky"
+              className="empty-zvuky-btn"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "12px 28px",
+                background: "#111",
+                color: "#fff",
+                border: "1px solid #333",
+                borderRadius: "8px",
+                fontSize: "14px",
+                fontWeight: 600,
+                textDecoration: "none",
+                letterSpacing: "0.02em",
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+              </svg>
+              Zvukové kity
+            </a>
+          </div>
         </div>
       </div>
     );

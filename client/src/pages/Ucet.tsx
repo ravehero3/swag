@@ -30,6 +30,7 @@ export default function Ucet() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [savedItems, setSavedItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showDownloadBanner, setShowDownloadBanner] = useState(false);
   const [payingOrderId, setPayingOrderId] = useState<number | null>(null);
   const [cancellingOrderId, setCancellingOrderId] = useState<number | null>(null);
   const [confirmCancelId, setConfirmCancelId] = useState<number | null>(null);
@@ -47,6 +48,16 @@ export default function Ucet() {
     if (user?.avatarUrl) setAvatarUrl(user.avatarUrl);
     if (user?.username) setUsername(user.username);
   }, [user]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("stazeno") === "1") {
+      setShowDownloadBanner(true);
+      window.history.replaceState({}, "", "/ucet");
+      const t = setTimeout(() => setShowDownloadBanner(false), 8000);
+      return () => clearTimeout(t);
+    }
+  }, []);
 
   const handleUsernameEdit = () => {
     setUsernameInput(username);
@@ -240,6 +251,47 @@ export default function Ucet() {
 
   return (
     <div className="fade-in" style={{ maxWidth: "1000px", margin: "0 auto", padding: "100px 20px 120px" }}>
+      {showDownloadBanner && (
+        <div
+          data-testid="banner-download-success"
+          style={{
+            position: "fixed",
+            top: "58px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 9999,
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            padding: "14px 20px",
+            background: "linear-gradient(135deg, #0d1f10 0%, #0a1a0c 100%)",
+            border: "1px solid rgba(36,224,83,0.35)",
+            borderRadius: "12px",
+            boxShadow: "0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(36,224,83,0.1)",
+            animation: "slideDownFade 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards",
+            maxWidth: "420px",
+            width: "calc(100vw - 32px)",
+          }}
+        >
+          <style>{`@keyframes slideDownFade { from { opacity:0; transform:translateX(-50%) translateY(-12px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }`}</style>
+          <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "rgba(36,224,83,0.12)", border: "1px solid rgba(36,224,83,0.3)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#24e053" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: "14px", fontWeight: 600, color: "#fff", marginBottom: "2px" }}>Soubory jsou připraveny!</div>
+            <div style={{ fontSize: "12px", color: "#555" }}>Stáhni je níže v sekci Stažení zdarma</div>
+          </div>
+          <button
+            onClick={() => setShowDownloadBanner(false)}
+            style={{ background: "none", border: "none", color: "#444", cursor: "pointer", padding: "4px", flexShrink: 0, lineHeight: 1 }}
+            aria-label="Zavřít"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      )}
       <style dangerouslySetInnerHTML={{ __html: `
         .ucet-order-card {
           padding: 24px;

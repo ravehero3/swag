@@ -536,6 +536,7 @@ function App() {
             audioRef={previewAudioRef}
             isSaved={previewIsSaved}
             onToggleSave={handlePreviewToggleSave}
+            queue={previewQueue}
           />
         )}
       </div>
