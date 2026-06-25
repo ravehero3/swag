@@ -603,7 +603,7 @@ function Beaty() {
 
   if (beats.length === 0 && !highlightedBeat) {
     return (
-      <div style={{ background: "#000", minHeight: "100vh" }}>
+      <div style={{ background: "#000", minHeight: "100vh", paddingBottom: currentBeat ? "100px" : "20px" }}>
         <div style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative", background: "#000", height: "clamp(520px, 70vh, 900px)" }}>
           <video
             autoPlay
@@ -871,7 +871,7 @@ function Beaty() {
         />
       </div>
       
-      <div style={{ padding: "0 20px" }} className="fade-in-grid">
+      <div style={{ padding: "0 20px", paddingBottom: currentBeat ? "calc(84px + env(safe-area-inset-bottom) + 20px)" : "20px", transition: "padding-bottom 0.3s ease" }} className="fade-in-grid">
           <div className="fade-in-section delay-2 featured-beat-section" style={{ marginBottom: "48px", display: "flex", justifyContent: "center", marginTop: "-116px", position: "relative", zIndex: 50, minHeight: "330px" }}>
           {displayedHighlight && (
             <div className="featured-beat-inner">

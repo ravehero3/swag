@@ -116,6 +116,13 @@ function MusicPlayer({
 
   const progressPercent = duration ? (currentTime / duration) * 100 : 0;
 
+  const formatTime = (s: number) => {
+    if (!isFinite(s) || isNaN(s)) return "0:00";
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    return `${m}:${sec.toString().padStart(2, "0")}`;
+  };
+
   return (
     <>
       <div
@@ -212,7 +219,22 @@ function MusicPlayer({
             style={{ marginLeft: "-16px", marginRight: "0", flexShrink: 0 }}
           />
           <div className="player-info-wrap" style={{ flex: 1, display: "flex", alignItems: "center", gap: "12px" }}>
-            <div className="player-title" style={{ fontWeight: "bold", fontSize: "18px" }}>{currentBeat.title}</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+              <div className="player-title" style={{ fontWeight: "bold", fontSize: "18px", lineHeight: "1.1" }}>{currentBeat.title}</div>
+              {(currentBeat.bpm || currentBeat.key) && (
+                <div className="player-beat-meta" style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                  {currentBeat.bpm && (
+                    <span style={{ fontSize: "11px", color: "#555", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", letterSpacing: "0.02em" }}>{currentBeat.bpm} BPM</span>
+                  )}
+                  {currentBeat.bpm && currentBeat.key && (
+                    <span style={{ fontSize: "11px", color: "#333" }}>·</span>
+                  )}
+                  {currentBeat.key && (
+                    <span style={{ fontSize: "11px", color: "#555", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", letterSpacing: "0.02em" }}>{currentBeat.key}</span>
+                  )}
+                </div>
+              )}
+            </div>
             {onToggleSave && (
               <button
                 onClick={onToggleSave}
@@ -439,6 +461,25 @@ function MusicPlayer({
 
         <div className="player-right-section" style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1, justifyContent: "flex-end" }}>
 
+          {/* Time display */}
+          {duration > 0 && (
+            <div
+              className="player-time-display"
+              style={{
+                fontSize: "11px",
+                fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif",
+                color: "#555",
+                letterSpacing: "0.04em",
+                whiteSpace: "nowrap",
+                userSelect: "none",
+                minWidth: "80px",
+                textAlign: "right",
+              }}
+            >
+              {formatTime(currentTime)} / {formatTime(duration)}
+            </div>
+          )}
+
           {/* Volume Control */}
           <div
             className="volume-slider-wrapper"
@@ -453,6 +494,8 @@ function MusicPlayer({
             <style>{`
               @media (max-width: 768px) {
                 .volume-slider-wrapper { display: none !important; }
+                .player-beat-meta { display: none !important; }
+                .player-time-display { display: none !important; }
               }
               .volume-slider {
                 -webkit-appearance: none;
