@@ -847,7 +847,7 @@ function Beaty() {
           <img
             src="/uploads/artwork/voodoo808-main-logo.png"
             alt="VOODOO808"
-            style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
+            style={{ width: "min(1200px, calc(100vw - 40px))", height: "auto", display: "block" }}
           />
         </div>
         <div
@@ -865,7 +865,7 @@ function Beaty() {
       </div>
       
       <div style={{ padding: "0 20px", paddingBottom: currentBeat ? "calc(84px + env(safe-area-inset-bottom) + 20px)" : "20px", transition: "padding-bottom 0.3s ease" }} className="fade-in-grid">
-          <div className="fade-in-section delay-2 featured-beat-section" style={{ marginBottom: "48px", display: "flex", justifyContent: "center", marginTop: "-116px", position: "relative", zIndex: 50, minHeight: "330px" }}>
+          <div className="fade-in-section delay-2 featured-beat-section" style={{ marginBottom: "8px", display: "flex", justifyContent: "center", marginTop: "-116px", position: "relative", zIndex: 50, minHeight: "330px" }}>
           {displayedHighlight && (
             <div className="featured-beat-inner">
               <div style={{ position: "relative", flexShrink: 0 }} className="highlight-artwork-container featured-beat-artwork">
