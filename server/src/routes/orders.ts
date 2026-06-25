@@ -80,16 +80,18 @@ router.get("/my", requireAuth, async (req: Request, res: Response) => {
       [req.session.userId]
     );
 
-    // For paid orders, attach the current download URL for each item so the
+    // For paid and free orders, attach the current download URL for each item so the
     // account page can show a "Stáhnout" link (Google Drive URL or signed B2 URL).
     const orders = result.rows;
     const isPaid = (status: string) => status === "completed" || status === "paid";
+    const isFreeOrder = (o: any) => Number(o.total) === 0 || o.payment_method === "free";
+    const needsEnrichment = (o: any) => isPaid(o.status) || isFreeOrder(o);
 
     // Collect all (productType, productId) pairs we need to look up.
     const beatIds = new Set<number>();
     const kitIds = new Set<number>();
     for (const o of orders) {
-      if (!isPaid(o.status)) continue;
+      if (!needsEnrichment(o)) continue;
       const items = Array.isArray(o.items) ? o.items : [];
       for (const it of items) {
         if (!it || !it.productId) continue;
@@ -135,7 +137,7 @@ router.get("/my", requireAuth, async (req: Request, res: Response) => {
 
     const enriched = await Promise.all(
       orders.map(async (o: any) => {
-        if (!isPaid(o.status)) return o;
+        if (!needsEnrichment(o)) return o;
         const items = Array.isArray(o.items) ? o.items : [];
         const itemsOut = await Promise.all(
           items.map(async (it: any, itemIndex: number) => {

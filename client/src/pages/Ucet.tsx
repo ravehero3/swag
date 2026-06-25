@@ -632,7 +632,6 @@ export default function Ucet() {
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
               {orders.filter((o) => Number(o.total) === 0 || o.payment_method === "free").map((order) => {
-                const isPaid = order.status === "completed" || order.status === "paid";
                 const items: OrderItem[] = Array.isArray(order.items) ? order.items : [];
                 return (
                   <div key={order.id} className="ucet-order-card" data-testid={`card-free-order-${order.id}`}>
@@ -657,21 +656,52 @@ export default function Ucet() {
                             key={`${item.productId ?? idx}-${idx}`}
                             style={{ display: "flex", justifyContent: "space-between", alignItems: "center", color: "#ccc", fontSize: "14px", gap: "12px", flexWrap: "wrap" }}
                           >
-                            <span style={{ flex: "1 1 auto", minWidth: 0 }}>{item.title || "—"}</span>
+                            <div style={{ display: "flex", alignItems: "center", gap: "12px", flex: "1 1 auto", minWidth: 0 }}>
+                              {item.artwork_url && (
+                                <img
+                                  src={item.artwork_url}
+                                  alt=""
+                                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                                  style={{ width: "40px", height: "40px", borderRadius: "4px", objectFit: "cover", flexShrink: 0 }}
+                                />
+                              )}
+                              <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.title || "—"}</span>
+                            </div>
                             <div style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
-                              {isPaid && item.downloadUrl && (
+                              {item.downloadUrl ? (
                                 <a
                                   href={item.downloadUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   data-testid={`link-free-download-${order.id}-${item.productId ?? idx}`}
-                                  style={{ padding: "4px 12px", background: "#24e053", color: "#000", borderRadius: "4px", fontSize: "12px", fontWeight: 500, textDecoration: "none", whiteSpace: "nowrap" }}
+                                  style={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "6px",
+                                    padding: "7px 16px",
+                                    background: "linear-gradient(135deg, #24e053 0%, #1bc447 100%)",
+                                    color: "#000",
+                                    borderRadius: "6px",
+                                    fontSize: "12px",
+                                    fontWeight: 600,
+                                    textDecoration: "none",
+                                    whiteSpace: "nowrap",
+                                    letterSpacing: "0.03em",
+                                    boxShadow: "0 2px 12px rgba(36,224,83,0.25)",
+                                    transition: "opacity 0.15s ease, transform 0.15s ease",
+                                  }}
+                                  onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.opacity = "0.85"; (e.currentTarget as HTMLAnchorElement).style.transform = "scale(1.03)"; }}
+                                  onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.opacity = "1"; (e.currentTarget as HTMLAnchorElement).style.transform = "scale(1)"; }}
                                 >
+                                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="7 10 12 15 17 10"/>
+                                    <line x1="12" y1="15" x2="12" y2="3"/>
+                                  </svg>
                                   Stáhnout
                                 </a>
-                              )}
-                              {isPaid && !item.downloadUrl && (
-                                <span style={{ color: "#666", fontSize: "12px" }}>Odkaz připravujeme</span>
+                              ) : (
+                                <span style={{ color: "#555", fontSize: "12px", fontStyle: "italic" }}>Soubor brzy k dispozici</span>
                               )}
                             </div>
                           </div>
