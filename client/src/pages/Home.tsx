@@ -598,36 +598,9 @@ function Home() {
             .empty-zvuky-btn:hover { background: #fff !important; color: #000 !important; box-shadow: 0 0 24px rgba(255,255,255,0.15) !important; }
           `}</style>
           <div className="empty-state-card" style={{ display: "inline-flex", flexDirection: "column", alignItems: "center", maxWidth: "400px", gap: "0" }}>
-            <div style={{ fontSize: "38px", marginBottom: "12px", lineHeight: 1 }}>🎛️</div>
-            <h2 style={{ fontSize: "22px", fontWeight: 700, letterSpacing: "-0.02em", marginBottom: "10px", color: "#fff" }}>
-              Beaty jsou na cestě
-            </h2>
-            <p style={{ color: "#555", fontSize: "14px", lineHeight: 1.65, marginBottom: "28px", maxWidth: "300px" }}>
-              Momentálně zde nejsou žádné beaty. Prozkoumej zatím naše zvukové kity plné samplů a drilů.
+            <p style={{ color: "#555", fontSize: "15px", lineHeight: 1.65, marginBottom: "0" }}>
+              momentálně zde nejsou žádné beaty bro
             </p>
-            <a
-              href="/zvuky"
-              className="empty-zvuky-btn"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "8px",
-                padding: "12px 28px",
-                background: "#111",
-                color: "#fff",
-                border: "1px solid #333",
-                borderRadius: "8px",
-                fontSize: "14px",
-                fontWeight: 600,
-                textDecoration: "none",
-                letterSpacing: "0.02em",
-              }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
-              </svg>
-              Zvukové kity
-            </a>
           </div>
         </div>
       </div>
