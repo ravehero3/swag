@@ -173,6 +173,8 @@ function Beaty() {
   const [submittingComment, setSubmittingComment] = useState(false);
   const [beatStats, setBeatStats] = useState<{ comments: number; saves: number; plays: number } | null>(null);
   const [authNudge, setAuthNudge] = useState(false);
+  const [commentNudge, setCommentNudge] = useState(false);
+  const commentNudgeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [hoveredCommentId, setHoveredCommentId] = useState<number | null>(null);
   const [isDraggingComment, setIsDraggingComment] = useState(false);
   const [draggingCommentId, setDraggingCommentId] = useState<number | null>(null);
@@ -290,8 +292,8 @@ function Beaty() {
   }, [currentBeat, isPlaying, beats, highlightedBeat]);
 
   useEffect(() => {
-    if (!currentBeat) return;
-    const id = currentBeat.id;
+    const id = currentBeat?.id ?? highlightedBeat?.id;
+    if (!id) return;
     setComments([]);
     setBeatStats(null);
     Promise.all([
@@ -301,16 +303,17 @@ function Beaty() {
       setComments(Array.isArray(commentsData) ? commentsData : []);
       setBeatStats(statsData);
     }).catch(console.error);
-  }, [currentBeat?.id]);
+  }, [currentBeat?.id, highlightedBeat?.id]);
 
   const handleCommentSubmit = async () => {
-    if (!commentText.trim() || !currentBeat || !user) return;
+    const targetBeat = currentBeat ?? displayedHighlight;
+    if (!commentText.trim() || !targetBeat || !user) return;
     setSubmittingComment(true);
     const timeOffset = (audioRef.current?.duration && audioRef.current.duration > 0)
       ? audioRef.current.currentTime / audioRef.current.duration
       : 0;
     try {
-      const res = await fetch(`/api/beats/${currentBeat.id}/comments`, {
+      const res = await fetch(`/api/beats/${targetBeat.id}/comments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -396,6 +399,25 @@ function Beaty() {
       document.removeEventListener("mouseup", handleMouseUp);
     };
   }, [isDraggingComment, draggingCommentId, currentBeat?.id]);
+
+  // Comment nudge — fires 5s after playback starts
+  useEffect(() => {
+    if (isPlaying && currentBeat) {
+      if (commentNudgeTimerRef.current) clearTimeout(commentNudgeTimerRef.current);
+      commentNudgeTimerRef.current = setTimeout(() => setCommentNudge(true), 5000);
+    } else {
+      if (commentNudgeTimerRef.current) clearTimeout(commentNudgeTimerRef.current);
+      setCommentNudge(false);
+    }
+    return () => { if (commentNudgeTimerRef.current) clearTimeout(commentNudgeTimerRef.current); };
+  }, [isPlaying, currentBeat?.id]);
+
+  const getAvatarBg = (str: string) => {
+    const palette = ["#1b3a52","#2b1a45","#0d3b28","#3d2210","#1d3d52","#2d1a35"];
+    let h = 0;
+    for (let i = 0; i < str.length; i++) h = str.charCodeAt(i) + ((h << 5) - h);
+    return palette[Math.abs(h) % palette.length];
+  };
 
   const playBeat = async (beat: Beat) => {
     if (currentBeat?.id === beat.id) {
@@ -639,6 +661,33 @@ function Beaty() {
         }
         .heart-pop { animation: heartPop 0.35s ease-out forwards; }
 
+        @keyframes commentNudgePulse {
+          0%, 100% { box-shadow: 0 0 0 1.5px rgba(255,255,255,0.10), 0 0 14px rgba(255,255,255,0.04); }
+          50%       { box-shadow: 0 0 0 1.5px rgba(255,255,255,0.38), 0 0 28px rgba(255,255,255,0.12), 0 0 52px rgba(255,255,255,0.04); }
+        }
+        @keyframes commentNudgeSlide {
+          from { opacity: 0; transform: translateY(5px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .comment-nudge-wrap {
+          position: relative;
+          flex: 1;
+          border-radius: 20px;
+        }
+        .comment-nudge-wrap.active {
+          animation: commentNudgePulse 2s ease-in-out infinite;
+        }
+        .comment-nudge-label {
+          position: absolute;
+          top: -22px;
+          left: 16px;
+          font-size: 10px;
+          color: rgba(255,255,255,0.38);
+          letter-spacing: 0.05em;
+          pointer-events: none;
+          animation: commentNudgeSlide 0.4s ease-out both;
+        }
+
         @keyframes eqBar1 {
           0%,100% { height: 3px; }
           30%     { height: 10px; }
@@ -847,7 +896,7 @@ function Beaty() {
           <img
             src="/uploads/artwork/voodoo808-main-logo.png"
             alt="VOODOO808"
-            style={{ width: "min(1200px, calc(100vw - 40px))", height: "auto", display: "block" }}
+            style={{ width: "min(900px, 66.67vw)", height: "auto", display: "block" }}
           />
         </div>
         <div
@@ -1156,43 +1205,49 @@ function Beaty() {
           )}
           </div>
 
-        {/* Fixed-height container — height never changes so the beat list never moves */}
-        <div style={{ maxWidth: "1200px", margin: "0 auto", height: "130px" }}>
-          {currentBeat && (
+        {/* Waveform + comment strip — visible as soon as a beat is featured */}
+        <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+          {displayedHighlight && (
             <>
               {comments.length > 0 && (
                 <div style={{ padding: "0 16px 6px 16px", display: "flex", alignItems: "center", gap: "0" }}>
-                  {comments.slice(0, 10).map((c: any, i: number) => (
-                    <div
-                      key={c.id}
-                      className="comment-avatar-wrap"
-                      style={{ marginLeft: i > 0 ? "-8px" : 0, zIndex: 10 - i }}
-                    >
-                      <div style={{ width: "26px", height: "26px", borderRadius: "50%", background: "#1a1a1a", border: "1.5px solid #333", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: "#666", overflow: "hidden", cursor: "pointer" }}>
-                        {c.avatar_url ? (
-                          <img src={c.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                        ) : (
-                          <span style={{ fontSize: "10px", color: "#888" }}>{(c.username || c.email)?.[0]?.toUpperCase() || "?"}</span>
-                        )}
+                  {comments.slice(0, 10).map((c: any, i: number) => {
+                    const initial = ((c.username || c.email)?.[0] || "?").toUpperCase();
+                    const bg = getAvatarBg(c.username || c.email || "?");
+                    return (
+                      <div
+                        key={c.id}
+                        className="comment-avatar-wrap"
+                        style={{ marginLeft: i > 0 ? "-8px" : 0, zIndex: 10 - i }}
+                      >
+                        <div style={{ width: "26px", height: "26px", borderRadius: "50%", background: c.avatar_url ? "#1a1a1a" : bg, border: "1.5px solid rgba(255,255,255,0.12)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: "#fff", overflow: "hidden", cursor: "pointer", fontWeight: 600 }}>
+                          {c.avatar_url ? (
+                            <img src={c.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          ) : (
+                            <span style={{ fontSize: "10px" }}>{initial}</span>
+                          )}
+                        </div>
+                        <div className="comment-tooltip" style={{ position: "absolute", bottom: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)", background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "6px", padding: "6px 10px", fontSize: "12px", color: "#ccc", minWidth: "160px", maxWidth: "420px", width: "max-content", wordBreak: "break-word", zIndex: 999, boxShadow: "0 4px 12px rgba(0,0,0,0.5)", whiteSpace: "normal" }}>
+                          <span style={{ color: "#555", marginRight: "6px" }}>{c.username || c.email?.split("@")[0]}</span>
+                          {c.text}
+                        </div>
                       </div>
-                      <div className="comment-tooltip" style={{ position: "absolute", bottom: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)", background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "6px", padding: "6px 10px", fontSize: "12px", color: "#ccc", minWidth: "160px", maxWidth: "420px", width: "max-content", wordBreak: "break-word", zIndex: 999, boxShadow: "0 4px 12px rgba(0,0,0,0.5)", whiteSpace: "normal" }}>
-                        <span style={{ color: "#555", marginRight: "6px" }}>{c.username || c.email?.split("@")[0]}</span>
-                        {c.text}
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
               <SoundWave
                 audioRef={audioRef}
                 isPlaying={isPlaying}
-                audioUrl={currentBeat.preview_url}
+                audioUrl={displayedHighlight.preview_url}
                 isDraggingComment={isDraggingComment}
                 waveRef={waveContainerRef}
               >
                 {comments.map((c: any) => {
                   const isOwn = c.user_id === user?.id;
                   const offset = typeof c.time_offset === 'number' ? c.time_offset : 0;
+                  const initial = ((c.username || c.email)?.[0] || "?").toUpperCase();
+                  const bg = getAvatarBg(c.username || c.email || "?");
                   return (
                     <div
                       key={c.id}
@@ -1212,21 +1267,22 @@ function Beaty() {
                         width: "22px",
                         height: "22px",
                         borderRadius: "50%",
-                        background: "#1a1a1a",
-                        border: `1.5px solid ${isOwn ? '#888' : '#444'}`,
+                        background: c.avatar_url ? "#1a1a1a" : bg,
+                        border: `1.5px solid ${isOwn ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.2)'}`,
                         overflow: "hidden",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
                         fontSize: "9px",
-                        color: "#888",
+                        color: "#fff",
+                        fontWeight: 600,
                         cursor: isOwn ? (draggingCommentId === c.id ? "grabbing" : "grab") : "default",
                         boxShadow: "0 1px 6px rgba(0,0,0,0.7)",
                       }}>
                         {c.avatar_url ? (
                           <img src={c.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                         ) : (
-                          <span>{(c.username || c.email)?.[0]?.toUpperCase() || "?"}</span>
+                          <span>{initial}</span>
                         )}
                       </div>
                     </div>
@@ -1237,7 +1293,7 @@ function Beaty() {
           )}
         </div>
 
-        <div ref={beatsListRef} className="scroll-fade-section beat-list" style={{ marginBottom: "48px", maxWidth: "1200px", margin: "0 auto", marginTop: "60px" }}>
+        <div ref={beatsListRef} className="scroll-fade-section beat-list" style={{ maxWidth: "1200px", margin: "20px auto 48px" }}>
           {beats.length === 0 && !displayedHighlight ? (
             <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "8px" }}>
               {Array(4).fill(null).map((_, index) => (
@@ -1806,13 +1862,13 @@ function Beaty() {
           </div>
         </div>
 
-        {/* Stats + comments — placed BELOW the beat list so expanding never shifts the list */}
-        {currentBeat && (
+        {/* Stats + comments — always visible once a beat is featured */}
+        {displayedHighlight && (
           <div style={{
             maxWidth: "1200px",
             margin: "0 auto",
             overflow: "hidden",
-            maxHeight: isPlaying ? "600px" : "0px",
+            maxHeight: "600px",
             transition: "max-height 0.3s ease",
           }}>
             <div style={{ padding: "16px 16px 8px 16px" }}>
@@ -1827,21 +1883,29 @@ function Beaty() {
                 </span>
                 <span data-testid="text-beat-plays" style={{ fontSize: "12px", color: "#777", display: "flex", alignItems: "center", gap: "4px" }}>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ color: "#777" }}><polygon points="5 3 19 12 5 21 5 3" /></svg>
-                  {(beatStats?.plays ?? beatPlayCounts[currentBeat.id] ?? 0).toLocaleString()}
+                  {(beatStats?.plays ?? beatPlayCounts[(currentBeat ?? displayedHighlight)!.id] ?? 0).toLocaleString()}
                 </span>
               </div>
               <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                <input
-                  type="text"
-                  value={commentText}
-                  onChange={(e) => setCommentText(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === "Enter") handleCommentSubmit(); }}
-                  placeholder={user ? "Napište komentář..." : "Pro komentáře se přihlaste"}
-                  disabled={!user || submittingComment}
-                  maxLength={200}
-                  data-testid="input-beat-comment"
-                  style={{ flex: 1, padding: "8px 16px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "20px", color: "#fff", fontSize: "13px", fontFamily: "inherit", outline: "none" }}
-                />
+                {user && (
+                  <div style={{ width: "28px", height: "28px", borderRadius: "50%", flexShrink: 0, background: user.avatarUrl ? "#1a1a1a" : getAvatarBg(user.email || "?"), border: "1.5px solid rgba(255,255,255,0.1)", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", color: "#fff", fontWeight: 600 }}>
+                    {user.avatarUrl ? <img src={user.avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : ((user.email || "?")[0]).toUpperCase()}
+                  </div>
+                )}
+                <div className={`comment-nudge-wrap${commentNudge ? " active" : ""}`}>
+                  {commentNudge && <span className="comment-nudge-label">dej koment bro ↓</span>}
+                  <input
+                    type="text"
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") handleCommentSubmit(); }}
+                    placeholder={user ? "dej koment bro…" : "Pro komentáře se přihlaste"}
+                    disabled={!user || submittingComment}
+                    maxLength={200}
+                    data-testid="input-beat-comment"
+                    style={{ width: "100%", padding: "8px 16px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "20px", color: "#fff", fontSize: "13px", fontFamily: "inherit", outline: "none", boxSizing: "border-box" }}
+                  />
+                </div>
                 {user && (
                   <button
                     onClick={handleCommentSubmit}

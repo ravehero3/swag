@@ -147,6 +147,8 @@ function Home() {
   const [hoveredCommentId, setHoveredCommentId] = useState<number | null>(null);
   const [activeCommentId, setActiveCommentId] = useState<number | null>(null);
   const [draggingComment, setDraggingComment] = useState<{ id: number; xPct: number } | null>(null);
+  const [commentNudge, setCommentNudge] = useState(false);
+  const commentNudgeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [usernameInput, setUsernameInput] = useState("");
   const [savingUsername, setSavingUsername] = useState(false);
   const waveRef = useRef<HTMLDivElement>(null);
@@ -440,6 +442,25 @@ function Home() {
     previewPlayer.handleNext();
   };
 
+  // Comment nudge — fires 5 s after playback starts
+  useEffect(() => {
+    if (isPlaying && currentBeat) {
+      if (commentNudgeTimerRef.current) clearTimeout(commentNudgeTimerRef.current);
+      commentNudgeTimerRef.current = setTimeout(() => setCommentNudge(true), 5000);
+    } else {
+      if (commentNudgeTimerRef.current) clearTimeout(commentNudgeTimerRef.current);
+      setCommentNudge(false);
+    }
+    return () => { if (commentNudgeTimerRef.current) clearTimeout(commentNudgeTimerRef.current); };
+  }, [isPlaying, currentBeat?.id]);
+
+  const getAvatarBg = (str: string) => {
+    const palette = ["#1b3a52","#2b1a45","#0d3b28","#3d2210","#1d3d52","#2d1a35"];
+    let h = 0;
+    for (let i = 0; i < str.length; i++) h = str.charCodeAt(i) + ((h << 5) - h);
+    return palette[Math.abs(h) % palette.length];
+  };
+
   const openContractModal = (beat: Beat) => {
     setContractModalBeat(beat);
   };
@@ -617,6 +638,19 @@ function Home() {
           100% { transform: scale(1); }
         }
         .heart-pop { animation: heartPop 0.35s ease-out forwards; }
+
+        @keyframes commentNudgePulse {
+          0%, 100% { box-shadow: 0 0 0 1.5px rgba(255,255,255,0.10), 0 0 14px rgba(255,255,255,0.04); }
+          50%       { box-shadow: 0 0 0 1.5px rgba(255,255,255,0.38), 0 0 28px rgba(255,255,255,0.12), 0 0 52px rgba(255,255,255,0.04); }
+        }
+        @keyframes commentNudgeSlide {
+          from { opacity: 0; transform: translateY(5px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .comment-nudge-wrap { position: relative; flex: 1; border-radius: 20px; }
+        .comment-nudge-wrap.active { animation: commentNudgePulse 2s ease-in-out infinite; }
+        .comment-nudge-label { position: absolute; top: -22px; left: 16px; font-size: 10px; color: rgba(255,255,255,0.38); letter-spacing: 0.05em; pointer-events: none; animation: commentNudgeSlide 0.4s ease-out both; }
+
         .comment-avatar-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; }
         .comment-avatar-wrap > div:first-child { transition: transform 0.2s ease; }
         .comment-avatar-wrap:hover { z-index: 999 !important; }
@@ -1025,7 +1059,7 @@ function Home() {
           )}
           </div>
 
-        <div style={{ maxWidth: "1200px", margin: "0 auto", height: "130px" }}>
+        <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
         {currentBeat && (
           <>
             <SoundWave audioRef={audioRef} isPlaying={isPlaying} audioUrl={currentBeat.preview_url} isDraggingComment={!!draggingComment} waveRef={waveRef}>
@@ -1071,7 +1105,7 @@ function Home() {
                       {c.avatar_url ? (
                         <img src={c.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                       ) : (
-                        <span style={{ fontSize: "8px", color: "#888" }}>{(c.username || c.email)?.[0]?.toUpperCase() || "?"}</span>
+                        <span style={{ fontSize: "8px", color: "#fff", fontWeight: 600, background: getAvatarBg(c.username || c.email || "?"), width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>{(c.username || c.email)?.[0]?.toUpperCase() || "?"}</span>
                       )}
                     </div>
                     {isOwnComment && isHovered && !isDragging && (
@@ -1120,16 +1154,24 @@ function Home() {
                 </span>
               </div>
               <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                <input
-                  type="text"
-                  value={commentText}
-                  onChange={(e) => setCommentText(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === "Enter") handleCommentSubmit(); }}
-                  placeholder={user ? "dej koment bro…" : "Pro komentáře se přihlaste"}
-                  disabled={!user || submittingComment}
-                  maxLength={200}
-                  style={{ flex: 1, padding: "8px 16px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "20px", color: "#fff", fontSize: "13px", fontFamily: "inherit", outline: "none" }}
-                />
+                {user && (
+                  <div style={{ width: "28px", height: "28px", borderRadius: "50%", flexShrink: 0, background: user.avatarUrl ? "#1a1a1a" : getAvatarBg(user.email || "?"), border: "1.5px solid rgba(255,255,255,0.1)", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", color: "#fff", fontWeight: 600 }}>
+                    {user.avatarUrl ? <img src={user.avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : ((user.email || "?")[0]).toUpperCase()}
+                  </div>
+                )}
+                <div className={`comment-nudge-wrap${commentNudge ? " active" : ""}`}>
+                  {commentNudge && <span className="comment-nudge-label">dej koment bro ↓</span>}
+                  <input
+                    type="text"
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") handleCommentSubmit(); }}
+                    placeholder={user ? "dej koment bro…" : "Pro komentáře se přihlaste"}
+                    disabled={!user || submittingComment}
+                    maxLength={200}
+                    style={{ width: "100%", padding: "8px 16px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "20px", color: "#fff", fontSize: "13px", fontFamily: "inherit", outline: "none", boxSizing: "border-box" }}
+                  />
+                </div>
                 {user && (
                   <button
                     onClick={handleCommentSubmit}
@@ -1155,7 +1197,7 @@ function Home() {
         {/* Glassmorphism border wrapper — 1px gradient outline that fades dark→grey */}
         <div ref={beatsListRef} className="scroll-fade-section" style={{
           maxWidth: "1200px",
-          margin: "60px auto 48px auto",
+          margin: "20px auto 48px auto",
           padding: "1px",
           borderRadius: "18px",
           background: "linear-gradient(160deg, rgba(80,80,80,0.22) 0%, rgba(30,30,30,0.08) 40%, rgba(50,50,50,0.14) 100%)",
