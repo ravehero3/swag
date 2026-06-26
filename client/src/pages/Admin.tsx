@@ -1817,6 +1817,59 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
   const [hoveredKitId, setHoveredKitId] = useState<number | null>(null);
   const [recomputingKitIds, setRecomputingKitIds] = useState<Set<number>>(new Set());
   const formRef = useRef<HTMLDivElement>(null);
+  const [showGallery, setShowGallery] = useState(false);
+  const [galleryImages, setGalleryImages] = useState<{filename: string; url: string; size: number}[]>([]);
+  const [galleryLoading, setGalleryLoading] = useState(false);
+  const [galleryUploading, setGalleryUploading] = useState(false);
+  const [galleryTarget, setGalleryTarget] = useState<"main" | number>("main");
+
+  const openGallery = (target: "main" | number) => {
+    setGalleryTarget(target);
+    setShowGallery(true);
+    loadGallery();
+  };
+
+  const loadGallery = async () => {
+    setGalleryLoading(true);
+    try {
+      const res = await fetch("/api/kit-artworks", { credentials: "include" });
+      if (res.ok) setGalleryImages(await res.json());
+    } catch {}
+    setGalleryLoading(false);
+  };
+
+  const handleGalleryUpload = async (file: File) => {
+    setGalleryUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/kit-artworks/upload", { method: "POST", body: fd, credentials: "include" });
+      if (res.ok) await loadGallery();
+      else alert("Nepodařilo se nahrát obrázek");
+    } catch { alert("Chyba při nahrávání"); }
+    setGalleryUploading(false);
+  };
+
+  const handleGalleryDelete = async (filename: string) => {
+    if (!confirm(`Smazat ${filename}?`)) return;
+    const res = await fetch(`/api/kit-artworks/${encodeURIComponent(filename)}`, { method: "DELETE", credentials: "include" });
+    if (res.ok) setGalleryImages(prev => prev.filter(i => i.filename !== filename));
+    else alert("Nepodařilo se smazat");
+  };
+
+  const handleGallerySelect = (url: string) => {
+    if (galleryTarget === "main") {
+      setForm(f => ({ ...f, artworkUrl: url }));
+    } else {
+      const idx = galleryTarget as number;
+      setForm(f => {
+        const updated = [...(f.extraArtworkUrls || [])];
+        updated[idx] = url;
+        return { ...f, extraArtworkUrls: updated };
+      });
+    }
+    setShowGallery(false);
+  };
 
   useEffect(() => {
     if (showForm && formRef.current) {
@@ -2264,18 +2317,29 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
             </div>
             <div>
               <label style={{ display: "block", marginBottom: "8px" }}>Artwork</label>
-              <input
-                type="file"
-                accept="image/*"
-                disabled={uploading["artwork"]}
-                onChange={async (e) => {
-                  if (e.target.files?.[0]) {
-                    const url = await uploadFile(e.target.files[0], "artwork");
-                    if (url) setForm(f => ({ ...f, artworkUrl: url as string }));
-                  }
-                }}
-                style={{ width: "100%", opacity: uploading["artwork"] ? 0.4 : 1 }}
-              />
+              <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "6px" }}>
+                <input
+                  type="file"
+                  accept="image/*"
+                  disabled={uploading["artwork"]}
+                  onChange={async (e) => {
+                    if (e.target.files?.[0]) {
+                      const url = await uploadFile(e.target.files[0], "artwork");
+                      if (url) setForm(f => ({ ...f, artworkUrl: url as string }));
+                    }
+                  }}
+                  style={{ flex: 1, opacity: uploading["artwork"] ? 0.4 : 1 }}
+                />
+                <button
+                  type="button"
+                  className="btn btn-admin"
+                  onClick={() => openGallery("main")}
+                  data-testid="button-open-artwork-gallery-kit"
+                  style={{ whiteSpace: "nowrap", flexShrink: 0 }}
+                >
+                  🖼 Galerie
+                </button>
+              </div>
               <UploadProgressBar type="artwork" />
               {uploadError["artwork"] && (
                 <div style={{ marginTop: "6px", fontSize: "12px", color: "#ff5252" }}>Chyba při nahrávání: {uploadError["artwork"]}</div>
@@ -2296,33 +2360,29 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
               Přidej více obrázků – zobrazí se jako scrollovatelná galerie na stránce produktu.
             </p>
             {(form.extraArtworkUrls || []).map((url, idx) => (
-              <div key={idx} style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
-                {url && <img src={url} alt="" style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "3px", flexShrink: 0 }} onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />}
+              <div key={idx} style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+                {url && <img src={url} alt="" style={{ width: "44px", height: "44px", objectFit: "cover", borderRadius: "3px", flexShrink: 0 }} onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />}
                 <input
-                  type="file"
-                  accept="image/*"
-                  disabled={uploading[`extra_artwork_${idx}`]}
-                  onChange={async (e) => {
-                    if (e.target.files?.[0]) {
-                      const uploadedUrl = await uploadFile(e.target.files[0], "artwork");
-                      if (uploadedUrl) {
-                        setForm(f => {
-                          const updated = [...(f.extraArtworkUrls || [])];
-                          updated[idx] = uploadedUrl as string;
-                          return { ...f, extraArtworkUrls: updated };
-                        });
-                      }
-                    }
-                  }}
-                  style={{ flex: 1, opacity: uploading[`extra_artwork_${idx}`] ? 0.4 : 1 }}
+                  readOnly
+                  value={url}
+                  placeholder="URL obrázku"
+                  style={{ flex: 1, fontSize: "11px" }}
                 />
+                <button
+                  type="button"
+                  className="btn btn-admin"
+                  onClick={() => openGallery(idx)}
+                  style={{ whiteSpace: "nowrap", flexShrink: 0 }}
+                >
+                  🖼 Galerie
+                </button>
                 <button
                   type="button"
                   onClick={() => setForm(f => ({ ...f, extraArtworkUrls: (f.extraArtworkUrls || []).filter((_, i) => i !== idx) }))}
                   style={{ background: "transparent", border: "0.4px solid #555", color: "#888", borderRadius: "3px", padding: "4px 8px", cursor: "pointer", flexShrink: 0 }}
                   data-testid={`button-delete-extra-artwork-kit-${idx}`}
                 >
-                  Smazat
+                  ×
                 </button>
               </div>
             ))}
@@ -2341,6 +2401,93 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
             <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}><input type="checkbox" checked={form.isPublished} onChange={(e) => setForm({ ...form, isPublished: e.target.checked })} /> <span>Publikovat</span></label>
           </div>
         </form>
+        </div>
+      )}
+
+      {showGallery && (
+        <div
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
+          onClick={(e) => { if (e.target === e.currentTarget) setShowGallery(false); }}
+        >
+          <div style={{ background: "#111", border: "0.4px solid #333", borderRadius: "8px", width: "min(860px, 96vw)", maxHeight: "88vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "0.4px solid #2a2a2a", flexShrink: 0 }}>
+              <div>
+                <div style={{ color: "#fff", fontSize: "14px", fontWeight: 500 }}>Galerie obrázků</div>
+                <div style={{ color: "#555", fontSize: "11px", marginTop: "2px" }}>Obrázky jsou uloženy přímo v aplikaci — žádný Backblaze bandwidth</div>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <label style={{ background: "transparent", border: "0.4px solid #555", color: galleryUploading ? "#555" : "#aaa", borderRadius: "3px", padding: "6px 12px", cursor: galleryUploading ? "default" : "pointer", fontSize: "12px", display: "flex", alignItems: "center", gap: "6px" }}>
+                  {galleryUploading ? "Nahrávám…" : "+ Nahrát nový"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    disabled={galleryUploading}
+                    style={{ display: "none" }}
+                    onChange={(e) => { if (e.target.files?.[0]) handleGalleryUpload(e.target.files[0]); }}
+                    data-testid="input-gallery-upload"
+                  />
+                </label>
+                <button
+                  onClick={() => setShowGallery(false)}
+                  style={{ background: "transparent", border: "none", color: "#666", fontSize: "20px", cursor: "pointer", lineHeight: 1, padding: "0 4px" }}
+                  data-testid="button-close-gallery"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+            <div style={{ overflowY: "auto", padding: "20px", flex: 1 }}>
+              {galleryLoading ? (
+                <div style={{ textAlign: "center", color: "#444", padding: "48px 0", fontSize: "12px" }}>Načítám…</div>
+              ) : galleryImages.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "48px 0" }}>
+                  <div style={{ color: "#444", fontSize: "13px", marginBottom: "8px" }}>Galerie je prázdná</div>
+                  <div style={{ color: "#333", fontSize: "11px" }}>Nahraj první obrázek tlačítkem výše</div>
+                </div>
+              ) : (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: "12px" }}>
+                  {galleryImages.map(img => (
+                    <div
+                      key={img.filename}
+                      style={{ position: "relative", border: "0.4px solid #2a2a2a", borderRadius: "5px", overflow: "hidden", cursor: "pointer", transition: "border-color 0.15s" }}
+                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = "#666"}
+                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = "#2a2a2a"}
+                    >
+                      <img
+                        src={img.url}
+                        alt={img.filename}
+                        onClick={() => handleGallerySelect(img.url)}
+                        style={{ width: "100%", aspectRatio: "1", objectFit: "cover", display: "block" }}
+                        data-testid={`img-gallery-${img.filename}`}
+                      />
+                      <div style={{ padding: "6px 8px 4px", background: "#0e0e0e" }}>
+                        <div style={{ fontSize: "10px", color: "#555", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{img.filename}</div>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "4px" }}>
+                          <button
+                            onClick={() => handleGallerySelect(img.url)}
+                            style={{ background: "transparent", border: "0.4px solid #444", color: "#aaa", borderRadius: "3px", padding: "2px 8px", cursor: "pointer", fontSize: "11px" }}
+                            data-testid={`button-select-gallery-${img.filename}`}
+                          >
+                            Vybrat
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleGalleryDelete(img.filename); }}
+                            style={{ background: "transparent", border: "none", color: "#444", cursor: "pointer", fontSize: "14px", padding: "0 2px", lineHeight: 1 }}
+                            data-testid={`button-delete-gallery-${img.filename}`}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div style={{ padding: "10px 20px", borderTop: "0.4px solid #1a1a1a", flexShrink: 0, display: "flex", justifyContent: "flex-end" }}>
+              <button onClick={() => setShowGallery(false)} className="btn btn-admin" data-testid="button-close-gallery-footer">Zavřít</button>
+            </div>
+          </div>
         </div>
       )}
 
