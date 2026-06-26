@@ -146,7 +146,7 @@ function Checkout() {
 
       clearCart();
       setFreeSuccess(true);
-      setTimeout(() => navigate(user ? "/ucet" : "/"), 3000);
+      setTimeout(() => navigate(user ? "/ucet?stazeno=1" : "/"), 3500);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -282,18 +282,72 @@ function Checkout() {
   if (freeSuccess) {
     return (
       <div className="fade-in" style={s.page}>
+        <style>{`
+          @keyframes checkDraw {
+            from { stroke-dashoffset: 60; opacity: 0; }
+            to   { stroke-dashoffset: 0;  opacity: 1; }
+          }
+          @keyframes ringPop {
+            0%   { transform: scale(0.6); opacity: 0; }
+            60%  { transform: scale(1.08); opacity: 1; }
+            100% { transform: scale(1); }
+          }
+          @keyframes glowPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(36,224,83,0); }
+            50%       { box-shadow: 0 0 32px 8px rgba(36,224,83,0.18); }
+          }
+          .free-success-ring { animation: ringPop 0.55s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+          .free-success-check { stroke-dasharray: 60; stroke-dashoffset: 60; animation: checkDraw 0.45s 0.4s ease-out forwards; opacity: 0; }
+          .free-success-card { animation: glowPulse 2.4s 0.6s ease-in-out infinite; border-radius: 16px; }
+        `}</style>
         <div style={{ ...s.card, textAlign: "center" }}>
-          <h1 style={{ marginBottom: "24px" }}>Soubory jsou na cestě!</h1>
-          <p style={{ color: "#666", marginBottom: "24px" }}>
-            Na email <strong style={{ color: "#fff" }}>{email}</strong> jsme odeslali odkaz ke stažení.
-            {user && " Najdete soubory také ve svém účtu."}
-          </p>
-          <p style={{ color: "#555", fontSize: "13px", marginBottom: "24px" }}>
-            {user ? "Přesměrovávám na váš účet..." : "Přesměrovávám na hlavní stránku..."}
-          </p>
-          <button className="btn btn-bounce" onClick={() => navigate(user ? "/ucet" : "/")} style={{ borderRadius: "4px" }}>
-            {user ? "Přejít na účet" : "Zpět na hlavní stránku"}
-          </button>
+          <div className="free-success-card" style={{ background: "#080808", border: "1px solid #1e1e1e", borderRadius: "16px", padding: "40px 32px" }}>
+            <div className="free-success-ring" style={{ display: "flex", justifyContent: "center", marginBottom: "28px" }}>
+              <svg width="72" height="72" viewBox="0 0 72 72" fill="none">
+                <circle cx="36" cy="36" r="35" stroke="#24e053" strokeWidth="2" />
+                <circle cx="36" cy="36" r="35" fill="rgba(36,224,83,0.06)" />
+                <path className="free-success-check" d="M22 37L31 46L50 27" stroke="#24e053" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+
+            <h1 style={{ fontSize: "26px", fontWeight: 700, marginBottom: "10px", letterSpacing: "-0.02em" }}>
+              Soubory jsou připraveny!
+            </h1>
+            <p style={{ color: "#666", fontSize: "14px", lineHeight: 1.6, marginBottom: "6px" }}>
+              Odkaz ke stažení jsme odeslali na{" "}
+              <strong style={{ color: "#ccc" }}>{email}</strong>.
+            </p>
+            {user && (
+              <p style={{ color: "#555", fontSize: "13px", lineHeight: 1.6, marginBottom: "28px" }}>
+                Soubory najdete také ve svém účtu — kdykoliv ke stažení znovu.
+              </p>
+            )}
+            {!user && <div style={{ marginBottom: "28px" }} />}
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              {user && (
+                <button
+                  className="btn btn-filled btn-bounce"
+                  onClick={() => navigate("/ucet?stazeno=1")}
+                  data-testid="button-go-to-account-free"
+                  style={{ width: "100%", borderRadius: "8px", fontSize: "14px" }}
+                >
+                  Přejít na účet a stáhnout soubory
+                </button>
+              )}
+              <button
+                className="btn btn-bounce"
+                onClick={() => navigate("/")}
+                style={{ width: "100%", borderRadius: "8px", fontSize: "14px", color: "#555", borderColor: "#1a1a1a" }}
+              >
+                Zpět na hlavní stránku
+              </button>
+            </div>
+
+            <p style={{ color: "#333", fontSize: "11px", marginTop: "20px", lineHeight: 1.5 }}>
+              {user ? "Automaticky přesměrovávám na váš účet…" : "Automaticky přesměrovávám…"}
+            </p>
+          </div>
         </div>
       </div>
     );

@@ -141,15 +141,6 @@ function Beaty() {
   const [beatPlayCounts, setBeatPlayCounts] = useState<Record<number, number>>({});
   const [contractModalBeat, setContractModalBeat] = useState<Beat | null>(null);
   const [downloadingBeat, setDownloadingBeat] = useState<Beat | null>(null);
-  const [showCommentHighlight, setShowCommentHighlight] = useState(false);
-
-  // Helper for generating avatar colors
-  const getAvatarColor = (str: string) => {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
-    const h = Math.abs(hash) % 360;
-    return `hsl(${h}, 70%, 40%)`;
-  };
 
   const downloadPreview = async (beat: Beat) => {
     if (!beat.preview_url) return;
@@ -182,6 +173,8 @@ function Beaty() {
   const [submittingComment, setSubmittingComment] = useState(false);
   const [beatStats, setBeatStats] = useState<{ comments: number; saves: number; plays: number } | null>(null);
   const [authNudge, setAuthNudge] = useState(false);
+  const [commentNudge, setCommentNudge] = useState(false);
+  const commentNudgeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [hoveredCommentId, setHoveredCommentId] = useState<number | null>(null);
   const [isDraggingComment, setIsDraggingComment] = useState(false);
   const [draggingCommentId, setDraggingCommentId] = useState<number | null>(null);
@@ -230,14 +223,6 @@ function Beaty() {
       if (highlightedData && !highlightedData.error) setHighlightedBeat(highlightedData);
       setBeatsLoading(false);
 
-      if (!currentBeat) {
-        if (highlightedData && !highlightedData.error) {
-          setCurrentBeat(highlightedData);
-        } else if (Array.isArray(beatsData) && beatsData.length > 0) {
-          setCurrentBeat(beatsData[0]);
-        }
-      }
-
       const allBeats = [
         ...(highlightedData && !highlightedData.error ? [highlightedData] : []),
         ...(Array.isArray(beatsData) ? beatsData : []),
@@ -283,16 +268,6 @@ function Beaty() {
   }, []);
 
   useEffect(() => {
-    let highlightTimer: NodeJS.Timeout;
-    if (isPlaying) {
-      highlightTimer = setTimeout(() => setShowCommentHighlight(true), 4000);
-    } else {
-      setShowCommentHighlight(false);
-    }
-    return () => clearTimeout(highlightTimer);
-  }, [isPlaying]);
-
-  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.code !== "Space") return;
       const target = e.target as HTMLElement;
@@ -317,8 +292,8 @@ function Beaty() {
   }, [currentBeat, isPlaying, beats, highlightedBeat]);
 
   useEffect(() => {
-    if (!currentBeat) return;
-    const id = currentBeat.id;
+    const id = currentBeat?.id ?? highlightedBeat?.id;
+    if (!id) return;
     setComments([]);
     setBeatStats(null);
     Promise.all([
@@ -328,16 +303,17 @@ function Beaty() {
       setComments(Array.isArray(commentsData) ? commentsData : []);
       setBeatStats(statsData);
     }).catch(console.error);
-  }, [currentBeat?.id]);
+  }, [currentBeat?.id, highlightedBeat?.id]);
 
   const handleCommentSubmit = async () => {
-    if (!commentText.trim() || !currentBeat || !user) return;
+    const targetBeat = currentBeat ?? displayedHighlight;
+    if (!commentText.trim() || !targetBeat || !user) return;
     setSubmittingComment(true);
     const timeOffset = (audioRef.current?.duration && audioRef.current.duration > 0)
       ? audioRef.current.currentTime / audioRef.current.duration
       : 0;
     try {
-      const res = await fetch(`/api/beats/${currentBeat.id}/comments`, {
+      const res = await fetch(`/api/beats/${targetBeat.id}/comments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -423,6 +399,25 @@ function Beaty() {
       document.removeEventListener("mouseup", handleMouseUp);
     };
   }, [isDraggingComment, draggingCommentId, currentBeat?.id]);
+
+  // Comment nudge — fires 5s after playback starts
+  useEffect(() => {
+    if (isPlaying && currentBeat) {
+      if (commentNudgeTimerRef.current) clearTimeout(commentNudgeTimerRef.current);
+      commentNudgeTimerRef.current = setTimeout(() => setCommentNudge(true), 5000);
+    } else {
+      if (commentNudgeTimerRef.current) clearTimeout(commentNudgeTimerRef.current);
+      setCommentNudge(false);
+    }
+    return () => { if (commentNudgeTimerRef.current) clearTimeout(commentNudgeTimerRef.current); };
+  }, [isPlaying, currentBeat?.id]);
+
+  const getAvatarBg = (str: string) => {
+    const palette = ["#1b3a52","#2b1a45","#0d3b28","#3d2210","#1d3d52","#2d1a35"];
+    let h = 0;
+    for (let i = 0; i < str.length; i++) h = str.charCodeAt(i) + ((h << 5) - h);
+    return palette[Math.abs(h) % palette.length];
+  };
 
   const playBeat = async (beat: Beat) => {
     if (currentBeat?.id === beat.id) {
@@ -612,8 +607,8 @@ function Beaty() {
   };
 
   const filteredBeats = beatLimit ? beats.slice(0, beatLimit) : beats;
-  // Featured slot shows the currently playing beat; falls back to admin-highlighted beat when idle
-  const displayedHighlight = currentBeat ?? highlightedBeat;
+  // Featured slot shows the currently playing beat; falls back to admin-highlighted beat, then first beat
+  const displayedHighlight = currentBeat ?? highlightedBeat ?? (beats.length > 0 ? beats[0] : null);
   // List always contains ALL beats — no beat is ever removed when it starts playing
   const sortedBeats = (() => {
     if (sortBy === "bpm") return [...filteredBeats].sort((a: Beat, b: Beat) => sortAsc ? a.bpm - b.bpm : b.bpm - a.bpm);
@@ -630,7 +625,7 @@ function Beaty() {
 
   if (beats.length === 0 && !highlightedBeat) {
     return (
-      <div style={{ background: "#000", minHeight: "100vh" }}>
+      <div style={{ background: "#000", minHeight: "100vh", paddingBottom: currentBeat ? "100px" : "20px" }}>
         <div style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative", background: "#000", height: "clamp(520px, 70vh, 900px)" }}>
           <video
             autoPlay
@@ -643,8 +638,8 @@ function Beaty() {
             <source src="/uploads/hrad-na-web.mp4" type="video/mp4" />
           </video>
           <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%)", pointerEvents: "none" }} />
-          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none", zIndex: 2 }}>
-            <img src="/uploads/artwork/voodoo808-main-logo.png" alt="VOODOO808" style={{ width: "66vw", height: "auto", maxWidth: "none", objectFit: "contain", display: "block" }} />
+          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "flex-start", justifyContent: "center", paddingTop: "6%", pointerEvents: "none", zIndex: 2 }}>
+            <img src="/uploads/artwork/voodoo808-main-logo.png" alt="VOODOO808" style={{ width: "100%", height: "auto", objectFit: "contain", display: "block" }} />
           </div>
           <div style={{ position: "absolute", bottom: 0, left: 0, width: "100%", height: "166px", background: "linear-gradient(to bottom, rgba(13,13,13,0) 0%, rgba(13,13,13,1) 100%)", pointerEvents: "none", zIndex: 3 }} />
         </div>
@@ -666,6 +661,33 @@ function Beaty() {
         }
         .heart-pop { animation: heartPop 0.35s ease-out forwards; }
 
+        @keyframes commentNudgePulse {
+          0%, 100% { box-shadow: 0 0 0 1.5px rgba(255,255,255,0.10), 0 0 14px rgba(255,255,255,0.04); }
+          50%       { box-shadow: 0 0 0 1.5px rgba(255,255,255,0.38), 0 0 28px rgba(255,255,255,0.12), 0 0 52px rgba(255,255,255,0.04); }
+        }
+        @keyframes commentNudgeSlide {
+          from { opacity: 0; transform: translateY(5px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .comment-nudge-wrap {
+          position: relative;
+          flex: 1;
+          border-radius: 20px;
+        }
+        .comment-nudge-wrap.active {
+          animation: commentNudgePulse 2s ease-in-out infinite;
+        }
+        .comment-nudge-label {
+          position: absolute;
+          top: -22px;
+          left: 16px;
+          font-size: 10px;
+          color: rgba(255,255,255,0.38);
+          letter-spacing: 0.05em;
+          pointer-events: none;
+          animation: commentNudgeSlide 0.4s ease-out both;
+        }
+
         @keyframes eqBar1 {
           0%,100% { height: 3px; }
           30%     { height: 10px; }
@@ -681,14 +703,6 @@ function Beaty() {
           0%,100% { height: 5px; }
           40%     { height: 11px; }
           70%     { height: 2px; }
-        }
-        @keyframes commentGlow {
-          0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.2); border-color: #2a2a2a; }
-          50% { box-shadow: 0 0 20px 4px rgba(255,255,255,0.25); border-color: rgba(255,255,255,0.7); }
-          100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.2); border-color: #2a2a2a; }
-        }
-        .comment-input-highlight {
-          animation: commentGlow 2.5s ease-in-out infinite;
         }
         .beat-eq-bars {
           position: absolute;
@@ -716,17 +730,10 @@ function Beaty() {
         .beat-eq-bars span:nth-child(3) { animation: eqBar3 1.1s ease-in-out infinite; }
 
         .beats-glass-card {
-          background: linear-gradient(160deg, rgba(255,255,255,0.055) 0%, rgba(255,255,255,0.018) 40%, rgba(255,255,255,0.03) 100%);
-          border: 1px solid rgba(255,255,255,0.09);
-          border-top: 1px solid rgba(255,255,255,0.18);
+          background: linear-gradient(160deg, rgba(255,255,255,0.025) 0%, rgba(255,255,255,0.008) 40%, rgba(255,255,255,0.012) 100%);
+          border: 1px solid rgba(255,255,255,0.07);
+          border-top: 1px solid rgba(255,255,255,0.10);
           border-radius: 20px;
-          backdrop-filter: blur(28px) saturate(1.5);
-          -webkit-backdrop-filter: blur(28px) saturate(1.5);
-          box-shadow:
-            0 24px 64px rgba(0,0,0,0.65),
-            0 4px 16px rgba(0,0,0,0.4),
-            inset 0 1px 0 rgba(255,255,255,0.09),
-            inset 0 0 0 0.5px rgba(255,255,255,0.04);
           overflow: hidden;
           position: relative;
           padding-bottom: 8px;
@@ -739,9 +746,9 @@ function Beaty() {
           left: 8%;
           right: 8%;
           height: 1px;
-          background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.22) 30%, rgba(255,255,255,0.35) 50%, rgba(255,255,255,0.22) 70%, transparent 100%);
+          background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.12) 30%, rgba(255,255,255,0.18) 50%, rgba(255,255,255,0.12) 70%, transparent 100%);
           pointer-events: none;
-          z-index: 1;
+          z-index: -1;
         }
 
         .beats-glass-card::after {
@@ -751,10 +758,10 @@ function Beaty() {
           left: 0;
           right: 0;
           height: 80px;
-          background: linear-gradient(180deg, rgba(255,255,255,0.025) 0%, transparent 100%);
+          background: linear-gradient(180deg, rgba(255,255,255,0.01) 0%, transparent 100%);
           pointer-events: none;
           border-radius: 20px 20px 0 0;
-          z-index: 0;
+          z-index: -1;
         }
 
         .beat-row-playing {
@@ -889,7 +896,7 @@ function Beaty() {
           <img
             src="/uploads/artwork/voodoo808-main-logo.png"
             alt="VOODOO808"
-            style={{ width: "66vw", height: "auto", maxWidth: "none", objectFit: "contain", display: "block" }}
+            style={{ width: "min(900px, 66.67vw)", height: "auto", display: "block" }}
           />
         </div>
         <div
@@ -906,8 +913,8 @@ function Beaty() {
         />
       </div>
       
-      <div style={{ padding: "0 20px" }} className="fade-in-grid">
-          <div className="fade-in-section delay-2 featured-beat-section" style={{ marginBottom: "24px", display: "flex", justifyContent: "center", marginTop: "-60px", position: "relative", zIndex: 50, minHeight: "280px" }}>
+      <div style={{ padding: "0 20px", paddingBottom: currentBeat ? "calc(84px + env(safe-area-inset-bottom) + 20px)" : "20px", transition: "padding-bottom 0.3s ease" }} className="fade-in-grid">
+          <div className="fade-in-section delay-2 featured-beat-section" style={{ marginBottom: "8px", display: "flex", justifyContent: "center", marginTop: "-116px", position: "relative", zIndex: 50, minHeight: "330px" }}>
           {displayedHighlight && (
             <div className="featured-beat-inner">
               <div style={{ position: "relative", flexShrink: 0 }} className="highlight-artwork-container featured-beat-artwork">
@@ -982,7 +989,7 @@ function Beaty() {
               <div className="featured-beat-info" style={{ display: "flex", flexDirection: "column", justifyContent: "flex-start", flex: 1 }}>
                 <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "6px" }}>
                   <span style={{ fontSize: "12px", fontFamily: "Work Sans, sans-serif", color: "#999" }}>
-                    {isPlaying ? "Nyní hraje" : displayedHighlight?.id === highlightedBeat?.id ? "Beat týdne" : "Naposledy hrán"}
+                    {isPlaying && currentBeat?.id === displayedHighlight?.id ? "Nyní hraje" : highlightedBeat?.id === displayedHighlight?.id ? "Beat týdne" : "Doporučeno"}
                   </span>
                   <span style={{ fontSize: "12px", fontFamily: "Work Sans, sans-serif", color: "#666" }}>•</span>
                   <span style={{ fontSize: "12px", fontFamily: "Work Sans, sans-serif", color: "#666" }}>
@@ -1198,43 +1205,49 @@ function Beaty() {
           )}
           </div>
 
-        {/* Fixed-height container — height never changes so the beat list never moves */}
-        <div style={{ maxWidth: "1200px", margin: "0 auto", height: "130px" }}>
-          {currentBeat && (
+        {/* Waveform + comment strip — visible as soon as a beat is featured */}
+        <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+          {displayedHighlight && (
             <>
               {comments.length > 0 && (
                 <div style={{ padding: "0 16px 6px 16px", display: "flex", alignItems: "center", gap: "0" }}>
-                  {comments.slice(0, 10).map((c: any, i: number) => (
-                    <div
-                      key={c.id}
-                      className="comment-avatar-wrap"
-                      style={{ marginLeft: i > 0 ? "-8px" : 0, zIndex: 10 - i }}
-                    >
-                      <div style={{ width: "26px", height: "26px", borderRadius: "50%", background: getAvatarColor(c.username || c.email || "?"), border: "1.5px solid #333", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: "bold", color: "#fff", overflow: "hidden", cursor: "pointer" }}>
-                        {c.avatar_url ? (
-                          <img src={c.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                        ) : (
-                          <span>{(c.username || c.email)?.[0]?.toUpperCase() || "?"}</span>
-                        )}
+                  {comments.slice(0, 10).map((c: any, i: number) => {
+                    const initial = ((c.username || c.email)?.[0] || "?").toUpperCase();
+                    const bg = getAvatarBg(c.username || c.email || "?");
+                    return (
+                      <div
+                        key={c.id}
+                        className="comment-avatar-wrap"
+                        style={{ marginLeft: i > 0 ? "-8px" : 0, zIndex: 10 - i }}
+                      >
+                        <div style={{ width: "26px", height: "26px", borderRadius: "50%", background: c.avatar_url ? "#1a1a1a" : bg, border: "1.5px solid rgba(255,255,255,0.12)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: "#fff", overflow: "hidden", cursor: "pointer", fontWeight: 600 }}>
+                          {c.avatar_url ? (
+                            <img src={c.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          ) : (
+                            <span style={{ fontSize: "10px" }}>{initial}</span>
+                          )}
+                        </div>
+                        <div className="comment-tooltip" style={{ position: "absolute", bottom: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)", background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "6px", padding: "6px 10px", fontSize: "12px", color: "#ccc", minWidth: "160px", maxWidth: "420px", width: "max-content", wordBreak: "break-word", zIndex: 999, boxShadow: "0 4px 12px rgba(0,0,0,0.5)", whiteSpace: "normal" }}>
+                          <span style={{ color: "#555", marginRight: "6px" }}>{c.username || c.email?.split("@")[0]}</span>
+                          {c.text}
+                        </div>
                       </div>
-                      <div className="comment-tooltip" style={{ position: "absolute", bottom: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)", background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "6px", padding: "6px 10px", fontSize: "12px", color: "#ccc", minWidth: "160px", maxWidth: "420px", width: "max-content", wordBreak: "break-word", zIndex: 999, boxShadow: "0 4px 12px rgba(0,0,0,0.5)", whiteSpace: "normal" }}>
-                        <span style={{ color: "#555", marginRight: "6px" }}>{c.username || c.email?.split("@")[0]}</span>
-                        {c.text}
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
               <SoundWave
                 audioRef={audioRef}
                 isPlaying={isPlaying}
-                audioUrl={currentBeat.preview_url}
+                audioUrl={displayedHighlight.preview_url}
                 isDraggingComment={isDraggingComment}
                 waveRef={waveContainerRef}
               >
                 {comments.map((c: any) => {
                   const isOwn = c.user_id === user?.id;
                   const offset = typeof c.time_offset === 'number' ? c.time_offset : 0;
+                  const initial = ((c.username || c.email)?.[0] || "?").toUpperCase();
+                  const bg = getAvatarBg(c.username || c.email || "?");
                   return (
                     <div
                       key={c.id}
@@ -1254,22 +1267,22 @@ function Beaty() {
                         width: "22px",
                         height: "22px",
                         borderRadius: "50%",
-                        background: getAvatarColor(c.username || c.email || "?"),
-                        border: `1.5px solid ${isOwn ? '#fff' : '#888'}`,
+                        background: c.avatar_url ? "#1a1a1a" : bg,
+                        border: `1.5px solid ${isOwn ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.2)'}`,
                         overflow: "hidden",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        fontSize: "11px",
-                        fontWeight: "bold",
+                        fontSize: "9px",
                         color: "#fff",
+                        fontWeight: 600,
                         cursor: isOwn ? (draggingCommentId === c.id ? "grabbing" : "grab") : "default",
                         boxShadow: "0 1px 6px rgba(0,0,0,0.7)",
                       }}>
                         {c.avatar_url ? (
                           <img src={c.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                         ) : (
-                          <span>{(c.username || c.email)?.[0]?.toUpperCase() || "?"}</span>
+                          <span>{initial}</span>
                         )}
                       </div>
                     </div>
@@ -1280,7 +1293,7 @@ function Beaty() {
           )}
         </div>
 
-        <div ref={beatsListRef} className="scroll-fade-section beat-list" style={{ marginBottom: "48px", maxWidth: "1200px", margin: "0 auto", marginTop: "20px" }}>
+        <div ref={beatsListRef} className="scroll-fade-section beat-list" style={{ maxWidth: "1200px", margin: "20px auto 48px" }}>
           {beats.length === 0 && !displayedHighlight ? (
             <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "8px" }}>
               {Array(4).fill(null).map((_, index) => (
@@ -1849,13 +1862,13 @@ function Beaty() {
           </div>
         </div>
 
-        {/* Stats + comments — placed BELOW the beat list so expanding never shifts the list */}
-        {currentBeat && (
+        {/* Stats + comments — always visible once a beat is featured */}
+        {displayedHighlight && (
           <div style={{
             maxWidth: "1200px",
             margin: "0 auto",
             overflow: "hidden",
-            maxHeight: isPlaying ? "600px" : "0px",
+            maxHeight: "600px",
             transition: "max-height 0.3s ease",
           }}>
             <div style={{ padding: "16px 16px 8px 16px" }}>
@@ -1870,22 +1883,29 @@ function Beaty() {
                 </span>
                 <span data-testid="text-beat-plays" style={{ fontSize: "12px", color: "#777", display: "flex", alignItems: "center", gap: "4px" }}>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={{ color: "#777" }}><polygon points="5 3 19 12 5 21 5 3" /></svg>
-                  {(beatStats?.plays ?? beatPlayCounts[currentBeat.id] ?? 0).toLocaleString()}
+                  {(beatStats?.plays ?? beatPlayCounts[(currentBeat ?? displayedHighlight)!.id] ?? 0).toLocaleString()}
                 </span>
               </div>
               <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                <input
-                  type="text"
-                  value={commentText}
-                  onChange={(e) => setCommentText(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === "Enter") handleCommentSubmit(); }}
-                  placeholder={user ? "Napište komentář..." : "Pro komentáře se přihlaste"}
-                  disabled={!user || submittingComment}
-                  maxLength={200}
-                  data-testid="input-beat-comment"
-                  className={showCommentHighlight ? "comment-input-highlight" : ""}
-                  style={{ flex: 1, padding: "8px 16px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "20px", color: "#fff", fontSize: "13px", fontFamily: "inherit", outline: "none", transition: "all 0.3s ease" }}
-                />
+                {user && (
+                  <div style={{ width: "28px", height: "28px", borderRadius: "50%", flexShrink: 0, background: user.avatarUrl ? "#1a1a1a" : getAvatarBg(user.email || "?"), border: "1.5px solid rgba(255,255,255,0.1)", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", color: "#fff", fontWeight: 600 }}>
+                    {user.avatarUrl ? <img src={user.avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : ((user.email || "?")[0]).toUpperCase()}
+                  </div>
+                )}
+                <div className={`comment-nudge-wrap${commentNudge ? " active" : ""}`}>
+                  {commentNudge && <span className="comment-nudge-label">dej koment bro ↓</span>}
+                  <input
+                    type="text"
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") handleCommentSubmit(); }}
+                    placeholder={user ? "dej koment bro…" : "Pro komentáře se přihlaste"}
+                    disabled={!user || submittingComment}
+                    maxLength={200}
+                    data-testid="input-beat-comment"
+                    style={{ width: "100%", padding: "8px 16px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "20px", color: "#fff", fontSize: "13px", fontFamily: "inherit", outline: "none", boxSizing: "border-box" }}
+                  />
+                </div>
                 {user && (
                   <button
                     onClick={handleCommentSubmit}
@@ -1918,11 +1938,11 @@ function Beaty() {
                       onMouseLeave={() => setHoveredCommentId(null)}
                     >
                       <div style={{ display: "flex", gap: "8px", alignItems: "flex-start" }}>
-                        <div style={{ width: "22px", height: "22px", borderRadius: "50%", background: getAvatarColor(c.username || c.email || "?"), border: "1px solid #333", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", fontWeight: "bold", color: "#fff", overflow: "hidden", marginTop: "2px" }}>
+                        <div style={{ width: "22px", height: "22px", borderRadius: "50%", background: "#222", border: "1px solid #333", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "9px", color: "#666", overflow: "hidden", marginTop: "2px" }}>
                           {c.avatar_url ? (
                             <img src={c.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                           ) : (
-                            <span>{(c.username || c.email)?.[0]?.toUpperCase() || "?"}</span>
+                            (c.username || c.email)?.[0]?.toUpperCase() || "?"
                           )}
                         </div>
                         <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: "2px" }}>

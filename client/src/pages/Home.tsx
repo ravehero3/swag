@@ -147,6 +147,8 @@ function Home() {
   const [hoveredCommentId, setHoveredCommentId] = useState<number | null>(null);
   const [activeCommentId, setActiveCommentId] = useState<number | null>(null);
   const [draggingComment, setDraggingComment] = useState<{ id: number; xPct: number } | null>(null);
+  const [commentNudge, setCommentNudge] = useState(false);
+  const commentNudgeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [usernameInput, setUsernameInput] = useState("");
   const [savingUsername, setSavingUsername] = useState(false);
   const waveRef = useRef<HTMLDivElement>(null);
@@ -230,7 +232,8 @@ function Home() {
     if (!globalItem || globalItem.product_type !== "beat") {
       return;
     }
-    const found = beats.find(b => b.id === globalItem.id) ?? highlightedBeat ?? null;
+    const found = beats.find(b => b.id === globalItem.id)
+      ?? (highlightedBeat?.id === globalItem.id ? highlightedBeat : null);
     setCurrentBeat(prev => {
       if (prev?.id === globalItem.id) return prev;
       return found;
@@ -412,16 +415,19 @@ function Home() {
       artwork_url: beat.artwork_url || "",
       product_type: "beat" as const,
     };
+    const isNewBeat = previewPlayer.currentItem?.id !== beat.id;
     setCurrentBeat(beat);
     await previewPlayer.playPreview(item, getBeatsQueue());
-    fetch(`/api/beats/${beat.id}/play`, { method: "POST" })
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (data?.play_count != null) {
-          setBeatStats(prev => prev ? { ...prev, plays: data.play_count } : prev);
-        }
-      })
-      .catch(() => {});
+    if (isNewBeat) {
+      fetch(`/api/beats/${beat.id}/play`, { method: "POST" })
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (data?.play_count != null) {
+            setBeatStats(prev => prev ? { ...prev, plays: data.play_count } : prev);
+          }
+        })
+        .catch(() => {});
+    }
   };
 
   const handlePlayPause = () => {
@@ -434,6 +440,25 @@ function Home() {
 
   const handleNext = () => {
     previewPlayer.handleNext();
+  };
+
+  // Comment nudge — fires 5 s after playback starts
+  useEffect(() => {
+    if (isPlaying && currentBeat) {
+      if (commentNudgeTimerRef.current) clearTimeout(commentNudgeTimerRef.current);
+      commentNudgeTimerRef.current = setTimeout(() => setCommentNudge(true), 5000);
+    } else {
+      if (commentNudgeTimerRef.current) clearTimeout(commentNudgeTimerRef.current);
+      setCommentNudge(false);
+    }
+    return () => { if (commentNudgeTimerRef.current) clearTimeout(commentNudgeTimerRef.current); };
+  }, [isPlaying, currentBeat?.id]);
+
+  const getAvatarBg = (str: string) => {
+    const palette = ["#1b3a52","#2b1a45","#0d3b28","#3d2210","#1d3d52","#2d1a35"];
+    let h = 0;
+    for (let i = 0; i < str.length; i++) h = str.charCodeAt(i) + ((h << 5) - h);
+    return palette[Math.abs(h) % palette.length];
   };
 
   const openContractModal = (beat: Beat) => {
@@ -569,25 +594,35 @@ function Home() {
   if (beats.length === 0 && !highlightedBeat) {
     return (
       <div style={{ background: "#000", minHeight: "100vh" }}>
-        <div style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative", background: "#000", minHeight: "600px" }}>
+        <div style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "24px", overflow: "hidden", position: "relative", background: "#000", height: "clamp(320px, 52vh, 480px)" }}>
           <video
             autoPlay
             loop
             muted
             playsInline
             preload="auto"
-            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", background: "#000", opacity: 0.5, minHeight: "600px" }}
+            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", background: "#000", opacity: 0.5 }}
           >
             <source src="/uploads/hrad-na-web.mp4" type="video/mp4" />
           </video>
           <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%)", pointerEvents: "none" }} />
           <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none", zIndex: 2 }}>
-            <img src="/uploads/artwork/voodoo808-main-logo.png" alt="VOODOO808" style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }} />
+            <img src="/uploads/artwork/voodoo808-main-logo.png" alt="VOODOO808" className="hero-logo-img" />
           </div>
-          <div style={{ position: "absolute", bottom: 0, left: 0, width: "100%", height: "166px", background: "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 100%)", pointerEvents: "none", zIndex: 3 }} />
+          <div style={{ position: "absolute", bottom: 0, left: 0, width: "100%", height: "120px", background: "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 100%)", pointerEvents: "none", zIndex: 3 }} />
         </div>
-        <div className="fade-in" style={{ textAlign: "center", padding: "60px 20px", color: "#fff" }}>
-          <p style={{ opacity: 0.6, fontSize: "14px", letterSpacing: "1px" }}>Žádné beaty nebyly nalezeny.</p>
+        <div className="fade-in" style={{ textAlign: "center", padding: "48px 20px 80px", color: "#fff" }}>
+          <style>{`
+            @keyframes emptyFadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+            .empty-state-card { animation: emptyFadeUp 0.55s 0.1s ease-out both; }
+            .empty-zvuky-btn { transition: background 0.2s, color 0.2s, box-shadow 0.2s; }
+            .empty-zvuky-btn:hover { background: #fff !important; color: #000 !important; box-shadow: 0 0 24px rgba(255,255,255,0.15) !important; }
+          `}</style>
+          <div className="empty-state-card" style={{ display: "inline-flex", flexDirection: "column", alignItems: "center", maxWidth: "400px", gap: "0" }}>
+            <p style={{ color: "#555", fontSize: "15px", lineHeight: 1.65, marginBottom: "0" }}>
+              momentálně zde nejsou žádné beaty bro
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -603,12 +638,29 @@ function Home() {
           100% { transform: scale(1); }
         }
         .heart-pop { animation: heartPop 0.35s ease-out forwards; }
+
+        @keyframes commentNudgePulse {
+          0%, 100% { box-shadow: 0 0 0 1.5px rgba(255,255,255,0.10), 0 0 14px rgba(255,255,255,0.04); }
+          50%       { box-shadow: 0 0 0 1.5px rgba(255,255,255,0.38), 0 0 28px rgba(255,255,255,0.12), 0 0 52px rgba(255,255,255,0.04); }
+        }
+        @keyframes commentNudgeSlide {
+          from { opacity: 0; transform: translateY(5px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .comment-nudge-wrap { position: relative; flex: 1; border-radius: 20px; }
+        .comment-nudge-wrap.active { animation: commentNudgePulse 2s ease-in-out infinite; }
+        .comment-nudge-label { position: absolute; top: -22px; left: 16px; font-size: 10px; color: rgba(255,255,255,0.38); letter-spacing: 0.05em; pointer-events: none; animation: commentNudgeSlide 0.4s ease-out both; }
+
         .comment-avatar-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; }
         .comment-avatar-wrap > div:first-child { transition: transform 0.2s ease; }
         .comment-avatar-wrap:hover { z-index: 999 !important; }
         .comment-avatar-wrap:hover > div:first-child { transform: scale(2); }
         .comment-avatar-wrap .comment-tooltip { opacity: 0; pointer-events: none; transition: opacity 0.15s ease; }
         .comment-avatar-wrap:hover .comment-tooltip { opacity: 1 !important; }
+        .hero-logo-img { width: min(1750px, calc(100vw - 40px)); height: auto; object-fit: contain; display: block; }
+        @media (max-width: 1040px) {
+          .home-featured-inner { width: calc(100% - 40px) !important; }
+        }
         @media (max-width: 768px) {
           .mobile-hide-dock { display: none !important; }
           .mobile-video-container { min-height: 320px !important; max-height: 60vh; }
@@ -618,12 +670,13 @@ function Home() {
           .desktop-only { display: none !important; }
           .mobile-only { display: flex !important; }
           .mobile-only-flex { display: flex !important; }
-          .home-featured-section { margin-top: -72px !important; margin-bottom: 32px !important; }
-          .home-featured-inner { width: 100% !important; flex-direction: column !important; gap: 16px !important; align-items: stretch !important; margin-bottom: 16px !important; }
-          .home-featured-artwork { width: min(72vw, 280px) !important; margin: 0 auto !important; }
+          .hero-logo-img { width: calc(100vw - 32px); }
+          .home-featured-section { margin-top: 12px !important; margin-bottom: 24px !important; min-height: 0 !important; }
+          .home-featured-inner { width: 100% !important; flex-direction: column !important; gap: 20px !important; align-items: stretch !important; margin-bottom: 16px !important; }
+          .home-featured-artwork { width: min(64vw, 220px) !important; margin: 0 auto !important; }
           .home-featured-artwork img { width: 100% !important; height: auto !important; aspect-ratio: 1 / 1 !important; }
-          .home-featured-info { width: 100% !important; min-width: 0 !important; }
-          .home-featured-info h2 { font-size: 24px !important; max-width: 100% !important; overflow-wrap: anywhere !important; }
+          .home-featured-info { width: 100% !important; min-width: 0 !important; padding: 0 4px !important; }
+          .home-featured-info h2 { font-size: 22px !important; max-width: 100% !important; overflow-wrap: anywhere !important; }
           .home-featured-actions { flex-wrap: wrap !important; gap: 8px !important; }
           .home-beats-list { margin-top: 32px !important; margin-bottom: 36px !important; }
           .home-beat-list-header { padding: 8px 8px 6px 8px !important; gap: 10px !important; margin-top: 0 !important; }
@@ -649,7 +702,7 @@ function Home() {
         }
       `}</style>
 
-      <div className="mobile-video-container desktop-main-video" style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "32px", overflow: "hidden", position: "relative", background: "#000", minHeight: "600px" }}>
+      <div className="mobile-video-container desktop-main-video" style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "24px", overflow: "hidden", position: "relative", background: "#000", height: "clamp(420px, 64vh, 620px)" }}>
         <video
           ref={videoRef}
           src="/uploads/hrad-na-web.mp4"
@@ -665,11 +718,11 @@ function Home() {
           Your browser does not support the video tag.
         </video>
         <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none", zIndex: 2 }}>
+        <div style={{ position: "absolute", top: "242px", left: 0, right: 0, display: "flex", justifyContent: "center", pointerEvents: "none", zIndex: 2 }}>
           <img
             src="/uploads/artwork/voodoo808-main-logo.png"
             alt="VOODOO808"
-            style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
+            className="hero-logo-img"
           />
         </div>
         <div
@@ -678,7 +731,7 @@ function Home() {
             bottom: 0,
             left: 0,
             width: "100%",
-            height: "166px",
+            height: "120px",
             background: "linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 100%)",
             pointerEvents: "none",
             zIndex: 3,
@@ -715,7 +768,7 @@ function Home() {
       <div style={{ padding: "0 20px" }} className="fade-in-grid">
           <div className="fade-in-section delay-2 home-featured-section" style={{ marginBottom: "48px", display: "flex", justifyContent: "center", marginTop: "-116px", position: "relative", zIndex: 50, minHeight: "330px" }}>
           {displayedHighlight && (
-            <div className="home-featured-inner" style={{ display: "flex", gap: "48px", alignItems: "flex-start", marginBottom: "32px", width: "1000px", position: "relative", zIndex: 50 }}>
+            <div className="home-featured-inner" style={{ display: "flex", gap: "48px", alignItems: "flex-start", marginBottom: "32px", width: "1000px", maxWidth: "100%", position: "relative", zIndex: 50 }}>
               <div style={{ position: "relative", flexShrink: 0 }} className="highlight-artwork-container home-featured-artwork">
                 <style>{`
                   @keyframes hacPlayPulse {
@@ -1006,7 +1059,7 @@ function Home() {
           )}
           </div>
 
-        <div style={{ maxWidth: "1200px", margin: "0 auto", height: "130px" }}>
+        <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
         {currentBeat && (
           <>
             <SoundWave audioRef={audioRef} isPlaying={isPlaying} audioUrl={currentBeat.preview_url} isDraggingComment={!!draggingComment} waveRef={waveRef}>
@@ -1052,7 +1105,7 @@ function Home() {
                       {c.avatar_url ? (
                         <img src={c.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                       ) : (
-                        <span style={{ fontSize: "8px", color: "#888" }}>{(c.username || c.email)?.[0]?.toUpperCase() || "?"}</span>
+                        <span style={{ fontSize: "8px", color: "#fff", fontWeight: 600, background: getAvatarBg(c.username || c.email || "?"), width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>{(c.username || c.email)?.[0]?.toUpperCase() || "?"}</span>
                       )}
                     </div>
                     {isOwnComment && isHovered && !isDragging && (
@@ -1101,16 +1154,24 @@ function Home() {
                 </span>
               </div>
               <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                <input
-                  type="text"
-                  value={commentText}
-                  onChange={(e) => setCommentText(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === "Enter") handleCommentSubmit(); }}
-                  placeholder={user ? "dej koment bro…" : "Pro komentáře se přihlaste"}
-                  disabled={!user || submittingComment}
-                  maxLength={200}
-                  style={{ flex: 1, padding: "8px 16px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "20px", color: "#fff", fontSize: "13px", fontFamily: "inherit", outline: "none" }}
-                />
+                {user && (
+                  <div style={{ width: "28px", height: "28px", borderRadius: "50%", flexShrink: 0, background: user.avatarUrl ? "#1a1a1a" : getAvatarBg(user.email || "?"), border: "1.5px solid rgba(255,255,255,0.1)", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", color: "#fff", fontWeight: 600 }}>
+                    {user.avatarUrl ? <img src={user.avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : ((user.email || "?")[0]).toUpperCase()}
+                  </div>
+                )}
+                <div className={`comment-nudge-wrap${commentNudge ? " active" : ""}`}>
+                  {commentNudge && <span className="comment-nudge-label">dej koment bro ↓</span>}
+                  <input
+                    type="text"
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") handleCommentSubmit(); }}
+                    placeholder={user ? "dej koment bro…" : "Pro komentáře se přihlaste"}
+                    disabled={!user || submittingComment}
+                    maxLength={200}
+                    style={{ width: "100%", padding: "8px 16px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "20px", color: "#fff", fontSize: "13px", fontFamily: "inherit", outline: "none", boxSizing: "border-box" }}
+                  />
+                </div>
                 {user && (
                   <button
                     onClick={handleCommentSubmit}
@@ -1133,7 +1194,16 @@ function Home() {
         )}
         </div>
 
-        <div ref={beatsListRef} className="scroll-fade-section home-beats-list" style={{ marginBottom: "48px", maxWidth: "1200px", margin: "0 auto", marginTop: "60px" }}>
+        {/* Glassmorphism border wrapper — 1px gradient outline that fades dark→grey */}
+        <div ref={beatsListRef} className="scroll-fade-section" style={{
+          maxWidth: "1200px",
+          margin: "20px auto 48px auto",
+          padding: "1px",
+          borderRadius: "18px",
+          background: "linear-gradient(160deg, rgba(80,80,80,0.22) 0%, rgba(30,30,30,0.08) 40%, rgba(50,50,50,0.14) 100%)",
+          boxShadow: "0 0 0 0.5px rgba(0,0,0,0.8), 0 24px 64px rgba(0,0,0,0.45)",
+        }}>
+        <div className="home-beats-list" style={{ marginBottom: "0", maxWidth: "none", margin: "0", marginTop: "0", borderRadius: "17px", background: "linear-gradient(160deg, rgba(18,18,18,0.82) 0%, rgba(8,8,8,0.92) 100%)", backdropFilter: "blur(28px)", WebkitBackdropFilter: "blur(28px)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04), inset 0 -1px 0 rgba(0,0,0,0.3)", overflow: "hidden" }}>
           {otherBeats.length === 0 && !highlightedBeat ? (
             <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "8px" }}>
               {Array(4).fill(null).map((_, index) => (
@@ -1169,9 +1239,9 @@ function Home() {
                 <div className="home-beat-header-title" style={{ width: "240px", minWidth: "240px", maxWidth: "240px", flexShrink: 0, marginRight: "12px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666" }}>NÁZEV</div>
                 <div className="home-beat-header-separator" style={{ position: "absolute", bottom: 0, left: "80px", right: "16px", height: "1px", background: "#333" }} />
                 {/* BPM — matches beat bpm column */}
-                <div className="desktop-only" style={{ width: "100px", flexShrink: 0 }}><button onClick={() => { setSortBy(sortBy === "bpm" ? "bpm" : "bpm"); setSortAsc(sortBy === "bpm" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0, textAlign: "left", width: "100%" }}>BPM {sortBy === "bpm" && (sortAsc ? "↑" : "↓")}</button></div>
+                <div className="desktop-only" style={{ width: "100px", flexShrink: 0 }}><button onClick={() => { if (sortBy === "bpm") { setSortAsc(a => !a); } else { setSortBy("bpm"); setSortAsc(true); } }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: sortBy === "bpm" ? "#fff" : "#666", cursor: "pointer", padding: 0, textAlign: "left", width: "100%" }}>BPM {sortBy === "bpm" ? (sortAsc ? "↑" : "↓") : ""}</button></div>
                 {/* KEY — matches beat key column */}
-                <div className="desktop-only" style={{ width: "100px", flexShrink: 0 }}><button onClick={() => { setSortBy(sortBy === "key" ? "key" : "key"); setSortAsc(sortBy === "key" ? !sortAsc : false); }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", cursor: "pointer", padding: 0, textAlign: "left", width: "100%" }}>KEY {sortBy === "key" && (sortAsc ? "↑" : "↓")}</button></div>
+                <div className="desktop-only" style={{ width: "100px", flexShrink: 0 }}><button onClick={() => { if (sortBy === "key") { setSortAsc(a => !a); } else { setSortBy("key"); setSortAsc(true); } }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: sortBy === "key" ? "#fff" : "#666", cursor: "pointer", padding: 0, textAlign: "left", width: "100%" }}>KEY {sortBy === "key" ? (sortAsc ? "↑" : "↓") : ""}</button></div>
                 {/* TAGY — matches tags column */}
                 <div className="desktop-only" style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", marginLeft: "12px" }}>TAGY</div>
               </div>
@@ -1622,6 +1692,7 @@ function Home() {
               </button>
           </div>
         </div>
+        </div>{/* end glassmorphism wrapper */}
 
         {/* Removed: "PRO VŠECHNY HUDEBNÍ PRODUCENTY" section with the
             computer background image and the SoundKitsDock — no longer

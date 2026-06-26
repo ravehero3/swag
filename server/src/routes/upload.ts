@@ -7,6 +7,7 @@ import { requireAdmin } from "../middleware/auth.js";
 import { uploadFile, generatePresignedUploadUrl, listFiles, STORAGE_BUCKETS, VIDEO_PREFIX, getPublicUrl } from "../lib/storage.js";
 import stream from "stream";
 import sharp from "sharp";
+import heicConvert from "heic-convert";
 import { pool } from "../db.js";
 interface PendingUpload {
   id: number;
@@ -338,13 +339,30 @@ router.post("/", requireAdmin, upload.single("file"), async (req: Request, res: 
       let contentType = req.file.mimetype || "application/octet-stream";
 
       if (isImage) {
+        // HEIC/HEIF (iPhone photos) — convert to JPEG first because libheif on
+        // many Linux servers is not compiled with the HEVC codec, causing Sharp
+        // to crash. heic-convert uses a pure-JS WASM decoder so it works
+        // everywhere regardless of system codec support.
+        const isHeic = /\.hei[cf]$/i.test(req.file.originalname) ||
+          req.file.mimetype === "image/heic" ||
+          req.file.mimetype === "image/heif";
+        let sharpInput: string | Buffer = req.file.path;
+        if (isHeic) {
+          const heicBuffer = fs.readFileSync(req.file.path);
+          sharpInput = Buffer.from(await heicConvert({
+            buffer: heicBuffer,
+            format: "JPEG",
+            quality: 1,
+          }));
+        }
+
         // Decide output format based on whether the source image has an alpha
         // channel. PNG/WebP with transparency (e.g. cover-art mockups on a
         // transparent background) MUST stay PNG — JPEG has no alpha and would
         // flatten transparent pixels to solid black, which is exactly the bug
         // we're fixing here. JPEGs and other opaque sources stay as compact
         // JPEG to keep file sizes small.
-        const src = sharp(req.file.path).rotate(); // honor EXIF orientation
+        const src = sharp(sharpInput).rotate(); // honor EXIF orientation
         const meta = await src.metadata();
         const hasAlpha = !!meta.hasAlpha;
 
@@ -410,10 +428,10 @@ router.post("/", requireAdmin, upload.single("file"), async (req: Request, res: 
     }
   }
 
-  // Preview: upload to ARTWORK bucket (Cloudflare R2 when configured, B2 fallback)
+  // Preview: upload to PREVIEWS bucket (Cloudflare R2 when configured, B2 fallback)
   if (type === "preview") {
     try {
-      const bucket = STORAGE_BUCKETS.ARTWORK;
+      const bucket = STORAGE_BUCKETS.PREVIEWS;
       const fileStream = fs.createReadStream(req.file.path);
       await uploadFile(bucket, key, fileStream, req.file.mimetype);
       fs.unlinkSync(req.file.path);

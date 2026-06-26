@@ -30,6 +30,29 @@ export default function Ucet() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [savedItems, setSavedItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showDownloadBanner, setShowDownloadBanner] = useState(false);
+  const [downloadingItem, setDownloadingItem] = useState<string | null>(null);
+
+  const handleFetchDownload = async (orderId: number, productType: string, productId: number) => {
+    const key = `${orderId}-${productId}`;
+    setDownloadingItem(key);
+    try {
+      const endpoint = productType === "beat"
+        ? `/api/beats/${productId}/download`
+        : `/api/sound-kits/${productId}/download`;
+      const res = await fetch(endpoint, { credentials: "include" });
+      const data = await res.json();
+      if (res.ok && data.downloadUrl) {
+        window.open(data.downloadUrl, "_blank", "noopener,noreferrer");
+      } else {
+        alert(data.error || "Soubor není k dispozici.");
+      }
+    } catch {
+      alert("Chyba při stahování.");
+    } finally {
+      setDownloadingItem(null);
+    }
+  };
   const [payingOrderId, setPayingOrderId] = useState<number | null>(null);
   const [cancellingOrderId, setCancellingOrderId] = useState<number | null>(null);
   const [confirmCancelId, setConfirmCancelId] = useState<number | null>(null);
@@ -47,6 +70,16 @@ export default function Ucet() {
     if (user?.avatarUrl) setAvatarUrl(user.avatarUrl);
     if (user?.username) setUsername(user.username);
   }, [user]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("stazeno") === "1") {
+      setShowDownloadBanner(true);
+      window.history.replaceState({}, "", "/ucet");
+      const t = setTimeout(() => setShowDownloadBanner(false), 8000);
+      return () => clearTimeout(t);
+    }
+  }, []);
 
   const handleUsernameEdit = () => {
     setUsernameInput(username);
@@ -240,6 +273,47 @@ export default function Ucet() {
 
   return (
     <div className="fade-in" style={{ maxWidth: "1000px", margin: "0 auto", padding: "100px 20px 120px" }}>
+      {showDownloadBanner && (
+        <div
+          data-testid="banner-download-success"
+          style={{
+            position: "fixed",
+            top: "58px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 9999,
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            padding: "14px 20px",
+            background: "linear-gradient(135deg, #0d1f10 0%, #0a1a0c 100%)",
+            border: "1px solid rgba(36,224,83,0.35)",
+            borderRadius: "12px",
+            boxShadow: "0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(36,224,83,0.1)",
+            animation: "slideDownFade 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards",
+            maxWidth: "420px",
+            width: "calc(100vw - 32px)",
+          }}
+        >
+          <style>{`@keyframes slideDownFade { from { opacity:0; transform:translateX(-50%) translateY(-12px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }`}</style>
+          <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "rgba(36,224,83,0.12)", border: "1px solid rgba(36,224,83,0.3)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#24e053" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: "14px", fontWeight: 600, color: "#fff", marginBottom: "2px" }}>Soubory jsou připraveny!</div>
+            <div style={{ fontSize: "12px", color: "#555" }}>Stáhni je níže v sekci Stažení zdarma</div>
+          </div>
+          <button
+            onClick={() => setShowDownloadBanner(false)}
+            style={{ background: "none", border: "none", color: "#444", cursor: "pointer", padding: "4px", flexShrink: 0, lineHeight: 1 }}
+            aria-label="Zavřít"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      )}
       <style dangerouslySetInnerHTML={{ __html: `
         .ucet-order-card {
           padding: 24px;
@@ -406,10 +480,15 @@ export default function Ucet() {
               onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
             >
               {avatarUrl ? (
-                <img src={avatarUrl} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                <img
+                  src={avatarUrl}
+                  alt="Avatar"
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  onError={() => setAvatarUrl(null)}
+                />
               ) : (
-                <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", color: "#444" }}>
-                  {user?.email?.[0]?.toUpperCase() || "?"}
+                <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%)", fontSize: "22px", fontWeight: 700, color: "#fff", letterSpacing: "-0.02em", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", userSelect: "none" }}>
+                  {user?.username?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || "?"}
                 </div>
               )}
               <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", opacity: 0, transition: "opacity 0.2s" }}
@@ -632,7 +711,6 @@ export default function Ucet() {
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
               {orders.filter((o) => Number(o.total) === 0 || o.payment_method === "free").map((order) => {
-                const isPaid = order.status === "completed" || order.status === "paid";
                 const items: OrderItem[] = Array.isArray(order.items) ? order.items : [];
                 return (
                   <div key={order.id} className="ucet-order-card" data-testid={`card-free-order-${order.id}`}>
@@ -657,21 +735,86 @@ export default function Ucet() {
                             key={`${item.productId ?? idx}-${idx}`}
                             style={{ display: "flex", justifyContent: "space-between", alignItems: "center", color: "#ccc", fontSize: "14px", gap: "12px", flexWrap: "wrap" }}
                           >
-                            <span style={{ flex: "1 1 auto", minWidth: 0 }}>{item.title || "—"}</span>
+                            <div style={{ display: "flex", alignItems: "center", gap: "12px", flex: "1 1 auto", minWidth: 0 }}>
+                              {item.artwork_url && (
+                                <img
+                                  src={item.artwork_url}
+                                  alt=""
+                                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                                  style={{ width: "40px", height: "40px", borderRadius: "4px", objectFit: "cover", flexShrink: 0 }}
+                                />
+                              )}
+                              <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.title || "—"}</span>
+                            </div>
                             <div style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
-                              {isPaid && item.downloadUrl && (
+                              {item.downloadUrl ? (
                                 <a
                                   href={item.downloadUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   data-testid={`link-free-download-${order.id}-${item.productId ?? idx}`}
-                                  style={{ padding: "4px 12px", background: "#24e053", color: "#000", borderRadius: "4px", fontSize: "12px", fontWeight: 500, textDecoration: "none", whiteSpace: "nowrap" }}
+                                  style={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "6px",
+                                    padding: "7px 16px",
+                                    background: "linear-gradient(135deg, #24e053 0%, #1bc447 100%)",
+                                    color: "#000",
+                                    borderRadius: "6px",
+                                    fontSize: "12px",
+                                    fontWeight: 600,
+                                    textDecoration: "none",
+                                    whiteSpace: "nowrap",
+                                    letterSpacing: "0.03em",
+                                    boxShadow: "0 2px 12px rgba(36,224,83,0.25)",
+                                    transition: "opacity 0.15s ease, transform 0.15s ease",
+                                  }}
+                                  onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.opacity = "0.85"; (e.currentTarget as HTMLAnchorElement).style.transform = "scale(1.03)"; }}
+                                  onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.opacity = "1"; (e.currentTarget as HTMLAnchorElement).style.transform = "scale(1)"; }}
                                 >
-                                  Stáhnout
+                                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="7 10 12 15 17 10"/>
+                                    <line x1="12" y1="15" x2="12" y2="3"/>
+                                  </svg>
+                                  Stáhnout zdarma
                                 </a>
-                              )}
-                              {isPaid && !item.downloadUrl && (
-                                <span style={{ color: "#666", fontSize: "12px" }}>Odkaz připravujeme</span>
+                              ) : item.productId ? (
+                                <button
+                                  data-testid={`button-free-download-${order.id}-${item.productId}`}
+                                  onClick={() => handleFetchDownload(order.id, item.productType, item.productId)}
+                                  disabled={downloadingItem === `${order.id}-${item.productId}`}
+                                  style={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "6px",
+                                    padding: "7px 16px",
+                                    background: "linear-gradient(135deg, #24e053 0%, #1bc447 100%)",
+                                    color: "#000",
+                                    borderRadius: "6px",
+                                    fontSize: "12px",
+                                    fontWeight: 600,
+                                    border: "none",
+                                    cursor: downloadingItem === `${order.id}-${item.productId}` ? "default" : "pointer",
+                                    whiteSpace: "nowrap",
+                                    letterSpacing: "0.03em",
+                                    boxShadow: "0 2px 12px rgba(36,224,83,0.25)",
+                                    opacity: downloadingItem === `${order.id}-${item.productId}` ? 0.6 : 1,
+                                    transition: "opacity 0.15s ease, transform 0.15s ease",
+                                    fontFamily: "inherit",
+                                  }}
+                                  onMouseEnter={e => { if (downloadingItem !== `${order.id}-${item.productId}`) { (e.currentTarget as HTMLButtonElement).style.opacity = "0.85"; (e.currentTarget as HTMLButtonElement).style.transform = "scale(1.03)"; } }}
+                                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.opacity = downloadingItem === `${order.id}-${item.productId}` ? "0.6" : "1"; (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)"; }}
+                                >
+                                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="7 10 12 15 17 10"/>
+                                    <line x1="12" y1="15" x2="12" y2="3"/>
+                                  </svg>
+                                  {downloadingItem === `${order.id}-${item.productId}` ? "Načítám…" : "Stáhnout zdarma"}
+                                </button>
+                              ) : (
+                                <span style={{ color: "#555", fontSize: "12px", fontStyle: "italic" }}>Soubor brzy k dispozici</span>
                               )}
                             </div>
                           </div>
