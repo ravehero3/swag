@@ -176,6 +176,7 @@ interface SoundKit {
   preview_labels: string[];
   file_url: string;
   artwork_url: string;
+  extra_artwork_urls?: string[];
   legal_info: string;
   author_info: string;
   is_published: boolean;
@@ -1803,6 +1804,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
     previewLabels: [] as string[],
     fileUrl: "",
     artworkUrl: "",
+    extraArtworkUrls: [] as string[],
     legalInfo: "",
     authorInfo: "",
     isPublished: true,
@@ -1872,6 +1874,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
         previewLabels: editing.preview_labels || [],
         fileUrl: editing.file_url || "",
         artworkUrl: editing.artwork_url || "",
+        extraArtworkUrls: editing.extra_artwork_urls || [],
         legalInfo: editing.legal_info || "",
         authorInfo: editing.author_info || "",
         isPublished: editing.is_published,
@@ -1894,7 +1897,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
     if (res.ok) {
       setShowForm(false);
       setEditing(null);
-      setForm({ title: "", description: "", type: "drum_kit", price: 899, priceType: "kit", isFree: false, numberOfSounds: 0, tags: [], previewUrl: "", previewUrls: [], previewLabels: [], fileUrl: "", artworkUrl: "", legalInfo: "", authorInfo: "", isPublished: true });
+      setForm({ title: "", description: "", type: "drum_kit", price: 899, priceType: "kit", isFree: false, numberOfSounds: 0, tags: [], previewUrl: "", previewUrls: [], previewLabels: [], fileUrl: "", artworkUrl: "", extraArtworkUrls: [], legalInfo: "", authorInfo: "", isPublished: true });
       onRefresh();
     } else {
       const errorData = await res.json().catch(() => ({}));
@@ -2286,6 +2289,52 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
               )}
               <ArtworkStorageDiag />
             </div>
+          </div>
+          <div style={{ marginTop: "16px" }}>
+            <label style={{ display: "block", marginBottom: "8px" }}>Další obrázky (galerie)</label>
+            <p style={{ fontSize: "11px", color: "#555", marginTop: "0", marginBottom: "10px" }}>
+              Přidej více obrázků – zobrazí se jako scrollovatelná galerie na stránce produktu.
+            </p>
+            {(form.extraArtworkUrls || []).map((url, idx) => (
+              <div key={idx} style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
+                {url && <img src={url} alt="" style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "3px", flexShrink: 0 }} onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />}
+                <input
+                  type="file"
+                  accept="image/*"
+                  disabled={uploading[`extra_artwork_${idx}`]}
+                  onChange={async (e) => {
+                    if (e.target.files?.[0]) {
+                      const uploadedUrl = await uploadFile(e.target.files[0], "artwork");
+                      if (uploadedUrl) {
+                        setForm(f => {
+                          const updated = [...(f.extraArtworkUrls || [])];
+                          updated[idx] = uploadedUrl as string;
+                          return { ...f, extraArtworkUrls: updated };
+                        });
+                      }
+                    }
+                  }}
+                  style={{ flex: 1, opacity: uploading[`extra_artwork_${idx}`] ? 0.4 : 1 }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setForm(f => ({ ...f, extraArtworkUrls: (f.extraArtworkUrls || []).filter((_, i) => i !== idx) }))}
+                  style={{ background: "transparent", border: "0.4px solid #555", color: "#888", borderRadius: "3px", padding: "4px 8px", cursor: "pointer", flexShrink: 0 }}
+                  data-testid={`button-delete-extra-artwork-kit-${idx}`}
+                >
+                  Smazat
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              className="btn btn-admin"
+              onClick={() => setForm(f => ({ ...f, extraArtworkUrls: [...(f.extraArtworkUrls || []), ""] }))}
+              data-testid="button-add-extra-artwork-kit"
+              style={{ marginTop: "4px" }}
+            >
+              + Přidat obrázek
+            </button>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "16px", marginTop: "16px" }}>
             <button type="submit" className="btn btn-filled">{editing ? "Uložit změny" : "Přidat kit"}</button>

@@ -13,6 +13,7 @@ interface ProductData {
   key?: string;
   price: number;
   artwork_url: string;
+  extra_artwork_urls?: string[];
   preview_url?: string;
   preview_urls?: string[];
   preview_labels?: string[];
@@ -120,12 +121,20 @@ function ProductDetail() {
           position: relative;
           width: 50%;
           display: flex;
+          flex-direction: column;
           align-items: center;
           justify-content: center;
           padding: 100px;
           flex-shrink: 0;
-          overflow: hidden;
+          overflow-y: auto;
+          overflow-x: hidden;
           background: #000;
+        }
+        .pd-artwork.is-gallery {
+          align-items: stretch;
+          justify-content: flex-start;
+          padding: 48px;
+          gap: 32px;
         }
         .pd-artwork-bg {
           position: absolute;
@@ -233,23 +242,36 @@ function ProductDetail() {
       `}</style>
 
       {/* Left half — artwork */}
-      <div className="pd-artwork">
-        {/* Stars background sits behind the artwork frame, sized to ~2x the
-            frame and faded into surrounding black on every edge/corner. */}
-        <div className="pd-artwork-bg" aria-hidden="true">
-          <div className="pd-artwork-bg-stars" />
+      {params?.type === "beat" ? (
+        <div className="pd-artwork">
+          <div className="pd-artwork-bg" aria-hidden="true">
+            <div className="pd-artwork-bg-stars" />
+          </div>
+          <div className="pd-artwork-frame">
+            <BeatArtwork
+              artworkUrl={product.artwork_url}
+              alt={product.title}
+              width="100%"
+              height="100%"
+              borderRadius={0}
+              applyEffects={true}
+            />
+          </div>
         </div>
-        <div className="pd-artwork-frame">
-        <BeatArtwork
-          artworkUrl={product.artwork_url}
-          alt={product.title}
-          width="100%"
-          height="100%"
-          borderRadius={0}
-          applyEffects={params?.type === "beat"}
-        />
+      ) : (
+        <div className="pd-artwork is-gallery">
+          {[product.artwork_url, ...(product.extra_artwork_urls || [])].filter(Boolean).map((url, idx) => (
+            <div key={idx} style={{ width: "100%", borderRadius: "6px", overflow: "hidden", border: "1px solid #1a1a1a", flexShrink: 0 }}>
+              <img
+                src={url}
+                alt={idx === 0 ? product.title : `${product.title} — obrázek ${idx + 1}`}
+                style={{ width: "100%", display: "block", objectFit: "contain", background: "#0a0a0a", minHeight: "120px" }}
+                onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
+              />
+            </div>
+          ))}
         </div>
-      </div>
+      )}
 
       {/* Center divider */}
       <div className="pd-divider" />

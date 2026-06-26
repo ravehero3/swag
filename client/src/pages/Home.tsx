@@ -166,7 +166,6 @@ function Home() {
 
   // Determine if we're on home page or beaty page
   const isHomePage = location === "/" || location === "";
-  const beatLimit = isHomePage ? 10 : undefined;
 
   // Parse URL parameters on mount and when location changes
   useEffect(() => {
@@ -579,8 +578,8 @@ function Home() {
     }
   };
 
-  const filteredBeats = beatLimit ? beats.slice(0, beatLimit) : beats;
-  const displayedHighlight = currentBeat ?? highlightedBeat;
+  const filteredBeats = beats;
+  const displayedHighlight = currentBeat ?? highlightedBeat ?? (beats.length > 0 ? beats[0] : null);
   const otherBeats = filteredBeats;
 
   if (beatsLoading) {
@@ -659,7 +658,7 @@ function Home() {
         .comment-avatar-wrap:hover > div:first-child { transform: scale(2); }
         .comment-avatar-wrap .comment-tooltip { opacity: 0; pointer-events: none; transition: opacity 0.15s ease; }
         .comment-avatar-wrap:hover .comment-tooltip { opacity: 1 !important; }
-        .hero-logo-img { width: 66vw; max-width: none; height: auto; object-fit: contain; display: block; }
+        .hero-logo-img { width: 80vw; max-width: none; height: auto; object-fit: contain; display: block; }
         @media (max-width: 1040px) {
           .home-featured-inner { width: calc(100% - 40px) !important; }
         }
@@ -704,7 +703,7 @@ function Home() {
         }
       `}</style>
 
-      <div className="mobile-video-container desktop-main-video" style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "24px", overflow: "hidden", position: "relative", background: "#000", height: "clamp(420px, 64vh, 620px)" }}>
+      <div className="mobile-video-container desktop-main-video" style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "24px", overflow: "hidden", position: "relative", background: "#000", height: "clamp(380px, 56vh, 540px)" }}>
         <video
           ref={videoRef}
           src="/uploads/hrad-na-web.mp4"
@@ -768,7 +767,7 @@ function Home() {
       </div>
       
       <div style={{ padding: "0 20px" }} className="fade-in-grid">
-          <div className="fade-in-section delay-2 home-featured-section" style={{ marginBottom: "16px", display: "flex", justifyContent: "center", marginTop: "-60px", position: "relative", zIndex: 50, minHeight: "330px" }}>
+          <div className="fade-in-section delay-2 home-featured-section" style={{ marginBottom: "16px", display: "flex", justifyContent: "center", marginTop: "-90px", position: "relative", zIndex: 50, minHeight: "280px" }}>
           {displayedHighlight && (
             <div className="home-featured-inner" style={{ display: "flex", gap: "48px", alignItems: "flex-start", marginBottom: "32px", width: "1000px", maxWidth: "100%", position: "relative", zIndex: 50 }}>
               <div style={{ position: "relative", flexShrink: 0 }} className="highlight-artwork-container home-featured-artwork">
@@ -1062,9 +1061,9 @@ function Home() {
           </div>
 
         <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-        {currentBeat && (
+        {displayedHighlight && (
           <>
-            <SoundWave audioRef={audioRef} isPlaying={isPlaying} audioUrl={currentBeat.preview_url} isDraggingComment={!!draggingComment} waveRef={waveRef}>
+            <SoundWave audioRef={audioRef} isPlaying={isPlaying} audioUrl={displayedHighlight.preview_url} isDraggingComment={!!draggingComment} waveRef={waveRef}>
               {comments.slice(0, 20).map((c: any) => {
                 const baseXPct = audioDuration > 0 ? Math.min(98, Math.max(1, (parseFloat(c.time_offset) || 0) / audioDuration * 100)) : 2;
                 const xPct = (draggingComment && draggingComment.id === c.id) ? draggingComment.xPct : baseXPct;
@@ -1197,7 +1196,7 @@ function Home() {
         </div>
 
         {/* Glassmorphism border wrapper — 1px gradient outline that fades dark→grey */}
-        <div ref={beatsListRef} className="scroll-fade-section" style={{
+        <div ref={beatsListRef} style={{
           maxWidth: "1200px",
           margin: "0px auto 48px auto",
           padding: "1px",
@@ -1205,7 +1204,7 @@ function Home() {
           background: "linear-gradient(160deg, rgba(80,80,80,0.22) 0%, rgba(30,30,30,0.08) 40%, rgba(50,50,50,0.14) 100%)",
           boxShadow: "0 0 0 0.5px rgba(0,0,0,0.8), 0 24px 64px rgba(0,0,0,0.45)",
         }}>
-        <div className="home-beats-list" style={{ marginBottom: "0", maxWidth: "none", margin: "0", marginTop: "0", borderRadius: "17px", background: "linear-gradient(160deg, rgba(18,18,18,0.82) 0%, rgba(8,8,8,0.92) 100%)", backdropFilter: "blur(28px)", WebkitBackdropFilter: "blur(28px)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04), inset 0 -1px 0 rgba(0,0,0,0.3)", overflow: "hidden" }}>
+        <div className="home-beats-list" style={{ marginBottom: "0", maxWidth: "none", margin: "0", marginTop: "0", borderRadius: "17px", background: "linear-gradient(160deg, rgba(18,18,18,0.82) 0%, rgba(8,8,8,0.92) 100%)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04), inset 0 -1px 0 rgba(0,0,0,0.3)" }}>
           {otherBeats.length === 0 && !highlightedBeat ? (
             <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "8px" }}>
               {Array(4).fill(null).map((_, index) => (
@@ -1603,7 +1602,7 @@ function Home() {
             </>
           )}
           
-          <div className="fade-in-section delay-3" style={{ display: "flex", justifyContent: "center", gap: "16px", marginTop: "16px", marginBottom: "32px", position: "relative", zIndex: 9999, alignItems: "center", pointerEvents: "auto" }}>
+          {isHomePage && <div className="fade-in-section delay-3" style={{ display: "flex", justifyContent: "center", gap: "16px", marginTop: "16px", marginBottom: "32px", position: "relative", zIndex: 9999, alignItems: "center", pointerEvents: "auto" }}>
               <button
                 data-testid="button-listen-more-beats"
                 onClick={() => setLocation("/beaty")}
@@ -1692,7 +1691,7 @@ function Home() {
                   <polyline points="12 5 19 12 12 19"></polyline>
                 </svg>
               </button>
-          </div>
+          </div>}
         </div>
         </div>{/* end glassmorphism wrapper */}
 
