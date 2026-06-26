@@ -141,6 +141,15 @@ function Beaty() {
   const [beatPlayCounts, setBeatPlayCounts] = useState<Record<number, number>>({});
   const [contractModalBeat, setContractModalBeat] = useState<Beat | null>(null);
   const [downloadingBeat, setDownloadingBeat] = useState<Beat | null>(null);
+  const [showCommentHighlight, setShowCommentHighlight] = useState(false);
+
+  // Helper for generating avatar colors
+  const getAvatarColor = (str: string) => {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    const h = Math.abs(hash) % 360;
+    return `hsl(${h}, 70%, 40%)`;
+  };
 
   const downloadPreview = async (beat: Beat) => {
     if (!beat.preview_url) return;
@@ -221,6 +230,14 @@ function Beaty() {
       if (highlightedData && !highlightedData.error) setHighlightedBeat(highlightedData);
       setBeatsLoading(false);
 
+      if (!currentBeat) {
+        if (highlightedData && !highlightedData.error) {
+          setCurrentBeat(highlightedData);
+        } else if (Array.isArray(beatsData) && beatsData.length > 0) {
+          setCurrentBeat(beatsData[0]);
+        }
+      }
+
       const allBeats = [
         ...(highlightedData && !highlightedData.error ? [highlightedData] : []),
         ...(Array.isArray(beatsData) ? beatsData : []),
@@ -264,6 +281,16 @@ function Beaty() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    let highlightTimer: NodeJS.Timeout;
+    if (isPlaying) {
+      highlightTimer = setTimeout(() => setShowCommentHighlight(true), 4000);
+    } else {
+      setShowCommentHighlight(false);
+    }
+    return () => clearTimeout(highlightTimer);
+  }, [isPlaying]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -617,7 +644,7 @@ function Beaty() {
           </video>
           <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%)", pointerEvents: "none" }} />
           <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none", zIndex: 2 }}>
-            <img src="/uploads/artwork/voodoo808-main-logo.png" alt="VOODOO808" style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }} />
+            <img src="/uploads/artwork/voodoo808-main-logo.png" alt="VOODOO808" style={{ width: "66vw", height: "auto", maxWidth: "none", objectFit: "contain", display: "block" }} />
           </div>
           <div style={{ position: "absolute", bottom: 0, left: 0, width: "100%", height: "166px", background: "linear-gradient(to bottom, rgba(13,13,13,0) 0%, rgba(13,13,13,1) 100%)", pointerEvents: "none", zIndex: 3 }} />
         </div>
@@ -654,6 +681,14 @@ function Beaty() {
           0%,100% { height: 5px; }
           40%     { height: 11px; }
           70%     { height: 2px; }
+        }
+        @keyframes commentGlow {
+          0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.2); border-color: #2a2a2a; }
+          50% { box-shadow: 0 0 20px 4px rgba(255,255,255,0.25); border-color: rgba(255,255,255,0.7); }
+          100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.2); border-color: #2a2a2a; }
+        }
+        .comment-input-highlight {
+          animation: commentGlow 2.5s ease-in-out infinite;
         }
         .beat-eq-bars {
           position: absolute;
@@ -854,7 +889,7 @@ function Beaty() {
           <img
             src="/uploads/artwork/voodoo808-main-logo.png"
             alt="VOODOO808"
-            style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
+            style={{ width: "66vw", height: "auto", maxWidth: "none", objectFit: "contain", display: "block" }}
           />
         </div>
         <div
@@ -872,7 +907,7 @@ function Beaty() {
       </div>
       
       <div style={{ padding: "0 20px" }} className="fade-in-grid">
-          <div className="fade-in-section delay-2 featured-beat-section" style={{ marginBottom: "48px", display: "flex", justifyContent: "center", marginTop: "-116px", position: "relative", zIndex: 50, minHeight: "330px" }}>
+          <div className="fade-in-section delay-2 featured-beat-section" style={{ marginBottom: "24px", display: "flex", justifyContent: "center", marginTop: "-60px", position: "relative", zIndex: 50, minHeight: "280px" }}>
           {displayedHighlight && (
             <div className="featured-beat-inner">
               <div style={{ position: "relative", flexShrink: 0 }} className="highlight-artwork-container featured-beat-artwork">
@@ -1175,11 +1210,11 @@ function Beaty() {
                       className="comment-avatar-wrap"
                       style={{ marginLeft: i > 0 ? "-8px" : 0, zIndex: 10 - i }}
                     >
-                      <div style={{ width: "26px", height: "26px", borderRadius: "50%", background: "#1a1a1a", border: "1.5px solid #333", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", color: "#666", overflow: "hidden", cursor: "pointer" }}>
+                      <div style={{ width: "26px", height: "26px", borderRadius: "50%", background: getAvatarColor(c.username || c.email || "?"), border: "1.5px solid #333", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: "bold", color: "#fff", overflow: "hidden", cursor: "pointer" }}>
                         {c.avatar_url ? (
                           <img src={c.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                         ) : (
-                          <span style={{ fontSize: "10px", color: "#888" }}>{(c.username || c.email)?.[0]?.toUpperCase() || "?"}</span>
+                          <span>{(c.username || c.email)?.[0]?.toUpperCase() || "?"}</span>
                         )}
                       </div>
                       <div className="comment-tooltip" style={{ position: "absolute", bottom: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)", background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "6px", padding: "6px 10px", fontSize: "12px", color: "#ccc", minWidth: "160px", maxWidth: "420px", width: "max-content", wordBreak: "break-word", zIndex: 999, boxShadow: "0 4px 12px rgba(0,0,0,0.5)", whiteSpace: "normal" }}>
@@ -1219,14 +1254,15 @@ function Beaty() {
                         width: "22px",
                         height: "22px",
                         borderRadius: "50%",
-                        background: "#1a1a1a",
-                        border: `1.5px solid ${isOwn ? '#888' : '#444'}`,
+                        background: getAvatarColor(c.username || c.email || "?"),
+                        border: `1.5px solid ${isOwn ? '#fff' : '#888'}`,
                         overflow: "hidden",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        fontSize: "9px",
-                        color: "#888",
+                        fontSize: "11px",
+                        fontWeight: "bold",
+                        color: "#fff",
                         cursor: isOwn ? (draggingCommentId === c.id ? "grabbing" : "grab") : "default",
                         boxShadow: "0 1px 6px rgba(0,0,0,0.7)",
                       }}>
@@ -1244,7 +1280,7 @@ function Beaty() {
           )}
         </div>
 
-        <div ref={beatsListRef} className="scroll-fade-section beat-list" style={{ marginBottom: "48px", maxWidth: "1200px", margin: "0 auto", marginTop: "60px" }}>
+        <div ref={beatsListRef} className="scroll-fade-section beat-list" style={{ marginBottom: "48px", maxWidth: "1200px", margin: "0 auto", marginTop: "20px" }}>
           {beats.length === 0 && !displayedHighlight ? (
             <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "8px" }}>
               {Array(4).fill(null).map((_, index) => (
@@ -1847,7 +1883,8 @@ function Beaty() {
                   disabled={!user || submittingComment}
                   maxLength={200}
                   data-testid="input-beat-comment"
-                  style={{ flex: 1, padding: "8px 16px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "20px", color: "#fff", fontSize: "13px", fontFamily: "inherit", outline: "none" }}
+                  className={showCommentHighlight ? "comment-input-highlight" : ""}
+                  style={{ flex: 1, padding: "8px 16px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "20px", color: "#fff", fontSize: "13px", fontFamily: "inherit", outline: "none", transition: "all 0.3s ease" }}
                 />
                 {user && (
                   <button
@@ -1881,11 +1918,11 @@ function Beaty() {
                       onMouseLeave={() => setHoveredCommentId(null)}
                     >
                       <div style={{ display: "flex", gap: "8px", alignItems: "flex-start" }}>
-                        <div style={{ width: "22px", height: "22px", borderRadius: "50%", background: "#222", border: "1px solid #333", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "9px", color: "#666", overflow: "hidden", marginTop: "2px" }}>
+                        <div style={{ width: "22px", height: "22px", borderRadius: "50%", background: getAvatarColor(c.username || c.email || "?"), border: "1px solid #333", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", fontWeight: "bold", color: "#fff", overflow: "hidden", marginTop: "2px" }}>
                           {c.avatar_url ? (
                             <img src={c.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                           ) : (
-                            (c.username || c.email)?.[0]?.toUpperCase() || "?"
+                            <span>{(c.username || c.email)?.[0]?.toUpperCase() || "?"}</span>
                           )}
                         </div>
                         <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: "2px" }}>
