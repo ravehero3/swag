@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
+import { Music, Image as ImageIcon, Upload } from "lucide-react";
 import { useApp } from "../App.js";
 import { useLocation } from "wouter";
 import {
@@ -1268,7 +1269,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     isDragging, setIsDragging, fileInputRef,
     uploadedUrl, uploadedName,
   }: {
-    type: string; accept: string; label: string; hint: string; icon: string;
+    type: string; accept: string; label: string; hint: string; icon: React.ReactNode;
     onFile: (f: File) => void; isDragging: boolean; setIsDragging: (v: boolean) => void;
     fileInputRef: React.RefObject<HTMLInputElement>; uploadedUrl?: string; uploadedName?: string;
   }) => {
@@ -1337,7 +1338,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
             onClick={() => bulkFileInputRef.current?.click()}
             style={{ border: `1.5px dashed ${isDragOver ? "#0B99FC" : "#2a2a2a"}`, borderRadius: "8px", padding: "32px 24px", textAlign: "center", cursor: "pointer", background: isDragOver ? "rgba(11,153,252,0.05)" : "transparent", transition: "all 0.15s ease", marginBottom: stagedBeats.length > 0 ? "16px" : "0" }}
           >
-            <div style={{ fontSize: "28px", marginBottom: "8px" }}>🎵</div>
+            <Upload size={28} color="#444" style={{ marginBottom: "8px" }} />
             <div style={{ color: "#aaa", fontSize: "13px" }}>Přetáhněte audio soubory nebo klikněte</div>
             <div style={{ color: "#444", fontSize: "11px", marginTop: "4px" }}>MP3, WAV, AIFF, FLAC — více souborů najednou</div>
             <input ref={bulkFileInputRef} type="file" multiple accept="audio/*,.mp3,.wav,.aiff,.flac,.ogg,.m4a" style={{ display: "none" }} onChange={e => { if (e.target.files) handleBulkFiles(e.target.files); e.target.value = ""; }} />
@@ -1483,7 +1484,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                       accept="audio/*,.mp3,.wav,.aiff,.flac,.ogg,.m4a"
                       label="Přetáhněte audio nebo klikněte"
                       hint="MP3, WAV, AIFF, FLAC"
-                      icon="🎵"
+                      icon={<Music size={22} color="#555" />}
                       onFile={async (f) => { const url = await uploadFile(f, "preview"); if (url) setForm(ff => ({ ...ff, previewUrl: url as string })); }}
                       isDragging={isDragPreview}
                       setIsDragging={setIsDragPreview}
@@ -1505,7 +1506,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                       accept="image/*,.heic,.heif"
                       label="Přetáhněte obrázek nebo klikněte"
                       hint="JPG, PNG, HEIC · auto 1500×1500px"
-                      icon="🖼"
+                      icon={<ImageIcon size={22} color="#555" />}
                       onFile={async (f) => { const url = await uploadFile(f, "artwork"); if (url) setForm(ff => ({ ...ff, artworkUrl: url as string })); }}
                       isDragging={isDragArtwork}
                       setIsDragging={setIsDragArtwork}
@@ -1654,7 +1655,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
       {/* ── Beat list ── */}
       {beats.length === 0 ? (
         <div style={{ padding: "48px 24px", textAlign: "center", border: "1px dashed #1e1e1e", borderRadius: "10px" }}>
-          <div style={{ fontSize: "32px", marginBottom: "12px" }}>🎵</div>
+          <Music size={32} color="#333" style={{ marginBottom: "12px" }} />
           <div style={{ color: "#444", fontSize: "14px" }}>Žádné beaty. Přidejte první beat.</div>
         </div>
       ) : (
@@ -4463,7 +4464,7 @@ function IGStoriesTab({ settings, onRefresh }: any) {
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                     <button onClick={() => updateLayer(i, { mode: "text" })} style={modeBtnStyle(layer.mode === "text")}>Aa Text</button>
                     <button onClick={() => fileInputRefs.current[i]?.click()} style={modeBtnStyle(layer.mode === "image")}>
-                      {uploading[i] ? "Nahrávám…" : layer.mode === "image" && layer.imageUrl ? "🖼 Změnit logo" : "🖼 Nahrát logo"}
+                      {uploading[i] ? "Nahrávám…" : layer.mode === "image" && layer.imageUrl ? "Změnit logo" : "Nahrát logo"}
                     </button>
                     <input
                       ref={el => { fileInputRefs.current[i] = el; }}
@@ -4688,7 +4689,7 @@ function IGStoriesTab({ settings, onRefresh }: any) {
                     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                       <button onClick={() => updateZvukyLayer(i, { mode: "text" })} style={modeBtnStyle(layer.mode === "text")}>Aa Text</button>
                       <button onClick={() => zvukyFileInputRefs.current[i]?.click()} style={modeBtnStyle(layer.mode === "image")}>
-                        {zvukyLayerUploading[i] ? "Nahrávám…" : layer.mode === "image" && layer.imageUrl ? "🖼 Změnit logo" : "🖼 Nahrát logo"}
+                        {zvukyLayerUploading[i] ? "Nahrávám…" : layer.mode === "image" && layer.imageUrl ? "Změnit logo" : "Nahrát logo"}
                       </button>
                       <input
                         ref={el => { zvukyFileInputRefs.current[i] = el; }}
