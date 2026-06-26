@@ -484,7 +484,7 @@ function App() {
           <Suspense fallback={<PageLoader />}>
             <Switch>
               <Route path="/" component={Home} />
-              <Route path="/beaty" component={Home} />
+              <Route path="/beaty" component={Beaty} />
               <Route path="/zvuky" component={Zvuky} />
               <Route path="/produkt/:type/:id" component={ProductDetail} />
               <Route path="/prihlasit-se" component={Login} />
