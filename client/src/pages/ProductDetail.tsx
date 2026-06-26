@@ -205,7 +205,7 @@ function ProductDetail() {
           display: flex;
           flex-direction: column;
           padding: 48px 40px;
-          overflow-y: auto;
+          overflow-y: hidden;
           gap: 0;
         }
         @media (max-width: 768px) {

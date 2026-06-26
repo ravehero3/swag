@@ -784,7 +784,7 @@ function Home() {
                     color: #fff; font-size: 20px; cursor: pointer;
                     display: flex; align-items: center; justify-content: center;
                     z-index: 4;
-                    opacity: 0; transform: translate(-50%, -50%) scale(0.82);
+                    opacity: 1; transform: translate(-50%, -50%) scale(1);
                     transition: opacity 0.28s cubic-bezier(0.34,1.56,0.64,1), transform 0.28s cubic-bezier(0.34,1.56,0.64,1);
                   }
                   .highlight-artwork-container:hover .hac-play-overlay {
@@ -796,11 +796,11 @@ function Home() {
                   .hac-blur-ring {
                     position: absolute; top: 50%; left: 50%;
                     width: 66px; height: 66px; border-radius: 50%;
-                    transform: translate(-50%, -50%) scale(0.82); pointer-events: none;
+                    transform: translate(-50%, -50%) scale(1); pointer-events: none;
                     backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
                     -webkit-mask-image: radial-gradient(circle at center, transparent 0%, transparent 28%, rgba(0,0,0,0.2) 40%, rgba(0,0,0,0.7) 60%, black 78%, black 100%);
                     mask-image: radial-gradient(circle at center, transparent 0%, transparent 28%, rgba(0,0,0,0.2) 40%, rgba(0,0,0,0.7) 60%, black 78%, black 100%);
-                    opacity: 0; z-index: 3;
+                    opacity: 1; z-index: 3;
                     transition: opacity 0.28s cubic-bezier(0.34,1.56,0.64,1), transform 0.28s cubic-bezier(0.34,1.56,0.64,1);
                   }
                   .highlight-artwork-container:hover .hac-blur-ring {
