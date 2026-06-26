@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect, useCallback, useMemo } from "react";
 import { getWaveform, preloadWaveform } from "../lib/waveformCache.js";
 
 interface SoundWaveProps {
@@ -20,6 +20,18 @@ function SoundWave({ audioRef, isPlaying, audioUrl, children, isDraggingComment,
   const lastUrlRef = useRef<string>("");
   const isLoadingRef = useRef<boolean>(false);
   const drawRef = useRef<() => void>(() => {});
+
+  const placeholderPeaks = useMemo(() => {
+    const arr: number[] = [];
+    let v = 0.4;
+    for (let i = 0; i < BAR_COUNT; i++) {
+      v += (Math.random() - 0.5) * 0.13;
+      v = Math.max(0.06, Math.min(0.88, v));
+      const wave = 0.22 * Math.sin((i / BAR_COUNT) * Math.PI * 7);
+      arr.push(Math.max(0.04, Math.min(0.94, v + wave)));
+    }
+    return arr;
+  }, []);
 
   const loadWaveform = useCallback(async (url: string) => {
     if (!url || url === lastUrlRef.current) return;
@@ -158,8 +170,8 @@ function SoundWave({ audioRef, isPlaying, audioUrl, children, isDraggingComment,
       return;
     }
 
-    const peaks = peaksRef.current;
-    if (peaks.length === 0) return;
+    const isPlaceholder = peaksRef.current.length === 0;
+    const peaks = isPlaceholder ? placeholderPeaks : peaksRef.current;
 
     const prog = progressRef.current;
     const playheadBar = prog * count;
@@ -171,7 +183,7 @@ function SoundWave({ audioRef, isPlaying, audioUrl, children, isDraggingComment,
       const topAmp = Math.max(peak * topMaxAmp, 1.2);
       const botAmp = Math.max(peak * botMaxAmp, 0.5);
       const isPlayed = i < playheadBar;
-      const isHead = Math.abs(i - playheadBar) < 1.2;
+      const isHead = !isPlaceholder && Math.abs(i - playheadBar) < 1.2;
 
       const topBarY = divY - topAmp;
       const botBarY = divY;
@@ -186,8 +198,12 @@ function SoundWave({ audioRef, isPlaying, audioUrl, children, isDraggingComment,
         }
         cx.fill();
       } else {
-        const topColor = isPlayed ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.28)";
-        const botColor = isPlayed ? "rgba(255,255,255,0.61)" : "rgba(255,255,255,0.13)";
+        const topColor = isPlaceholder
+          ? "rgba(255,255,255,0.13)"
+          : (isPlayed ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.28)");
+        const botColor = isPlaceholder
+          ? "rgba(255,255,255,0.06)"
+          : (isPlayed ? "rgba(255,255,255,0.61)" : "rgba(255,255,255,0.13)");
 
         cx.fillStyle = topColor;
         cx.beginPath();
@@ -258,6 +274,7 @@ function SoundWave({ audioRef, isPlaying, audioUrl, children, isDraggingComment,
       canvas.height = wrap.clientHeight * dpr;
       const ctx = canvas.getContext("2d");
       if (ctx) ctx.scale(dpr, dpr);
+      drawRef.current();
     };
     resize();
     const ro = new ResizeObserver(resize);

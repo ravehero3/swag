@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
 import { toAudioProxyUrl } from "../lib/audioProxy.js";
 import { useApp } from "../App.js";
@@ -123,6 +123,131 @@ const testSoundKits: SoundKit[] = [
   },
 ];
 
+function AuthModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (user: any) => void }) {
+  const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      const endpoint = isLogin ? "/api/auth/login" : "/api/auth/register";
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Chyba");
+      onSuccess(data.user);
+      onClose();
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [isLogin, email, password, onSuccess, onClose]);
+
+  return (
+    <div
+      style={{ position: "fixed", inset: 0, zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center" }}
+      onClick={onClose}
+    >
+      <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }} />
+      <div
+        style={{ position: "relative", zIndex: 1, maxWidth: "360px", width: "calc(100% - 32px)", padding: "32px 28px 24px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.10)", background: "rgba(10,10,10,0.92)", backdropFilter: "blur(32px)", WebkitBackdropFilter: "blur(32px)", boxShadow: "0 32px 80px rgba(0,0,0,0.8)" }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={onClose}
+          style={{ position: "absolute", top: "12px", right: "14px", background: "none", border: "none", color: "#555", fontSize: "20px", cursor: "pointer", lineHeight: 1, padding: "4px", borderRadius: "4px" }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "#aaa")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "#555")}
+        >×</button>
+
+        <h2 style={{ marginBottom: "20px", textAlign: "center", fontSize: "18px", fontWeight: 400, letterSpacing: "0.02em" }}>
+          {isLogin ? "Přihlásit se" : "Registrace"}
+        </h2>
+
+        {error && (
+          <div style={{ color: "#e55", marginBottom: "14px", padding: "10px 12px", border: "1px solid rgba(220,60,60,0.4)", borderRadius: "6px", fontSize: "13px", textAlign: "center" }}>
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: "12px" }}>
+            <label style={{ display: "block", marginBottom: "4px", fontSize: "11px", color: "#666", letterSpacing: "0.05em", textTransform: "uppercase" }}>Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoFocus
+              style={{ width: "100%", padding: "9px 12px", borderRadius: "6px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.10)", color: "#fff", fontSize: "14px", outline: "none", boxSizing: "border-box" }}
+            />
+          </div>
+          <div style={{ marginBottom: "18px" }}>
+            <label style={{ display: "block", marginBottom: "4px", fontSize: "11px", color: "#666", letterSpacing: "0.05em", textTransform: "uppercase" }}>Heslo</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              style={{ width: "100%", padding: "9px 12px", borderRadius: "6px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.10)", color: "#fff", fontSize: "14px", outline: "none", boxSizing: "border-box" }}
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            style={{ width: "100%", padding: "10px", borderRadius: "6px", background: "#fff", color: "#000", border: "none", fontSize: "14px", fontWeight: 500, cursor: loading ? "not-allowed" : "pointer", marginBottom: "10px", transition: "opacity 0.15s", opacity: loading ? 0.6 : 1 }}
+          >
+            {loading ? "..." : isLogin ? "Přihlásit se" : "Registrovat"}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => window.location.href = "/api/auth/google"}
+            style={{ width: "100%", padding: "10px", borderRadius: "6px", background: "#fff", color: "#000", border: "none", fontSize: "14px", fontWeight: 400, cursor: "pointer", marginBottom: "16px", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px" }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" />
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+            </svg>
+            Přihlásit přes Google
+          </button>
+
+          {isLogin && (
+            <div style={{ textAlign: "right", marginBottom: "4px", marginTop: "-10px" }}>
+              <a href="/zapomenute-heslo" style={{ color: "#444", fontSize: "12px", textDecoration: "none" }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "#888")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "#444")}
+              >Zapomenuté heslo?</a>
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={() => setIsLogin(!isLogin)}
+            style={{ background: "transparent", border: "none", color: "#555", width: "100%", textDecoration: "underline", padding: "6px 0 0", cursor: "pointer", fontSize: "13px", display: "block", textAlign: "center" }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "#999")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "#555")}
+          >
+            {isLogin ? "Nemáte účet? Registrujte se" : "Už máte účet? Přihlaste se"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
 
 function Home() {
   const [location, setLocation] = useLocation();
@@ -151,6 +276,7 @@ function Home() {
   const commentNudgeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [usernameInput, setUsernameInput] = useState("");
   const [savingUsername, setSavingUsername] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const waveRef = useRef<HTMLDivElement>(null);
   const commentTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastTriggeredCommentRef = useRef<number | null>(null);
@@ -719,7 +845,7 @@ function Home() {
           Your browser does not support the video tag.
         </video>
         <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", top: "242px", left: 0, right: 0, display: "flex", justifyContent: "center", pointerEvents: "none", zIndex: 2 }}>
+        <div style={{ position: "absolute", top: 0, bottom: "80px", left: 0, right: 0, paddingTop: "44px", display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none", zIndex: 2 }}>
           <img
             src="/uploads/artwork/voodoo808-main-logo.png"
             alt="VOODOO808"
@@ -1160,17 +1286,18 @@ function Home() {
                     {user.avatarUrl ? <img src={user.avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : ((user.email || "?")[0]).toUpperCase()}
                   </div>
                 )}
-                <div className={`comment-nudge-wrap${commentNudge ? " active" : ""}`}>
+                <div className={`comment-nudge-wrap${commentNudge ? " active" : ""}`} onClick={!user ? () => setShowAuthModal(true) : undefined} style={!user ? { cursor: "pointer" } : undefined}>
                   {commentNudge && <span className="comment-nudge-label">dej koment bro ↓</span>}
                   <input
                     type="text"
                     value={commentText}
                     onChange={(e) => setCommentText(e.target.value)}
                     onKeyDown={(e) => { if (e.key === "Enter") handleCommentSubmit(); }}
-                    placeholder={user ? "dej koment bro…" : "Pro komentáře se přihlaste"}
+                    placeholder={user ? "dej koment bro…" : "Pro komentáře se přihlaste →"}
                     disabled={!user || submittingComment}
                     maxLength={200}
-                    style={{ width: "100%", padding: "8px 16px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "20px", color: "#fff", fontSize: "13px", fontFamily: "inherit", outline: "none", boxSizing: "border-box" }}
+                    onClick={!user ? (e) => { e.preventDefault(); setShowAuthModal(true); } : undefined}
+                    style={{ width: "100%", padding: "8px 16px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "20px", color: "#fff", fontSize: "13px", fontFamily: "inherit", outline: "none", boxSizing: "border-box", cursor: !user ? "pointer" : "text" }}
                   />
                 </div>
                 {user && (
@@ -1238,7 +1365,7 @@ function Home() {
                 <div style={{ width: "48px", flexShrink: 0 }} />
                 {/* NÁZEV — matches title column */}
                 <div className="home-beat-header-title" style={{ width: "240px", minWidth: "240px", maxWidth: "240px", flexShrink: 0, marginRight: "12px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666" }}>NÁZEV</div>
-                <div className="home-beat-header-separator" style={{ position: "absolute", bottom: 0, left: "80px", right: "16px", height: "1px", background: "#333" }} />
+                <div className="home-beat-header-separator" style={{ position: "absolute", bottom: 0, left: "16px", right: "16px", height: "1px", background: "rgba(255,255,255,0.07)" }} />
                 {/* BPM — matches beat bpm column */}
                 <div className="desktop-only" style={{ width: "100px", flexShrink: 0 }}><button onClick={() => { if (sortBy === "bpm") { setSortAsc(a => !a); } else { setSortBy("bpm"); setSortAsc(true); } }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: sortBy === "bpm" ? "#fff" : "#666", cursor: "pointer", padding: 0, textAlign: "left", width: "100%" }}>BPM {sortBy === "bpm" ? (sortAsc ? "↑" : "↓") : ""}</button></div>
                 {/* KEY — matches beat key column */}
@@ -1286,7 +1413,7 @@ function Home() {
                 if (separator) separator.style.opacity = "1";
               }}
             >
-              <div data-separator className="home-beat-row-separator" style={{ position: "absolute", bottom: 0, left: "144px", right: "16px", height: "1px", background: "#333", opacity: 1, transition: "opacity 0.15s ease" }} />
+              <div data-separator className="home-beat-row-separator" style={{ position: "absolute", bottom: 0, left: "16px", right: "16px", height: "1px", background: "rgba(255,255,255,0.06)", opacity: 1, transition: "opacity 0.15s ease" }} />
               <div className="mobile-hide" style={{ position: "relative", display: "flex", alignItems: "center", gap: "16px", marginRight: "-4px" }}>
                 <button
                   onClick={(e) => {
@@ -1701,6 +1828,13 @@ function Home() {
 
       </div>
 
+
+      {showAuthModal && (
+        <AuthModal
+          onClose={() => setShowAuthModal(false)}
+          onSuccess={(u) => { setUser(u); setShowAuthModal(false); }}
+        />
+      )}
 
       {contractModalBeat && (
         <ContractModal
