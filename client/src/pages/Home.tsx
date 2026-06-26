@@ -204,10 +204,13 @@ function Home() {
       }
       if (highlightedData && !highlightedData.error) {
         setHighlightedBeat(highlightedData);
+        setCurrentBeat(highlightedData);
         if (highlightedData.artwork_url) {
           const img = new Image();
           img.src = highlightedData.artwork_url;
         }
+      } else if (beatsData && Array.isArray(beatsData) && beatsData.length > 0) {
+        setCurrentBeat(beatsData[0]);
       }
       setBeatsLoading(false);
     });
@@ -455,10 +458,9 @@ function Home() {
   }, [isPlaying, currentBeat?.id]);
 
   const getAvatarBg = (str: string) => {
-    const palette = ["#1b3a52","#2b1a45","#0d3b28","#3d2210","#1d3d52","#2d1a35"];
-    let h = 0;
-    for (let i = 0; i < str.length; i++) h = str.charCodeAt(i) + ((h << 5) - h);
-    return palette[Math.abs(h) % palette.length];
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    return `hsl(${Math.abs(hash) % 360}, 75%, 45%)`;
   };
 
   const openContractModal = (beat: Beat) => {
@@ -657,7 +659,7 @@ function Home() {
         .comment-avatar-wrap:hover > div:first-child { transform: scale(2); }
         .comment-avatar-wrap .comment-tooltip { opacity: 0; pointer-events: none; transition: opacity 0.15s ease; }
         .comment-avatar-wrap:hover .comment-tooltip { opacity: 1 !important; }
-        .hero-logo-img { width: min(1750px, calc(100vw - 40px)); height: auto; object-fit: contain; display: block; }
+        .hero-logo-img { width: 66vw; max-width: none; height: auto; object-fit: contain; display: block; }
         @media (max-width: 1040px) {
           .home-featured-inner { width: calc(100% - 40px) !important; }
         }
@@ -766,7 +768,7 @@ function Home() {
       </div>
       
       <div style={{ padding: "0 20px" }} className="fade-in-grid">
-          <div className="fade-in-section delay-2 home-featured-section" style={{ marginBottom: "48px", display: "flex", justifyContent: "center", marginTop: "-116px", position: "relative", zIndex: 50, minHeight: "330px" }}>
+          <div className="fade-in-section delay-2 home-featured-section" style={{ marginBottom: "16px", display: "flex", justifyContent: "center", marginTop: "-60px", position: "relative", zIndex: 50, minHeight: "330px" }}>
           {displayedHighlight && (
             <div className="home-featured-inner" style={{ display: "flex", gap: "48px", alignItems: "flex-start", marginBottom: "32px", width: "1000px", maxWidth: "100%", position: "relative", zIndex: 50 }}>
               <div style={{ position: "relative", flexShrink: 0 }} className="highlight-artwork-container home-featured-artwork">
@@ -1197,7 +1199,7 @@ function Home() {
         {/* Glassmorphism border wrapper — 1px gradient outline that fades dark→grey */}
         <div ref={beatsListRef} className="scroll-fade-section" style={{
           maxWidth: "1200px",
-          margin: "20px auto 48px auto",
+          margin: "0px auto 48px auto",
           padding: "1px",
           borderRadius: "18px",
           background: "linear-gradient(160deg, rgba(80,80,80,0.22) 0%, rgba(30,30,30,0.08) 40%, rgba(50,50,50,0.14) 100%)",

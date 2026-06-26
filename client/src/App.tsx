@@ -11,7 +11,6 @@ import MusicPlayer from "./components/MusicPlayer.js";
 import "./styles/global.css";
 
 const Home = lazy(() => import("./pages/Home.js"));
-const Beaty = lazy(() => import("./pages/Beaty.js"));
 const Zvuky = lazy(() => import("./pages/Zvuky.js"));
 const ProductDetail = lazy(() => import("./pages/ProductDetail.js"));
 const Login = lazy(() => import("./pages/Login.js"));
@@ -484,7 +483,7 @@ function App() {
           <Suspense fallback={<PageLoader />}>
             <Switch>
               <Route path="/" component={Home} />
-              <Route path="/beaty" component={Beaty} />
+              <Route path="/beaty" component={Home} />
               <Route path="/zvuky" component={Zvuky} />
               <Route path="/produkt/:type/:id" component={ProductDetail} />
               <Route path="/prihlasit-se" component={Login} />
