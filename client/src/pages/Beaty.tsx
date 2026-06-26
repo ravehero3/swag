@@ -141,6 +141,7 @@ function Beaty() {
   const [beatPlayCounts, setBeatPlayCounts] = useState<Record<number, number>>({});
   const [contractModalBeat, setContractModalBeat] = useState<Beat | null>(null);
   const [downloadingBeat, setDownloadingBeat] = useState<Beat | null>(null);
+  const [showCommentHighlight, setShowCommentHighlight] = useState(false);
 
   const downloadPreview = async (beat: Beat) => {
     if (!beat.preview_url) return;
@@ -223,6 +224,14 @@ function Beaty() {
       if (highlightedData && !highlightedData.error) setHighlightedBeat(highlightedData);
       setBeatsLoading(false);
 
+      if (!currentBeat) {
+        if (highlightedData && !highlightedData.error) {
+          setCurrentBeat(highlightedData);
+        } else if (Array.isArray(beatsData) && beatsData.length > 0) {
+          setCurrentBeat(beatsData[0]);
+        }
+      }
+
       const allBeats = [
         ...(highlightedData && !highlightedData.error ? [highlightedData] : []),
         ...(Array.isArray(beatsData) ? beatsData : []),
@@ -266,6 +275,16 @@ function Beaty() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    let highlightTimer: NodeJS.Timeout;
+    if (isPlaying) {
+      highlightTimer = setTimeout(() => setShowCommentHighlight(true), 4000);
+    } else {
+      setShowCommentHighlight(false);
+    }
+    return () => clearTimeout(highlightTimer);
+  }, [isPlaying]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -639,7 +658,7 @@ function Beaty() {
           </video>
           <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%)", pointerEvents: "none" }} />
           <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "flex-start", justifyContent: "center", paddingTop: "6%", pointerEvents: "none", zIndex: 2 }}>
-            <img src="/uploads/artwork/voodoo808-main-logo.png" alt="VOODOO808" style={{ width: "100%", height: "auto", objectFit: "contain", display: "block" }} />
+            <img src="/uploads/artwork/voodoo808-main-logo.png" alt="VOODOO808" style={{ width: "66vw", height: "auto", maxWidth: "none", objectFit: "contain", display: "block" }} />
           </div>
           <div style={{ position: "absolute", bottom: 0, left: 0, width: "100%", height: "166px", background: "linear-gradient(to bottom, rgba(13,13,13,0) 0%, rgba(13,13,13,1) 100%)", pointerEvents: "none", zIndex: 3 }} />
         </div>
@@ -703,6 +722,14 @@ function Beaty() {
           0%,100% { height: 5px; }
           40%     { height: 11px; }
           70%     { height: 2px; }
+        }
+        @keyframes commentGlow {
+          0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.2); border-color: #2a2a2a; }
+          50% { box-shadow: 0 0 20px 4px rgba(255,255,255,0.25); border-color: rgba(255,255,255,0.7); }
+          100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.2); border-color: #2a2a2a; }
+        }
+        .comment-input-highlight {
+          animation: commentGlow 2.5s ease-in-out infinite;
         }
         .beat-eq-bars {
           position: absolute;
@@ -914,7 +941,7 @@ function Beaty() {
       </div>
       
       <div style={{ padding: "0 20px", paddingBottom: currentBeat ? "calc(84px + env(safe-area-inset-bottom) + 20px)" : "20px", transition: "padding-bottom 0.3s ease" }} className="fade-in-grid">
-          <div className="fade-in-section delay-2 featured-beat-section" style={{ marginBottom: "8px", display: "flex", justifyContent: "center", marginTop: "-116px", position: "relative", zIndex: 50, minHeight: "330px" }}>
+          <div className="fade-in-section delay-2 featured-beat-section" style={{ marginBottom: "8px", display: "flex", justifyContent: "center", marginTop: "-60px", position: "relative", zIndex: 50, minHeight: "280px" }}>
           {displayedHighlight && (
             <div className="featured-beat-inner">
               <div style={{ position: "relative", flexShrink: 0 }} className="highlight-artwork-container featured-beat-artwork">
@@ -1902,8 +1929,8 @@ function Beaty() {
                     placeholder={user ? "dej koment bro…" : "Pro komentáře se přihlaste"}
                     disabled={!user || submittingComment}
                     maxLength={200}
-                    data-testid="input-beat-comment"
-                    style={{ width: "100%", padding: "8px 16px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "20px", color: "#fff", fontSize: "13px", fontFamily: "inherit", outline: "none", boxSizing: "border-box" }}
+                    className={showCommentHighlight ? "comment-input-highlight" : ""}
+                    style={{ flex: 1, padding: "8px 16px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "20px", color: "#fff", fontSize: "13px", fontFamily: "inherit", outline: "none", transition: "all 0.3s ease" }}
                   />
                 </div>
                 {user && (
