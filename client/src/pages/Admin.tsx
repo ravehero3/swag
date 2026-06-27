@@ -318,24 +318,50 @@ function Admin() {
     );
   }
 
-  return (
-    <div className="fade-in admin-container" style={{ maxWidth: "800px", margin: "0 auto", textAlign: "center" }}>
-      <h1 style={{ marginBottom: "24px", color: "#666" }}>Admin Panel</h1>
+  const TAB_LABELS: Record<string, string> = {
+    orders: "Objednávky", beats: "Beaty", kits: "Zvuky", zakaznici: "Zákazníci",
+    licenses: "Licence", emails: "Emaily", promo: "Promo", slevy: "Slevy",
+    seo: "SEO", ig_stories: "IG Stories", komentare: "Komentáře",
+    artworks: "Artworks", konfigurace: "Konfigurace",
+  };
 
-      <div style={{ display: "flex", gap: "12px", marginBottom: "24px", flexWrap: "wrap", justifyContent: "center" }}>
-        {["beats", "kits", "orders", "zakaznici", "licenses", "emails", "promo", "slevy", "seo", "ig_stories", "komentare", "artworks", "konfigurace"].map((t) => (
+  return (
+    <div className="fade-in" style={{ maxWidth: "1100px", margin: "0 auto", padding: "0 24px 64px" }}>
+      {/* Minimal header */}
+      <div style={{ padding: "28px 0 0", marginBottom: "4px" }}>
+        <span style={{ fontSize: "11px", fontWeight: 600, color: "#333", letterSpacing: "0.12em", textTransform: "uppercase" }}>Admin</span>
+      </div>
+
+      {/* Horizontal underline tab bar */}
+      <div style={{ display: "flex", borderBottom: "1px solid #1a1a1a", marginBottom: "32px", overflowX: "auto", scrollbarWidth: "none" }}>
+        {["orders", "beats", "kits", "zakaznici", "licenses", "emails", "promo", "slevy", "seo", "ig_stories", "komentare", "artworks", "konfigurace"].map((t) => (
           <button
             key={t}
-            className={tab === t ? "btn btn-filled" : "btn btn-admin"}
+            data-testid={`tab-${t}`}
             onClick={() => setTab(t as any)}
-            style={tab !== t ? { borderColor: "#333", color: "#666" } : {}}
+            style={{
+              background: "none",
+              border: "none",
+              borderBottom: tab === t ? "2px solid #fff" : "2px solid transparent",
+              color: tab === t ? "#fff" : "#555",
+              padding: "12px 14px",
+              fontSize: "13px",
+              fontWeight: tab === t ? 500 : 400,
+              cursor: "pointer",
+              whiteSpace: "nowrap",
+              marginBottom: "-1px",
+              transition: "color 0.15s, border-color 0.15s",
+              fontFamily: "inherit",
+            }}
+            onMouseEnter={e => { if (tab !== t) (e.currentTarget as HTMLButtonElement).style.color = "#999"; }}
+            onMouseLeave={e => { if (tab !== t) (e.currentTarget as HTMLButtonElement).style.color = "#555"; }}
           >
-            {t === "beats" ? "Beaty" : t === "kits" ? "Zvuky" : t === "orders" ? "Objednávky" : t === "zakaznici" ? "Zákazníci" : t === "licenses" ? "Licence" : t === "emails" ? "Emaily" : t === "promo" ? "Promo kódy" : t === "slevy" ? "Slevy 💸" : t === "komentare" ? "Komentáře" : t === "ig_stories" ? "IG Stories" : t === "artworks" ? "Artworks" : t === "konfigurace" ? "⚙ Konfigurace" : "SEO"}
+            {TAB_LABELS[t]}
           </button>
         ))}
       </div>
 
-      <div style={{ textAlign: "left" }}>
+      <div>
         {tab === "beats" && (
           <BeatsTab
             beats={beats}
