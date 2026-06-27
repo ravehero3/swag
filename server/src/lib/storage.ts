@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand, GetObjectCommand, ListObjectsV2Command, PutBucketCorsCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand, ListObjectsV2Command, PutBucketCorsCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import type { Readable } from "stream";
 
@@ -170,6 +170,52 @@ export async function generateDownloadUrl(bucket: string, key: string, expiresIn
   } catch (error) {
     console.error(`Download URL generation error for ${bucket}/${key}:`, error);
     throw error;
+  }
+}
+
+/**
+ * Deletes a file from R2/B2 given its public URL.
+ * Silently skips Google Drive links, local /uploads/ paths, and unrecognised URLs.
+ */
+export async function deleteStorageFile(publicUrl: string): Promise<void> {
+  if (!publicUrl || !publicUrl.startsWith("http")) return;
+  // Skip Google Drive and other non-storage URLs
+  if (publicUrl.includes("drive.google.com") || publicUrl.includes("docs.google.com")) return;
+
+  let bucket: string | undefined;
+  let key: string | undefined;
+
+  // Try R2 public base URL
+  if (R2_IS_ENABLED && R2_PUBLIC_BASE_URL) {
+    const base = R2_PUBLIC_BASE_URL.replace(/\/$/, "");
+    if (publicUrl.startsWith(base + "/")) {
+      key = publicUrl.slice(base.length + 1);
+      if (key.startsWith("artwork/")) bucket = resolvedArtworkBucket;
+      else if (key.startsWith("previews/")) bucket = resolvedPreviewBucket;
+      else bucket = R2_PREVIEW_BUCKET || R2_BUCKET || undefined;
+    }
+  }
+
+  // Try B2 public base URL (fallback)
+  if (!bucket && B2_PUBLIC_BASE_URL) {
+    const base = B2_PUBLIC_BASE_URL.replace(/\/$/, "");
+    if (publicUrl.startsWith(base + "/")) {
+      key = publicUrl.slice(base.length + 1);
+      bucket = B2_PREVIEW_BUCKET || undefined;
+    }
+  }
+
+  if (!bucket || !key) {
+    console.log(`deleteStorageFile: cannot resolve bucket/key for URL — skipping: ${publicUrl}`);
+    return;
+  }
+
+  try {
+    await clientFor(bucket).send(new DeleteObjectCommand({ Bucket: bucket, Key: key }));
+    console.log(`Deleted from storage: ${bucket}/${key}`);
+  } catch (err) {
+    // Don't throw — a storage deletion failure should never block the DB cleanup
+    console.warn(`Failed to delete ${bucket}/${key} from storage:`, (err as Error).message);
   }
 }
 

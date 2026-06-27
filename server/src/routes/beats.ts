@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { pool } from "../db.js";
 import { requireAdmin, requireAuth } from "../middleware/auth.js";
-import { generateDownloadUrl, STORAGE_BUCKETS } from "../lib/storage.js";
+import { generateDownloadUrl, STORAGE_BUCKETS, deleteStorageFile } from "../lib/storage.js";
 import { computeWaveformFromUrl } from "../lib/waveform.js";
 
 async function triggerWaveformComputation(beatId: number, previewUrl: string) {
@@ -225,6 +225,14 @@ router.put("/:id", requireAdmin, async (req: Request, res: Response) => {
 
 router.delete("/:id", requireAdmin, async (req: Request, res: Response) => {
   try {
+    const fetch = await pool.query("SELECT artwork_url, preview_url FROM beats WHERE id = $1", [req.params.id]);
+    if (fetch.rows.length > 0) {
+      const { artwork_url, preview_url } = fetch.rows[0];
+      await Promise.all([
+        deleteStorageFile(artwork_url),
+        deleteStorageFile(preview_url),
+      ]);
+    }
     await pool.query("DELETE FROM beats WHERE id = $1", [req.params.id]);
     res.json({ message: "Beat smazán" });
   } catch (error) {
@@ -306,6 +314,11 @@ router.post("/bulk-delete", requireAdmin, async (req: Request, res: Response) =>
     if (!Array.isArray(ids) || ids.length === 0) {
       return res.status(400).json({ error: "Musíte vybrat alespoň jeden beat" });
     }
+    const rows = await pool.query("SELECT artwork_url, preview_url FROM beats WHERE id = ANY($1)", [ids]);
+    await Promise.all(rows.rows.flatMap((r: any) => [
+      deleteStorageFile(r.artwork_url),
+      deleteStorageFile(r.preview_url),
+    ]));
     await pool.query("DELETE FROM beats WHERE id = ANY($1)", [ids]);
     res.json({ message: `${ids.length} beatů smazáno` });
   } catch (error) {

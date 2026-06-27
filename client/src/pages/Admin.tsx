@@ -3638,7 +3638,6 @@ function SEOTab({ settings, onRefresh }: any) {
   const [videoUploading, setVideoUploading] = useState<Record<string, boolean>>({});
   const [videoUploadProgress, setVideoUploadProgress] = useState<Record<string, number>>({});
   const [videoUploadError, setVideoUploadError] = useState<Record<string, string>>({});
-  const [b2VideoPickerFor, setB2VideoPickerFor] = useState<string | null>(null);
   const homeVideoInputRef = useRef<HTMLInputElement>(null);
   const beatyVideoInputRef = useRef<HTMLInputElement>(null);
   const zvukyVideoInputRef = useRef<HTMLInputElement>(null);
@@ -3742,14 +3741,6 @@ function SEOTab({ settings, onRefresh }: any) {
         >
           {videoUploading[field] ? `${videoUploadProgress[field] ?? 0}%` : "Nahrát"}
         </button>
-        <button
-          type="button"
-          onClick={() => setB2VideoPickerFor(field)}
-          style={{ background: "#1a1a1a", border: "1px solid #2a2a2a", color: "#aaa", padding: "0 10px", fontSize: "11px", borderRadius: "3px", cursor: "pointer", whiteSpace: "nowrap" }}
-          data-testid={`button-b2-${field}`}
-        >
-          Knihovna B2
-        </button>
       </div>
       {videoUploading[field] && (
         <div style={{ height: "4px", background: "#1b1b1b", borderRadius: "999px", overflow: "hidden", marginBottom: "6px" }}>
@@ -3767,15 +3758,6 @@ function SEOTab({ settings, onRefresh }: any) {
 
   return (
     <div>
-      {b2VideoPickerFor && (
-        <B2VideoPickerModal
-          onSelect={(url) => { handleChange(b2VideoPickerFor, url); setB2VideoPickerFor(null); }}
-          onClose={() => setB2VideoPickerFor(null)}
-        />
-      )}
-
-      {/* Video uploads removed — videos are served directly from public/uploads/ */}
-
       <div style={{ fontSize: "12px", color: "#555", lineHeight: "1.7", marginBottom: "24px", padding: "14px", border: "1px solid #1a1a1a", borderRadius: "3px", background: "#111111" }}>
         Zde nastavíš, jak se tvůj web zobrazuje ve výsledcích Google. Titulek a popis vidí zákazník dřív než klikne na stránku — dobře napsané SEO přivede víc návštěvníků.
       </div>

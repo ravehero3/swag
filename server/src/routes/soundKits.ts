@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { pool } from "../db.js";
 import { requireAdmin, requireAuth } from "../middleware/auth.js";
-import { generateDownloadUrl, STORAGE_BUCKETS } from "../lib/storage.js";
+import { generateDownloadUrl, STORAGE_BUCKETS, deleteStorageFile } from "../lib/storage.js";
 import { computeWaveformFromUrl } from "../lib/waveform.js";
 
 const router = Router();
@@ -176,6 +176,17 @@ router.post("/:id/recompute-waveform", requireAdmin, async (req: Request, res: R
 
 router.delete("/:id", requireAdmin, async (req: Request, res: Response) => {
   try {
+    const fetch = await pool.query("SELECT artwork_url, preview_url, preview_urls, extra_artwork_urls FROM sound_kits WHERE id = $1", [req.params.id]);
+    if (fetch.rows.length > 0) {
+      const { artwork_url, preview_url, preview_urls, extra_artwork_urls } = fetch.rows[0];
+      const allUrls: string[] = [
+        artwork_url,
+        preview_url,
+        ...(Array.isArray(preview_urls) ? preview_urls : []),
+        ...(Array.isArray(extra_artwork_urls) ? extra_artwork_urls : []),
+      ].filter(Boolean);
+      await Promise.all(allUrls.map(deleteStorageFile));
+    }
     await pool.query("DELETE FROM sound_kits WHERE id = $1", [req.params.id]);
     res.json({ message: "Kit smazán" });
   } catch (error) {
@@ -189,6 +200,14 @@ router.post("/bulk-delete", requireAdmin, async (req: Request, res: Response) =>
     if (!Array.isArray(ids) || ids.length === 0) {
       return res.status(400).json({ error: "Musíte vybrat alespoň jeden kit" });
     }
+    const rows = await pool.query("SELECT artwork_url, preview_url, preview_urls, extra_artwork_urls FROM sound_kits WHERE id = ANY($1)", [ids]);
+    const allUrls: string[] = rows.rows.flatMap((r: any) => [
+      r.artwork_url,
+      r.preview_url,
+      ...(Array.isArray(r.preview_urls) ? r.preview_urls : []),
+      ...(Array.isArray(r.extra_artwork_urls) ? r.extra_artwork_urls : []),
+    ]).filter(Boolean);
+    await Promise.all(allUrls.map(deleteStorageFile));
     await pool.query("DELETE FROM sound_kits WHERE id = ANY($1)", [ids]);
     res.json({ message: `${ids.length} kitů smazáno` });
   } catch (error) {
