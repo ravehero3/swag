@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
 import { toAudioProxyUrl } from "../lib/audioProxy.js";
+import { seedWaveformCache } from "../lib/waveformCache.js";
 import { useApp } from "../App.js";
 import { useScrollAnimation } from "../hooks/useScrollAnimation.js";
 import { useSEO } from "../hooks/useSEO.js";
@@ -319,11 +320,14 @@ function Home() {
     ]).then(([beatsData, highlightedData]) => {
       if (Array.isArray(beatsData)) {
         setBeats(beatsData);
-        // Preload beat artwork images
+        // Preload beat artwork images + seed waveform cache from stored data
         beatsData.forEach((beat) => {
           if (beat.artwork_url) {
             const img = new Image();
             img.src = beat.artwork_url;
+          }
+          if (beat.preview_url && beat.waveform_data && Array.isArray(beat.waveform_data)) {
+            seedWaveformCache(beat.preview_url, beat.waveform_data);
           }
         });
       }
@@ -333,6 +337,10 @@ function Home() {
         if (highlightedData.artwork_url) {
           const img = new Image();
           img.src = highlightedData.artwork_url;
+        }
+        // Seed waveform cache for featured track immediately
+        if (highlightedData.preview_url && highlightedData.waveform_data && Array.isArray(highlightedData.waveform_data)) {
+          seedWaveformCache(highlightedData.preview_url, highlightedData.waveform_data);
         }
       } else if (beatsData && Array.isArray(beatsData) && beatsData.length > 0) {
         setCurrentBeat(beatsData[0]);

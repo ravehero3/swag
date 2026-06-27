@@ -329,16 +329,13 @@ router.post("/", requireAdmin, upload.single("file"), async (req: Request, res: 
   const ext = req.file.originalname.split('.').pop()?.toLowerCase() || 'zip';
   let key = `${uuidv4()}.${ext}`;
 
-  // Artwork: resize/normalise with Sharp then save directly to public/uploads/artwork/
-  // No cloud storage — files are committed to git and served by Express.
+  // Artwork: resize/normalise with Sharp then upload to R2
   if (type === "artwork") {
     try {
-      const artworkDir = path.join(process.cwd(), "public/uploads/artwork");
-      if (!fs.existsSync(artworkDir)) fs.mkdirSync(artworkDir, { recursive: true });
-
       const isImage = (req.file.mimetype || "").startsWith("image/");
       let bodyBuffer: Buffer;
       let outExt = "jpg";
+      let contentType = "image/jpeg";
 
       if (isImage) {
         const isHeic = /\.hei[cf]$/i.test(req.file.originalname) ||
@@ -362,23 +359,26 @@ router.post("/", requireAdmin, upload.single("file"), async (req: Request, res: 
         if (hasAlpha) {
           bodyBuffer = await resized.png({ compressionLevel: 9, adaptiveFiltering: true }).toBuffer();
           outExt = "png";
+          contentType = "image/png";
         } else {
           bodyBuffer = await resized.jpeg({ quality: 88, mozjpeg: true }).toBuffer();
           outExt = "jpg";
+          contentType = "image/jpeg";
         }
       } else {
         bodyBuffer = fs.readFileSync(req.file.path);
         outExt = ext;
+        contentType = req.file.mimetype || "application/octet-stream";
       }
 
       fs.unlinkSync(req.file.path);
-      const filename = `${uuidv4()}.${outExt}`;
-      const dest = path.join(artworkDir, filename);
-      fs.writeFileSync(dest, bodyBuffer);
+      const filename = `artwork/${uuidv4()}.${outExt}`;
 
-      const url = `/uploads/artwork/${filename}`;
+      await uploadFile(STORAGE_BUCKETS.ARTWORK, filename, bodyBuffer, contentType);
+      const url = getPublicUrl(STORAGE_BUCKETS.ARTWORK, filename);
+
       res.json({ url, filename, size: bodyBuffer.length });
-      console.log(`✅ artwork saved locally: ${dest}`);
+      console.log(`✅ artwork uploaded to R2: ${url}`);
       return;
     } catch (error) {
       if (req.file.path && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
@@ -388,25 +388,23 @@ router.post("/", requireAdmin, upload.single("file"), async (req: Request, res: 
     }
   }
 
-  // Preview audio: save directly to public/uploads/previews/
-  // No cloud storage — files committed to git, served by Express.
+  // Preview audio: upload to R2 (previews bucket)
   if (type === "preview") {
     try {
-      const previewDir = path.join(process.cwd(), "public/uploads/previews");
-      if (!fs.existsSync(previewDir)) fs.mkdirSync(previewDir, { recursive: true });
-
       const origExt = path.extname(req.file.originalname).toLowerCase() || `.${ext}`;
       const base = path.basename(req.file.originalname, origExt)
         .toLowerCase().replace(/[^a-z0-9_.-]/g, "-").substring(0, 80);
-      const filename = `${base}-${uuidv4().substring(0, 8)}${origExt}`;
-      const dest = path.join(previewDir, filename);
+      const filename = `previews/${base}-${uuidv4().substring(0, 8)}${origExt}`;
 
-      fs.copyFileSync(req.file.path, dest);
+      const fileBuffer = fs.readFileSync(req.file.path);
       fs.unlinkSync(req.file.path);
 
-      const url = `/uploads/previews/${filename}`;
+      const mimeType = req.file.mimetype || "audio/mpeg";
+      await uploadFile(STORAGE_BUCKETS.PREVIEWS, filename, fileBuffer, mimeType);
+      const url = getPublicUrl(STORAGE_BUCKETS.PREVIEWS, filename);
+
       res.json({ url, filename, size: req.file.size });
-      console.log(`✅ preview saved locally: ${dest}`);
+      console.log(`✅ preview uploaded to R2: ${url}`);
       return;
     } catch (error) {
       if (req.file.path && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
