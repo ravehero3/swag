@@ -447,6 +447,35 @@ router.post("/", requireAdmin, upload.single("file"), async (req: Request, res: 
     }
   }
 
+  // Beat-local: save audio file directly to public/uploads/beats/ (no B2 bandwidth)
+  if (type === "beat-local") {
+    try {
+      const beatsDir = path.join(process.cwd(), "public/uploads/beats");
+      if (!fs.existsSync(beatsDir)) fs.mkdirSync(beatsDir, { recursive: true });
+
+      const ext = path.extname(req.file.originalname).toLowerCase() || ".wav";
+      const base = path.basename(req.file.originalname, ext)
+        .toLowerCase()
+        .replace(/[^a-z0-9_.-]/g, "-")
+        .substring(0, 80);
+      const filename = `${base}-${uuidv4().substring(0, 8)}${ext}`;
+      const dest = path.join(beatsDir, filename);
+
+      fs.copyFileSync(req.file.path, dest);
+      fs.unlinkSync(req.file.path);
+
+      const url = `/uploads/beats/${filename}`;
+      res.json({ url, filename, size: req.file.size });
+      console.log(`✅ beat-local saved: ${dest}`);
+      return;
+    } catch (error) {
+      if (req.file.path && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+      console.error("beat-local upload failed:", error);
+      res.status(500).json({ error: "Nahrávání beatu selhalo", detail: String(error) });
+      return;
+    }
+  }
+
   // Video: upload to B2 videos bucket with prefix
   if (type === "video") {
     try {

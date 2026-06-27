@@ -368,6 +368,12 @@ router.get("/:id/download", requireAuth, async (req: Request, res: Response) => 
       return res.json({ downloadUrl: fileUrl });
     }
 
+    // Locally stored beat file (saved in public/uploads/beats/)
+    if (fileUrl.startsWith("/uploads/")) {
+      const { getAppBaseUrl } = await import("../lib/appUrl.js");
+      return res.json({ downloadUrl: `${getAppBaseUrl()}${fileUrl}` });
+    }
+
     const url = await generateDownloadUrl(STORAGE_BUCKETS.ZIPS, fileUrl);
     res.json({ downloadUrl: url });
   } catch (error) {

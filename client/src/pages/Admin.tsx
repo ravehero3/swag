@@ -1172,7 +1172,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     // Beat/kit/trackout/artwork: always go through server (reliable, handles auth)
     // Preview audio: use direct B2 presign to bypass hosting body size limit
     const isLargeFile = file.size > 50 * 1024 * 1024;
-    const useServerUpload = isLargeFile || type === "beat" || type === "kit" || type === "trackout" || type === "artwork";
+    const useServerUpload = isLargeFile || type === "beat" || type === "beat-local" || type === "kit" || type === "trackout" || type === "artwork";
 
     try {
       if (useServerUpload) {
@@ -1550,13 +1550,51 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
 
               {/* Section 4: Distribuce */}
               <div style={sectionStyle}>
-                <div style={sectionHeadStyle}>Distribuce (Google Drive)</div>
+                <div style={sectionHeadStyle}>Distribuce</div>
                 <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
                   <div>
-                    <label style={labelStyle}>URL beatu ke stažení *</label>
-                    <input type="url" placeholder="https://drive.google.com/drive/folders/…" value={form.fileUrl || ""} onChange={e => setForm({ ...form, fileUrl: e.target.value })} style={inputStyle} data-testid="input-gdrive-url-beat" />
-                    <p style={{ fontSize: "11px", color: "#444", marginTop: "5px", lineHeight: 1.5 }}>Nastav sdílení → Kdokoli s odkazem → Prohlížeč</p>
-                    <GDriveLinkStatus url={form.fileUrl || ""} />
+                    <label style={labelStyle}>Soubor beatu ke stažení *</label>
+                    {/* Local file upload */}
+                    <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "8px" }}>
+                      <label style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "9px 14px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "6px", cursor: uploading["beat-local"] ? "default" : "pointer", fontSize: "13px", color: uploading["beat-local"] ? "#555" : "#aaa", opacity: uploading["beat-local"] ? 0.6 : 1 }}>
+                        <input
+                          type="file"
+                          accept="audio/*,.wav,.mp3,.flac,.aif,.aiff,.zip,.rar"
+                          disabled={uploading["beat-local"]}
+                          style={{ display: "none" }}
+                          data-testid="input-beat-local-file"
+                          onChange={async (e) => {
+                            if (e.target.files?.[0]) {
+                              const url = await uploadFile(e.target.files[0], "beat-local");
+                              if (url) setForm(f => ({ ...f, fileUrl: url as string }));
+                            }
+                          }}
+                        />
+                        {uploading["beat-local"] ? "Nahrávám…" : "⬆ Nahrát soubor přímo"}
+                      </label>
+                    </div>
+                    <UploadProgressBar type="beat-local" />
+                    {uploadError["beat-local"] && (
+                      <div style={{ fontSize: "12px", color: "#ff5252", marginBottom: "6px" }}>Chyba: {uploadError["beat-local"]}</div>
+                    )}
+                    {/* Show currently set file — either local or GDrive */}
+                    {form.fileUrl && form.fileUrl.startsWith("/uploads/") ? (
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 10px", background: "#0d1a0d", border: "1px solid #1a3a1a", borderRadius: "6px", marginBottom: "6px" }}>
+                        <span style={{ fontSize: "12px", color: "#4caf50", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>✓ {decodeURIComponent(form.fileUrl.split("/").pop() || "")}</span>
+                        <button type="button" onClick={() => setForm(f => ({ ...f, fileUrl: "" }))} style={{ background: "none", border: "none", color: "#555", cursor: "pointer", fontSize: "16px", lineHeight: 1, padding: "0 2px", flexShrink: 0 }}>×</button>
+                      </div>
+                    ) : (
+                      <div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px", margin: "6px 0 4px" }}>
+                          <div style={{ flex: 1, height: "1px", background: "#1e1e1e" }} />
+                          <span style={{ fontSize: "10px", color: "#333" }}>nebo Google Drive</span>
+                          <div style={{ flex: 1, height: "1px", background: "#1e1e1e" }} />
+                        </div>
+                        <input type="url" placeholder="https://drive.google.com/drive/folders/…" value={form.fileUrl || ""} onChange={e => setForm({ ...form, fileUrl: e.target.value })} style={inputStyle} data-testid="input-gdrive-url-beat" />
+                        <p style={{ fontSize: "11px", color: "#444", marginTop: "5px", lineHeight: 1.5 }}>Nastav sdílení → Kdokoli s odkazem → Prohlížeč</p>
+                        <GDriveLinkStatus url={form.fileUrl || ""} />
+                      </div>
+                    )}
                   </div>
                   <div>
                     <label style={labelStyle}>URL trackoutu <span style={{ color: "#333", fontWeight: 400 }}>(volitelné)</span></label>
@@ -2018,7 +2056,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
     // Beat/kit/trackout/artwork: always go through server (reliable, handles auth)
     // Preview audio: use direct B2 presign to bypass hosting body size limit
     const isLargeFile = file.size > 50 * 1024 * 1024;
-    const useServerUpload = isLargeFile || type === "beat" || type === "kit" || type === "trackout" || type === "artwork";
+    const useServerUpload = isLargeFile || type === "beat" || type === "beat-local" || type === "kit" || type === "trackout" || type === "artwork";
 
     try {
       if (useServerUpload) {
@@ -2483,7 +2521,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
                         src={img.url}
                         alt={img.filename}
                         onClick={() => handleGallerySelect(img.url)}
-                        style={{ width: "100%", aspectRatio: "1", objectFit: "cover", display: "block" }}
+                        style={{ width: "100%", aspectRatio: "1", objectFit: "contain", background: "#080808", display: "block" }}
                         data-testid={`img-gallery-${img.filename}`}
                       />
                       <div style={{ padding: "6px 8px 4px", background: "#0e0e0e" }}>
