@@ -1,3 +1,5 @@
+import { canDirectFetch } from "./audioProxy.js";
+
 const cache = new Map<string, number[] | null>();
 const inFlight = new Set<string>();
 
@@ -8,6 +10,7 @@ function proxiedUrl(url: string): string {
   if (!url.startsWith("http")) return url;
   const origin = typeof window !== "undefined" ? window.location.origin : "";
   if (url.startsWith(origin)) return url;
+  if (canDirectFetch(url)) return url;
   return `/api/audio-proxy?url=${encodeURIComponent(url)}`;
 }
 

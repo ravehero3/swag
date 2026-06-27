@@ -1,6 +1,7 @@
 import { useState, useEffect, CSSProperties } from "react";
 import { useApp } from "../App.js";
 import { getWaveform, preloadWaveform } from "../lib/waveformCache.js";
+import { toAudioProxyUrl } from "../lib/audioProxy.js";
 
 interface ShareProduct {
   id: number;
@@ -121,7 +122,7 @@ function ShareModal({ product, productType = "beat", beatId, beatTitle, isOpen, 
     if (!resolvedPreviewUrl || !isOpen) return;
     const audio = new Audio();
     audio.crossOrigin = "anonymous";
-    audio.src = `/api/audio-proxy?url=${encodeURIComponent(resolvedPreviewUrl)}`;
+    audio.src = toAudioProxyUrl(resolvedPreviewUrl);
     audio.onloadedmetadata = () => setBeatDuration(audio.duration);
     audio.onerror = () => setBeatDuration(null);
   }, [resolvedPreviewUrl, isOpen]);

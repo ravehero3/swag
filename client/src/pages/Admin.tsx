@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { Music, Image as ImageIcon, Upload } from "lucide-react";
 import { useApp } from "../App.js";
 import { useLocation } from "wouter";
+import { toAudioProxyUrl } from "../lib/audioProxy.js";
 import {
   BeatArtwork,
   parseArtworkConfig,
@@ -350,7 +351,7 @@ type BeatPriceType = typeof PRICE_TYPES_BEAT[number]["id"];
 async function computeWaveformInBrowser(previewUrl: string): Promise<number[] | null> {
   const BAR_COUNT = 480;
   try {
-    const proxyUrl = `/api/audio-proxy?url=${encodeURIComponent(previewUrl)}`;
+    const proxyUrl = toAudioProxyUrl(previewUrl);
     const response = await fetch(proxyUrl);
     if (!response.ok) return null;
     const arrayBuffer = await response.arrayBuffer();
@@ -4095,7 +4096,7 @@ function IGStoriesTab({ settings, onRefresh }: any) {
     if (!previewBeat?.preview_url) { setPreviewBeatDuration(null); return; }
     const audio = new Audio();
     audio.crossOrigin = "anonymous";
-    audio.src = `/api/audio-proxy?url=${encodeURIComponent(previewBeat.preview_url)}`;
+    audio.src = toAudioProxyUrl(previewBeat.preview_url);
     audio.onloadedmetadata = () => { setPreviewBeatDuration(audio.duration); };
     audio.onerror = () => { setPreviewBeatDuration(null); };
   }, [previewBeat?.preview_url]);
