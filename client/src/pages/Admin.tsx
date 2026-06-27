@@ -18,117 +18,6 @@ function formatBytes(bytes: number): string {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
 }
 
-interface B2VideoFile {
-  key: string;
-  size: number;
-  lastModified: string | undefined;
-  url: string;
-}
-
-function B2VideoPickerModal({ onSelect, onClose }: { onSelect: (url: string, key: string) => void; onClose: () => void }) {
-  const [files, setFiles] = useState<B2VideoFile[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [search, setSearch] = useState("");
-  const [previewKey, setPreviewKey] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetch("/api/upload/b2-videos", { credentials: "include" })
-      .then(r => r.ok ? r.json() : Promise.reject(r.statusText))
-      .then(data => { setFiles(data); setLoading(false); })
-      .catch(err => { setError(String(err)); setLoading(false); });
-  }, []);
-
-  const filtered = files.filter(f =>
-    f.key.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const fileName = (key: string) => key.split("/").pop() || key;
-
-  return (
-    <div
-      style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center" }}
-      onClick={onClose}
-    >
-      <div
-        style={{ background: "#0e0e0e", border: "1px solid #2a2a2a", borderRadius: "6px", padding: "24px", width: "700px", maxHeight: "85vh", display: "flex", flexDirection: "column", gap: "14px" }}
-        onClick={e => e.stopPropagation()}
-      >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <h3 style={{ margin: 0, fontSize: "15px", color: "#fff" }}>Videa z Backblaze</h3>
-          <button onClick={onClose} style={{ background: "none", border: "none", color: "#666", cursor: "pointer", fontSize: "22px", lineHeight: 1 }}>×</button>
-        </div>
-
-        <input
-          autoFocus
-          placeholder="Hledat video..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          style={{ width: "100%", padding: "9px 12px", background: "#1a1a1a", border: "1px solid #2a2a2a", color: "#fff", borderRadius: "4px", fontSize: "13px", boxSizing: "border-box" }}
-        />
-
-        <div style={{ overflowY: "auto", flex: 1, border: "1px solid #1a1a1a", borderRadius: "4px" }}>
-          {loading && <div style={{ padding: "32px", textAlign: "center", color: "#555" }}>Načítám videa z B2...</div>}
-          {error && <div style={{ padding: "32px", textAlign: "center", color: "#ff4444" }}>Chyba: {error}</div>}
-          {!loading && !error && filtered.length === 0 && (
-            <div style={{ padding: "32px", textAlign: "center", color: "#555" }}>
-              {files.length === 0 ? "Žádná videa v bucketu. Nahrajte video přes tlačítko Nahrát video." : "Žádné výsledky."}
-            </div>
-          )}
-          {!loading && !error && filtered.map(file => (
-            <div
-              key={file.key}
-              style={{ borderBottom: "1px solid #181818" }}
-            >
-              <div
-                onClick={() => { onSelect(file.url, file.key); onClose(); }}
-                style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 16px", cursor: "pointer", transition: "background 120ms" }}
-                onMouseEnter={e => (e.currentTarget.style.background = "#161616")}
-                onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
-              >
-                <div
-                  style={{ width: "36px", height: "36px", borderRadius: "4px", background: "#1a1a1a", border: "1px solid #2a2a2a", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, cursor: "pointer" }}
-                  onClick={e => { e.stopPropagation(); setPreviewKey(prev => prev === file.key ? null : file.key); }}
-                  title="Přehrát náhled"
-                >
-                  <span style={{ fontSize: "16px" }}>{previewKey === file.key ? "⏸" : "▶"}</span>
-                </div>
-                <div style={{ flex: 1, overflow: "hidden" }}>
-                  <div style={{ fontSize: "13px", color: "#ddd", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{fileName(file.key)}</div>
-                  {file.lastModified && (
-                    <div style={{ fontSize: "11px", color: "#555", marginTop: "2px" }}>{new Date(file.lastModified).toLocaleString("cs-CZ")} · {formatBytes(file.size)}</div>
-                  )}
-                </div>
-                <button
-                  onClick={e => { e.stopPropagation(); onSelect(file.url, file.key); onClose(); }}
-                  style={{ background: "#1a1a1a", border: "1px solid #333", color: "#aaa", padding: "6px 12px", fontSize: "12px", borderRadius: "3px", cursor: "pointer", flexShrink: 0 }}
-                >
-                  Vybrat
-                </button>
-              </div>
-              {previewKey === file.key && (
-                <div style={{ padding: "0 16px 12px" }}>
-                  <video
-                    src={file.url}
-                    controls
-                    autoPlay
-                    muted
-                    style={{ width: "100%", maxHeight: "200px", borderRadius: "4px", background: "#000", border: "1px solid #222" }}
-                  />
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-
-        <div style={{ fontSize: "11px", color: "#444" }}>
-          {!loading && !error && `${filtered.length} / ${files.length} videí`}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 interface Beat {
   id: number;
   title: string;
@@ -197,15 +86,35 @@ interface LicenseType {
   created_at: string;
 }
 
+type AdminTab = "orders" | "beats" | "kits" | "zakaznici" | "licenses" | "marketing" | "komentare" | "nastaveni";
+
+const ADMIN_NAV: { id: AdminTab; label: string }[] = [
+  { id: "orders",    label: "Objednávky" },
+  { id: "beats",     label: "Beaty"      },
+  { id: "kits",      label: "Zvuky"      },
+  { id: "zakaznici", label: "Zákazníci"  },
+  { id: "licenses",  label: "Licence"    },
+  { id: "marketing", label: "Marketing"  },
+  { id: "komentare", label: "Komentáře"  },
+  { id: "nastaveni", label: "Nastavení"  },
+];
+
+const LEGACY_TAB_MAP: Record<string, AdminTab> = {
+  emails: "nastaveni", promo: "marketing", slevy: "marketing",
+  seo: "nastaveni", ig_stories: "orders", artworks: "beats", konfigurace: "nastaveni",
+};
+
 function Admin() {
   const { settings, refreshSettings } = useApp() as any;
   const [, navigate] = useLocation();
   const initialTab = (() => {
-    const p = new URLSearchParams(window.location.search).get("tab");
-    const valid = ["beats", "kits", "orders", "licenses", "emails", "promo", "slevy", "seo", "ig_stories", "zakaznici", "komentare", "artworks", "konfigurace"];
-    return (valid.includes(p || "") ? p : "orders") as "beats" | "kits" | "orders" | "licenses" | "emails" | "promo" | "slevy" | "seo" | "ig_stories" | "zakaznici" | "komentare" | "artworks" | "konfigurace";
+    const p = new URLSearchParams(window.location.search).get("tab") || "";
+    const valid = ADMIN_NAV.map(n => n.id);
+    if (valid.includes(p as AdminTab)) return p as AdminTab;
+    if (LEGACY_TAB_MAP[p]) return LEGACY_TAB_MAP[p];
+    return "orders" as AdminTab;
   })();
-  const [tab, setTab] = useState<"beats" | "kits" | "orders" | "licenses" | "emails" | "promo" | "slevy" | "seo" | "ig_stories" | "zakaznici" | "komentare" | "artworks" | "konfigurace">(initialTab);
+  const [tab, setTab] = useState<AdminTab>(initialTab);
   const [beats, setBeats] = useState<Beat[]>([]);
   const [kits, setKits] = useState<SoundKit[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
@@ -288,20 +197,17 @@ function Admin() {
 
   if (adminLoading) {
     return (
-      <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", background: "#000" }}>
-        <div style={{ textAlign: "center", padding: "24px" }}>
-          <p style={{ margin: 0, fontSize: "16px" }}>Kontrola administrátorského přístupu...</p>
-        </div>
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#000" }}>
+        <div style={{ fontSize: "13px", color: "#444", letterSpacing: "0.05em" }}>Načítám...</div>
       </div>
     );
   }
 
   if (adminError) {
     return (
-      <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", background: "#000", padding: "24px" }}>
-        <div style={{ maxWidth: "640px", textAlign: "center" }}>
-          <h2 style={{ marginBottom: "16px", color: "#fff" }}>Chyba administračního panelu</h2>
-          <p style={{ marginBottom: "16px", color: "#ccc" }}>{adminError}</p>
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#000", padding: "24px" }}>
+        <div style={{ maxWidth: "480px", textAlign: "center" }}>
+          <div style={{ fontSize: "14px", color: "#ccc", marginBottom: "20px" }}>{adminError}</div>
           <button className="btn btn-filled" onClick={loadData}>Zkusit znovu</button>
         </div>
       </div>
@@ -310,58 +216,97 @@ function Admin() {
 
   if (!adminChecked || !isAdmin) {
     return (
-      <div style={{ minHeight: "60vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", background: "#000" }}>
-        <div style={{ textAlign: "center", padding: "24px" }}>
-          <p style={{ margin: 0, fontSize: "16px" }}>Probíhá přesměrování na přihlášení...</p>
-        </div>
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#000" }}>
+        <div style={{ fontSize: "13px", color: "#444" }}>Přesměrovávám...</div>
       </div>
     );
   }
 
-  const TAB_LABELS: Record<string, string> = {
-    orders: "Objednávky", beats: "Beaty", kits: "Zvuky", zakaznici: "Zákazníci",
-    licenses: "Licence", emails: "Emaily", promo: "Promo", slevy: "Slevy",
-    seo: "SEO", ig_stories: "IG Stories", komentare: "Komentáře",
-    artworks: "Artworks", konfigurace: "Konfigurace",
-  };
+  const pendingBank = orders.filter((o: any) => o.status === "awaiting_payment" && o.payment_method === "bank_transfer").length;
 
   return (
-    <div className="fade-in" style={{ maxWidth: "1100px", margin: "0 auto", padding: "0 24px 64px" }}>
-      {/* Minimal header */}
-      <div style={{ padding: "28px 0 0", marginBottom: "4px" }}>
-        <span style={{ fontSize: "11px", fontWeight: 600, color: "#333", letterSpacing: "0.12em", textTransform: "uppercase" }}>Admin</span>
-      </div>
+    <div style={{ display: "flex", minHeight: "100vh", background: "#000", color: "#fff" }}>
+      {/* ── Sidebar ── */}
+      <aside style={{
+        width: "214px",
+        flexShrink: 0,
+        background: "#070707",
+        borderRight: "1px solid #181818",
+        display: "flex",
+        flexDirection: "column",
+        position: "sticky",
+        top: 0,
+        height: "100vh",
+        overflowY: "auto",
+        scrollbarWidth: "none",
+      }}>
+        {/* Brand */}
+        <div style={{ padding: "22px 20px 18px", borderBottom: "1px solid #131313" }}>
+          <a href="/" style={{ textDecoration: "none" }}>
+            <div style={{ fontSize: "12px", fontWeight: 700, letterSpacing: "0.22em", color: "#fff", textTransform: "uppercase" }}>VOODOO808</div>
+            <div style={{ fontSize: "10px", color: "#2b2b2b", letterSpacing: "0.12em", marginTop: "3px", textTransform: "uppercase" }}>Admin</div>
+          </a>
+        </div>
 
-      {/* Horizontal underline tab bar */}
-      <div style={{ display: "flex", borderBottom: "1px solid #1a1a1a", marginBottom: "32px", overflowX: "auto", scrollbarWidth: "none" }}>
-        {["orders", "beats", "kits", "zakaznici", "licenses", "emails", "promo", "slevy", "seo", "ig_stories", "komentare", "artworks", "konfigurace"].map((t) => (
-          <button
-            key={t}
-            data-testid={`tab-${t}`}
-            onClick={() => setTab(t as any)}
-            style={{
-              background: "none",
-              border: "none",
-              borderBottom: tab === t ? "2px solid #fff" : "2px solid transparent",
-              color: tab === t ? "#fff" : "#555",
-              padding: "12px 14px",
-              fontSize: "13px",
-              fontWeight: tab === t ? 500 : 400,
-              cursor: "pointer",
-              whiteSpace: "nowrap",
-              marginBottom: "-1px",
-              transition: "color 0.15s, border-color 0.15s",
-              fontFamily: "inherit",
-            }}
-            onMouseEnter={e => { if (tab !== t) (e.currentTarget as HTMLButtonElement).style.color = "#999"; }}
-            onMouseLeave={e => { if (tab !== t) (e.currentTarget as HTMLButtonElement).style.color = "#555"; }}
+        {/* Nav */}
+        <nav style={{ flex: 1, padding: "8px 0" }}>
+          {ADMIN_NAV.map(({ id, label }) => {
+            const active = tab === id;
+            const badge = id === "orders" && pendingBank > 0 ? pendingBank : null;
+            return (
+              <button
+                key={id}
+                data-testid={`tab-${id}`}
+                onClick={() => setTab(id)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  width: "100%",
+                  padding: "10px 20px",
+                  background: active ? "#111" : "transparent",
+                  border: "none",
+                  borderLeft: active ? "2px solid #fff" : "2px solid transparent",
+                  color: active ? "#fff" : "#484848",
+                  fontSize: "13px",
+                  fontFamily: "inherit",
+                  cursor: "pointer",
+                  textAlign: "left",
+                  letterSpacing: "0.01em",
+                  transition: "color 120ms, background 120ms",
+                  boxSizing: "border-box",
+                }}
+                onMouseEnter={e => { if (!active) (e.currentTarget as HTMLButtonElement).style.color = "#aaa"; }}
+                onMouseLeave={e => { if (!active) (e.currentTarget as HTMLButtonElement).style.color = "#484848"; }}
+              >
+                <span style={{ flex: 1 }}>{label}</span>
+                {badge && (
+                  <span style={{
+                    fontSize: "10px", fontWeight: 700, lineHeight: 1,
+                    background: "#fbbf24", color: "#000",
+                    borderRadius: "10px", padding: "2px 6px",
+                    flexShrink: 0,
+                  }}>{badge}</span>
+                )}
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Footer */}
+        <div style={{ padding: "14px 20px", borderTop: "1px solid #131313" }}>
+          <a
+            href="/"
+            style={{ fontSize: "11px", color: "#2b2b2b", textDecoration: "none", letterSpacing: "0.03em" }}
+            onMouseEnter={e => (e.currentTarget.style.color = "#666")}
+            onMouseLeave={e => (e.currentTarget.style.color = "#2b2b2b")}
           >
-            {TAB_LABELS[t]}
-          </button>
-        ))}
-      </div>
+            ← Zpět na web
+          </a>
+        </div>
+      </aside>
 
-      <div>
+      {/* ── Main content ── */}
+      <main style={{ flex: 1, minWidth: 0, padding: "36px 44px 80px", overflowX: "hidden" }}>
         {tab === "beats" && (
           <BeatsTab
             beats={beats}
@@ -374,7 +319,6 @@ function Admin() {
             loadData={loadData}
           />
         )}
-
         {tab === "kits" && (
           <KitsTab
             kits={kits}
@@ -385,19 +329,13 @@ function Admin() {
             onRefresh={loadData}
           />
         )}
-
-        {tab === "orders" && <OrdersTab orders={orders} onRefresh={loadData} />}
+        {tab === "orders"    && <OrdersTab orders={orders} onRefresh={loadData} />}
         {tab === "zakaznici" && <ZakazniciTab />}
-        {tab === "licenses" && <LicensesTab licenses={licenses} onRefresh={loadData} />}
-        {tab === "emails" && <EmailsTab />}
-        {tab === "promo" && <PromoCodesTab />}
-        {tab === "slevy" && <SlevyTab settings={settings} onRefresh={refreshSettings} />}
-        {tab === "seo" && <SEOTab settings={settings} onRefresh={refreshSettings} />}
-        {tab === "ig_stories" && <IGStoriesTab settings={settings} onRefresh={refreshSettings} />}
+        {tab === "licenses"  && <LicensesTab licenses={licenses} onRefresh={loadData} />}
+        {tab === "marketing" && <MarketingTab settings={settings} onRefresh={refreshSettings} />}
         {tab === "komentare" && <KomentareTab />}
-        {tab === "artworks" && <ArtworksTab settings={settings} onRefresh={refreshSettings} beats={beats} />}
-        {tab === "konfigurace" && <KonfiguraceTab />}
-      </div>
+        {tab === "nastaveni" && <NastaveniTab settings={settings} onRefresh={refreshSettings} />}
+      </main>
     </div>
   );
 }
@@ -693,81 +631,6 @@ function ArtworkPreview({ url, onDelete, testId }: { url: string; onDelete: () =
           </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-// Admin diagnostic: round-trips a 1×1 test JPEG through the artwork bucket and
-// reports back exactly which knob is wrong (missing env var, R2 bucket not
-// public, wrong base URL, etc.). Use when artwork uploads "succeed" but the
-// image won't display.
-function ArtworkStorageDiag() {
-  const [state, setState] = useState<{ status: "idle" | "running" | "done"; data?: any; error?: string }>({ status: "idle" });
-
-  const run = async () => {
-    setState({ status: "running" });
-    try {
-      const r = await fetch("/api/upload/diag/artwork", { credentials: "include" });
-      const data = await r.json().catch(() => ({}));
-      setState({ status: "done", data });
-    } catch (e: any) {
-      setState({ status: "done", error: e?.message || String(e) });
-    }
-  };
-
-  const data = state.data;
-  const env = data?.env;
-  const fetchOk = data?.publicFetch?.ok;
-  const fetchDetail = data?.publicFetch?.detail;
-  const overallOk = data?.uploadOk && fetchOk;
-
-  return (
-    <div style={{ marginTop: "14px", padding: "12px", background: "#0f0f0f", border: "1px solid #2a2a2a", borderRadius: "4px" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", flexWrap: "wrap" }}>
-        <div style={{ fontSize: "12px", color: "#888" }}>
-          Diagnostika úložiště pro artwork (Cloudflare R2 / Backblaze B2)
-        </div>
-        <button
-          type="button"
-          onClick={run}
-          disabled={state.status === "running"}
-          style={{ background: "transparent", border: "1px solid #333", color: "#aaa", padding: "4px 10px", borderRadius: "3px", fontSize: "11px", cursor: state.status === "running" ? "default" : "pointer" }}
-          data-testid="button-diag-artwork-storage"
-        >
-          {state.status === "running" ? "Testuji…" : "Otestovat úložiště"}
-        </button>
-      </div>
-
-      {state.status === "done" && state.error && (
-        <div style={{ marginTop: "10px", fontSize: "12px", color: "#ff5252" }}>Chyba: {state.error}</div>
-      )}
-
-      {state.status === "done" && data && (
-        <div style={{ marginTop: "10px", fontSize: "12px", color: "#ddd", lineHeight: 1.5 }}>
-          <div style={{ marginBottom: "6px", fontWeight: 600, color: overallOk ? "#4caf50" : "#ff9800" }}>
-            {overallOk ? "✓ Vše v pořádku — artwork se uloží i zobrazí." : "✗ Něco je špatně nakonfigurováno."}
-          </div>
-          <div style={{ background: "#070707", padding: "8px 10px", borderRadius: "3px", border: "1px solid #1f1f1f", fontFamily: "monospace", fontSize: "11px", color: "#bbb", whiteSpace: "pre-wrap", wordBreak: "break-all" }}>
-{`Bucket:               ${data.bucket}
-Upload to bucket:     ${data.uploadOk ? "OK" : "FAIL"}${data.uploadError ? "  → " + data.uploadError : ""}
-Public URL returned:  ${data.publicUrl || "(none)"}
-Public fetch:         ${fetchOk ? "OK" : "FAIL  → " + (fetchDetail || "n/a")}
-
-R2_ACCOUNT_ID:        ${env?.R2_ACCOUNT_ID ? "set" : "MISSING"}
-R2_ACCESS_KEY_ID:     ${env?.R2_ACCESS_KEY_ID ? "set" : "MISSING"}
-R2_SECRET_ACCESS_KEY: ${env?.R2_SECRET_ACCESS_KEY ? "set" : "MISSING"}
-R2_BUCKET:            ${env?.R2_BUCKET || "MISSING"}
-R2_PUBLIC_BASE_URL:   ${env?.R2_PUBLIC_BASE_URL || "MISSING"}
-
-B2_PREVIEW_BUCKET:    ${env?.B2_PREVIEW_BUCKET || "(none)"}
-B2_PUBLIC_BASE_URL:   ${env?.B2_PUBLIC_BASE_URL || "(none)"}
-B2_ENDPOINT:          ${env?.B2_ENDPOINT || "(none)"}`}
-          </div>
-          <div style={{ marginTop: "8px", fontSize: "12px", color: overallOk ? "#888" : "#ff9800" }}>
-            {data.diagnosis}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -2415,7 +2278,6 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
                   testId="button-delete-artwork-kit"
                 />
               )}
-              <ArtworkStorageDiag />
             </div>
           </div>
           <div style={{ marginTop: "16px" }}>
@@ -4048,7 +3910,7 @@ const WAVE_BARS = [
 const PLAYHEAD_FRACTION = 2 / 3;
 
 // Matches the SoundWave.tsx dual-axis design: tall top bars + shorter bottom reflection
-function IGWaveformPreview({ width }: { width: number }) {
+function _REMOVED_IGWaveformPreview({ width }: { width: number }) {
   const barCount = WAVE_BARS.length;
   const gap = 0.8;
   const barW = Math.max(1, (width - gap * (barCount - 1)) / barCount);
@@ -5699,16 +5561,7 @@ function KomentareTab() {
   );
 }
 
-// ============================================================================
-// ARTWORKS TAB — site-wide beat artwork configuration:
-//   1) Default fallback artwork (shown when a beat has no artwork uploaded)
-//   2) Color overlay with selectable blend mode (multiply/screen/etc.)
-//   3) CSS filters: B&W, sepia, brightness, contrast, saturation, hue, blur
-//   4) Quick presets (Cinematic, B&W, Vintage, Cyberpunk, Neon, Mono…)
-//   5) Live preview against real beat artworks before saving
-// All effects are applied via CSS at render time, so changes are instant and
-// reversible — original images on R2 are never modified.
-// ============================================================================
+// ArtworksTab removed in 2026 redesign
 
 const BLEND_MODES: { value: BlendMode; label: string; hint: string }[] = [
   { value: "normal",       label: "Normální (žádné prolnutí)", hint: "Barva jen překryje obrázek." },
