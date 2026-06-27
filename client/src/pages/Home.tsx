@@ -1322,16 +1322,16 @@ function Home() {
         )}
         </div>
 
-        {/* Glassmorphism border wrapper — 1px gradient outline that fades dark→grey */}
         <div ref={beatsListRef} style={{
           maxWidth: "1200px",
           margin: "0px auto 48px auto",
-          padding: "1px",
           borderRadius: "18px",
-          background: "linear-gradient(180deg, rgba(72,72,72,0.28) 0%, rgba(38,38,38,0.10) 50%, rgba(52,52,52,0.18) 100%)",
-          boxShadow: "0 0 0 0.5px rgba(0,0,0,0.8), 0 24px 64px rgba(0,0,0,0.45)",
+          background: "rgba(13,13,13,0.98)",
+          border: "1px solid rgba(52,52,52,0.40)",
+          boxShadow: "0 16px 56px rgba(0,0,0,0.55)",
+          overflow: "hidden",
         }}>
-        <div className="home-beats-list" style={{ marginBottom: "0", maxWidth: "none", margin: "0", marginTop: "0", borderRadius: "17px", background: "linear-gradient(180deg, rgba(20,20,20,0.88) 0%, rgba(9,9,9,0.96) 100%)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05), inset 0 -1px 0 rgba(0,0,0,0.35)" }}>
+        <div className="home-beats-list" style={{ marginBottom: "0", maxWidth: "none", margin: "0", marginTop: "0" }}>
           {otherBeats.length === 0 && !highlightedBeat ? (
             <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "8px" }}>
               {Array(4).fill(null).map((_, index) => (
