@@ -1331,7 +1331,7 @@ function Home() {
           boxShadow: "0 16px 56px rgba(0,0,0,0.55)",
           overflow: "hidden",
         }}>
-        <div className="home-beats-list" style={{ marginBottom: "0", maxWidth: "none", margin: "0", marginTop: "0" }}>
+        <div className="home-beats-list" style={{ marginBottom: "0", maxWidth: "none", margin: "0", marginTop: "0", paddingBottom: "8px" }}>
           {otherBeats.length === 0 && !highlightedBeat ? (
             <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "8px" }}>
               {Array(4).fill(null).map((_, index) => (
@@ -1364,14 +1364,14 @@ function Home() {
                 {/* matches artwork image */}
                 <div style={{ width: "48px", flexShrink: 0 }} />
                 {/* NÁZEV — matches title column */}
-                <div className="home-beat-header-title" style={{ width: "240px", minWidth: "240px", maxWidth: "240px", flexShrink: 0, marginRight: "12px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666" }}>NÁZEV</div>
+                <div className="home-beat-header-title" style={{ width: "240px", minWidth: "240px", maxWidth: "240px", flexShrink: 0, marginRight: "12px", fontWeight: "500", fontSize: "11px", color: "#555", letterSpacing: "0.08em", textTransform: "uppercase" }}>Název</div>
                 <div className="home-beat-header-separator" style={{ position: "absolute", bottom: 0, left: "16px", right: "16px", height: "1px", background: "rgba(255,255,255,0.07)" }} />
                 {/* BPM — matches beat bpm column */}
-                <div className="desktop-only" style={{ width: "100px", flexShrink: 0 }}><button onClick={() => { if (sortBy === "bpm") { setSortAsc(a => !a); } else { setSortBy("bpm"); setSortAsc(true); } }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: sortBy === "bpm" ? "#fff" : "#666", cursor: "pointer", padding: 0, textAlign: "left", width: "100%" }}>BPM {sortBy === "bpm" ? (sortAsc ? "↑" : "↓") : ""}</button></div>
+                <div className="desktop-only" style={{ width: "100px", flexShrink: 0 }}><button onClick={() => { if (sortBy === "bpm") { setSortAsc(a => !a); } else { setSortBy("bpm"); setSortAsc(true); } }} style={{ background: "none", border: "none", fontWeight: "500", fontSize: "11px", color: sortBy === "bpm" ? "#bbb" : "#555", cursor: "pointer", padding: 0, textAlign: "left", width: "100%", letterSpacing: "0.08em", textTransform: "uppercase" }}>BPM {sortBy === "bpm" ? (sortAsc ? "↑" : "↓") : ""}</button></div>
                 {/* KEY — matches beat key column */}
-                <div className="desktop-only" style={{ width: "100px", flexShrink: 0 }}><button onClick={() => { if (sortBy === "key") { setSortAsc(a => !a); } else { setSortBy("key"); setSortAsc(true); } }} style={{ background: "none", border: "none", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: sortBy === "key" ? "#fff" : "#666", cursor: "pointer", padding: 0, textAlign: "left", width: "100%" }}>KEY {sortBy === "key" ? (sortAsc ? "↑" : "↓") : ""}</button></div>
+                <div className="desktop-only" style={{ width: "100px", flexShrink: 0 }}><button onClick={() => { if (sortBy === "key") { setSortAsc(a => !a); } else { setSortBy("key"); setSortAsc(true); } }} style={{ background: "none", border: "none", fontWeight: "500", fontSize: "11px", color: sortBy === "key" ? "#bbb" : "#555", cursor: "pointer", padding: 0, textAlign: "left", width: "100%", letterSpacing: "0.08em", textTransform: "uppercase" }}>Key {sortBy === "key" ? (sortAsc ? "↑" : "↓") : ""}</button></div>
                 {/* TAGY — matches tags column */}
-                <div className="desktop-only" style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "12px", color: "#666", marginLeft: "12px" }}>TAGY</div>
+                <div className="desktop-only" style={{ fontWeight: "500", fontSize: "11px", color: "#555", marginLeft: "12px", letterSpacing: "0.08em", textTransform: "uppercase" }}>Tagy</div>
               </div>
               {(sortBy && sortBy === "bpm" ? [...otherBeats].sort((a, b) => sortAsc ? a.bpm - b.bpm : b.bpm - a.bpm) : sortBy && sortBy === "key" ? [...otherBeats].sort((a, b) => sortAsc ? a.key.localeCompare(b.key) : b.key.localeCompare(a.key)) : otherBeats).map((beat) => (
             <div
@@ -1381,7 +1381,7 @@ function Home() {
               style={{
                 display: "flex",
                 alignItems: "center",
-                padding: "6px 16px",
+                padding: "10px 16px",
                 gap: "16px",
                 border: "1px solid transparent",
                 borderRadius: "4px",
