@@ -462,7 +462,7 @@ function App() {
 
   return (
     <AppContext.Provider value={{ user, setUser, authLoading, cart, addToCart, removeFromCart, clearCart, isCartOpen, setIsCartOpen, isNewsletterOpen, setIsNewsletterOpen, settings, refreshSettings, savedCount, refreshSavedCount, previewPlayer: { currentItem: previewCurrentItem, isPlaying: isPreviewPlaying, isLooping: isPreviewLooping, isShuffling: isPreviewShuffling, playPreview, handlePlayPause: handlePreviewPlayPause, handlePrevious: handlePreviewPrevious, handleNext: handlePreviewNext, handleToggleLoop: () => setIsPreviewLooping((v) => !v), handleToggleShuffle: () => setIsPreviewShuffling((v) => !v), audioRef: previewAudioRef, setPreviewMeta } }}>
-      <div style={{ minHeight: "100vh", background: "#000", display: "flex", flexDirection: "column" }}>
+      <div style={{ minHeight: "100vh", background: "#000", display: "flex", flexDirection: "column", paddingBottom: previewCurrentItem ? "84px" : "0" }}>
         <audio
           ref={previewAudioRef}
           onEnded={handlePreviewEnded}

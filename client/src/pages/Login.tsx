@@ -111,7 +111,7 @@ function Login() {
   }
 
   return (
-    <div className="fade-in" style={{ position: "relative", display: "flex", justifyContent: "center", alignItems: "center", height: "100vh", padding: "40px 20px", overflow: "hidden" }}>
+    <div className="fade-in" style={{ position: "relative", display: "flex", justifyContent: "center", alignItems: "center", minHeight: "calc(100vh - 42px)", padding: "40px 20px", overflow: "hidden" }}>
       {/* Video background */}
       <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 0, pointerEvents: "none", overflow: "hidden" }}>
         <video
