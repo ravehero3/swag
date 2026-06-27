@@ -1,9 +1,22 @@
 FROM node:20-slim
-RUN apt-get update -y && apt-get install -y openssl
+
+ENV PATH=/usr/local/bin:$PATH
+
+RUN apt-get update -y && \
+    apt-get install -y --no-install-recommends \
+        openssl \
+        python3 \
+        make \
+        g++ \
+        && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
+
 COPY package*.json ./
 RUN npm ci
+
 COPY . .
 RUN npm run build
+
 EXPOSE 5000
-CMD ["npm", "run", "start"]
+CMD ["node", "dist/index.cjs"]
