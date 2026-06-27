@@ -1462,17 +1462,17 @@ function Home() {
                 />
               </div>
               <div className="home-beat-title-col" style={{ width: "240px", marginRight: "12px", display: "flex", flexDirection: "column", gap: "4px" }}>
-                <div style={{ fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", fontSize: "20px" }}>{beat.title}</div>
+                <div style={{ fontWeight: "500", fontSize: "15px", letterSpacing: "0.01em" }}>{beat.title}</div>
                 <div className="mobile-only-flex" style={{ display: "none", gap: "8px", alignItems: "center" }}>
-                  {beat.bpm && <span style={{ fontSize: "11px", color: "#666", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif" }}>{beat.bpm} BPM</span>}
+                  {beat.bpm && <span style={{ fontSize: "11px", color: "#666" }}>{beat.bpm} BPM</span>}
                   {beat.bpm && beat.key && <span style={{ fontSize: "11px", color: "#444" }}>·</span>}
-                  {beat.key && <span style={{ fontSize: "11px", color: "#666", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif" }}>{beat.key}</span>}
+                  {beat.key && <span style={{ fontSize: "11px", color: "#666" }}>{beat.key}</span>}
                 </div>
               </div>
-              <div className="desktop-only" style={{ width: "100px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", color: "#666", fontSize: "16px", textAlign: "left" }}>
+              <div className="desktop-only" style={{ width: "100px", fontWeight: "400", color: "#555", fontSize: "13px", textAlign: "left" }}>
                 {beat.bpm}
               </div>
-              <div className="desktop-only" style={{ width: "100px", fontWeight: "400", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif", color: "#666", fontSize: "16px", textAlign: "left" }}>
+              <div className="desktop-only" style={{ width: "100px", fontWeight: "400", color: "#555", fontSize: "13px", textAlign: "left" }}>
                 {beat.key}
               </div>
 
