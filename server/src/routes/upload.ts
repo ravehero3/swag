@@ -329,96 +329,56 @@ router.post("/", requireAdmin, upload.single("file"), async (req: Request, res: 
   const ext = req.file.originalname.split('.').pop()?.toLowerCase() || 'zip';
   let key = `${uuidv4()}.${ext}`;
 
-  // Artwork: normalize to a 1500x1500 square JPEG so it always renders cleanly
-  // regardless of source dimensions (no top/bottom cropping, predictable size).
+  // Artwork: resize/normalise with Sharp then save directly to public/uploads/artwork/
+  // No cloud storage — files are committed to git and served by Express.
   if (type === "artwork") {
     try {
-      const bucket = STORAGE_BUCKETS.ARTWORK;
+      const artworkDir = path.join(process.cwd(), "public/uploads/artwork");
+      if (!fs.existsSync(artworkDir)) fs.mkdirSync(artworkDir, { recursive: true });
+
       const isImage = (req.file.mimetype || "").startsWith("image/");
       let bodyBuffer: Buffer;
-      let contentType = req.file.mimetype || "application/octet-stream";
+      let outExt = "jpg";
 
       if (isImage) {
-        // HEIC/HEIF (iPhone photos) — convert to JPEG first because libheif on
-        // many Linux servers is not compiled with the HEVC codec, causing Sharp
-        // to crash. heic-convert uses a pure-JS WASM decoder so it works
-        // everywhere regardless of system codec support.
         const isHeic = /\.hei[cf]$/i.test(req.file.originalname) ||
           req.file.mimetype === "image/heic" ||
           req.file.mimetype === "image/heif";
         let sharpInput: string | Buffer = req.file.path;
         if (isHeic) {
           const heicBuffer = fs.readFileSync(req.file.path);
-          sharpInput = Buffer.from(await heicConvert({
-            buffer: heicBuffer,
-            format: "JPEG",
-            quality: 1,
-          }));
+          sharpInput = Buffer.from(await heicConvert({ buffer: heicBuffer, format: "JPEG", quality: 1 }));
         }
 
-        // Decide output format based on whether the source image has an alpha
-        // channel. PNG/WebP with transparency (e.g. cover-art mockups on a
-        // transparent background) MUST stay PNG — JPEG has no alpha and would
-        // flatten transparent pixels to solid black, which is exactly the bug
-        // we're fixing here. JPEGs and other opaque sources stay as compact
-        // JPEG to keep file sizes small.
-        const src = sharp(sharpInput).rotate(); // honor EXIF orientation
+        const src = sharp(sharpInput).rotate();
         const meta = await src.metadata();
         const hasAlpha = !!meta.hasAlpha;
 
         const resized = src.resize(1500, 1500, {
           fit: "contain",
-          // Transparent padding when alpha exists, black otherwise.
-          background: hasAlpha
-            ? { r: 0, g: 0, b: 0, alpha: 0 }
-            : { r: 0, g: 0, b: 0, alpha: 1 },
+          background: hasAlpha ? { r: 0, g: 0, b: 0, alpha: 0 } : { r: 0, g: 0, b: 0, alpha: 1 },
         });
 
         if (hasAlpha) {
-          bodyBuffer = await resized
-            .png({ compressionLevel: 9, adaptiveFiltering: true })
-            .toBuffer();
-          contentType = "image/png";
-          key = `${uuidv4()}.png`;
+          bodyBuffer = await resized.png({ compressionLevel: 9, adaptiveFiltering: true }).toBuffer();
+          outExt = "png";
         } else {
-          bodyBuffer = await resized
-            .jpeg({ quality: 88, mozjpeg: true })
-            .toBuffer();
-          contentType = "image/jpeg";
-          key = `${uuidv4()}.jpg`;
+          bodyBuffer = await resized.jpeg({ quality: 88, mozjpeg: true }).toBuffer();
+          outExt = "jpg";
         }
       } else {
         bodyBuffer = fs.readFileSync(req.file.path);
+        outExt = ext;
       }
 
-      await uploadFile(bucket, key, bodyBuffer, contentType);
       fs.unlinkSync(req.file.path);
-      const url = getPublicUrl(bucket, key);
+      const filename = `${uuidv4()}.${outExt}`;
+      const dest = path.join(artworkDir, filename);
+      fs.writeFileSync(dest, bodyBuffer);
 
-      // CRITICAL: verify the uploaded artwork is actually publicly fetchable
-      // BEFORE returning success. Otherwise we get the silent-failure mode
-      // where the storage PUT succeeds but the public URL is dead (R2 bucket
-      // not public, R2_PUBLIC_BASE_URL pointing at the wrong domain, B2
-      // bucket private, etc.) — the admin sees "✓ Nahráno" but the image
-      // never renders. Fail loudly with an actionable message instead.
-      const verification = await verifyPublicUrl(url);
-      if (!verification.ok) {
-        console.error(`❌ artwork uploaded but public URL is not loadable: ${url} — ${verification.detail}`);
-        res.status(502).json({
-          error:
-            "Soubor se nahrál, ale veřejná URL nefunguje. Nejčastější příčina: " +
-            "Cloudflare R2 bucket nemá zapnutý veřejný přístup, nebo proměnná " +
-            "R2_PUBLIC_BASE_URL na Renderu je špatně nastavená.",
-          detail: verification.detail,
-          attemptedUrl: url,
-          bucket,
-          key,
-        });
-        return;
-      }
-
-      res.json({ url, key, bucket, size: bodyBuffer.length });
-      console.log(`✅ artwork uploaded + verified loadable: ${url}`);
+      const url = `/uploads/artwork/${filename}`;
+      res.json({ url, filename, size: bodyBuffer.length });
+      console.log(`✅ artwork saved locally: ${dest}`);
       return;
     } catch (error) {
       if (req.file.path && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
@@ -428,16 +388,25 @@ router.post("/", requireAdmin, upload.single("file"), async (req: Request, res: 
     }
   }
 
-  // Preview: upload to PREVIEWS bucket (Cloudflare R2 when configured, B2 fallback)
+  // Preview audio: save directly to public/uploads/previews/
+  // No cloud storage — files committed to git, served by Express.
   if (type === "preview") {
     try {
-      const bucket = STORAGE_BUCKETS.PREVIEWS;
-      const fileStream = fs.createReadStream(req.file.path);
-      await uploadFile(bucket, key, fileStream, req.file.mimetype);
+      const previewDir = path.join(process.cwd(), "public/uploads/previews");
+      if (!fs.existsSync(previewDir)) fs.mkdirSync(previewDir, { recursive: true });
+
+      const origExt = path.extname(req.file.originalname).toLowerCase() || `.${ext}`;
+      const base = path.basename(req.file.originalname, origExt)
+        .toLowerCase().replace(/[^a-z0-9_.-]/g, "-").substring(0, 80);
+      const filename = `${base}-${uuidv4().substring(0, 8)}${origExt}`;
+      const dest = path.join(previewDir, filename);
+
+      fs.copyFileSync(req.file.path, dest);
       fs.unlinkSync(req.file.path);
-      const url = getPublicUrl(bucket, key);
-      res.json({ url, key, bucket, size: req.file.size });
-      console.log(`✅ preview uploaded: ${url}`);
+
+      const url = `/uploads/previews/${filename}`;
+      res.json({ url, filename, size: req.file.size });
+      console.log(`✅ preview saved locally: ${dest}`);
       return;
     } catch (error) {
       if (req.file.path && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
@@ -496,32 +465,28 @@ router.post("/", requireAdmin, upload.single("file"), async (req: Request, res: 
     }
   }
 
-  const isPublic = type === "preview";
-  const bucket = isPublic ? STORAGE_BUCKETS.PREVIEWS : STORAGE_BUCKETS.ZIPS;
-  
+  // Kit / trackout / any other type: save to public/uploads/kits/
+  // No cloud storage — files committed to git, served by Express.
   try {
-    console.log(`Streaming upload: ${req.file.originalname} (${req.file.size}B) → ${bucket}/${key}`);
-    
-    // Stream temp file to B2 (low memory)
-    const fileStream = fs.createReadStream(req.file.path);
-    await uploadFile(bucket, key, fileStream, req.file.mimetype);
-    
-    // Cleanup temp file
+    const kitsDir = path.join(process.cwd(), "public/uploads/kits");
+    if (!fs.existsSync(kitsDir)) fs.mkdirSync(kitsDir, { recursive: true });
+
+    const origExt = path.extname(req.file.originalname).toLowerCase() || `.${ext}`;
+    const base = path.basename(req.file.originalname, origExt)
+      .toLowerCase().replace(/[^a-z0-9_.-]/g, "-").substring(0, 80);
+    const filename = `${base}-${uuidv4().substring(0, 8)}${origExt}`;
+    const dest = path.join(kitsDir, filename);
+
+    fs.copyFileSync(req.file.path, dest);
     fs.unlinkSync(req.file.path);
-    
-    const url = isPublic ? getPublicUrl(bucket, key) : key;
-    res.json({ url, key, bucket, size: req.file.size });
-    console.log(`✅ ${bucket}/${key} uploaded`);
+
+    const url = `/uploads/kits/${filename}`;
+    res.json({ url, filename, size: req.file.size });
+    console.log(`✅ ${type} saved locally: ${dest}`);
   } catch (error) {
-    // Cleanup on error
-    if (req.file.path && fs.existsSync(req.file.path)) {
-      fs.unlinkSync(req.file.path);
-    }
+    if (req.file.path && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
     console.error("Upload failed:", error);
-    res.status(500).json({ 
-      error: "Upload failed", 
-      detail: String(error)
-    });
+    res.status(500).json({ error: "Upload failed", detail: String(error) });
   }
 });
 

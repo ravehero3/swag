@@ -236,6 +236,11 @@ router.get("/:id/download", requireAuth, async (req: Request, res: Response) => 
     if (fileUrl.startsWith("https://") || fileUrl.startsWith("http://")) {
       return res.json({ downloadUrl: fileUrl });
     }
+    // Locally stored kit file (saved in public/uploads/kits/)
+    if (fileUrl.startsWith("/uploads/")) {
+      const { getAppBaseUrl } = await import("../lib/appUrl.js");
+      return res.json({ downloadUrl: `${getAppBaseUrl()}${fileUrl}` });
+    }
     // Otherwise it's a B2 object key — generate a signed download URL
     const url = await generateDownloadUrl(STORAGE_BUCKETS.ZIPS, fileUrl);
     res.json({ downloadUrl: url });
