@@ -1328,10 +1328,10 @@ function Home() {
           margin: "0px auto 48px auto",
           padding: "1px",
           borderRadius: "18px",
-          background: "linear-gradient(160deg, rgba(80,80,80,0.22) 0%, rgba(30,30,30,0.08) 40%, rgba(50,50,50,0.14) 100%)",
+          background: "linear-gradient(180deg, rgba(72,72,72,0.28) 0%, rgba(38,38,38,0.10) 50%, rgba(52,52,52,0.18) 100%)",
           boxShadow: "0 0 0 0.5px rgba(0,0,0,0.8), 0 24px 64px rgba(0,0,0,0.45)",
         }}>
-        <div className="home-beats-list" style={{ marginBottom: "0", maxWidth: "none", margin: "0", marginTop: "0", borderRadius: "17px", background: "linear-gradient(160deg, rgba(18,18,18,0.82) 0%, rgba(8,8,8,0.92) 100%)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04), inset 0 -1px 0 rgba(0,0,0,0.3)" }}>
+        <div className="home-beats-list" style={{ marginBottom: "0", maxWidth: "none", margin: "0", marginTop: "0", borderRadius: "17px", background: "linear-gradient(180deg, rgba(20,20,20,0.88) 0%, rgba(9,9,9,0.96) 100%)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05), inset 0 -1px 0 rgba(0,0,0,0.35)" }}>
           {otherBeats.length === 0 && !highlightedBeat ? (
             <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "8px" }}>
               {Array(4).fill(null).map((_, index) => (
