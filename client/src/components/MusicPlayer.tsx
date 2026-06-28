@@ -112,14 +112,22 @@ function MusicPlayer({
     if (!audio) return;
 
     const updateTime = () => setCurrentTime(audio.currentTime);
-    const updateDuration = () => setDuration(audio.duration);
+    const updateDuration = () => {
+      if (isFinite(audio.duration) && audio.duration > 0) setDuration(audio.duration);
+    };
 
     audio.addEventListener("timeupdate", updateTime);
     audio.addEventListener("loadedmetadata", updateDuration);
+    audio.addEventListener("durationchange", updateDuration);
+
+    // Sync immediately — loadedmetadata may have already fired before this effect ran
+    updateDuration();
+    updateTime();
 
     return () => {
       audio.removeEventListener("timeupdate", updateTime);
       audio.removeEventListener("loadedmetadata", updateDuration);
+      audio.removeEventListener("durationchange", updateDuration);
     };
   }, [activeAudioRef, currentBeat]);
 

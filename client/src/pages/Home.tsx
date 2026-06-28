@@ -250,6 +250,19 @@ function AuthModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (us
   );
 }
 
+function AlienAvatar({ size = "100%" }: { size?: string | number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: "block" }}>
+      <ellipse cx="12" cy="12" rx="7.5" ry="9.5" fill="#1a1a1a"/>
+      <ellipse cx="9" cy="10.5" rx="3.2" ry="2.1" fill="rgba(255,255,255,0.78)" transform="rotate(-12 9 10.5)"/>
+      <ellipse cx="15" cy="10.5" rx="3.2" ry="2.1" fill="rgba(255,255,255,0.78)" transform="rotate(12 15 10.5)"/>
+      <circle cx="11.2" cy="14.2" r="0.55" fill="rgba(255,255,255,0.28)"/>
+      <circle cx="12.8" cy="14.2" r="0.55" fill="rgba(255,255,255,0.28)"/>
+      <path d="M9.5 17.2 Q12 18.8 14.5 17.2" stroke="rgba(255,255,255,0.28)" strokeWidth="0.8" fill="none" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
 function Home() {
   const [location, setLocation] = useLocation();
   const [beats, setBeats] = useState<Beat[]>([]);
@@ -1223,6 +1236,7 @@ function Home() {
                         setDraggingComment({ id: c.id, xPct: initXPct });
                       } : undefined}
                       style={{
+                        position: "relative",
                         width: "18px",
                         height: "18px",
                         borderRadius: "50%",
@@ -1237,10 +1251,14 @@ function Home() {
                         transformOrigin: "center center",
                       }}
                     >
-                      {c.avatar_url ? (
-                        <img src={c.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                      ) : (
-                        <span style={{ fontSize: "8px", color: "#fff", fontWeight: 600, background: getAvatarBg(c.username || c.email || "?"), width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>{(c.username || c.email)?.[0]?.toUpperCase() || "?"}</span>
+                      <AlienAvatar />
+                      {c.avatar_url && (
+                        <img
+                          src={c.avatar_url}
+                          alt=""
+                          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                        />
                       )}
                     </div>
                     {isOwnComment && isHovered && !isDragging && (
@@ -1290,8 +1308,11 @@ function Home() {
               </div>
               <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
                 {user && (
-                  <div style={{ width: "28px", height: "28px", borderRadius: "50%", flexShrink: 0, background: user.avatarUrl ? "#1a1a1a" : getAvatarBg(user.email || "?"), border: "1.5px solid rgba(255,255,255,0.1)", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", color: "#fff", fontWeight: 600 }}>
-                    {user.avatarUrl ? <img src={user.avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : ((user.email || "?")[0]).toUpperCase()}
+                  <div style={{ position: "relative", width: "28px", height: "28px", borderRadius: "50%", flexShrink: 0, background: "#1a1a1a", border: "1.5px solid rgba(255,255,255,0.1)", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <AlienAvatar />
+                    {user.avatarUrl && (
+                      <img src={user.avatarUrl} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                    )}
                   </div>
                 )}
                 <div
