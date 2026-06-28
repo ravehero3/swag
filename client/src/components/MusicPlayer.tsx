@@ -47,6 +47,7 @@ function MusicPlayer({
 }: MusicPlayerProps) {
   const [showShareModal, setShowShareModal] = useState(false);
   const [showMobileQueue, setShowMobileQueue] = useState(false);
+  const [isHoveringTimeline, setIsHoveringTimeline] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
@@ -192,12 +193,8 @@ function MusicPlayer({
             cursor: "pointer",
             zIndex: 100,
           }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLDivElement).style.height = "6px";
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLDivElement).style.height = "6px";
-          }}
+          onMouseEnter={() => setIsHoveringTimeline(true)}
+          onMouseLeave={() => setIsHoveringTimeline(false)}
         >
           <div
             style={{
@@ -208,21 +205,21 @@ function MusicPlayer({
               pointerEvents: "none",
             }}
           />
-          {/* Scrubber thumb */}
+          {/* Scrubber thumb — only visible on hover */}
           <div
             style={{
               position: "absolute",
               top: "50%",
               left: `${progressPercent}%`,
               transform: "translate(-50%, -50%)",
-              width: "10px",
-              height: "10px",
+              width: "12px",
+              height: "12px",
               borderRadius: "50%",
               background: "#fff",
               pointerEvents: "none",
-              opacity: progressPercent > 0 ? 1 : 0,
-              transition: isPlaying ? "none" : "left 0.1s linear",
-              boxShadow: "0 0 4px rgba(255,255,255,0.6)",
+              opacity: isHoveringTimeline && progressPercent >= 0 ? 1 : 0,
+              transition: isPlaying ? "opacity 0.15s ease" : "left 0.1s linear, opacity 0.15s ease",
+              boxShadow: "0 0 6px rgba(255,255,255,0.7)",
             }}
           />
         </div>

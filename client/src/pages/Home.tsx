@@ -356,6 +356,21 @@ function Home() {
         if (highlightedData.preview_url && highlightedData.waveform_data && Array.isArray(highlightedData.waveform_data)) {
           seedWaveformCache(highlightedData.preview_url, highlightedData.waveform_data);
         }
+        // Prefetch sound kit artwork in background so /zvuky loads instantly
+        setTimeout(() => {
+          fetch("/api/sound-kits")
+            .then(r => r.json())
+            .then((kits: any[]) => {
+              if (!Array.isArray(kits)) return;
+              kits.forEach((kit: any) => {
+                if (kit.artwork_url) { const img = new Image(); img.src = kit.artwork_url; }
+                if (Array.isArray(kit.extra_artwork_urls)) {
+                  kit.extra_artwork_urls.forEach((url: string) => { if (url) { const img = new Image(); img.src = url; } });
+                }
+              });
+            })
+            .catch(() => {});
+        }, 1500);
       } else if (beatsData && Array.isArray(beatsData) && beatsData.length > 0) {
         setCurrentBeat(beatsData[0]);
       }
@@ -1256,7 +1271,8 @@ function Home() {
                         <img
                           src={c.avatar_url}
                           alt=""
-                          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+                          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0, transition: "opacity 0.2s" }}
+                          onLoad={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = "1"; }}
                           onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
                         />
                       )}
@@ -1311,7 +1327,7 @@ function Home() {
                   <div style={{ position: "relative", width: "28px", height: "28px", borderRadius: "50%", flexShrink: 0, background: "#1a1a1a", border: "1.5px solid rgba(255,255,255,0.1)", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
                     <AlienAvatar />
                     {user.avatarUrl && (
-                      <img src={user.avatarUrl} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                      <img src={user.avatarUrl} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0, transition: "opacity 0.2s" }} onLoad={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = "1"; }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
                     )}
                   </div>
                 )}

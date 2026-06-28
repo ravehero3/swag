@@ -664,6 +664,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   const [uploadError, setUploadError] = useState<Record<string, string>>({});
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
   const [hoveredBeatId, setHoveredBeatId] = useState<number | null>(null);
+  const [inlineBpmKey, setInlineBpmKey] = useState<{ id: number; bpm: number; key: string } | null>(null);
   const [previewBeatId, setPreviewBeatId] = useState<number | null>(null);
   const [recomputingIds, setRecomputingIds] = useState<Set<number>>(new Set());
   const [recomputeAllProgress, setRecomputeAllProgress] = useState<{ current: number; total: number } | null>(null);
@@ -869,6 +870,25 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
       }
     }
     setRecomputeAllProgress(null);
+  };
+
+  const saveInlineBpmKey = async (beat: Beat, bpm: number, key: string) => {
+    setInlineBpmKey(null);
+    if (bpm === beat.bpm && key === beat.key) return;
+    try {
+      await fetch(`/api/beats/${beat.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          title: beat.title, artist: beat.artist, bpm, key, price: beat.price,
+          previewUrl: beat.preview_url, fileUrl: beat.file_url, artworkUrl: beat.artwork_url,
+          trackoutUrl: beat.trackout_url || null, tags: beat.tags || [],
+          isPublished: beat.is_published, isHighlighted: beat.is_highlighted || false,
+        }),
+      });
+      onRefresh();
+    } catch {}
   };
 
   const toggleBeatPreview = (beat: Beat, e: React.MouseEvent) => {
@@ -1643,9 +1663,40 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                       </div>
                     )}
                   </td>
-                  <td style={{ padding: "10px 8px" }}>
-                    <div style={{ fontSize: "12px", color: "#ccc", fontFamily: "monospace" }}>{beat.bpm} BPM</div>
-                    <div style={{ fontSize: "11px", color: "#555", marginTop: "2px" }}>{beat.key}</div>
+                  <td style={{ padding: "6px 8px" }} onClick={e => e.stopPropagation()}>
+                    {inlineBpmKey?.id === beat.id ? (
+                      <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                        <input
+                          type="number"
+                          min={40} max={300}
+                          value={inlineBpmKey.bpm}
+                          onChange={e => setInlineBpmKey(v => v ? { ...v, bpm: Number(e.target.value) } : v)}
+                          onBlur={() => saveInlineBpmKey(beat, inlineBpmKey.bpm, inlineBpmKey.key)}
+                          onKeyDown={e => { if (e.key === "Enter") { (e.currentTarget as HTMLInputElement).blur(); } if (e.key === "Escape") setInlineBpmKey(null); }}
+                          autoFocus
+                          style={{ width: "64px", padding: "3px 6px", background: "#0d0d0d", border: "1px solid #333", borderRadius: "4px", color: "#ccc", fontSize: "12px", fontFamily: "monospace", outline: "none" }}
+                        />
+                        <select
+                          value={inlineBpmKey.key}
+                          onChange={e => setInlineBpmKey(v => v ? { ...v, key: e.target.value } : v)}
+                          onBlur={() => saveInlineBpmKey(beat, inlineBpmKey.bpm, inlineBpmKey.key)}
+                          style={{ width: "64px", padding: "3px 4px", background: "#0d0d0d", border: "1px solid #333", borderRadius: "4px", color: "#aaa", fontSize: "11px", outline: "none" }}
+                        >
+                          {MUSICAL_KEYS.map(k => <option key={k} value={k}>{k}</option>)}
+                        </select>
+                      </div>
+                    ) : (
+                      <div
+                        onClick={() => setInlineBpmKey({ id: beat.id, bpm: beat.bpm, key: beat.key || "Cm" })}
+                        title="Kliknutím upravíte"
+                        style={{ cursor: "text", display: "inline-flex", flexDirection: "column", gap: "2px", padding: "4px 6px", borderRadius: "4px", border: "1px solid transparent", transition: "border-color 0.15s" }}
+                        onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.borderColor = "#2a2a2a"}
+                        onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.borderColor = "transparent"}
+                      >
+                        <div style={{ fontSize: "12px", color: "#ccc", fontFamily: "monospace" }}>{beat.bpm} BPM</div>
+                        <div style={{ fontSize: "11px", color: "#555" }}>{beat.key}</div>
+                      </div>
+                    )}
                   </td>
                   <td style={{ padding: "10px 8px" }}>
                     <div style={{ fontSize: "12px", color: beat.price === 0 ? "#555" : "#ccc", fontFamily: "monospace" }}>{beat.price === 0 ? "Free" : `${beat.price.toLocaleString("cs-CZ")} Kč`}</div>
