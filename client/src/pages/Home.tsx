@@ -250,15 +250,11 @@ function AuthModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (us
   );
 }
 
-function AlienAvatar({ size = "100%" }: { size?: string | number }) {
+function TorsoAvatar({ size = "100%" }: { size?: string | number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ display: "block" }}>
-      <ellipse cx="12" cy="12" rx="7.5" ry="9.5" fill="#1a1a1a"/>
-      <ellipse cx="9" cy="10.5" rx="3.2" ry="2.1" fill="rgba(255,255,255,0.78)" transform="rotate(-12 9 10.5)"/>
-      <ellipse cx="15" cy="10.5" rx="3.2" ry="2.1" fill="rgba(255,255,255,0.78)" transform="rotate(12 15 10.5)"/>
-      <circle cx="11.2" cy="14.2" r="0.55" fill="rgba(255,255,255,0.28)"/>
-      <circle cx="12.8" cy="14.2" r="0.55" fill="rgba(255,255,255,0.28)"/>
-      <path d="M9.5 17.2 Q12 18.8 14.5 17.2" stroke="rgba(255,255,255,0.28)" strokeWidth="0.8" fill="none" strokeLinecap="round"/>
+      <circle cx="12" cy="8" r="3.5" fill="#3a3a3a"/>
+      <path d="M5 20c0-3.866 3.134-7 7-7s7 3.134 7 7" stroke="#3a3a3a" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
     </svg>
   );
 }
@@ -820,7 +816,7 @@ function Home() {
         .comment-avatar-wrap:hover > div:first-child { transform: scale(2); }
         .comment-avatar-wrap .comment-tooltip { opacity: 0; pointer-events: none; transition: opacity 0.15s ease; }
         .comment-avatar-wrap:hover .comment-tooltip { opacity: 1 !important; }
-        .hero-logo-img { width: 33.333vw; height: auto; object-fit: contain; display: block; }
+        .hero-logo-img { width: clamp(280px, 44vw, 680px); height: auto; object-fit: contain; display: block; }
         @media (max-width: 1040px) {
           .home-featured-inner { width: calc(100% - 40px) !important; }
         }
@@ -885,7 +881,7 @@ function Home() {
             src="/uploads/artwork/voodoo808-main-logo.png"
             alt="VOODOO808"
             className="hero-logo-img"
-            style={{ width: "33.333vw", height: "auto", objectFit: "contain", display: "block" }}
+            style={{ width: "clamp(280px, 44vw, 680px)", height: "auto", objectFit: "contain", display: "block" }}
           />
         </div>
         <div
@@ -1266,7 +1262,7 @@ function Home() {
                         transformOrigin: "center center",
                       }}
                     >
-                      <AlienAvatar />
+                      <TorsoAvatar />
                       {c.avatar_url && (
                         <img
                           src={c.avatar_url}
@@ -1325,7 +1321,7 @@ function Home() {
               <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
                 {user && (
                   <div style={{ position: "relative", width: "28px", height: "28px", borderRadius: "50%", flexShrink: 0, background: "#1a1a1a", border: "1.5px solid rgba(255,255,255,0.1)", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <AlienAvatar />
+                    <TorsoAvatar />
                     {user.avatarUrl && (
                       <img src={user.avatarUrl} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0, transition: "opacity 0.2s" }} onLoad={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = "1"; }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
                     )}
