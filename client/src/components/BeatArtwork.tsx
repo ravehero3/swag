@@ -5,6 +5,7 @@ import { useApp } from "../App.js";
 // (settings) and read here so every beat-artwork render stays in sync.
 export interface ArtworkConfig {
   defaultArtworkUrl: string;
+  zoom: number;          // scale factor, e.g. 1.0 = no zoom, 1.35 = 35% in
   overlay: {
     enabled: boolean;
     color: string;       // hex like "#ff00ff"
@@ -45,6 +46,7 @@ export const DEFAULT_ARTWORK_FALLBACK = "/uploads/artwork/metallic-logo.png";
 
 export const DEFAULT_ARTWORK_CONFIG: ArtworkConfig = {
   defaultArtworkUrl: DEFAULT_ARTWORK_FALLBACK,
+  zoom: 1,
   overlay: { enabled: false, color: "#000000", opacity: 30, blendMode: "multiply" },
   filter: {
     grayscale: 0,
@@ -66,6 +68,7 @@ export function parseArtworkConfig(raw: string | undefined | null): ArtworkConfi
     const parsed = JSON.parse(raw);
     return {
       defaultArtworkUrl: parsed?.defaultArtworkUrl || DEFAULT_ARTWORK_FALLBACK,
+      zoom: typeof parsed?.zoom === "number" ? parsed.zoom : 1,
       overlay: { ...DEFAULT_ARTWORK_CONFIG.overlay, ...(parsed?.overlay || {}) },
       filter: { ...DEFAULT_ARTWORK_CONFIG.filter, ...(parsed?.filter || {}) },
     };
@@ -166,8 +169,12 @@ export function BeatArtwork({
           // Safari fix: forces a unique GPU compositing layer per image,
           // preventing Safari from reusing cached textures across different
           // <img> elements with the same dimensions (shows "wrong" artwork).
-          transform: "translateZ(0)",
-          WebkitTransform: "translateZ(0)",
+          transform: applyEffects && config.zoom && config.zoom !== 1
+            ? `scale(${config.zoom}) translateZ(0)`
+            : "translateZ(0)",
+          WebkitTransform: applyEffects && config.zoom && config.zoom !== 1
+            ? `scale(${config.zoom}) translateZ(0)`
+            : "translateZ(0)",
         }}
       />
       {showOverlay && (

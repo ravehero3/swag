@@ -669,6 +669,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   const [recomputeAllProgress, setRecomputeAllProgress] = useState<{ current: number; total: number } | null>(null);
   const [expandedWaveformBeat, setExpandedWaveformBeat] = useState<Beat | null>(null);
   const [ffmpegHealth, setFfmpegHealth] = useState<{ ok: boolean; version: string; source: string; durationMs: number } | null | "loading">("loading");
+  const [pendingAutoCompute, setPendingAutoCompute] = useState(false);
   const previewAudioRef = useRef<HTMLAudioElement | null>(null);
   const [stagedBeats, setStagedBeats] = useState<StagedBeat[]>([]);
   const [showBulkZone, setShowBulkZone] = useState(false);
@@ -779,6 +780,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
       });
       if (!res.ok) throw new Error("Create failed");
       setStagedBeats(prev => prev.filter(b => b.status !== "done"));
+      setPendingAutoCompute(true);
       onRefresh();
     } catch (err) {
       alert("Chyba při vytváření beatů: " + String(err));
@@ -807,6 +809,13 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     const id = setInterval(() => { loadData(); }, 5000);
     return () => clearInterval(id);
   }, [hasPendingWaveforms, loadData]);
+
+  useEffect(() => {
+    if (pendingAutoCompute && hasPendingWaveforms && !recomputeAllProgress) {
+      setPendingAutoCompute(false);
+      handleRecomputeAll();
+    }
+  }, [pendingAutoCompute, hasPendingWaveforms, recomputeAllProgress]);
 
   const handleRecomputeWaveform = async (beat: Beat, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -1540,20 +1549,6 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
       )}
 
       {/* ── Status bars ── */}
-      {(() => {
-        const isLoading = ffmpegHealth === "loading";
-        const health = ffmpegHealth !== "loading" ? ffmpegHealth : null;
-        const ok = health?.ok;
-        return (
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "6px 12px", marginBottom: "6px", background: isLoading ? "rgba(255,255,255,0.01)" : ok ? "rgba(76,175,80,0.04)" : "rgba(229,57,53,0.06)", border: `1px solid ${isLoading ? "#1a1a1a" : ok ? "#1a3d1a" : "#3a1010"}`, borderRadius: "6px" }}>
-            <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: isLoading ? "#333" : ok ? "#4caf50" : "#e53935", flexShrink: 0, boxShadow: !isLoading ? `0 0 5px ${ok ? "#4caf50" : "#e53935"}` : "none" }} />
-            <span style={{ fontSize: "11px", color: isLoading ? "#444" : ok ? "#4caf50" : "#e53935", fontFamily: "monospace", flex: 1 }}>
-              {isLoading ? "ffmpeg: ověřuji…" : ok ? `ffmpeg ${health.version} · ${health.source}` : `ffmpeg NEDOSTUPNÝ — waveformy nebudou generovány`}
-            </span>
-            <button onClick={checkFfmpegHealth} disabled={isLoading} data-testid="button-check-ffmpeg-health" style={{ background: "none", border: "1px solid #222", color: "#444", fontSize: "10px", padding: "2px 7px", borderRadius: "4px", cursor: isLoading ? "not-allowed" : "pointer", opacity: isLoading ? 0.4 : 1 }}>{isLoading ? "…" : "Ověřit"}</button>
-          </div>
-        );
-      })()}
 
       {beats.length > 0 && (() => {
         const withWave = beats.filter((b: Beat) => b.waveform_data && Array.isArray(b.waveform_data)).length;
@@ -5571,6 +5566,18 @@ const ARTWORK_PRESETS: { name: string; config: ArtworkConfig }[] = [
     config: DEFAULT_ARTWORK_CONFIG,
   },
   {
+    name: "Zoom ×1",
+    config: { ...DEFAULT_ARTWORK_CONFIG, zoom: 1.15 },
+  },
+  {
+    name: "Zoom ×2",
+    config: { ...DEFAULT_ARTWORK_CONFIG, zoom: 1.35 },
+  },
+  {
+    name: "Zoom ×3",
+    config: { ...DEFAULT_ARTWORK_CONFIG, zoom: 1.7 },
+  },
+  {
     name: "Černobílé",
     config: {
       ...DEFAULT_ARTWORK_CONFIG,
@@ -6349,12 +6356,25 @@ function KonfiguraceTab() {
   const [items, setItems] = useState<{ key: string; label: string; group: string; required: boolean; set: boolean }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [ffmpegHealth, setFfmpegHealth] = useState<{ ok: boolean; version: string; source: string; durationMs: number } | null | "loading">("loading");
+
+  const checkFfmpegHealth = async () => {
+    setFfmpegHealth("loading");
+    try {
+      const res = await fetch("/api/beats/ffmpeg-health", { credentials: "include" });
+      const data = await res.json();
+      setFfmpegHealth(data);
+    } catch {
+      setFfmpegHealth({ ok: false, version: "network error", source: "unknown", durationMs: 0 });
+    }
+  };
 
   useEffect(() => {
     fetch("/api/admin/config-check", { credentials: "include" })
       .then((r) => r.json())
       .then((data) => { setItems(data); setLoading(false); })
       .catch(() => { setError("Nepodařilo se načíst konfiguraci."); setLoading(false); });
+    checkFfmpegHealth();
   }, []);
 
   const groups = items.reduce<Record<string, typeof items>>((acc, item) => {
@@ -6379,6 +6399,22 @@ function KonfiguraceTab() {
       <p style={{ marginBottom: "24px", color: "#555", fontSize: "13px" }}>
         Přehled environment variables potřebných pro správný chod webu — zkontroluj je v nastavení Renderu.
       </p>
+
+      {/* ── FFmpeg status ── */}
+      {(() => {
+        const isLoading = ffmpegHealth === "loading";
+        const health = ffmpegHealth !== "loading" ? ffmpegHealth : null;
+        const ok = health?.ok;
+        return (
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 14px", marginBottom: "24px", background: isLoading ? "rgba(255,255,255,0.01)" : ok ? "rgba(76,175,80,0.04)" : "rgba(229,57,53,0.06)", border: `1px solid ${isLoading ? "#1a1a1a" : ok ? "#1a3d1a" : "#3a1010"}`, borderRadius: "6px" }}>
+            <div style={{ width: "7px", height: "7px", borderRadius: "50%", background: isLoading ? "#333" : ok ? "#4caf50" : "#e53935", flexShrink: 0, boxShadow: !isLoading ? `0 0 6px ${ok ? "#4caf50" : "#e53935"}` : "none" }} />
+            <span style={{ fontSize: "12px", color: isLoading ? "#444" : ok ? "#4caf50" : "#e53935", fontFamily: "monospace", flex: 1 }}>
+              {isLoading ? "ffmpeg: ověřuji…" : ok ? `ffmpeg ${health.version} · ${health.source}` : "ffmpeg NEDOSTUPNÝ — waveformy nebudou generovány"}
+            </span>
+            <button onClick={checkFfmpegHealth} disabled={isLoading} data-testid="button-check-ffmpeg-health" style={{ background: "none", border: "1px solid #222", color: "#444", fontSize: "10px", padding: "2px 7px", borderRadius: "4px", cursor: isLoading ? "not-allowed" : "pointer", opacity: isLoading ? 0.4 : 1 }}>{isLoading ? "…" : "Ověřit"}</button>
+          </div>
+        );
+      })()}
 
       <GoogleOAuthDiagPanel />
 
