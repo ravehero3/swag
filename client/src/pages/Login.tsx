@@ -112,8 +112,8 @@ function Login() {
 
   return (
     <div className="fade-in" style={{ position: "relative", display: "flex", justifyContent: "center", alignItems: "flex-start", minHeight: "calc(100vh - 42px)", paddingTop: "8vh", paddingBottom: "60px", paddingLeft: "20px", paddingRight: "20px", overflow: "hidden" }}>
-      {/* Video background */}
-      <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 0, pointerEvents: "none", overflow: "hidden" }}>
+      {/* Video background — absolute so it stays inside the login container and doesn't cover the footer */}
+      <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, zIndex: 0, pointerEvents: "none", overflow: "hidden" }}>
         <video
           src="/uploads/hrad-na-web.mp4"
           autoPlay
