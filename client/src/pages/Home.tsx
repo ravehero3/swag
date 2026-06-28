@@ -756,7 +756,7 @@ function Home() {
           </video>
           <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%)", pointerEvents: "none" }} />
           <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none", zIndex: 2 }}>
-            <img src="/uploads/artwork/voodoo808-main-logo.png" alt="VOODOO808" className="hero-logo-img" style={{ width: "100vw", maxWidth: "none", height: "auto", objectFit: "contain", display: "block", transform: "scale(1.6)", transformOrigin: "center center" }} />
+            <img src="/uploads/artwork/voodoo808-main-logo.png" alt="VOODOO808" className="hero-logo-img" />
           </div>
           <div style={{ position: "absolute", bottom: 0, left: 0, width: "100%", height: "120px", background: "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 100%)", pointerEvents: "none", zIndex: 3 }} />
         </div>
@@ -805,7 +805,7 @@ function Home() {
         .comment-avatar-wrap:hover > div:first-child { transform: scale(2); }
         .comment-avatar-wrap .comment-tooltip { opacity: 0; pointer-events: none; transition: opacity 0.15s ease; }
         .comment-avatar-wrap:hover .comment-tooltip { opacity: 1 !important; }
-        .hero-logo-img { width: 1200px; max-width: calc(100vw - 40px); height: auto; object-fit: contain; display: block; }
+        .hero-logo-img { width: 33.333vw; height: auto; object-fit: contain; display: block; }
         @media (max-width: 1040px) {
           .home-featured-inner { width: calc(100% - 40px) !important; }
         }
@@ -818,7 +818,6 @@ function Home() {
           .desktop-only { display: none !important; }
           .mobile-only { display: flex !important; }
           .mobile-only-flex { display: flex !important; }
-          .hero-logo-img { width: calc(100vw - 32px); }
           .home-featured-section { margin-top: 12px !important; margin-bottom: 24px !important; min-height: 0 !important; }
           .home-featured-inner { width: 100% !important; flex-direction: column !important; gap: 20px !important; align-items: stretch !important; margin-bottom: 16px !important; }
           .home-featured-artwork { width: min(64vw, 220px) !important; margin: 0 auto !important; }
@@ -871,7 +870,7 @@ function Home() {
             src="/uploads/artwork/voodoo808-main-logo.png"
             alt="VOODOO808"
             className="hero-logo-img"
-            style={{ width: "100vw", maxWidth: "none", height: "auto", objectFit: "contain", display: "block", transform: "scale(1.6)", transformOrigin: "center center" }}
+            style={{ width: "33.333vw", height: "auto", objectFit: "contain", display: "block" }}
           />
         </div>
         <div
