@@ -1423,9 +1423,9 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                     <label style={labelStyle}>Artwork</label>
                     <DropZone
                       type="artwork"
-                      accept="image/*,.heic,.heif"
+                      accept="image/*"
                       label="Přetáhněte obrázek nebo klikněte"
-                      hint="JPG, PNG, HEIC · auto 1500×1500px"
+                      hint="JPG, PNG · auto 1500×1500px"
                       icon={<ImageIcon size={22} color="#555" />}
                       onFile={async (f) => { const url = await uploadFile(f, "artwork"); if (url) setForm(ff => ({ ...ff, artworkUrl: url as string })); }}
                       isDragging={isDragArtwork}

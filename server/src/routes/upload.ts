@@ -7,7 +7,6 @@ import { requireAdmin } from "../middleware/auth.js";
 import { uploadFile, generatePresignedUploadUrl, listFiles, STORAGE_BUCKETS, VIDEO_PREFIX, getPublicUrl } from "../lib/storage.js";
 import stream from "stream";
 import sharp from "sharp";
-import heicConvert from "heic-convert";
 import { pool } from "../db.js";
 interface PendingUpload {
   id: number;
@@ -338,16 +337,7 @@ router.post("/", requireAdmin, upload.single("file"), async (req: Request, res: 
       let contentType = "image/jpeg";
 
       if (isImage) {
-        const isHeic = /\.hei[cf]$/i.test(req.file.originalname) ||
-          req.file.mimetype === "image/heic" ||
-          req.file.mimetype === "image/heif";
-        let sharpInput: string | Buffer = req.file.path;
-        if (isHeic) {
-          const heicBuffer = fs.readFileSync(req.file.path);
-          sharpInput = Buffer.from(await heicConvert({ buffer: heicBuffer, format: "JPEG", quality: 1 }));
-        }
-
-        const src = sharp(sharpInput).rotate();
+        const src = sharp(req.file.path).rotate();
         const meta = await src.metadata();
         const hasAlpha = !!meta.hasAlpha;
 
