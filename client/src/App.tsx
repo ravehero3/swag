@@ -167,6 +167,23 @@ function App() {
   const [location, setLocation] = useLocation();
 
   useEffect(() => {
+    const getOrCreateSession = () => {
+      let id = sessionStorage.getItem("_v8sid");
+      if (!id) {
+        id = Math.random().toString(36).slice(2) + Date.now().toString(36);
+        sessionStorage.setItem("_v8sid", id);
+      }
+      return id;
+    };
+    const sessionId = getOrCreateSession();
+    fetch("/api/analytics/track", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ path: location, sessionId, referrer: document.referrer || null }),
+    }).catch(() => {});
+  }, [location]);
+
+  useEffect(() => {
     document.body.style.paddingTop = "42px";
     return () => {
       document.body.style.paddingTop = "0";

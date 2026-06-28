@@ -5495,6 +5495,350 @@ function PromoCodesTab() {
   );
 }
 
+type MktSubTab = "analytika" | "slevy" | "promo" | "seo" | "ig" | "emaily";
+
+function MarketingTab({ settings, onRefresh }: { settings: Record<string, string>; onRefresh: () => Promise<void> }) {
+  const [sub, setSub] = useState<MktSubTab>("analytika");
+  const [analytics, setAnalytics] = useState<any>(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(true);
+
+  const loadAnalytics = async () => {
+    setAnalyticsLoading(true);
+    try {
+      const res = await fetch("/api/admin/analytics", { credentials: "include" });
+      if (res.ok) setAnalytics(await res.json());
+    } catch {}
+    setAnalyticsLoading(false);
+  };
+
+  useEffect(() => { loadAnalytics(); }, []);
+
+  const SUB_TABS: { id: MktSubTab; label: string }[] = [
+    { id: "analytika", label: "Analytika" },
+    { id: "slevy",     label: "Slevy" },
+    { id: "promo",     label: "Promo kódy" },
+    { id: "seo",       label: "SEO" },
+    { id: "ig",        label: "IG Stories" },
+    { id: "emaily",    label: "E-maily" },
+  ];
+
+  const PAGE_LABELS: Record<string, string> = {
+    "/": "Domovská stránka",
+    "/beaty": "Beaty",
+    "/zvuky": "Zvuky",
+    "/kosik": "Košík",
+    "/pokladna": "Pokladna",
+    "/ucet": "Účet",
+    "/ulozeno": "Uložené",
+    "/prihlasit-se": "Přihlášení",
+  };
+
+  const formatPath = (path: string) => {
+    if (PAGE_LABELS[path]) return PAGE_LABELS[path];
+    if (path.startsWith("/produkt/")) {
+      const parts = path.split("/");
+      return `Produkt – ${parts[2] === "beat" ? "Beat" : "Kit"} #${parts[3] || ""}`;
+    }
+    return path;
+  };
+
+  const formatDate = (d: string) => {
+    const date = new Date(d);
+    return date.toLocaleDateString("cs-CZ", { day: "numeric", month: "short" });
+  };
+
+  const maxViews = analytics?.topPages?.length > 0
+    ? Math.max(...analytics.topPages.map((p: any) => parseInt(p.views)))
+    : 1;
+
+  const maxDailyViews = analytics?.dailyTrend?.length > 0
+    ? Math.max(...analytics.dailyTrend.map((d: any) => parseInt(d.views)))
+    : 1;
+
+  const card: React.CSSProperties = {
+    background: "rgba(255,255,255,0.03)",
+    border: "1px solid rgba(255,255,255,0.07)",
+    borderRadius: "14px",
+    padding: "22px 24px",
+    backdropFilter: "blur(8px)",
+  };
+
+  const statLabel: React.CSSProperties = {
+    fontSize: "11px",
+    color: "#555",
+    textTransform: "uppercase",
+    letterSpacing: "0.1em",
+    fontWeight: 600,
+    marginBottom: "8px",
+  };
+
+  const statValue: React.CSSProperties = {
+    fontSize: "34px",
+    fontWeight: 700,
+    color: "#fff",
+    lineHeight: 1,
+    letterSpacing: "-0.02em",
+  };
+
+  return (
+    <div style={{ paddingBottom: "60px" }}>
+      {/* ── Page header with live visitor pill ── */}
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "28px", gap: "16px", flexWrap: "wrap" }}>
+        <div>
+          <h1 style={{ margin: 0, fontSize: "22px", fontWeight: 700, letterSpacing: "-0.01em", color: "#fff" }}>Marketing</h1>
+          <p style={{ margin: "6px 0 0", fontSize: "13px", color: "#444" }}>Analytika, slevy, SEO a e-mailové šablony</p>
+        </div>
+        {!analyticsLoading && analytics && (
+          <div style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "8px",
+            padding: "6px 14px 6px 10px",
+            background: "rgba(255,255,255,0.05)",
+            border: "1px solid rgba(255,255,255,0.1)",
+            borderRadius: "999px",
+            backdropFilter: "blur(12px)",
+            fontSize: "13px",
+            color: "#ccc",
+            whiteSpace: "nowrap",
+          }}>
+            <span style={{
+              width: "7px", height: "7px", borderRadius: "50%",
+              background: "#22c55e",
+              boxShadow: "0 0 6px #22c55e",
+              flexShrink: 0,
+              animation: "pulse-green 2s infinite",
+            }} />
+            <span style={{ fontWeight: 600, color: "#fff" }}>{analytics.uniqueSessions7d.toLocaleString("cs-CZ")}</span>
+            <span style={{ color: "#555" }}>návštěvníků</span>
+            <span style={{ color: "#333", margin: "0 2px" }}>·</span>
+            <span style={{ color: "#666" }}>7 dní</span>
+          </div>
+        )}
+      </div>
+
+      {/* ── Sub-tab nav ── */}
+      <div style={{
+        display: "flex",
+        gap: "2px",
+        padding: "4px",
+        background: "rgba(255,255,255,0.03)",
+        border: "1px solid rgba(255,255,255,0.07)",
+        borderRadius: "10px",
+        marginBottom: "32px",
+        width: "fit-content",
+        flexWrap: "wrap",
+      }}>
+        {SUB_TABS.map(({ id, label }) => {
+          const active = sub === id;
+          return (
+            <button
+              key={id}
+              onClick={() => setSub(id)}
+              style={{
+                padding: "7px 16px",
+                fontSize: "13px",
+                fontFamily: "inherit",
+                border: "none",
+                borderRadius: "7px",
+                cursor: "pointer",
+                transition: "all 140ms",
+                background: active ? "rgba(255,255,255,0.1)" : "transparent",
+                color: active ? "#fff" : "#555",
+                fontWeight: active ? 600 : 400,
+                letterSpacing: "0.01em",
+              }}
+              onMouseEnter={e => { if (!active) (e.currentTarget as HTMLButtonElement).style.color = "#aaa"; }}
+              onMouseLeave={e => { if (!active) (e.currentTarget as HTMLButtonElement).style.color = "#555"; }}
+            >
+              {label}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ── ANALYTIKA ── */}
+      {sub === "analytika" && (
+        <div>
+          {analyticsLoading ? (
+            <div style={{ color: "#444", fontSize: "13px", padding: "40px 0", textAlign: "center" }}>Načítám data…</div>
+          ) : !analytics ? (
+            <div style={{ color: "#ff4444", fontSize: "13px" }}>Nepodařilo se načíst analytiku.</div>
+          ) : (
+            <>
+              {/* Stat cards */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "14px", marginBottom: "28px" }}>
+                <div style={card}>
+                  <div style={statLabel}>Dnes</div>
+                  <div style={statValue}>{analytics.totalToday.toLocaleString("cs-CZ")}</div>
+                  <div style={{ fontSize: "12px", color: "#555", marginTop: "6px" }}>zobrazení stránek</div>
+                </div>
+                <div style={card}>
+                  <div style={statLabel}>7 dní – návštěvníci</div>
+                  <div style={statValue}>{analytics.uniqueSessions7d.toLocaleString("cs-CZ")}</div>
+                  <div style={{ fontSize: "12px", color: "#555", marginTop: "6px" }}>unikátních relací</div>
+                </div>
+                <div style={card}>
+                  <div style={statLabel}>7 dní – zobrazení</div>
+                  <div style={statValue}>{analytics.totalVisits7d.toLocaleString("cs-CZ")}</div>
+                  <div style={{ fontSize: "12px", color: "#555", marginTop: "6px" }}>celkem pageviewů</div>
+                </div>
+                <div style={card}>
+                  <div style={statLabel}>30 dní – návštěvníci</div>
+                  <div style={statValue}>{analytics.uniqueSessions30d.toLocaleString("cs-CZ")}</div>
+                  <div style={{ fontSize: "12px", color: "#555", marginTop: "6px" }}>unikátních relací</div>
+                </div>
+              </div>
+
+              {/* Daily trend + top pages side by side */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", marginBottom: "14px" }}>
+
+                {/* Daily trend chart */}
+                <div style={{ ...card, minWidth: 0 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+                    <div>
+                      <div style={{ fontSize: "13px", fontWeight: 600, color: "#fff" }}>Denní trend</div>
+                      <div style={{ fontSize: "11px", color: "#444", marginTop: "2px" }}>zobrazení za posledních 14 dní</div>
+                    </div>
+                    <button
+                      onClick={loadAnalytics}
+                      style={{ background: "none", border: "1px solid #222", color: "#555", padding: "4px 10px", borderRadius: "6px", cursor: "pointer", fontSize: "11px", fontFamily: "inherit" }}
+                    >
+                      Obnovit
+                    </button>
+                  </div>
+                  {analytics.dailyTrend.length === 0 ? (
+                    <div style={{ color: "#333", fontSize: "13px", textAlign: "center", padding: "32px 0" }}>Zatím žádná data</div>
+                  ) : (
+                    <div style={{ display: "flex", alignItems: "flex-end", gap: "4px", height: "90px" }}>
+                      {analytics.dailyTrend.map((day: any, i: number) => {
+                        const pct = maxDailyViews > 0 ? (parseInt(day.views) / maxDailyViews) * 100 : 0;
+                        const isToday = i === analytics.dailyTrend.length - 1;
+                        return (
+                          <div
+                            key={day.date}
+                            title={`${formatDate(day.date)}: ${day.views} zobrazení, ${day.visitors} návštěvníků`}
+                            style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", cursor: "default" }}
+                          >
+                            <div style={{
+                              width: "100%",
+                              height: `${Math.max(pct, 4)}%`,
+                              minHeight: "3px",
+                              background: isToday
+                                ? "linear-gradient(to top, #6366f1, #818cf8)"
+                                : "rgba(255,255,255,0.12)",
+                              borderRadius: "3px 3px 0 0",
+                              transition: "height 0.4s ease",
+                            }} />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {analytics.dailyTrend.length > 0 && (
+                    <div style={{ display: "flex", justifyContent: "space-between", marginTop: "8px" }}>
+                      <span style={{ fontSize: "10px", color: "#333" }}>{formatDate(analytics.dailyTrend[0].date)}</span>
+                      <span style={{ fontSize: "10px", color: "#555" }}>dnes</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Avg pages per visitor card */}
+                <div style={{ ...card, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                  <div style={{ fontSize: "13px", fontWeight: 600, color: "#fff", marginBottom: "6px" }}>Průměrné stránky / návštěva</div>
+                  <div style={{ fontSize: "52px", fontWeight: 800, color: "#fff", letterSpacing: "-0.03em", lineHeight: 1 }}>
+                    {analytics.uniqueSessions7d > 0
+                      ? (analytics.totalVisits7d / analytics.uniqueSessions7d).toFixed(1)
+                      : "—"}
+                  </div>
+                  <div style={{ fontSize: "12px", color: "#444", marginTop: "8px" }}>stránek za relaci (7 dní)</div>
+                  <div style={{ marginTop: "20px", height: "2px", background: "rgba(255,255,255,0.05)", borderRadius: "1px", overflow: "hidden" }}>
+                    <div style={{
+                      height: "100%",
+                      width: analytics.uniqueSessions7d > 0
+                        ? `${Math.min((analytics.totalVisits7d / analytics.uniqueSessions7d / 10) * 100, 100)}%`
+                        : "0%",
+                      background: "linear-gradient(to right, #6366f1, #818cf8)",
+                      borderRadius: "1px",
+                    }} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Top pages bar chart */}
+              <div style={card}>
+                <div style={{ marginBottom: "20px" }}>
+                  <div style={{ fontSize: "13px", fontWeight: 600, color: "#fff" }}>Nejnavštěvovanější stránky</div>
+                  <div style={{ fontSize: "11px", color: "#444", marginTop: "2px" }}>zobrazení za posledních 7 dní</div>
+                </div>
+                {analytics.topPages.length === 0 ? (
+                  <div style={{ color: "#333", fontSize: "13px", textAlign: "center", padding: "24px 0" }}>Zatím žádná data — stránky se začnou zobrazovat po prvních návštěvách</div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                    {analytics.topPages.map((page: any, i: number) => {
+                      const pct = maxViews > 0 ? (parseInt(page.views) / maxViews) * 100 : 0;
+                      const isTop = i === 0;
+                      return (
+                        <div key={page.path} style={{ display: "grid", gridTemplateColumns: "180px 1fr 60px 60px", alignItems: "center", gap: "12px" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px", minWidth: 0 }}>
+                            <span style={{
+                              fontSize: "10px", fontWeight: 700, color: isTop ? "#818cf8" : "#333",
+                              width: "18px", textAlign: "right", flexShrink: 0,
+                            }}>#{i + 1}</span>
+                            <span style={{
+                              fontSize: "12px", color: "#ccc", whiteSpace: "nowrap", overflow: "hidden",
+                              textOverflow: "ellipsis", fontFamily: "monospace",
+                            }} title={page.path}>
+                              {formatPath(page.path)}
+                            </span>
+                          </div>
+                          <div style={{ height: "6px", background: "rgba(255,255,255,0.05)", borderRadius: "3px", overflow: "hidden" }}>
+                            <div style={{
+                              height: "100%",
+                              width: `${pct}%`,
+                              background: isTop
+                                ? "linear-gradient(to right, #6366f1, #818cf8)"
+                                : "rgba(255,255,255,0.18)",
+                              borderRadius: "3px",
+                              transition: "width 0.5s ease",
+                            }} />
+                          </div>
+                          <div style={{ fontSize: "12px", color: "#fff", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
+                            {parseInt(page.views).toLocaleString("cs-CZ")}
+                          </div>
+                          <div style={{ fontSize: "11px", color: "#444", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
+                            {parseInt(page.unique_visitors).toLocaleString("cs-CZ")} uniq
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                <div style={{ marginTop: "16px", paddingTop: "14px", borderTop: "1px solid rgba(255,255,255,0.05)", display: "flex", gap: "24px" }}>
+                  <div style={{ fontSize: "11px", color: "#444" }}>
+                    <span style={{ display: "inline-block", width: "28px", height: "4px", background: "linear-gradient(to right, #6366f1, #818cf8)", borderRadius: "2px", verticalAlign: "middle", marginRight: "6px" }} />
+                    Nejnavštěvovanější stránka
+                  </div>
+                  <div style={{ fontSize: "11px", color: "#444" }}>
+                    <span style={{ display: "inline-block", width: "28px", height: "4px", background: "rgba(255,255,255,0.18)", borderRadius: "2px", verticalAlign: "middle", marginRight: "6px" }} />
+                    Ostatní stránky
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {sub === "slevy"  && <SlevyTab settings={settings} onRefresh={onRefresh} />}
+      {sub === "promo"  && <PromoCodesTab />}
+      {sub === "seo"    && <SEOTab settings={settings} onRefresh={onRefresh} />}
+      {sub === "ig"     && <IGStoriesTab settings={settings} onRefresh={onRefresh} />}
+      {sub === "emaily" && <EmailsTab />}
+    </div>
+  );
+}
+
 function KomentareTab() {
   const [comments, setComments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);

@@ -867,6 +867,60 @@ app.get("/produkt/:type/:id", async (req: any, res: any) => {
 });
 // ─────────────────────────────────────────────────────────────────────────────
 
+// ── Analytics tracking ────────────────────────────────────────────────────────
+app.post("/api/analytics/track", async (req: any, res: any) => {
+  try {
+    const { path, sessionId, referrer } = req.body;
+    if (!path || typeof path !== "string") return res.status(400).json({ error: "Missing path" });
+    await pool.query(
+      "INSERT INTO page_views (path, session_id, referrer) VALUES ($1, $2, $3)",
+      [path.substring(0, 500), sessionId ? String(sessionId).substring(0, 100) : null, referrer ? String(referrer).substring(0, 500) : null]
+    );
+    res.json({ ok: true });
+  } catch {
+    res.status(500).json({ error: "Track error" });
+  }
+});
+
+app.get("/api/admin/analytics", requireAdmin, async (_req: any, res: any) => {
+  try {
+    const [totalToday, visits7d, unique7d, unique30d, topPages, dailyTrend] = await Promise.all([
+      pool.query("SELECT COUNT(*) AS count FROM page_views WHERE created_at > NOW() - INTERVAL '24 hours'"),
+      pool.query("SELECT COUNT(*) AS count FROM page_views WHERE created_at > NOW() - INTERVAL '7 days'"),
+      pool.query("SELECT COUNT(DISTINCT session_id) AS count FROM page_views WHERE created_at > NOW() - INTERVAL '7 days' AND session_id IS NOT NULL"),
+      pool.query("SELECT COUNT(DISTINCT session_id) AS count FROM page_views WHERE created_at > NOW() - INTERVAL '30 days' AND session_id IS NOT NULL"),
+      pool.query(`
+        SELECT path, COUNT(*) AS views, COUNT(DISTINCT session_id) AS unique_visitors
+        FROM page_views
+        WHERE created_at > NOW() - INTERVAL '7 days'
+        GROUP BY path
+        ORDER BY views DESC
+        LIMIT 12
+      `),
+      pool.query(`
+        SELECT TO_CHAR(DATE(created_at), 'YYYY-MM-DD') AS date,
+               COUNT(*) AS views,
+               COUNT(DISTINCT session_id) AS visitors
+        FROM page_views
+        WHERE created_at > NOW() - INTERVAL '14 days'
+        GROUP BY DATE(created_at)
+        ORDER BY date ASC
+      `),
+    ]);
+    res.json({
+      totalToday: parseInt(totalToday.rows[0].count),
+      totalVisits7d: parseInt(visits7d.rows[0].count),
+      uniqueSessions7d: parseInt(unique7d.rows[0].count),
+      uniqueSessions30d: parseInt(unique30d.rows[0].count),
+      topPages: topPages.rows,
+      dailyTrend: dailyTrend.rows,
+    });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+// ─────────────────────────────────────────────────────────────────────────────
+
 // JSON error handler — ensures API routes always return JSON, never HTML
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error("Express error on", req.method, req.path, ":", err.message);

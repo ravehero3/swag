@@ -304,6 +304,19 @@ export async function initDatabase() {
         AND value = 'SPECIÁLNÍ AKCE! Omezená nabídka končí za chvíli. Využijte slevový kód:';
     `);
 
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS page_views (
+        id SERIAL PRIMARY KEY,
+        path VARCHAR(500) NOT NULL,
+        session_id VARCHAR(100),
+        referrer VARCHAR(500),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX IF NOT EXISTS idx_page_views_created_at ON page_views (created_at DESC);
+      CREATE INDEX IF NOT EXISTS idx_page_views_path ON page_views (path);
+      CREATE INDEX IF NOT EXISTS idx_page_views_session_id ON page_views (session_id);
+    `);
+
     console.log("Database initialized successfully");
   } finally {
     client.release();
