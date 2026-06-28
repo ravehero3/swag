@@ -275,6 +275,7 @@ function Home() {
   const [draggingComment, setDraggingComment] = useState<{ id: number; xPct: number } | null>(null);
   const [commentNudge, setCommentNudge] = useState(false);
   const commentNudgeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const commentInputRef = useRef<HTMLInputElement>(null);
   const [usernameInput, setUsernameInput] = useState("");
   const [savingUsername, setSavingUsername] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -784,7 +785,6 @@ function Home() {
         }
         .comment-nudge-wrap { position: relative; flex: 1; border-radius: 20px; }
         .comment-nudge-wrap.active { animation: commentNudgePulse 2s ease-in-out infinite; }
-        .comment-nudge-label { position: absolute; top: -22px; left: 16px; font-size: 10px; color: rgba(255,255,255,0.38); letter-spacing: 0.05em; pointer-events: none; animation: commentNudgeSlide 0.4s ease-out both; }
 
         .comment-avatar-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; }
         .comment-avatar-wrap > div:first-child { transition: transform 0.2s ease; }
@@ -1294,9 +1294,13 @@ function Home() {
                     {user.avatarUrl ? <img src={user.avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : ((user.email || "?")[0]).toUpperCase()}
                   </div>
                 )}
-                <div className={`comment-nudge-wrap${commentNudge ? " active" : ""}`} onClick={!user ? () => setShowAuthModal(true) : undefined} style={!user ? { cursor: "pointer" } : undefined}>
-                  {commentNudge && <span className="comment-nudge-label">dej koment bro ↓</span>}
+                <div
+                  className={`comment-nudge-wrap${commentNudge ? " active" : ""}`}
+                  onClick={() => { if (!user) { setShowAuthModal(true); } else { commentInputRef.current?.focus(); } }}
+                  style={{ cursor: "pointer" }}
+                >
                   <input
+                    ref={commentInputRef}
                     type="text"
                     value={commentText}
                     onChange={(e) => setCommentText(e.target.value)}
@@ -1304,7 +1308,6 @@ function Home() {
                     placeholder={user ? "dej koment bro…" : "Pro komentáře se přihlaste →"}
                     disabled={!user || submittingComment}
                     maxLength={200}
-                    onClick={!user ? (e) => { e.preventDefault(); setShowAuthModal(true); } : undefined}
                     style={{ width: "100%", padding: "8px 16px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "20px", color: "#fff", fontSize: "13px", fontFamily: "inherit", outline: "none", boxSizing: "border-box", cursor: !user ? "pointer" : "text" }}
                   />
                 </div>
