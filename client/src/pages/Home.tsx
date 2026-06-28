@@ -979,7 +979,7 @@ function Home() {
                   width={200}
                   height={200}
                   borderRadius={4}
-                  style={{ position: "relative", zIndex: 1, border: "1px solid #666" }}
+                  style={{ position: "relative", zIndex: 1 }}
                 />
                 <div className="hac-blur-ring" />
                 <button

@@ -5699,9 +5699,56 @@ const ARTWORK_PRESETS: { name: string; config: ArtworkConfig }[] = [
   },
 ];
 
+const ZOOM_OPTIONS = [
+  { label: "Bez výřezu", value: 1,    desc: "Celý obrázek" },
+  { label: "Střední",    value: 1.25, desc: "Mírný výřez" },
+  { label: "Blízký",    value: 1.6,  desc: "Výrazný výřez" },
+];
+
+function ZoomThumb({ url, zoom, active, onClick }: { url: string; zoom: number; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        padding: 0, background: "transparent", border: "none", cursor: "pointer",
+        outline: "none", width: "100%", textAlign: "center",
+      }}
+    >
+      <div style={{
+        width: "100%", aspectRatio: "1 / 1", overflow: "hidden", borderRadius: "6px",
+        border: active ? "2px solid #fff" : "2px solid #2a2a2a",
+        boxShadow: active ? "0 0 0 1px rgba(255,255,255,0.15), 0 4px 16px rgba(255,255,255,0.08)" : "none",
+        transition: "border-color 0.15s, box-shadow 0.15s",
+        background: "#111", position: "relative",
+      }}>
+        {url ? (
+          <img
+            src={url}
+            alt=""
+            style={{
+              width: "100%", height: "100%", objectFit: "cover", display: "block",
+              transform: `scale(${zoom}) translateZ(0)`,
+              transformOrigin: "center center",
+            }}
+          />
+        ) : (
+          <div style={{ width: "100%", height: "100%", background: "#1a1a1a" }} />
+        )}
+        {active && (
+          <div style={{
+            position: "absolute", top: "6px", right: "6px",
+            width: "18px", height: "18px", borderRadius: "50%",
+            background: "#fff", display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: "10px", color: "#000", fontWeight: 700, lineHeight: 1,
+          }}>✓</div>
+        )}
+      </div>
+    </button>
+  );
+}
+
 function ArtworksTab({ settings, onRefresh, beats }: { settings: Record<string, string>; onRefresh: () => Promise<void>; beats: Beat[] }) {
-  // Initialize from server-loaded settings; fallback to defaults if nothing
-  // has ever been saved.
   const initial = useMemo(() => parseArtworkConfig(settings?.artwork_config), [settings?.artwork_config]);
   const [config, setConfig] = useState<ArtworkConfig>(initial);
   const [saving, setSaving] = useState(false);
@@ -5710,17 +5757,13 @@ function ArtworksTab({ settings, onRefresh, beats }: { settings: Record<string, 
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Pick up to 6 real beat artworks for the live-preview row, so the operator
-  // sees how the chosen overlay/filter actually looks against the catalog —
-  // not a single contrived sample.
   const sampleArtworks = useMemo(() => {
-    const withArt = beats.filter((b) => b.artwork_url).slice(0, 6).map((b) => ({ url: b.artwork_url, title: b.title }));
-    if (withArt.length === 0) {
-      return [{ url: config.defaultArtworkUrl, title: "Výchozí" }];
-    }
+    const withArt = beats.filter((b) => b.artwork_url).slice(0, 5).map((b) => ({ url: b.artwork_url, title: b.title }));
+    if (withArt.length === 0) return [{ url: config.defaultArtworkUrl, title: "Výchozí" }];
     return withArt;
   }, [beats, config.defaultArtworkUrl]);
 
+  const thumbUrl = sampleArtworks[0]?.url || config.defaultArtworkUrl;
   const isDirty = JSON.stringify(config) !== JSON.stringify(initial);
 
   const updateOverlay = (patch: Partial<ArtworkConfig["overlay"]>) =>
@@ -5737,9 +5780,7 @@ function ArtworksTab({ settings, onRefresh, beats }: { settings: Record<string, 
       fd.append("file", file);
       const res = await fetch("/api/upload?type=artwork", { method: "POST", credentials: "include", body: fd });
       const data = await res.json();
-      if (!res.ok || !data.url) {
-        throw new Error(data?.error || "Nahrávání selhalo");
-      }
+      if (!res.ok || !data.url) throw new Error(data?.error || "Nahrávání selhalo");
       setConfig((c: ArtworkConfig) => ({ ...c, defaultArtworkUrl: data.url }));
     } catch (e: any) {
       setUploadError(e?.message || String(e));
@@ -5753,15 +5794,11 @@ function ArtworksTab({ settings, onRefresh, beats }: { settings: Record<string, 
     setSaving(true);
     try {
       const res = await fetch("/api/admin/settings", {
-        method: "POST",
-        credentials: "include",
+        method: "POST", credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key: "artwork_config", value: JSON.stringify(config) }),
       });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data?.error || `HTTP ${res.status}`);
-      }
+      if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d?.error || `HTTP ${res.status}`); }
       await onRefresh();
       setSavedAt(Date.now());
     } catch (e: any) {
@@ -5771,265 +5808,131 @@ function ArtworksTab({ settings, onRefresh, beats }: { settings: Record<string, 
     }
   };
 
-  const sectionStyle: React.CSSProperties = {
-    padding: "16px",
-    background: "#0a0a0a",
-    border: "1px solid #1f1f1f",
-    borderRadius: "4px",
-    marginBottom: "16px",
-    textAlign: "left",
-  };
-  const labelStyle: React.CSSProperties = { display: "block", fontSize: "12px", color: "#888", marginBottom: "6px", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif" };
-  const sectionTitleStyle: React.CSSProperties = { fontSize: "14px", fontWeight: 600, color: "#ddd", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.05em" };
+  const sec: React.CSSProperties = { padding: "20px", background: "#0a0a0a", border: "1px solid #1a1a1a", borderRadius: "6px", marginBottom: "14px" };
+  const secTitle: React.CSSProperties = { fontSize: "11px", fontWeight: 600, color: "#555", marginBottom: "16px", textTransform: "uppercase", letterSpacing: "0.1em" };
+  const lbl: React.CSSProperties = { display: "block", fontSize: "12px", color: "#777", marginBottom: "5px" };
+
+  const activeZoom = ZOOM_OPTIONS.find(z => Math.abs(z.value - config.zoom) < 0.01) || null;
 
   return (
     <div style={{ textAlign: "left" }}>
-      {/* ── Header / save bar ───────────────────────────────────────── */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", flexWrap: "wrap", gap: "10px" }}>
+
+      {/* ── Header ── */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
         <div>
           <h2 style={{ margin: 0, fontSize: "18px", color: "#fff" }}>Artworks</h2>
-          <div style={{ fontSize: "12px", color: "#666", marginTop: "4px" }}>
-            Výchozí obrázek pro beaty bez artworku, barevný překryv a filtry. Změny se projeví všude, kde se beat zobrazuje.
+          <div style={{ fontSize: "12px", color: "#555", marginTop: "4px" }}>
+            Výřez, překryv a filtry — projeví se na všech beatech po uložení.
           </div>
         </div>
         <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-          {savedAt && Date.now() - savedAt < 4000 && (
-            <span style={{ fontSize: "12px", color: "#4caf50" }}>✓ Uloženo</span>
-          )}
-          <button
-            type="button"
-            className="btn btn-admin"
-            onClick={() => setConfig(initial)}
-            disabled={!isDirty || saving}
-            style={{ borderColor: "#333", color: isDirty ? "#aaa" : "#444" }}
-            data-testid="button-artworks-revert"
-          >
-            Vrátit změny
-          </button>
-          <button
-            type="button"
-            className="btn btn-filled"
-            onClick={handleSave}
-            disabled={!isDirty || saving}
-            data-testid="button-artworks-save"
-          >
-            {saving ? "Ukládám…" : "Uložit nastavení"}
-          </button>
+          {savedAt && Date.now() - savedAt < 5000 && <span style={{ fontSize: "12px", color: "#4caf50" }}>✓ Uloženo</span>}
+          <button type="button" className="btn btn-admin" onClick={() => setConfig(initial)} disabled={!isDirty || saving} style={{ borderColor: "#333", color: isDirty ? "#aaa" : "#444" }} data-testid="button-artworks-revert">Vrátit</button>
+          <button type="button" className="btn btn-filled" onClick={handleSave} disabled={!isDirty || saving} data-testid="button-artworks-save">{saving ? "Ukládám…" : "Uložit"}</button>
         </div>
       </div>
 
-      {/* ── Live preview ────────────────────────────────────────────── */}
-      <div style={sectionStyle}>
-        <div style={sectionTitleStyle}>Náhled na opravdových beatech</div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: "12px" }}>
-          {sampleArtworks.map((s, i) => (
-            <div key={i} style={{ background: "#000", borderRadius: "4px", overflow: "hidden", border: "1px solid #1f1f1f" }}>
-              <BeatArtwork
-                artworkUrl={s.url}
-                alt={s.title}
-                width="100%"
-                height={140}
-                borderRadius={0}
-                applyEffects={true}
-                configOverride={config}
-                testId={`preview-artwork-${i}`}
+      {/* ── Zoom / Crop ── */}
+      <div style={sec}>
+        <div style={secTitle}>Výřez obrazu</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "12px", maxWidth: "480px" }}>
+          {ZOOM_OPTIONS.map((z) => (
+            <div key={z.value} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
+              <ZoomThumb
+                url={thumbUrl}
+                zoom={z.value}
+                active={Math.abs(config.zoom - z.value) < 0.01}
+                onClick={() => setConfig(c => ({ ...c, zoom: z.value }))}
               />
-              <div style={{ padding: "6px 8px", fontSize: "10px", color: "#666", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                {s.title}
+              <div style={{ textAlign: "center" }}>
+                <div style={{ fontSize: "13px", color: Math.abs(config.zoom - z.value) < 0.01 ? "#fff" : "#888", fontWeight: Math.abs(config.zoom - z.value) < 0.01 ? 600 : 400, transition: "color 0.15s" }}>{z.label}</div>
+                <div style={{ fontSize: "11px", color: "#444", marginTop: "2px" }}>{z.desc}</div>
               </div>
             </div>
           ))}
         </div>
-        <div style={{ fontSize: "11px", color: "#555", marginTop: "10px" }}>
-          Náhled používá živé nastavení vlevo. Po kliknutí na "Uložit nastavení" se efekt aplikuje na všechny beaty na webu.
-        </div>
+        {!activeZoom && (
+          <div style={{ marginTop: "12px", fontSize: "12px", color: "#666" }}>
+            Vlastní zoom: ×{config.zoom.toFixed(2)} — výběrem jedné z možností výše ho přepíšete.
+          </div>
+        )}
       </div>
 
-      {/* ── Default fallback artwork ─────────────────────────────────── */}
-      <div style={sectionStyle}>
-        <div style={sectionTitleStyle}>Výchozí artwork (pro beaty bez vlastního)</div>
+      {/* ── Default fallback artwork ── */}
+      <div style={sec}>
+        <div style={secTitle}>Výchozí artwork</div>
         <div style={{ display: "flex", gap: "16px", alignItems: "flex-start", flexWrap: "wrap" }}>
-          <div style={{ width: "180px", flexShrink: 0 }}>
-            <BeatArtwork
-              artworkUrl={config.defaultArtworkUrl}
-              alt="Výchozí artwork"
-              width={180}
-              height={180}
-              borderRadius={6}
-              applyEffects={false}
-              configOverride={config}
-              testId="preview-default-artwork"
-            />
-            <div style={{ fontSize: "10px", color: "#444", marginTop: "6px", textAlign: "center" }}>BEZ efektu (originál)</div>
-          </div>
-          <div style={{ flex: 1, minWidth: "240px" }}>
-            <label style={labelStyle}>Nahrát nový výchozí obrázek</label>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              disabled={uploading}
-              onChange={(e) => e.target.files?.[0] && handleDefaultArtworkUpload(e.target.files[0])}
-              style={{ width: "100%", color: "#aaa", fontSize: "12px" }}
-              data-testid="input-default-artwork-upload"
-            />
+          <BeatArtwork artworkUrl={config.defaultArtworkUrl} alt="Výchozí" width={120} height={120} borderRadius={6} applyEffects={false} configOverride={config} testId="preview-default-artwork" />
+          <div style={{ flex: 1, minWidth: "200px" }}>
+            <label style={lbl}>Nahrát nový výchozí obrázek (PNG/JPG, min. 1500 × 1500 px)</label>
+            <input ref={fileInputRef} type="file" accept="image/*" disabled={uploading} onChange={(e) => e.target.files?.[0] && handleDefaultArtworkUpload(e.target.files[0])} style={{ width: "100%", color: "#aaa", fontSize: "12px" }} data-testid="input-default-artwork-upload" />
             {uploading && <div style={{ fontSize: "12px", color: "#888", marginTop: "8px" }}>Nahrávám…</div>}
             {uploadError && <div style={{ fontSize: "12px", color: "#ff5252", marginTop: "8px" }}>Chyba: {uploadError}</div>}
-            <div style={{ fontSize: "11px", color: "#555", marginTop: "10px", lineHeight: 1.5 }}>
-              Doporučení: čtvercový PNG/JPG aspoň 1500×1500 px. Tento obrázek se zobrazí všude, kde beat nemá svůj vlastní artwork. Po nahrání nezapomeňte kliknout na "Uložit nastavení".
-            </div>
-            <div style={{ marginTop: "10px", fontSize: "11px", color: "#666", wordBreak: "break-all" }}>
-              <span style={{ color: "#444" }}>URL:</span> {config.defaultArtworkUrl}
-            </div>
+            <div style={{ marginTop: "8px", fontSize: "11px", color: "#444", wordBreak: "break-all" }}>{config.defaultArtworkUrl}</div>
           </div>
         </div>
       </div>
 
-      {/* ── Quick presets ────────────────────────────────────────────── */}
-      <div style={sectionStyle}>
-        <div style={sectionTitleStyle}>Rychlé předvolby</div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(110px, 1fr))", gap: "8px" }}>
-          {ARTWORK_PRESETS.map((p) => {
-            const isActive = JSON.stringify(p.config) === JSON.stringify({ ...config, defaultArtworkUrl: p.config.defaultArtworkUrl });
-            return (
-              <button
-                key={p.name}
-                type="button"
-                onClick={() => setConfig({ ...p.config, defaultArtworkUrl: config.defaultArtworkUrl })}
-                style={{
-                  padding: "0",
-                  background: "transparent",
-                  border: isActive ? "2px solid #fff" : "1px solid #333",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                  overflow: "hidden",
-                  fontFamily: "inherit",
-                }}
-                data-testid={`button-preset-${p.name}`}
-              >
-                <BeatArtwork
-                  artworkUrl={sampleArtworks[0]?.url}
-                  alt={p.name}
-                  width="100%"
-                  height={70}
-                  borderRadius={0}
-                  applyEffects={true}
-                  configOverride={p.config}
-                />
-                <div style={{ padding: "5px 4px", fontSize: "10px", color: "#aaa", textAlign: "center", background: "#0a0a0a" }}>
-                  {p.name}
-                </div>
-              </button>
-            );
-          })}
+      {/* ── Overlay ── */}
+      <div style={sec}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
+          <div style={secTitle}>Barevný překryv</div>
+          <label style={{ display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", marginBottom: 0 }}>
+            <input type="checkbox" checked={config.overlay.enabled} onChange={(e) => updateOverlay({ enabled: e.target.checked })} data-testid="input-overlay-enabled" />
+            <span style={{ fontSize: "12px", color: config.overlay.enabled ? "#ddd" : "#555" }}>Zapnout</span>
+          </label>
         </div>
-      </div>
-
-      {/* ── Overlay controls ─────────────────────────────────────────── */}
-      <div style={sectionStyle}>
-        <div style={sectionTitleStyle}>Barevný překryv (overlay)</div>
-        <label style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px", cursor: "pointer" }}>
-          <input
-            type="checkbox"
-            checked={config.overlay.enabled}
-            onChange={(e) => updateOverlay({ enabled: e.target.checked })}
-            data-testid="input-overlay-enabled"
-          />
-          <span style={{ fontSize: "13px", color: "#ddd" }}>Zapnout překryv</span>
-        </label>
-
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "16px", opacity: config.overlay.enabled ? 1 : 0.4 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "auto 1fr 1fr", gap: "12px", alignItems: "end", opacity: config.overlay.enabled ? 1 : 0.35 }}>
           <div>
-            <label style={labelStyle}>Barva překryvu</label>
-            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-              <input
-                type="color"
-                value={config.overlay.color}
-                onChange={(e) => updateOverlay({ color: e.target.value })}
-                disabled={!config.overlay.enabled}
-                style={{ width: "44px", height: "32px", padding: 0, border: "1px solid #333", background: "#000", cursor: "pointer" }}
-                data-testid="input-overlay-color"
-              />
-              <input
-                type="text"
-                value={config.overlay.color}
-                onChange={(e) => updateOverlay({ color: e.target.value })}
-                disabled={!config.overlay.enabled}
-                style={{ flex: 1, background: "#000", border: "1px solid #333", color: "#aaa", padding: "6px 8px", fontSize: "12px", fontFamily: "monospace" }}
-                placeholder="#000000"
-              />
-            </div>
+            <label style={lbl}>Barva</label>
+            <input type="color" value={config.overlay.color} onChange={(e) => updateOverlay({ color: e.target.value })} disabled={!config.overlay.enabled} style={{ width: "48px", height: "36px", padding: 0, border: "1px solid #333", background: "#000", cursor: "pointer", display: "block" }} data-testid="input-overlay-color" />
           </div>
-
           <div>
-            <label style={labelStyle}>Sytost překryvu: {config.overlay.opacity}%</label>
-            <input
-              type="range"
-              min={0}
-              max={100}
-              value={config.overlay.opacity}
-              onChange={(e) => updateOverlay({ opacity: Number(e.target.value) })}
-              disabled={!config.overlay.enabled}
-              style={{ width: "100%" }}
-              data-testid="input-overlay-opacity"
-            />
+            <label style={lbl}>Průhlednost: {config.overlay.opacity}%</label>
+            <input type="range" min={0} max={100} value={config.overlay.opacity} onChange={(e) => updateOverlay({ opacity: Number(e.target.value) })} disabled={!config.overlay.enabled} style={{ width: "100%" }} data-testid="input-overlay-opacity" />
           </div>
-
-          <div style={{ gridColumn: "1 / -1" }}>
-            <label style={labelStyle}>Režim prolínání</label>
-            <select
-              value={config.overlay.blendMode}
-              onChange={(e) => updateOverlay({ blendMode: e.target.value as BlendMode })}
-              disabled={!config.overlay.enabled}
-              style={{ width: "100%", background: "#000", border: "1px solid #333", color: "#ddd", padding: "8px", fontSize: "13px" }}
-              data-testid="input-overlay-blend"
-            >
-              {BLEND_MODES.map((m) => (
-                <option key={m.value} value={m.value}>{m.label}</option>
-              ))}
+          <div>
+            <label style={lbl}>Režim</label>
+            <select value={config.overlay.blendMode} onChange={(e) => updateOverlay({ blendMode: e.target.value as BlendMode })} disabled={!config.overlay.enabled} style={{ width: "100%", background: "#0d0d0d", border: "1px solid #333", color: "#ddd", padding: "7px 8px", fontSize: "12px", borderRadius: "3px" }} data-testid="input-overlay-blend">
+              {BLEND_MODES.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
             </select>
-            <div style={{ fontSize: "11px", color: "#555", marginTop: "6px" }}>
-              {BLEND_MODES.find((m) => m.value === config.overlay.blendMode)?.hint}
-            </div>
           </div>
         </div>
       </div>
 
-      {/* ── Filter controls ──────────────────────────────────────────── */}
-      <div style={sectionStyle}>
-        <div style={sectionTitleStyle}>Filtry</div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "16px" }}>
-          <FilterSlider label="Černobílé" suffix="%" min={0} max={100} value={config.filter.grayscale} onChange={(v) => updateFilter({ grayscale: v })} testId="input-filter-grayscale" />
-          <FilterSlider label="Sépie"     suffix="%" min={0} max={100} value={config.filter.sepia}     onChange={(v) => updateFilter({ sepia: v })}     testId="input-filter-sepia" />
-          <FilterSlider label="Sytost"    suffix="%" min={0} max={200} value={config.filter.saturate}  onChange={(v) => updateFilter({ saturate: v })}  resetTo={100} testId="input-filter-saturate" />
-          <FilterSlider label="Jas"       suffix="%" min={0} max={200} value={config.filter.brightness} onChange={(v) => updateFilter({ brightness: v })} resetTo={100} testId="input-filter-brightness" />
-          <FilterSlider label="Kontrast"  suffix="%" min={0} max={200} value={config.filter.contrast}  onChange={(v) => updateFilter({ contrast: v })}  resetTo={100} testId="input-filter-contrast" />
-          <FilterSlider label="Posun odstínu" suffix="°" min={0} max={360} value={config.filter.hueRotate} onChange={(v) => updateFilter({ hueRotate: v })} testId="input-filter-hue" />
-          <FilterSlider label="Rozmazání" suffix="px" min={0} max={20}  value={config.filter.blur}      onChange={(v) => updateFilter({ blur: v })}      testId="input-filter-blur" />
-          <FilterSlider label="Inverze"   suffix="%" min={0} max={100} value={config.filter.invert}    onChange={(v) => updateFilter({ invert: v })}    testId="input-filter-invert" />
+      {/* ── Filters ── */}
+      <div style={sec}>
+        <div style={secTitle}>Filtry</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "14px" }}>
+          <FilterSlider label="Černobílé"  suffix="%" min={0}   max={100} value={config.filter.grayscale}  onChange={(v) => updateFilter({ grayscale: v })}  testId="input-filter-grayscale" />
+          <FilterSlider label="Sytost"     suffix="%" min={0}   max={200} value={config.filter.saturate}   onChange={(v) => updateFilter({ saturate: v })}   resetTo={100} testId="input-filter-saturate" />
+          <FilterSlider label="Jas"        suffix="%" min={0}   max={200} value={config.filter.brightness} onChange={(v) => updateFilter({ brightness: v })} resetTo={100} testId="input-filter-brightness" />
+          <FilterSlider label="Kontrast"   suffix="%" min={0}   max={200} value={config.filter.contrast}   onChange={(v) => updateFilter({ contrast: v })}   resetTo={100} testId="input-filter-contrast" />
+          <FilterSlider label="Sépie"      suffix="%" min={0}   max={100} value={config.filter.sepia}      onChange={(v) => updateFilter({ sepia: v })}      testId="input-filter-sepia" />
+          <FilterSlider label="Rozmazání"  suffix="px" min={0}  max={20}  value={config.filter.blur}       onChange={(v) => updateFilter({ blur: v })}       testId="input-filter-blur" />
         </div>
       </div>
 
-      {/* ── Sticky save bar at bottom for long pages ─────────────────── */}
-      <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "16px" }}>
-        <button
-          type="button"
-          className="btn btn-admin"
-          onClick={() => setConfig(DEFAULT_ARTWORK_CONFIG)}
-          style={{ borderColor: "#333", color: "#aaa" }}
-          data-testid="button-artworks-reset-defaults"
-        >
-          Reset na výchozí (vše)
-        </button>
-        <button
-          type="button"
-          className="btn btn-filled"
-          onClick={handleSave}
-          disabled={!isDirty || saving}
-          data-testid="button-artworks-save-bottom"
-        >
-          {saving ? "Ukládám…" : "Uložit nastavení"}
-        </button>
+      {/* ── Live preview ── */}
+      <div style={sec}>
+        <div style={secTitle}>Náhled na beatech</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))", gap: "10px" }}>
+          {sampleArtworks.map((s, i) => (
+            <div key={i} style={{ background: "#000", borderRadius: "4px", overflow: "hidden", border: "1px solid #1a1a1a" }}>
+              <BeatArtwork artworkUrl={s.url} alt={s.title} width="100%" height={120} borderRadius={0} applyEffects={true} configOverride={config} testId={`preview-artwork-${i}`} />
+              <div style={{ padding: "5px 7px", fontSize: "10px", color: "#555", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{s.title}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Bottom bar ── */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "8px" }}>
+        <button type="button" className="btn btn-admin" onClick={() => setConfig(DEFAULT_ARTWORK_CONFIG)} style={{ borderColor: "#2a2a2a", color: "#555", fontSize: "12px" }} data-testid="button-artworks-reset-defaults">Reset na výchozí</button>
+        <div style={{ display: "flex", gap: "8px" }}>
+          <button type="button" className="btn btn-admin" onClick={() => setConfig(initial)} disabled={!isDirty || saving} style={{ borderColor: "#333", color: isDirty ? "#aaa" : "#444" }}>Vrátit</button>
+          <button type="button" className="btn btn-filled" onClick={handleSave} disabled={!isDirty || saving} data-testid="button-artworks-save-bottom">{saving ? "Ukládám…" : "Uložit"}</button>
+        </div>
       </div>
     </div>
   );
