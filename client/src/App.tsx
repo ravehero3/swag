@@ -8,6 +8,7 @@ import Footer from "./components/Footer.js";
 import CartModal from "./components/CartModal.js";
 import NewsletterWindow from "./components/NewsletterWindow.js";
 import MusicPlayer from "./components/MusicPlayer.js";
+import CookieConsent, { getConsent, type ConsentValue } from "./components/CookieConsent.js";
 import "./styles/global.css";
 
 const Home = lazy(() => import("./pages/Home.js"));
@@ -165,8 +166,10 @@ function App() {
   const [previewIsSaved, setPreviewIsSaved] = useState(false);
   const previewOnToggleSaveRef = useRef<(() => void) | undefined>(undefined);
   const [location, setLocation] = useLocation();
+  const [consent, setConsent] = useState<ConsentValue | null>(() => getConsent());
 
   useEffect(() => {
+    if (consent !== "accepted") return;
     const getOrCreateSession = () => {
       let id = sessionStorage.getItem("_v8sid");
       if (!id) {
@@ -181,7 +184,7 @@ function App() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ path: location, sessionId, referrer: document.referrer || null }),
     }).catch(() => {});
-  }, [location]);
+  }, [location, consent]);
 
   useEffect(() => {
     document.body.style.paddingTop = "42px";
@@ -537,6 +540,7 @@ function App() {
         )}
         <CartModal isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
         <NewsletterWindow isOpen={isNewsletterOpen} onClose={() => setIsNewsletterOpen(false)} />
+        <CookieConsent onConsent={(v) => setConsent(v)} />
         {previewCurrentItem && !isAdminPage && !isPokladnaPage && (
           <MusicPlayer
             currentBeat={previewCurrentItem}
