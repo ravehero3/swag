@@ -3,6 +3,7 @@ import { Music, Image as ImageIcon, Upload } from "lucide-react";
 import { useApp } from "../App.js";
 import { useLocation } from "wouter";
 import { toAudioProxyUrl } from "../lib/audioProxy.js";
+import SoundWave from "../components/SoundWave.js";
 import {
   BeatArtwork,
   parseArtworkConfig,
@@ -10,6 +11,47 @@ import {
   type ArtworkConfig,
   type BlendMode,
 } from "../components/BeatArtwork.js";
+
+function AdminAudioPreview({ src }: { src: string }) {
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  const toggle = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (isPlaying) { audio.pause(); setIsPlaying(false); }
+    else { audio.play().catch(() => {}); setIsPlaying(true); }
+  };
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    const onEnded = () => setIsPlaying(false);
+    const onPause = () => setIsPlaying(false);
+    audio.addEventListener("ended", onEnded);
+    audio.addEventListener("pause", onPause);
+    return () => { audio.removeEventListener("ended", onEnded); audio.removeEventListener("pause", onPause); };
+  }, []);
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: "12px", background: "#0a0a0a", borderRadius: "8px", padding: "10px 14px", border: "1px solid #1a1a1a" }}>
+      <audio ref={audioRef} src={src} />
+      <button
+        type="button"
+        onClick={toggle}
+        style={{ width: "36px", height: "36px", borderRadius: "50%", background: "#fff", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.15s" }}
+      >
+        {isPlaying
+          ? <svg width="11" height="11" viewBox="0 0 24 24" fill="#000"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+          : <svg width="11" height="11" viewBox="0 0 24 24" fill="#000"><path d="M5 3l14 9-14 9V3z"/></svg>
+        }
+      </button>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <SoundWave audioRef={audioRef as React.RefObject<HTMLAudioElement>} isPlaying={isPlaying} audioUrl={src} />
+      </div>
+    </div>
+  );
+}
 
 function formatBytes(bytes: number): string {
   if (bytes === 0) return "0 B";
@@ -1237,7 +1279,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
           {showForm ? "× Zavřít formulář" : "+ Přidat beat"}
         </button>
         <button className="btn btn-admin" onClick={() => setShowBulkZone(v => !v)} style={{ borderColor: "#0B99FC", color: "#0B99FC", fontSize: "13px" }}>
-          {showBulkZone ? "Zavřít bulk upload" : "⬆ Bulk upload"}
+          {showBulkZone ? "Zavřít bulk upload" : "Bulk upload"}
         </button>
         {beats.some((b: any) => !b.is_published) && (
           <button className="btn btn-admin" onClick={handlePublishAll} style={{ borderColor: "#4caf50", color: "#4caf50", fontSize: "13px" }}>
@@ -1414,7 +1456,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                     />
                     {form.previewUrl && !uploading["preview"] && (
                       <div style={{ marginTop: "8px" }}>
-                        <audio controls src={form.previewUrl} style={{ width: "100%", height: "32px" }} />
+                        <AdminAudioPreview src={form.previewUrl} />
                         <button type="button" onClick={() => { setForm(f => ({ ...f, previewUrl: "" })); setUploadProgress(p => ({ ...p, preview: 0 })); setUploadedNames(n => { const c = { ...n }; delete c["preview"]; return c; }); }} style={{ marginTop: "6px", background: "none", border: "none", color: "#555", fontSize: "11px", cursor: "pointer", padding: 0 }}>× Odebrat</button>
                       </div>
                     )}
@@ -1463,7 +1505,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                             }
                           }}
                         />
-                        {uploading["beat-local"] ? "Nahrávám…" : "⬆ Nahrát soubor přímo"}
+                        {uploading["beat-local"] ? "Nahrávám…" : "Nahrát soubor přímo"}
                       </label>
                     </div>
                     <UploadProgressBar type="beat-local" />
@@ -2130,7 +2172,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
           data-testid="button-open-gallery-standalone"
           style={{ borderColor: "#444" }}
         >
-          🖼 Spravovat galerii artworků
+          Spravovat galerii artworků
         </button>
       </div>
 
@@ -2244,37 +2286,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
                       <option value="Další zvuk z kitu">Další zvuk z kitu</option>
                     </select>
                   </div>
-                  {/* Inline audio player */}
-                  <audio controls src={url} style={{ width: "100%", height: "36px" }} />
-                  {/* SoundWave-style visual preview */}
-                  <div style={{ marginTop: "10px", background: "#111", borderRadius: "4px", padding: "10px 14px" }}>
-                    <div style={{ fontSize: "10px", color: "#444", marginBottom: "6px", letterSpacing: "0.5px", textTransform: "uppercase" }}>Náhled přehrávače</div>
-                    <div style={{ display: "flex", alignItems: "flex-end", gap: "2px", height: "36px" }}>
-                      {Array.from({ length: 60 }, (_, i) => {
-                        const x = i / 60;
-                        const h = 0.15 + 0.7 * Math.abs(Math.sin(x * 9.7 + 1.2) * Math.cos(x * 4.3 + 0.5) * Math.sin(x * 2.1 + 0.8));
-                        const played = i < 18;
-                        return (
-                          <div
-                            key={i}
-                            style={{
-                              flex: 1,
-                              height: `${Math.round(h * 100)}%`,
-                              background: played
-                                ? "linear-gradient(to top, #0B99FC, #4cc3ff)"
-                                : "linear-gradient(to top, #2a2a2a, #3a3a3a)",
-                              borderRadius: "1px",
-                              minWidth: "2px",
-                            }}
-                          />
-                        );
-                      })}
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginTop: "4px" }}>
-                      <span style={{ fontSize: "10px", color: "#555" }}>0:00</span>
-                      <span style={{ fontSize: "10px", color: "#555" }}>—:——</span>
-                    </div>
-                  </div>
+                  <AdminAudioPreview src={url} />
                 </div>
               ))}
               <div style={{ position: "relative" }}>
@@ -2323,7 +2335,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
                   data-testid="button-open-artwork-gallery-kit"
                   style={{ whiteSpace: "nowrap" }}
                 >
-                  🖼 Vybrat z galerie
+                  Vybrat z galerie
                 </button>
                 {form.artworkUrl && (
                   <span style={{ fontSize: "11px", color: "#555", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
@@ -2363,7 +2375,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
                   onClick={() => openGallery(idx)}
                   style={{ whiteSpace: "nowrap", flexShrink: 0 }}
                 >
-                  🖼 Galerie
+                  Galerie
                 </button>
                 <button
                   type="button"
@@ -2866,7 +2878,7 @@ function OrdersList({ orders, onRefresh }: { orders: any[]; onRefresh: () => voi
                             style={{ fontSize: "11px", color: "#aaa", border: "1px solid #2a2a2a", borderRadius: "3px", padding: "3px 8px", textDecoration: "none", background: "#161616" }}
                             onClick={(e) => e.stopPropagation()}
                           >
-                            📄 Licence PDF
+                            Licence PDF
                           </a>
                         )}
                       </div>
@@ -6539,7 +6551,7 @@ function GopayDiagPanel() {
               background: diag.tokenOk ? "#0a1f0a" : "#1f0a0a",
               border: `1px solid ${diag.tokenOk ? "#1a4d1a" : "#4d1a1a"}`,
             }} data-testid="gopay-diag-token-result">
-              <span style={{ fontSize: "16px", flexShrink: 0 }}>{diag.tokenOk ? "✅" : "❌"}</span>
+              <span style={{ fontSize: "16px", flexShrink: 0 }}>{diag.tokenOk ? "✓" : "✗"}</span>
               <div>
                 <div style={{ fontSize: "13px", fontWeight: 600, color: diag.tokenOk ? "#4caf50" : "#e55" }}>
                   Krok 1 – OAuth token: {diag.tokenOk ? "OK" : "SELHAL"}
@@ -6560,7 +6572,7 @@ function GopayDiagPanel() {
                 background: diag.paymentTestOk ? "#0a1f0a" : "#1f0a0a",
                 border: `1px solid ${diag.paymentTestOk ? "#1a4d1a" : "#4d1a1a"}`,
               }} data-testid="gopay-diag-payment-result">
-                <span style={{ fontSize: "16px", flexShrink: 0 }}>{diag.paymentTestOk ? "✅" : "❌"}</span>
+                <span style={{ fontSize: "16px", flexShrink: 0 }}>{diag.paymentTestOk ? "✓" : "✗"}</span>
                 <div style={{ minWidth: 0 }}>
                   <div style={{ fontSize: "13px", fontWeight: 600, color: diag.paymentTestOk ? "#4caf50" : "#e55" }}>
                     Krok 2 – Vytvoření platby (1 CZK test): {diag.paymentTestOk ? "OK — GoPay přijal platbu" : "SELHAL — GoPay odmítl platbu"}
@@ -6768,7 +6780,7 @@ function KonfiguraceTab() {
             border: `1px solid ${allOk ? "#1a4d1a" : "#4d1a1a"}`,
             display: "flex", alignItems: "center", gap: "10px",
           }} data-testid="config-status-banner">
-            <span style={{ fontSize: "20px" }}>{allOk ? "✅" : "⚠️"}</span>
+            <span style={{ fontSize: "20px" }}>{allOk ? "✓" : "⚠"}</span>
             <span style={{ fontSize: "13px", color: allOk ? "#5d5" : "#e77" }}>
               {allOk
                 ? "Všechny povinné proměnné jsou nastaveny."
