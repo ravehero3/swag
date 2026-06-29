@@ -754,7 +754,7 @@ function Home() {
   if (beats.length === 0 && !highlightedBeat) {
     return (
       <div style={{ background: "#000", minHeight: "100vh" }}>
-        <div style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "24px", overflow: "hidden", position: "relative", background: "#000", height: "clamp(320px, 52vh, 480px)" }}>
+        <div style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "24px", overflow: "hidden", position: "relative", background: "#000", height: "clamp(500px, 75vh, 700px)" }}>
           <video
             autoPlay
             loop
@@ -777,7 +777,7 @@ function Home() {
             .empty-state-card { animation: emptyFadeUp 0.55s 0.1s ease-out both; }
             .empty-zvuky-btn { transition: background 0.2s, color 0.2s, box-shadow 0.2s; }
             .empty-zvuky-btn:hover { background: #fff !important; color: #000 !important; box-shadow: 0 0 24px rgba(255,255,255,0.15) !important; }
-            .hero-logo-img { width: min(1000px, 90vw); height: auto; object-fit: contain; display: block; }
+            .hero-logo-img { width: 100vw; height: auto; object-fit: contain; display: block; }
           `}</style>
           <div className="empty-state-card" style={{ display: "inline-flex", flexDirection: "column", alignItems: "center", maxWidth: "400px", gap: "0" }}>
             <p style={{ color: "#555", fontSize: "15px", lineHeight: 1.65, marginBottom: "0" }}>
@@ -817,7 +817,7 @@ function Home() {
         .comment-avatar-wrap:hover > div:first-child { transform: scale(2); }
         .comment-avatar-wrap .comment-tooltip { opacity: 0; pointer-events: none; transition: opacity 0.15s ease; }
         .comment-avatar-wrap:hover .comment-tooltip { opacity: 1 !important; }
-        .hero-logo-img { width: min(1000px, 90vw); height: auto; object-fit: contain; display: block; }
+        .hero-logo-img { width: 100vw; height: auto; object-fit: contain; display: block; }
         @media (max-width: 1040px) {
           .home-featured-inner { width: calc(100% - 40px) !important; }
         }
@@ -861,7 +861,7 @@ function Home() {
         }
       `}</style>
 
-      <div className="mobile-video-container desktop-main-video" style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "24px", overflow: "hidden", position: "relative", background: "#000", height: "clamp(380px, 56vh, 540px)" }}>
+      <div className="mobile-video-container desktop-main-video" style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)", marginTop: "-42px", marginBottom: "24px", overflow: "hidden", position: "relative", background: "#000", height: "clamp(500px, 75vh, 700px)" }}>
         <video
           ref={videoRef}
           src="/uploads/hrad-na-web.mp4"
