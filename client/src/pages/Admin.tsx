@@ -1795,6 +1795,9 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
   const [galleryImages, setGalleryImages] = useState<{filename: string; url: string; size: number}[]>([]);
   const [galleryLoading, setGalleryLoading] = useState(false);
   const [galleryUploading, setGalleryUploading] = useState(false);
+  const [galleryUploadCount, setGalleryUploadCount] = useState(0);
+  const [galleryUploadDone, setGalleryUploadDone] = useState(0);
+  const [galleryDragging, setGalleryDragging] = useState(false);
   const [galleryTarget, setGalleryTarget] = useState<"main" | number>("main");
 
   const openGallery = (target: "main" | number) => {
@@ -1812,16 +1815,26 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
     setGalleryLoading(false);
   };
 
-  const handleGalleryUpload = async (file: File) => {
+  const handleGalleryUpload = async (files: FileList | File[]) => {
+    const fileArr = Array.from(files);
+    if (fileArr.length === 0) return;
     setGalleryUploading(true);
+    setGalleryUploadCount(fileArr.length);
+    setGalleryUploadDone(0);
     try {
       const fd = new FormData();
-      fd.append("file", file);
-      const res = await fetch("/api/kit-artworks/upload", { method: "POST", body: fd, credentials: "include" });
-      if (res.ok) await loadGallery();
-      else alert("Nepodařilo se nahrát obrázek");
+      fileArr.forEach(f => fd.append("files", f));
+      const res = await fetch("/api/kit-artworks/upload-batch", { method: "POST", body: fd, credentials: "include" });
+      if (res.ok) {
+        setGalleryUploadDone(fileArr.length);
+        await loadGallery();
+      } else {
+        alert("Nepodařilo se nahrát obrázky");
+      }
     } catch { alert("Chyba při nahrávání"); }
     setGalleryUploading(false);
+    setGalleryUploadCount(0);
+    setGalleryUploadDone(0);
   };
 
   const handleGalleryDelete = async (filename: string) => {
@@ -2106,9 +2119,20 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
 
   return (
     <div>
-      <button className="btn btn-admin" onClick={() => { setShowForm(!showForm); setEditing(null); }} style={{ marginBottom: "16px" }}>
-        {showForm ? "Zrušit" : "Přidat zvukový kit"}
-      </button>
+      <div style={{ display: "flex", gap: "10px", alignItems: "center", marginBottom: "16px", flexWrap: "wrap" }}>
+        <button className="btn btn-admin" onClick={() => { setShowForm(!showForm); setEditing(null); }}>
+          {showForm ? "Zrušit" : "Přidat zvukový kit"}
+        </button>
+        <button
+          type="button"
+          className="btn btn-admin"
+          onClick={() => openGallery("main")}
+          data-testid="button-open-gallery-standalone"
+          style={{ borderColor: "#444" }}
+        >
+          🖼 Spravovat galerii artworků
+        </button>
+      </div>
 
       {showForm && (
         <div ref={formRef}>
@@ -2292,33 +2316,25 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
             <div>
               <label style={{ display: "block", marginBottom: "8px" }}>Artwork</label>
               <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "6px" }}>
-                <input
-                  type="file"
-                  accept="image/*"
-                  disabled={uploading["artwork"]}
-                  onChange={async (e) => {
-                    if (e.target.files?.[0]) {
-                      const url = await uploadFile(e.target.files[0], "artwork");
-                      if (url) setForm(f => ({ ...f, artworkUrl: url as string }));
-                    }
-                  }}
-                  style={{ flex: 1, opacity: uploading["artwork"] ? 0.4 : 1 }}
-                />
                 <button
                   type="button"
                   className="btn btn-admin"
                   onClick={() => openGallery("main")}
                   data-testid="button-open-artwork-gallery-kit"
-                  style={{ whiteSpace: "nowrap", flexShrink: 0 }}
+                  style={{ whiteSpace: "nowrap" }}
                 >
-                  🖼 Galerie
+                  🖼 Vybrat z galerie
                 </button>
+                {form.artworkUrl && (
+                  <span style={{ fontSize: "11px", color: "#555", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
+                    {form.artworkUrl.split("/").pop()}
+                  </span>
+                )}
               </div>
-              <UploadProgressBar type="artwork" />
-              {uploadError["artwork"] && (
-                <div style={{ marginTop: "6px", fontSize: "12px", color: "#ff5252" }}>Chyba při nahrávání: {uploadError["artwork"]}</div>
-              )}
-              {form.artworkUrl && !uploading["artwork"] && (
+              <p style={{ fontSize: "11px", color: "#444", margin: "0 0 6px" }}>
+                Obrázky se ukládají lokálně — bez Backblaze. Nejdřív nahraj obrázky do galerie, pak vyber.
+              </p>
+              {form.artworkUrl && (
                 <ArtworkPreview
                   url={form.artworkUrl}
                   onDelete={() => setForm(f => ({ ...f, artworkUrl: "" }))}
@@ -2390,13 +2406,16 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 <label style={{ background: "transparent", border: "0.4px solid #555", color: galleryUploading ? "#555" : "#aaa", borderRadius: "3px", padding: "6px 12px", cursor: galleryUploading ? "default" : "pointer", fontSize: "12px", display: "flex", alignItems: "center", gap: "6px" }}>
-                  {galleryUploading ? "Nahrávám…" : "+ Nahrát nový"}
+                  {galleryUploading
+                    ? `Nahrávám${galleryUploadCount > 1 ? ` ${galleryUploadCount} obrázků` : ""}…`
+                    : "+ Nahrát obrázky"}
                   <input
                     type="file"
                     accept="image/*"
+                    multiple
                     disabled={galleryUploading}
                     style={{ display: "none" }}
-                    onChange={(e) => { if (e.target.files?.[0]) handleGalleryUpload(e.target.files[0]); }}
+                    onChange={(e) => { if (e.target.files && e.target.files.length > 0) handleGalleryUpload(e.target.files); }}
                     data-testid="input-gallery-upload"
                   />
                 </label>
@@ -2409,13 +2428,33 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
                 </button>
               </div>
             </div>
-            <div style={{ overflowY: "auto", padding: "20px", flex: 1 }}>
+            <div
+              style={{ overflowY: "auto", padding: "20px", flex: 1, position: "relative", transition: "background 0.15s" }}
+              onDragOver={(e) => { e.preventDefault(); setGalleryDragging(true); }}
+              onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setGalleryDragging(false); }}
+              onDrop={(e) => {
+                e.preventDefault();
+                setGalleryDragging(false);
+                const files = e.dataTransfer.files;
+                if (files && files.length > 0) handleGalleryUpload(files);
+              }}
+            >
+              {galleryDragging && (
+                <div style={{ position: "absolute", inset: 0, background: "rgba(11,153,252,0.08)", border: "2px dashed #0B99FC", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10, pointerEvents: "none" }}>
+                  <span style={{ color: "#0B99FC", fontSize: "14px", fontWeight: 500 }}>Přetáhni obrázky sem</span>
+                </div>
+              )}
+              {galleryUploading && (
+                <div style={{ marginBottom: "12px", padding: "8px 12px", background: "#0a1a2a", border: "0.4px solid #1a3a5a", borderRadius: "4px", fontSize: "12px", color: "#0B99FC" }}>
+                  Nahrávám {galleryUploadCount} {galleryUploadCount === 1 ? "obrázek" : galleryUploadCount < 5 ? "obrázky" : "obrázků"}…
+                </div>
+              )}
               {galleryLoading ? (
                 <div style={{ textAlign: "center", color: "#444", padding: "48px 0", fontSize: "12px" }}>Načítám…</div>
               ) : galleryImages.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "48px 0" }}>
                   <div style={{ color: "#444", fontSize: "13px", marginBottom: "8px" }}>Galerie je prázdná</div>
-                  <div style={{ color: "#333", fontSize: "11px" }}>Nahraj první obrázek tlačítkem výše</div>
+                  <div style={{ color: "#333", fontSize: "11px" }}>Nahraj obrázky tlačítkem výše nebo je sem přetáhni</div>
                 </div>
               ) : (
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: "12px" }}>
