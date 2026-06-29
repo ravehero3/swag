@@ -777,7 +777,7 @@ function Home() {
             .empty-state-card { animation: emptyFadeUp 0.55s 0.1s ease-out both; }
             .empty-zvuky-btn { transition: background 0.2s, color 0.2s, box-shadow 0.2s; }
             .empty-zvuky-btn:hover { background: #fff !important; color: #000 !important; box-shadow: 0 0 24px rgba(255,255,255,0.15) !important; }
-            .hero-logo-img { width: 33.333vw; height: auto; object-fit: contain; display: block; }
+            .hero-logo-img { width: min(1000px, 90vw); height: auto; object-fit: contain; display: block; }
           `}</style>
           <div className="empty-state-card" style={{ display: "inline-flex", flexDirection: "column", alignItems: "center", maxWidth: "400px", gap: "0" }}>
             <p style={{ color: "#555", fontSize: "15px", lineHeight: 1.65, marginBottom: "0" }}>
@@ -817,7 +817,7 @@ function Home() {
         .comment-avatar-wrap:hover > div:first-child { transform: scale(2); }
         .comment-avatar-wrap .comment-tooltip { opacity: 0; pointer-events: none; transition: opacity 0.15s ease; }
         .comment-avatar-wrap:hover .comment-tooltip { opacity: 1 !important; }
-        .hero-logo-img { width: 33.333vw; height: auto; object-fit: contain; display: block; }
+        .hero-logo-img { width: min(1000px, 90vw); height: auto; object-fit: contain; display: block; }
         @media (max-width: 1040px) {
           .home-featured-inner { width: calc(100% - 40px) !important; }
         }
