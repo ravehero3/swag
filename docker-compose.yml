@@ -1,0 +1,13 @@
+services:
+  app:
+    image: ${DOCKER_IMAGE}
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    volumes:
+      # Persistent image gallery — survives redeployments
+      - ./data/kit-artworks:/app/public/kit-artworks
+      # Persistent uploads (hero logo, videos, etc.)
+      - ./data/uploads:/app/public/uploads
