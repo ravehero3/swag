@@ -40,7 +40,11 @@ jobs:
           username: ${{ secrets.ORACLE_USER }}
           key: ${{ secrets.ORACLE_SSH_KEY }}
           script: |
-            cd ~/voodoo808
-            docker compose pull
-            docker compose up -d
+            set -e
+            cd ~/apps/swag
+            git pull
+            cd ~/apps
+            docker compose build swag
+            docker compose up -d swag
             docker image prune -f
+            echo "Deploy complete"
