@@ -777,6 +777,7 @@ function Home() {
             .empty-state-card { animation: emptyFadeUp 0.55s 0.1s ease-out both; }
             .empty-zvuky-btn { transition: background 0.2s, color 0.2s, box-shadow 0.2s; }
             .empty-zvuky-btn:hover { background: #fff !important; color: #000 !important; box-shadow: 0 0 24px rgba(255,255,255,0.15) !important; }
+            .hero-logo-img { width: clamp(280px, 44vw, 680px); height: auto; object-fit: contain; display: block; }
           `}</style>
           <div className="empty-state-card" style={{ display: "inline-flex", flexDirection: "column", alignItems: "center", maxWidth: "400px", gap: "0" }}>
             <p style={{ color: "#555", fontSize: "15px", lineHeight: 1.65, marginBottom: "0" }}>
