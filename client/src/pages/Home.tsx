@@ -767,7 +767,7 @@ function Home() {
           </video>
           <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%)", pointerEvents: "none" }} />
           <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none", zIndex: 2 }}>
-            <img src="/uploads/artwork/voodoo808-main-logo.png" alt="VOODOO808" className="hero-logo-img" />
+            <img src={settings['hero_logo'] || '/uploads/artwork/voodoo808-main-logo.png'} alt="VOODOO808" className="hero-logo-img" />
           </div>
           <div style={{ position: "absolute", bottom: 0, left: 0, width: "100%", height: "120px", background: "linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 100%)", pointerEvents: "none", zIndex: 3 }} />
         </div>
@@ -878,10 +878,10 @@ function Home() {
         <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%)", pointerEvents: "none" }} />
         <div style={{ position: "absolute", top: 0, bottom: "80px", left: 0, right: 0, paddingTop: "44px", display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none", zIndex: 2 }}>
           <img
-            src="/uploads/artwork/voodoo808-main-logo.png"
+            src={settings['hero_logo'] || '/uploads/artwork/voodoo808-main-logo.png'}
             alt="VOODOO808"
             className="hero-logo-img"
-            style={{ width: "clamp(280px, 44vw, 680px)", height: "auto", objectFit: "contain", display: "block" }}
+            style={{ width: "clamp(280px, 44vw, 680px)", height: "auto", objectFit: "contain", display: "block", minWidth: "280px" }}
           />
         </div>
         <div
@@ -1262,15 +1262,17 @@ function Home() {
                         transformOrigin: "center center",
                       }}
                     >
-                      <TorsoAvatar />
-                      {c.avatar_url && (
+                      {c.avatar_url ? (
                         <img
                           src={c.avatar_url}
                           alt=""
-                          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0, transition: "opacity 0.2s" }}
-                          onLoad={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = "1"; }}
+                          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
                           onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
                         />
+                      ) : (
+                        <span style={{ fontSize: "8px", fontWeight: 700, color: "#aaa", lineHeight: 1, userSelect: "none", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif" }}>
+                          {(c.username?.[0] || c.email?.[0] || "?").toUpperCase()}
+                        </span>
                       )}
                     </div>
                     {isOwnComment && isHovered && !isDragging && (
@@ -1321,9 +1323,12 @@ function Home() {
               <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
                 {user && (
                   <div style={{ position: "relative", width: "28px", height: "28px", borderRadius: "50%", flexShrink: 0, background: "#1a1a1a", border: "1.5px solid rgba(255,255,255,0.1)", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <TorsoAvatar />
-                    {user.avatarUrl && (
-                      <img src={user.avatarUrl} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0, transition: "opacity 0.2s" }} onLoad={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = "1"; }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                    {user.avatarUrl ? (
+                      <img src={user.avatarUrl} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                    ) : (
+                      <span style={{ fontSize: "12px", fontWeight: 700, color: "#fff", lineHeight: 1, userSelect: "none", fontFamily: "Helvetica Neue, Helvetica, Arial, sans-serif" }}>
+                        {(user.username?.[0] || user.email?.[0] || "?").toUpperCase()}
+                      </span>
                     )}
                   </div>
                 )}

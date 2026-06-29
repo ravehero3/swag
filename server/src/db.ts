@@ -211,6 +211,7 @@ export async function initDatabase() {
         ('ig_story_tagline', ''),
         ('ig_story_listening_text', 'právě poslouchám'),
         ('ig_story_website_text', 'NA VOODOO808.COM'),
+        ('hero_logo', '/uploads/artwork/voodoo808-main-logo.png'),
         ('ig_story_logo_url', ''),
         ('ig_story_logo_placement', 'top-center'),
         ('ig_story_logo_y', '0'),
