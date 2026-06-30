@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import { Music, Image as ImageIcon, Upload } from "lucide-react";
+import { Music, Image as ImageIcon, Upload, Star, ChevronUp, ChevronDown, Pencil, Check, X, Clock } from "lucide-react";
 import { useApp } from "../App.js";
 import { useLocation } from "wouter";
 import { toAudioProxyUrl } from "../lib/audioProxy.js";
@@ -360,6 +360,7 @@ function Admin() {
             setEditing={setEditingBeat}
             onRefresh={loadData}
             loadData={loadData}
+            settings={settings}
           />
         )}
         {tab === "kits" && (
@@ -683,7 +684,7 @@ const MUSICAL_KEYS = [
   "Cm", "C#m", "Dbm", "Dm", "D#m", "Ebm", "Em", "Fm", "F#m", "Gbm", "Gm", "G#m", "Abm", "Am", "A#m", "Bbm", "Bm",
 ];
 
-function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh, loadData }: any) {
+function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh, loadData, settings }: any) {
   const [form, setForm] = useState({
     title: "",
     artist: "VOODOO808",
@@ -707,6 +708,8 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
   const [hoveredBeatId, setHoveredBeatId] = useState<number | null>(null);
   const [inlineBpmKey, setInlineBpmKey] = useState<{ id: number; bpm: number; key: string } | null>(null);
+  const [quickEditId, setQuickEditId] = useState<number | null>(null);
+  const [quickEditTitle, setQuickEditTitle] = useState<string>("");
   const [previewBeatId, setPreviewBeatId] = useState<number | null>(null);
   const [recomputingIds, setRecomputingIds] = useState<Set<number>>(new Set());
   const [recomputeAllProgress, setRecomputeAllProgress] = useState<{ current: number; total: number } | null>(null);
@@ -924,6 +927,26 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
         credentials: "include",
         body: JSON.stringify({
           title: beat.title, artist: beat.artist, bpm, key, price: beat.price,
+          previewUrl: beat.preview_url, fileUrl: beat.file_url, artworkUrl: beat.artwork_url,
+          trackoutUrl: beat.trackout_url || null, tags: beat.tags || [],
+          isPublished: beat.is_published, isHighlighted: beat.is_highlighted || false,
+        }),
+      });
+      onRefresh();
+    } catch {}
+  };
+
+  const saveInlineTitle = async (beat: Beat, title: string) => {
+    setQuickEditId(null);
+    const trimmed = title.trim();
+    if (!trimmed || trimmed === beat.title) return;
+    try {
+      await fetch(`/api/beats/${beat.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          title: trimmed, artist: beat.artist, bpm: beat.bpm, key: beat.key, price: beat.price,
           previewUrl: beat.preview_url, fileUrl: beat.file_url, artworkUrl: beat.artwork_url,
           trackoutUrl: beat.trackout_url || null, tags: beat.tags || [],
           isPublished: beat.is_published, isHighlighted: beat.is_highlighted || false,
@@ -1377,226 +1400,216 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
       {/* ── Beat form ── */}
       {showForm && (
         <div ref={formRef} style={{ marginBottom: "28px" }}>
-          <div style={{ background: "#080808", border: "1px solid #1e1e1e", borderRadius: "12px", overflow: "hidden" }}>
-            {/* Form header */}
-            <div style={{ padding: "18px 22px", borderBottom: "1px solid #1a1a1a", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <div>
-                <div style={{ fontSize: "15px", fontWeight: 600, color: "#fff" }}>{editing ? "Upravit beat" : "Přidat nový beat"}</div>
-                {editing && <div style={{ fontSize: "11px", color: "#444", marginTop: "2px" }}>ID #{editing.id} · {editing.title}</div>}
+          {/* Bento form header */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
+            <div>
+              <div style={{ fontSize: "16px", fontWeight: 600, color: "#fff", letterSpacing: "-0.01em" }}>
+                {editing ? "Upravit beat" : "Přidat nový beat"}
               </div>
-              <button onClick={resetForm} style={{ background: "none", border: "1px solid #2a2a2a", color: "#555", width: "30px", height: "30px", borderRadius: "6px", cursor: "pointer", fontSize: "16px", display: "flex", alignItems: "center", justifyContent: "center", transition: "border-color 0.15s, color 0.15s" }} onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = "#555"; (e.currentTarget as HTMLButtonElement).style.color = "#aaa"; }} onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = "#2a2a2a"; (e.currentTarget as HTMLButtonElement).style.color = "#555"; }}>×</button>
+              {editing && <div style={{ fontSize: "11px", color: "#333", marginTop: "2px" }}>ID #{editing.id} · {editing.title}</div>}
             </div>
+            <button
+              type="button"
+              onClick={resetForm}
+              style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "#555", width: "32px", height: "32px", borderRadius: "8px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s" }}
+              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.1)"; (e.currentTarget as HTMLButtonElement).style.color = "#aaa"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.05)"; (e.currentTarget as HTMLButtonElement).style.color = "#555"; }}
+            >
+              <X size={15} />
+            </button>
+          </div>
 
-            <form onSubmit={handleSubmit} style={{ padding: "22px" }}>
-              {/* Section 1: Základní informace */}
-              <div style={sectionStyle}>
-                <div style={sectionHeadStyle}>Základní informace</div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "14px" }}>
-                  <div style={{ gridColumn: "1 / -1" }}>
-                    <label style={labelStyle}>Název beatu *</label>
-                    <input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} required style={{ ...inputStyle, fontSize: "15px", padding: "10px 14px" }} placeholder="Např. Midnight Rain" data-testid="input-beat-title" />
-                  </div>
-                  <div>
-                    <label style={labelStyle}>Umělec</label>
-                    <input value={form.artist} onChange={e => setForm({ ...form, artist: e.target.value })} style={inputStyle} placeholder="VOODOO808" data-testid="input-beat-artist" />
-                  </div>
-                  <div>
-                    <label style={labelStyle}>BPM</label>
-                    <input type="number" min={40} max={300} value={form.bpm} onChange={e => setForm({ ...form, bpm: Number(e.target.value) })} style={inputStyle} placeholder="140" data-testid="input-beat-bpm" />
-                  </div>
-                  <div>
-                    <label style={labelStyle}>Tónina</label>
-                    <select value={form.key} onChange={e => setForm({ ...form, key: e.target.value })} style={selectStyle} data-testid="select-beat-key">
-                      {MUSICAL_KEYS.map(k => <option key={k} value={k}>{k}</option>)}
-                    </select>
-                  </div>
-                </div>
-              </div>
+          <form onSubmit={handleSubmit}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px" }}>
 
-              {/* Section 2: Cena */}
-              <div style={sectionStyle}>
-                <div style={sectionHeadStyle}>Cena</div>
-                <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
-                  {PRICE_TYPES_BEAT.map(pt => (
-                    <button key={pt.id} type="button" onClick={() => setForm({ ...form, priceType: pt.id, price: pt.price })} style={{ flex: 1, padding: "10px 12px", background: form.priceType === pt.id ? "#fff" : "transparent", color: form.priceType === pt.id ? "#000" : "#666", border: `1px solid ${form.priceType === pt.id ? "#fff" : "#2a2a2a"}`, borderRadius: "8px", cursor: "pointer", fontSize: "13px", fontWeight: form.priceType === pt.id ? 600 : 400, transition: "all 0.15s" }}>
-                      <div>{pt.label}</div>
-                      <div style={{ fontSize: "11px", opacity: 0.6, marginTop: "2px" }}>{pt.sublabel}</div>
-                    </button>
-                  ))}
-                </div>
-                {form.priceType === "beat" && (
-                  <div>
-                    <label style={labelStyle}>Vlastní cena (Kč)</label>
-                    <div style={{ position: "relative" }}>
-                      <input type="number" min={0} value={form.price} onChange={e => setForm({ ...form, price: Number(e.target.value) })} style={{ ...inputStyle, paddingRight: "40px" }} placeholder="5000" data-testid="input-beat-price" />
-                      <span style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", fontSize: "12px", color: "#444", pointerEvents: "none" }}>Kč</span>
+              {/* Bento card styles via shared object */}
+              {(() => {
+                const card: React.CSSProperties = { background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "18px", boxShadow: "0 4px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)", padding: "18px 20px" };
+                const lbl: React.CSSProperties = { fontSize: "10px", fontWeight: 700, color: "rgba(255,255,255,0.22)", textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: "10px" };
+                const inp: React.CSSProperties = { ...inputStyle, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "10px" };
+                return (
+                  <>
+                    {/* Card: Název beatu — full width */}
+                    <div style={{ ...card, gridColumn: "1 / -1" }}>
+                      <div style={lbl}>Název beatu *</div>
+                      <input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} required style={{ ...inp, fontSize: "17px", padding: "10px 14px", fontWeight: 500, letterSpacing: "-0.01em" }} placeholder="Např. Midnight Rain" data-testid="input-beat-title" />
                     </div>
-                  </div>
-                )}
-              </div>
 
-              {/* Section 3: Soubory */}
-              <div style={sectionStyle}>
-                <div style={sectionHeadStyle}>Soubory</div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
-                  <div>
-                    <label style={labelStyle}>Preview Audio *</label>
-                    <DropZone
-                      type="preview"
-                      accept="audio/*,.mp3,.wav,.aiff,.flac,.ogg,.m4a"
-                      label="Přetáhněte audio nebo klikněte"
-                      hint="MP3, WAV, AIFF, FLAC"
-                      icon={<Music size={22} color="#555" />}
-                      onFile={async (f) => { const url = await uploadFile(f, "preview"); if (url) setForm(ff => ({ ...ff, previewUrl: url as string })); }}
-                      isDragging={isDragPreview}
-                      setIsDragging={setIsDragPreview}
-                      fileInputRef={previewFileInputRef as any}
-                      uploadedUrl={form.previewUrl}
-                      uploadedName={uploadedNames["preview"]}
-                    />
-                    {form.previewUrl && !uploading["preview"] && (
-                      <div style={{ marginTop: "8px" }}>
-                        <AdminAudioPreview src={form.previewUrl} />
-                        <button type="button" onClick={() => { setForm(f => ({ ...f, previewUrl: "" })); setUploadProgress(p => ({ ...p, preview: 0 })); setUploadedNames(n => { const c = { ...n }; delete c["preview"]; return c; }); }} style={{ marginTop: "6px", background: "none", border: "none", color: "#555", fontSize: "11px", cursor: "pointer", padding: 0 }}>× Odebrat</button>
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <label style={labelStyle}>Artwork</label>
-                    <DropZone
-                      type="artwork"
-                      accept="image/*"
-                      label="Přetáhněte obrázek nebo klikněte"
-                      hint="JPG, PNG · auto 1500×1500px"
-                      icon={<ImageIcon size={22} color="#555" />}
-                      onFile={async (f) => { const url = await uploadFile(f, "artwork"); if (url) setForm(ff => ({ ...ff, artworkUrl: url as string })); }}
-                      isDragging={isDragArtwork}
-                      setIsDragging={setIsDragArtwork}
-                      fileInputRef={artworkFileInputRef as any}
-                      uploadedUrl={form.artworkUrl}
-                      uploadedName={uploadedNames["artwork"]}
-                    />
-                    {form.artworkUrl && !uploading["artwork"] && (
-                      <ArtworkPreview url={form.artworkUrl} onDelete={() => { setForm(f => ({ ...f, artworkUrl: "" })); setUploadProgress(p => ({ ...p, artwork: 0 })); setUploadedNames(n => { const c = { ...n }; delete c["artwork"]; return c; }); }} testId="button-delete-artwork-beat" />
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Section 4: Distribuce */}
-              <div style={sectionStyle}>
-                <div style={sectionHeadStyle}>Distribuce</div>
-                <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-                  <div>
-                    <label style={labelStyle}>Soubor beatu ke stažení *</label>
-                    {/* Local file upload */}
-                    <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "8px" }}>
-                      <label style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "9px 14px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "6px", cursor: uploading["beat-local"] ? "default" : "pointer", fontSize: "13px", color: uploading["beat-local"] ? "#555" : "#aaa", opacity: uploading["beat-local"] ? 0.6 : 1 }}>
-                        <input
-                          type="file"
-                          accept="audio/*,.wav,.mp3,.flac,.aif,.aiff,.zip,.rar"
-                          disabled={uploading["beat-local"]}
-                          style={{ display: "none" }}
-                          data-testid="input-beat-local-file"
-                          onChange={async (e) => {
-                            if (e.target.files?.[0]) {
-                              const url = await uploadFile(e.target.files[0], "beat-local");
-                              if (url) setForm(f => ({ ...f, fileUrl: url as string }));
-                            }
-                          }}
-                        />
-                        {uploading["beat-local"] ? "Nahrávám…" : "Nahrát soubor přímo"}
-                      </label>
+                    {/* Card: Umělec */}
+                    <div style={card}>
+                      <div style={lbl}>Umělec</div>
+                      <input value={form.artist} onChange={e => setForm({ ...form, artist: e.target.value })} style={inp} placeholder="VOODOO808" data-testid="input-beat-artist" />
                     </div>
-                    <UploadProgressBar type="beat-local" />
-                    {uploadError["beat-local"] && (
-                      <div style={{ fontSize: "12px", color: "#ff5252", marginBottom: "6px" }}>Chyba: {uploadError["beat-local"]}</div>
-                    )}
-                    {/* Show currently set file — either local or GDrive */}
-                    {form.fileUrl && form.fileUrl.startsWith("/uploads/") ? (
-                      <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 10px", background: "#0d1a0d", border: "1px solid #1a3a1a", borderRadius: "6px", marginBottom: "6px" }}>
-                        <span style={{ fontSize: "12px", color: "#4caf50", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>✓ {decodeURIComponent(form.fileUrl.split("/").pop() || "")}</span>
-                        <button type="button" onClick={() => setForm(f => ({ ...f, fileUrl: "" }))} style={{ background: "none", border: "none", color: "#555", cursor: "pointer", fontSize: "16px", lineHeight: 1, padding: "0 2px", flexShrink: 0 }}>×</button>
-                      </div>
-                    ) : (
-                      <div>
-                        <div style={{ display: "flex", alignItems: "center", gap: "6px", margin: "6px 0 4px" }}>
-                          <div style={{ flex: 1, height: "1px", background: "#1e1e1e" }} />
-                          <span style={{ fontSize: "10px", color: "#333" }}>nebo Google Drive</span>
-                          <div style={{ flex: 1, height: "1px", background: "#1e1e1e" }} />
-                        </div>
-                        <input type="url" placeholder="https://drive.google.com/drive/folders/…" value={form.fileUrl || ""} onChange={e => setForm({ ...form, fileUrl: e.target.value })} style={inputStyle} data-testid="input-gdrive-url-beat" />
-                        <p style={{ fontSize: "11px", color: "#444", marginTop: "5px", lineHeight: 1.5 }}>Nastav sdílení → Kdokoli s odkazem → Prohlížeč</p>
-                        <GDriveLinkStatus url={form.fileUrl || ""} />
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <label style={labelStyle}>URL trackoutu <span style={{ color: "#333", fontWeight: 400 }}>(volitelné)</span></label>
-                    <input type="url" placeholder="https://drive.google.com/drive/folders/…" value={form.trackoutUrl || ""} onChange={e => setForm({ ...form, trackoutUrl: e.target.value })} style={inputStyle} data-testid="input-gdrive-url-trackout" />
-                    <GDriveLinkStatus url={form.trackoutUrl || ""} />
-                  </div>
-                </div>
-              </div>
 
-              {/* Section 5: Tagy + Status */}
-              <div style={{ ...sectionStyle, borderBottom: "none", paddingBottom: 0, marginBottom: 0 }}>
-                <div style={sectionHeadStyle}>Tagy a viditelnost</div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
-                  <div style={{ gridColumn: "1 / -1" }}>
-                    <label style={labelStyle}>Tagy <span style={{ color: "#333", fontWeight: 400 }}>(max 3)</span></label>
-                    <div style={{ display: "flex", gap: "8px" }}>
-                      <input
-                        value={tagInput}
-                        onChange={e => setTagInput(e.target.value)}
-                        onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); if (tagInput.trim() && form.tags.length < 3) { setForm({ ...form, tags: [...form.tags, tagInput.trim()] }); setTagInput(""); } } }}
-                        placeholder="Přidat tag… (Enter pro přidání)"
-                        style={{ ...inputStyle, flex: 1 }}
-                        disabled={form.tags.length >= 3}
-                        data-testid="input-beat-tag"
-                      />
-                      <button type="button" onClick={() => { if (tagInput.trim() && form.tags.length < 3) { setForm({ ...form, tags: [...form.tags, tagInput.trim()] }); setTagInput(""); } }} style={{ padding: "0 16px", background: "#1a1a1a", border: "1px solid #2a2a2a", color: "#aaa", borderRadius: "6px", cursor: "pointer", fontSize: "18px", flexShrink: 0 }}>+</button>
+                    {/* Card: BPM */}
+                    <div style={{ ...card, textAlign: "center" }}>
+                      <div style={lbl}>BPM</div>
+                      <input type="number" min={40} max={300} value={form.bpm} onChange={e => setForm({ ...form, bpm: Number(e.target.value) })} style={{ ...inp, fontSize: "22px", fontWeight: 700, fontFamily: "monospace", textAlign: "center", padding: "8px 10px" }} placeholder="140" data-testid="input-beat-bpm" />
                     </div>
-                    {form.tags.length > 0 && (
-                      <div style={{ display: "flex", gap: "6px", marginTop: "8px", flexWrap: "wrap" }}>
-                        {form.tags.map((tag, i) => (
-                          <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "4px 10px", background: "#141414", border: "1px solid #2a2a2a", borderRadius: "999px", fontSize: "12px", color: "#ccc" }}>
-                            {tag}
-                            <button type="button" onClick={() => setForm({ ...form, tags: form.tags.filter((_, j) => j !== i) })} style={{ background: "none", border: "none", color: "#555", cursor: "pointer", fontSize: "14px", lineHeight: 1, padding: "0 0 0 2px" }}>×</button>
-                          </span>
+
+                    {/* Card: Tónina */}
+                    <div style={{ ...card, textAlign: "center" }}>
+                      <div style={lbl}>Tónina</div>
+                      <select value={form.key} onChange={e => setForm({ ...form, key: e.target.value })} style={{ ...inp, fontSize: "15px", fontWeight: 500, textAlign: "center", padding: "8px 10px", cursor: "pointer" }} data-testid="select-beat-key">
+                        {MUSICAL_KEYS.map(k => <option key={k} value={k}>{k}</option>)}
+                      </select>
+                    </div>
+
+                    {/* Card: Cena — full width */}
+                    <div style={{ ...card, gridColumn: "1 / -1" }}>
+                      <div style={lbl}>Cena</div>
+                      <div style={{ display: "flex", gap: "8px", marginBottom: form.priceType === "beat" ? "12px" : "0" }}>
+                        {PRICE_TYPES_BEAT.map(pt => (
+                          <button key={pt.id} type="button" onClick={() => setForm({ ...form, priceType: pt.id, price: pt.price })} style={{ flex: 1, padding: "10px 12px", background: form.priceType === pt.id ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.04)", color: form.priceType === pt.id ? "#000" : "#666", border: `1px solid ${form.priceType === pt.id ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.07)"}`, borderRadius: "12px", cursor: "pointer", fontSize: "13px", fontWeight: form.priceType === pt.id ? 600 : 400, transition: "all 0.15s" }}>
+                            <div>{pt.label}</div>
+                            <div style={{ fontSize: "11px", opacity: 0.6, marginTop: "2px" }}>{pt.sublabel}</div>
+                          </button>
                         ))}
                       </div>
-                    )}
-                  </div>
-                  <div>
-                    <label style={labelStyle}>Viditelnost</label>
-                    <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", padding: "10px 12px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "8px" }}>
-                      <input type="checkbox" checked={form.isPublished} onChange={e => setForm({ ...form, isPublished: e.target.checked })} style={{ width: "16px", height: "16px", cursor: "pointer", accentColor: "#4caf50" }} data-testid="checkbox-beat-published" />
-                      <span style={{ fontSize: "13px", color: form.isPublished ? "#4caf50" : "#666" }}>{form.isPublished ? "Publikováno" : "Skryto"}</span>
-                    </label>
-                  </div>
-                  <div>
-                    <label style={labelStyle}>Featured</label>
-                    <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", padding: "10px 12px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "8px" }}>
-                      <input type="checkbox" checked={form.isHighlighted} onChange={e => setForm({ ...form, isHighlighted: e.target.checked })} style={{ width: "16px", height: "16px", cursor: "pointer", accentColor: "#f9a825" }} data-testid="checkbox-beat-highlighted" />
-                      <span style={{ fontSize: "13px", color: form.isHighlighted ? "#f9a825" : "#666" }}>{form.isHighlighted ? "⭐ Zvýrazněný" : "Normální"}</span>
-                    </label>
-                  </div>
-                </div>
-              </div>
+                      {form.priceType === "beat" && (
+                        <div style={{ position: "relative" }}>
+                          <input type="number" min={0} value={form.price} onChange={e => setForm({ ...form, price: Number(e.target.value) })} style={{ ...inp, paddingRight: "40px" }} placeholder="5000" data-testid="input-beat-price" />
+                          <span style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", fontSize: "12px", color: "#444", pointerEvents: "none" }}>Kč</span>
+                        </div>
+                      )}
+                    </div>
 
-              {/* Submit row */}
-              <div style={{ marginTop: "22px", paddingTop: "20px", borderTop: "1px solid #1a1a1a", display: "flex", gap: "10px", alignItems: "center" }}>
-                <button type="submit" className="btn btn-filled" disabled={Object.values(uploading).some(Boolean)} style={{ fontSize: "14px", padding: "10px 24px", opacity: Object.values(uploading).some(Boolean) ? 0.5 : 1 }} data-testid="button-submit-beat">
-                  {Object.values(uploading).some(Boolean) ? "Čekám na nahrání…" : editing ? "Uložit změny" : "Přidat beat"}
-                </button>
-                <button type="button" onClick={resetForm} style={{ background: "none", border: "1px solid #2a2a2a", color: "#555", padding: "10px 20px", borderRadius: "6px", cursor: "pointer", fontSize: "13px" }}>Zrušit</button>
-                {editing && (
-                  <button type="button" onClick={() => handleDelete(editing.id)} style={{ marginLeft: "auto", background: "none", border: "1px solid #2a2a2a", color: "#555", padding: "10px 14px", borderRadius: "6px", cursor: "pointer", fontSize: "12px" }} data-testid={`button-delete-beat-${editing.id}`}>Smazat beat</button>
-                )}
-              </div>
-            </form>
-          </div>
+                    {/* Card: Preview Audio — spans 2 cols */}
+                    <div style={{ ...card, gridColumn: "span 2" }}>
+                      <div style={lbl}>Preview Audio *</div>
+                      <DropZone
+                        type="preview"
+                        accept="audio/*,.mp3,.wav,.aiff,.flac,.ogg,.m4a"
+                        label="Přetáhněte audio nebo klikněte"
+                        hint="MP3, WAV, AIFF, FLAC"
+                        icon={<Music size={22} color="#555" />}
+                        onFile={async (f) => { const url = await uploadFile(f, "preview"); if (url) setForm(ff => ({ ...ff, previewUrl: url as string })); }}
+                        isDragging={isDragPreview}
+                        setIsDragging={setIsDragPreview}
+                        fileInputRef={previewFileInputRef as any}
+                        uploadedUrl={form.previewUrl}
+                        uploadedName={uploadedNames["preview"]}
+                      />
+                      {form.previewUrl && !uploading["preview"] && (
+                        <div style={{ marginTop: "8px" }}>
+                          <AdminAudioPreview src={form.previewUrl} />
+                          <button type="button" onClick={() => { setForm(f => ({ ...f, previewUrl: "" })); setUploadProgress(p => ({ ...p, preview: 0 })); setUploadedNames(n => { const c = { ...n }; delete c["preview"]; return c; }); }} style={{ marginTop: "6px", background: "none", border: "none", color: "#555", fontSize: "11px", cursor: "pointer", padding: 0 }}>Odebrat</button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Card: Artwork */}
+                    <div style={card}>
+                      <div style={lbl}>Artwork</div>
+                      <DropZone
+                        type="artwork"
+                        accept="image/*"
+                        label="Přetáhněte obrázek nebo klikněte"
+                        hint="JPG, PNG · 1500×1500px"
+                        icon={<ImageIcon size={22} color="#555" />}
+                        onFile={async (f) => { const url = await uploadFile(f, "artwork"); if (url) setForm(ff => ({ ...ff, artworkUrl: url as string })); }}
+                        isDragging={isDragArtwork}
+                        setIsDragging={setIsDragArtwork}
+                        fileInputRef={artworkFileInputRef as any}
+                        uploadedUrl={form.artworkUrl}
+                        uploadedName={uploadedNames["artwork"]}
+                      />
+                      {form.artworkUrl && !uploading["artwork"] && (
+                        <ArtworkPreview url={form.artworkUrl} onDelete={() => { setForm(f => ({ ...f, artworkUrl: "" })); setUploadProgress(p => ({ ...p, artwork: 0 })); setUploadedNames(n => { const c = { ...n }; delete c["artwork"]; return c; }); }} testId="button-delete-artwork-beat" />
+                      )}
+                    </div>
+
+                    {/* Card: Distribuce — full width */}
+                    <div style={{ ...card, gridColumn: "1 / -1" }}>
+                      <div style={lbl}>Distribuce</div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                        <div>
+                          <label style={labelStyle}>Soubor beatu ke stažení *</label>
+                          <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "8px" }}>
+                            <label style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "9px 14px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "10px", cursor: uploading["beat-local"] ? "default" : "pointer", fontSize: "13px", color: uploading["beat-local"] ? "#555" : "#aaa", opacity: uploading["beat-local"] ? 0.6 : 1 }}>
+                              <input type="file" accept="audio/*,.wav,.mp3,.flac,.aif,.aiff,.zip,.rar" disabled={uploading["beat-local"]} style={{ display: "none" }} data-testid="input-beat-local-file" onChange={async (e) => { if (e.target.files?.[0]) { const url = await uploadFile(e.target.files[0], "beat-local"); if (url) setForm(f => ({ ...f, fileUrl: url as string })); } }} />
+                              {uploading["beat-local"] ? "Nahrávám…" : "Nahrát soubor přímo"}
+                            </label>
+                          </div>
+                          <UploadProgressBar type="beat-local" />
+                          {uploadError["beat-local"] && <div style={{ fontSize: "12px", color: "#ff5252", marginBottom: "6px" }}>Chyba: {uploadError["beat-local"]}</div>}
+                          {form.fileUrl && form.fileUrl.startsWith("/uploads/") ? (
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 10px", background: "#0d1a0d", border: "1px solid #1a3a1a", borderRadius: "8px", marginBottom: "6px" }}>
+                              <Check size={12} color="#4caf50" style={{ flexShrink: 0 }} />
+                              <span style={{ fontSize: "12px", color: "#4caf50", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{decodeURIComponent(form.fileUrl.split("/").pop() || "")}</span>
+                              <button type="button" onClick={() => setForm(f => ({ ...f, fileUrl: "" }))} style={{ background: "none", border: "none", color: "#555", cursor: "pointer", padding: "0 2px", flexShrink: 0, display: "flex", alignItems: "center" }}><X size={13} /></button>
+                            </div>
+                          ) : (
+                            <div>
+                              <div style={{ display: "flex", alignItems: "center", gap: "6px", margin: "6px 0 4px" }}>
+                                <div style={{ flex: 1, height: "1px", background: "rgba(255,255,255,0.06)" }} />
+                                <span style={{ fontSize: "10px", color: "#333" }}>nebo Google Drive</span>
+                                <div style={{ flex: 1, height: "1px", background: "rgba(255,255,255,0.06)" }} />
+                              </div>
+                              <input type="url" placeholder="https://drive.google.com/drive/folders/…" value={form.fileUrl || ""} onChange={e => setForm({ ...form, fileUrl: e.target.value })} style={inp} data-testid="input-gdrive-url-beat" />
+                              <p style={{ fontSize: "11px", color: "#444", marginTop: "5px", lineHeight: 1.5 }}>Nastav sdílení → Kdokoli s odkazem → Prohlížeč</p>
+                              <GDriveLinkStatus url={form.fileUrl || ""} />
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <label style={labelStyle}>URL trackoutu <span style={{ color: "#333", fontWeight: 400 }}>(volitelné)</span></label>
+                          <input type="url" placeholder="https://drive.google.com/drive/folders/…" value={form.trackoutUrl || ""} onChange={e => setForm({ ...form, trackoutUrl: e.target.value })} style={inp} data-testid="input-gdrive-url-trackout" />
+                          <GDriveLinkStatus url={form.trackoutUrl || ""} />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Card: Tagy — spans 2 cols */}
+                    <div style={{ ...card, gridColumn: "span 2" }}>
+                      <div style={lbl}>Tagy <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0, opacity: 0.6 }}>(max 3)</span></div>
+                      <div style={{ display: "flex", gap: "8px" }}>
+                        <input value={tagInput} onChange={e => setTagInput(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); if (tagInput.trim() && form.tags.length < 3) { setForm({ ...form, tags: [...form.tags, tagInput.trim()] }); setTagInput(""); } } }} placeholder="Přidat tag… (Enter)" style={{ ...inp, flex: 1 }} disabled={form.tags.length >= 3} data-testid="input-beat-tag" />
+                        <button type="button" onClick={() => { if (tagInput.trim() && form.tags.length < 3) { setForm({ ...form, tags: [...form.tags, tagInput.trim()] }); setTagInput(""); } }} style={{ padding: "0 16px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.07)", color: "#aaa", borderRadius: "10px", cursor: "pointer", fontSize: "18px", flexShrink: 0 }}>+</button>
+                      </div>
+                      {form.tags.length > 0 && (
+                        <div style={{ display: "flex", gap: "6px", marginTop: "10px", flexWrap: "wrap" }}>
+                          {form.tags.map((tag, i) => (
+                            <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "5px 12px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "999px", fontSize: "12px", color: "#ccc" }}>
+                              {tag}
+                              <button type="button" onClick={() => setForm({ ...form, tags: form.tags.filter((_, j) => j !== i) })} style={{ background: "none", border: "none", color: "#555", cursor: "pointer", lineHeight: 1, padding: "0 0 0 2px", display: "flex", alignItems: "center" }}><X size={11} /></button>
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Card: Status */}
+                    <div style={{ ...card, display: "flex", flexDirection: "column", gap: "10px", justifyContent: "center" }}>
+                      <div style={lbl}>Status</div>
+                      <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", padding: "10px 12px", background: "rgba(255,255,255,0.03)", border: `1px solid ${form.isPublished ? "rgba(76,175,80,0.25)" : "rgba(255,255,255,0.06)"}`, borderRadius: "12px", transition: "border-color 0.15s" }}>
+                        <input type="checkbox" checked={form.isPublished} onChange={e => setForm({ ...form, isPublished: e.target.checked })} style={{ width: "16px", height: "16px", cursor: "pointer", accentColor: "#4caf50" }} data-testid="checkbox-beat-published" />
+                        <span style={{ fontSize: "13px", color: form.isPublished ? "#4caf50" : "#555" }}>{form.isPublished ? "Publikováno" : "Skryto"}</span>
+                      </label>
+                      <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", padding: "10px 12px", background: "rgba(255,255,255,0.03)", border: `1px solid ${form.isHighlighted ? "rgba(249,168,37,0.25)" : "rgba(255,255,255,0.06)"}`, borderRadius: "12px", transition: "border-color 0.15s" }}>
+                        <input type="checkbox" checked={form.isHighlighted} onChange={e => setForm({ ...form, isHighlighted: e.target.checked })} style={{ width: "16px", height: "16px", cursor: "pointer", accentColor: "#f9a825" }} data-testid="checkbox-beat-highlighted" />
+                        <span style={{ fontSize: "13px", color: form.isHighlighted ? "#f9a825" : "#555", display: "flex", alignItems: "center", gap: "5px" }}>
+                          {form.isHighlighted && <Star size={11} fill="#f9a825" color="#f9a825" />}
+                          {form.isHighlighted ? "Featured" : "Normální"}
+                        </span>
+                      </label>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+
+            {/* Submit row */}
+            <div style={{ marginTop: "14px", paddingTop: "14px", borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", gap: "10px", alignItems: "center" }}>
+              <button type="submit" className="btn btn-filled" disabled={Object.values(uploading).some(Boolean)} style={{ fontSize: "14px", padding: "10px 24px", opacity: Object.values(uploading).some(Boolean) ? 0.5 : 1 }} data-testid="button-submit-beat">
+                {Object.values(uploading).some(Boolean) ? "Čekám na nahrání…" : editing ? "Uložit změny" : "Přidat beat"}
+              </button>
+              <button type="button" onClick={resetForm} style={{ background: "none", border: "1px solid rgba(255,255,255,0.08)", color: "#555", padding: "10px 20px", borderRadius: "8px", cursor: "pointer", fontSize: "13px" }}>Zrušit</button>
+              {editing && (
+                <button type="button" onClick={() => handleDelete(editing.id)} style={{ marginLeft: "auto", background: "none", border: "1px solid rgba(255,255,255,0.08)", color: "#555", padding: "10px 14px", borderRadius: "8px", cursor: "pointer", fontSize: "12px" }} data-testid={`button-delete-beat-${editing.id}`}>Smazat beat</button>
+              )}
+            </div>
+          </form>
         </div>
       )}
 
@@ -1639,157 +1652,202 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
       })()}
 
       {/* ── Beat list ── */}
-      {beats.length === 0 ? (
-        <div style={{ padding: "48px 24px", textAlign: "center", border: "1px dashed #1e1e1e", borderRadius: "10px" }}>
-          <Music size={32} color="#333" style={{ marginBottom: "12px" }} />
-          <div style={{ color: "#444", fontSize: "14px" }}>Žádné beaty. Přidejte první beat.</div>
-        </div>
-      ) : (
-        <div style={{ border: "1px solid #1a1a1a", borderRadius: "10px", overflow: "hidden" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr style={{ background: "#080808", borderBottom: "1px solid #1a1a1a" }}>
-                <th style={{ padding: "10px 14px", width: "36px" }}>
-                  <input type="checkbox" checked={beats.length > 0 && selectedBeats.length === beats.length} onChange={handleSelectAll} data-testid="checkbox-select-all-beats" style={{ cursor: "pointer", accentColor: "#4caf50" }} />
-                </th>
-                <th style={{ padding: "10px 8px", width: "52px" }}></th>
-                <th style={{ textAlign: "left", padding: "10px 8px", fontSize: "10px", fontWeight: 700, color: "#444", textTransform: "uppercase", letterSpacing: "0.6px" }}>Název</th>
-                <th style={{ textAlign: "left", padding: "10px 8px", fontSize: "10px", fontWeight: 700, color: "#444", textTransform: "uppercase", letterSpacing: "0.6px", width: "90px" }}>BPM / Key</th>
-                <th style={{ textAlign: "left", padding: "10px 8px", fontSize: "10px", fontWeight: 700, color: "#444", textTransform: "uppercase", letterSpacing: "0.6px", width: "80px" }}>Cena</th>
-                <th style={{ textAlign: "left", padding: "10px 8px", fontSize: "10px", fontWeight: 700, color: "#444", textTransform: "uppercase", letterSpacing: "0.6px", width: "110px" }}>Status</th>
-                <th style={{ textAlign: "left", padding: "10px 8px", fontSize: "10px", fontWeight: 700, color: "#444", textTransform: "uppercase", letterSpacing: "0.6px" }}>Waveform</th>
-                <th style={{ textAlign: "right", padding: "10px 14px", width: "120px" }}></th>
-              </tr>
-            </thead>
-            <tbody>
-              {beats.map((beat: Beat, beatIdx: number) => (
-                <tr
-                  key={beat.id}
-                  style={{ borderBottom: "1px solid #111", background: hoveredBeatId === beat.id ? "#0d0d0d" : "transparent", cursor: "pointer", transition: "background 120ms" }}
-                  onMouseEnter={() => setHoveredBeatId(beat.id)}
-                  onMouseLeave={() => setHoveredBeatId(null)}
-                  onClick={() => { setEditing(beat); setShowForm(true); }}
-                  data-testid={`row-beat-${beat.id}`}
-                >
-                  <td style={{ padding: "10px 14px" }} onClick={e => e.stopPropagation()}>
-                    <input type="checkbox" checked={selectedBeats.includes(beat.id)} onChange={() => handleSelectBeat(beat.id)} data-testid={`checkbox-beat-${beat.id}`} style={{ cursor: "pointer", accentColor: "#4caf50" }} />
-                  </td>
-                  <td style={{ padding: "8px" }} onClick={e => toggleBeatPreview(beat, e)}>
-                    <div style={{ position: "relative", width: "44px", height: "44px", cursor: beat.preview_url ? "pointer" : "default", flexShrink: 0, borderRadius: "6px", overflow: "hidden" }}>
-                      {beat.artwork_url ? (
-                        <img src={beat.artwork_url} alt={beat.title} style={{ width: "44px", height: "44px", objectFit: "cover", display: "block", transition: "opacity 0.15s", opacity: previewBeatId === beat.id ? 0.4 : 1 }} onError={e => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }} />
-                      ) : (
-                        <div style={{ width: "44px", height: "44px", background: "#161616", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                          <span style={{ fontSize: "18px", color: "#2a2a2a" }}>♪</span>
-                        </div>
-                      )}
-                      {beat.preview_url && (
-                        <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: previewBeatId === beat.id ? "rgba(0,0,0,0.5)" : hoveredBeatId === beat.id ? "rgba(0,0,0,0.25)" : "transparent", transition: "background 0.15s" }}>
-                          {previewBeatId === beat.id ? (
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-                          ) : hoveredBeatId === beat.id ? (
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="rgba(255,255,255,0.9)"><path d="M5 3l14 9-14 9V3z"/></svg>
-                          ) : null}
-                        </div>
-                      )}
-                    </div>
-                  </td>
-                  <td style={{ padding: "10px 8px" }}>
-                    <div style={{ fontSize: "13px", fontWeight: 500, color: "#e0e0e0", marginBottom: "3px" }}>{beat.title}</div>
-                    <div style={{ fontSize: "11px", color: "#444" }}>{beat.artist}</div>
-                    {beat.tags && beat.tags.length > 0 && (
-                      <div style={{ display: "flex", gap: "4px", marginTop: "4px", flexWrap: "wrap" }}>
-                        {beat.tags.map((t: string, i: number) => (
-                          <span key={i} style={{ fontSize: "10px", color: "#555", background: "#111", border: "1px solid #1e1e1e", borderRadius: "999px", padding: "1px 7px" }}>{t}</span>
-                        ))}
-                      </div>
-                    )}
-                  </td>
-                  <td style={{ padding: "6px 8px" }} onClick={e => e.stopPropagation()}>
-                    {inlineBpmKey?.id === beat.id ? (
-                      <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                        <input
-                          type="number"
-                          min={40} max={300}
-                          value={inlineBpmKey.bpm}
-                          onChange={e => setInlineBpmKey(v => v ? { ...v, bpm: Number(e.target.value) } : v)}
-                          onBlur={() => saveInlineBpmKey(beat, inlineBpmKey.bpm, inlineBpmKey.key)}
-                          onKeyDown={e => { if (e.key === "Enter") { (e.currentTarget as HTMLInputElement).blur(); } if (e.key === "Escape") setInlineBpmKey(null); }}
-                          autoFocus
-                          style={{ width: "64px", padding: "3px 6px", background: "#0d0d0d", border: "1px solid #333", borderRadius: "4px", color: "#ccc", fontSize: "12px", fontFamily: "monospace", outline: "none" }}
-                        />
-                        <select
-                          value={inlineBpmKey.key}
-                          onChange={e => setInlineBpmKey(v => v ? { ...v, key: e.target.value } : v)}
-                          onBlur={() => saveInlineBpmKey(beat, inlineBpmKey.bpm, inlineBpmKey.key)}
-                          style={{ width: "64px", padding: "3px 4px", background: "#0d0d0d", border: "1px solid #333", borderRadius: "4px", color: "#aaa", fontSize: "11px", outline: "none" }}
-                        >
-                          {MUSICAL_KEYS.map(k => <option key={k} value={k}>{k}</option>)}
-                        </select>
-                      </div>
-                    ) : (
-                      <div
-                        onClick={() => setInlineBpmKey({ id: beat.id, bpm: beat.bpm, key: beat.key || "Cm" })}
-                        title="Kliknutím upravíte"
-                        style={{ cursor: "text", display: "inline-flex", flexDirection: "column", gap: "2px", padding: "4px 6px", borderRadius: "4px", border: "1px solid transparent", transition: "border-color 0.15s" }}
-                        onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.borderColor = "#2a2a2a"}
-                        onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.borderColor = "transparent"}
-                      >
-                        <div style={{ fontSize: "12px", color: "#ccc", fontFamily: "monospace" }}>{beat.bpm} BPM</div>
-                        <div style={{ fontSize: "11px", color: "#555" }}>{beat.key}</div>
-                      </div>
-                    )}
-                  </td>
-                  <td style={{ padding: "10px 8px" }}>
-                    <div style={{ fontSize: "12px", color: beat.price === 0 ? "#555" : "#ccc", fontFamily: "monospace" }}>{beat.price === 0 ? "Free" : `${beat.price.toLocaleString("cs-CZ")} Kč`}</div>
-                  </td>
-                  <td style={{ padding: "10px 8px" }}>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "10px", fontWeight: 600, padding: "2px 8px", borderRadius: "999px", background: beat.is_published ? "rgba(76,175,80,0.12)" : "rgba(255,255,255,0.04)", color: beat.is_published ? "#4caf50" : "#444", border: `1px solid ${beat.is_published ? "rgba(76,175,80,0.25)" : "#1e1e1e"}`, width: "fit-content" }}>
-                        <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: beat.is_published ? "#4caf50" : "#2a2a2a", flexShrink: 0 }} />
-                        {beat.is_published ? "Publik." : "Skryto"}
-                      </span>
-                      {beat.is_highlighted && (
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "10px", fontWeight: 600, padding: "2px 8px", borderRadius: "999px", background: "rgba(249,168,37,0.1)", color: "#f9a825", border: "1px solid rgba(249,168,37,0.2)", width: "fit-content" }}>⭐ Featured</span>
-                      )}
-                    </div>
-                  </td>
-                  <td style={{ padding: "10px 8px" }} onClick={e => e.stopPropagation()}>
-                    {!beat.preview_url ? (
-                      <span style={{ fontSize: "11px", color: "#2a2a2a" }}>—</span>
-                    ) : (beat.waveform_data && Array.isArray(beat.waveform_data)) ? (() => {
-                      const quality = getBeatWaveformQuality(beat.waveform_data);
-                      const isHov = hoveredBeatId === beat.id;
-                      return (
-                        <div data-testid={`waveform-status-${beat.id}`} style={{ display: "inline-flex", flexDirection: "column", gap: "3px", cursor: "pointer" }} title={`${beat.waveform_data.length} bodů`} onClick={e => { e.stopPropagation(); setExpandedWaveformBeat(beat); }}>
-                          <BeatWaveformSparkline data={beat.waveform_data} hovered={isHov} />
-                          <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                            <div style={{ width: "4px", height: "4px", borderRadius: "50%", background: quality.color, flexShrink: 0 }} />
-                            <span style={{ fontSize: "9px", color: isHov ? quality.color : "#333", fontFamily: "monospace", letterSpacing: "0.3px", transition: "color 120ms" }}>{quality.label}</span>
-                          </div>
-                        </div>
-                      );
-                    })() : recomputingIds.has(beat.id) ? (
-                      <span style={{ fontSize: "11px", color: "#555" }}>Počítám…</span>
-                    ) : (
-                      <button data-testid={`button-recompute-waveform-${beat.id}`} onClick={e => handleRecomputeWaveform(beat, e)} style={{ background: "none", border: "1px solid #2a2000", color: "#8a6e1a", fontSize: "10px", padding: "3px 8px", borderRadius: "4px", cursor: "pointer" }}>⏳ Výpočet</button>
-                    )}
-                  </td>
-                  <td style={{ padding: "10px 14px", textAlign: "right" }} onClick={e => e.stopPropagation()}>
-                    <div style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                      <div style={{ display: "inline-flex", border: "1px solid #1e1e1e", borderRadius: "6px", overflow: "hidden" }}>
-                        <button onClick={() => handleBeatReorder(beatIdx, "up")} disabled={beatIdx === 0} data-testid={`button-beat-up-${beat.id}`} title="Nahoru" style={{ background: "transparent", border: "none", color: beatIdx === 0 ? "#222" : "#444", cursor: beatIdx === 0 ? "default" : "pointer", padding: "5px 8px", fontSize: "11px", lineHeight: 1, transition: "color 0.12s" }} onMouseEnter={e => { if (beatIdx > 0) (e.currentTarget as HTMLButtonElement).style.color = "#aaa"; }} onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = beatIdx === 0 ? "#222" : "#444"; }}>↑</button>
-                        <button onClick={() => handleBeatReorder(beatIdx, "down")} disabled={beatIdx === beats.length - 1} data-testid={`button-beat-down-${beat.id}`} title="Dolů" style={{ background: "transparent", border: "none", borderLeft: "1px solid #1e1e1e", color: beatIdx === beats.length - 1 ? "#222" : "#444", cursor: beatIdx === beats.length - 1 ? "default" : "pointer", padding: "5px 8px", fontSize: "11px", lineHeight: 1, transition: "color 0.12s" }} onMouseEnter={e => { if (beatIdx < beats.length - 1) (e.currentTarget as HTMLButtonElement).style.color = "#aaa"; }} onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = beatIdx === beats.length - 1 ? "#222" : "#444"; }}>↓</button>
-                      </div>
-                      <button className="btn btn-admin" onClick={() => { setEditing(beat); setShowForm(true); }} style={{ fontSize: "11px", padding: "5px 10px" }} data-testid={`button-edit-beat-${beat.id}`}>Upravit</button>
-                    </div>
-                  </td>
+      {(() => {
+        const defaultArtworkUrl = (() => { try { return JSON.parse(settings?.artwork_config || '{}')?.defaultArtworkUrl || ''; } catch { return ''; } })();
+        return beats.length === 0 ? (
+          <div style={{ padding: "48px 24px", textAlign: "center", border: "1px dashed #1e1e1e", borderRadius: "10px" }}>
+            <Music size={32} color="#333" style={{ marginBottom: "12px" }} />
+            <div style={{ color: "#444", fontSize: "14px" }}>Žádné beaty. Přidejte první beat.</div>
+          </div>
+        ) : (
+          <div style={{ border: "1px solid #1a1a1a", borderRadius: "10px", overflow: "hidden" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr style={{ background: "#080808", borderBottom: "1px solid #1a1a1a" }}>
+                  <th style={{ padding: "10px 14px", width: "36px" }}>
+                    <input type="checkbox" checked={beats.length > 0 && selectedBeats.length === beats.length} onChange={handleSelectAll} data-testid="checkbox-select-all-beats" style={{ cursor: "pointer", accentColor: "#4caf50" }} />
+                  </th>
+                  <th style={{ padding: "10px 8px", width: "52px" }}></th>
+                  <th style={{ textAlign: "left", padding: "10px 8px", fontSize: "10px", fontWeight: 700, color: "#444", textTransform: "uppercase", letterSpacing: "0.6px" }}>Název</th>
+                  <th style={{ textAlign: "center", padding: "10px 8px", fontSize: "10px", fontWeight: 700, color: "#444", textTransform: "uppercase", letterSpacing: "0.6px", width: "68px" }}>BPM</th>
+                  <th style={{ textAlign: "center", padding: "10px 8px", fontSize: "10px", fontWeight: 700, color: "#444", textTransform: "uppercase", letterSpacing: "0.6px", width: "68px" }}>Tónina</th>
+                  <th style={{ textAlign: "left", padding: "10px 8px", fontSize: "10px", fontWeight: 700, color: "#444", textTransform: "uppercase", letterSpacing: "0.6px", width: "80px" }}>Cena</th>
+                  <th style={{ textAlign: "left", padding: "10px 8px", fontSize: "10px", fontWeight: 700, color: "#444", textTransform: "uppercase", letterSpacing: "0.6px", width: "110px" }}>Status</th>
+                  <th style={{ textAlign: "left", padding: "10px 8px", fontSize: "10px", fontWeight: 700, color: "#444", textTransform: "uppercase", letterSpacing: "0.6px" }}>Waveform</th>
+                  <th style={{ textAlign: "right", padding: "10px 14px", width: "148px" }}></th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+              </thead>
+              <tbody>
+                {beats.map((beat: Beat, beatIdx: number) => {
+                  const isQuickEdit = quickEditId === beat.id;
+                  const artworkSrc = beat.artwork_url || defaultArtworkUrl;
+                  return (
+                    <tr
+                      key={beat.id}
+                      style={{ borderBottom: "1px solid #111", background: isQuickEdit ? "#0b0b10" : hoveredBeatId === beat.id ? "#0d0d0d" : "transparent", cursor: isQuickEdit ? "default" : "pointer", transition: "background 120ms" }}
+                      onMouseEnter={() => setHoveredBeatId(beat.id)}
+                      onMouseLeave={() => setHoveredBeatId(null)}
+                      onClick={() => { if (!isQuickEdit) { setEditing(beat); setShowForm(true); } }}
+                      data-testid={`row-beat-${beat.id}`}
+                    >
+                      <td style={{ padding: "10px 14px" }} onClick={e => e.stopPropagation()}>
+                        <input type="checkbox" checked={selectedBeats.includes(beat.id)} onChange={() => handleSelectBeat(beat.id)} data-testid={`checkbox-beat-${beat.id}`} style={{ cursor: "pointer", accentColor: "#4caf50" }} />
+                      </td>
+                      <td style={{ padding: "8px" }} onClick={e => { e.stopPropagation(); toggleBeatPreview(beat, e); }}>
+                        <div style={{ position: "relative", width: "44px", height: "44px", cursor: beat.preview_url ? "pointer" : "default", flexShrink: 0, borderRadius: "6px", overflow: "hidden" }}>
+                          {artworkSrc ? (
+                            <img src={artworkSrc} alt={beat.title} style={{ width: "44px", height: "44px", objectFit: "cover", display: "block", transition: "opacity 0.15s", opacity: previewBeatId === beat.id ? 0.4 : 1 }} onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                          ) : (
+                            <div style={{ width: "44px", height: "44px", background: "#161616", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                              <Music size={16} color="#2a2a2a" />
+                            </div>
+                          )}
+                          {beat.preview_url && (
+                            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: previewBeatId === beat.id ? "rgba(0,0,0,0.5)" : hoveredBeatId === beat.id ? "rgba(0,0,0,0.25)" : "transparent", transition: "background 0.15s" }}>
+                              {previewBeatId === beat.id ? (
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                              ) : hoveredBeatId === beat.id ? (
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="rgba(255,255,255,0.9)"><path d="M5 3l14 9-14 9V3z"/></svg>
+                              ) : null}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td style={{ padding: "10px 8px" }} onClick={e => { if (isQuickEdit) e.stopPropagation(); }}>
+                        {isQuickEdit ? (
+                          <input
+                            value={quickEditTitle}
+                            onChange={e => setQuickEditTitle(e.target.value)}
+                            onKeyDown={e => { if (e.key === "Enter") { saveInlineTitle(beat, quickEditTitle); if (inlineBpmKey) saveInlineBpmKey(beat, inlineBpmKey.bpm, inlineBpmKey.key); } if (e.key === "Escape") { setQuickEditId(null); setInlineBpmKey(null); } }}
+                            autoFocus
+                            style={{ width: "100%", padding: "5px 8px", background: "#0d0d0d", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "6px", color: "#e0e0e0", fontSize: "13px", fontWeight: 500, outline: "none", boxSizing: "border-box" }}
+                            data-testid={`input-beat-title-inline-${beat.id}`}
+                          />
+                        ) : (
+                          <div>
+                            <div style={{ fontSize: "13px", fontWeight: 500, color: "#e0e0e0", marginBottom: "3px" }}>{beat.title}</div>
+                            <div style={{ fontSize: "11px", color: "#444" }}>{beat.artist}</div>
+                            {beat.tags && beat.tags.length > 0 && (
+                              <div style={{ display: "flex", gap: "4px", marginTop: "4px", flexWrap: "wrap" }}>
+                                {beat.tags.map((t: string, i: number) => (
+                                  <span key={i} style={{ fontSize: "10px", color: "#555", background: "#111", border: "1px solid #1e1e1e", borderRadius: "999px", padding: "1px 7px" }}>{t}</span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </td>
+                      <td style={{ padding: "6px 8px", textAlign: "center" }} onClick={e => e.stopPropagation()}>
+                        {isQuickEdit ? (
+                          <input
+                            type="number"
+                            min={40} max={300}
+                            value={inlineBpmKey?.bpm ?? beat.bpm}
+                            onChange={e => setInlineBpmKey(v => v ? { ...v, bpm: Number(e.target.value) } : { id: beat.id, bpm: Number(e.target.value), key: beat.key || "Cm" })}
+                            style={{ width: "56px", padding: "4px 5px", background: "#0d0d0d", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "4px", color: "#ccc", fontSize: "12px", fontFamily: "monospace", outline: "none", textAlign: "center" }}
+                          />
+                        ) : (
+                          <div style={{ fontSize: "12px", color: "#ccc", fontFamily: "monospace" }}>{beat.bpm}</div>
+                        )}
+                      </td>
+                      <td style={{ padding: "6px 8px", textAlign: "center" }} onClick={e => e.stopPropagation()}>
+                        {isQuickEdit ? (
+                          <select
+                            value={inlineBpmKey?.key ?? beat.key ?? "Cm"}
+                            onChange={e => setInlineBpmKey(v => v ? { ...v, key: e.target.value } : { id: beat.id, bpm: beat.bpm, key: e.target.value })}
+                            style={{ width: "62px", padding: "4px 3px", background: "#0d0d0d", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "4px", color: "#aaa", fontSize: "11px", outline: "none" }}
+                          >
+                            {MUSICAL_KEYS.map(k => <option key={k} value={k}>{k}</option>)}
+                          </select>
+                        ) : (
+                          <div style={{ fontSize: "11px", color: "#555" }}>{beat.key || "—"}</div>
+                        )}
+                      </td>
+                      <td style={{ padding: "10px 8px" }}>
+                        <div style={{ fontSize: "12px", color: beat.price === 0 ? "#555" : "#ccc", fontFamily: "monospace" }}>{beat.price === 0 ? "Free" : `${beat.price.toLocaleString("cs-CZ")} Kč`}</div>
+                      </td>
+                      <td style={{ padding: "10px 8px" }}>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "10px", fontWeight: 600, padding: "2px 8px", borderRadius: "999px", background: beat.is_published ? "rgba(76,175,80,0.12)" : "rgba(255,255,255,0.04)", color: beat.is_published ? "#4caf50" : "#444", border: `1px solid ${beat.is_published ? "rgba(76,175,80,0.25)" : "#1e1e1e"}`, width: "fit-content" }}>
+                            <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: beat.is_published ? "#4caf50" : "#2a2a2a", flexShrink: 0 }} />
+                            {beat.is_published ? "Publik." : "Skryto"}
+                          </span>
+                          {beat.is_highlighted && (
+                            <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "10px", fontWeight: 600, padding: "2px 8px", borderRadius: "999px", background: "rgba(249,168,37,0.1)", color: "#f9a825", border: "1px solid rgba(249,168,37,0.2)", width: "fit-content" }}>
+                              <Star size={9} fill="#f9a825" color="#f9a825" />
+                              Featured
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td style={{ padding: "10px 8px" }} onClick={e => e.stopPropagation()}>
+                        {!beat.preview_url ? (
+                          <span style={{ fontSize: "11px", color: "#2a2a2a" }}>—</span>
+                        ) : (beat.waveform_data && Array.isArray(beat.waveform_data)) ? (() => {
+                          const quality = getBeatWaveformQuality(beat.waveform_data);
+                          const isHov = hoveredBeatId === beat.id;
+                          return (
+                            <div data-testid={`waveform-status-${beat.id}`} style={{ display: "inline-flex", flexDirection: "column", gap: "3px", cursor: "pointer" }} title={`${beat.waveform_data.length} bodů`} onClick={e => { e.stopPropagation(); setExpandedWaveformBeat(beat); }}>
+                              <BeatWaveformSparkline data={beat.waveform_data} hovered={isHov} />
+                              <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                                <div style={{ width: "4px", height: "4px", borderRadius: "50%", background: quality.color, flexShrink: 0 }} />
+                                <span style={{ fontSize: "9px", color: isHov ? quality.color : "#333", fontFamily: "monospace", letterSpacing: "0.3px", transition: "color 120ms" }}>{quality.label}</span>
+                              </div>
+                            </div>
+                          );
+                        })() : recomputingIds.has(beat.id) ? (
+                          <span style={{ fontSize: "11px", color: "#555" }}>Počítám…</span>
+                        ) : (
+                          <button data-testid={`button-recompute-waveform-${beat.id}`} onClick={e => handleRecomputeWaveform(beat, e)} style={{ background: "none", border: "1px solid #2a2000", color: "#8a6e1a", fontSize: "10px", padding: "3px 8px", borderRadius: "4px", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                            <Clock size={9} />
+                            Výpočet
+                          </button>
+                        )}
+                      </td>
+                      <td style={{ padding: "10px 14px", textAlign: "right" }} onClick={e => e.stopPropagation()}>
+                        <div style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                          {isQuickEdit ? (
+                            <button
+                              onClick={() => { saveInlineTitle(beat, quickEditTitle); if (inlineBpmKey && inlineBpmKey.id === beat.id) { saveInlineBpmKey(beat, inlineBpmKey.bpm, inlineBpmKey.key); } else { setInlineBpmKey(null); } }}
+                              title="Uložit"
+                              data-testid={`button-save-quick-edit-${beat.id}`}
+                              style={{ background: "rgba(76,175,80,0.12)", border: "1px solid rgba(76,175,80,0.3)", color: "#4caf50", width: "28px", height: "28px", borderRadius: "6px", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                            >
+                              <Check size={13} />
+                            </button>
+                          ) : (
+                            <>
+                              <div style={{ display: "inline-flex", border: "1px solid #1e1e1e", borderRadius: "6px", overflow: "hidden" }}>
+                                <button onClick={() => handleBeatReorder(beatIdx, "up")} disabled={beatIdx === 0} data-testid={`button-beat-up-${beat.id}`} title="Nahoru" style={{ background: "transparent", border: "none", color: beatIdx === 0 ? "#222" : "#444", cursor: beatIdx === 0 ? "default" : "pointer", padding: "5px 7px", lineHeight: 1, transition: "color 0.12s", display: "flex", alignItems: "center" }} onMouseEnter={e => { if (beatIdx > 0) (e.currentTarget as HTMLButtonElement).style.color = "#aaa"; }} onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = beatIdx === 0 ? "#222" : "#444"; }}>
+                                  <ChevronUp size={12} />
+                                </button>
+                                <button onClick={() => handleBeatReorder(beatIdx, "down")} disabled={beatIdx === beats.length - 1} data-testid={`button-beat-down-${beat.id}`} title="Dolů" style={{ background: "transparent", border: "none", borderLeft: "1px solid #1e1e1e", color: beatIdx === beats.length - 1 ? "#222" : "#444", cursor: beatIdx === beats.length - 1 ? "default" : "pointer", padding: "5px 7px", lineHeight: 1, transition: "color 0.12s", display: "flex", alignItems: "center" }} onMouseEnter={e => { if (beatIdx < beats.length - 1) (e.currentTarget as HTMLButtonElement).style.color = "#aaa"; }} onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = beatIdx === beats.length - 1 ? "#222" : "#444"; }}>
+                                  <ChevronDown size={12} />
+                                </button>
+                              </div>
+                              <button
+                                onClick={e => { e.stopPropagation(); setQuickEditId(beat.id); setQuickEditTitle(beat.title); setInlineBpmKey({ id: beat.id, bpm: beat.bpm, key: beat.key || "Cm" }); }}
+                                title="Rychlá úprava"
+                                data-testid={`button-quick-edit-${beat.id}`}
+                                style={{ background: "transparent", border: "1px solid #1e1e1e", color: "#444", width: "28px", height: "28px", borderRadius: "6px", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "all 0.12s" }}
+                                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = "#aaa"; (e.currentTarget as HTMLButtonElement).style.borderColor = "#333"; }}
+                                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = "#444"; (e.currentTarget as HTMLButtonElement).style.borderColor = "#1e1e1e"; }}
+                              >
+                                <Pencil size={11} />
+                              </button>
+                              <button className="btn btn-admin" onClick={e => { e.stopPropagation(); setEditing(beat); setShowForm(true); }} style={{ fontSize: "11px", padding: "5px 10px" }} data-testid={`button-edit-beat-${beat.id}`}>Upravit</button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        );
+      })()}
 
       {expandedWaveformBeat && (
         <WaveformModal beat={expandedWaveformBeat} onClose={() => setExpandedWaveformBeat(null)} />
