@@ -115,49 +115,34 @@ export default function CookieConsent({ onConsent }: { onConsent?: (v: ConsentVa
   return (
     <>
       <style>{`
-        @keyframes cc-backdrop-in {
-          from { opacity: 0; }
-          to   { opacity: 1; }
-        }
         @keyframes cc-modal-in {
-          from { opacity: 0; transform: translateY(20px) scale(0.98); }
-          to   { opacity: 1; transform: translateY(0) scale(1); }
+          from { opacity: 0; transform: translateY(12px); }
+          to   { opacity: 1; transform: translateY(0); }
         }
         @keyframes cc-out {
-          from { opacity: 1; }
-          to   { opacity: 0; }
+          from { opacity: 1; transform: translateY(0); }
+          to   { opacity: 0; transform: translateY(12px); }
         }
         .cc-backdrop {
           position: fixed;
-          inset: 0;
+          bottom: 20px;
+          left: 20px;
           z-index: 9998;
-          background: rgba(0, 0, 0, 0.65);
-          backdrop-filter: blur(4px);
-          -webkit-backdrop-filter: blur(4px);
-          animation: cc-backdrop-in 0.3s ease forwards;
-          display: flex;
-          align-items: flex-end;
-          justify-content: center;
-          padding: 0 0 24px 0;
+          pointer-events: none;
         }
-        @media (min-width: 560px) {
-          .cc-backdrop {
-            align-items: center;
-            padding: 0;
-          }
-        }
-        .cc-backdrop.cc-leaving {
+        .cc-backdrop.cc-leaving .cc-modal {
           animation: cc-out 0.35s ease forwards;
         }
         .cc-modal {
+          pointer-events: all;
           background: #0e0e0e;
           border: 1px solid rgba(255, 255, 255, 0.1);
           border-radius: 14px;
-          width: calc(100vw - 32px);
-          max-width: 520px;
-          max-height: 90vh;
+          width: 320px;
+          max-width: calc(100vw - 40px);
+          max-height: 80vh;
           overflow-y: auto;
-          box-shadow: 0 24px 80px rgba(0, 0, 0, 0.8);
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
           animation: cc-modal-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
           font-family: inherit;
         }
