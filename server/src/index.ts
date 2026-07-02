@@ -171,13 +171,19 @@ app.get("/payment/return", async (req: any, res: any) => {
 });
 
 // ── GoPay IPN notification ────────────────────────────────────────────────────
-// GoPay POSTs to notify_url with id=<payment_id> in the body when payment
-// state changes. We look up the order by gopay_payment_id and update status.
+// GoPay POSTs to notify_url with id=<payment_id> as a QUERY PARAMETER
+// (e.g. /payment/notify?id=9271576359). The body may also carry it, so we
+// check both to be safe. We must respond HTTP 200 first, then query GoPay for
+// the authoritative payment state.
 app.post("/payment/notify", async (req: any, res: any) => {
   res.status(200).send("OK");
 
-  const paymentId = req.body?.id;
-  if (!paymentId) return;
+  // GoPay sends the payment ID in the query string (?id=...), not the body.
+  const paymentId = (req.query?.id as string) || req.body?.id;
+  if (!paymentId) {
+    console.warn("[GoPay] /payment/notify: no payment id in query or body", { query: req.query, body: req.body });
+    return;
+  }
 
   try {
     const clientId = process.env.GOPAY_CLIENT_ID;
@@ -210,7 +216,23 @@ app.post("/payment/notify", async (req: any, res: any) => {
       } catch (err) {
         console.error("[GoPay] /payment/notify contract email error:", err);
       }
-    } else if (status?.state === "CANCELED" || status?.state === "TIMEOUTED") {
+      // Mark exclusive beats as sold so they can no longer be purchased
+      try {
+        const orderItemsRes = await pool.query("SELECT items FROM orders WHERE id = $1", [order.id]);
+        const items: any[] = Array.isArray(orderItemsRes.rows[0]?.items) ? orderItemsRes.rows[0].items : [];
+        for (const item of items) {
+          if (item.productType !== "beat" || !item.licenseTypeId || !item.productId) continue;
+          const ltRes = await pool.query("SELECT name FROM license_types WHERE id = $1", [item.licenseTypeId]);
+          if (!ltRes.rows[0]) continue;
+          if ((ltRes.rows[0].name as string).toLowerCase().includes("exclusive")) {
+            await pool.query("UPDATE beats SET exclusive_sold = true WHERE id = $1", [item.productId]);
+            console.log(`[GoPay] /payment/notify: beat ${item.productId} marked exclusive_sold (order ${order.id})`);
+          }
+        }
+      } catch (err) {
+        console.error("[GoPay] /payment/notify exclusive-sold error:", err);
+      }
+    } else if (status?.state === "CANCELED" || status?.state === "TIMEOUTED" || status?.state === "REFUNDED") {
       await pool.query("UPDATE orders SET status = 'cancelled' WHERE id = $1", [order.id]);
     }
   } catch (e) {
