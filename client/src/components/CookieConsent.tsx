@@ -308,12 +308,8 @@ export default function CookieConsent({ onConsent }: { onConsent?: (v: ConsentVa
           <div className="cc-header">
             <p className="cc-title">Tento web používá soubory cookie</p>
             <p className="cc-body-text">
-              Používáme cookies, abychom vám zajistili co nejlepší zážitek na našem webu.
-              Část cookies je nezbytná pro správné fungování, ostatní nám pomáhají web zlepšovat.
-              Svůj souhlas můžete kdykoliv změnit v{" "}
-              <a href="/nastaveni-cookies">nastavení cookies</a>.
-              Více informací v{" "}
-              <a href="/cookies">zásadách používání cookies</a>.
+              Používáme cookies pro správné fungování webu a analýzu návštěvnosti.{" "}
+              <a href="/cookies">Zásady cookies</a>.
             </p>
 
             <button
