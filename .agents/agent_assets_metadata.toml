@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "02v2CWdTESNBn8shzfZug"
+uri = "file://BEATZ_PLATFORM_BRIEF.md"
+type = "text"
+title = "Beatz Platform — Agent Briefing"
