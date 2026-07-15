@@ -1,5 +1,6 @@
 import { spawn } from "child_process";
 import { createRequire } from "module";
+import path from "path";
 
 const BAR_COUNT = 480;
 
@@ -14,8 +15,22 @@ function getFfmpegPath(): string {
   return "ffmpeg";
 }
 
+// Locally-stored beat/kit previews come back from the upload API as a
+// relative web path like "/uploads/beats/previews/foo.mp3". ffmpeg has no
+// concept of that — it either needs a real http(s) URL or a filesystem path.
+// Resolve "/uploads/..." straight to the file on disk (public/uploads/...)
+// instead of round-tripping through HTTP; leave real http(s) URLs untouched.
+function resolveFfmpegInput(url: string): string {
+  if (/^https?:\/\//i.test(url)) return url;
+  if (url.startsWith("/uploads/")) {
+    return path.join(process.cwd(), "public", url);
+  }
+  return url;
+}
+
 export async function computeWaveformFromUrl(url: string): Promise<number[] | null> {
   const ffmpegPath = getFfmpegPath();
+  const input = resolveFfmpegInput(url);
   return new Promise((resolve) => {
     const chunks: Buffer[] = [];
     const timeout = setTimeout(() => {
@@ -24,7 +39,7 @@ export async function computeWaveformFromUrl(url: string): Promise<number[] | nu
     }, 60000);
 
     const ffmpeg = spawn(ffmpegPath, [
-      "-i", url,
+      "-i", input,
       "-ac", "1",
       "-ar", "22050",
       "-f", "f32le",
