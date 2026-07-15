@@ -706,6 +706,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   const [uploadedNames, setUploadedNames] = useState<Record<string, string>>({});
   const [uploadError, setUploadError] = useState<Record<string, string>>({});
   const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
+  const [uploadFileInfo, setUploadFileInfo] = useState<Record<string, { name: string; size: number; ext: string }>>({});
   const [hoveredBeatId, setHoveredBeatId] = useState<number | null>(null);
   const [inlineBpmKey, setInlineBpmKey] = useState<{ id: number; bpm: number; key: string } | null>(null);
   const [quickEditId, setQuickEditId] = useState<number | null>(null);
@@ -1134,6 +1135,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
       setUploadProgress({});
       setUploadError({});
       setUploading({});
+      setUploadFileInfo({});
       setShowForm(true);
     }
   }, [editing, setShowForm]);
@@ -1152,6 +1154,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     setUploadProgress({});
     setUploadError({});
     setUploading({});
+    setUploadFileInfo({});
     setTagInput("");
   };
 
@@ -1190,9 +1193,11 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   };
 
   const uploadFile = async (file: File, type: string) => {
+    const ext = file.name.split('.').pop()?.toLowerCase() || '';
     setUploading(prev => ({ ...prev, [type]: true }));
     setUploadError(prev => ({ ...prev, [type]: "" }));
     setUploadProgress(prev => ({ ...prev, [type]: 0 }));
+    setUploadFileInfo(prev => ({ ...prev, [type]: { name: file.name, size: file.size, ext } }));
 
     // Beat/kit/trackout/artwork: always go through server (reliable, handles auth)
     // Preview audio: use direct B2 presign to bypass hosting body size limit
@@ -1211,7 +1216,8 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
         return new Promise((resolve, reject) => {
           xhr.upload.onprogress = (evt) => {
             if (!evt.lengthComputable) return;
-            const pct = Math.max(0, Math.min(100, Math.round((evt.loaded / evt.total) * 100)));
+            // Cap at 90% — the remaining 10% is server-side processing (R2/B2 upload)
+            const pct = Math.max(0, Math.min(90, Math.round((evt.loaded / evt.total) * 90)));
             setUploadProgress(prev => ({ ...prev, [type]: pct }));
           };
 
@@ -1228,13 +1234,14 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                 reject(new Error("Invalid response"));
               }
             } else {
-              reject(new Error(`Server ${xhr.status}: ${xhr.responseText}`));
+              let errMsg = `Server ${xhr.status}`;
+              try { errMsg = JSON.parse(xhr.responseText)?.error || errMsg; } catch {}
+              reject(new Error(errMsg));
             }
           };
           xhr.send(formData);
         });
       } else {
-        const ext = file.name.split('.').pop() || 'zip';
         const contentType = file.type || '';
 
         const presignRes = await fetch(
@@ -1299,18 +1306,65 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     return null;
   };
 
+  const formatBytes = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
   const UploadProgressBar = ({ type }: { type: string }) => {
     const pct = uploadProgress[type] ?? 0;
     const isUploading = uploading[type];
+    const fileInfo = uploadFileInfo[type];
     const isDone = !isUploading && pct >= 100;
+    // Server-side processing phase: transfer complete (≥90%) but server hasn't responded yet
+    const isProcessing = isUploading && pct >= 90;
     if (!isUploading && !isDone) return null;
+
     return (
-      <div style={{ marginTop: "6px" }}>
-        <div style={{ height: "3px", background: "#1b1b1b", borderRadius: "999px", overflow: "hidden" }}>
-          <div style={{ height: "100%", width: `${pct}%`, background: isDone ? "linear-gradient(90deg,#2e7d32,#4caf50)" : "linear-gradient(90deg,#0B99FC,#4cc3ff)", transition: "width 200ms ease, background 300ms ease" }} />
+      <div style={{ marginTop: "8px", background: "#0d0d0d", border: "1px solid #222", borderRadius: "8px", padding: "10px 12px" }}>
+        {/* File info row */}
+        {fileInfo && (
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+            <span style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.05em", color: "#555", background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "4px", padding: "2px 5px", textTransform: "uppercase" }}>
+              {fileInfo.ext || "?"}
+            </span>
+            <span style={{ fontSize: "12px", color: "#888", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
+              {fileInfo.name}
+            </span>
+            <span style={{ fontSize: "11px", color: "#555", flexShrink: 0 }}>
+              {formatBytes(fileInfo.size)}
+            </span>
+          </div>
+        )}
+        {/* Progress bar */}
+        <div style={{ height: "4px", background: "#1b1b1b", borderRadius: "999px", overflow: "hidden" }}>
+          {isProcessing ? (
+            // Animated indeterminate bar during server-side processing
+            <div style={{
+              height: "100%", width: "40%",
+              background: "linear-gradient(90deg,#0B99FC,#4cc3ff)",
+              borderRadius: "999px",
+              animation: "uploadSlide 1.2s ease-in-out infinite",
+            }} />
+          ) : (
+            <div style={{
+              height: "100%",
+              width: `${isDone ? 100 : pct}%`,
+              background: isDone ? "linear-gradient(90deg,#2e7d32,#4caf50)" : "linear-gradient(90deg,#0B99FC,#4cc3ff)",
+              transition: "width 200ms ease, background 300ms ease",
+              borderRadius: "999px",
+            }} />
+          )}
         </div>
-        <div style={{ marginTop: "3px", fontSize: "11px", color: isDone ? "#4caf50" : "#666" }}>
-          {isDone ? "✓ Nahráno" : `${pct}%`}
+        {/* Status row */}
+        <div style={{ marginTop: "6px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ fontSize: "11px", color: isDone ? "#4caf50" : isProcessing ? "#0B99FC" : "#666" }}>
+            {isDone ? "✓ Nahráno" : isProcessing ? "Zpracování na serveru…" : `Přenos dat… ${pct}%`}
+          </span>
+          {!isDone && !isProcessing && (
+            <span style={{ fontSize: "11px", color: "#444" }}>{pct}%</span>
+          )}
         </div>
       </div>
     );
