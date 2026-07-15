@@ -805,27 +805,31 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   const uploadStagedBeat = async (localId: string, file: File) => {
     setStagedBeats(prev => prev.map(b => b.localId === localId ? { ...b, status: "uploading", progress: 0 } : b));
     try {
-      const ext = file.name.split(".").pop() || "mp3";
-      const contentType = file.type || "audio/mpeg";
-      const presignRes = await fetch(
-        `/api/upload/presign?type=preview&ext=${encodeURIComponent(ext)}&contentType=${encodeURIComponent(contentType)}`,
-        { credentials: "include" }
-      );
-      if (!presignRes.ok) throw new Error("Presign failed");
-      const { presignedUrl, publicUrl } = await presignRes.json();
-      await new Promise<void>((resolve, reject) => {
+      const formData = new FormData();
+      formData.append("file", file);
+      const publicUrl = await new Promise<string>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
-        xhr.open("PUT", presignedUrl, true);
-        xhr.setRequestHeader("Content-Type", contentType);
+        xhr.open("POST", "/api/upload?type=beat-preview", true);
         xhr.upload.onprogress = (e) => {
           if (e.lengthComputable) {
             const pct = Math.round((e.loaded / e.total) * 100);
             setStagedBeats(prev => prev.map(b => b.localId === localId ? { ...b, progress: pct } : b));
           }
         };
-        xhr.onload = () => xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error(`Upload failed: ${xhr.status}`));
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              const data = JSON.parse(xhr.responseText);
+              resolve(data.url);
+            } catch {
+              reject(new Error("Invalid response"));
+            }
+          } else {
+            reject(new Error(`Upload failed: ${xhr.status}`));
+          }
+        };
         xhr.onerror = () => reject(new Error("Network error"));
-        xhr.send(file);
+        xhr.send(formData);
       });
       setStagedBeats(prev => prev.map(b => b.localId === localId ? { ...b, status: "done", progress: 100, previewUrl: publicUrl } : b));
     } catch (err) {
@@ -1113,7 +1117,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
       const derivedNames: Record<string, string> = {};
       const extractFilename = (url: string) =>
         decodeURIComponent((url.split("/").pop() || "").split("?")[0]);
-      if (editing.preview_url) derivedNames["preview"] = extractFilename(editing.preview_url);
+      if (editing.preview_url) derivedNames["beat-preview"] = extractFilename(editing.preview_url);
       if (editing.artwork_url) derivedNames["artwork"] = extractFilename(editing.artwork_url);
       if (editing.trackout_url) derivedNames["trackout"] = extractFilename(editing.trackout_url);
       setUploadedNames(derivedNames);
@@ -1183,7 +1187,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     // Beat/kit/trackout/artwork: always go through server (reliable, handles auth)
     // Preview audio: use direct B2 presign to bypass hosting body size limit
     const isLargeFile = file.size > 50 * 1024 * 1024;
-    const useServerUpload = isLargeFile || type === "beat" || type === "beat-local" || type === "kit" || type === "trackout" || type === "artwork";
+    const useServerUpload = isLargeFile || type === "beat" || type === "beat-local" || type === "beat-preview" || type === "kit" || type === "trackout" || type === "artwork";
 
     try {
       if (useServerUpload) {
@@ -1531,22 +1535,22 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                     <div style={{ ...card, gridColumn: "span 2" }}>
                       <div style={lbl}>Preview Audio *</div>
                       <DropZone
-                        type="preview"
+                        type="beat-preview"
                         accept="audio/*,.mp3,.wav,.aiff,.flac,.ogg,.m4a"
                         label="Přetáhněte audio nebo klikněte"
                         hint="MP3, WAV, AIFF, FLAC"
                         icon={<Music size={22} color="#555" />}
-                        onFile={async (f) => { const url = await uploadFile(f, "preview"); if (url) setForm(ff => ({ ...ff, previewUrl: url as string })); }}
+                        onFile={async (f) => { const url = await uploadFile(f, "beat-preview"); if (url) setForm(ff => ({ ...ff, previewUrl: url as string })); }}
                         isDragging={isDragPreview}
                         setIsDragging={setIsDragPreview}
                         fileInputRef={previewFileInputRef as any}
                         uploadedUrl={form.previewUrl}
-                        uploadedName={uploadedNames["preview"]}
+                        uploadedName={uploadedNames["beat-preview"]}
                       />
-                      {form.previewUrl && !uploading["preview"] && (
+                      {form.previewUrl && !uploading["beat-preview"] && (
                         <div style={{ marginTop: "8px" }}>
                           <AdminAudioPreview src={form.previewUrl} />
-                          <button type="button" onClick={() => { setForm(f => ({ ...f, previewUrl: "" })); setUploadProgress(p => ({ ...p, preview: 0 })); setUploadedNames(n => { const c = { ...n }; delete c["preview"]; return c; }); }} style={{ marginTop: "6px", background: "none", border: "none", color: "#555", fontSize: "11px", cursor: "pointer", padding: 0 }}>Odebrat</button>
+                          <button type="button" onClick={() => { setForm(f => ({ ...f, previewUrl: "" })); setUploadProgress(p => ({ ...p, "beat-preview": 0 })); setUploadedNames(n => { const c = { ...n }; delete c["beat-preview"]; return c; }); }} style={{ marginTop: "6px", background: "none", border: "none", color: "#555", fontSize: "11px", cursor: "pointer", padding: 0 }}>Odebrat</button>
                         </div>
                       )}
                     </div>

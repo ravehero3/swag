@@ -404,6 +404,35 @@ router.post("/", requireAdmin, upload.single("file"), async (req: Request, res: 
     }
   }
 
+  // Beat preview audio: save directly to public/uploads/beats/previews/ (no R2/B2 bandwidth)
+  if (type === "beat-preview") {
+    try {
+      const previewsDir = path.join(process.cwd(), "public/uploads/beats/previews");
+      if (!fs.existsSync(previewsDir)) fs.mkdirSync(previewsDir, { recursive: true });
+
+      const origExt = path.extname(req.file.originalname).toLowerCase() || ".mp3";
+      const base = path.basename(req.file.originalname, origExt)
+        .toLowerCase()
+        .replace(/[^a-z0-9_.-]/g, "-")
+        .substring(0, 80);
+      const filename = `${base}-${uuidv4().substring(0, 8)}${origExt}`;
+      const dest = path.join(previewsDir, filename);
+
+      fs.copyFileSync(req.file.path, dest);
+      fs.unlinkSync(req.file.path);
+
+      const url = `/uploads/beats/previews/${filename}`;
+      res.json({ url, filename, size: req.file.size });
+      console.log(`✅ beat-preview saved: ${dest}`);
+      return;
+    } catch (error) {
+      if (req.file.path && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+      console.error("beat-preview upload failed:", error);
+      res.status(500).json({ error: "Nahrávání preview selhalo", detail: String(error) });
+      return;
+    }
+  }
+
   // Beat-local: save audio file directly to public/uploads/beats/ (no B2 bandwidth)
   if (type === "beat-local") {
     try {
