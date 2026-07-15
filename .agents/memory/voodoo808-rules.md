@@ -35,14 +35,21 @@ sed -i 's|http://package-firewall.replit.local/npm/|https://registry.npmjs.org/|
 8. Don't import from @prisma/client, use Next.js patterns, add nodemailer, use backblaze-b2 npm package, or add connect-pg-simple
 
 ## Deployment
-- Live site: Oracle Cloud via Docker + Docker Hub
-- GitHub Actions builds image on push to main
+- Live site: Oracle Cloud VPS (`~/apps/swag` on the VPS, multi-app host also running cink/ayobr/beatz behind a shared Caddy reverse proxy), via Docker Compose — NOT systemd, NOT a bare Docker Hub pull
+- Only deploy path: `.github/workflows/main.yml` — push to `main` → SSH in → `git pull` → `docker compose build swag && docker compose up -d swag`. A duplicate systemd-based workflow (`deploy.yml`) existed and pointed at a broken/crash-looping service; it was deleted — do not recreate a second deploy workflow for this repo.
 - Dockerfile: node:20, npm ci, builds frontend (Vite) + server (esbuild via build-server.mjs) into dist/
 - Dev server: `npm run dev` (tsx server/src/index.ts — Vite in middleware mode for HMR)
 
-**Why:** Breaking any of these causes Docker builds to fail and takes the live site (voodoo808.com) down.
+**Why:** Breaking any of these causes Docker builds to fail and takes the live site (voodoo808.com) down. Running two deploy workflows against the same VPS repo checkout caused git object ownership conflicts (see below).
 
-**How to apply:** Check this before any dependency change, tech swap, or framework upgrade.
+**How to apply:** Check this before any dependency change, tech swap, framework upgrade, or workflow-file edit.
+
+## VPS git repo ownership must stay `ubuntu`-owned
+The `~/apps/swag` git checkout on the VPS previously had ~150 files (including `.git/objects/*`) owned by `root` — from some past manual `sudo git ...` run directly on the server — which made every subsequent `git pull` during deploy fail with "insufficient permission for adding an object to repository database .git/objects", silently blocking deploys for a while (site ran stale code, several commits behind).
+
+**Why:** Any command run with `sudo` inside that repo directory (git, npm, etc.) leaves root-owned files that block the next non-root deploy's git write.
+
+**How to apply:** Never run VPS repo commands with `sudo` unless truly required; if a deploy ever fails with a `.git/objects` permission error again, `sudo chown -R ubuntu:ubuntu ~/apps/swag` fixes it. Access requires the user to supply an SSH key (uploaded as a repl attached asset); delete the key file from `attached_assets/` after use since it grants production server access.
 
 ## Pre-existing TS errors (not caused by agent edits)
 `npx tsc --noEmit` on `client/src/pages/Admin.tsx` and `App.tsx` reports 3 baseline errors (missing `NastaveniTab`, missing `IGWaveformPreview`, `PreviewPlayerItem`/`Beat` bpm mismatch). Confirmed via `git stash` that these exist on `main` already — not regressions.
