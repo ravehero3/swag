@@ -78,7 +78,10 @@ export function getWaveform(url: string): number[] | null | undefined {
 }
 
 export function seedWaveformCache(url: string, data: number[]): void {
-  if (!url || cache.has(url)) return;
+  if (!url || !data || data.length === 0) return;
+  // Allow overwriting a null entry (previous failed computation) with valid DB data,
+  // but never overwrite already-valid cached peaks.
+  if (cache.has(url) && cache.get(url) !== null) return;
   cache.set(url, data);
 }
 

@@ -63,7 +63,10 @@ function SoundWave({ audioRef, isPlaying, audioUrl, children, isDraggingComment,
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-    const onLoadStart = () => { if (audio.src) loadWaveform(audio.src); };
+    // Only fall back to audio.src when no explicit audioUrl prop is set.
+    // Without this guard, any global audio-element change (e.g. a queued beat starting)
+    // triggers loadWaveform with a different URL, overwriting the current beat's waveform.
+    const onLoadStart = () => { if (audio.src && !audioUrl) loadWaveform(audio.src); };
     const onTimeUpdate = () => {
       if (audio.duration) progressRef.current = audio.currentTime / audio.duration;
     };
