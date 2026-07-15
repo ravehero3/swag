@@ -378,7 +378,7 @@ function Admin() {
         {tab === "licenses"  && <LicensesTab licenses={licenses} onRefresh={loadData} />}
         {tab === "marketing" && <MarketingTab settings={settings} onRefresh={refreshSettings} />}
         {tab === "komentare" && <KomentareTab />}
-        {tab === "nastaveni" && <NastaveniTab settings={settings} onRefresh={refreshSettings} />}
+        {tab === "nastaveni" && <NastaveniTab settings={settings} onRefresh={refreshSettings} beats={beats} />}
       </main>
     </div>
   );
@@ -716,6 +716,8 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   const [expandedWaveformBeat, setExpandedWaveformBeat] = useState<Beat | null>(null);
   const [ffmpegHealth, setFfmpegHealth] = useState<{ ok: boolean; version: string; source: string; durationMs: number } | null | "loading">("loading");
   const [pendingAutoCompute, setPendingAutoCompute] = useState(false);
+  const autoTriggeredOnMountRef = useRef(false);
+  const [formWaveformPreview, setFormWaveformPreview] = useState<number[] | null>(null);
   const previewAudioRef = useRef<HTMLAudioElement | null>(null);
   const [stagedBeats, setStagedBeats] = useState<StagedBeat[]>([]);
   const [showBulkZone, setShowBulkZone] = useState(false);
@@ -917,6 +919,14 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
       handleRecomputeAll();
     }
   }, [pendingAutoCompute, hasPendingWaveforms, recomputeAllProgress]);
+
+  // Auto-trigger waveform computation on initial load if there are beats missing waveforms
+  useEffect(() => {
+    if (!autoTriggeredOnMountRef.current && beats.length > 0 && hasPendingWaveforms && !recomputeAllProgress) {
+      autoTriggeredOnMountRef.current = true;
+      handleRecomputeAll();
+    }
+  }, [beats.length, hasPendingWaveforms]);
 
   const handleRecomputeWaveform = async (beat: Beat, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -1540,7 +1550,17 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                         label="Přetáhněte audio nebo klikněte"
                         hint="MP3, WAV, AIFF, FLAC"
                         icon={<Music size={22} color="#555" />}
-                        onFile={async (f) => { const url = await uploadFile(f, "beat-preview"); if (url) setForm(ff => ({ ...ff, previewUrl: url as string })); }}
+                        onFile={async (f) => {
+                          // Start waveform computation in background from local file immediately
+                          setFormWaveformPreview(null);
+                          const objectUrl = URL.createObjectURL(f);
+                          computeWaveformInBrowser(objectUrl).then(data => {
+                            if (data) setFormWaveformPreview(data);
+                            URL.revokeObjectURL(objectUrl);
+                          });
+                          const url = await uploadFile(f, "beat-preview");
+                          if (url) setForm(ff => ({ ...ff, previewUrl: url as string }));
+                        }}
                         isDragging={isDragPreview}
                         setIsDragging={setIsDragPreview}
                         fileInputRef={previewFileInputRef as any}
@@ -1550,7 +1570,13 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                       {form.previewUrl && !uploading["beat-preview"] && (
                         <div style={{ marginTop: "8px" }}>
                           <AdminAudioPreview src={form.previewUrl} />
-                          <button type="button" onClick={() => { setForm(f => ({ ...f, previewUrl: "" })); setUploadProgress(p => ({ ...p, "beat-preview": 0 })); setUploadedNames(n => { const c = { ...n }; delete c["beat-preview"]; return c; }); }} style={{ marginTop: "6px", background: "none", border: "none", color: "#555", fontSize: "11px", cursor: "pointer", padding: 0 }}>Odebrat</button>
+                          {formWaveformPreview && (
+                            <div style={{ marginTop: "8px", padding: "10px 12px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "8px" }}>
+                              <div style={{ fontSize: "10px", color: "#555", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.08em" }}>Náhled waveformu</div>
+                              <BeatWaveformSparkline data={formWaveformPreview} />
+                            </div>
+                          )}
+                          <button type="button" onClick={() => { setForm(f => ({ ...f, previewUrl: "" })); setUploadProgress(p => ({ ...p, "beat-preview": 0 })); setUploadedNames(n => { const c = { ...n }; delete c["beat-preview"]; return c; }); setFormWaveformPreview(null); }} style={{ marginTop: "6px", background: "none", border: "none", color: "#555", fontSize: "11px", cursor: "pointer", padding: 0 }}>Odebrat</button>
                         </div>
                       )}
                     </div>
@@ -1596,7 +1622,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                           </div>
                           <UploadProgressBar type="beat-local" />
                           {uploadError["beat-local"] && <div style={{ fontSize: "12px", color: "#ff5252", marginBottom: "6px" }}>Chyba: {uploadError["beat-local"]}</div>}
-                          {form.fileUrl && form.fileUrl.startsWith("/uploads/") ? (
+                          {form.fileUrl && (form.fileUrl.startsWith("/uploads/") || form.fileUrl.startsWith("http")) && !form.fileUrl.includes("drive.google.com") ? (
                             <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 10px", background: "#0d1a0d", border: "1px solid #1a3a1a", borderRadius: "8px", marginBottom: "6px" }}>
                               <Check size={12} color="#4caf50" style={{ flexShrink: 0 }} />
                               <span style={{ fontSize: "12px", color: "#4caf50", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{decodeURIComponent(form.fileUrl.split("/").pop() || "")}</span>
@@ -7055,6 +7081,73 @@ function KonfiguraceTab() {
           </div>
         </>
       )}
+    </div>
+  );
+}
+
+type NastaveniSubTab = "artworks" | "seo" | "emaily" | "konfigurace";
+
+function NastaveniTab({ settings, onRefresh, beats }: { settings: Record<string, string>; onRefresh: () => Promise<void>; beats: Beat[] }) {
+  const [sub, setSub] = useState<NastaveniSubTab>("artworks");
+
+  const SUB_TABS: { id: NastaveniSubTab; label: string }[] = [
+    { id: "artworks",    label: "Artwork" },
+    { id: "seo",         label: "SEO" },
+    { id: "emaily",      label: "E-maily" },
+    { id: "konfigurace", label: "Konfigurace" },
+  ];
+
+  return (
+    <div style={{ paddingBottom: "60px" }}>
+      <div style={{ marginBottom: "28px" }}>
+        <h1 style={{ margin: 0, fontSize: "22px", fontWeight: 700, letterSpacing: "-0.01em", color: "#fff" }}>Nastavení</h1>
+        <p style={{ margin: "6px 0 0", fontSize: "13px", color: "#444" }}>Výchozí artwork, SEO, e-maily a konfigurace prostředí</p>
+      </div>
+
+      {/* Sub-tab nav */}
+      <div style={{
+        display: "flex",
+        gap: "2px",
+        padding: "4px",
+        background: "rgba(255,255,255,0.03)",
+        border: "1px solid rgba(255,255,255,0.07)",
+        borderRadius: "10px",
+        marginBottom: "32px",
+        width: "fit-content",
+        flexWrap: "wrap",
+      }}>
+        {SUB_TABS.map(({ id, label }) => {
+          const active = sub === id;
+          return (
+            <button
+              key={id}
+              onClick={() => setSub(id)}
+              style={{
+                padding: "7px 16px",
+                fontSize: "13px",
+                fontFamily: "inherit",
+                border: "none",
+                borderRadius: "7px",
+                cursor: "pointer",
+                transition: "all 140ms",
+                background: active ? "rgba(255,255,255,0.1)" : "transparent",
+                color: active ? "#fff" : "#555",
+                fontWeight: active ? 600 : 400,
+                letterSpacing: "0.01em",
+              }}
+              onMouseEnter={e => { if (!active) (e.currentTarget as HTMLButtonElement).style.color = "#aaa"; }}
+              onMouseLeave={e => { if (!active) (e.currentTarget as HTMLButtonElement).style.color = "#555"; }}
+            >
+              {label}
+            </button>
+          );
+        })}
+      </div>
+
+      {sub === "artworks"    && <ArtworksTab settings={settings} onRefresh={onRefresh} beats={beats} />}
+      {sub === "seo"         && <SEOTab settings={settings} onRefresh={onRefresh} />}
+      {sub === "emaily"      && <EmailsTab />}
+      {sub === "konfigurace" && <KonfiguraceTab />}
     </div>
   );
 }

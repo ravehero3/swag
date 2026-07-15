@@ -404,26 +404,27 @@ router.post("/", requireAdmin, upload.single("file"), async (req: Request, res: 
     }
   }
 
-  // Beat preview audio: save directly to public/uploads/beats/previews/ (no R2/B2 bandwidth)
+  // Beat preview audio: upload to R2 (previews bucket) — same bucket as "preview" type
+  // This ensures the URL is a public HTTPS URL accessible by ffmpeg for waveform generation
+  // and that files persist across Docker restarts.
   if (type === "beat-preview") {
     try {
-      const previewsDir = path.join(process.cwd(), "public/uploads/beats/previews");
-      if (!fs.existsSync(previewsDir)) fs.mkdirSync(previewsDir, { recursive: true });
-
       const origExt = path.extname(req.file.originalname).toLowerCase() || ".mp3";
       const base = path.basename(req.file.originalname, origExt)
         .toLowerCase()
         .replace(/[^a-z0-9_.-]/g, "-")
         .substring(0, 80);
-      const filename = `${base}-${uuidv4().substring(0, 8)}${origExt}`;
-      const dest = path.join(previewsDir, filename);
+      const filename = `previews/${base}-${uuidv4().substring(0, 8)}${origExt}`;
 
-      fs.copyFileSync(req.file.path, dest);
+      const fileBuffer = fs.readFileSync(req.file.path);
       fs.unlinkSync(req.file.path);
 
-      const url = `/uploads/beats/previews/${filename}`;
+      const mimeType = req.file.mimetype || "audio/mpeg";
+      await uploadFile(STORAGE_BUCKETS.PREVIEWS, filename, fileBuffer, mimeType);
+      const url = getPublicUrl(STORAGE_BUCKETS.PREVIEWS, filename);
+
       res.json({ url, filename, size: req.file.size });
-      console.log(`✅ beat-preview saved: ${dest}`);
+      console.log(`✅ beat-preview uploaded to R2/B2: ${url}`);
       return;
     } catch (error) {
       if (req.file.path && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);

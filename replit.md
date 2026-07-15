@@ -1,65 +1,72 @@
-# VOODOO808 – Digital Music Marketplace
+# VOODOO808 – Czech Beat Store
 
 ## Project Overview
-A full-stack e-commerce platform for music producers to buy beats and sound kits. Built with React + Express + PostgreSQL.
+VOODOO808 (voodoo808.com) is a Czech-language beat store where producers buy and download beats and sound kits. Full-stack e-commerce platform with React + Express + PostgreSQL.
 
-## Architecture
+## Tech Stack — DO NOT CHANGE OR UPGRADE
+- **Frontend:** React 18, Vite, Wouter (routing), Lucide React (icons)
+- **Backend:** Express 4 (Node.js), TypeScript, tsx
+- **Database:** PostgreSQL with raw SQL via pg pool (Drizzle ORM only for drizzle-kit migrations, NOT runtime)
+- **Auth:** Passport.js with local (email/password) + Google OAuth 2.0, cookie-session
+- **Payments:** GoPay (Czech payment gateway)
+- **File storage:** Cloudflare R2 (primary) + Backblaze B2 (fallback), both via @aws-sdk/client-s3
+- **Image processing:** Sharp
+- **Audio processing:** ffmpeg-static (waveform generation)
+- **Email:** Resend
+- **PDF generation:** PDFKit
 
-### Frontend (`/client`)
-- React 18 with Vite
-- Routing via `wouter`
-- Pages: Home, Beats (Beaty), Sounds (Zvuky), Admin, Checkout
-- Global music player with waveform visualization
-
-### Backend (`/server/src`)
-- Express.js REST API
-- Authentication: Passport.js (local + Google OAuth 2.0)
-- Session: `cookie-session`
-- Database: PostgreSQL via `pg` pool + raw SQL (no ORM at runtime)
-- Storage: Backblaze B2 (audio/artwork files) + AWS S3
-- Audio processing: `ffmpeg-static` for waveform generation
-- Email: `nodemailer` + `resend`
-- Payments: `gopay-nodejs`
-
-### Shared (`/shared`)
-- TypeScript types shared between client and server
+## File Structure
+- Frontend: `client/src/` (React components, pages, hooks)
+- Backend: `server/src/` (Express routes, middleware, db, email)
+- Routes: `server/src/routes/` (auth, beats, soundKits, orders, upload, saved, licenses, adminLicenses, leads, comments, kitArtworks)
+- Lib: `server/src/lib/` (storage, waveform, gopay, pricing, contracts, contractPdf, contractTemplate, appUrl)
+- Build output: `dist/`
 
 ## Key Scripts
-- `npm run dev` — starts the Express server (which also starts Vite in middleware mode for HMR)
-- `npm run build` — builds Vite frontend + compiles server TypeScript
-- `npm start` — runs the compiled production server
+- `npm run dev` — runs tsx server/src/index.ts (Vite runs in middleware mode for HMR)
+- `npm run build` — vite build && node build-server.mjs
+- `npm start` — node dist/index.cjs
+- `npm run db:push` — drizzle-kit push
+- Server listens on PORT env var, defaults to 5000
 
 ## Database
-- Replit PostgreSQL (DATABASE_URL env var auto-set)
+- Replit PostgreSQL (DATABASE_URL auto-set by Replit)
 - Schema is auto-created on startup via `initDatabase()` in `server/src/db.ts`
-- No Drizzle schema file — schema is managed with raw SQL migrations inside `db.ts`
+- NO Drizzle at runtime — schema managed with raw SQL inside db.ts
 
 ## Environment Variables Required
-- `DATABASE_URL` — auto-set by Replit DB
+- `DATABASE_URL` — auto-set by Replit PostgreSQL
 - `SESSION_SECRET` — session signing secret
 - `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` — Google OAuth
-- `GOOGLE_CALLBACK_URL` — optional override for OAuth redirect URI (defaults to `APP_URL/api/auth/google/callback`)
-- `B2_APPLICATION_KEY_ID` / `B2_APPLICATION_KEY` / `B2_ENDPOINT` / `B2_PUBLIC_BASE_URL` — Backblaze B2 storage
-- `STORAGE_BUCKETS_PREVIEWS` / `STORAGE_BUCKETS_FILES` — bucket names
-- `GOPAY_*` — GoPay payment gateway credentials
-- `RESEND_API_KEY` — email sending
-- `APP_URL` — production URL for OAuth callbacks
+- `R2_ACCOUNT_ID` / `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` / `R2_BUCKET` / `R2_PUBLIC_BASE_URL` — Cloudflare R2 (primary storage)
+- `B2_ENDPOINT` / `B2_KEY_ID` / `B2_APPLICATION_KEY` / `B2_PREVIEW_BUCKET` / `B2_PUBLIC_BASE_URL` — Backblaze B2 (fallback)
+- `RESEND_API_KEY` / `RESEND_FROM` — email
+- `GOPAY_CLIENT_ID` / `GOPAY_CLIENT_SECRET` / `GOPAY_GOID` / `GOPAY_SANDBOX` — payments
+- `APP_URL` — production domain (for OAuth callbacks and GoPay return URLs)
 
-### Google Sign-In setup
-1. [Google Cloud Console](https://console.cloud.google.com/apis/credentials) → your OAuth 2.0 Client (Web application).
-2. **Authorized JavaScript origins:** `https://voodoo808.com` (and `https://www.voodoo808.com` if you use www).
-3. **Authorized redirect URIs:** must match production exactly, e.g. `https://voodoo808.com/api/auth/google/callback` (register both www and non-www if users can land on either).
-4. Set `APP_URL` in Vercel/Replit to the same origin (no trailing slash). Admin → Konfigurace shows the live callback URL via the Google OAuth diagnostic panel.
+## Critical Rules
+1. NEVER switch from raw pg/SQL to Prisma or use Drizzle ORM at runtime
+2. NEVER upgrade React to version 19 — stay on React 18
+3. NEVER change the Express server structure or port
+4. NEVER modify package.json scripts without asking
+5. NEVER delete or rename existing API routes
+6. All user-facing text must be in CZECH language
+7. Preserve existing dark theme design
+8. Build command bundles both frontend (Vite) AND backend (esbuild via build-server.mjs)
 
-## Port
-- Dev & prod: **5000**
+## ⚠️ CRITICAL: After any npm install/uninstall
+npm rewrites package-lock.json with Replit mirror URLs that break Docker CI. Always run:
+```
+sed -i 's|http://package-firewall.replit.local/npm/|https://registry.npmjs.org/|g' package-lock.json
+grep -c "package-firewall.replit.local" package-lock.json  # must return 0
+```
 
-## Replit Migration Notes
-- Changed `dev` script from `npx tsx` to `node_modules/.bin/tsx` to avoid interactive prompts
-- Replit PostgreSQL provisioned and connected via DATABASE_URL
+## Deployment
+- Live site: Oracle Cloud via Docker
+- GitHub Actions (.github/workflows/main.yml) builds Docker image on push to main
+- Dockerfile uses node:20, runs npm ci, builds frontend + server
 
-## Known Vercel Constraints & Fixes Applied
-- **Waveform scanning**: Moved from server-side ffmpeg to browser Web Audio API (ffmpeg not available in Vercel serverless).
-- **Audio preview uploads**: Vercel serverless functions have a hard 4.5 MB request body limit. Beat/sound-kit preview audio files were previously force-routed through the server, causing silent failures for larger files. Fixed: preview audio now uses presigned direct-to-B2 uploads (browser → B2 directly, bypassing Vercel). B2 CORS updated to allow `PUT` in addition to `GET`/`HEAD`.
-- **Kit form save errors**: Sound kit `handleSubmit` had no error handling — the form closed even on failed saves, making it impossible to notice session expiry or server errors. Fixed: now checks `res.ok` and shows an alert on failure (same pattern as the beat form).
-- Beats/sound-kits both use `STORAGE_BUCKETS.PREVIEWS` bucket for audio; bucket must be public for playback.
+## User Preferences
+- All user-facing text must be in Czech language
+- Never propose migrating to Prisma, Drizzle (at runtime), or Next.js
+- Never add nodemailer (use Resend only), connect-pg-simple (use cookie-session only), or backblaze-b2 npm package (use @aws-sdk/client-s3)
