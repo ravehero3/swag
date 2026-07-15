@@ -15,6 +15,7 @@ import adminLicensesRoutes from "./routes/adminLicenses.js";
 import leadsRoutes from "./routes/leads.js";
 import commentsRoutes from "./routes/comments.js";
 import kitArtworksRoutes from "./routes/kitArtworks.js";
+import beatFilesRoutes from "./routes/beatFiles.js";
 import { requireAuth, requireAdmin } from "./middleware/auth.js";
 import bcrypt from "bcryptjs";
 import { configureBucketCors, STORAGE_BUCKETS } from "./lib/storage.js";
@@ -140,6 +141,7 @@ app.use("/kit-artworks", (_req: any, res: any, next: any) => {
   next();
 }, express.static(path.join(rootDir, "public/kit-artworks")));
 app.use("/api/kit-artworks", kitArtworksRoutes);
+app.use("/api/beat-files", beatFilesRoutes);
 app.use("/api/saved", savedRoutes);
 app.use("/api/licenses", licensesRoutes);
 app.use("/api/admin", adminLicensesRoutes);

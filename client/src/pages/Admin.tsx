@@ -737,6 +737,14 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   const [galleryUploadCount, setGalleryUploadCount] = useState(0);
   const [galleryDragging, setGalleryDragging] = useState(false);
 
+  // ── Beat folder ("Složka s beatama") state ─────────────────────────────────
+  const [showBeatFolder, setShowBeatFolder] = useState(false);
+  const [beatFolderFiles, setBeatFolderFiles] = useState<{filename: string; url: string; size: number; modified: string}[]>([]);
+  const [beatFolderLoading, setBeatFolderLoading] = useState(false);
+  const [beatFolderUploading, setBeatFolderUploading] = useState(false);
+  const [beatFolderUploadProgress, setBeatFolderUploadProgress] = useState(0);
+  const [beatFolderDragging, setBeatFolderDragging] = useState(false);
+
   const openGallery = () => {
     setShowGallery(true);
     loadGallery();
@@ -780,6 +788,74 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   const handleGallerySelect = (url: string) => {
     setForm(f => ({ ...f, artworkUrl: url }));
     setShowGallery(false);
+  };
+
+  // ── Beat folder handlers ────────────────────────────────────────────────────
+  const loadBeatFolder = async () => {
+    setBeatFolderLoading(true);
+    try {
+      const res = await fetch("/api/beat-files", { credentials: "include" });
+      if (res.ok) setBeatFolderFiles(await res.json());
+    } catch {}
+    setBeatFolderLoading(false);
+  };
+
+  const openBeatFolder = () => {
+    setShowBeatFolder(true);
+    loadBeatFolder();
+  };
+
+  const handleBeatFolderUpload = async (files: FileList | File[]) => {
+    const fileArr = Array.from(files);
+    if (fileArr.length === 0) return;
+    setBeatFolderUploading(true);
+    setBeatFolderUploadProgress(0);
+    try {
+      for (let i = 0; i < fileArr.length; i++) {
+        const file = fileArr[i];
+        await new Promise<void>((resolve, reject) => {
+          const formData = new FormData();
+          formData.append("file", file);
+          const xhr = new XMLHttpRequest();
+          xhr.open("POST", "/api/beat-files/upload", true);
+          xhr.withCredentials = true;
+          xhr.upload.onprogress = (e) => {
+            if (e.lengthComputable) {
+              const filePct = Math.round((e.loaded / e.total) * 100);
+              const overallPct = Math.round(((i + filePct / 100) / fileArr.length) * 100);
+              setBeatFolderUploadProgress(overallPct);
+            }
+          };
+          xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) resolve();
+            else {
+              let msg = `Server ${xhr.status}`;
+              try { msg = JSON.parse(xhr.responseText)?.error || msg; } catch {}
+              reject(new Error(msg));
+            }
+          };
+          xhr.onerror = () => reject(new Error("Network error"));
+          xhr.send(formData);
+        });
+      }
+      await loadBeatFolder();
+    } catch (err) {
+      alert("Chyba při nahrávání: " + String(err));
+    }
+    setBeatFolderUploading(false);
+    setBeatFolderUploadProgress(0);
+  };
+
+  const handleBeatFolderSelect = (url: string) => {
+    setForm(f => ({ ...f, fileUrl: url }));
+    setShowBeatFolder(false);
+  };
+
+  const handleBeatFolderDelete = async (filename: string) => {
+    if (!confirm(`Smazat ${filename}?`)) return;
+    const res = await fetch(`/api/beat-files/${encodeURIComponent(filename)}`, { method: "DELETE", credentials: "include" });
+    if (res.ok) setBeatFolderFiles(prev => prev.filter(f => f.filename !== filename));
+    else alert("Nepodařilo se smazat soubor");
   };
 
   const handleBeatReorder = async (beatIdx: number, direction: "up" | "down") => {
@@ -1673,6 +1749,15 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                               <input type="file" accept="audio/*,.wav,.mp3,.flac,.aif,.aiff,.zip,.rar" disabled={uploading["beat-local"]} style={{ display: "none" }} data-testid="input-beat-local-file" onChange={async (e) => { if (e.target.files?.[0]) { const url = await uploadFile(e.target.files[0], "beat-local"); if (url) setForm(f => ({ ...f, fileUrl: url as string })); } }} />
                               {uploading["beat-local"] ? "Nahrávám…" : "Nahrát soubor přímo"}
                             </label>
+                            <button
+                              type="button"
+                              className="btn btn-admin"
+                              onClick={openBeatFolder}
+                              data-testid="button-open-beat-folder"
+                              style={{ whiteSpace: "nowrap", flexShrink: 0 }}
+                            >
+                              📁 Složka s beatama
+                            </button>
                           </div>
                           <UploadProgressBar type="beat-local" />
                           {uploadError["beat-local"] && <div style={{ fontSize: "12px", color: "#ff5252", marginBottom: "6px" }}>Chyba: {uploadError["beat-local"]}</div>}
@@ -1856,6 +1941,111 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
             </div>
             <div style={{ padding: "10px 20px", borderTop: "0.4px solid #1a1a1a", flexShrink: 0, display: "flex", justifyContent: "flex-end" }}>
               <button onClick={() => setShowGallery(false)} className="btn btn-admin" data-testid="button-close-gallery-footer-beat">Zavřít</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Složka s beatama modal ── */}
+      {showBeatFolder && (
+        <div
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
+          onClick={(e) => { if (e.target === e.currentTarget) setShowBeatFolder(false); }}
+        >
+          <div style={{ background: "#111", border: "0.4px solid #333", borderRadius: "8px", width: "min(860px, 96vw)", maxHeight: "88vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+            {/* Header */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "0.4px solid #2a2a2a", flexShrink: 0 }}>
+              <div>
+                <div style={{ color: "#fff", fontSize: "14px", fontWeight: 500 }}>Složka s beatama</div>
+                <div style={{ color: "#555", fontSize: "11px", marginTop: "2px" }}>Soubory uložené přímo na VPS — {beatFolderFiles.length} souborů</div>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                {beatFolderUploading && (
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <div style={{ width: "80px", height: "3px", background: "#1b1b1b", borderRadius: "999px", overflow: "hidden" }}>
+                      <div style={{ height: "100%", width: `${beatFolderUploadProgress}%`, background: "linear-gradient(90deg,#0B99FC,#4cc3ff)", transition: "width 150ms ease" }} />
+                    </div>
+                    <span style={{ fontSize: "11px", color: "#0B99FC" }}>{beatFolderUploadProgress}%</span>
+                  </div>
+                )}
+                <label style={{ background: "transparent", border: "0.4px solid #555", color: beatFolderUploading ? "#555" : "#aaa", borderRadius: "3px", padding: "6px 12px", cursor: beatFolderUploading ? "default" : "pointer", fontSize: "12px", display: "flex", alignItems: "center", gap: "6px" }}>
+                  {beatFolderUploading ? "Nahrávám…" : "+ Přidat beat"}
+                  <input
+                    type="file"
+                    accept="audio/*,.wav,.mp3,.flac,.aif,.aiff,.zip,.rar"
+                    multiple
+                    disabled={beatFolderUploading}
+                    style={{ display: "none" }}
+                    data-testid="input-beat-folder-upload"
+                    onChange={(e) => { if (e.target.files && e.target.files.length > 0) handleBeatFolderUpload(e.target.files); }}
+                  />
+                </label>
+                <button
+                  onClick={() => setShowBeatFolder(false)}
+                  style={{ background: "transparent", border: "none", color: "#666", fontSize: "20px", cursor: "pointer", lineHeight: 1, padding: "0 4px" }}
+                  data-testid="button-close-beat-folder"
+                >×</button>
+              </div>
+            </div>
+
+            {/* Drop zone + file list */}
+            <div
+              style={{ overflowY: "auto", padding: "20px", flex: 1, position: "relative", transition: "background 0.15s" }}
+              onDragOver={(e) => { e.preventDefault(); setBeatFolderDragging(true); }}
+              onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setBeatFolderDragging(false); }}
+              onDrop={(e) => { e.preventDefault(); setBeatFolderDragging(false); if (e.dataTransfer.files.length > 0) handleBeatFolderUpload(e.dataTransfer.files); }}
+            >
+              {beatFolderDragging && (
+                <div style={{ position: "absolute", inset: 0, background: "rgba(11,153,252,0.08)", border: "2px dashed #0B99FC", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10, pointerEvents: "none" }}>
+                  <span style={{ color: "#0B99FC", fontSize: "14px", fontWeight: 500 }}>Přetáhni soubory sem</span>
+                </div>
+              )}
+              {beatFolderLoading ? (
+                <div style={{ textAlign: "center", color: "#444", padding: "48px 0", fontSize: "12px" }}>Načítám…</div>
+              ) : beatFolderFiles.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "48px 0" }}>
+                  <div style={{ fontSize: "28px", marginBottom: "12px" }}>📁</div>
+                  <div style={{ color: "#444", fontSize: "13px", marginBottom: "6px" }}>Složka je prázdná</div>
+                  <div style={{ color: "#333", fontSize: "11px" }}>Nahraj beaty tlačítkem výše nebo je sem přetáhni</div>
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                  {beatFolderFiles.map(f => {
+                    const ext = f.filename.split(".").pop()?.toUpperCase() || "?";
+                    const sizeMB = (f.size / (1024 * 1024)).toFixed(1);
+                    const isSelected = form.fileUrl === f.url;
+                    return (
+                      <div
+                        key={f.filename}
+                        style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 12px", background: isSelected ? "rgba(11,153,252,0.08)" : "rgba(255,255,255,0.02)", border: `1px solid ${isSelected ? "rgba(11,153,252,0.3)" : "#1e1e1e"}`, borderRadius: "8px", transition: "border-color 0.15s, background 0.15s" }}
+                        onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)"; }}
+                        onMouseLeave={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.02)"; }}
+                      >
+                        <span style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.05em", color: "#555", background: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: "4px", padding: "2px 6px", textTransform: "uppercase", flexShrink: 0 }}>{ext}</span>
+                        <span style={{ fontSize: "13px", color: isSelected ? "#0B99FC" : "#ccc", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{decodeURIComponent(f.filename)}</span>
+                        <span style={{ fontSize: "11px", color: "#444", flexShrink: 0 }}>{sizeMB} MB</span>
+                        <button
+                          onClick={() => handleBeatFolderSelect(f.url)}
+                          style={{ background: isSelected ? "rgba(11,153,252,0.15)" : "transparent", border: `0.4px solid ${isSelected ? "#0B99FC" : "#444"}`, color: isSelected ? "#0B99FC" : "#aaa", borderRadius: "4px", padding: "4px 12px", cursor: "pointer", fontSize: "12px", flexShrink: 0, fontWeight: isSelected ? 600 : 400 }}
+                          data-testid={`button-select-beat-file-${f.filename}`}
+                        >
+                          {isSelected ? "✓ Vybráno" : "Vybrat"}
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleBeatFolderDelete(f.filename); }}
+                          style={{ background: "transparent", border: "none", color: "#333", cursor: "pointer", fontSize: "16px", padding: "0 2px", lineHeight: 1, flexShrink: 0 }}
+                          data-testid={`button-delete-beat-file-${f.filename}`}
+                        >×</button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div style={{ padding: "10px 20px", borderTop: "0.4px solid #1a1a1a", flexShrink: 0, display: "flex", justifyContent: "flex-end" }}>
+              <button onClick={() => setShowBeatFolder(false)} className="btn btn-admin" data-testid="button-close-beat-folder-footer">Zavřít</button>
             </div>
           </div>
         </div>
