@@ -3,6 +3,7 @@ import { pool } from "../db.js";
 import { requireAdmin, requireAuth } from "../middleware/auth.js";
 import { generateDownloadUrl, STORAGE_BUCKETS, deleteStorageFile } from "../lib/storage.js";
 import { computeWaveformFromUrl } from "../lib/waveform.js";
+import { analyzeAudio } from "../lib/audioAnalysis.js";
 
 async function triggerWaveformComputation(beatId: number, previewUrl: string) {
   try {
@@ -80,6 +81,21 @@ router.get("/all", requireAdmin, async (_req: Request, res: Response) => {
     res.json(result.rows);
   } catch (error) {
     res.status(500).json({ error: "Chyba při načítání beatů" });
+  }
+});
+
+// POST /api/beats/analyze-audio — detect BPM + key from a local path or public URL
+router.post("/analyze-audio", requireAdmin, async (req: Request, res: Response) => {
+  const { url } = req.body as { url?: string };
+  if (!url || typeof url !== "string") {
+    return res.status(400).json({ error: "url is required" });
+  }
+  try {
+    const result = await analyzeAudio(url);
+    res.json(result);
+  } catch (e) {
+    console.error("[analyze-audio] error:", e);
+    res.status(500).json({ error: "Analysis failed", detail: String(e) });
   }
 });
 

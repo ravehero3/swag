@@ -544,3 +544,8 @@ input::placeholder, textarea::placeholder {
   50%  { transform: translateX(150%); }
   100% { transform: translateX(350%); }
 }
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}

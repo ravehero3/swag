@@ -744,6 +744,12 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   const [beatFolderUploading, setBeatFolderUploading] = useState(false);
   const [beatFolderUploadProgress, setBeatFolderUploadProgress] = useState(0);
   const [beatFolderDragging, setBeatFolderDragging] = useState(false);
+  // "fileUrl" → select main beat file  |  "previewUrl" → select preview audio
+  const [beatFolderTarget, setBeatFolderTarget] = useState<"fileUrl" | "previewUrl">("fileUrl");
+
+  // ── Auto BPM/Key detection state ────────────────────────────────────────────
+  const [autoAnalyzing, setAutoAnalyzing] = useState(false);
+  const [autoDetected, setAutoDetected] = useState<{ bpm: number | null; key: string | null } | null>(null);
 
   const openGallery = () => {
     setShowGallery(true);
@@ -800,7 +806,8 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     setBeatFolderLoading(false);
   };
 
-  const openBeatFolder = () => {
+  const openBeatFolder = (target: "fileUrl" | "previewUrl" = "fileUrl") => {
+    setBeatFolderTarget(target);
     setShowBeatFolder(true);
     loadBeatFolder();
   };
@@ -846,9 +853,18 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     setBeatFolderUploadProgress(0);
   };
 
-  const handleBeatFolderSelect = (url: string) => {
-    setForm(f => ({ ...f, fileUrl: url }));
-    setShowBeatFolder(false);
+  const handleBeatFolderSelect = async (url: string) => {
+    if (beatFolderTarget === "previewUrl") {
+      setForm(f => ({ ...f, previewUrl: url }));
+      setShowBeatFolder(false);
+      // Kick off waveform + BPM/key analysis in parallel
+      setFormWaveformPreview(null);
+      computeWaveformInBrowser(url).then(data => { if (data) setFormWaveformPreview(data); });
+      analyzePreviewAudio(url);
+    } else {
+      setForm(f => ({ ...f, fileUrl: url }));
+      setShowBeatFolder(false);
+    }
   };
 
   const handleBeatFolderDelete = async (filename: string) => {
@@ -856,6 +872,28 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     const res = await fetch(`/api/beat-files/${encodeURIComponent(filename)}`, { method: "DELETE", credentials: "include" });
     if (res.ok) setBeatFolderFiles(prev => prev.filter(f => f.filename !== filename));
     else alert("Nepodařilo se smazat soubor");
+  };
+
+  /** Calls /api/beats/analyze-audio and auto-fills BPM + key if detected. */
+  const analyzePreviewAudio = async (url: string) => {
+    if (!url) return;
+    setAutoAnalyzing(true);
+    setAutoDetected(null);
+    try {
+      const res = await fetch("/api/beats/analyze-audio", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ url }),
+      });
+      if (res.ok) {
+        const data = await res.json() as { bpm: number | null; key: string | null };
+        setAutoDetected({ bpm: data.bpm, key: data.key });
+        if (data.bpm) setForm(f => ({ ...f, bpm: data.bpm! }));
+        if (data.key) setForm(f => ({ ...f, key: data.key! }));
+      }
+    } catch {}
+    setAutoAnalyzing(false);
   };
 
   const handleBeatReorder = async (beatIdx: number, direction: "up" | "down") => {
@@ -1232,6 +1270,9 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     setUploading({});
     setUploadFileInfo({});
     setTagInput("");
+    setAutoDetected(null);
+    setAutoAnalyzing(false);
+    setFormWaveformPreview(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -1640,14 +1681,24 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
 
                     {/* Card: BPM */}
                     <div style={{ ...card, textAlign: "center" }}>
-                      <div style={lbl}>BPM</div>
-                      <input type="number" min={40} max={300} value={form.bpm} onChange={e => setForm({ ...form, bpm: Number(e.target.value) })} style={{ ...inp, fontSize: "22px", fontWeight: 700, fontFamily: "monospace", textAlign: "center", padding: "8px 10px" }} placeholder="140" data-testid="input-beat-bpm" />
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", marginBottom: "10px" }}>
+                        <div style={lbl}>BPM</div>
+                        {autoDetected?.bpm && (
+                          <span style={{ fontSize: "9px", fontWeight: 700, color: "#4caf50", background: "rgba(76,175,80,0.12)", border: "1px solid rgba(76,175,80,0.25)", borderRadius: "999px", padding: "2px 6px", letterSpacing: "0.05em" }}>AUTO</span>
+                        )}
+                      </div>
+                      <input type="number" min={40} max={300} value={form.bpm} onChange={e => { setForm({ ...form, bpm: Number(e.target.value) }); setAutoDetected(a => a ? { ...a, bpm: null } : null); }} style={{ ...inp, fontSize: "22px", fontWeight: 700, fontFamily: "monospace", textAlign: "center", padding: "8px 10px" }} placeholder="140" data-testid="input-beat-bpm" />
                     </div>
 
                     {/* Card: Tónina */}
                     <div style={{ ...card, textAlign: "center" }}>
-                      <div style={lbl}>Tónina</div>
-                      <select value={form.key} onChange={e => setForm({ ...form, key: e.target.value })} style={{ ...inp, fontSize: "15px", fontWeight: 500, textAlign: "center", padding: "8px 10px", cursor: "pointer" }} data-testid="select-beat-key">
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", marginBottom: "10px" }}>
+                        <div style={lbl}>Tónina</div>
+                        {autoDetected?.key && (
+                          <span style={{ fontSize: "9px", fontWeight: 700, color: "#4caf50", background: "rgba(76,175,80,0.12)", border: "1px solid rgba(76,175,80,0.25)", borderRadius: "999px", padding: "2px 6px", letterSpacing: "0.05em" }}>AUTO</span>
+                        )}
+                      </div>
+                      <select value={form.key} onChange={e => { setForm({ ...form, key: e.target.value }); setAutoDetected(a => a ? { ...a, key: null } : null); }} style={{ ...inp, fontSize: "15px", fontWeight: 500, textAlign: "center", padding: "8px 10px", cursor: "pointer" }} data-testid="select-beat-key">
                         {MUSICAL_KEYS.map(k => <option key={k} value={k}>{k}</option>)}
                       </select>
                     </div>
@@ -1673,7 +1724,17 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
 
                     {/* Card: Preview Audio — spans 2 cols */}
                     <div style={{ ...card, gridColumn: "span 2" }}>
-                      <div style={lbl}>Preview Audio *</div>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
+                        <div style={lbl}>Preview Audio *</div>
+                        <button
+                          type="button"
+                          className="btn btn-admin"
+                          onClick={() => openBeatFolder("previewUrl")}
+                          style={{ fontSize: "11px", padding: "4px 10px", whiteSpace: "nowrap" }}
+                        >
+                          📁 Složka s beatama
+                        </button>
+                      </div>
                       <DropZone
                         type="beat-preview"
                         accept="audio/*,.mp3,.wav,.aiff,.flac,.ogg,.m4a"
@@ -1681,7 +1742,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                         hint="MP3, WAV, AIFF, FLAC"
                         icon={<Music size={22} color="#555" />}
                         onFile={async (f) => {
-                          // Start waveform computation in background from local file immediately
+                          // Compute waveform from local file immediately (no round-trip)
                           setFormWaveformPreview(null);
                           const objectUrl = URL.createObjectURL(f);
                           computeWaveformInBrowser(objectUrl).then(data => {
@@ -1689,7 +1750,11 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                             URL.revokeObjectURL(objectUrl);
                           });
                           const url = await uploadFile(f, "beat-preview");
-                          if (url) setForm(ff => ({ ...ff, previewUrl: url as string }));
+                          if (url) {
+                            setForm(ff => ({ ...ff, previewUrl: url as string }));
+                            // Auto-detect BPM + key from the uploaded file
+                            analyzePreviewAudio(url as string);
+                          }
                         }}
                         isDragging={isDragPreview}
                         setIsDragging={setIsDragPreview}
@@ -1697,6 +1762,13 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                         uploadedUrl={form.previewUrl}
                         uploadedName={uploadedNames["beat-preview"]}
                       />
+                      {/* Analysis status */}
+                      {autoAnalyzing && (
+                        <div style={{ marginTop: "8px", display: "flex", alignItems: "center", gap: "6px" }}>
+                          <div style={{ width: "10px", height: "10px", borderRadius: "50%", border: "2px solid #555", borderTopColor: "#aaa", animation: "spin 0.8s linear infinite", flexShrink: 0 }} />
+                          <span style={{ fontSize: "11px", color: "#555" }}>Analyzuji BPM a tóninu…</span>
+                        </div>
+                      )}
                       {form.previewUrl && !uploading["beat-preview"] && (
                         <div style={{ marginTop: "8px" }}>
                           <AdminAudioPreview src={form.previewUrl} />
@@ -1706,7 +1778,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                               <BeatWaveformSparkline data={formWaveformPreview} />
                             </div>
                           )}
-                          <button type="button" onClick={() => { setForm(f => ({ ...f, previewUrl: "" })); setUploadProgress(p => ({ ...p, "beat-preview": 0 })); setUploadedNames(n => { const c = { ...n }; delete c["beat-preview"]; return c; }); setFormWaveformPreview(null); }} style={{ marginTop: "6px", background: "none", border: "none", color: "#555", fontSize: "11px", cursor: "pointer", padding: 0 }}>Odebrat</button>
+                          <button type="button" onClick={() => { setForm(f => ({ ...f, previewUrl: "" })); setUploadProgress(p => ({ ...p, "beat-preview": 0 })); setUploadedNames(n => { const c = { ...n }; delete c["beat-preview"]; return c; }); setFormWaveformPreview(null); setAutoDetected(null); }} style={{ marginTop: "6px", background: "none", border: "none", color: "#555", fontSize: "11px", cursor: "pointer", padding: 0 }}>Odebrat</button>
                         </div>
                       )}
                     </div>
@@ -1838,6 +1910,120 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
               )}
             </div>
           </form>
+
+          {/* ── Live beat preview card ─────────────────────────────────────
+               Shows exactly how this beat will look in the playlist on the
+               home page (home-beat-row layout with active waveform). */}
+          {(form.title || form.artworkUrl || form.previewUrl) && (
+            <div style={{ marginTop: "24px", paddingTop: "20px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+              <div style={{ fontSize: "10px", fontWeight: 700, color: "#333", textTransform: "uppercase", letterSpacing: "1.2px", marginBottom: "12px" }}>
+                Náhled — jak beat vypadá na hlavní stránce
+              </div>
+
+              {/* Beat row replica */}
+              <div
+                style={{
+                  display: "flex", alignItems: "center", padding: "10px 16px", gap: "16px",
+                  background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.10)",
+                  borderRadius: "4px", position: "relative", maxWidth: "900px",
+                }}
+              >
+                {/* Heart icon (decorative) */}
+                <div className="mobile-hide" style={{ display: "flex", alignItems: "center", marginRight: "-4px" }}>
+                  <div style={{ width: "28px", height: "28px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="1">
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Artwork */}
+                <div style={{ flexShrink: 0 }}>
+                  {form.artworkUrl ? (
+                    <img src={form.artworkUrl} alt={form.title} style={{ width: 48, height: 48, borderRadius: 4, objectFit: "cover", display: "block" }} />
+                  ) : (
+                    <div style={{ width: 48, height: 48, borderRadius: 4, background: "#111", border: "1px solid #1e1e1e", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <Music size={18} color="#2a2a2a" />
+                    </div>
+                  )}
+                </div>
+
+                {/* Title + mobile BPM/Key */}
+                <div style={{ width: "240px", marginRight: "12px", display: "flex", flexDirection: "column", gap: "4px" }}>
+                  <div style={{ fontWeight: 500, fontSize: "15px", letterSpacing: "0.01em", color: form.title ? "#fff" : "#333" }}>
+                    {form.title || "Název beatu"}
+                  </div>
+                </div>
+
+                {/* BPM */}
+                <div style={{ width: "100px", fontWeight: 400, color: "#555", fontSize: "13px", textAlign: "left" }}>
+                  {form.bpm || "—"}
+                </div>
+
+                {/* Key */}
+                <div style={{ width: "100px", fontWeight: 400, color: "#555", fontSize: "13px", textAlign: "left" }}>
+                  {form.key || "—"}
+                </div>
+
+                {/* Tags */}
+                {form.tags.length > 0 && (
+                  <div style={{ display: "flex", gap: "4px", flexWrap: "wrap", marginLeft: "12px", alignItems: "center" }}>
+                    {form.tags.map(tag => (
+                      <span key={tag} style={{ padding: "3px 8px", background: "#111111", color: "#666", border: "1px solid #333", borderRadius: "20px", fontSize: "10px", whiteSpace: "nowrap" }}>
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Buy button */}
+                <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
+                  <button
+                    type="button"
+                    style={{ padding: "8px 16px", background: "#fff", color: "#000", border: "none", borderRadius: "2px", fontSize: "12px", fontWeight: 600, cursor: "default", letterSpacing: "0.02em" }}
+                  >
+                    {Number(form.price) === 0 ? "Zdarma" : `${Number(form.price).toLocaleString("cs-CZ")} Kč`}
+                  </button>
+                </div>
+              </div>
+
+              {/* Waveform preview row */}
+              {(formWaveformPreview || (editing && editing.waveform_data && Array.isArray(editing.waveform_data))) && (() => {
+                const waveData = formWaveformPreview || (editing && editing.waveform_data);
+                if (!waveData) return null;
+                const N = waveData.length;
+                const H = 44;
+                const W = 900;
+                const gap = 0.5;
+                const barW = Math.max(0.6, (W - gap * (N - 1)) / N);
+                const mid = H / 2;
+                const topMax = mid - 2;
+                const botMax = mid * 0.38;
+                return (
+                  <div style={{ marginTop: "6px", padding: "10px 16px", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "4px", maxWidth: "900px" }}>
+                    <div style={{ fontSize: "9px", color: "#2a2a2a", textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: "6px" }}>Soundwave při přehrávání</div>
+                    <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ display: "block", overflow: "visible" }} preserveAspectRatio="none">
+                      {Array.from({ length: N }, (_, i) => {
+                        const v = waveData[i];
+                        const x = i * (barW + gap);
+                        const topH = Math.max(0.5, v * topMax);
+                        const botH = Math.max(0.3, v * botMax);
+                        return (
+                          <g key={i}>
+                            <rect x={x} y={mid - topH} width={barW} height={topH} fill="rgba(255,255,255,0.65)" rx={0.3} />
+                            <rect x={x} y={mid} width={barW} height={botH} fill="rgba(255,255,255,0.18)" rx={0.3} />
+                          </g>
+                        );
+                      })}
+                    </svg>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginTop: "4px", fontSize: "9px", color: "#2a2a2a" }}>
+                      <span>0:00</span><span>konec</span>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
         </div>
       )}
 
@@ -1956,8 +2142,14 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
             {/* Header */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "0.4px solid #2a2a2a", flexShrink: 0 }}>
               <div>
-                <div style={{ color: "#fff", fontSize: "14px", fontWeight: 500 }}>Složka s beatama</div>
-                <div style={{ color: "#555", fontSize: "11px", marginTop: "2px" }}>Soubory uložené přímo na VPS — {beatFolderFiles.length} souborů</div>
+                <div style={{ color: "#fff", fontSize: "14px", fontWeight: 500 }}>
+                  {beatFolderTarget === "previewUrl" ? "Vybrat preview audio" : "Složka s beatama"}
+                </div>
+                <div style={{ color: "#555", fontSize: "11px", marginTop: "2px" }}>
+                  {beatFolderTarget === "previewUrl"
+                    ? "Vyberte soubor jako preview audio (MP3/WAV)"
+                    : `Soubory uložené přímo na VPS — ${beatFolderFiles.length} souborů`}
+                </div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 {beatFolderUploading && (
@@ -2013,7 +2205,9 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                   {beatFolderFiles.map(f => {
                     const ext = f.filename.split(".").pop()?.toUpperCase() || "?";
                     const sizeMB = (f.size / (1024 * 1024)).toFixed(1);
-                    const isSelected = form.fileUrl === f.url;
+                    const isSelected = beatFolderTarget === "previewUrl"
+                      ? form.previewUrl === f.url
+                      : form.fileUrl === f.url;
                     return (
                       <div
                         key={f.filename}
