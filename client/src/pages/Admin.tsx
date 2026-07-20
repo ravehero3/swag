@@ -1682,7 +1682,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                     {/* Card: BPM */}
                     <div style={{ ...card, textAlign: "center" }}>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", marginBottom: "10px" }}>
-                        <div style={lbl}>BPM</div>
+                        <div style={{ ...lbl, marginBottom: 0 }}>BPM</div>
                         {autoDetected?.bpm && (
                           <span style={{ fontSize: "9px", fontWeight: 700, color: "#4caf50", background: "rgba(76,175,80,0.12)", border: "1px solid rgba(76,175,80,0.25)", borderRadius: "999px", padding: "2px 6px", letterSpacing: "0.05em" }}>AUTO</span>
                         )}
@@ -1693,7 +1693,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                     {/* Card: Tónina */}
                     <div style={{ ...card, textAlign: "center" }}>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", marginBottom: "10px" }}>
-                        <div style={lbl}>Tónina</div>
+                        <div style={{ ...lbl, marginBottom: 0 }}>Tónina</div>
                         {autoDetected?.key && (
                           <span style={{ fontSize: "9px", fontWeight: 700, color: "#4caf50", background: "rgba(76,175,80,0.12)", border: "1px solid rgba(76,175,80,0.25)", borderRadius: "999px", padding: "2px 6px", letterSpacing: "0.05em" }}>AUTO</span>
                         )}
@@ -1725,7 +1725,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                     {/* Card: Preview Audio — spans 2 cols */}
                     <div style={{ ...card, gridColumn: "span 2" }}>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
-                        <div style={lbl}>Preview Audio *</div>
+                        <div style={{ ...lbl, marginBottom: 0 }}>Preview Audio *</div>
                         <button
                           type="button"
                           className="btn btn-admin"
@@ -1916,7 +1916,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                home page (home-beat-row layout with active waveform). */}
           {(form.title || form.artworkUrl || form.previewUrl) && (
             <div style={{ marginTop: "24px", paddingTop: "20px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-              <div style={{ fontSize: "10px", fontWeight: 700, color: "#333", textTransform: "uppercase", letterSpacing: "1.2px", marginBottom: "12px" }}>
+              <div style={{ fontSize: "10px", fontWeight: 700, color: "rgba(255,255,255,0.22)", textTransform: "uppercase", letterSpacing: "1.2px", marginBottom: "12px" }}>
                 Náhled — jak beat vypadá na hlavní stránce
               </div>
 
@@ -2001,7 +2001,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                 const botMax = mid * 0.38;
                 return (
                   <div style={{ marginTop: "6px", padding: "10px 16px", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "4px", maxWidth: "900px" }}>
-                    <div style={{ fontSize: "9px", color: "#2a2a2a", textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: "6px" }}>Soundwave při přehrávání</div>
+                    <div style={{ fontSize: "9px", color: "#444", textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: "6px" }}>Soundwave při přehrávání</div>
                     <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ display: "block", overflow: "visible" }} preserveAspectRatio="none">
                       {Array.from({ length: N }, (_, i) => {
                         const v = waveData[i];
@@ -2016,7 +2016,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                         );
                       })}
                     </svg>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginTop: "4px", fontSize: "9px", color: "#2a2a2a" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginTop: "4px", fontSize: "9px", color: "#444" }}>
                       <span>0:00</span><span>konec</span>
                     </div>
                   </div>
@@ -2392,7 +2392,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                             {MUSICAL_KEYS.map(k => <option key={k} value={k}>{k}</option>)}
                           </select>
                         ) : (
-                          <div style={{ fontSize: "11px", color: "#555" }}>{beat.key || "—"}</div>
+                          <div style={{ fontSize: "12px", color: "#ccc", fontFamily: "monospace" }}>{beat.key || "—"}</div>
                         )}
                       </td>
                       <td style={{ padding: "10px 8px" }}>
@@ -2414,7 +2414,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                       </td>
                       <td style={{ padding: "10px 8px" }} onClick={e => e.stopPropagation()}>
                         {!beat.preview_url ? (
-                          <span style={{ fontSize: "11px", color: "#2a2a2a" }}>—</span>
+                          <span style={{ fontSize: "11px", color: "#333" }}>—</span>
                         ) : (beat.waveform_data && Array.isArray(beat.waveform_data)) ? (() => {
                           const quality = getBeatWaveformQuality(beat.waveform_data);
                           const isHov = hoveredBeatId === beat.id;

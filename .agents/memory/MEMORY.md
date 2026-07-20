@@ -1,1 +1,2 @@
 - [VOODOO808 project rules](voodoo808-rules.md) — critical constraints: never switch pg/SQL to Prisma, never upgrade React 19, fix package-lock.json after every npm install
+- [Admin bento lbl-in-flex pattern](admin-lbl-flex.md) — when `lbl` (which has marginBottom:10px) is placed inside a flex row wrapper that also has marginBottom, the lbl must be overridden with marginBottom:0
