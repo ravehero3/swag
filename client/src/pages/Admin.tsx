@@ -862,8 +862,10 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
       computeWaveformInBrowser(url).then(data => { if (data) setFormWaveformPreview(data); });
       analyzePreviewAudio(url);
     } else {
-      setForm(f => ({ ...f, fileUrl: url }));
+      setForm(f => ({ ...f, fileUrl: url, previewUrl: f.previewUrl || url }));
       setShowBeatFolder(false);
+      // Auto-detect BPM + key from the beat file (same as preview audio path)
+      analyzePreviewAudio(url);
     }
   };
 
@@ -1818,7 +1820,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                           <label style={labelStyle}>Soubor beatu ke stažení *</label>
                           <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "8px" }}>
                             <label style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "9px 14px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "10px", cursor: uploading["beat-local"] ? "default" : "pointer", fontSize: "13px", color: uploading["beat-local"] ? "#555" : "#aaa", opacity: uploading["beat-local"] ? 0.6 : 1 }}>
-                              <input type="file" accept="audio/*,.wav,.mp3,.flac,.aif,.aiff,.zip,.rar" disabled={uploading["beat-local"]} style={{ display: "none" }} data-testid="input-beat-local-file" onChange={async (e) => { if (e.target.files?.[0]) { const url = await uploadFile(e.target.files[0], "beat-local"); if (url) setForm(f => ({ ...f, fileUrl: url as string })); } }} />
+                              <input type="file" accept="audio/*,.wav,.mp3,.flac,.aif,.aiff,.zip,.rar" disabled={uploading["beat-local"]} style={{ display: "none" }} data-testid="input-beat-local-file" onChange={async (e) => { if (e.target.files?.[0]) { const url = await uploadFile(e.target.files[0], "beat-local"); if (url) { setForm(f => ({ ...f, fileUrl: url as string, previewUrl: f.previewUrl || (url as string) })); analyzePreviewAudio(url as string); } } }} />
                               {uploading["beat-local"] ? "Nahrávám…" : "Nahrát soubor přímo"}
                             </label>
                             <button
