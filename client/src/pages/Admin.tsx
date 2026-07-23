@@ -741,8 +741,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   const [showBeatFolder, setShowBeatFolder] = useState(false);
   const [beatFolderFiles, setBeatFolderFiles] = useState<{filename: string; url: string; size: number; modified: string}[]>([]);
   const [beatFolderLoading, setBeatFolderLoading] = useState(false);
-  const [beatFolderUploading, setBeatFolderUploading] = useState(false);
-  const [beatFolderUploadProgress, setBeatFolderUploadProgress] = useState(0);
+  const [folderQueue, setFolderQueue] = useState<Array<{id:string;name:string;size:number;status:"queued"|"uploading"|"done"|"error";progress:number;error?:string}>>([]);
   const [beatFolderDragging, setBeatFolderDragging] = useState(false);
   // "fileUrl" → select main beat file  |  "previewUrl" → select preview audio
   const [beatFolderTarget, setBeatFolderTarget] = useState<"fileUrl" | "previewUrl">("fileUrl");
@@ -815,42 +814,73 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   const handleBeatFolderUpload = async (files: FileList | File[]) => {
     const fileArr = Array.from(files);
     if (fileArr.length === 0) return;
-    setBeatFolderUploading(true);
-    setBeatFolderUploadProgress(0);
-    try {
-      for (let i = 0; i < fileArr.length; i++) {
-        const file = fileArr[i];
-        await new Promise<void>((resolve, reject) => {
-          const formData = new FormData();
-          formData.append("file", file);
+
+    // Build per-file queue entries
+    const newItems = fileArr.map((f, i) => ({
+      id: `${Date.now()}-${i}`,
+      name: f.name,
+      size: f.size,
+      status: "queued" as const,
+      progress: 0,
+    }));
+    setFolderQueue(prev => [...prev, ...newItems]);
+
+    const uploadOne = async (item: typeof newItems[0], file: File) => {
+      setFolderQueue(prev => prev.map(q => q.id === item.id ? { ...q, status: "uploading" as const } : q));
+      try {
+        const url = await new Promise<string>((resolve, reject) => {
+          const fd = new FormData();
+          fd.append("file", file);
           const xhr = new XMLHttpRequest();
           xhr.open("POST", "/api/beat-files/upload", true);
           xhr.withCredentials = true;
           xhr.upload.onprogress = (e) => {
             if (e.lengthComputable) {
-              const filePct = Math.round((e.loaded / e.total) * 100);
-              const overallPct = Math.round(((i + filePct / 100) / fileArr.length) * 100);
-              setBeatFolderUploadProgress(overallPct);
+              const pct = Math.round((e.loaded / e.total) * 100);
+              setFolderQueue(prev => prev.map(q => q.id === item.id ? { ...q, progress: pct } : q));
             }
           };
           xhr.onload = () => {
-            if (xhr.status >= 200 && xhr.status < 300) resolve();
-            else {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              try { resolve(JSON.parse(xhr.responseText).url); }
+              catch { reject(new Error("Invalid response")); }
+            } else {
               let msg = `Server ${xhr.status}`;
               try { msg = JSON.parse(xhr.responseText)?.error || msg; } catch {}
               reject(new Error(msg));
             }
           };
-          xhr.onerror = () => reject(new Error("Network error"));
-          xhr.send(formData);
+          xhr.onerror = () => reject(new Error("Chyba sítě"));
+          xhr.send(fd);
         });
+        // Mark done + optimistically prepend to folder list
+        setFolderQueue(prev => prev.map(q => q.id === item.id ? { ...q, status: "done" as const, progress: 100 } : q));
+        setBeatFolderFiles(prev => [{
+          filename: decodeURIComponent(url.split("/").pop() || item.name),
+          url,
+          size: file.size,
+          modified: new Date().toISOString(),
+        }, ...prev]);
+      } catch (err) {
+        setFolderQueue(prev => prev.map(q => q.id === item.id ? {
+          ...q, status: "error" as const,
+          error: err instanceof Error ? err.message : String(err),
+        } : q));
       }
-      await loadBeatFolder();
-    } catch (err) {
-      alert("Chyba při nahrávání: " + String(err));
+    };
+
+    // Upload up to 3 files concurrently
+    const CONCURRENCY = 3;
+    for (let i = 0; i < fileArr.length; i += CONCURRENCY) {
+      const chunk = fileArr.slice(i, i + CONCURRENCY);
+      const chunkItems = newItems.slice(i, i + CONCURRENCY);
+      await Promise.all(chunk.map((file, ci) => uploadOne(chunkItems[ci], file)));
     }
-    setBeatFolderUploading(false);
-    setBeatFolderUploadProgress(0);
+
+    // Auto-clear completed entries after 4 s; keep errors for the user to dismiss
+    setTimeout(() => {
+      setFolderQueue(prev => prev.filter(q => q.status !== "done"));
+    }, 4000);
   };
 
   const handleBeatFolderSelect = async (url: string) => {
@@ -2154,24 +2184,31 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                 </div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                {beatFolderUploading && (
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <div style={{ width: "80px", height: "3px", background: "#1b1b1b", borderRadius: "999px", overflow: "hidden" }}>
-                      <div style={{ height: "100%", width: `${beatFolderUploadProgress}%`, background: "linear-gradient(90deg,#0B99FC,#4cc3ff)", transition: "width 150ms ease" }} />
+                {folderQueue.length > 0 && (() => {
+                  const active = folderQueue.filter(q => q.status === "queued" || q.status === "uploading").length;
+                  const done   = folderQueue.filter(q => q.status === "done").length;
+                  const errors = folderQueue.filter(q => q.status === "error").length;
+                  const total  = folderQueue.length;
+                  if (active > 0) return (
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <div style={{ width: "80px", height: "3px", background: "#1b1b1b", borderRadius: "999px", overflow: "hidden" }}>
+                        <div style={{ height: "100%", width: `${Math.round((done / total) * 100)}%`, background: "linear-gradient(90deg,#0B99FC,#4cc3ff)", transition: "width 150ms ease" }} />
+                      </div>
+                      <span style={{ fontSize: "11px", color: "#0B99FC" }}>{done}/{total}</span>
                     </div>
-                    <span style={{ fontSize: "11px", color: "#0B99FC" }}>{beatFolderUploadProgress}%</span>
-                  </div>
-                )}
-                <label style={{ background: "transparent", border: "0.4px solid #555", color: beatFolderUploading ? "#555" : "#aaa", borderRadius: "3px", padding: "6px 12px", cursor: beatFolderUploading ? "default" : "pointer", fontSize: "12px", display: "flex", alignItems: "center", gap: "6px" }}>
-                  {beatFolderUploading ? "Nahrávám…" : "+ Přidat beat"}
+                  );
+                  if (errors > 0) return <span style={{ fontSize: "11px", color: "#ff5252" }}>{errors} chyb</span>;
+                  return null;
+                })()}
+                <label style={{ background: "transparent", border: "0.4px solid #555", color: "#aaa", borderRadius: "3px", padding: "6px 12px", cursor: "pointer", fontSize: "12px", display: "flex", alignItems: "center", gap: "6px" }}>
+                  + Přidat soubory
                   <input
                     type="file"
                     accept="audio/*,.wav,.mp3,.flac,.aif,.aiff,.zip,.rar"
                     multiple
-                    disabled={beatFolderUploading}
                     style={{ display: "none" }}
                     data-testid="input-beat-folder-upload"
-                    onChange={(e) => { if (e.target.files && e.target.files.length > 0) handleBeatFolderUpload(e.target.files); }}
+                    onChange={(e) => { if (e.target.files && e.target.files.length > 0) { handleBeatFolderUpload(e.target.files); e.target.value = ""; } }}
                   />
                 </label>
                 <button
@@ -2194,6 +2231,40 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                   <span style={{ color: "#0B99FC", fontSize: "14px", fontWeight: 500 }}>Přetáhni soubory sem</span>
                 </div>
               )}
+
+              {/* Per-file upload queue */}
+              {folderQueue.length > 0 && (
+                <div style={{ marginBottom: "12px", display: "flex", flexDirection: "column", gap: "3px" }}>
+                  {folderQueue.map(item => (
+                    <div key={item.id} style={{
+                      display: "flex", alignItems: "center", gap: "10px", padding: "7px 10px",
+                      background: item.status === "error" ? "rgba(255,82,82,0.06)" : item.status === "done" ? "rgba(76,175,80,0.06)" : "rgba(11,153,252,0.05)",
+                      border: `1px solid ${item.status === "error" ? "rgba(255,82,82,0.2)" : item.status === "done" ? "rgba(76,175,80,0.2)" : "rgba(11,153,252,0.15)"}`,
+                      borderRadius: "6px",
+                    }}>
+                      {item.status === "done"      ? <span style={{ fontSize: "11px", color: "#4caf50", flexShrink: 0 }}>✓</span>
+                       : item.status === "error"   ? <span style={{ fontSize: "11px", color: "#ff5252", flexShrink: 0 }}>✕</span>
+                       : item.status === "uploading" ? <div style={{ width: "10px", height: "10px", borderRadius: "50%", border: "2px solid #1b4a6b", borderTopColor: "#0B99FC", animation: "spin 0.8s linear infinite", flexShrink: 0 }} />
+                       : <div style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#2a2a2a", flexShrink: 0 }} />}
+                      <span style={{ fontSize: "12px", color: item.status === "error" ? "#ff5252" : item.status === "done" ? "#4caf50" : "#aaa", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {item.name}
+                      </span>
+                      {item.status === "uploading" && (
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0 }}>
+                          <div style={{ width: "60px", height: "2px", background: "#1b1b1b", borderRadius: "999px", overflow: "hidden" }}>
+                            <div style={{ height: "100%", width: `${item.progress}%`, background: "#0B99FC", transition: "width 100ms" }} />
+                          </div>
+                          <span style={{ fontSize: "10px", color: "#555", minWidth: "28px" }}>{item.progress}%</span>
+                        </div>
+                      )}
+                      {item.status === "queued"   && <span style={{ fontSize: "10px", color: "#333", flexShrink: 0 }}>čeká</span>}
+                      {item.status === "error"    && <span style={{ fontSize: "10px", color: "#ff5252", flexShrink: 0, maxWidth: "120px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.error}</span>}
+                      {item.status === "error"    && <button onClick={() => setFolderQueue(prev => prev.filter(q => q.id !== item.id))} style={{ background: "none", border: "none", color: "#555", cursor: "pointer", fontSize: "14px", padding: "0 2px", lineHeight: 1, flexShrink: 0 }}>×</button>}
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {beatFolderLoading ? (
                 <div style={{ textAlign: "center", color: "#444", padding: "48px 0", fontSize: "12px" }}>Načítám…</div>
               ) : beatFolderFiles.length === 0 ? (
