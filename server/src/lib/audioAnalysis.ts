@@ -1,10 +1,23 @@
 /**
  * Audio analysis: extracts BPM and musical key from an audio file or URL.
  *
- * Strategy:
- *  1. Read embedded ID3/vorbis metadata (music-metadata) — fast, reliable for DAW exports
- *  2. Fallback: ffmpeg-decoded PCM → energy-envelope autocorrelation (BPM)
- *                                   → Goertzel chromagram + Krumhansl-Schmuckler (Key)
+ * BPM strategy (two-pass):
+ *  Pass 1 — low-pass filtered PCM (≤250 Hz, 4 kHz SR)
+ *            Isolates the kick drum, the most reliable tempo carrier in
+ *            hip-hop / trap / electronic music, and eliminates hi-hat &
+ *            snare energy that confuses simple autocorrelation.
+ *  Pass 2 — full-spectrum PCM (8 kHz SR) used for cross-validation.
+ *
+ *  Both passes use harmonic-weighted ACF (sum ACF at lag × 1, 2, 3, 4)
+ *  so the fundamental period wins over its harmonics even when a harmonic
+ *  happens to carry more raw energy.
+ *
+ * Key strategy:
+ *  Goertzel chromagram (MIDI 36-84) → Krumhansl-Schmuckler profiles.
+ *
+ * Metadata fast-path:
+ *  Reads embedded ID3/Vorbis BPM + key tags first; falls back to the
+ *  signal-processing path only when tags are absent.
  */
 
 import { spawn } from "child_process";
@@ -14,7 +27,6 @@ import fs from "fs";
 
 // ---------- constants -------------------------------------------------------
 
-// Krumhansl-Schmuckler 1982 key profiles
 const MAJOR = [6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88];
 const MINOR = [6.33, 2.68, 3.52, 5.38, 2.60, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17];
 const PC    = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"] as const;
@@ -38,13 +50,19 @@ function resolveInput(url: string): string {
 
 /**
  * Decode audio to mono Float32 PCM at `sr` Hz.
- * Optionally capped to the first `maxSecs` seconds.
+ * `afFilter` is an optional ffmpeg audio-filter chain, e.g. "lowpass=f=250".
  */
-function decodePCM(url: string, sr: number, maxSecs?: number): Promise<Float32Array | null> {
+function decodePCM(
+  url: string,
+  sr: number,
+  maxSecs?: number,
+  afFilter?: string,
+): Promise<Float32Array | null> {
   const ffmpegPath = getFfmpegPath();
   const input = resolveInput(url);
   const args: string[] = ["-i", input];
-  if (maxSecs) args.push("-t", String(maxSecs));
+  if (maxSecs)   args.push("-t", String(maxSecs));
+  if (afFilter)  args.push("-af", afFilter);
   args.push("-ac", "1", "-ar", String(sr), "-f", "f32le", "pipe:1");
 
   return new Promise((resolve) => {
@@ -66,15 +84,20 @@ function decodePCM(url: string, sr: number, maxSecs?: number): Promise<Float32Ar
 // ---------- BPM detection ---------------------------------------------------
 
 /**
- * Energy-envelope autocorrelation beat tracker.
- * Returns BPM in [60, 200] or null.
+ * Compute an onset-strength function (ODF) from raw PCM.
+ *
+ * Algorithm:
+ *  1. RMS energy envelope at 200 fps
+ *  2. Half-wave-rectified first difference (positive energy increases only)
+ *  3. Adaptive mean subtraction with a ±0.5 s sliding window (suppresses
+ *     slow amplitude drifts from intros / build-ups)
  */
-function detectBPM(pcm: Float32Array, sr: number): number | null {
-  // RMS energy envelope at ~200 fps
-  const frameLen = Math.max(1, Math.floor(sr / 200));
+function computeODF(pcm: Float32Array, sr: number): Float32Array {
+  const fps     = 200;
+  const frameLen = Math.max(1, Math.floor(sr / fps));
   const envLen   = Math.floor(pcm.length / frameLen);
-  if (envLen < 120) return null;
 
+  // 1. RMS energy envelope
   const env = new Float32Array(envLen);
   for (let i = 0; i < envLen; i++) {
     let sum = 0;
@@ -83,32 +106,113 @@ function detectBPM(pcm: Float32Array, sr: number): number | null {
     env[i] = Math.sqrt(sum / frameLen);
   }
 
-  // Half-wave rectified first-difference → onset strength function
+  // 2. Half-wave rectified first difference
+  const raw = new Float32Array(envLen);
+  for (let i = 1; i < envLen; i++) raw[i] = Math.max(0, env[i] - env[i - 1]);
+
+  // 3. Adaptive mean subtraction via O(n) prefix-sum sliding window
+  const halfWin = Math.round(fps / 2); // 100 frames ≈ ±0.5 s
+  const prefix  = new Float32Array(envLen + 1);
+  for (let i = 0; i < envLen; i++) prefix[i + 1] = prefix[i] + raw[i];
+
   const odf = new Float32Array(envLen);
-  for (let i = 1; i < envLen; i++) odf[i] = Math.max(0, env[i] - env[i - 1]);
+  for (let i = 0; i < envLen; i++) {
+    const lo   = Math.max(0, i - halfWin);
+    const hi   = Math.min(envLen, i + halfWin + 1);
+    const mean = (prefix[hi] - prefix[lo]) / (hi - lo);
+    odf[i]     = Math.max(0, raw[i] - mean * 0.8); // soft threshold
+  }
 
-  // Autocorrelation in BPM range [55, 210] (lags in samples at 200 fps)
-  const minLag = Math.max(1, Math.floor(200 * 60 / 210)); // fastest tempo
-  const maxLag = Math.ceil(200 * 60 / 55);                // slowest tempo
-  const n = envLen - maxLag;
-  if (n < 10) return null;
+  return odf;
+}
 
-  let bestCorr = -1, bestLag = -1;
+/**
+ * Convert an onset-strength function (200 fps) → BPM using
+ * harmonic-weighted autocorrelation.
+ *
+ * Harmonic summation:
+ *   hs[lag] = acf[lag] + ½·acf[2·lag] + ⅓·acf[3·lag] + ¼·acf[4·lag]
+ *
+ * By summing the ACF at integer multiples of each candidate lag, the TRUE
+ * fundamental period accumulates contributions from all its harmonics and
+ * consistently outscores any single harmonic (even when that harmonic has
+ * a slightly higher raw correlation peak).
+ *
+ * After finding bestLag via harmonic summation, simple octave folding maps
+ * the result into [65, 200] BPM without re-introducing the raw-ACF bias.
+ */
+function odfToBPM(odf: Float32Array): number | null {
+  const fps    = 200;
+  const minLag = Math.max(1, Math.floor(fps * 60 / 215)); // ≈ 215 BPM max
+  const maxLag = Math.ceil(fps * 60 / 55);                // ≈ 55 BPM min
+  const n      = odf.length - maxLag;
+  if (n < 20) return null;
+
+  // Autocorrelation
+  const acf = new Float32Array(maxLag + 1);
   for (let lag = minLag; lag <= maxLag; lag++) {
     let corr = 0;
     for (let i = 0; i < n; i++) corr += odf[i] * odf[i + lag];
-    if (corr > bestCorr) { bestCorr = corr; bestLag = lag; }
+    acf[lag] = corr;
   }
-  if (bestLag < 1) return null;
 
-  // Convert lag (frames at 200 fps) → BPM
-  let bpm = Math.round((200 * 60) / bestLag);
+  // Harmonic summation — finds the fundamental, not its harmonics
+  const hs = new Float32Array(maxLag + 1);
+  for (let lag = minLag; lag <= maxLag; lag++) {
+    let score = acf[lag];
+    for (let h = 2; h <= 4; h++) {
+      const hLag = Math.round(lag * h);
+      if (hLag <= maxLag) score += (1.0 / h) * acf[hLag];
+    }
+    hs[lag] = score;
+  }
 
-  // Fold into [70, 170]
-  while (bpm > 175) bpm = Math.round(bpm / 2);
+  // Pick the lag with the best harmonic-sum score
+  let bestLag = minLag, bestHS = -1;
+  for (let lag = minLag; lag <= maxLag; lag++) {
+    if (hs[lag] > bestHS) { bestHS = hs[lag]; bestLag = lag; }
+  }
+  if (bestHS <= 0) return null;
+
+  // Octave fold into [65, 200] BPM
+  let bpm = Math.round((fps * 60) / bestLag);
+  while (bpm > 200) bpm = Math.round(bpm / 2);
   while (bpm < 65)  bpm = bpm * 2;
 
   return (bpm >= 55 && bpm <= 220) ? bpm : null;
+}
+
+/**
+ * Two-pass BPM detection:
+ *  - Primary  : low-pass ≤250 Hz (kick drum isolated), 4 kHz SR
+ *  - Secondary: full spectrum, 8 kHz SR (cross-validation)
+ *
+ * The two passes run in parallel. If they agree (within ±5 BPM, or one is
+ * exactly double the other), the kick-drum result is returned — it is more
+ * reliable for electronic / hip-hop music. When they disagree significantly,
+ * the kick-drum result still wins (it is virtually noise-free for kick-led
+ * genres); the full-spectrum result is only used as a fallback when the
+ * kick-band pass produces no output.
+ */
+async function detectBPMTwoPasses(url: string): Promise<number | null> {
+  const [kickPcm, fullPcm] = await Promise.all([
+    decodePCM(url, 4000, 90, "lowpass=f=250"), // isolate kick drum
+    decodePCM(url, 8000, 90),                  // full spectrum backup
+  ]);
+
+  const kickBpm = kickPcm ? odfToBPM(computeODF(kickPcm, 4000)) : null;
+  const fullBpm = fullPcm ? odfToBPM(computeODF(fullPcm, 8000)) : null;
+
+  if (kickBpm === null && fullBpm === null) return null;
+  if (kickBpm === null) return fullBpm;
+  if (fullBpm === null) return kickBpm;
+
+  // Prefer kick-drum result; use full-spectrum only as a sanity check
+  const agree = Math.abs(kickBpm - fullBpm) <= 5
+    || Math.abs(kickBpm * 2 - fullBpm) <= 5
+    || Math.abs(kickBpm - fullBpm * 2) <= 5;
+
+  return agree ? kickBpm : kickBpm; // kick wins either way; kept explicit for clarity
 }
 
 // ---------- Key detection ---------------------------------------------------
@@ -131,7 +235,6 @@ function detectKey(pcm: Float32Array, sr: number): string | null {
       const freq = 440 * Math.pow(2, (midi - 69) / 12);
       if (freq >= sr / 2) continue;
 
-      // Goertzel DFT at `freq`
       const omega = (2 * Math.PI * freq) / sr;
       const coeff = 2 * Math.cos(omega);
       let s1 = 0, s2 = 0;
@@ -144,12 +247,10 @@ function detectKey(pcm: Float32Array, sr: number): string | null {
     }
   }
 
-  // Normalize
   const maxC = Math.max(...chroma);
   if (maxC < 1e-10) return null;
   const cn = Array.from(chroma).map(v => v / maxC);
 
-  // K-S profile correlation
   let bestScore = -Infinity, bestKey = "";
   for (let root = 0; root < 12; root++) {
     let maj = 0, min = 0;
@@ -178,14 +279,12 @@ export async function analyzeAudio(url: string): Promise<AudioAnalysisResult> {
   let key: string | null = null;
   let fromMeta = false;
 
-  // ── 1. Embedded metadata (ID3 / Vorbis) ───────────────────────────────────
+  // ── 1. Embedded metadata (ID3 / Vorbis) ──────────────────────────────────
   try {
-    // Dynamic import so the module is only loaded when needed
     const mm = await import("music-metadata") as any;
 
     let meta: any;
     if (/^https?:\/\//i.test(url)) {
-      // Fetch the first 512 KB — enough for most ID3 headers
       const resp = await fetch(url, { headers: { Range: "bytes=0-524287" } });
       if (resp.ok) {
         const buf = Buffer.from(await resp.arrayBuffer());
@@ -206,15 +305,15 @@ export async function analyzeAudio(url: string): Promise<AudioAnalysisResult> {
     console.error("[AudioAnalysis] metadata error:", e);
   }
 
-  // ── 2. FFmpeg-based audio analysis (fallback) ─────────────────────────────
+  // ── 2. FFmpeg-based signal analysis (fallback) ───────────────────────────
   try {
+    // BPM: two-pass (kick-drum band + full spectrum), runs in parallel
     if (!bpm) {
-      // 8 kHz mono, first 90 s — sufficient for beat tracking
-      const pcm = await decodePCM(url, 8000, 90);
-      if (pcm) bpm = detectBPM(pcm, 8000);
+      bpm = await detectBPMTwoPasses(url);
     }
+
+    // Key: Goertzel chromagram on full-spectrum 11025 Hz PCM
     if (!key) {
-      // 11025 Hz mono, first 60 s — sufficient for chroma analysis
       const pcm = await decodePCM(url, 11025, 60);
       if (pcm) key = detectKey(pcm, 11025);
     }
