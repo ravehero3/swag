@@ -407,7 +407,40 @@ router.post("/", requireAdmin, upload.single("file"), async (req: Request, res: 
   // Beat preview audio: upload to R2 (previews bucket) — same bucket as "preview" type
   // This ensures the URL is a public HTTPS URL accessible by ffmpeg for waveform generation
   // and that files persist across Docker restarts.
+  // If BEAT_STORAGE=local, saves directly to public/uploads/beats/ on the VPS filesystem
+  // (requires a Docker volume mount so files survive redeploys).
   if (type === "beat-preview") {
+    // --- Local VPS storage path ---
+    if (process.env.BEAT_STORAGE === "local") {
+      try {
+        const beatsDir = path.join(process.cwd(), "public/uploads/beats");
+        if (!fs.existsSync(beatsDir)) fs.mkdirSync(beatsDir, { recursive: true });
+
+        const origExt = path.extname(req.file.originalname).toLowerCase() || ".mp3";
+        const base = path.basename(req.file.originalname, origExt)
+          .toLowerCase()
+          .replace(/[^a-z0-9_.-]/g, "-")
+          .substring(0, 80);
+        const filename = `${base}-${uuidv4().substring(0, 8)}${origExt}`;
+        const dest = path.join(beatsDir, filename);
+
+        fs.copyFileSync(req.file.path, dest);
+        fs.unlinkSync(req.file.path);
+
+        const appUrl = (process.env.APP_URL || "").replace(/\/$/, "");
+        const url = appUrl ? `${appUrl}/uploads/beats/${filename}` : `/uploads/beats/${filename}`;
+        res.json({ url, filename, size: req.file.size });
+        console.log(`✅ beat-preview saved to VPS local disk: ${dest}`);
+        return;
+      } catch (error) {
+        if (req.file.path && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+        console.error("beat-preview local save failed:", error);
+        res.status(500).json({ error: "Nahrávání preview selhalo", detail: String(error) });
+        return;
+      }
+    }
+
+    // --- Cloud storage path (R2 / B2) ---
     try {
       const origExt = path.extname(req.file.originalname).toLowerCase() || ".mp3";
       const base = path.basename(req.file.originalname, origExt)

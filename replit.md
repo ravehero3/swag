@@ -34,6 +34,16 @@ VOODOO808 (voodoo808.com) is a Czech-language beat store where producers buy and
 - Schema is auto-created on startup via `initDatabase()` in `server/src/db.ts`
 - NO Drizzle at runtime — schema managed with raw SQL inside db.ts
 
+## Beat Storage — VPS Local Mode
+Set `BEAT_STORAGE=local` in the server environment to save bulk-uploaded beat preview files directly to `public/uploads/beats/` on the VPS filesystem instead of uploading to R2/B2. The returned URL uses `APP_URL` as the base so waveform generation gets a fully-qualified public URL.
+
+**VPS docker-compose.yml** must have this volume under the `beatz` service for files to survive redeploys:
+```yaml
+volumes:
+  - ./data/beats:/app/public/uploads/beats
+```
+The `./data/beats` directory on the VPS host holds all uploaded beat files permanently.
+
 ## Environment Variables Required
 - `DATABASE_URL` — auto-set by Replit PostgreSQL
 - `SESSION_SECRET` — session signing secret
