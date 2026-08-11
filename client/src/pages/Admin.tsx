@@ -748,8 +748,6 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   const [beatFolderTarget, setBeatFolderTarget] = useState<"fileUrl" | "previewUrl">("fileUrl");
   const [beatFolderSearch, setBeatFolderSearch] = useState("");
   const [beatFolderSort, setBeatFolderSort] = useState<"name-asc" | "name-desc" | "size-asc" | "size-desc">("name-asc");
-  const [beatFolderSearch, setBeatFolderSearch] = useState("");
-  const [beatFolderSort, setBeatFolderSort] = useState<"name-asc" | "name-desc" | "size-asc" | "size-desc">("name-asc");
 
   // ── Auto BPM/Key detection state ────────────────────────────────────────────
   const [autoAnalyzing, setAutoAnalyzing] = useState(false);
@@ -2253,13 +2251,12 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                     data-testid="input-beat-folder-upload"
                     onChange={(e) => { if (e.target.files && e.target.files.length > 0) { handleBeatFolderUpload(e.target.files); e.target.value = ""; } }}
                   />
-                  </label>
-                  {galleryUploading && (
-                    <div style={{ flex: "1", minWidth: "100px", height: "4px", background: "#1b1b1b", borderRadius: "999px", overflow: "hidden" }}>
-                      <div style={{ height: "100%", width: `${Math.round(((galleryUploadDone || 0) / (galleryUploadCount || 1)) * 100)}%`, background: "linear-gradient(90deg,#0B99FC,#4cc3ff)", transition: "width 150ms ease" }} />
-                    </div>
-                  )}
-                </div>
+                </label>
+                {galleryUploading && (
+                  <div style={{ flex: "1", minWidth: "100px", height: "4px", background: "#1b1b1b", borderRadius: "999px", overflow: "hidden" }}>
+                    <div style={{ height: "100%", width: `${Math.round(((galleryUploadDone || 0) / (galleryUploadCount || 1)) * 100)}%`, background: "linear-gradient(90deg,#0B99FC,#4cc3ff)", transition: "width 150ms ease" }} />
+                  </div>
+                )}
                 <button
                   onClick={() => setShowBeatFolder(false)}
                   style={{ background: "transparent", border: "none", color: "#666", fontSize: "20px", cursor: "pointer", lineHeight: 1, padding: "0 4px" }}
