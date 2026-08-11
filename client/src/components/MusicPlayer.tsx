@@ -132,6 +132,39 @@ function MusicPlayer({
     };
   }, [activeAudioRef, currentBeat]);
 
+  // Update MediaSession for iOS lock screen
+  useEffect(() => {
+    if (!currentBeat || !navigator.mediaSession) return;
+
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: currentBeat.title,
+      artist: "VOODOO808",
+      artwork: currentBeat.artwork_url
+        ? [
+            {
+              src: currentBeat.artwork_url,
+              sizes: "256x256",
+              type: "image/jpeg",
+            },
+            {
+              src: currentBeat.artwork_url,
+              sizes: "512x512",
+              type: "image/jpeg",
+            },
+          ]
+        : [],
+    });
+
+    navigator.mediaSession.setActionHandler("play", () => onPlayPause());
+    navigator.mediaSession.setActionHandler("pause", () => onPlayPause());
+    navigator.mediaSession.setActionHandler("nexttrack", () => onNext());
+    navigator.mediaSession.setActionHandler("previoustrack", () => onPrevious());
+
+    return () => {
+      navigator.mediaSession.metadata = null;
+    };
+  }, [currentBeat, onPlayPause, onNext, onPrevious]);
+
   if (!currentBeat) return null;
 
   const progressPercent = duration ? (currentTime / duration) * 100 : 0;

@@ -181,7 +181,16 @@ export default function ProductCard({
               data-testid={`button-play-product-${id}`}
               style={{ paddingLeft: isPlaying ? "0" : "3px" }}
             >
-              {isPlaying ? "⏸" : "▶"}
+              {isPlaying ? (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <rect x="6" y="4" width="4" height="16" rx="1" />
+                  <rect x="14" y="4" width="4" height="16" rx="1" />
+                </svg>
+              ) : (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: "2px" }}>
+                  <polygon points="5,3 19,12 5,21" />
+                </svg>
+              )}
             </button>
           </>
         )}
