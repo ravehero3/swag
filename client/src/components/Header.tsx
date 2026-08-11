@@ -1,6 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { useApp } from "../App.js";
 import { useState } from "react";
+import { LanguageSelector } from "./LanguageSelector.js";
 
 function Header() {
   const { user, cart, setIsCartOpen, savedCount } = useApp() as any;
@@ -73,6 +74,7 @@ function Header() {
       </Link>
 
       <div style={{ display: "flex", alignItems: "center", gap: "12px", position: "relative", zIndex: 10, paddingRight: "12px" }}>
+        <LanguageSelector style={{ marginRight: "4px" }} />
         {user?.isAdmin && (
           <Link href="/admin?tab=orders" className="header-link">
             <span

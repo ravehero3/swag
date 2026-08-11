@@ -324,6 +324,37 @@ router.post("/bulk-create", requireAdmin, async (req: Request, res: Response) =>
   }
 });
 
+// Publish a beat from the beat folder (create or update)
+router.post("/publish-from-folder", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { title, bpm, key, artworkUrl, previewUrl, fileUrl, tags } = req.body;
+    
+    if (!title || !previewUrl) {
+      return res.status(400).json({ error: "Název a preview URL jsou povinné" });
+    }
+    
+    const beatTags = Array.isArray(tags) ? tags.slice(0, 3) : [];
+    
+    // Create new beat with is_published = true
+    const result = await pool.query(
+      `INSERT INTO beats (title, artist, bpm, key, price, preview_url, file_url, artwork_url, tags, is_published, is_highlighted)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, true, false) RETURNING *`,
+      [title, "VOODOO808", bpm || null, key || null, 0, previewUrl, fileUrl || null, artworkUrl || null, beatTags]
+    );
+    
+    const beat = result.rows[0];
+    res.json(beat);
+    
+    // Trigger waveform computation in background
+    if (beat.id && previewUrl) {
+      triggerWaveformComputation(beat.id, previewUrl).catch(() => {});
+    }
+  } catch (error) {
+    console.error("Error publishing beat from folder:", error);
+    res.status(500).json({ error: "Chyba při zveřejňování beatu" });
+  }
+});
+
 router.post("/bulk-delete", requireAdmin, async (req: Request, res: Response) => {
   try {
     const { ids } = req.body;

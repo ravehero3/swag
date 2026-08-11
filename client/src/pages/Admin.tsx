@@ -3,6 +3,7 @@ import { Music, Image as ImageIcon, Upload, Star, ChevronUp, ChevronDown, Pencil
 import { useApp } from "../App.js";
 import { useLocation } from "wouter";
 import { toAudioProxyUrl } from "../lib/audioProxy.js";
+import { filterAndSortBeatFiles } from "../lib/beatFolderUtils.js";
 import SoundWave from "../components/SoundWave.js";
 import {
   BeatArtwork,
@@ -745,6 +746,10 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   const [beatFolderDragging, setBeatFolderDragging] = useState(false);
   // "fileUrl" → select main beat file  |  "previewUrl" → select preview audio
   const [beatFolderTarget, setBeatFolderTarget] = useState<"fileUrl" | "previewUrl">("fileUrl");
+  const [beatFolderSearch, setBeatFolderSearch] = useState("");
+  const [beatFolderSort, setBeatFolderSort] = useState<"name-asc" | "name-desc" | "size-asc" | "size-desc">("name-asc");
+  const [beatFolderSearch, setBeatFolderSearch] = useState("");
+  const [beatFolderSort, setBeatFolderSort] = useState<"name-asc" | "name-desc" | "size-asc" | "size-desc">("name-asc");
 
   // ── Auto BPM/Key detection state ────────────────────────────────────────────
   const [autoAnalyzing, setAutoAnalyzing] = useState(false);
@@ -769,18 +774,36 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     if (fileArr.length === 0) return;
     setGalleryUploading(true);
     setGalleryUploadCount(fileArr.length);
+    setGalleryUploadDone(0);
     try {
-      const fd = new FormData();
-      fileArr.forEach(f => fd.append("files", f));
-      const res = await fetch("/api/kit-artworks/upload-batch", { method: "POST", body: fd, credentials: "include" });
-      if (res.ok) {
-        await loadGallery();
-      } else {
-        alert("Nepodařilo se nahrát obrázky");
+      // Upload files individually to show progress
+      let successCount = 0;
+      for (const file of fileArr) {
+        try {
+          const fd = new FormData();
+          fd.append("file", file);
+          const res = await fetch("/api/kit-artworks/upload", { method: "POST", body: fd, credentials: "include" });
+          if (res.ok) {
+            successCount++;
+            setGalleryUploadDone(successCount);
+          }
+        } catch (e) {
+          console.error(`Failed to upload ${file.name}:`, e);
+        }
       }
-    } catch { alert("Chyba při nahrávání"); }
+      if (successCount > 0) {
+        await loadGallery();
+      }
+      if (successCount < fileArr.length) {
+        alert(`Nahrána ${successCount}/${fileArr.length} obrázků`);
+      }
+    } catch (e) { 
+      console.error("Gallery upload error:", e);
+      alert("Chyba při nahrávání"); 
+    }
     setGalleryUploading(false);
     setGalleryUploadCount(0);
+    setGalleryUploadDone(0);
   };
 
   const handleGalleryDelete = async (filename: string) => {
@@ -1051,6 +1074,11 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   };
 
   useEffect(() => { checkFfmpegHealth(); }, []);
+
+  // Filter and sort beat folder files
+  const filteredBeatFolderFiles = useMemo(() => {
+    return filterAndSortBeatFiles(beatFolderFiles, beatFolderSearch, beatFolderSort);
+  }, [beatFolderFiles, beatFolderSearch, beatFolderSort]);
 
   const hasPendingWaveforms = beats.some((b: Beat) => b.preview_url && !b.waveform_data);
 
@@ -1806,8 +1834,16 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                           <AdminAudioPreview src={form.previewUrl} />
                           {formWaveformPreview && (
                             <div style={{ marginTop: "8px", padding: "10px 12px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "8px" }}>
-                              <div style={{ fontSize: "10px", color: "#555", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.08em" }}>Náhled waveformu</div>
-                              <BeatWaveformSparkline data={formWaveformPreview} />
+                              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                                <div>
+                                  <div style={{ fontSize: "10px", color: "#555", marginBottom: "4px", textTransform: "uppercase", letterSpacing: "0.08em" }}>Soubor</div>
+                                  <div style={{ fontSize: "12px", color: "#aaa", fontFamily: "monospace", wordBreak: "break-all" }}>{uploadedNames["beat-preview"] || "—"}</div>
+                                </div>
+                                <div>
+                                  <div style={{ fontSize: "10px", color: "#555", marginBottom: "4px", textTransform: "uppercase", letterSpacing: "0.08em" }}>Náhled waveformu</div>
+                                  <BeatWaveformSparkline data={formWaveformPreview} />
+                                </div>
+                              </div>
                             </div>
                           )}
                           <button type="button" onClick={() => { setForm(f => ({ ...f, previewUrl: "" })); setUploadProgress(p => ({ ...p, "beat-preview": 0 })); setUploadedNames(n => { const c = { ...n }; delete c["beat-preview"]; return c; }); setFormWaveformPreview(null); setAutoDetected(null); }} style={{ marginTop: "6px", background: "none", border: "none", color: "#555", fontSize: "11px", cursor: "pointer", padding: 0 }}>Odebrat</button>
@@ -2071,10 +2107,11 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                 <div style={{ color: "#555", fontSize: "11px", marginTop: "2px" }}>Obrázky jsou uloženy přímo v aplikaci — žádný Backblaze bandwidth</div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <label style={{ background: "transparent", border: "0.4px solid #555", color: galleryUploading ? "#555" : "#aaa", borderRadius: "3px", padding: "6px 12px", cursor: galleryUploading ? "default" : "pointer", fontSize: "12px", display: "flex", alignItems: "center", gap: "6px" }}>
-                  {galleryUploading
-                    ? `Nahrávám${galleryUploadCount > 1 ? ` ${galleryUploadCount} obrázků` : ""}…`
-                    : "+ Nahrát obrázky"}
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: "1", minWidth: 0 }}>
+                  <label style={{ background: "transparent", border: "0.4px solid #555", color: galleryUploading ? "#555" : "#aaa", borderRadius: "3px", padding: "6px 12px", cursor: galleryUploading ? "default" : "pointer", fontSize: "12px", display: "flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap" }}>
+                    {galleryUploading
+                      ? `Nahrávám${galleryUploadCount > 1 ? ` ${galleryUploadCount} obrázků` : ""}…`
+                      : "+ Nahrát obrázky"}
                   <input
                     type="file"
                     accept="image/*"
@@ -2084,7 +2121,13 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                     onChange={(e) => { if (e.target.files && e.target.files.length > 0) handleGalleryUpload(e.target.files); }}
                     data-testid="input-gallery-upload-beat"
                   />
-                </label>
+                  </label>
+                  {galleryUploading && (
+                    <div style={{ flex: "1", minWidth: "100px", height: "4px", background: "#1b1b1b", borderRadius: "999px", overflow: "hidden" }}>
+                      <div style={{ height: "100%", width: `${Math.round(((galleryUploadDone || 0) / (galleryUploadCount || 1)) * 100)}%`, background: "linear-gradient(90deg,#0B99FC,#4cc3ff)", transition: "width 150ms ease" }} />
+                    </div>
+                  )}
+                </div>
                 <button
                   onClick={() => setShowGallery(false)}
                   style={{ background: "transparent", border: "none", color: "#666", fontSize: "20px", cursor: "pointer", lineHeight: 1, padding: "0 4px" }}
@@ -2180,7 +2223,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                 <div style={{ color: "#555", fontSize: "11px", marginTop: "2px" }}>
                   {beatFolderTarget === "previewUrl"
                     ? "Vyberte soubor jako preview audio (MP3/WAV)"
-                    : `Soubory uložené přímo na VPS — ${beatFolderFiles.length} souborů`}
+                    : `Soubory uložené přímo na VPS — ${beatFolderFiles.length} souborů${beatFolderSearch ? ` (${filteredBeatFolderFiles.length} nalezeno)` : ''}`}
                 </div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -2210,13 +2253,40 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                     data-testid="input-beat-folder-upload"
                     onChange={(e) => { if (e.target.files && e.target.files.length > 0) { handleBeatFolderUpload(e.target.files); e.target.value = ""; } }}
                   />
-                </label>
+                  </label>
+                  {galleryUploading && (
+                    <div style={{ flex: "1", minWidth: "100px", height: "4px", background: "#1b1b1b", borderRadius: "999px", overflow: "hidden" }}>
+                      <div style={{ height: "100%", width: `${Math.round(((galleryUploadDone || 0) / (galleryUploadCount || 1)) * 100)}%`, background: "linear-gradient(90deg,#0B99FC,#4cc3ff)", transition: "width 150ms ease" }} />
+                    </div>
+                  )}
+                </div>
                 <button
                   onClick={() => setShowBeatFolder(false)}
                   style={{ background: "transparent", border: "none", color: "#666", fontSize: "20px", cursor: "pointer", lineHeight: 1, padding: "0 4px" }}
                   data-testid="button-close-beat-folder"
                 >×</button>
               </div>
+            </div>
+
+            {/* Search + Sort controls */}
+            <div style={{ padding: "12px 20px", borderBottom: "0.4px solid #2a2a2a", display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
+              <input
+                type="text"
+                placeholder="Hledat soubor…"
+                value={beatFolderSearch}
+                onChange={(e) => setBeatFolderSearch(e.target.value)}
+                style={{ flex: 1, background: "rgba(255,255,255,0.04)", border: "0.4px solid #333", borderRadius: "6px", padding: "8px 12px", fontSize: "13px", color: "#fff", outline: "none" }}
+              />
+              <select
+                value={beatFolderSort}
+                onChange={(e) => setBeatFolderSort(e.target.value as any)}
+                style={{ background: "rgba(255,255,255,0.04)", border: "0.4px solid #333", borderRadius: "6px", padding: "8px 12px", fontSize: "12px", color: "#aaa", outline: "none", cursor: "pointer" }}
+              >
+                <option value="name-asc">Název A–Z</option>
+                <option value="name-desc">Název Z–A</option>
+                <option value="size-asc">Velikost up</option>
+                <option value="size-desc">Velikost down</option>
+              </select>
             </div>
 
             {/* Drop zone + file list */}
@@ -2267,7 +2337,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
 
               {beatFolderLoading ? (
                 <div style={{ textAlign: "center", color: "#444", padding: "48px 0", fontSize: "12px" }}>Načítám…</div>
-              ) : beatFolderFiles.length === 0 ? (
+              ) : filteredBeatFolderFiles.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "48px 0" }}>
                   <div style={{ fontSize: "28px", marginBottom: "12px" }}>📁</div>
                   <div style={{ color: "#444", fontSize: "13px", marginBottom: "6px" }}>Složka je prázdná</div>
@@ -2275,7 +2345,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                 </div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                  {beatFolderFiles.map(f => {
+                  {filteredBeatFolderFiles.map(f => {
                     const ext = f.filename.split(".").pop()?.toUpperCase() || "?";
                     const sizeMB = (f.size / (1024 * 1024)).toFixed(1);
                     const isSelected = beatFolderTarget === "previewUrl"
@@ -3180,10 +3250,11 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
                 <div style={{ color: "#555", fontSize: "11px", marginTop: "2px" }}>Obrázky jsou uloženy přímo v aplikaci — žádný Backblaze bandwidth</div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <label style={{ background: "transparent", border: "0.4px solid #555", color: galleryUploading ? "#555" : "#aaa", borderRadius: "3px", padding: "6px 12px", cursor: galleryUploading ? "default" : "pointer", fontSize: "12px", display: "flex", alignItems: "center", gap: "6px" }}>
-                  {galleryUploading
-                    ? `Nahrávám${galleryUploadCount > 1 ? ` ${galleryUploadCount} obrázků` : ""}…`
-                    : "+ Nahrát obrázky"}
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: "1", minWidth: 0 }}>
+                  <label style={{ background: "transparent", border: "0.4px solid #555", color: galleryUploading ? "#555" : "#aaa", borderRadius: "3px", padding: "6px 12px", cursor: galleryUploading ? "default" : "pointer", fontSize: "12px", display: "flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap" }}>
+                    {galleryUploading
+                      ? `Nahrávám${galleryUploadCount > 1 ? ` ${galleryUploadCount} obrázků` : ""}…`
+                      : "+ Nahrát obrázky"}
                   <input
                     type="file"
                     accept="image/*"
@@ -3193,7 +3264,13 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
                     onChange={(e) => { if (e.target.files && e.target.files.length > 0) handleGalleryUpload(e.target.files); }}
                     data-testid="input-gallery-upload"
                   />
-                </label>
+                  </label>
+                  {galleryUploading && (
+                    <div style={{ flex: "1", minWidth: "100px", height: "4px", background: "#1b1b1b", borderRadius: "999px", overflow: "hidden" }}>
+                      <div style={{ height: "100%", width: `${Math.round(((galleryUploadDone || 0) / (galleryUploadCount || 1)) * 100)}%`, background: "linear-gradient(90deg,#0B99FC,#4cc3ff)", transition: "width 150ms ease" }} />
+                    </div>
+                  )}
+                </div>
                 <button
                   onClick={() => setShowGallery(false)}
                   style={{ background: "transparent", border: "none", color: "#666", fontSize: "20px", cursor: "pointer", lineHeight: 1, padding: "0 4px" }}
