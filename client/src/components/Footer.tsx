@@ -1,3 +1,5 @@
+import { LanguageSelector } from "./LanguageSelector.js";
+
 function Footer() {
   return (
     <footer
@@ -5,10 +7,12 @@ function Footer() {
         height: "24px",
         display: "flex",
         alignItems: "center",
-        justifyContent: "center",
+        justifyContent: "space-between",
         position: "relative",
         zIndex: 10,
         borderTop: "1px solid #333",
+        paddingRight: "16px",
+        paddingLeft: "16px",
       }}
     >
       <span
@@ -22,6 +26,7 @@ function Footer() {
       >
         © 2026 VOODOO808
       </span>
+      <LanguageSelector />
     </footer>
   );
 }
