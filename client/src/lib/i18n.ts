@@ -198,24 +198,14 @@ const translations: Translations = {
 };
 
 export function detectLanguage(): Language {
-  // Check localStorage override
-  const stored = localStorage.getItem('language');
-  if (stored === 'cs' || stored === 'de' || stored === 'en') {
-    return stored;
-  }
-
-  // Detect from browser
+  // Auto-detect from browser language only
   const browserLang = navigator.language || (navigator as any).userLanguage;
   const lang = browserLang.split('-')[0].toLowerCase();
 
   if (lang === 'de') return 'de';
   if (lang === 'en') return 'en';
-  // Default to Czech
+  // Default to Czech for everyone else
   return 'cs';
-}
-
-export function setLanguage(lang: Language): void {
-  localStorage.setItem('language', lang);
 }
 
 export function t(key: string, lang?: Language, count?: number): string {
@@ -239,7 +229,3 @@ export function t(key: string, lang?: Language, count?: number): string {
   return text;
 }
 
-export function useLanguage() {
-  const lang = detectLanguage();
-  return { lang, t: (key: string) => t(key, lang), setLanguage };
-}

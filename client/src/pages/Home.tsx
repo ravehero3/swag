@@ -984,7 +984,16 @@ function Home() {
                   className={`hac-play-overlay${currentBeat?.id === displayedHighlight.id && isPlaying ? " is-playing" : ""}`}
                   style={{ paddingLeft: currentBeat?.id === displayedHighlight.id && isPlaying ? "0" : "3px" }}
                 >
-                  {currentBeat?.id === displayedHighlight.id && isPlaying ? "⏸" : "▶"}
+                  {currentBeat?.id === displayedHighlight.id && isPlaying ? (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                      <rect x="6" y="4" width="4" height="16" rx="1" />
+                      <rect x="14" y="4" width="4" height="16" rx="1" />
+                    </svg>
+                  ) : (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: "2px" }}>
+                      <polygon points="5,3 19,12 5,21" />
+                    </svg>
+                  )}
                 </button>
               </div>
 
