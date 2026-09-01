@@ -17,7 +17,8 @@ jobs:
           script: |
             set -e
             cd ~/apps/swag
-            git pull
+            git fetch origin
+            git reset --hard origin/main
             cd ~/apps
             docker compose build swag
             docker compose up -d swag
