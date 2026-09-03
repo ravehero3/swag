@@ -28,7 +28,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
   onClose,
   onUploadComplete,
 }) => {
-  console.log("BeatUploadModal render:", { isOpen });
+  console.log('[BeatUploadModal] Rendering with isOpen:', isOpen);
   
   const [beats, setBeats] = useState<BeatFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -89,17 +89,12 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
 
   const handleUpload = async () => {
     if (beats.length === 0) return;
-
     setIsUploading(true);
-
     try {
-      // Upload beats sequentially or in parallel (you can adjust)
       const uploadPromises = beats.map(async (beat) => {
         if (beat.status !== 'pending') return beat;
-
         try {
           updateBeat(beat.id, { status: 'uploading' });
-
           const formData = new FormData();
           formData.append('file', beat.file);
           formData.append('name', beat.name);
@@ -112,22 +107,18 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
           if (beat.artworkUrl) {
             formData.append('artworkUrl', beat.artworkUrl);
           }
-
           const response = await fetch('/api/beats/upload', {
             method: 'POST',
             body: formData,
           });
-
           if (!response.ok) {
             const errorText = await response.text();
             throw new Error(errorText || 'Upload failed');
           }
-
           updateBeat(beat.id, {
             status: 'completed',
             progress: 100,
           });
-
           return await response.json();
         } catch (error) {
           updateBeat(beat.id, {
@@ -137,10 +128,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
           return null;
         }
       });
-
       await Promise.all(uploadPromises);
-      
-      // Call completion callback
       if (onUploadComplete) {
         onUploadComplete(beats.filter((b) => b.status === 'completed'));
       }
@@ -156,7 +144,12 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
   const completedCount = beats.filter((b) => b.status === 'completed').length;
   const errorCount = beats.filter((b) => b.status === 'error').length;
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    console.log('[BeatUploadModal] Not rendering because isOpen is false');
+    return null;
+  }
+
+  console.log('[BeatUploadModal] Rendering modal DOM');
 
   return (
     <>
@@ -176,6 +169,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
               onClick={onClose}
               disabled={isUploading}
               className="p-2 hover:bg-gray-800 rounded-lg transition disabled:opacity-50"
+              type="button"
             >
               <X className="w-6 h-6 text-gray-400" />
             </button>
@@ -243,6 +237,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                       <button
                         onClick={() => removeBeat(beat.id)}
                         className="p-1 hover:bg-gray-700 rounded transition ml-2"
+                        type="button"
                       >
                         <X className="w-4 h-4 text-gray-400" />
                       </button>
@@ -327,6 +322,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                             }}
                             disabled={isUploading || beat.status === 'completed'}
                             className="px-3 py-1 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white text-xs rounded transition"
+                            type="button"
                           >
                             Change
                           </button>
@@ -339,6 +335,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                           }}
                           disabled={isUploading || beat.status === 'completed'}
                           className="col-span-2 flex items-center justify-center px-3 py-2 bg-gray-800 border border-gray-600 hover:border-purple-500 disabled:opacity-50 text-gray-300 text-sm rounded transition"
+                          type="button"
                         >
                           <ImageIcon className="w-4 h-4 mr-2" />
                           Select Artwork
@@ -387,6 +384,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                   onClick={handleClearCompleted}
                   disabled={isUploading}
                   className="px-4 py-2 text-sm text-gray-400 hover:text-gray-300 transition disabled:opacity-50"
+                  type="button"
                 >
                   Clear completed
                 </button>
@@ -398,6 +396,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                 onClick={onClose}
                 disabled={isUploading}
                 className="px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 text-white rounded-lg transition"
+                type="button"
               >
                 Close
               </button>
@@ -405,6 +404,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                 onClick={handleUpload}
                 disabled={beats.length === 0 || isUploading}
                 className="px-6 py-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-medium rounded-lg transition"
+                type="button"
               >
                 {isUploading ? 'Uploading...' : 'Upload All'}
               </button>
