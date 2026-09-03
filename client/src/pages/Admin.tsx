@@ -367,6 +367,8 @@ function Admin() {
             onRefresh={loadData}
             loadData={loadData}
             settings={settings}
+            showBeatUploadModal={showBeatUploadModal}
+            setShowBeatUploadModal={setShowBeatUploadModal}
           />
         )}
         {tab === "kits" && (
@@ -691,7 +693,7 @@ const MUSICAL_KEYS = [
   "Cm", "C#m", "Dbm", "Dm", "D#m", "Ebm", "Em", "Fm", "F#m", "Gbm", "Gm", "G#m", "Abm", "Am", "A#m", "Bbm", "Bm",
 ];
 
-function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh, loadData, settings }: any) {
+function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh, loadData, settings, showBeatUploadModal, setShowBeatUploadModal }: any) {
   const [form, setForm] = useState({
     title: "",
     artist: "VOODOO808",
