@@ -774,34 +774,35 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     setGalleryUploadCount(fileArr.length);
     setGalleryUploadDone(0);
     try {
-      // Upload files individually to show progress
-      let successCount = 0;
-      for (const file of fileArr) {
-        try {
-          const fd = new FormData();
-          fd.append("file", file);
-          const res = await fetch("/api/kit-artworks/upload", { method: "POST", body: fd, credentials: "include" });
-          if (res.ok) {
-            successCount++;
-            setGalleryUploadDone(successCount);
-          }
-        } catch (e) {
-          console.error(`Failed to upload ${file.name}:`, e);
+      // Use batch endpoint for efficient multi-file upload
+      const fd = new FormData();
+      fileArr.forEach((f, i) => {
+        fd.append("files", f);
+        // Update progress every 2 files
+        if ((i + 1) % 2 === 0) {
+          setGalleryUploadDone(i + 1);
         }
-      }
-      if (successCount > 0) {
+      });
+      const res = await fetch("/api/kit-artworks/upload-batch", { 
+        method: "POST", 
+        body: fd, 
+        credentials: "include" 
+      });
+      if (res.ok) {
+        setGalleryUploadDone(fileArr.length);
         await loadGallery();
-      }
-      if (successCount < fileArr.length) {
-        alert(`Nahrána ${successCount}/${fileArr.length} obrázků`);
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        alert(`Chyba: ${errData.error || res.status}`);
       }
     } catch (e) { 
       console.error("Gallery upload error:", e);
-      alert("Chyba při nahrávání"); 
+      alert("Chyba při nahrávání: " + (e instanceof Error ? e.message : String(e))); 
+    } finally {
+      setGalleryUploading(false);
+      setGalleryUploadCount(0);
+      setGalleryUploadDone(0);
     }
-    setGalleryUploading(false);
-    setGalleryUploadCount(0);
-    setGalleryUploadDone(0);
   };
 
   const handleGalleryDelete = async (filename: string) => {
@@ -2694,19 +2695,29 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
     setGalleryUploadCount(fileArr.length);
     setGalleryUploadDone(0);
     try {
+      // Use batch endpoint for efficient multi-file upload
       const fd = new FormData();
-      fileArr.forEach(f => fd.append("files", f));
-      const res = await fetch("/api/kit-artworks/upload-batch", { method: "POST", body: fd, credentials: "include" });
+      fileArr.forEach((f) => fd.append("files", f));
+      const res = await fetch("/api/kit-artworks/upload-batch", { 
+        method: "POST", 
+        body: fd, 
+        credentials: "include" 
+      });
       if (res.ok) {
         setGalleryUploadDone(fileArr.length);
         await loadGallery();
       } else {
-        alert("Nepodařilo se nahrát obrázky");
+        const errData = await res.json().catch(() => ({}));
+        alert(`Chyba: ${errData.error || res.status}`);
       }
-    } catch { alert("Chyba při nahrávání"); }
-    setGalleryUploading(false);
-    setGalleryUploadCount(0);
-    setGalleryUploadDone(0);
+    } catch (e) { 
+      console.error("Gallery upload error:", e);
+      alert("Chyba při nahrávání: " + (e instanceof Error ? e.message : String(e))); 
+    } finally {
+      setGalleryUploading(false);
+      setGalleryUploadCount(0);
+      setGalleryUploadDone(0);
+    }
   };
 
   const handleGalleryDelete = async (filename: string) => {
