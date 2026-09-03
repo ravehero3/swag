@@ -5,6 +5,7 @@ import { useLocation } from "wouter";
 import { toAudioProxyUrl } from "../lib/audioProxy.js";
 import { filterAndSortBeatFiles } from "../lib/beatFolderUtils.js";
 import SoundWave from "../components/SoundWave.js";
+import { BeatUploadModal } from "../components/BeatUploadModal.js";
 import {
   BeatArtwork,
   parseArtworkConfig,
@@ -732,6 +733,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   const [isDragPreview, setIsDragPreview] = useState(false);
   const [isDragArtwork, setIsDragArtwork] = useState(false);
   const [showGallery, setShowGallery] = useState(false);
+  const [showBeatUploadModal, setShowBeatUploadModal] = useState(false);
   const [galleryImages, setGalleryImages] = useState<{filename: string; url: string; size: number}[]>([]);
   const [galleryLoading, setGalleryLoading] = useState(false);
   const [galleryUploading, setGalleryUploading] = useState(false);
@@ -1600,6 +1602,9 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
         </button>
         <button className="btn btn-admin" onClick={() => setShowBulkZone(v => !v)} style={{ borderColor: "#0B99FC", color: "#0B99FC", fontSize: "13px" }}>
           {showBulkZone ? "Zavřít bulk upload" : "Bulk upload"}
+        </button>
+        <button className="btn btn-admin" onClick={() => setShowBeatUploadModal(true)} style={{ borderColor: "#7c3aed", color: "#7c3aed", fontSize: "13px" }}>
+          ↑ Upload Beats
         </button>
         {beats.some((b: any) => !b.is_published) && (
           <button className="btn btn-admin" onClick={handlePublishAll} style={{ borderColor: "#4caf50", color: "#4caf50", fontSize: "13px" }}>
@@ -2622,7 +2627,13 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
         );
       })()}
 
-      {expandedWaveformBeat && (
+            <BeatUploadModal 
+        isOpen={showBeatUploadModal} 
+        onClose={() => setShowBeatUploadModal(false)} 
+        onUploadComplete={() => loadData()}
+      />
+
+{expandedWaveformBeat && (
         <WaveformModal beat={expandedWaveformBeat} onClose={() => setExpandedWaveformBeat(null)} />
       )}
     </div>
