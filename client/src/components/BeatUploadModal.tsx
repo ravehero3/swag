@@ -29,6 +29,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
   onUploadComplete,
 }) => {
   console.log('[BeatUploadModal] Component rendering with isOpen:', isOpen);
+  
   const [beats, setBeats] = useState<BeatFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [globalReleaseImmediately, setGlobalReleaseImmediately] = useState(true);
@@ -155,59 +156,107 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md">
-        <div className="w-full max-w-5xl max-h-[90vh] bg-gradient-to-br from-gray-900 to-gray-950 rounded-2xl shadow-2xl flex flex-col border border-purple-500/40">
+      <div style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 9999,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        backdropFilter: 'blur(12px)',
+      }}>
+        <div style={{
+          position: 'relative',
+          width: '100%',
+          maxWidth: '1200px',
+          maxHeight: '90vh',
+          backgroundColor: '#0f172a',
+          borderRadius: '1rem',
+          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          flexDirection: 'column',
+          border: '1px solid rgba(168, 85, 247, 0.4)',
+          margin: '0 1rem',
+          overflow: 'hidden',
+        }}>
           
           {/* Header */}
-          <div className="px-8 py-6 border-b border-purple-500/20 bg-gradient-to-r from-gray-900 to-gray-850">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-white">🎵 Upload Beats</h1>
-                <p className="text-sm text-gray-400 mt-2">
-                  {beats.length} beat{beats.length !== 1 ? 's' : ''} queued
-                  {completedCount > 0 && ` • ${completedCount} ✅`}
-                  {errorCount > 0 && ` • ${errorCount} ❌`}
-                </p>
-              </div>
-              <button
-                onClick={onClose}
-                disabled={isUploading}
-                className="p-2 hover:bg-gray-800 rounded-lg transition text-gray-400 hover:text-gray-200"
-              >
-                <X className="w-6 h-6" />
-              </button>
+          <div style={{
+            padding: '2rem',
+            borderBottom: '1px solid rgba(168, 85, 247, 0.2)',
+            background: 'linear-gradient(to right, #0f172a 0%, #1e293b 100%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}>
+            <div>
+              <h1 style={{ fontSize: '1.875rem', fontWeight: 'bold', color: '#fff', margin: 0 }}>🎵 Upload Beats</h1>
+              <p style={{ fontSize: '0.875rem', color: '#9ca3af', marginTop: '0.5rem', margin: 0 }}>
+                {beats.length} beat{beats.length !== 1 ? 's' : ''} queued
+                {completedCount > 0 && ` • ${completedCount} ✅`}
+                {errorCount > 0 && ` • ${errorCount} ❌`}
+              </p>
             </div>
+            <button
+              onClick={onClose}
+              disabled={isUploading}
+              style={{
+                padding: '0.5rem',
+                backgroundColor: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                opacity: isUploading ? 0.5 : 1,
+              }}
+            >
+              <X className="w-6 h-6" style={{ color: '#9ca3af' }} />
+            </button>
           </div>
 
           {/* Global Settings */}
           {beats.length > 0 && (
-            <div className="px-8 py-3 border-b border-gray-700/50 bg-gray-800/30 flex items-center gap-4">
-              <label className="flex items-center gap-2 cursor-pointer">
+            <div style={{
+              padding: '0.75rem 2rem',
+              borderBottom: '1px solid rgba(75, 85, 99, 0.5)',
+              backgroundColor: 'rgba(30, 41, 59, 0.3)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '1rem',
+            }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
                 <input
                   type="checkbox"
                   checked={globalReleaseImmediately}
                   onChange={(e) => setGlobalReleaseImmediately(e.target.checked)}
                   disabled={isUploading}
-                  className="w-4 h-4 rounded"
+                  style={{ width: '1rem', height: '1rem', cursor: 'pointer' }}
                 />
-                <span className="text-sm text-gray-300">Release all immediately</span>
+                <span style={{ fontSize: '0.875rem', color: '#d1d5db' }}>Release all immediately</span>
               </label>
             </div>
           )}
 
           {/* Beat List */}
-          <div className="flex-1 overflow-y-auto">
+          <div style={{ flex: 1, overflowY: 'auto', padding: '2rem' }}>
             {beats.length === 0 ? (
-              <div className="flex items-center justify-center h-48 text-gray-500">
-                <div className="text-center">
-                  <Upload className="w-12 h-12 mx-auto mb-3 opacity-50" />
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '200px', color: '#6b7280' }}>
+                <div style={{ textAlign: 'center' }}>
+                  <Upload className="w-12 h-12" style={{ margin: '0 auto 0.75rem', opacity: 0.5 }} />
                   <p>No beats selected yet</p>
                 </div>
               </div>
             ) : (
-              <div className="px-8 py-4 space-y-2">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 {/* Column Headers */}
-                <div className="grid gap-3 text-xs text-gray-500 font-semibold mb-3 pb-2 border-b border-gray-700/50" style={{
+                <div style={{
+                  display: 'grid',
+                  gap: '0.75rem',
+                  fontSize: '0.75rem',
+                  color: '#6b7280',
+                  fontWeight: 'bold',
+                  marginBottom: '0.75rem',
+                  paddingBottom: '0.5rem',
+                  borderBottom: '1px solid rgba(75, 85, 99, 0.5)',
                   gridTemplateColumns: '40px 1fr 70px 60px 120px 100px 80px 60px'
                 }}>
                   <div>Status</div>
@@ -222,12 +271,19 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
 
                 {/* Beat Rows */}
                 {beats.map((beat) => (
-                  <div key={beat.id} className="grid gap-3 items-center p-3 rounded-lg bg-gray-800/40 border border-gray-700/50 hover:border-purple-500/30 transition" style={{
-                    gridTemplateColumns: '40px 1fr 70px 60px 120px 100px 80px 60px'
+                  <div key={beat.id} style={{
+                    display: 'grid',
+                    gap: '0.75rem',
+                    alignItems: 'center',
+                    padding: '0.75rem',
+                    borderRadius: '0.5rem',
+                    backgroundColor: 'rgba(30, 41, 59, 0.4)',
+                    border: '1px solid rgba(75, 85, 99, 0.5)',
+                    gridTemplateColumns: '40px 1fr 70px 60px 120px 100px 80px 60px',
                   }}>
                     
                     {/* Status */}
-                    <div className="text-center text-lg">
+                    <div style={{ textAlign: 'center', fontSize: '1.125rem' }}>
                       {statusIcon[beat.status]}
                     </div>
 
@@ -238,7 +294,15 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                       onChange={(e) => updateBeat(beat.id, { name: e.target.value })}
                       disabled={isUploading || beat.status === 'completed'}
                       placeholder="Beat name"
-                      className="px-3 py-2 text-sm bg-gray-900/50 border border-gray-600 rounded text-white placeholder-gray-500 disabled:opacity-50 focus:outline-none focus:border-purple-500"
+                      style={{
+                        padding: '0.5rem 0.75rem',
+                        fontSize: '0.875rem',
+                        backgroundColor: 'rgba(15, 23, 42, 0.5)',
+                        border: '1px solid #4b5563',
+                        borderRadius: '0.375rem',
+                        color: '#fff',
+                        opacity: isUploading || beat.status === 'completed' ? 0.5 : 1,
+                      }}
                     />
 
                     {/* BPM */}
@@ -248,7 +312,15 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                       onChange={(e) => updateBeat(beat.id, { bpm: e.target.value })}
                       disabled={isUploading || beat.status === 'completed'}
                       placeholder="BPM"
-                      className="px-2 py-2 text-sm bg-gray-900/50 border border-gray-600 rounded text-white placeholder-gray-500 disabled:opacity-50 focus:outline-none focus:border-purple-500"
+                      style={{
+                        padding: '0.5rem 0.5rem',
+                        fontSize: '0.875rem',
+                        backgroundColor: 'rgba(15, 23, 42, 0.5)',
+                        border: '1px solid #4b5563',
+                        borderRadius: '0.375rem',
+                        color: '#fff',
+                        opacity: isUploading || beat.status === 'completed' ? 0.5 : 1,
+                      }}
                     />
 
                     {/* Key */}
@@ -256,7 +328,15 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                       value={beat.key}
                       onChange={(e) => updateBeat(beat.id, { key: e.target.value })}
                       disabled={isUploading || beat.status === 'completed'}
-                      className="px-2 py-2 text-sm bg-gray-900/50 border border-gray-600 rounded text-white disabled:opacity-50 focus:outline-none focus:border-purple-500"
+                      style={{
+                        padding: '0.5rem 0.5rem',
+                        fontSize: '0.875rem',
+                        backgroundColor: 'rgba(15, 23, 42, 0.5)',
+                        border: '1px solid #4b5563',
+                        borderRadius: '0.375rem',
+                        color: '#fff',
+                        opacity: isUploading || beat.status === 'completed' ? 0.5 : 1,
+                      }}
                     >
                       <option value="">-</option>
                       {['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'].map((k) => (
@@ -267,13 +347,13 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                     </select>
 
                     {/* Artwork */}
-                    <div className="flex items-center gap-2">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       {beat.artworkUrl ? (
                         <>
                           <img
                             src={beat.artworkUrl}
                             alt={beat.artworkFilename}
-                            className="w-8 h-8 rounded object-cover"
+                            style={{ width: '2rem', height: '2rem', borderRadius: '0.25rem', objectFit: 'cover' }}
                           />
                           <button
                             onClick={() => {
@@ -281,7 +361,16 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                               setShowArtworkSelector(true);
                             }}
                             disabled={isUploading}
-                            className="text-xs px-2 py-1 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white rounded whitespace-nowrap"
+                            style={{
+                              fontSize: '0.75rem',
+                              padding: '0.25rem 0.5rem',
+                              backgroundColor: '#9333ea',
+                              color: '#fff',
+                              border: 'none',
+                              borderRadius: '0.25rem',
+                              cursor: 'pointer',
+                              opacity: isUploading ? 0.5 : 1,
+                            }}
                           >
                             Change
                           </button>
@@ -293,33 +382,52 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                             setShowArtworkSelector(true);
                           }}
                           disabled={isUploading}
-                          className="text-xs px-2 py-1 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 text-gray-300 rounded whitespace-nowrap"
+                          style={{
+                            fontSize: '0.75rem',
+                            padding: '0.25rem 0.5rem',
+                            backgroundColor: '#4b5563',
+                            color: '#d1d5db',
+                            border: 'none',
+                            borderRadius: '0.25rem',
+                            cursor: 'pointer',
+                            opacity: isUploading ? 0.5 : 1,
+                            whiteSpace: 'nowrap',
+                          }}
                         >
-                          <ImageIcon className="w-3 h-3 inline mr-1" />
+                          <ImageIcon className="w-3 h-3" style={{ display: 'inline', marginRight: '0.25rem' }} />
                           Select
                         </button>
                       )}
                     </div>
 
                     {/* Release */}
-                    <div className="text-xs">
+                    <div style={{ fontSize: '0.75rem' }}>
                       {beat.releaseImmediately ? (
-                        <span className="text-green-400 font-semibold">Now</span>
+                        <span style={{ color: '#4ade80', fontWeight: 'bold' }}>Now</span>
                       ) : (
                         <input
                           type="date"
                           value={beat.releaseDate}
                           onChange={(e) => updateBeat(beat.id, { releaseDate: e.target.value })}
                           disabled={isUploading}
-                          className="w-full px-2 py-1 text-xs bg-gray-900/50 border border-gray-600 rounded text-white disabled:opacity-50 focus:outline-none focus:border-purple-500"
+                          style={{
+                            width: '100%',
+                            padding: '0.25rem 0.5rem',
+                            fontSize: '0.75rem',
+                            backgroundColor: 'rgba(15, 23, 42, 0.5)',
+                            border: '1px solid #4b5563',
+                            borderRadius: '0.25rem',
+                            color: '#fff',
+                            opacity: isUploading ? 0.5 : 1,
+                          }}
                         />
                       )}
                     </div>
 
                     {/* Progress */}
                     {beat.status === 'uploading' && (
-                      <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
-                        <div className="h-full bg-purple-500 transition-all" style={{ width: `${beat.progress}%` }} />
+                      <div style={{ height: '0.5rem', backgroundColor: '#4b5563', borderRadius: '9999px', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', backgroundColor: '#a855f7', transition: 'width 0.3s ease', width: `${beat.progress}%` }} />
                       </div>
                     )}
 
@@ -327,7 +435,12 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                     {!isUploading && beat.status === 'pending' && (
                       <button
                         onClick={() => removeBeat(beat.id)}
-                        className="text-gray-400 hover:text-red-400 transition"
+                        style={{
+                          color: '#9ca3af',
+                          backgroundColor: 'transparent',
+                          border: 'none',
+                          cursor: 'pointer',
+                        }}
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -339,34 +452,69 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
           </div>
 
           {/* Footer */}
-          <div className="px-8 py-6 border-t border-purple-500/20 bg-gradient-to-r from-gray-800/50 to-gray-900 flex items-center justify-between gap-4">
-            <label className="cursor-pointer">
+          <div style={{
+            padding: '2rem',
+            borderTop: '1px solid rgba(168, 85, 247, 0.2)',
+            background: 'linear-gradient(to right, rgba(30, 41, 59, 0.5) 0%, #0f172a 100%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '1rem',
+          }}>
+            <label style={{ cursor: 'pointer' }}>
               <input
                 type="file"
                 multiple
                 accept="audio/*"
                 onChange={handleFileSelect}
                 disabled={isUploading}
-                className="hidden"
+                style={{ display: 'none' }}
               />
-              <span className="inline-flex items-center gap-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 text-white rounded-lg cursor-pointer transition">
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.5rem 1rem',
+                backgroundColor: '#4b5563',
+                color: '#fff',
+                borderRadius: '0.5rem',
+                cursor: 'pointer',
+                opacity: isUploading ? 0.5 : 1,
+              }}>
                 <Upload className="w-4 h-4" />
                 Add Beats
               </span>
             </label>
 
-            <div className="flex items-center gap-3">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               <button
                 onClick={onClose}
                 disabled={isUploading}
-                className="px-6 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 text-white rounded-lg transition"
+                style={{
+                  padding: '0.5rem 1.5rem',
+                  backgroundColor: '#4b5563',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '0.5rem',
+                  cursor: 'pointer',
+                  opacity: isUploading ? 0.5 : 1,
+                }}
               >
                 Close
               </button>
               <button
                 onClick={handleUpload}
                 disabled={beats.length === 0 || isUploading}
-                className="px-8 py-2 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 disabled:opacity-50 text-white font-semibold rounded-lg transition"
+                style={{
+                  padding: '0.5rem 2rem',
+                  background: 'linear-gradient(to right, #a855f7, #c084fc)',
+                  color: '#fff',
+                  fontWeight: 'bold',
+                  border: 'none',
+                  borderRadius: '0.5rem',
+                  cursor: beats.length === 0 || isUploading ? 'not-allowed' : 'pointer',
+                  opacity: beats.length === 0 || isUploading ? 0.5 : 1,
+                }}
               >
                 {isUploading ? '⬆️ Uploading...' : '⬆️ Upload All'}
               </button>
