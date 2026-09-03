@@ -1,6 +1,5 @@
 import React, { useState, useCallback } from 'react';
 import { X, Upload, Image as ImageIcon } from 'lucide-react';
-import { ArtworkSelector } from './ArtworkSelector';
 
 interface BeatFile {
   id: string;
@@ -33,8 +32,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
   const [beats, setBeats] = useState<BeatFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [globalReleaseImmediately, setGlobalReleaseImmediately] = useState(true);
-  const [showArtworkSelector, setShowArtworkSelector] = useState(false);
-  const [selectedBeatForArtwork, setSelectedBeatForArtwork] = useState<string | null>(null);
+
 
   const handleFileSelect = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -268,14 +266,13 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                   marginBottom: '8px',
                   paddingBottom: '8px',
                   borderBottom: '1px solid #2a2a2a',
-                  gridTemplateColumns: '40px 1fr 60px 50px 100px 90px 100px 50px',
+                  gridTemplateColumns: '40px 1fr 60px 50px 90px 100px 50px',
                   letterSpacing: '0.3px',
                 }}>
                   <div>Status</div>
                   <div>Name</div>
                   <div>BPM</div>
                   <div>Key</div>
-                  <div>Artwork</div>
                   <div>Release</div>
                   <div>Progress</div>
                   <div></div>
@@ -291,7 +288,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                     borderRadius: '6px',
                     backgroundColor: '#0d0d0d',
                     border: '1px solid #1e1e1e',
-                    gridTemplateColumns: '40px 1fr 60px 50px 100px 90px 100px 50px',
+                    gridTemplateColumns: '40px 1fr 60px 50px 90px 100px 50px',
                     transition: 'border-color 0.15s, background 0.15s',
                   }}
                   onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#2a2a2a')}
@@ -621,12 +618,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
         </div>
       </div>
 
-      <ArtworkSelector
-        isOpen={showArtworkSelector}
-        onClose={() => setShowArtworkSelector(false)}
-        onSelect={handleArtworkSelect}
-        beatName={selectedBeatForArtwork ? beats.find((b) => b.id === selectedBeatForArtwork)?.name : undefined}
-      />
+
     </>
   );
 };
