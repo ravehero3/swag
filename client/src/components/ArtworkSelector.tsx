@@ -20,6 +20,7 @@ export const ArtworkSelector: React.FC<ArtworkSelectorProps> = ({
   onSelect,
   beatName,
 }) => {
+  console.log('[ArtworkSelector] Rendering with isOpen:', isOpen);
   const [galleryImages, setGalleryImages] = useState<ArtworkImage[]>([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);

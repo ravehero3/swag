@@ -110,7 +110,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
             formData.append('artworkUrl', beat.artworkUrl);
           }
 
-          const response = await fetch('/api/beats/upload', {
+          const response = await fetch('/api/upload', {
             method: 'POST',
             body: formData,
           });
