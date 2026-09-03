@@ -174,6 +174,7 @@ function Admin() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminLoading, setAdminLoading] = useState(true);
   const [adminError, setAdminError] = useState<string | null>(null);
+  const [showBeatUploadModal, setShowBeatUploadModal] = useState(false);
 
   useEffect(() => {
     const checkAdmin = async () => {
