@@ -112,7 +112,7 @@ export const ArtworkSelector: React.FC<ArtworkSelectorProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80"
+      style={{ position: "fixed", inset: 0, zIndex: 10000, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "rgba(0, 0, 0, 0.9)" }}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
