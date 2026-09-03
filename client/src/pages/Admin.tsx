@@ -275,8 +275,8 @@ function Admin() {
     <>
       <AdminErrorLog />
       <div style={{ display: "flex", minHeight: "100vh", background: "#000", color: "#fff" }}>
-      {/* ── Sidebar ── */}
-      <aside style={{
+        {/* ── Sidebar ── */}
+        <aside style={{
         width: "214px",
         flexShrink: 0,
         background: "#070707",
@@ -2651,7 +2651,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
       {expandedWaveformBeat && (
         <WaveformModal beat={expandedWaveformBeat} onClose={() => setExpandedWaveformBeat(null)} />
       )}
-    </div>
+      </div>
     </>
   );
 }
