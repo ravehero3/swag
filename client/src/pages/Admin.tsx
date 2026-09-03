@@ -386,7 +386,8 @@ function Admin() {
         {tab === "komentare" && <KomentareTab />}
         {tab === "nastaveni" && <NastaveniTab settings={settings} onRefresh={refreshSettings} beats={beats} />}
       </main>
-    </div>
+      </div>
+    </>
   );
 }
 
