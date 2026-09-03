@@ -2652,6 +2652,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
       {expandedWaveformBeat && (
         <WaveformModal beat={expandedWaveformBeat} onClose={() => setExpandedWaveformBeat(null)} />
       )}
+    </div>
   );
 }
 
