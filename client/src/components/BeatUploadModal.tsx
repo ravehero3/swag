@@ -150,7 +150,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-[2px]">
         <div className="relative w-full max-w-3xl max-h-[90vh] bg-gray-900 rounded-2xl shadow-2xl flex flex-col border border-purple-500/30">
           {/* Header */}
           <div className="flex items-center justify-between border-b border-purple-500/20 p-6 bg-gradient-to-r from-gray-900 to-gray-800/50">
