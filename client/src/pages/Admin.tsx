@@ -740,8 +740,6 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   const [isDragPreview, setIsDragPreview] = useState(false);
   const [isDragArtwork, setIsDragArtwork] = useState(false);
   const [showGallery, setShowGallery] = useState(false);
-  // Beat upload modal state
-  const [showBeatUploadModal, setShowBeatUploadModal] = useState(false);
   const [galleryImages, setGalleryImages] = useState<{filename: string; url: string; size: number}[]>([]);
   const [galleryLoading, setGalleryLoading] = useState(false);
   const [galleryUploading, setGalleryUploading] = useState(false);
