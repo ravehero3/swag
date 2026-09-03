@@ -2627,13 +2627,13 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
         );
       })()}
 
-            <BeatUploadModal 
+      <BeatUploadModal 
         isOpen={showBeatUploadModal} 
         onClose={() => setShowBeatUploadModal(false)} 
         onUploadComplete={() => loadData()}
       />
 
-{expandedWaveformBeat && (
+      {expandedWaveformBeat && (
         <WaveformModal beat={expandedWaveformBeat} onClose={() => setExpandedWaveformBeat(null)} />
       )}
     </div>
