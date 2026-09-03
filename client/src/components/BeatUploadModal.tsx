@@ -148,10 +148,10 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
   if (!isOpen) return null;
 
   const statusIcon = {
-    pending: '⏳',
-    uploading: '⬆️',
-    completed: '✅',
-    error: '❌',
+    pending: '⌛',
+    uploading: '⬆',
+    completed: '✓',
+    error: '✕',
   };
 
   return (
@@ -163,101 +163,106 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-        backdropFilter: 'blur(12px)',
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        backdropFilter: 'blur(8px)',
       }}>
         <div style={{
           position: 'relative',
           width: '100%',
-          maxWidth: '1200px',
-          maxHeight: '90vh',
-          backgroundColor: '#0f172a',
-          borderRadius: '1rem',
-          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5)',
+          maxWidth: '1400px',
+          maxHeight: '85vh',
+          backgroundColor: '#000',
+          borderRadius: '8px',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.8)',
           display: 'flex',
           flexDirection: 'column',
-          border: '1px solid rgba(168, 85, 247, 0.4)',
+          border: '1px solid #2a2a2a',
           margin: '0 1rem',
           overflow: 'hidden',
+          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
         }}>
           
           {/* Header */}
           <div style={{
-            padding: '2rem',
-            borderBottom: '1px solid rgba(168, 85, 247, 0.2)',
-            background: 'linear-gradient(to right, #0f172a 0%, #1e293b 100%)',
+            padding: '20px 24px',
+            borderBottom: '1px solid #2a2a2a',
+            backgroundColor: '#0d0d0d',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
           }}>
             <div>
-              <h1 style={{ fontSize: '1.875rem', fontWeight: 'bold', color: '#fff', margin: 0 }}>🎵 Upload Beats</h1>
-              <p style={{ fontSize: '0.875rem', color: '#9ca3af', marginTop: '0.5rem', margin: 0 }}>
+              <h1 style={{ fontSize: '20px', fontWeight: 600, color: '#fff', margin: 0, letterSpacing: '-0.5px' }}>Upload Beats</h1>
+              <p style={{ fontSize: '13px', color: '#888', marginTop: '6px', margin: 0 }}>
                 {beats.length} beat{beats.length !== 1 ? 's' : ''} queued
-                {completedCount > 0 && ` • ${completedCount} ✅`}
-                {errorCount > 0 && ` • ${errorCount} ❌`}
+                {completedCount > 0 && ` • ${completedCount} completed`}
+                {errorCount > 0 && ` • ${errorCount} errors`}
               </p>
             </div>
             <button
               onClick={onClose}
               disabled={isUploading}
               style={{
-                padding: '0.5rem',
+                padding: '8px',
                 backgroundColor: 'transparent',
                 border: 'none',
                 cursor: 'pointer',
-                opacity: isUploading ? 0.5 : 1,
+                opacity: isUploading ? 0.5 : 0.7,
+                transition: 'opacity 0.15s',
               }}
+              onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+              onMouseLeave={(e) => (e.currentTarget.style.opacity = isUploading ? '0.5' : '0.7')}
             >
-              <X className="w-6 h-6" style={{ color: '#9ca3af' }} />
+              <X className="w-5 h-5" style={{ color: '#999' }} />
             </button>
           </div>
 
           {/* Global Settings */}
           {beats.length > 0 && (
             <div style={{
-              padding: '0.75rem 2rem',
-              borderBottom: '1px solid rgba(75, 85, 99, 0.5)',
-              backgroundColor: 'rgba(30, 41, 59, 0.3)',
+              padding: '12px 24px',
+              borderBottom: '1px solid #2a2a2a',
+              backgroundColor: '#111',
               display: 'flex',
               alignItems: 'center',
-              gap: '1rem',
+              gap: '12px',
             }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                 <input
                   type="checkbox"
                   checked={globalReleaseImmediately}
                   onChange={(e) => setGlobalReleaseImmediately(e.target.checked)}
                   disabled={isUploading}
-                  style={{ width: '1rem', height: '1rem', cursor: 'pointer' }}
+                  style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#0B99FC' }}
                 />
-                <span style={{ fontSize: '0.875rem', color: '#d1d5db' }}>Release all immediately</span>
+                <span style={{ fontSize: '13px', color: '#ccc' }}>Release all immediately</span>
               </label>
             </div>
           )}
 
           {/* Beat List */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '2rem' }}>
+          <div style={{ flex: 1, overflowY: 'auto', padding: '16px 24px' }}>
             {beats.length === 0 ? (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '200px', color: '#6b7280' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '200px', color: '#666' }}>
                 <div style={{ textAlign: 'center' }}>
-                  <Upload className="w-12 h-12" style={{ margin: '0 auto 0.75rem', opacity: 0.5 }} />
-                  <p>No beats selected yet</p>
+                  <Upload className="w-10 h-10" style={{ margin: '0 auto 12px', opacity: 0.4 }} />
+                  <p style={{ fontSize: '14px', margin: 0 }}>No beats selected yet</p>
                 </div>
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {/* Column Headers */}
                 <div style={{
                   display: 'grid',
-                  gap: '0.75rem',
-                  fontSize: '0.75rem',
-                  color: '#6b7280',
-                  fontWeight: 'bold',
-                  marginBottom: '0.75rem',
-                  paddingBottom: '0.5rem',
-                  borderBottom: '1px solid rgba(75, 85, 99, 0.5)',
-                  gridTemplateColumns: '40px 1fr 70px 60px 120px 100px 80px 60px'
+                  gap: '8px',
+                  fontSize: '12px',
+                  color: '#666',
+                  fontWeight: 500,
+                  marginBottom: '8px',
+                  paddingBottom: '8px',
+                  borderBottom: '1px solid #2a2a2a',
+                  gridTemplateColumns: '40px 1fr 60px 50px 100px 90px 100px 50px',
+                  letterSpacing: '0.3px',
                 }}>
                   <div>Status</div>
                   <div>Name</div>
@@ -273,17 +278,21 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                 {beats.map((beat) => (
                   <div key={beat.id} style={{
                     display: 'grid',
-                    gap: '0.75rem',
+                    gap: '8px',
                     alignItems: 'center',
-                    padding: '0.75rem',
-                    borderRadius: '0.5rem',
-                    backgroundColor: 'rgba(30, 41, 59, 0.4)',
-                    border: '1px solid rgba(75, 85, 99, 0.5)',
-                    gridTemplateColumns: '40px 1fr 70px 60px 120px 100px 80px 60px',
-                  }}>
+                    padding: '12px',
+                    borderRadius: '6px',
+                    backgroundColor: '#0d0d0d',
+                    border: '1px solid #1e1e1e',
+                    gridTemplateColumns: '40px 1fr 60px 50px 100px 90px 100px 50px',
+                    transition: 'border-color 0.15s, background 0.15s',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#2a2a2a')}
+                  onMouseLeave={(e) => (e.currentTarget.style.borderColor = '#1e1e1e')}
+                  >
                     
                     {/* Status */}
-                    <div style={{ textAlign: 'center', fontSize: '1.125rem' }}>
+                    <div style={{ textAlign: 'center', fontSize: '14px', fontWeight: 600, color: beat.status === 'completed' ? '#4caf50' : beat.status === 'error' ? '#f44336' : '#999' }}>
                       {statusIcon[beat.status]}
                     </div>
 
@@ -295,14 +304,20 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                       disabled={isUploading || beat.status === 'completed'}
                       placeholder="Beat name"
                       style={{
-                        padding: '0.5rem 0.75rem',
-                        fontSize: '0.875rem',
-                        backgroundColor: 'rgba(15, 23, 42, 0.5)',
-                        border: '1px solid #4b5563',
-                        borderRadius: '0.375rem',
+                        padding: '8px 10px',
+                        fontSize: '13px',
+                        backgroundColor: '#111',
+                        border: '1px solid #2a2a2a',
+                        borderRadius: '4px',
                         color: '#fff',
-                        opacity: isUploading || beat.status === 'completed' ? 0.5 : 1,
+                        opacity: isUploading || beat.status === 'completed' ? 0.6 : 1,
+                        outline: 'none',
+                        fontFamily: 'inherit',
+                        boxSizing: 'border-box',
+                        transition: 'border-color 0.15s',
                       }}
+                      onFocus={(e) => (e.currentTarget.style.borderColor = '#0B99FC')}
+                      onBlur={(e) => (e.currentTarget.style.borderColor = '#2a2a2a')}
                     />
 
                     {/* BPM */}
@@ -313,14 +328,20 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                       disabled={isUploading || beat.status === 'completed'}
                       placeholder="BPM"
                       style={{
-                        padding: '0.5rem 0.5rem',
-                        fontSize: '0.875rem',
-                        backgroundColor: 'rgba(15, 23, 42, 0.5)',
-                        border: '1px solid #4b5563',
-                        borderRadius: '0.375rem',
+                        padding: '8px 10px',
+                        fontSize: '13px',
+                        backgroundColor: '#111',
+                        border: '1px solid #2a2a2a',
+                        borderRadius: '4px',
                         color: '#fff',
-                        opacity: isUploading || beat.status === 'completed' ? 0.5 : 1,
+                        opacity: isUploading || beat.status === 'completed' ? 0.6 : 1,
+                        outline: 'none',
+                        fontFamily: 'inherit',
+                        boxSizing: 'border-box',
+                        transition: 'border-color 0.15s',
                       }}
+                      onFocus={(e) => (e.currentTarget.style.borderColor = '#0B99FC')}
+                      onBlur={(e) => (e.currentTarget.style.borderColor = '#2a2a2a')}
                     />
 
                     {/* Key */}
@@ -329,14 +350,21 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                       onChange={(e) => updateBeat(beat.id, { key: e.target.value })}
                       disabled={isUploading || beat.status === 'completed'}
                       style={{
-                        padding: '0.5rem 0.5rem',
-                        fontSize: '0.875rem',
-                        backgroundColor: 'rgba(15, 23, 42, 0.5)',
-                        border: '1px solid #4b5563',
-                        borderRadius: '0.375rem',
+                        padding: '8px 10px',
+                        fontSize: '13px',
+                        backgroundColor: '#111',
+                        border: '1px solid #2a2a2a',
+                        borderRadius: '4px',
                         color: '#fff',
-                        opacity: isUploading || beat.status === 'completed' ? 0.5 : 1,
+                        opacity: isUploading || beat.status === 'completed' ? 0.6 : 1,
+                        outline: 'none',
+                        fontFamily: 'inherit',
+                        boxSizing: 'border-box',
+                        transition: 'border-color 0.15s',
+                        cursor: 'pointer',
                       }}
+                      onFocus={(e) => (e.currentTarget.style.borderColor = '#0B99FC')}
+                      onBlur={(e) => (e.currentTarget.style.borderColor = '#2a2a2a')}
                     >
                       <option value="">-</option>
                       {['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'].map((k) => (
@@ -347,13 +375,13 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                     </select>
 
                     {/* Artwork */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       {beat.artworkUrl ? (
                         <>
                           <img
                             src={beat.artworkUrl}
                             alt={beat.artworkFilename}
-                            style={{ width: '2rem', height: '2rem', borderRadius: '0.25rem', objectFit: 'cover' }}
+                            style={{ width: '28px', height: '28px', borderRadius: '3px', objectFit: 'cover', border: '1px solid #2a2a2a' }}
                           />
                           <button
                             onClick={() => {
@@ -362,15 +390,19 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                             }}
                             disabled={isUploading}
                             style={{
-                              fontSize: '0.75rem',
-                              padding: '0.25rem 0.5rem',
-                              backgroundColor: '#9333ea',
+                              fontSize: '11px',
+                              padding: '6px 10px',
+                              backgroundColor: '#0B99FC',
                               color: '#fff',
                               border: 'none',
-                              borderRadius: '0.25rem',
+                              borderRadius: '3px',
                               cursor: 'pointer',
-                              opacity: isUploading ? 0.5 : 1,
+                              opacity: isUploading ? 0.6 : 1,
+                              transition: 'opacity 0.15s',
+                              fontWeight: 500,
                             }}
+                            onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.8')}
+                            onMouseLeave={(e) => (e.currentTarget.style.opacity = isUploading ? '0.6' : '1')}
                           >
                             Change
                           </button>
@@ -383,27 +415,39 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                           }}
                           disabled={isUploading}
                           style={{
-                            fontSize: '0.75rem',
-                            padding: '0.25rem 0.5rem',
-                            backgroundColor: '#4b5563',
-                            color: '#d1d5db',
-                            border: 'none',
-                            borderRadius: '0.25rem',
+                            fontSize: '11px',
+                            padding: '6px 10px',
+                            backgroundColor: '#1e1e1e',
+                            color: '#999',
+                            border: '1px solid #2a2a2a',
+                            borderRadius: '3px',
                             cursor: 'pointer',
-                            opacity: isUploading ? 0.5 : 1,
-                            whiteSpace: 'nowrap',
+                            opacity: isUploading ? 0.6 : 1,
+                            transition: 'all 0.15s',
+                            fontWeight: 500,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.borderColor = '#3a3a3a';
+                            e.currentTarget.style.color = '#ccc';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.borderColor = '#2a2a2a';
+                            e.currentTarget.style.color = '#999';
                           }}
                         >
-                          <ImageIcon className="w-3 h-3" style={{ display: 'inline', marginRight: '0.25rem' }} />
+                          <ImageIcon className="w-3 h-3" />
                           Select
                         </button>
                       )}
                     </div>
 
                     {/* Release */}
-                    <div style={{ fontSize: '0.75rem' }}>
+                    <div style={{ fontSize: '12px' }}>
                       {beat.releaseImmediately ? (
-                        <span style={{ color: '#4ade80', fontWeight: 'bold' }}>Now</span>
+                        <span style={{ color: '#4caf50', fontWeight: 500 }}>Now</span>
                       ) : (
                         <input
                           type="date"
@@ -412,22 +456,29 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                           disabled={isUploading}
                           style={{
                             width: '100%',
-                            padding: '0.25rem 0.5rem',
-                            fontSize: '0.75rem',
-                            backgroundColor: 'rgba(15, 23, 42, 0.5)',
-                            border: '1px solid #4b5563',
-                            borderRadius: '0.25rem',
+                            padding: '6px 8px',
+                            fontSize: '12px',
+                            backgroundColor: '#111',
+                            border: '1px solid #2a2a2a',
+                            borderRadius: '4px',
                             color: '#fff',
-                            opacity: isUploading ? 0.5 : 1,
+                            opacity: isUploading ? 0.6 : 1,
+                            outline: 'none',
+                            fontFamily: 'inherit',
+                            boxSizing: 'border-box',
+                            transition: 'border-color 0.15s',
+                            cursor: 'pointer',
                           }}
+                          onFocus={(e) => (e.currentTarget.style.borderColor = '#0B99FC')}
+                          onBlur={(e) => (e.currentTarget.style.borderColor = '#2a2a2a')}
                         />
                       )}
                     </div>
 
                     {/* Progress */}
                     {beat.status === 'uploading' && (
-                      <div style={{ height: '0.5rem', backgroundColor: '#4b5563', borderRadius: '9999px', overflow: 'hidden' }}>
-                        <div style={{ height: '100%', backgroundColor: '#a855f7', transition: 'width 0.3s ease', width: `${beat.progress}%` }} />
+                      <div style={{ height: '4px', backgroundColor: '#1e1e1e', borderRadius: '2px', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', backgroundColor: '#0B99FC', transition: 'width 0.3s ease', width: `${beat.progress}%` }} />
                       </div>
                     )}
 
@@ -436,11 +487,17 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                       <button
                         onClick={() => removeBeat(beat.id)}
                         style={{
-                          color: '#9ca3af',
+                          color: '#666',
                           backgroundColor: 'transparent',
                           border: 'none',
                           cursor: 'pointer',
+                          fontSize: '16px',
+                          padding: '4px',
+                          opacity: 0.6,
+                          transition: 'opacity 0.15s',
                         }}
+                        onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
+                        onMouseLeave={(e) => (e.currentTarget.style.opacity = '0.6')}
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -453,13 +510,13 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
 
           {/* Footer */}
           <div style={{
-            padding: '2rem',
-            borderTop: '1px solid rgba(168, 85, 247, 0.2)',
-            background: 'linear-gradient(to right, rgba(30, 41, 59, 0.5) 0%, #0f172a 100%)',
+            padding: '16px 24px',
+            borderTop: '1px solid #2a2a2a',
+            backgroundColor: '#0d0d0d',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            gap: '1rem',
+            gap: '12px',
           }}>
             <label style={{ cursor: 'pointer' }}>
               <input
@@ -473,31 +530,55 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
               <span style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '0.5rem',
-                padding: '0.5rem 1rem',
-                backgroundColor: '#4b5563',
-                color: '#fff',
-                borderRadius: '0.5rem',
+                gap: '6px',
+                padding: '8px 16px',
+                backgroundColor: '#1e1e1e',
+                color: '#ccc',
+                border: '1px solid #2a2a2a',
+                borderRadius: '4px',
                 cursor: 'pointer',
-                opacity: isUploading ? 0.5 : 1,
-              }}>
+                fontSize: '13px',
+                fontWeight: 500,
+                opacity: isUploading ? 0.6 : 1,
+                transition: 'all 0.15s',
+              }}
+              onMouseEnter={(e: any) => {
+                e.currentTarget.style.backgroundColor = '#2a2a2a';
+                e.currentTarget.style.color = '#fff';
+              }}
+              onMouseLeave={(e: any) => {
+                e.currentTarget.style.backgroundColor = '#1e1e1e';
+                e.currentTarget.style.color = '#ccc';
+              }}
+              >
                 <Upload className="w-4 h-4" />
                 Add Beats
               </span>
             </label>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: 'auto' }}>
               <button
                 onClick={onClose}
                 disabled={isUploading}
                 style={{
-                  padding: '0.5rem 1.5rem',
-                  backgroundColor: '#4b5563',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: '0.5rem',
+                  padding: '8px 16px',
+                  backgroundColor: '#1e1e1e',
+                  color: '#ccc',
+                  border: '1px solid #2a2a2a',
+                  borderRadius: '4px',
                   cursor: 'pointer',
-                  opacity: isUploading ? 0.5 : 1,
+                  fontSize: '13px',
+                  fontWeight: 500,
+                  opacity: isUploading ? 0.6 : 1,
+                  transition: 'all 0.15s',
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#2a2a2a';
+                  (e.currentTarget as HTMLButtonElement).style.color = '#fff';
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#1e1e1e';
+                  (e.currentTarget as HTMLButtonElement).style.color = '#ccc';
                 }}
               >
                 Close
@@ -506,17 +587,27 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                 onClick={handleUpload}
                 disabled={beats.length === 0 || isUploading}
                 style={{
-                  padding: '0.5rem 2rem',
-                  background: 'linear-gradient(to right, #a855f7, #c084fc)',
+                  padding: '8px 20px',
+                  backgroundColor: '#0B99FC',
                   color: '#fff',
-                  fontWeight: 'bold',
                   border: 'none',
-                  borderRadius: '0.5rem',
+                  borderRadius: '4px',
                   cursor: beats.length === 0 || isUploading ? 'not-allowed' : 'pointer',
-                  opacity: beats.length === 0 || isUploading ? 0.5 : 1,
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  opacity: beats.length === 0 || isUploading ? 0.6 : 1,
+                  transition: 'opacity 0.15s',
+                }}
+                onMouseEnter={(e) => {
+                  if (beats.length > 0 && !isUploading) {
+                    (e.currentTarget as HTMLButtonElement).style.opacity = '0.9';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.opacity = beats.length === 0 || isUploading ? '0.6' : '1';
                 }}
               >
-                {isUploading ? '⬆️ Uploading...' : '⬆️ Upload All'}
+                {isUploading ? 'Uploading...' : 'Upload All'}
               </button>
             </div>
           </div>
