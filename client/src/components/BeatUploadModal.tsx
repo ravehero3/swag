@@ -28,8 +28,6 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
   onClose,
   onUploadComplete,
 }) => {
-  console.log('[BeatUploadModal] Rendering with isOpen:', isOpen);
-  
   const [beats, setBeats] = useState<BeatFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [hoveredBeatId, setHoveredBeatId] = useState<string | null>(null);
