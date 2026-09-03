@@ -7,6 +7,7 @@ import { filterAndSortBeatFiles } from "../lib/beatFolderUtils.js";
 import SoundWave from "../components/SoundWave.js";
 // Force rebuild 1788444345
 import { BeatUploadModal } from "../components/BeatUploadModal.js";
+import { AdminErrorLog } from "../components/AdminErrorLog.js";
 import {
   BeatArtwork,
   parseArtworkConfig,
@@ -271,7 +272,9 @@ function Admin() {
   const pendingBank = orders.filter((o: any) => o.status === "awaiting_payment" && o.payment_method === "bank_transfer").length;
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#000", color: "#fff" }}>
+    <>
+      <AdminErrorLog />
+      <div style={{ display: "flex", minHeight: "100vh", background: "#000", color: "#fff" }}>
       {/* ── Sidebar ── */}
       <aside style={{
         width: "214px",
@@ -2649,6 +2652,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
         <WaveformModal beat={expandedWaveformBeat} onClose={() => setExpandedWaveformBeat(null)} />
       )}
     </div>
+    </>
   );
 }
 
