@@ -274,7 +274,7 @@ function Admin() {
   return (
     <>
       <AdminErrorLog />
-      <div style={{ display: "flex", minHeight: "100vh", background: "#000", color: "#fff" }}>
+      <div style={{ display: "flex", minHeight: "100vh", background: "#000", color: "#fff", filter: showBeatUploadModal ? "blur(10px)" : "none", transition: "filter 0.2s ease" }}>
         {/* ── Sidebar ── */}
         <aside style={{
         width: "214px",

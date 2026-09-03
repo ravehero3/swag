@@ -150,12 +150,12 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-        <div className="relative w-full max-w-2xl max-h-[90vh] bg-gray-900 rounded-lg shadow-xl flex flex-col">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+        <div className="relative w-full max-w-3xl max-h-[90vh] bg-gray-900 rounded-2xl shadow-2xl flex flex-col border border-purple-500/30">
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-gray-700 p-6">
+          <div className="flex items-center justify-between border-b border-purple-500/20 p-6 bg-gradient-to-r from-gray-900 to-gray-800/50">
             <div>
-              <h2 className="text-2xl font-bold text-white">Upload Beats</h2>
+              <h2 className="text-2xl font-bold text-white">🎵 Upload Beats</h2>
               <p className="text-sm text-gray-400 mt-1">
                 {beats.length} beat{beats.length !== 1 ? 's' : ''} queued
                 {completedCount > 0 && ` • ${completedCount} completed`}
@@ -201,11 +201,11 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                   key={beat.id}
                   onMouseEnter={() => setHoveredBeatId(beat.id)}
                   onMouseLeave={() => setHoveredBeatId(null)}
-                  className={`p-4 rounded-lg border transition-all ${
+                  className={`p-4 rounded-xl border transition-all ${
                     hoveredBeatId === beat.id
-                      ? 'bg-gray-700 border-purple-500 shadow-lg shadow-purple-500/30'
-                      : 'bg-gray-800 border-gray-700 hover:border-gray-600'
-                  } ${beat.status === 'completed' ? 'opacity-75' : ''}`}
+                      ? 'bg-gray-700/80 border-purple-500 shadow-lg shadow-purple-500/40'
+                      : 'bg-gray-800/60 border-gray-700 hover:border-purple-500/50'
+                  } ${beat.status === 'completed' ? 'opacity-60' : ''}`}
                 >
                   {/* Status Indicator & File Name */}
                   <div className="flex items-start justify-between mb-3">
@@ -360,7 +360,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
           </div>
 
           {/* Footer Actions */}
-          <div className="border-t border-gray-700 p-6 bg-gray-800 flex items-center justify-between gap-4">
+          <div className="border-t border-purple-500/20 p-6 bg-gradient-to-r from-gray-800/50 to-gray-900 flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <label className="cursor-pointer">
                 <input
