@@ -5,6 +5,7 @@ import { useLocation } from "wouter";
 import { toAudioProxyUrl } from "../lib/audioProxy.js";
 import { filterAndSortBeatFiles } from "../lib/beatFolderUtils.js";
 import SoundWave from "../components/SoundWave.js";
+// Force rebuild 1788444345
 import { BeatUploadModal } from "../components/BeatUploadModal.js";
 import {
   BeatArtwork,
