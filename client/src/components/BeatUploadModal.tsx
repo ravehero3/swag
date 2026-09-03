@@ -154,6 +154,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
   const completedCount = beats.filter((b) => b.status === 'completed').length;
   const errorCount = beats.filter((b) => b.status === 'error').length;
 
+  console.log("BeatUploadModal render:", { isOpen });
   if (!isOpen) return null;
 
   return (
