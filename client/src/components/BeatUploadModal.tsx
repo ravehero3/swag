@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
-import { X, Upload, Calendar, Play } from 'lucide-react';
+import { X, Upload, Calendar, Play, Image as ImageIcon } from 'lucide-react';
+import { ArtworkSelector } from './ArtworkSelector';
 
 interface BeatFile {
   id: string;
@@ -12,6 +13,8 @@ interface BeatFile {
   progress: number;
   status: 'pending' | 'uploading' | 'completed' | 'error';
   error?: string;
+  artworkUrl?: string;
+  artworkFilename?: string;
 }
 
 interface BeatUploadModalProps {
@@ -28,6 +31,8 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
   const [beats, setBeats] = useState<BeatFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [hoveredBeatId, setHoveredBeatId] = useState<string | null>(null);
+  const [showArtworkSelector, setShowArtworkSelector] = useState(false);
+  const [selectedBeatForArtwork, setSelectedBeatForArtwork] = useState<string | null>(null);
   const [globalReleaseImmediately, setGlobalReleaseImmediately] = useState(true);
 
   const handleFileSelect = useCallback(
@@ -66,6 +71,20 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
     setBeats((prev) => prev.filter((beat) => beat.id !== id));
   }, []);
 
+  const handleArtworkSelect = useCallback(
+    (url: string, filename: string) => {
+      if (selectedBeatForArtwork) {
+        updateBeat(selectedBeatForArtwork, {
+          artworkUrl: url,
+          artworkFilename: filename,
+        });
+        setSelectedBeatForArtwork(null);
+        setShowArtworkSelector(false);
+      }
+    },
+    [selectedBeatForArtwork]
+  );
+
   const handleUpload = async () => {
     if (beats.length === 0) return;
 
@@ -87,6 +106,9 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
           formData.append('releaseImmediately', String(beat.releaseImmediately));
           if (!beat.releaseImmediately) {
             formData.append('releaseDate', beat.releaseDate);
+          }
+          if (beat.artworkUrl) {
+            formData.append('artworkUrl', beat.artworkUrl);
           }
 
           const response = await fetch('/api/beats/upload', {
@@ -261,6 +283,46 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                     )}
                   </select>
 
+                  {/* Artwork Selection */}
+                  <div className="col-span-2 flex items-center gap-2">
+                    {beat.artworkUrl ? (
+                      <>
+                        <img 
+                          src={beat.artworkUrl} 
+                          alt={beat.artworkFilename} 
+                          className="w-10 h-10 rounded object-cover bg-gray-800 border border-gray-600"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-gray-400 truncate">
+                            {beat.artworkFilename}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => {
+                            setSelectedBeatForArtwork(beat.id);
+                            setShowArtworkSelector(true);
+                          }}
+                          disabled={isUploading || beat.status === 'completed'}
+                          className="px-3 py-1 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white text-xs rounded transition"
+                        >
+                          Change
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        onClick={() => {
+                          setSelectedBeatForArtwork(beat.id);
+                          setShowArtworkSelector(true);
+                        }}
+                        disabled={isUploading || beat.status === 'completed'}
+                        className="col-span-2 flex items-center justify-center px-3 py-2 bg-gray-800 border border-gray-600 hover:border-purple-500 disabled:opacity-50 text-gray-300 text-sm rounded transition"
+                      >
+                        <ImageIcon className="w-4 h-4 mr-2" />
+                        Select Artwork
+                      </button>
+                    )}
+                  </div>
+
                   {/* Release Date / Immediately */}
                   {beat.releaseImmediately ? (
                     <div className="flex items-center space-x-2">
@@ -342,6 +404,13 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
               {isUploading ? 'Uploading...' : 'Upload All'}
             </button>
           </div>
+
+      <ArtworkSelector
+        isOpen={showArtworkSelector}
+        onClose={() => setShowArtworkSelector(false)}
+        onSelect={handleArtworkSelect}
+        beatName={selectedBeatForArtwork ? beats.find(b => b.id === selectedBeatForArtwork)?.name : undefined}
+      />
         </div>
       </div>
     </div>
