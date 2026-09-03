@@ -84,14 +84,17 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
   );
 
   const handleUpload = async () => {
+    console.log('[handleUpload] Starting upload with', beats.length, 'beats');
     if (beats.length === 0) return;
     setIsUploading(true);
 
     try {
       const uploadPromises = beats.map(async (beat) => {
+        console.log('[handleUpload] Processing beat:', beat.name, 'status:', beat.status);
         if (beat.status !== 'pending') return beat;
 
         try {
+          console.log('[handleUpload] Uploading beat:', beat.name);
           updateBeat(beat.id, { status: 'uploading' });
 
           const formData = new FormData();
@@ -114,8 +117,10 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
 
           if (!response.ok) {
             const errorText = await response.text();
+            console.error('[handleUpload] Upload failed for', beat.name, '- Status:', response.status, 'Text:', errorText);
             throw new Error(errorText || 'Upload failed');
           }
+          console.log('[handleUpload] Upload successful for', beat.name);
 
           updateBeat(beat.id, {
             status: 'completed',
