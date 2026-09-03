@@ -1611,12 +1611,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
         </button>
         <button 
           className="btn btn-admin" 
-          onClick={() => {
-            console.log("Upload Beats clicked - state:", showBeatUploadModal);
-            console.log("Setting showBeatUploadModal to true");
-            setShowBeatUploadModal(true);
-            console.log("After setShowBeatUploadModal");
-          }} 
+          onClick={() => setShowBeatUploadModal(true)} 
           style={{ borderColor: "#7c3aed", color: "#7c3aed", fontSize: "13px" }}
           type="button"
         >

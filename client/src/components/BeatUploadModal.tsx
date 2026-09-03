@@ -145,11 +145,8 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
   const errorCount = beats.filter((b) => b.status === 'error').length;
 
   if (!isOpen) {
-    console.log('[BeatUploadModal] Not rendering because isOpen is false');
-    return null;
+      return null;
   }
-
-  console.log('[BeatUploadModal] Rendering modal DOM');
 
   return (
     <>
