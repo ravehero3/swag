@@ -124,9 +124,11 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
 
           return await response.json();
         } catch (error) {
+          const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+          console.error('[BeatUploadModal] Upload error for', beat.name, ':', errorMsg);
           updateBeat(beat.id, {
             status: 'error',
-            error: error instanceof Error ? error.message : 'Unknown error',
+            error: errorMsg,
           });
           return null;
         }
