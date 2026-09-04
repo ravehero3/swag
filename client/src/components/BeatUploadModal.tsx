@@ -102,6 +102,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
         formData.append('files', file);
       });
 
+      console.log('[Gallery] Starting upload of', files.length, 'images');
       const response = await fetch('/api/kit-artworks/upload-batch', {
         method: 'POST',
         body: formData,
@@ -109,6 +110,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
       });
 
       clearInterval(progressInterval);
+      console.log('[Gallery] Upload response:', response.status);
 
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}));
@@ -116,9 +118,12 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
       }
       setGalleryUploadProgress(100);
       
-      // Reload gallery images
-      await new Promise(r => setTimeout(r, 1000));
+      // Wait longer for large batches and ensure gallery reloads
+      console.log('[Gallery] Waiting to refresh gallery...');
+      await new Promise(r => setTimeout(r, 2000));
+      console.log('[Gallery] Refreshing gallery images...');
       await loadGalleryImages();
+      console.log('[Gallery] Gallery refreshed');
     } catch (err) {
       console.error('Gallery upload failed:', err);
       alert('Upload failed: ' + (err instanceof Error ? err.message : String(err)));
@@ -337,7 +342,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                   checked={globalReleaseImmediately}
                   onChange={(e) => setGlobalReleaseImmediately(e.target.checked)}
                   disabled={isUploading}
-                  style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#0B99FC' }}
+                  style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#0055FF' }}
                 />
                 <span style={{ fontSize: '13px', color: '#ccc' }}>Release all immediately</span>
               </label>
@@ -420,7 +425,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                         boxSizing: 'border-box',
                         transition: 'border-color 0.15s',
                       }}
-                      onFocus={(e) => (e.currentTarget.style.borderColor = '#0B99FC')}
+                      onFocus={(e) => (e.currentTarget.style.borderColor = '#0055FF')}
                       onBlur={(e) => (e.currentTarget.style.borderColor = '#2a2a2a')}
                     />
 
@@ -444,7 +449,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                         boxSizing: 'border-box',
                         transition: 'border-color 0.15s',
                       }}
-                      onFocus={(e) => (e.currentTarget.style.borderColor = '#0B99FC')}
+                      onFocus={(e) => (e.currentTarget.style.borderColor = '#0055FF')}
                       onBlur={(e) => (e.currentTarget.style.borderColor = '#2a2a2a')}
                     />
 
@@ -467,7 +472,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                         transition: 'border-color 0.15s',
                         cursor: 'pointer',
                       }}
-                      onFocus={(e) => (e.currentTarget.style.borderColor = '#0B99FC')}
+                      onFocus={(e) => (e.currentTarget.style.borderColor = '#0055FF')}
                       onBlur={(e) => (e.currentTarget.style.borderColor = '#2a2a2a')}
                     >
                       <option value="">-</option>
@@ -496,7 +501,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                             style={{
                               fontSize: '11px',
                               padding: '6px 10px',
-                              backgroundColor: '#0B99FC',
+                              backgroundColor: '#0055FF',
                               color: '#fff',
                               border: 'none',
                               borderRadius: '3px',
@@ -573,7 +578,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                             transition: 'border-color 0.15s',
                             cursor: 'pointer',
                           }}
-                          onFocus={(e) => (e.currentTarget.style.borderColor = '#0B99FC')}
+                          onFocus={(e) => (e.currentTarget.style.borderColor = '#0055FF')}
                           onBlur={(e) => (e.currentTarget.style.borderColor = '#2a2a2a')}
                         />
                       )}
@@ -582,7 +587,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                     {/* Progress */}
                     {beat.status === 'uploading' && (
                       <div style={{ height: '4px', backgroundColor: '#1e1e1e', borderRadius: '2px', overflow: 'hidden' }}>
-                        <div style={{ height: '100%', backgroundColor: '#0B99FC', transition: 'width 0.3s ease', width: `${beat.progress}%` }} />
+                        <div style={{ height: '100%', backgroundColor: '#0055FF', transition: 'width 0.3s ease', width: `${beat.progress}%` }} />
                       </div>
                     )}
 
@@ -692,7 +697,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                 disabled={beats.length === 0 || isUploading}
                 style={{
                   padding: '8px 20px',
-                  backgroundColor: '#0B99FC',
+                  backgroundColor: '#0055FF',
                   color: '#fff',
                   border: 'none',
                   borderRadius: '4px',
@@ -734,9 +739,9 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                 {galleryUploading && (
                   <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: "220px" }}>
                     <div style={{ flex: 1, height: "4px", background: "#1b1b1b", borderRadius: "999px", overflow: "hidden" }}>
-                      <div style={{ height: "100%", width: `${Math.min(galleryUploadProgress, 100)}%`, background: "linear-gradient(90deg,#0B99FC,#4cc3ff)", transition: "width 200ms ease" }} />
+                      <div style={{ height: "100%", width: `${Math.min(galleryUploadProgress, 100)}%`, background: "linear-gradient(90deg,#0055FF,#3399FF)", transition: "width 200ms ease" }} />
                     </div>
-                    <span style={{ fontSize: "11px", color: "#0B99FC", fontWeight: 500, whiteSpace: "nowrap", minWidth: "50px", textAlign: "right" }}>
+                    <span style={{ fontSize: "11px", color: "#0055FF", fontWeight: 500, whiteSpace: "nowrap", minWidth: "50px", textAlign: "right" }}>
                       {Math.round(Math.min(galleryUploadProgress, 100))}%
                     </span>
                   </div>
@@ -773,8 +778,8 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
               }}
             >
               {galleryDragging && (
-                <div style={{ position: "absolute", inset: 0, background: "rgba(11,153,252,0.08)", border: "2px dashed #0B99FC", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10, pointerEvents: "none" }}>
-                  <span style={{ color: "#0B99FC", fontSize: "14px", fontWeight: 500 }}>Drag images here</span>
+                <div style={{ position: "absolute", inset: 0, background: "rgba(11,153,252,0.08)", border: "2px dashed #0055FF", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10, pointerEvents: "none" }}>
+                  <span style={{ color: "#0055FF", fontSize: "14px", fontWeight: 500 }}>Drag images here</span>
                 </div>
               )}
               {galleryLoading ? (
@@ -824,7 +829,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
               )}
             </div>
             <div style={{ padding: "10px 20px", borderTop: "0.4px solid #1a1a1a", flexShrink: 0, display: "flex", justifyContent: "flex-end" }}>
-              <button onClick={() => setShowGallery(false)} style={{padding: '8px 16px', backgroundColor: '#0B99FC', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 600}}>Close</button>
+              <button onClick={() => setShowGallery(false)} style={{padding: '8px 16px', backgroundColor: '#0055FF', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 600}}>Close</button>
             </div>
           </div>
         </div>
