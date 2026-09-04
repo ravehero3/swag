@@ -49,19 +49,23 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
   const [galleryUploadProgress, setGalleryUploadProgress] = useState(0);
   const [galleryUploadTotal, setGalleryUploadTotal] = useState(0);
 
-  // Load gallery images when modal opens
+  // Load gallery images when gallery modal opens
   useEffect(() => {
-    if (isOpen && showGallery) {
+    if (showGallery) {
+      console.log('[Gallery] Opening gallery, loading images...');
       loadGalleryImages();
     }
-  }, [isOpen, showGallery]);
+  }, [showGallery]);
 
   const loadGalleryImages = async () => {
     try {
       setGalleryLoading(true);
+      console.log('[Gallery] Loading images from /api/kit-artworks');
       const res = await fetch('/api/kit-artworks', { credentials: 'include' });
+      console.log('[Gallery] Response status:', res.status);
       if (!res.ok) throw new Error('Failed to load gallery');
       const data = await res.json();
+      console.log('[Gallery] Loaded', data?.length || 0, 'images');
       setGalleryImages(data || []);
     } catch (err) {
       console.error('Failed to load gallery:', err);
@@ -72,6 +76,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
   };
 
   const handleGallerySelect = (url: string) => {
+    console.log('[Gallery] Selecting artwork:', url);
     if (selectedBeatForArtwork) {
       updateBeat(selectedBeatForArtwork, {
         artworkUrl: url,
@@ -79,6 +84,8 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
       });
       setSelectedBeatForArtwork(null);
       setShowGallery(false);
+    } else {
+      console.warn('[Gallery] No beat selected for artwork');
     }
   };
 
@@ -494,9 +501,10 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                           />
                           <button
                             onClick={() => {
-                              setSelectedBeatForArtwork(beat.id);
-                              setShowGallery(true);
-                            }}
+                            console.log('[BeatUploadModal] Opening gallery for beat:', beat.id);
+                            setSelectedBeatForArtwork(beat.id);
+                            setShowGallery(true);
+                          }}
                             disabled={isUploading}
                             style={{
                               fontSize: '11px',
@@ -519,6 +527,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                       ) : (
                         <button
                           onClick={() => {
+                            console.log('[BeatUploadModal] Opening gallery for beat:', beat.id);
                             setSelectedBeatForArtwork(beat.id);
                             setShowGallery(true);
                           }}
