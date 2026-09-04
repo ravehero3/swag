@@ -89,6 +89,14 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
     setGalleryUploadProgress(0);
 
     try {
+      // Simulate progress increments while uploading
+      const progressInterval = setInterval(() => {
+        setGalleryUploadProgress((prev) => {
+          if (prev >= 90) return prev;
+          return prev + Math.random() * 30;
+        });
+      }, 300);
+
       const formData = new FormData();
       Array.from(files).forEach((file) => {
         formData.append('files', file);
@@ -100,6 +108,8 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
         credentials: 'include',
       });
 
+      clearInterval(progressInterval);
+
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}));
         throw new Error(errData.error || 'Upload failed');
@@ -107,14 +117,14 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
       setGalleryUploadProgress(100);
       
       // Reload gallery images
-      await new Promise(r => setTimeout(r, 500));
+      await new Promise(r => setTimeout(r, 1000));
       await loadGalleryImages();
     } catch (err) {
       console.error('Gallery upload failed:', err);
       alert('Upload failed: ' + (err instanceof Error ? err.message : String(err)));
+      setGalleryUploadProgress(0);
     } finally {
       setGalleryUploading(false);
-      setGalleryUploadProgress(0);
       setGalleryUploadTotal(0);
     }
   };
@@ -715,22 +725,24 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
           onClick={(e) => { if (e.target === e.currentTarget) setShowGallery(false); }}
         >
           <div style={{ background: "#111", border: "0.4px solid #333", borderRadius: "8px", width: "min(860px, 96vw)", maxHeight: "88vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "0.4px solid #2a2a2a", flexShrink: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "0.4px solid #2a2a2a", flexShrink: 0 }}>
               <div>
                 <div style={{ color: "#fff", fontSize: "14px", fontWeight: 500 }}>Select Artwork</div>
                 <div style={{ color: "#555", fontSize: "11px", marginTop: "2px" }}>Choose an image or upload new ones</div>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 {galleryUploading && (
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <div style={{ width: "100px", height: "3px", background: "#1b1b1b", borderRadius: "999px", overflow: "hidden" }}>
-                      <div style={{ height: "100%", width: `${galleryUploadProgress}%`, background: "linear-gradient(90deg,#0B99FC,#4cc3ff)", transition: "width 150ms ease" }} />
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: "220px" }}>
+                    <div style={{ flex: 1, height: "4px", background: "#1b1b1b", borderRadius: "999px", overflow: "hidden" }}>
+                      <div style={{ height: "100%", width: `${Math.min(galleryUploadProgress, 100)}%`, background: "linear-gradient(90deg,#0B99FC,#4cc3ff)", transition: "width 200ms ease" }} />
                     </div>
-                    <span style={{ fontSize: "11px", color: "#0B99FC", whiteSpace: "nowrap", minWidth: "70px" }}>{galleryUploadProgress === 100 ? 'Processing...' : `${galleryUploadTotal} images`}</span>
+                    <span style={{ fontSize: "11px", color: "#0B99FC", fontWeight: 500, whiteSpace: "nowrap", minWidth: "50px", textAlign: "right" }}>
+                      {Math.round(Math.min(galleryUploadProgress, 100))}%
+                    </span>
                   </div>
                 )}
-                <label style={{ background: "transparent", border: "0.4px solid #555", color: galleryUploading ? "#555" : "#aaa", borderRadius: "3px", padding: "6px 12px", cursor: galleryUploading ? "default" : "pointer", fontSize: "12px", display: "flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap" }}>
-                  {galleryUploading ? 'Uploading...' : "+ Upload Images"}
+                <label style={{ background: "transparent", border: "0.4px solid #555", color: galleryUploading ? "#555" : "#aaa", borderRadius: "3px", padding: "6px 12px", cursor: galleryUploading ? "default" : "pointer", fontSize: "12px", display: "flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap", transition: "all 0.15s" }}>
+                  {galleryUploading ? `Uploading ${galleryUploadTotal} images...` : "+ Upload Images"}
                   <input
                     type="file"
                     accept="image/*"
@@ -742,7 +754,8 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                 </label>
                 <button
                   onClick={() => setShowGallery(false)}
-                  style={{ background: "transparent", border: "none", color: "#666", fontSize: "20px", cursor: "pointer", lineHeight: 1, padding: "0 4px" }}
+                  disabled={galleryUploading}
+                  style={{ background: "transparent", border: "none", color: galleryUploading ? "#555" : "#666", fontSize: "20px", cursor: galleryUploading ? "not-allowed" : "pointer", lineHeight: 1, padding: "0 4px", opacity: galleryUploading ? 0.5 : 1, transition: "all 0.15s" }}
                 >
                   ×
                 </button>
