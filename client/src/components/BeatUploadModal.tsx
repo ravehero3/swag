@@ -797,7 +797,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                         </div>
                       </div>
                     </div>
-                  ))}}
+                  ))}
                 </div>
               )}
             </div>
