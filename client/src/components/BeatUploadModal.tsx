@@ -104,6 +104,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
     d.setDate(d.getDate() + (5 - d.getDay() + 7) % 7 || 7);
     return d.toISOString().split('T')[0];
   };
+  const handleGallerySelect = (url: string) => {
     console.log('[Gallery] Selecting artwork:', url);
     if (selectedBeatForArtwork) {
       updateBeat(selectedBeatForArtwork, {
