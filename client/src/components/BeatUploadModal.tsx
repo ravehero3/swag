@@ -47,6 +47,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
   const [galleryDragging, setGalleryDragging] = useState(false);
   const [galleryUploading, setGalleryUploading] = useState(false);
   const [galleryUploadProgress, setGalleryUploadProgress] = useState(0);
+  const [galleryUploadTotal, setGalleryUploadTotal] = useState(0);
 
   // Load gallery images when modal opens
   useEffect(() => {
@@ -84,6 +85,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
   const handleGalleryImageUpload = async (files: FileList) => {
     if (!files || files.length === 0) return;
     setGalleryUploading(true);
+    setGalleryUploadTotal(files.length);
     setGalleryUploadProgress(0);
 
     try {
@@ -113,6 +115,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
     } finally {
       setGalleryUploading(false);
       setGalleryUploadProgress(0);
+      setGalleryUploadTotal(0);
     }
   };
 
@@ -718,10 +721,16 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                 <div style={{ color: "#555", fontSize: "11px", marginTop: "2px" }}>Choose an image or upload new ones</div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                {galleryUploading && (
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <div style={{ width: "100px", height: "3px", background: "#1b1b1b", borderRadius: "999px", overflow: "hidden" }}>
+                      <div style={{ height: "100%", width: `${galleryUploadProgress}%`, background: "linear-gradient(90deg,#0B99FC,#4cc3ff)", transition: "width 150ms ease" }} />
+                    </div>
+                    <span style={{ fontSize: "11px", color: "#0B99FC", whiteSpace: "nowrap", minWidth: "70px" }}>{galleryUploadProgress === 100 ? 'Processing...' : `${galleryUploadTotal} images`}</span>
+                  </div>
+                )}
                 <label style={{ background: "transparent", border: "0.4px solid #555", color: galleryUploading ? "#555" : "#aaa", borderRadius: "3px", padding: "6px 12px", cursor: galleryUploading ? "default" : "pointer", fontSize: "12px", display: "flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap" }}>
-                  {galleryUploading
-                    ? `Uploading${galleryUploadProgress > 0 ? ` ${galleryUploadProgress}%` : '...'}`
-                    : "+ Upload Images"}
+                  {galleryUploading ? 'Uploading...' : "+ Upload Images"}
                   <input
                     type="file"
                     accept="image/*"
