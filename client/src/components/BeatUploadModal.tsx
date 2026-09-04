@@ -258,7 +258,35 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
             console.error('[handleUpload] Upload failed for', beat.name, '- Status:', response.status, 'Text:', errorText);
             throw new Error(errorText || 'Upload failed');
           }
-          console.log('[handleUpload] Upload successful for', beat.name);
+          
+          const uploadedFile = await response.json();
+          console.log('[handleUpload] File uploaded:', uploadedFile.url);
+
+          // Create beat record in database with uploaded file URL
+          const beatCreateRes = await fetch('/api/beats', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              title: beat.name,
+              artist: 'VOODOO808',
+              bpm: parseInt(beat.bpm) || 0,
+              key: beat.key || '',
+              price: 0,
+              fileUrl: uploadedFile.url,
+              previewUrl: uploadedFile.url,
+              artworkUrl: beat.artworkUrl || '',
+              isPublished: true,
+              tags: [],
+            }),
+          });
+
+          if (!beatCreateRes.ok) {
+            const errText = await beatCreateRes.text();
+            console.error('[handleUpload] Beat creation failed for', beat.name, ':', errText);
+            throw new Error('Beat creation failed');
+          }
+          
+          console.log('[handleUpload] Beat created and published for', beat.name);
 
           updateBeat(beat.id, {
             status: 'completed',
