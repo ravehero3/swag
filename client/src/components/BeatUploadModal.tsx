@@ -19,6 +19,7 @@ interface BeatFile {
 interface GalleryImage {
   url: string;
   filename: string;
+  size?: number;
 }
 
 interface BeatUploadModalProps {
@@ -57,7 +58,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
   const loadGalleryImages = async () => {
     try {
       setGalleryLoading(true);
-      const res = await fetch('/api/gallery-images');
+      const res = await fetch('/api/kit-artworks', { credentials: 'include' });
       if (!res.ok) throw new Error('Failed to load gallery');
       const data = await res.json();
       setGalleryImages(data || []);
@@ -91,12 +92,16 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
         formData.append('files', file);
       });
 
-      const response = await fetch('/api/gallery-images/upload', {
+      const response = await fetch('/api/kit-artworks/upload-batch', {
         method: 'POST',
         body: formData,
+        credentials: 'include',
       });
 
-      if (!response.ok) throw new Error('Upload failed');
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || 'Upload failed');
+      }
       setGalleryUploadProgress(100);
       
       // Reload gallery images
@@ -104,9 +109,28 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
       await loadGalleryImages();
     } catch (err) {
       console.error('Gallery upload failed:', err);
+      alert('Upload failed: ' + (err instanceof Error ? err.message : String(err)));
     } finally {
       setGalleryUploading(false);
       setGalleryUploadProgress(0);
+    }
+  };
+
+  const handleGalleryImageDelete = async (filename: string) => {
+    if (!confirm(`Delete ${filename}?`)) return;
+    try {
+      const res = await fetch(`/api/kit-artworks/${encodeURIComponent(filename)}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (res.ok) {
+        setGalleryImages((prev) => prev.filter((i) => i.filename !== filename));
+      } else {
+        alert('Failed to delete image');
+      }
+    } catch (err) {
+      console.error('Delete failed:', err);
+      alert('Delete failed');
     }
   };
 
@@ -755,15 +779,25 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                       />
                       <div style={{ padding: "6px 8px 4px", background: "#0e0e0e" }}>
                         <div style={{ fontSize: "10px", color: "#555", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{img.filename}</div>
-                        <button
-                          onClick={() => handleGallerySelect(img.url)}
-                          style={{ background: "transparent", border: "0.4px solid #444", color: "#aaa", borderRadius: "3px", padding: "2px 8px", cursor: "pointer", fontSize: "11px", marginTop: "4px", width: "100%" }}
-                        >
-                          Select
-                        </button>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "4px", gap: "4px" }}>
+                          <button
+                            onClick={() => handleGallerySelect(img.url)}
+                            style={{ background: "transparent", border: "0.4px solid #444", color: "#aaa", borderRadius: "3px", padding: "2px 8px", cursor: "pointer", fontSize: "11px", flex: 1 }}
+                          >
+                            Select
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleGalleryImageDelete(img.filename); }}
+                            style={{ background: "transparent", border: "none", color: "#666", cursor: "pointer", fontSize: "16px", padding: "0 4px", lineHeight: 1, transition: "color 0.15s" }}
+                            onMouseEnter={(e) => (e.currentTarget.style.color = "#ff4444")}
+                            onMouseLeave={(e) => (e.currentTarget.style.color = "#666")}
+                          >
+                            ×
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  ))}
+                  ))}}
                 </div>
               )}
             </div>
