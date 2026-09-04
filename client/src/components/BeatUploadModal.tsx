@@ -44,6 +44,8 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
   const [galleryLoading, setGalleryLoading] = useState(false);
   const [galleryDragging, setGalleryDragging] = useState(false);
+  const [galleryUploading, setGalleryUploading] = useState(false);
+  const [galleryUploadProgress, setGalleryUploadProgress] = useState(0);
 
   // Load gallery images when modal opens
   useEffect(() => {
@@ -75,6 +77,36 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
       });
       setSelectedBeatForArtwork(null);
       setShowGallery(false);
+    }
+  };
+
+  const handleGalleryImageUpload = async (files: FileList) => {
+    if (!files || files.length === 0) return;
+    setGalleryUploading(true);
+    setGalleryUploadProgress(0);
+
+    try {
+      const formData = new FormData();
+      Array.from(files).forEach((file) => {
+        formData.append('files', file);
+      });
+
+      const response = await fetch('/api/gallery-images/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error('Upload failed');
+      setGalleryUploadProgress(100);
+      
+      // Reload gallery images
+      await new Promise(r => setTimeout(r, 500));
+      await loadGalleryImages();
+    } catch (err) {
+      console.error('Gallery upload failed:', err);
+    } finally {
+      setGalleryUploading(false);
+      setGalleryUploadProgress(0);
     }
   };
 
@@ -659,19 +691,40 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "0.4px solid #2a2a2a", flexShrink: 0 }}>
               <div>
                 <div style={{ color: "#fff", fontSize: "14px", fontWeight: 500 }}>Select Artwork</div>
-                <div style={{ color: "#555", fontSize: "11px", marginTop: "2px" }}>Choose an image for your beat</div>
+                <div style={{ color: "#555", fontSize: "11px", marginTop: "2px" }}>Choose an image or upload new ones</div>
               </div>
-              <button
-                onClick={() => setShowGallery(false)}
-                style={{ background: "transparent", border: "none", color: "#666", fontSize: "20px", cursor: "pointer", lineHeight: 1, padding: "0 4px" }}
-              >
-                ×
-              </button>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <label style={{ background: "transparent", border: "0.4px solid #555", color: galleryUploading ? "#555" : "#aaa", borderRadius: "3px", padding: "6px 12px", cursor: galleryUploading ? "default" : "pointer", fontSize: "12px", display: "flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap" }}>
+                  {galleryUploading
+                    ? `Uploading${galleryUploadProgress > 0 ? ` ${galleryUploadProgress}%` : '...'}`
+                    : "+ Upload Images"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    disabled={galleryUploading}
+                    style={{ display: "none" }}
+                    onChange={(e) => { if (e.target.files && e.target.files.length > 0) handleGalleryImageUpload(e.target.files); e.target.value = ""; }}
+                  />
+                </label>
+                <button
+                  onClick={() => setShowGallery(false)}
+                  style={{ background: "transparent", border: "none", color: "#666", fontSize: "20px", cursor: "pointer", lineHeight: 1, padding: "0 4px" }}
+                >
+                  ×
+                </button>
+              </div>
             </div>
             <div
               style={{ overflowY: "auto", padding: "20px", flex: 1, position: "relative", transition: "background 0.15s" }}
               onDragOver={(e) => { e.preventDefault(); setGalleryDragging(true); }}
               onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setGalleryDragging(false); }}
+              onDrop={(e) => {
+                e.preventDefault();
+                setGalleryDragging(false);
+                const files = e.dataTransfer.files;
+                if (files && files.length > 0) handleGalleryImageUpload(files);
+              }}
             >
               {galleryDragging && (
                 <div style={{ position: "absolute", inset: 0, background: "rgba(11,153,252,0.08)", border: "2px dashed #0B99FC", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10, pointerEvents: "none" }}>
