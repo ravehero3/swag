@@ -22,6 +22,30 @@ const uploadDir = process.env.NODE_ENV === "production"
   ? "/tmp/uploads"
   : path.join(process.cwd(), "tmp/uploads");
 
+// Beat audio is kept on the Oracle VPS filesystem. Set BEAT_STORAGE_DIR to the
+// mounted host/volume path in production so files survive container redeploys.
+const beatStorageDir = process.env.BEAT_STORAGE_DIR?.trim() ||
+  path.join(process.cwd(), "public/uploads/beats");
+
+function saveBeatToVps(file: { originalname: string; path: string; size: number }) {
+  if (!fs.existsSync(beatStorageDir)) fs.mkdirSync(beatStorageDir, { recursive: true });
+
+  const ext = path.extname(file.originalname).toLowerCase() || ".mp3";
+  const base = path.basename(file.originalname, ext)
+    .toLowerCase()
+    .replace(/[^a-z0-9_.-]/g, "-")
+    .substring(0, 80);
+  const filename = base + "-" + uuidv4().substring(0, 8) + ext;
+  const dest = path.join(beatStorageDir, filename);
+
+  fs.copyFileSync(file.path, dest);
+  fs.unlinkSync(file.path);
+
+  const appUrl = (process.env.APP_URL || "").replace(/\/$/, "");
+  const url = appUrl ? appUrl + "/uploads/beats/" + filename : "/uploads/beats/" + filename;
+  return { url, filename, size: file.size, storage: "oracle-vps" };
+}
+
 function ensureUploadDir() {
   if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
@@ -328,6 +352,22 @@ router.post("/", requireAdmin, upload.single("file"), async (req: Request, res: 
   const ext = req.file.originalname.split('.').pop()?.toLowerCase() || 'zip';
   let key = `${uuidv4()}.${ext}`;
 
+  // Beat upload from the purple admin uploader: always save the audio directly
+  // to the Oracle VPS filesystem, not to R2/B2 or the kits directory.
+  if (type === "beat") {
+    try {
+      const saved = saveBeatToVps(req.file);
+      res.json(saved);
+      console.log("✅ beat saved to Oracle VPS: " + saved.url);
+      return;
+    } catch (error) {
+      if (req.file.path && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+      console.error("Beat VPS upload failed:", error);
+      res.status(500).json({ error: "Nahrávání beatu selhalo", detail: String(error) });
+      return;
+    }
+  }
+
   // Artwork: resize/normalise with Sharp then upload to R2
   if (type === "artwork") {
     try {
@@ -413,24 +453,9 @@ router.post("/", requireAdmin, upload.single("file"), async (req: Request, res: 
     // --- Local VPS storage path ---
     if (process.env.BEAT_STORAGE === "local") {
       try {
-        const beatsDir = path.join(process.cwd(), "public/uploads/beats");
-        if (!fs.existsSync(beatsDir)) fs.mkdirSync(beatsDir, { recursive: true });
-
-        const origExt = path.extname(req.file.originalname).toLowerCase() || ".mp3";
-        const base = path.basename(req.file.originalname, origExt)
-          .toLowerCase()
-          .replace(/[^a-z0-9_.-]/g, "-")
-          .substring(0, 80);
-        const filename = `${base}-${uuidv4().substring(0, 8)}${origExt}`;
-        const dest = path.join(beatsDir, filename);
-
-        fs.copyFileSync(req.file.path, dest);
-        fs.unlinkSync(req.file.path);
-
-        const appUrl = (process.env.APP_URL || "").replace(/\/$/, "");
-        const url = appUrl ? `${appUrl}/uploads/beats/${filename}` : `/uploads/beats/${filename}`;
-        res.json({ url, filename, size: req.file.size });
-        console.log(`✅ beat-preview saved to VPS local disk: ${dest}`);
+        const saved = saveBeatToVps(req.file);
+        res.json(saved);
+        console.log("✅ beat-preview saved to VPS local disk: " + saved.url);
         return;
       } catch (error) {
         if (req.file.path && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
