@@ -38,6 +38,9 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
   const [beats, setBeats] = useState<BeatFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [globalReleaseImmediately, setGlobalReleaseImmediately] = useState(true);
+  const [showReleaseScheduler, setShowReleaseScheduler] = useState(false);
+  const [schedulerDate, setSchedulerDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [applyToAll, setApplyToAll] = useState(true);
   
   // Gallery state
   const [showGallery, setShowGallery] = useState(false);
@@ -75,7 +78,32 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
     }
   };
 
-  const handleGallerySelect = (url: string) => {
+  const handleApplyReleaseDate = () => {
+    if (applyToAll) {
+      // Apply to all beats
+      setBeats((prev) =>
+        prev.map((beat) => ({
+          ...beat,
+          releaseImmediately: false,
+          releaseDate: schedulerDate,
+        }))
+      );
+    }
+    setShowReleaseScheduler(false);
+  };
+
+  const getNextWeekday = () => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() + 1);
+    return d.toISOString().split('T')[0];
+  };
+
+  const getNextFriday = () => {
+    const d = new Date();
+    d.setDate(d.getDate() + (5 - d.getDay() + 7) % 7 || 7);
+    return d.toISOString().split('T')[0];
+  };
     console.log('[Gallery] Selecting artwork:', url);
     if (selectedBeatForArtwork) {
       updateBeat(selectedBeatForArtwork, {
@@ -341,6 +369,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
               backgroundColor: '#111',
               display: 'flex',
               alignItems: 'center',
+              justifyContent: 'space-between',
               gap: '12px',
             }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
@@ -353,6 +382,28 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                 />
                 <span style={{ fontSize: '13px', color: '#ccc' }}>Release all immediately</span>
               </label>
+              {!globalReleaseImmediately && (
+                <button
+                  onClick={() => setShowReleaseScheduler(true)}
+                  disabled={isUploading}
+                  style={{
+                    fontSize: '12px',
+                    padding: '6px 12px',
+                    backgroundColor: '#0055FF',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '3px',
+                    cursor: 'pointer',
+                    fontWeight: 500,
+                    opacity: isUploading ? 0.6 : 1,
+                    transition: 'opacity 0.15s',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.opacity = isUploading ? '0.6' : '0.9')}
+                  onMouseLeave={(e) => (e.currentTarget.style.opacity = isUploading ? '0.6' : '1')}
+                >
+                  Set Release Date
+                </button>
+              )}
             </div>
           )}
 
@@ -839,6 +890,152 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
             </div>
             <div style={{ padding: "10px 20px", borderTop: "0.4px solid #1a1a1a", flexShrink: 0, display: "flex", justifyContent: "flex-end" }}>
               <button onClick={() => setShowGallery(false)} style={{padding: '8px 16px', backgroundColor: '#0055FF', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 600}}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Release Scheduler Modal */}
+      {showReleaseScheduler && (
+        <div
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)", zIndex: 10001, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
+          onClick={(e) => { if (e.target === e.currentTarget) setShowReleaseScheduler(false); }}
+        >
+          <div style={{ background: "#111", border: "0.4px solid #333", borderRadius: "8px", width: "min(400px, 96vw)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+            {/* Header */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px", borderBottom: "0.4px solid #2a2a2a" }}>
+              <div>
+                <div style={{ color: "#fff", fontSize: "16px", fontWeight: 600 }}>Schedule Release</div>
+                <div style={{ color: "#555", fontSize: "12px", marginTop: "4px" }}>Set when your beats go live</div>
+              </div>
+              <button
+                onClick={() => setShowReleaseScheduler(false)}
+                style={{ background: "transparent", border: "none", color: "#666", fontSize: "20px", cursor: "pointer", lineHeight: 1, padding: "0 4px" }}
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Content */}
+            <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
+              {/* Date Input */}
+              <div>
+                <label style={{ display: "block", fontSize: "13px", fontWeight: 500, color: "#ccc", marginBottom: "8px" }}>Release Date</label>
+                <input
+                  type="date"
+                  value={schedulerDate}
+                  onChange={(e) => setSchedulerDate(e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
+                  style={{
+                    width: "100%",
+                    padding: "10px",
+                    fontSize: "14px",
+                    backgroundColor: "#0d0d0d",
+                    border: "0.4px solid #2a2a2a",
+                    borderRadius: "4px",
+                    color: "#fff",
+                    outline: "none",
+                    boxSizing: "border-box",
+                  }}
+                />
+              </div>
+
+              {/* Quick Presets */}
+              <div>
+                <label style={{ display: "block", fontSize: "13px", fontWeight: 500, color: "#ccc", marginBottom: "8px" }}>Quick Presets</label>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+                  {[
+                    { label: "Tomorrow", get: () => new Date(Date.now() + 86400000).toISOString().split('T')[0] },
+                    { label: "Next Weekday", get: getNextWeekday },
+                    { label: "Next Friday", get: getNextFriday },
+                    { label: "Next Week", get: () => new Date(Date.now() + 604800000).toISOString().split('T')[0] },
+                  ].map((preset) => (
+                    <button
+                      key={preset.label}
+                      onClick={() => setSchedulerDate(preset.get())}
+                      style={{
+                        padding: "10px",
+                        backgroundColor: "#1e1e1e",
+                        border: "0.4px solid #2a2a2a",
+                        borderRadius: "4px",
+                        color: "#aaa",
+                        fontSize: "12px",
+                        fontWeight: 500,
+                        cursor: "pointer",
+                        transition: "all 0.15s",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = "#2a2a2a";
+                        e.currentTarget.style.color = "#fff";
+                        e.currentTarget.style.borderColor = "#444";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = "#1e1e1e";
+                        e.currentTarget.style.color = "#aaa";
+                        e.currentTarget.style.borderColor = "#2a2a2a";
+                      }}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Apply to All */}
+              <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontSize: "13px", color: "#ccc" }}>
+                <input
+                  type="checkbox"
+                  checked={applyToAll}
+                  onChange={(e) => setApplyToAll(e.target.checked)}
+                  style={{ width: "16px", height: "16px", cursor: "pointer", accentColor: "#0055FF" }}
+                />
+                <span>Apply to all {beats.length} beats</span>
+              </label>
+            </div>
+
+            {/* Footer */}
+            <div style={{ padding: "16px 20px", borderTop: "0.4px solid #2a2a2a", display: "flex", gap: "8px", justifyContent: "flex-end" }}>
+              <button
+                onClick={() => setShowReleaseScheduler(false)}
+                style={{
+                  padding: "8px 16px",
+                  backgroundColor: "#1e1e1e",
+                  color: "#ccc",
+                  border: "0.4px solid #2a2a2a",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                  fontSize: "13px",
+                  fontWeight: 500,
+                  transition: "all 0.15s",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = "#2a2a2a";
+                  e.currentTarget.style.color = "#fff";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "#1e1e1e";
+                  e.currentTarget.style.color = "#ccc";
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleApplyReleaseDate}
+                style={{
+                  padding: "8px 20px",
+                  backgroundColor: "#0055FF",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  transition: "opacity 0.15s",
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.9")}
+                onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+              >
+                Apply Schedule
+              </button>
             </div>
           </div>
         </div>
