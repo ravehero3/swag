@@ -293,7 +293,8 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
             progress: 100,
           });
 
-          return await response.json();
+          const createdBeat = await beatCreateRes.json();
+          return createdBeat;
         } catch (error) {
           const errorMsg = error instanceof Error ? error.message : 'Unknown error';
           console.error('[BeatUploadModal] Upload error for', beat.name, ':', errorMsg);
@@ -305,10 +306,10 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
         }
       });
 
-      await Promise.all(uploadPromises);
+      const uploadedBeats = await Promise.all(uploadPromises);
 
       if (onUploadComplete) {
-        onUploadComplete(beats.filter((b) => b.status === 'completed'));
+        onUploadComplete(uploadedBeats.filter(Boolean));
       }
     } finally {
       setIsUploading(false);
