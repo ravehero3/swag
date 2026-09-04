@@ -22,10 +22,8 @@ const uploadDir = process.env.NODE_ENV === "production"
   ? "/tmp/uploads"
   : path.join(process.cwd(), "tmp/uploads");
 
-// Beat audio is kept on the Oracle VPS filesystem. Set BEAT_STORAGE_DIR to the
-// mounted host/volume path in production so files survive container redeploys.
-const beatStorageDir = process.env.BEAT_STORAGE_DIR?.trim() ||
-  path.join(process.cwd(), "public/uploads/beats");
+// Beat audio is kept on the Oracle VPS filesystem at the served, persistent path.
+const beatStorageDir = path.join(process.cwd(), "public/uploads/beats");
 
 function saveBeatToVps(file: { originalname: string; path: string; size: number }) {
   if (!fs.existsSync(beatStorageDir)) fs.mkdirSync(beatStorageDir, { recursive: true });
