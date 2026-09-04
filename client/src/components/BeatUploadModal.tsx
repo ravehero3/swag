@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { X, Upload, Image as ImageIcon } from 'lucide-react';
 
 interface BeatFile {
@@ -14,6 +14,11 @@ interface BeatFile {
   error?: string;
   artworkUrl?: string;
   artworkFilename?: string;
+}
+
+interface GalleryImage {
+  url: string;
+  filename: string;
 }
 
 interface BeatUploadModalProps {
@@ -32,7 +37,46 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
   const [beats, setBeats] = useState<BeatFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [globalReleaseImmediately, setGlobalReleaseImmediately] = useState(true);
+  
+  // Gallery state
+  const [showGallery, setShowGallery] = useState(false);
+  const [selectedBeatForArtwork, setSelectedBeatForArtwork] = useState<string | null>(null);
+  const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
+  const [galleryLoading, setGalleryLoading] = useState(false);
+  const [galleryDragging, setGalleryDragging] = useState(false);
 
+  // Load gallery images when modal opens
+  useEffect(() => {
+    if (isOpen && showGallery) {
+      loadGalleryImages();
+    }
+  }, [isOpen, showGallery]);
+
+  const loadGalleryImages = async () => {
+    try {
+      setGalleryLoading(true);
+      const res = await fetch('/api/gallery-images');
+      if (!res.ok) throw new Error('Failed to load gallery');
+      const data = await res.json();
+      setGalleryImages(data || []);
+    } catch (err) {
+      console.error('Failed to load gallery:', err);
+      setGalleryImages([]);
+    } finally {
+      setGalleryLoading(false);
+    }
+  };
+
+  const handleGallerySelect = (url: string) => {
+    if (selectedBeatForArtwork) {
+      updateBeat(selectedBeatForArtwork, {
+        artworkUrl: url,
+        artworkFilename: url.split('/').pop() || 'artwork',
+      });
+      setSelectedBeatForArtwork(null);
+      setShowGallery(false);
+    }
+  };
 
   const handleFileSelect = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -66,20 +110,6 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
   const removeBeat = useCallback((id: string) => {
     setBeats((prev) => prev.filter((beat) => beat.id !== id));
   }, []);
-
-  const handleArtworkSelect = useCallback(
-    (url: string, filename: string) => {
-      if (selectedBeatForArtwork) {
-        updateBeat(selectedBeatForArtwork, {
-          artworkUrl: url,
-          artworkFilename: filename,
-        });
-        setSelectedBeatForArtwork(null);
-        setShowArtworkSelector(false);
-      }
-    },
-    [selectedBeatForArtwork, updateBeat]
-  );
 
   const handleUpload = async () => {
     console.log('[handleUpload] Starting upload with', beats.length, 'beats');
@@ -152,11 +182,18 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
 
   if (!isOpen) return null;
 
-  const statusIcon = {
-    pending: '⌛',
-    uploading: '⬆',
-    completed: '✓',
-    error: '✕',
+  const statusText = {
+    pending: 'Pending',
+    uploading: 'Uploading',
+    completed: 'Done',
+    error: 'Error',
+  };
+
+  const statusColor = {
+    pending: '#999',
+    uploading: '#0B99FC',
+    completed: '#4caf50',
+    error: '#f44336',
   };
 
   return (
@@ -266,13 +303,14 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                   marginBottom: '8px',
                   paddingBottom: '8px',
                   borderBottom: '1px solid #2a2a2a',
-                  gridTemplateColumns: '40px 1fr 60px 50px 90px 100px 50px',
+                  gridTemplateColumns: '60px 1fr 60px 50px 100px 90px 100px 50px',
                   letterSpacing: '0.3px',
                 }}>
                   <div>Status</div>
                   <div>Name</div>
                   <div>BPM</div>
                   <div>Key</div>
+                  <div>Artwork</div>
                   <div>Release</div>
                   <div>Progress</div>
                   <div></div>
@@ -288,7 +326,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                     borderRadius: '6px',
                     backgroundColor: '#0d0d0d',
                     border: '1px solid #1e1e1e',
-                    gridTemplateColumns: '40px 1fr 60px 50px 90px 100px 50px',
+                    gridTemplateColumns: '60px 1fr 60px 50px 100px 90px 100px 50px',
                     transition: 'border-color 0.15s, background 0.15s',
                   }}
                   onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#2a2a2a')}
@@ -296,8 +334,8 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                   >
                     
                     {/* Status */}
-                    <div style={{ textAlign: 'center', fontSize: '14px', fontWeight: 600, color: beat.status === 'completed' ? '#4caf50' : beat.status === 'error' ? '#f44336' : '#999' }}>
-                      {statusIcon[beat.status]}
+                    <div style={{ textAlign: 'center', fontSize: '11px', fontWeight: 600, color: statusColor[beat.status] }}>
+                      {statusText[beat.status]}
                     </div>
 
                     {/* Name */}
@@ -390,7 +428,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                           <button
                             onClick={() => {
                               setSelectedBeatForArtwork(beat.id);
-                              setShowArtworkSelector(true);
+                              setShowGallery(true);
                             }}
                             disabled={isUploading}
                             style={{
@@ -415,7 +453,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                         <button
                           onClick={() => {
                             setSelectedBeatForArtwork(beat.id);
-                            setShowArtworkSelector(true);
+                            setShowGallery(true);
                           }}
                           disabled={isUploading}
                           style={{
@@ -618,7 +656,77 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
         </div>
       </div>
 
-
+      {/* Gallery Modal */}
+      {showGallery && (
+        <div
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)", zIndex: 10000, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
+          onClick={(e) => { if (e.target === e.currentTarget) setShowGallery(false); }}
+        >
+          <div style={{ background: "#111", border: "0.4px solid #333", borderRadius: "8px", width: "min(860px, 96vw)", maxHeight: "88vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "0.4px solid #2a2a2a", flexShrink: 0 }}>
+              <div>
+                <div style={{ color: "#fff", fontSize: "14px", fontWeight: 500 }}>Select Artwork</div>
+                <div style={{ color: "#555", fontSize: "11px", marginTop: "2px" }}>Choose an image for your beat</div>
+              </div>
+              <button
+                onClick={() => setShowGallery(false)}
+                style={{ background: "transparent", border: "none", color: "#666", fontSize: "20px", cursor: "pointer", lineHeight: 1, padding: "0 4px" }}
+              >
+                x
+              </button>
+            </div>
+            <div
+              style={{ overflowY: "auto", padding: "20px", flex: 1, position: "relative", transition: "background 0.15s" }}
+              onDragOver={(e) => { e.preventDefault(); setGalleryDragging(true); }}
+              onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node)) setGalleryDragging(false); }}
+            >
+              {galleryDragging && (
+                <div style={{ position: "absolute", inset: 0, background: "rgba(11,153,252,0.08)", border: "2px dashed #0B99FC", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10, pointerEvents: "none" }}>
+                  <span style={{ color: "#0B99FC", fontSize: "14px", fontWeight: 500 }}>Drag images here</span>
+                </div>
+              )}
+              {galleryLoading ? (
+                <div style={{ textAlign: "center", color: "#444", padding: "48px 0", fontSize: "12px" }}>Loading...</div>
+              ) : galleryImages.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "48px 0" }}>
+                  <div style={{ color: "#444", fontSize: "13px", marginBottom: "8px" }}>No images in gallery</div>
+                  <div style={{ color: "#333", fontSize: "11px" }}>Upload images through the admin gallery first</div>
+                </div>
+              ) : (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: "12px" }}>
+                  {galleryImages.map(img => (
+                    <div
+                      key={img.filename}
+                      style={{ position: "relative", border: "0.4px solid #2a2a2a", borderRadius: "5px", overflow: "hidden", cursor: "pointer", transition: "border-color 0.15s" }}
+                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = "#666"}
+                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = "#2a2a2a"}
+                    >
+                      <img
+                        src={img.url}
+                        alt={img.filename}
+                        onClick={() => handleGallerySelect(img.url)}
+                        style={{ width: "100%", aspectRatio: "1", objectFit: "contain", background: "#080808", display: "block" }}
+                      />
+                      <div style={{ padding: "6px 8px 4px", background: "#0e0e0e" }}>
+                        <div style={{ fontSize: "10px", color: "#555", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{img.filename}</div>
+                        <button
+                          onClick={() => handleGallerySelect(img.url)}
+                          style={{ background: "transparent", border: "0.4px solid #444", color: "#aaa", borderRadius: "3px", padding: "2px 8px", cursor: "pointer", fontSize: "11px", marginTop: "4px", width: "100%" }}
+                        >
+                          Select
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div style={{ padding: "10px 20px", borderTop: "0.4px solid #1a1a1a", flexShrink: 0, display: "flex", justifyContent: "flex-end" }}>
+              <button onClick={() => setShowGallery(false)} style={{padding: '8px 16px', backgroundColor: '#0B99FC', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 600}}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
