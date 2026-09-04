@@ -37,7 +37,7 @@ router.get("/", async (req: Request, res: Response) => {
       params.push(`%${search}%`);
     }
     
-    query += " ORDER BY order_index ASC NULLS LAST, created_at DESC";
+    query += " ORDER BY order_index ASC NULLS LAST, created_at DESC, id DESC";
     const result = await pool.query(query, params);
     res.set("Cache-Control", "no-store, no-cache, must-revalidate");
     res.json(result.rows);
