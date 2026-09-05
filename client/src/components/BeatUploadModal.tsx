@@ -1058,6 +1058,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                   </div>
                 )}
               </div>
+            </div>
 
             {/* Footer */}
             <div style={{ padding: "16px 20px", borderTop: "0.4px solid #2a2a2a", display: "flex", gap: "8px", justifyContent: "flex-end" }}>
