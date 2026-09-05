@@ -7,7 +7,6 @@ interface BeatFile {
   name: string;
   bpm: string;
   key: string;
-  price: string;
   releaseDate: string;
   releaseImmediately: boolean;
   progress: number;
@@ -204,7 +203,6 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
         name: file.name.replace(/\.[^/.]+$/, ''),
         bpm: '',
         key: '',
-        price: '5000',
         releaseDate: new Date().toISOString().split('T')[0],
         releaseImmediately: globalReleaseImmediately,
         progress: 0,
@@ -277,7 +275,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
               artist: 'VOODOO808',
               bpm: parseInt(beat.bpm) || 0,
               key: beat.key || '',
-              price: parseInt(beat.price) || 5000,
+              price: 5000,
               fileUrl: uploadedFile.url,
               previewUrl: uploadedFile.url,
               artworkUrl: beat.artworkUrl || '',
@@ -470,14 +468,13 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                   marginBottom: '8px',
                   paddingBottom: '8px',
                   borderBottom: '1px solid #2a2a2a',
-                  gridTemplateColumns: '40px 1fr 60px 50px 70px 100px 90px 100px 50px',
+                  gridTemplateColumns: '40px 1fr 60px 50px 100px 90px 100px 50px',
                   letterSpacing: '0.3px',
                 }}>
                   <div>Status</div>
                   <div>Name</div>
                   <div>BPM</div>
                   <div>Key</div>
-                  <div>Price</div>
                   <div>Artwork</div>
                   <div>Release</div>
                   <div>Progress</div>
@@ -583,30 +580,6 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                         </option>
                       ))}
                     </select>
-
-                    {/* Price */}
-                    <input
-                      type="number"
-                      value={beat.price}
-                      onChange={(e) => updateBeat(beat.id, { price: e.target.value })}
-                      disabled={isUploading || beat.status === 'completed'}
-                      placeholder="5000"
-                      style={{
-                        padding: '8px 10px',
-                        fontSize: '13px',
-                        backgroundColor: '#111',
-                        border: '1px solid #2a2a2a',
-                        borderRadius: '4px',
-                        color: '#fff',
-                        opacity: isUploading || beat.status === 'completed' ? 0.6 : 1,
-                        outline: 'none',
-                        fontFamily: 'inherit',
-                        boxSizing: 'border-box',
-                        transition: 'border-color 0.15s',
-                      }}
-                      onFocus={(e) => (e.currentTarget.style.borderColor = '#0055FF')}
-                      onBlur={(e) => (e.currentTarget.style.borderColor = '#2a2a2a')}
-                    />
 
                     {/* Artwork */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
