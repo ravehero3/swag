@@ -35,6 +35,28 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
 }) => {
   console.log('[BeatUploadModal] Component rendering with isOpen:', isOpen);
   
+  // Parse beat metadata from filename
+  const parseBeatMetadata = (filename: string) => {
+    const nameWithoutExt = filename.replace(/\.[^/.]+$/, '');
+    let bpm = '';
+    let key = '';
+
+    // Match BPM pattern: number followed by "bpm" (case insensitive)
+    const bpmMatch = nameWithoutExt.match(/(\d+)\s*bpm/i);
+    if (bpmMatch) {
+      bpm = bpmMatch[1];
+    }
+
+    // Match key patterns: single notes (C, D, E, F, G, A, B) with optional # or b
+    // Also support: note + minor/major (e.g., "A minor", "C# major")
+    const keyMatch = nameWithoutExt.match(/\b([A-G](?:[#b])?(?:\s+(?:minor|major))?)\b/i);
+    if (keyMatch) {
+      key = keyMatch[1].trim();
+    }
+
+    return { bpm, key };
+  };
+  
   const [beats, setBeats] = useState<BeatFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [globalReleaseImmediately, setGlobalReleaseImmediately] = useState(true);
@@ -197,17 +219,21 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
       const files = event.currentTarget.files;
       if (!files) return;
 
-      const newBeats = Array.from(files).map((file) => ({
-        id: `${Date.now()}-${Math.random()}`,
-        file,
-        name: file.name.replace(/\.[^/.]+$/, ''),
-        bpm: '',
-        key: '',
-        releaseDate: new Date().toISOString().split('T')[0],
-        releaseImmediately: globalReleaseImmediately,
-        progress: 0,
-        status: 'pending' as const,
-      }));
+      const newBeats = Array.from(files).map((file) => {
+        const cleanName = file.name.replace(/\.[^/.]+$/, '');
+        const { bpm, key } = parseBeatMetadata(file.name);
+        return {
+          id: `${Date.now()}-${Math.random()}`,
+          file,
+          name: cleanName,
+          bpm,
+          key,
+          releaseDate: new Date().toISOString().split('T')[0],
+          releaseImmediately: globalReleaseImmediately,
+          progress: 0,
+          status: 'pending' as const,
+        };
+      });
 
       setBeats((prev) => [...prev, ...newBeats]);
       event.currentTarget.value = '';
