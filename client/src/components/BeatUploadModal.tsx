@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { X, Upload, Image as ImageIcon } from 'lucide-react';
+import { X, Upload, Image as ImageIcon, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 
 interface BeatFile {
   id: string;
@@ -41,8 +41,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
   const [showReleaseScheduler, setShowReleaseScheduler] = useState(false);
   const [schedulerDate, setSchedulerDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [applyToAll, setApplyToAll] = useState(true);
-  
-  // Gallery state
+  const [autoIncrement, setAutoIncrement] = useState(false);
   const [showGallery, setShowGallery] = useState(false);
   const [selectedBeatForArtwork, setSelectedBeatForArtwork] = useState<string | null>(null);
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
@@ -80,13 +79,18 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
 
   const handleApplyReleaseDate = () => {
     if (applyToAll) {
-      // Apply to all beats
       setBeats((prev) =>
-        prev.map((beat) => ({
-          ...beat,
-          releaseImmediately: false,
-          releaseDate: schedulerDate,
-        }))
+        prev.map((beat, index) => {
+          const date = new Date(schedulerDate);
+          if (autoIncrement) {
+            date.setDate(date.getDate() + index);
+          }
+          return {
+            ...beat,
+            releaseImmediately: false,
+            releaseDate: date.toISOString().split('T')[0],
+          };
+        })
       );
     }
     setShowReleaseScheduler(false);
@@ -322,14 +326,20 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
   if (!isOpen) return null;
 
   const statusIcon = {
-    pending: '⌛',
-    uploading: '⬆',
-    completed: '✓',
-    error: '✕',
+    pending: <Clock size={14} color="#999" />,
+    uploading: <Clock size={14} color="#0055FF" style={{ animation: 'spin 1s linear infinite' }} />,
+    completed: <CheckCircle size={14} color="#4caf50" />,
+    error: <AlertCircle size={14} color="#f44336" />,
   };
 
   return (
     <>
+      <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
       <div style={{
         position: 'fixed',
         inset: 0,
@@ -1010,17 +1020,44 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                 </div>
               </div>
 
-              {/* Apply to All */}
-              <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontSize: "13px", color: "#ccc" }}>
-                <input
-                  type="checkbox"
-                  checked={applyToAll}
-                  onChange={(e) => setApplyToAll(e.target.checked)}
-                  style={{ width: "16px", height: "16px", cursor: "pointer", accentColor: "#0055FF" }}
-                />
-                <span>Apply to all {beats.length} beats</span>
-              </label>
-            </div>
+              {/* Apply to All + Auto-Increment */}
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontSize: "13px", color: "#ccc" }}>
+                  <input
+                    type="checkbox"
+                    checked={applyToAll}
+                    onChange={(e) => setApplyToAll(e.target.checked)}
+                    style={{ width: "16px", height: "16px", cursor: "pointer", accentColor: "#0055FF" }}
+                  />
+                  <span>Apply to all {beats.length} beats</span>
+                </label>
+                {applyToAll && (
+                  <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontSize: "13px", color: "#ccc", marginLeft: "24px" }}>
+                    <input
+                      type="checkbox"
+                      checked={autoIncrement}
+                      onChange={(e) => setAutoIncrement(e.target.checked)}
+                      style={{ width: "16px", height: "16px", cursor: "pointer", accentColor: "#0055FF" }}
+                    />
+                    <span>Auto-increment daily (05.09, 06.09, 07.09...)</span>
+                  </label>
+                )}
+                {applyToAll && autoIncrement && (
+                  <div style={{ marginLeft: "24px", padding: "10px", backgroundColor: "#1a2a3a", border: "0.4px solid #2a4a6a", borderRadius: "4px", fontSize: "12px", color: "#aaa", lineHeight: "1.4" }}>
+                    <div style={{ fontWeight: 500, marginBottom: "6px" }}>Preview:</div>
+                    {beats.slice(0, 3).map((beat, idx) => {
+                      const date = new Date(schedulerDate);
+                      date.setDate(date.getDate() + idx);
+                      return (
+                        <div key={beat.id} style={{ fontSize: "11px" }}>
+                          • {beat.name} → {date.toLocaleDateString()}
+                        </div>
+                      );
+                    })}
+                    {beats.length > 3 && <div style={{ fontSize: "11px", marginTop: "4px" }}>... and {beats.length - 3} more</div>}
+                  </div>
+                )}
+              </div>
 
             {/* Footer */}
             <div style={{ padding: "16px 20px", borderTop: "0.4px solid #2a2a2a", display: "flex", gap: "8px", justifyContent: "flex-end" }}>

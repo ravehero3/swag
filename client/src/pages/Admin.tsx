@@ -1763,7 +1763,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                     {/* Card: BPM */}
                     <div style={{ ...card, textAlign: "center" }}>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", marginBottom: "10px" }}>
-                        <div style={{ ...lbl, marginBottom: 0 }}>BPM</div>
+                        <div style={{ ...lbl, marginBottom: 0, minWidth: "40px" }}>BPM</div>
                         {autoDetected?.bpm && (
                           <span style={{ fontSize: "9px", fontWeight: 700, color: "#4caf50", background: "rgba(76,175,80,0.12)", border: "1px solid rgba(76,175,80,0.25)", borderRadius: "999px", padding: "2px 6px", letterSpacing: "0.05em" }}>AUTO</span>
                         )}
@@ -2118,18 +2118,18 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
 
       {showGallery && (
         <div
-          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)", zIndex: 1050, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
           onClick={(e) => { if (e.target === e.currentTarget) setShowGallery(false); }}
         >
-          <div style={{ background: "#111", border: "0.4px solid #333", borderRadius: "8px", width: "min(860px, 96vw)", maxHeight: "88vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+          <div style={{ background: "#111", border: "0.4px solid #333", borderRadius: "8px", width: "min(860px, 96vw)", maxHeight: "88vh", display: "flex", flexDirection: "column", overflow: "hidden", zIndex: 1051, position: "relative" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "0.4px solid #2a2a2a", flexShrink: 0 }}>
               <div>
                 <div style={{ color: "#fff", fontSize: "14px", fontWeight: 500 }}>Galerie obrázků</div>
                 <div style={{ color: "#555", fontSize: "11px", marginTop: "2px" }}>Obrázky jsou uloženy přímo v aplikaci — žádný Backblaze bandwidth</div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: "1", minWidth: 0 }}>
-                  <label style={{ background: "transparent", border: "0.4px solid #555", color: galleryUploading ? "#555" : "#aaa", borderRadius: "3px", padding: "6px 12px", cursor: galleryUploading ? "default" : "pointer", fontSize: "12px", display: "flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: "1", minWidth: 0, position: "relative", zIndex: 1 }}>
+                  <label style={{ background: "transparent", border: "0.4px solid #555", color: galleryUploading ? "#555" : "#aaa", borderRadius: "3px", padding: "6px 12px", cursor: galleryUploading ? "default" : "pointer", fontSize: "12px", display: "flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap", position: "relative", zIndex: 2 }}>
                     {galleryUploading
                       ? `Nahrávám${galleryUploadCount > 1 ? ` ${galleryUploadCount} obrázků` : ""}…`
                       : "+ Nahrát obrázky"}
