@@ -112,12 +112,41 @@ export const CZECH = {
   
   // Upload Modal
   nahrat_beaty_modal: "Nahrát beaty",
+  v_poradi: "beatů v pořadí",
   zadny_beat_vybran: "Zatím není vybrán žádný beat",
   pocet_beatu: "beatů v pořadí",
   dokonceno: "dokončeno",
   chyby: "chyb",
   okamzite_vydani: "Vydat okamžitě",
   nastavit_datum_vydani: "Nastavit datum vydání",
+  pridat_beaty: "Přidat beaty",
+  nahrat_vse: "Nahrát vše",
+  nahravani: "Nahrávání",
+  hned: "Hned",
+  
+  // Release Scheduler
+  naplanovani_vydani: "Plánování vydání",
+  kdy_vydani: "Kdy mají být vaše beaty zveřejněny",
+  datum_vydani: "Datum vydání",
+  rychly_vyber: "Rychlý výběr",
+  zitra: "Zítra",
+  dalsi_pracovni_den: "Další pracovní den",
+  dalsi_patek: "Příští pátek",
+  dalsi_tyden: "Příští týden",
+  pouzit_pro_vse: "Použít pro všechny",
+  bitu: "beatů",
+  auto_inkrementace: "Automaticky zvyšovat o 1 den (05.09, 06.09, 07.09...)",
+  nahled: "Náhled:",
+  a_dalsi: "a dalších",
+  aplikovat_plan: "Použít plán",
+  
+  // Gallery
+  vybrat_umeni: "Vybrat umění",
+  vyberte_obrazek_nebo_nahrajte: "Zvolte obrázek nebo nahrajte nové",
+  nahrat_obrazky: "Nahrát obrázky",
+  obrazky: "obrázky",
+  zadne_obrazky: "V galerii nejsou žádné obrázky",
+  nahrajte_obrazky_pres_admin: "Nahrávejte obrázky prostřednictvím administrátorské galerie",
   
   // Release Scheduler
   naplanovani_vydani: "Plánování vydání",

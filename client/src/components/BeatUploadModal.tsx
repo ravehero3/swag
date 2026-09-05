@@ -1,5 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { X, Upload, Image as ImageIcon, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { CZECH } from '../constants/czech';
+import { DESIGN_SYSTEM } from '../constants/designSystem';
 
 interface BeatFile {
   id: string;
@@ -402,11 +404,11 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
             justifyContent: 'space-between',
           }}>
             <div>
-              <h1 style={{ fontSize: '20px', fontWeight: 600, color: '#fff', margin: 0, letterSpacing: '-0.5px' }}>Upload Beats</h1>
-              <p style={{ fontSize: '13px', color: '#888', marginTop: '6px', margin: 0 }}>
-                {beats.length} beat{beats.length !== 1 ? 's' : ''} queued
-                {completedCount > 0 && ` • ${completedCount} completed`}
-                {errorCount > 0 && ` • ${errorCount} errors`}
+              <h1 style={{ fontSize: '20px', fontWeight: 600, color: DESIGN_SYSTEM.colors.textPrimary, margin: 0, letterSpacing: '-0.5px' }}>{CZECH.nahrat_beaty_modal}</h1>
+              <p style={{ fontSize: '13px', color: DESIGN_SYSTEM.colors.textSecondary, marginTop: '6px', margin: 0 }}>
+                {beats.length} beat{beats.length !== 1 ? 'y' : ''} {CZECH.v_poradi}
+                {completedCount > 0 && ` • ${completedCount} ${CZECH.dokonceno}`}
+                {errorCount > 0 && ` • ${errorCount} ${CZECH.chyby}`}
               </p>
             </div>
             <button
@@ -446,7 +448,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                   disabled={isUploading}
                   style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#0055FF' }}
                 />
-                <span style={{ fontSize: '13px', color: '#ccc' }}>Release all immediately</span>
+                <span style={{ fontSize: '13px', color: DESIGN_SYSTEM.colors.textPrimary }}>{CZECH.okamzite_vydani}</span>
               </label>
               {!globalReleaseImmediately && (
                 <button
@@ -467,7 +469,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                   onMouseEnter={(e) => (e.currentTarget.style.opacity = isUploading ? '0.6' : '0.9')}
                   onMouseLeave={(e) => (e.currentTarget.style.opacity = isUploading ? '0.6' : '1')}
                 >
-                  Set Release Date
+                  {CZECH.nastavit_datum_vydani}
                 </button>
               )}
             </div>
@@ -479,7 +481,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '200px', color: '#666' }}>
                 <div style={{ textAlign: 'center' }}>
                   <Upload className="w-10 h-10" style={{ margin: '0 auto 12px', opacity: 0.4 }} />
-                  <p style={{ fontSize: '14px', margin: 0 }}>No beats selected yet</p>
+                  <p style={{ fontSize: '14px', margin: 0 }}>{CZECH.zadny_beat_vybran}</p>
                 </div>
               </div>
             ) : (
@@ -497,13 +499,13 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                   gridTemplateColumns: '40px 1fr 60px 50px 100px 90px 100px 50px',
                   letterSpacing: '0.3px',
                 }}>
-                  <div>Status</div>
-                  <div>Name</div>
+                  <div>Stav</div>
+                  <div>{CZECH.nazev_beatu}</div>
                   <div>BPM</div>
-                  <div>Key</div>
-                  <div>Artwork</div>
-                  <div>Release</div>
-                  <div>Progress</div>
+                  <div>{CZECH.kluc}</div>
+                  <div>{CZECH.umeni}</div>
+                  <div>{CZECH.vydano}</div>
+                  <div>Postup</div>
                   <div></div>
                 </div>
 
@@ -682,7 +684,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                     {/* Release */}
                     <div style={{ fontSize: '12px' }}>
                       {beat.releaseImmediately ? (
-                        <span style={{ color: '#4caf50', fontWeight: 500 }}>Now</span>
+                        <span style={{ color: DESIGN_SYSTEM.colors.success, fontWeight: 500 }}>{CZECH.hned}</span>
                       ) : (
                         <input
                           type="date"
@@ -787,7 +789,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
               }}
               >
                 <Upload className="w-4 h-4" />
-                Add Beats
+                {CZECH.pridat_beaty}
               </span>
             </label>
 
@@ -816,7 +818,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                   (e.currentTarget as HTMLButtonElement).style.color = '#ccc';
                 }}
               >
-                Close
+                {CZECH.zavrit}
               </button>
               <button
                 onClick={handleUpload}
@@ -842,7 +844,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                   (e.currentTarget as HTMLButtonElement).style.opacity = beats.length === 0 || isUploading ? '0.6' : '1';
                 }}
               >
-                {isUploading ? 'Uploading...' : 'Upload All'}
+                {isUploading ? CZECH.nahravani : CZECH.nahrat_vse}
               </button>
             </div>
           </div>
@@ -858,8 +860,8 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
           <div style={{ background: "#111", border: "0.4px solid #333", borderRadius: "8px", width: "min(860px, 96vw)", maxHeight: "88vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "0.4px solid #2a2a2a", flexShrink: 0 }}>
               <div>
-                <div style={{ color: "#fff", fontSize: "14px", fontWeight: 500 }}>Select Artwork</div>
-                <div style={{ color: "#555", fontSize: "11px", marginTop: "2px" }}>Choose an image or upload new ones</div>
+                <div style={{ color: DESIGN_SYSTEM.colors.textPrimary, fontSize: "14px", fontWeight: 500 }}>{CZECH.vybrat_umeni}</div>
+                <div style={{ color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "11px", marginTop: "2px" }}>{CZECH.vyberte_obrazek_nebo_nahrajte}</div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 {galleryUploading && (
@@ -873,7 +875,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                   </div>
                 )}
                 <label style={{ background: "transparent", border: "0.4px solid #555", color: galleryUploading ? "#555" : "#aaa", borderRadius: "3px", padding: "6px 12px", cursor: galleryUploading ? "default" : "pointer", fontSize: "12px", display: "flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap", transition: "all 0.15s" }}>
-                  {galleryUploading ? `Uploading ${galleryUploadTotal} images...` : "+ Upload Images"}
+                  {galleryUploading ? `${CZECH.nahravani} ${galleryUploadTotal} ${CZECH.obrazky}...` : `+ ${CZECH.nahrat_obrazky}`}
                   <input
                     type="file"
                     accept="image/*"
@@ -912,8 +914,8 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                 <div style={{ textAlign: "center", color: "#444", padding: "48px 0", fontSize: "12px" }}>Loading...</div>
               ) : galleryImages.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "48px 0" }}>
-                  <div style={{ color: "#444", fontSize: "13px", marginBottom: "8px" }}>No images in gallery</div>
-                  <div style={{ color: "#333", fontSize: "11px" }}>Upload images through the admin gallery first</div>
+                  <div style={{ color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "13px", marginBottom: "8px" }}>{CZECH.zadne_obrazky}</div>
+                  <div style={{ color: DESIGN_SYSTEM.colors.textTertiary, fontSize: "11px" }}>{CZECH.nahrajte_obrazky_pres_admin}</div>
                 </div>
               ) : (
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: "12px" }}>
@@ -970,8 +972,8 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
             {/* Header */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px", borderBottom: "0.4px solid #2a2a2a" }}>
               <div>
-                <div style={{ color: "#fff", fontSize: "16px", fontWeight: 600 }}>Schedule Release</div>
-                <div style={{ color: "#555", fontSize: "12px", marginTop: "4px" }}>Set when your beats go live</div>
+                <div style={{ color: DESIGN_SYSTEM.colors.textPrimary, fontSize: "16px", fontWeight: 600 }}>{CZECH.naplanovani_vydani}</div>
+                <div style={{ color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "12px", marginTop: "4px" }}>{CZECH.kdy_vydani}</div>
               </div>
               <button
                 onClick={() => setShowReleaseScheduler(false)}
@@ -985,7 +987,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
             <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
               {/* Date Input */}
               <div>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: 500, color: "#ccc", marginBottom: "8px" }}>Release Date</label>
+                <label style={{ display: "block", fontSize: "13px", fontWeight: 500, color: DESIGN_SYSTEM.colors.textPrimary, marginBottom: "8px" }}>{CZECH.datum_vydani}</label>
                 <input
                   type="date"
                   value={schedulerDate}
@@ -1007,13 +1009,13 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
 
               {/* Quick Presets */}
               <div>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: 500, color: "#ccc", marginBottom: "8px" }}>Quick Presets</label>
+                <label style={{ display: "block", fontSize: "13px", fontWeight: 500, color: DESIGN_SYSTEM.colors.textPrimary, marginBottom: "8px" }}>{CZECH.rychly_vyber}</label>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
                   {[
-                    { label: "Tomorrow", get: () => new Date(Date.now() + 86400000).toISOString().split('T')[0] },
-                    { label: "Next Weekday", get: getNextWeekday },
-                    { label: "Next Friday", get: getNextFriday },
-                    { label: "Next Week", get: () => new Date(Date.now() + 604800000).toISOString().split('T')[0] },
+                    { label: CZECH.zitra, get: () => new Date(Date.now() + 86400000).toISOString().split('T')[0] },
+                    { label: CZECH.dalsi_pracovni_den, get: getNextWeekday },
+                    { label: CZECH.dalsi_patek, get: getNextFriday },
+                    { label: CZECH.dalsi_tyden, get: () => new Date(Date.now() + 604800000).toISOString().split('T')[0] },
                   ].map((preset) => (
                     <button
                       key={preset.label}
@@ -1048,29 +1050,29 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
 
               {/* Apply to All + Auto-Increment */}
               <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontSize: "13px", color: "#ccc" }}>
+                <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontSize: "13px", color: DESIGN_SYSTEM.colors.textPrimary }}>
                   <input
                     type="checkbox"
                     checked={applyToAll}
                     onChange={(e) => setApplyToAll(e.target.checked)}
-                    style={{ width: "16px", height: "16px", cursor: "pointer", accentColor: "#0055FF" }}
+                    style={{ width: "16px", height: "16px", cursor: "pointer", accentColor: DESIGN_SYSTEM.colors.primary }}
                   />
-                  <span>Apply to all {beats.length} beats</span>
+                  <span>{CZECH.pouzit_pro_vse} {beats.length} {CZECH.bitu}</span>
                 </label>
                 {applyToAll && (
-                  <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontSize: "13px", color: "#ccc", marginLeft: "24px" }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontSize: "13px", color: DESIGN_SYSTEM.colors.textPrimary, marginLeft: "24px" }}>
                     <input
                       type="checkbox"
                       checked={autoIncrement}
                       onChange={(e) => setAutoIncrement(e.target.checked)}
-                      style={{ width: "16px", height: "16px", cursor: "pointer", accentColor: "#0055FF" }}
+                      style={{ width: "16px", height: "16px", cursor: "pointer", accentColor: DESIGN_SYSTEM.colors.primary }}
                     />
-                    <span>Auto-increment daily (05.09, 06.09, 07.09...)</span>
+                    <span>{CZECH.auto_inkrementace}</span>
                   </label>
                 )}
                 {applyToAll && autoIncrement && (
                   <div style={{ marginLeft: "24px", padding: "10px", backgroundColor: "#1a2a3a", border: "0.4px solid #2a4a6a", borderRadius: "4px", fontSize: "12px", color: "#aaa", lineHeight: "1.4" }}>
-                    <div style={{ fontWeight: 500, marginBottom: "6px" }}>Preview:</div>
+                    <div style={{ fontWeight: 500, marginBottom: "6px" }}>{CZECH.nahled}</div>
                     {beats.slice(0, 3).map((beat, idx) => {
                       const date = new Date(schedulerDate);
                       date.setDate(date.getDate() + idx);
@@ -1080,7 +1082,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                         </div>
                       );
                     })}
-                    {beats.length > 3 && <div style={{ fontSize: "11px", marginTop: "4px" }}>... and {beats.length - 3} more</div>}
+                    {beats.length > 3 && <div style={{ fontSize: "11px", marginTop: "4px" }}>... {CZECH.a_dalsi} {beats.length - 3}</div>}
                   </div>
                 )}
               </div>
@@ -1110,7 +1112,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                   e.currentTarget.style.color = "#ccc";
                 }}
               >
-                Cancel
+                {CZECH.zrusit}
               </button>
               <button
                 onClick={handleApplyReleaseDate}
@@ -1128,7 +1130,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                 onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.9")}
                 onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
               >
-                Apply Schedule
+                {CZECH.aplikovat_plan}
               </button>
             </div>
           </div>
