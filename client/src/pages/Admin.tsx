@@ -529,7 +529,7 @@ function WaveformModal({ beat, onClose }: { beat: Beat; onClose: () => void }) {
       onClick={onClose}
     >
       <div
-        style={{ background: "DESIGN_SYSTEM.colors.tertiary", border: "1px solid #2a2a2a", borderRadius: "6px", padding: "24px 28px", minWidth: "540px", maxWidth: "90vw" }}
+        style={{ background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #2a2a2a", borderRadius: "6px", padding: "24px 28px", minWidth: "540px", maxWidth: "90vw" }}
         onClick={e => e.stopPropagation()}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
@@ -653,7 +653,7 @@ function ArtworkPreview({ url, onDelete, testId }: { url: string; onDelete: () =
           onError={() => setStatus("error")}
           style={{
             width: "96px", height: "96px", objectFit: "cover", borderRadius: "3px",
-            background: "DESIGN_SYSTEM.colors.tertiary", border: status === "error" ? "1px solid #ff5252" : "1px solid #2a2a2a",
+            background: DESIGN_SYSTEM.colors.tertiary, border: status === "error" ? "1px solid #ff5252" : "1px solid #2a2a2a",
             opacity: status === "error" ? 0.3 : 1,
           }}
         />
@@ -1215,7 +1215,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
       setPreviewBeatId(null);
     } else {
       if (previewAudioRef.current) { previewAudioRef.current.pause(); }
-      const audio = new Audio(beat.preview_url);
+      const audio = new Audio(toAudioProxyUrl(beat.preview_url));
       audio.volume = 0.7;
       audio.play().catch(() => {});
       audio.onended = () => setPreviewBeatId(null);
@@ -1478,7 +1478,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   };
 
   const inputStyle: React.CSSProperties = {
-    width: "100%", padding: "9px 12px", background: "DESIGN_SYSTEM.colors.tertiary", border: "1px solid #2a2a2a",
+    width: "100%", padding: "9px 12px", background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #2a2a2a",
     color: "DESIGN_SYSTEM.colors.textPrimary", borderRadius: "6px", fontSize: "13px", boxSizing: "border-box",
     outline: "none", transition: "border-color 0.15s",
   };
@@ -1510,7 +1510,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     if (!isUploading && !isDone) return null;
 
     return (
-      <div style={{ marginTop: "8px", background: "DESIGN_SYSTEM.colors.tertiary", border: "1px solid #222", borderRadius: "8px", padding: "10px 12px" }}>
+      <div style={{ marginTop: "8px", background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #222", borderRadius: "8px", padding: "10px 12px" }}>
         {/* File info row */}
         {fileInfo && (
           <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
@@ -2034,7 +2034,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                   {form.artworkUrl ? (
                     <img src={form.artworkUrl} alt={form.title} style={{ width: 48, height: 48, borderRadius: 4, objectFit: "cover", display: "block" }} />
                   ) : (
-                    <div style={{ width: 48, height: 48, borderRadius: 4, background: "DESIGN_SYSTEM.colors.tertiary", border: "1px solid #1e1e1e", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <div style={{ width: 48, height: 48, borderRadius: 4, background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #1e1e1e", display: "flex", alignItems: "center", justifyContent: "center" }}>
                       <Music size={18} color="DESIGN_SYSTEM.colors.border" />
                     </div>
                   )}
@@ -2124,7 +2124,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
           style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)", zIndex: DESIGN_SYSTEM.zIndex.modal, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
           onClick={(e) => { if (e.target === e.currentTarget) setShowGallery(false); }}
         >
-          <div style={{ background: "DESIGN_SYSTEM.colors.tertiary", border: "0.4px solid #333", borderRadius: "8px", width: "min(860px, 96vw)", maxHeight: "88vh", display: "flex", flexDirection: "column", overflow: "hidden", zIndex: DESIGN_SYSTEM.zIndex.modalNested, position: "relative" }}>
+          <div style={{ background: DESIGN_SYSTEM.colors.tertiary, border: "0.4px solid #333", borderRadius: "8px", width: "min(860px, 96vw)", maxHeight: "88vh", display: "flex", flexDirection: "column", overflow: "hidden", zIndex: DESIGN_SYSTEM.zIndex.modalNested, position: "relative" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "0.4px solid #2a2a2a", flexShrink: 0 }}>
               <div>
                 <div style={{ color: "DESIGN_SYSTEM.colors.textPrimary", fontSize: "14px", fontWeight: 500 }}>Galerie obrázků</div>
@@ -2237,7 +2237,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
           style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)", zIndex: DESIGN_SYSTEM.zIndex.modal, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
           onClick={(e) => { if (e.target === e.currentTarget) setShowBeatFolder(false); }}
         >
-          <div style={{ background: "DESIGN_SYSTEM.colors.tertiary", border: "0.4px solid #333", borderRadius: "8px", width: "min(860px, 96vw)", maxHeight: "88vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+          <div style={{ background: DESIGN_SYSTEM.colors.tertiary, border: "0.4px solid #333", borderRadius: "8px", width: "min(860px, 96vw)", maxHeight: "88vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
             {/* Header */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "0.4px solid #2a2a2a", flexShrink: 0 }}>
               <div>
@@ -2518,7 +2518,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                             onChange={e => setQuickEditTitle(e.target.value)}
                             onKeyDown={e => { if (e.key === "Enter") { saveInlineTitle(beat, quickEditTitle); if (inlineBpmKey) saveInlineBpmKey(beat, inlineBpmKey.bpm, inlineBpmKey.key); } if (e.key === "Escape") { setQuickEditId(null); setInlineBpmKey(null); } }}
                             autoFocus
-                            style={{ width: "100%", padding: "5px 8px", background: "DESIGN_SYSTEM.colors.tertiary", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "6px", color: "#e0e0e0", fontSize: "13px", fontWeight: 500, outline: "none", boxSizing: "border-box" }}
+                            style={{ width: "100%", padding: "5px 8px", background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid rgba(255,255,255,0.15)", borderRadius: "6px", color: "#e0e0e0", fontSize: "13px", fontWeight: 500, outline: "none", boxSizing: "border-box" }}
                             data-testid={`input-beat-title-inline-${beat.id}`}
                           />
                         ) : (
@@ -2528,7 +2528,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                             {beat.tags && beat.tags.length > 0 && (
                               <div style={{ display: "flex", gap: "4px", marginTop: "4px", flexWrap: "wrap" }}>
                                 {beat.tags.map((t: string, i: number) => (
-                                  <span key={i} style={{ fontSize: "10px", color: "#555", background: "DESIGN_SYSTEM.colors.tertiary", border: "1px solid #1e1e1e", borderRadius: "999px", padding: "1px 7px" }}>{t}</span>
+                                  <span key={i} style={{ fontSize: "10px", color: "#555", background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #1e1e1e", borderRadius: "999px", padding: "1px 7px" }}>{t}</span>
                                 ))}
                               </div>
                             )}
@@ -2542,7 +2542,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                             min={40} max={300}
                             value={inlineBpmKey?.bpm ?? beat.bpm}
                             onChange={e => setInlineBpmKey(v => v ? { ...v, bpm: Number(e.target.value) } : { id: beat.id, bpm: Number(e.target.value), key: beat.key || "Cm" })}
-                            style={{ width: "56px", padding: "4px 5px", background: "DESIGN_SYSTEM.colors.tertiary", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "4px", color: "DESIGN_SYSTEM.colors.textPrimary", fontSize: "12px", fontFamily: "monospace", outline: "none", textAlign: "center" }}
+                            style={{ width: "56px", padding: "4px 5px", background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid rgba(255,255,255,0.15)", borderRadius: "4px", color: "DESIGN_SYSTEM.colors.textPrimary", fontSize: "12px", fontFamily: "monospace", outline: "none", textAlign: "center" }}
                           />
                         ) : (
                           <div style={{ fontSize: "12px", color: "DESIGN_SYSTEM.colors.textPrimary", fontFamily: "monospace" }}>{beat.bpm}</div>
@@ -2553,7 +2553,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                           <select
                             value={inlineBpmKey?.key ?? beat.key ?? "Cm"}
                             onChange={e => setInlineBpmKey(v => v ? { ...v, key: e.target.value } : { id: beat.id, bpm: beat.bpm, key: e.target.value })}
-                            style={{ width: "62px", padding: "4px 3px", background: "DESIGN_SYSTEM.colors.tertiary", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "4px", color: "DESIGN_SYSTEM.colors.textSecondary", fontSize: "11px", outline: "none" }}
+                            style={{ width: "62px", padding: "4px 3px", background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid rgba(255,255,255,0.15)", borderRadius: "4px", color: "DESIGN_SYSTEM.colors.textSecondary", fontSize: "11px", outline: "none" }}
                           >
                             {MUSICAL_KEYS.map(k => <option key={k} value={k}>{k}</option>)}
                           </select>
@@ -3125,7 +3125,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
             <div style={{ gridColumn: "1 / -1" }}>
               <label style={{ display: "block", marginBottom: "8px" }}>Preview Audio (lze přidat více)</label>
               {form.previewUrls.map((url, idx) => (
-                <div key={idx} style={{ marginBottom: "12px", background: "DESIGN_SYSTEM.colors.tertiary", border: "1px solid #222", borderRadius: "6px", padding: "12px" }}>
+                <div key={idx} style={{ marginBottom: "12px", background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #222", borderRadius: "6px", padding: "12px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "10px" }}>
                     <span style={{ fontSize: "11px", color: "#555", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {url.split("/").pop() || url}
@@ -3149,7 +3149,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
                         labels[idx] = e.target.value;
                         return { ...f, previewLabels: labels };
                       })}
-                      style={{ width: "100%", background: "DESIGN_SYSTEM.colors.tertiary", border: "1px solid #333", color: "DESIGN_SYSTEM.colors.textPrimary", padding: "6px 8px", borderRadius: "3px", fontSize: "12px" }}
+                      style={{ width: "100%", background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #333", color: "DESIGN_SYSTEM.colors.textPrimary", padding: "6px 8px", borderRadius: "3px", fontSize: "12px" }}
                     >
                       <option value="">— vyberte popis —</option>
                       <option value="Melodie tohohle beatu je ze zvuků z tohohle kitu">Melodie tohohle beatu je ze zvuků z tohohle kitu</option>
@@ -3189,7 +3189,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
                 placeholder="https://drive.google.com/drive/folders/..."
                 value={form.fileUrl || ""}
                 onChange={(e) => setForm({ ...form, fileUrl: e.target.value })}
-                style={{ width: "100%", padding: "8px 10px", background: "DESIGN_SYSTEM.colors.tertiary", border: "1px solid #333", color: "DESIGN_SYSTEM.colors.textPrimary", borderRadius: "3px", fontSize: "13px", boxSizing: "border-box" }}
+                style={{ width: "100%", padding: "8px 10px", background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #333", color: "DESIGN_SYSTEM.colors.textPrimary", borderRadius: "3px", fontSize: "13px", boxSizing: "border-box" }}
                 data-testid="input-gdrive-url"
               />
               <p style={{ fontSize: "11px", color: "#555", marginTop: "5px" }}>
@@ -3282,7 +3282,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
           style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)", zIndex: DESIGN_SYSTEM.zIndex.modal, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
           onClick={(e) => { if (e.target === e.currentTarget) setShowGallery(false); }}
         >
-          <div style={{ background: "DESIGN_SYSTEM.colors.tertiary", border: "0.4px solid #333", borderRadius: "8px", width: "min(860px, 96vw)", maxHeight: "88vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+          <div style={{ background: DESIGN_SYSTEM.colors.tertiary, border: "0.4px solid #333", borderRadius: "8px", width: "min(860px, 96vw)", maxHeight: "88vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "0.4px solid #2a2a2a", flexShrink: 0 }}>
               <div>
                 <div style={{ color: "DESIGN_SYSTEM.colors.textPrimary", fontSize: "14px", fontWeight: 500 }}>Galerie obrázků</div>
@@ -4117,7 +4117,7 @@ function LicensesTab({ licenses, onRefresh }: any) {
       {previewHtml && (
         <div
           onClick={() => setPreviewHtml(null)}
-          style={{ position: "fixed", inset: 0, background: "rgba(30,30,30,0.92)", zIndex: 1000, display: "flex", flexDirection: "column", alignItems: "center", overflowY: "auto", padding: "24px 16px 48px" }}
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)", zIndex: DESIGN_SYSTEM.zIndex.modal, display: "flex", flexDirection: "column", alignItems: "center", overflowY: "auto", padding: "24px 16px 48px", display: "flex", flexDirection: "column", alignItems: "center", overflowY: "auto", padding: "24px 16px 48px" }}
         >
           {/* Toolbar */}
           <div
@@ -5160,7 +5160,7 @@ function IGStoriesTab({ settings, onRefresh }: any) {
   const cardBoxShadow = cardShadow ? `0 ${cardShadowAmount * 0.5}px ${cardShadowAmount}px rgba(0,0,0,0.55)` : "none";
 
   const labelStyle = { fontSize: "11px", color: "DESIGN_SYSTEM.colors.textSecondary", marginBottom: "6px", display: "block", letterSpacing: "0.05em", textTransform: "uppercase" as const };
-  const fieldStyle = { width: "100%", padding: "9px 12px", background: "DESIGN_SYSTEM.colors.tertiary", border: "1px solid #2a2a2a", borderRadius: "3px", color: "DESIGN_SYSTEM.colors.textPrimary", fontSize: "13px", fontFamily: "inherit", outline: "none", boxSizing: "border-box" as const };
+  const fieldStyle = { width: "100%", padding: "9px 12px", background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #2a2a2a", borderRadius: "3px", color: "DESIGN_SYSTEM.colors.textPrimary", fontSize: "13px", fontFamily: "inherit", outline: "none", boxSizing: "border-box" as const };
   const modeBtnStyle = (active: boolean) => ({ padding: "4px 10px", background: active ? "DESIGN_SYSTEM.colors.textPrimary" : "transparent", color: active ? "#000" : "#555", border: "1px solid " + (active ? "DESIGN_SYSTEM.colors.textPrimary" : "DESIGN_SYSTEM.colors.border"), borderRadius: "3px", fontSize: "11px", cursor: "pointer", fontFamily: "inherit" });
   const sectionHeadStyle = { fontSize: "10px", color: "#555", textTransform: "uppercase" as const, letterSpacing: "0.1em", borderBottom: "1px solid #1a1a1a", paddingBottom: "8px", marginBottom: "14px" };
 
@@ -5373,7 +5373,7 @@ function IGStoriesTab({ settings, onRefresh }: any) {
               <>
                 <label style={labelStyle}>Barva pozadí</label>
                 <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                  <input type="color" value={bgColor} onChange={(e) => handleChange("ig_story_bg_color", e.target.value)} style={{ width: "36px", height: "36px", padding: "2px", background: "DESIGN_SYSTEM.colors.tertiary", border: "1px solid #2a2a2a", borderRadius: "3px", cursor: "pointer" }} />
+                  <input type="color" value={bgColor} onChange={(e) => handleChange("ig_story_bg_color", e.target.value)} style={{ width: "36px", height: "36px", padding: "2px", background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #2a2a2a", borderRadius: "3px", cursor: "pointer" }} />
                   <input type="text" value={bgColor} onChange={(e) => handleChange("ig_story_bg_color", e.target.value)} style={{ ...fieldStyle, width: "90px" }} />
                 </div>
               </>
@@ -5385,7 +5385,7 @@ function IGStoriesTab({ settings, onRefresh }: any) {
             <div style={{ flex: 1 }}>
               <label style={labelStyle}>Barva textu</label>
               <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                <input type="color" value={textColor} onChange={(e) => handleChange("ig_story_text_color", e.target.value)} style={{ width: "36px", height: "36px", padding: "2px", background: "DESIGN_SYSTEM.colors.tertiary", border: "1px solid #2a2a2a", borderRadius: "3px", cursor: "pointer" }} />
+                <input type="color" value={textColor} onChange={(e) => handleChange("ig_story_text_color", e.target.value)} style={{ width: "36px", height: "36px", padding: "2px", background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #2a2a2a", borderRadius: "3px", cursor: "pointer" }} />
                 <input type="text" value={textColor} onChange={(e) => handleChange("ig_story_text_color", e.target.value)} style={{ ...fieldStyle, width: "90px" }} />
               </div>
             </div>
@@ -5465,8 +5465,8 @@ function IGStoriesTab({ settings, onRefresh }: any) {
                 <div>
                   <label style={labelStyle}>Vertikální pozice — {cardYOffset >= 0 ? "+" : ""}{cardYOffset}px</label>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <button onClick={() => handleChange("ig_story_card_y_offset", String(cardYOffset - 5))} style={{ padding: "5px 12px", background: "DESIGN_SYSTEM.colors.tertiary", border: "1px solid #2a2a2a", borderRadius: "3px", color: "DESIGN_SYSTEM.colors.textPrimary", cursor: "pointer", fontSize: "14px", fontFamily: "inherit", lineHeight: 1 }}>▲</button>
-                    <button onClick={() => handleChange("ig_story_card_y_offset", String(cardYOffset + 5))} style={{ padding: "5px 12px", background: "DESIGN_SYSTEM.colors.tertiary", border: "1px solid #2a2a2a", borderRadius: "3px", color: "DESIGN_SYSTEM.colors.textPrimary", cursor: "pointer", fontSize: "14px", fontFamily: "inherit", lineHeight: 1 }}>▼</button>
+                    <button onClick={() => handleChange("ig_story_card_y_offset", String(cardYOffset - 5))} style={{ padding: "5px 12px", background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #2a2a2a", borderRadius: "3px", color: "DESIGN_SYSTEM.colors.textPrimary", cursor: "pointer", fontSize: "14px", fontFamily: "inherit", lineHeight: 1 }}>▲</button>
+                    <button onClick={() => handleChange("ig_story_card_y_offset", String(cardYOffset + 5))} style={{ padding: "5px 12px", background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #2a2a2a", borderRadius: "3px", color: "DESIGN_SYSTEM.colors.textPrimary", cursor: "pointer", fontSize: "14px", fontFamily: "inherit", lineHeight: 1 }}>▼</button>
                     <button onClick={() => handleChange("ig_story_card_y_offset", "0")} style={{ padding: "5px 10px", background: "transparent", border: "1px solid #222", borderRadius: "3px", color: "#555", cursor: "pointer", fontSize: "11px", fontFamily: "inherit" }}>Reset</button>
                     <span style={{ fontSize: "11px", color: "#444" }}>vycentrováno ± posun</span>
                   </div>
@@ -5505,7 +5505,7 @@ function IGStoriesTab({ settings, onRefresh }: any) {
             <div style={sectionHeadStyle}>Logo</div>
             <input ref={logoInputRef} type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => { const f = e.target.files?.[0]; if (f) handleLogoUpload(f); e.target.value = ""; }} />
             <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
-              <button onClick={() => logoInputRef.current?.click()} style={{ padding: "7px 14px", background: "DESIGN_SYSTEM.colors.tertiary", border: "1px solid #2a2a2a", borderRadius: "3px", color: "DESIGN_SYSTEM.colors.textPrimary", fontSize: "12px", cursor: "pointer", fontFamily: "inherit" }}>
+              <button onClick={() => logoInputRef.current?.click()} style={{ padding: "7px 14px", background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #2a2a2a", borderRadius: "3px", color: "DESIGN_SYSTEM.colors.textPrimary", fontSize: "12px", cursor: "pointer", fontFamily: "inherit" }}>
                 {logoUploading ? "Nahrávám…" : logoUrl ? "Změnit logo" : "Nahrát logo"}
               </button>
               {logoUrl && (
@@ -5528,7 +5528,7 @@ function IGStoriesTab({ settings, onRefresh }: any) {
             <div style={sectionHeadStyle}>Textové vrstvy</div>
             <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
               {layers.map((layer, i) => (
-                <div key={layer.id} style={{ background: "DESIGN_SYSTEM.colors.tertiary", border: "1px solid #2a2a2a", borderRadius: "4px", padding: "10px 12px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                <div key={layer.id} style={{ background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #2a2a2a", borderRadius: "4px", padding: "10px 12px", display: "flex", flexDirection: "column", gap: "8px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                     <span style={{ flex: 1, fontSize: "12px", color: layer.visible ? "DESIGN_SYSTEM.colors.textPrimary" : "#444", textDecoration: layer.visible ? "none" : "line-through" }}>{IG_LAYER_LABELS[layer.id]}</span>
                     <span style={{ fontSize: "10px", color: "#444", whiteSpace: "nowrap" }}>Y: {layer.y}px</span>
@@ -5592,7 +5592,7 @@ function IGStoriesTab({ settings, onRefresh }: any) {
             <div style={{ fontSize: "11px", color: "#555", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
               Náhled{previewKit ? ` — ${previewKit.title}` : ""}
             </div>
-            <div style={{ width: `${ZVUKY_PREV_W_DISPLAY}px`, height: `${ZVUKY_PREV_H_DISPLAY}px`, position: "relative", overflow: "hidden", borderRadius: "8px", border: "1px solid #2a2a2a", background: "DESIGN_SYSTEM.colors.tertiary" }}>
+            <div style={{ width: `${ZVUKY_PREV_W_DISPLAY}px`, height: `${ZVUKY_PREV_H_DISPLAY}px`, position: "relative", overflow: "hidden", borderRadius: "8px", border: "1px solid #2a2a2a", background: DESIGN_SYSTEM.colors.tertiary }}>
               {zvukyPreviewArtwork && (
                 <img src={zvukyPreviewArtwork} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", filter: `blur(${zvukyBgBlur}px)`, transform: "scale(1.3)" }} />
               )}
@@ -5677,7 +5677,7 @@ function IGStoriesTab({ settings, onRefresh }: any) {
               <div style={{ flex: 1 }}>
                 <label style={labelStyle}>Barva textu</label>
                 <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                  <input type="color" value={zvukyTextColor} onChange={(e) => handleZvukyChange("ig_zvuky_text_color", e.target.value)} style={{ width: "36px", height: "36px", padding: "2px", background: "DESIGN_SYSTEM.colors.tertiary", border: "1px solid #2a2a2a", borderRadius: "3px", cursor: "pointer" }} />
+                  <input type="color" value={zvukyTextColor} onChange={(e) => handleZvukyChange("ig_zvuky_text_color", e.target.value)} style={{ width: "36px", height: "36px", padding: "2px", background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #2a2a2a", borderRadius: "3px", cursor: "pointer" }} />
                   <input type="text" value={zvukyTextColor} onChange={(e) => handleZvukyChange("ig_zvuky_text_color", e.target.value)} style={{ ...fieldStyle, width: "90px" }} />
                 </div>
               </div>
@@ -5728,7 +5728,7 @@ function IGStoriesTab({ settings, onRefresh }: any) {
               <div style={sectionHeadStyle}>Logo</div>
               <input ref={zvukyLogoInputRef} type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => { const f = e.target.files?.[0]; if (f) handleZvukyLogoUpload(f); e.target.value = ""; }} />
               <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
-                <button onClick={() => zvukyLogoInputRef.current?.click()} style={{ padding: "7px 14px", background: "DESIGN_SYSTEM.colors.tertiary", border: "1px solid #2a2a2a", borderRadius: "3px", color: "DESIGN_SYSTEM.colors.textPrimary", fontSize: "12px", cursor: "pointer", fontFamily: "inherit" }}>
+                <button onClick={() => zvukyLogoInputRef.current?.click()} style={{ padding: "7px 14px", background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #2a2a2a", borderRadius: "3px", color: "DESIGN_SYSTEM.colors.textPrimary", fontSize: "12px", cursor: "pointer", fontFamily: "inherit" }}>
                   {zvukyLogoUploading ? "Nahrávám…" : zvukyLogoUrl ? "Změnit logo" : "Nahrát logo"}
                 </button>
                 {zvukyLogoUrl && (
@@ -5748,7 +5748,7 @@ function IGStoriesTab({ settings, onRefresh }: any) {
               <div style={sectionHeadStyle}>Textové vrstvy</div>
               <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                 {zvukyLayers.map((layer, i) => (
-                  <div key={layer.id} style={{ background: "DESIGN_SYSTEM.colors.tertiary", border: "1px solid #2a2a2a", borderRadius: "4px", padding: "10px 12px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <div key={layer.id} style={{ background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #2a2a2a", borderRadius: "4px", padding: "10px 12px", display: "flex", flexDirection: "column", gap: "8px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                       <span style={{ flex: 1, fontSize: "12px", color: layer.visible ? "DESIGN_SYSTEM.colors.textPrimary" : "#444", textDecoration: layer.visible ? "none" : "line-through" }}>{IG_ZVUKY_LAYER_LABELS[layer.id]}</span>
                       <span style={{ fontSize: "10px", color: "#444", whiteSpace: "nowrap" }}>Y: {layer.y}px</span>
@@ -6107,7 +6107,7 @@ function EmailsTab() {
         {previewHtml && (
           <div
             onClick={() => setPreviewHtml(null)}
-            style={{ position: "fixed", inset: 0, background: "rgba(10,10,10,0.92)", zIndex: 1000, display: "flex", flexDirection: "column", alignItems: "center", overflowY: "auto", padding: "24px 16px 48px" }}
+            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)", zIndex: DESIGN_SYSTEM.zIndex.modal, display: "flex", flexDirection: "column", alignItems: "center", overflowY: "auto", padding: "24px 16px 48px", display: "flex", flexDirection: "column", alignItems: "center", overflowY: "auto", padding: "24px 16px 48px" }}
           >
             <div onClick={(e) => e.stopPropagation()} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", maxWidth: "640px", marginBottom: "16px", flexShrink: 0 }}>
               <span style={{ fontWeight: "600", color: "#ddd", fontSize: "13px", letterSpacing: "0.04em" }}>Náhled emailu – {scenario?.label}</span>
@@ -6152,7 +6152,7 @@ function EmailsTab() {
           <p style={{ margin: "6px 0 0", fontSize: "11px", color: "#555" }}>Tento text se zobrazí zákazníkovi hned po pozdravu. Placeholdery: &#123;id&#125;, &#123;datum&#125;</p>
         </div>
 
-        <div style={{ background: "DESIGN_SYSTEM.colors.tertiary", border: "1px solid #222", borderRadius: "6px", padding: "18px 22px", marginBottom: "24px" }}>
+        <div style={{ background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #222", borderRadius: "6px", padding: "18px 22px", marginBottom: "24px" }}>
           <p style={{ margin: "0 0 8px", fontSize: "11px", color: "#555", textTransform: "uppercase", letterSpacing: "1px" }}>Náhled emailu</p>
           <div style={{ background: "DESIGN_SYSTEM.colors.elevated", padding: "16px", borderRadius: "4px" }}>
             <p style={{ margin: "0 0 8px", fontSize: "11px", color: "DESIGN_SYSTEM.colors.textSecondary" }}>Předmět: <span style={{ color: "DESIGN_SYSTEM.colors.textSecondary" }}>{editForm.subject.replace("{id}", "1234").replace("{datum}", "1. ledna 2026")}</span></p>
@@ -6994,7 +6994,7 @@ function ZoomThumb({ url, zoom, active, onClick }: { url: string; zoom: number; 
         border: active ? "2px solid #fff" : "2px solid #2a2a2a",
         boxShadow: active ? "0 0 0 1px rgba(255,255,255,0.15), 0 4px 16px rgba(255,255,255,0.08)" : "none",
         transition: "border-color 0.15s, box-shadow 0.15s",
-        background: "DESIGN_SYSTEM.colors.tertiary", position: "relative",
+        background: DESIGN_SYSTEM.colors.tertiary, position: "relative",
       }}>
         {url ? (
           <img
@@ -7167,7 +7167,7 @@ function ArtworksTab({ settings, onRefresh, beats }: { settings: Record<string, 
           </div>
           <div>
             <label style={lbl}>Režim</label>
-            <select value={config.overlay.blendMode} onChange={(e) => updateOverlay({ blendMode: e.target.value as BlendMode })} disabled={!config.overlay.enabled} style={{ width: "100%", background: "DESIGN_SYSTEM.colors.tertiary", border: "1px solid #333", color: "#ddd", padding: "7px 8px", fontSize: "12px", borderRadius: "3px" }} data-testid="input-overlay-blend">
+            <select value={config.overlay.blendMode} onChange={(e) => updateOverlay({ blendMode: e.target.value as BlendMode })} disabled={!config.overlay.enabled} style={{ width: "100%", background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #333", color: "#ddd", padding: "7px 8px", fontSize: "12px", borderRadius: "3px" }} data-testid="input-overlay-blend">
               {BLEND_MODES.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
             </select>
           </div>
@@ -7323,7 +7323,7 @@ function GoogleOAuthDiagPanel() {
                 key={uri}
                 style={{
                   display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px",
-                  padding: "10px 12px", marginBottom: "8px", background: "DESIGN_SYSTEM.colors.tertiary", borderRadius: "4px",
+                  padding: "10px 12px", marginBottom: "8px", background: DESIGN_SYSTEM.colors.tertiary, borderRadius: "4px",
                   border: uri === diag.callbackUrl ? "1px solid #0B99FC" : "1px solid #222",
                 }}
               >
@@ -7338,13 +7338,13 @@ function GoogleOAuthDiagPanel() {
               Authorized JavaScript origins
             </div>
             {diag.authorizedJavaScriptOrigins.map((origin) => (
-              <div key={origin} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", padding: "8px 12px", marginBottom: "6px", background: "DESIGN_SYSTEM.colors.tertiary", borderRadius: "4px" }}>
+              <div key={origin} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", padding: "8px 12px", marginBottom: "6px", background: DESIGN_SYSTEM.colors.tertiary, borderRadius: "4px" }}>
                 <span style={mono}>{origin}</span>
                 <button type="button" className="btn btn-admin" style={{ fontSize: "11px" }} onClick={() => copy(origin)}>Kopírovat</button>
               </div>
             ))}
 
-            <div style={{ marginTop: "16px", padding: "12px 14px", background: "DESIGN_SYSTEM.colors.tertiary", borderRadius: "5px", fontSize: "12px", color: "DESIGN_SYSTEM.colors.textSecondary", lineHeight: 1.9 }}>
+            <div style={{ marginTop: "16px", padding: "12px 14px", background: DESIGN_SYSTEM.colors.tertiary, borderRadius: "5px", fontSize: "12px", color: "DESIGN_SYSTEM.colors.textSecondary", lineHeight: 1.9 }}>
               <div style={{ color: "DESIGN_SYSTEM.colors.textPrimary", fontWeight: 600, marginBottom: "8px" }}>Postup v Google Cloud Console</div>
               <div>1. Otevři <a href={diag.consoleUrl} target="_blank" rel="noopener noreferrer" style={{ color: "#0B99FC" }}>APIs &amp; Services → Credentials</a></div>
               <div>2. Vyber OAuth 2.0 Client ID (typ Web application) — stejný jako <span style={mono}>GOOGLE_CLIENT_ID</span> v Renderu</div>
@@ -7457,7 +7457,7 @@ function GopayDiagPanel() {
                     Krok 2 – Vytvoření platby (1 CZK test): {diag.paymentTestOk ? "OK — GoPay přijal platbu" : "SELHAL — GoPay odmítl platbu"}
                   </div>
                   {diag.paymentTestDetail && !diag.paymentTestOk && (
-                    <div style={{ fontSize: "11px", color: "#e77", marginTop: "6px", fontFamily: "monospace", wordBreak: "break-all", whiteSpace: "pre-wrap", background: "DESIGN_SYSTEM.colors.tertiary", padding: "8px", borderRadius: "4px" }}>
+                    <div style={{ fontSize: "11px", color: "#e77", marginTop: "6px", fontFamily: "monospace", wordBreak: "break-all", whiteSpace: "pre-wrap", background: DESIGN_SYSTEM.colors.tertiary, padding: "8px", borderRadius: "4px" }}>
                       {diag.paymentTestDetail}
                     </div>
                   )}
@@ -7553,7 +7553,7 @@ function GopayDiagPanel() {
             </div>
 
             {(!diag.tokenOk || !diag.paymentTestOk) && (
-              <div style={{ marginTop: "16px", padding: "12px 14px", background: "DESIGN_SYSTEM.colors.tertiary", borderRadius: "5px", fontSize: "12px", color: "DESIGN_SYSTEM.colors.textSecondary", lineHeight: "1.9" }}>
+              <div style={{ marginTop: "16px", padding: "12px 14px", background: DESIGN_SYSTEM.colors.tertiary, borderRadius: "5px", fontSize: "12px", color: "DESIGN_SYSTEM.colors.textSecondary", lineHeight: "1.9" }}>
                 <div style={{ color: "DESIGN_SYSTEM.colors.textSecondary", fontWeight: 600, marginBottom: "6px" }}>Jak opravit:</div>
                 {diag.domain.startsWith("http://localhost") && (
                   <div>• Nastav <span style={{ color: "DESIGN_SYSTEM.colors.textSecondary", fontFamily: "monospace" }}>APP_URL = https://www.voodoo808.com</span> v Render → Environment</div>
@@ -7700,7 +7700,7 @@ function KonfiguraceTab() {
             </div>
           ))}
 
-          <div style={{ padding: "16px", background: "DESIGN_SYSTEM.colors.tertiary", border: "1px solid #1a1a1a", borderRadius: "6px", fontSize: "12px", color: "#444", lineHeight: "1.8" }}>
+          <div style={{ padding: "16px", background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #1a1a1a", borderRadius: "6px", fontSize: "12px", color: "#444", lineHeight: "1.8" }}>
             <div style={{ color: "#555", marginBottom: "8px", fontWeight: 600 }}>Jak přidat chybějící proměnné na Renderu:</div>
             <div>1. Přejdi do <span style={{ color: "DESIGN_SYSTEM.colors.textSecondary", fontFamily: "monospace" }}>dashboard.render.com → projekt → Environment</span></div>
             <div>2. Přidej každou chybějící proměnnou pod <span style={{ color: "DESIGN_SYSTEM.colors.textSecondary", fontFamily: "monospace" }}>Environment Variables</span></div>
