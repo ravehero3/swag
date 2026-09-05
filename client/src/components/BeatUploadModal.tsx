@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { X, Upload, Image as ImageIcon, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { X, Upload, Plus, CheckCircle } from 'lucide-react';
 import { CZECH } from '../constants/czech';
 import { DESIGN_SYSTEM } from '../constants/designSystem';
 
@@ -35,22 +35,16 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
   onClose,
   onUploadComplete,
 }) => {
-  console.log('[BeatUploadModal] Component rendering with isOpen:', isOpen);
-  
-  // Parse beat metadata from filename
   const parseBeatMetadata = (filename: string) => {
     const nameWithoutExt = filename.replace(/\.[^/.]+$/, '');
     let bpm = '';
     let key = '';
 
-    // Match BPM pattern: number followed by "bpm" (case insensitive)
     const bpmMatch = nameWithoutExt.match(/(\d+)\s*bpm/i);
     if (bpmMatch) {
       bpm = bpmMatch[1];
     }
 
-    // Match key patterns: single notes (C, D, E, F, G, A, B) with optional # or b
-    // Extract just the note, ignoring minor/major (since dropdown only has C, C#, D, D#, etc.)
     const keyMatch = nameWithoutExt.match(/\b([A-G](?:[#b])?)(?:\s*(?:minor|major))?\b/i);
     if (keyMatch) {
       key = keyMatch[1].trim().toUpperCase();
@@ -61,6 +55,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
   
   const [beats, setBeats] = useState<BeatFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadedBeats, setUploadedBeats] = useState<BeatFile[]>([]);
   const [globalReleaseImmediately, setGlobalReleaseImmediately] = useState(true);
   const [showReleaseScheduler, setShowReleaseScheduler] = useState(false);
   const [schedulerDate, setSchedulerDate] = useState<string>(new Date().toISOString().split('T')[0]);
@@ -75,10 +70,8 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
   const [galleryUploadProgress, setGalleryUploadProgress] = useState(0);
   const [galleryUploadTotal, setGalleryUploadTotal] = useState(0);
 
-  // Load gallery images when gallery modal opens
   useEffect(() => {
     if (showGallery) {
-      console.log('[Gallery] Opening gallery, loading images...');
       loadGalleryImages();
     }
   }, [showGallery]);
@@ -86,12 +79,9 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
   const loadGalleryImages = async () => {
     try {
       setGalleryLoading(true);
-      console.log('[Gallery] Loading images from /api/kit-artworks');
       const res = await fetch('/api/kit-artworks', { credentials: 'include' });
-      console.log('[Gallery] Response status:', res.status);
       if (!res.ok) throw new Error('Failed to load gallery');
       const data = await res.json();
-      console.log('[Gallery] Loaded', data?.length || 0, 'images');
       setGalleryImages(data || []);
     } catch (err) {
       console.error('Failed to load gallery:', err);
@@ -132,8 +122,8 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
     d.setDate(d.getDate() + (5 - d.getDay() + 7) % 7 || 7);
     return d.toISOString().split('T')[0];
   };
+
   const handleGallerySelect = (url: string) => {
-    console.log('[Gallery] Selecting artwork:', url);
     if (selectedBeatForArtwork) {
       updateBeat(selectedBeatForArtwork, {
         artworkUrl: url,
@@ -141,8 +131,6 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
       });
       setSelectedBeatForArtwork(null);
       setShowGallery(false);
-    } else {
-      console.warn('[Gallery] No beat selected for artwork');
     }
   };
 
@@ -153,7 +141,6 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
     setGalleryUploadProgress(0);
 
     try {
-      // Simulate progress increments while uploading
       const progressInterval = setInterval(() => {
         setGalleryUploadProgress((prev) => {
           if (prev >= 90) return prev;
@@ -166,7 +153,6 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
         formData.append('files', file);
       });
 
-      console.log('[Gallery] Starting upload of', files.length, 'images');
       const response = await fetch('/api/kit-artworks/upload-batch', {
         method: 'POST',
         body: formData,
@@ -174,7 +160,6 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
       });
 
       clearInterval(progressInterval);
-      console.log('[Gallery] Upload response:', response.status);
 
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}));
@@ -182,12 +167,8 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
       }
       setGalleryUploadProgress(100);
       
-      // Wait longer for large batches and ensure gallery reloads
-      console.log('[Gallery] Waiting to refresh gallery...');
       await new Promise(r => setTimeout(r, 2000));
-      console.log('[Gallery] Refreshing gallery images...');
       await loadGalleryImages();
-      console.log('[Gallery] Gallery refreshed');
     } catch (err) {
       console.error('Gallery upload failed:', err);
       alert('Upload failed: ' + (err instanceof Error ? err.message : String(err)));
@@ -254,17 +235,15 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
   }, []);
 
   const handleUpload = async () => {
-    console.log('[handleUpload] Starting upload with', beats.length, 'beats');
     if (beats.length === 0) return;
     setIsUploading(true);
+    setUploadedBeats([]);
 
     try {
       const uploadPromises = beats.map(async (beat) => {
-        console.log('[handleUpload] Processing beat:', beat.name, 'status:', beat.status);
         if (beat.status !== 'pending') return beat;
 
         try {
-          console.log('[handleUpload] Uploading beat:', beat.name);
           updateBeat(beat.id, { status: 'uploading' });
 
           const formData = new FormData();
@@ -287,14 +266,11 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
 
           if (!response.ok) {
             const errorText = await response.text();
-            console.error('[handleUpload] Upload failed for', beat.name, '- Status:', response.status, 'Text:', errorText);
             throw new Error(errorText || 'Upload failed');
           }
           
           const uploadedFile = await response.json();
-          console.log('[handleUpload] File uploaded:', uploadedFile.url);
 
-          // Create beat record in database with uploaded file URL
           const beatCreateRes = await fetch('/api/beats', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -314,16 +290,12 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
 
           if (!beatCreateRes.ok) {
             const errText = await beatCreateRes.text();
-            console.error('[handleUpload] Beat creation failed for', beat.name, ':', errText);
             throw new Error('Beat creation failed');
           }
           
-          console.log('[handleUpload] Beat created and published for', beat.name);
-
-          updateBeat(beat.id, {
-            status: 'completed',
-            progress: 100,
-          });
+          const completedBeat = { ...beat, status: 'completed' as const, progress: 100 };
+          updateBeat(beat.id, { status: 'completed', progress: 100 });
+          setUploadedBeats((prev) => [...prev, completedBeat]);
 
           const createdBeat = await beatCreateRes.json();
           return createdBeat;
@@ -338,10 +310,10 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
         }
       });
 
-      const uploadedBeats = await Promise.all(uploadPromises);
+      const uploadedBeatsResult = await Promise.all(uploadPromises);
 
       if (onUploadComplete) {
-        onUploadComplete(uploadedBeats.filter(Boolean));
+        onUploadComplete(uploadedBeatsResult.filter(Boolean));
       }
     } finally {
       setIsUploading(false);
@@ -350,15 +322,187 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
 
   const completedCount = beats.filter((b) => b.status === 'completed').length;
   const errorCount = beats.filter((b) => b.status === 'error').length;
+  const totalProgress = Math.round((completedCount / beats.length) * 100) || 0;
 
   if (!isOpen) return null;
 
-  const statusIcon = {
-    pending: <Clock size={14} color="#999" />,
-    uploading: <Clock size={14} color="#0055FF" style={{ animation: 'spin 1s linear infinite' }} />,
-    completed: <CheckCircle size={14} color="#4caf50" />,
-    error: <AlertCircle size={14} color="#f44336" />,
-  };
+  // Completion screen
+  if (isUploading && uploadedBeats.length > 0 && completedCount === beats.length) {
+    return (
+      <>
+        <style>{`
+          @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+        `}</style>
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          backdropFilter: 'blur(8px)',
+        }}>
+          <div style={{
+            position: 'relative',
+            width: '100%',
+            maxWidth: '1400px',
+            maxHeight: '85vh',
+            backgroundColor: DESIGN_SYSTEM.colors.background,
+            borderRadius: '8px',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.8)',
+            display: 'flex',
+            flexDirection: 'column',
+            border: `1px solid ${DESIGN_SYSTEM.colors.border}`,
+            margin: '0 1rem',
+            overflow: 'hidden',
+            fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+          }}>
+            
+            {/* Header */}
+            <div style={{
+              padding: '20px 24px',
+              borderBottom: `1px solid ${DESIGN_SYSTEM.colors.border}`,
+              backgroundColor: DESIGN_SYSTEM.colors.elevated,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}>
+              <div>
+                <h1 style={{ 
+                  fontSize: '20px', 
+                  fontWeight: 600, 
+                  color: DESIGN_SYSTEM.colors.textPrimary, 
+                  margin: 0, 
+                  letterSpacing: '-0.5px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                }}>
+                  <CheckCircle size={24} color={DESIGN_SYSTEM.colors.success} />
+                  {globalReleaseImmediately ? 'Vaše beaty jsou live!' : 'Vaše beaty jsou připraveny na release'}
+                </h1>
+                <p style={{ fontSize: '13px', color: DESIGN_SYSTEM.colors.textSecondary, marginTop: '6px', margin: 0 }}>
+                  {uploadedBeats.length} beat{uploadedBeats.length !== 1 ? 'y' : ''} byly úspěšně nahrány
+                </p>
+              </div>
+            </div>
+
+            {/* Uploaded Beats Grid */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                gap: '16px',
+              }}>
+                {uploadedBeats.map((beat) => (
+                  <div 
+                    key={beat.id}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      backgroundColor: DESIGN_SYSTEM.colors.elevated,
+                      border: `0.5px solid ${DESIGN_SYSTEM.colors.border}`,
+                      borderRadius: '8px',
+                      overflow: 'hidden',
+                      transition: 'all 0.15s',
+                      animation: 'slideIn 0.3s ease-out',
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLElement).style.borderColor = '#444';
+                      (e.currentTarget as HTMLElement).style.boxShadow = `0 4px 16px rgba(0, 0, 0, 0.3)`;
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLElement).style.borderColor = DESIGN_SYSTEM.colors.border;
+                      (e.currentTarget as HTMLElement).style.boxShadow = 'none';
+                    }}
+                  >
+                    {/* Artwork placeholder */}
+                    <div style={{
+                      width: '100%',
+                      aspectRatio: '1',
+                      backgroundColor: DESIGN_SYSTEM.colors.tertiary,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderBottom: `0.5px solid ${DESIGN_SYSTEM.colors.border}`,
+                    }}>
+                      {beat.artworkUrl ? (
+                        <img 
+                          src={beat.artworkUrl} 
+                          alt={beat.name}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                      ) : (
+                        <div style={{ textAlign: 'center', color: DESIGN_SYSTEM.colors.textSecondary }}>
+                          <div style={{ fontSize: '32px', marginBottom: '8px' }}>♪</div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Info */}
+                    <div style={{ padding: '12px' }}>
+                      <div style={{
+                        fontSize: '13px',
+                        fontWeight: 500,
+                        color: DESIGN_SYSTEM.colors.textPrimary,
+                        marginBottom: '4px',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}>
+                        {beat.name}
+                      </div>
+                      <div style={{
+                        fontSize: '12px',
+                        color: DESIGN_SYSTEM.colors.textSecondary,
+                        display: 'flex',
+                        gap: '12px',
+                      }}>
+                        {beat.bpm && <span>{beat.bpm} BPM</span>}
+                        {beat.key && <span>{beat.key}</span>}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div style={{
+              padding: '16px 24px',
+              borderTop: `1px solid ${DESIGN_SYSTEM.colors.border}`,
+              backgroundColor: DESIGN_SYSTEM.colors.elevated,
+              display: 'flex',
+              justifyContent: 'flex-end',
+            }}>
+              <button
+                onClick={onClose}
+                style={{
+                  padding: '8px 20px',
+                  backgroundColor: DESIGN_SYSTEM.colors.primary,
+                  color: DESIGN_SYSTEM.colors.textPrimary,
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                  fontWeight: 600,
+                  transition: 'opacity 0.15s',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.9')}
+                onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
+              >
+                Hotovo
+              </button>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -383,12 +527,12 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
           width: '100%',
           maxWidth: '1400px',
           maxHeight: '85vh',
-          backgroundColor: '#000',
+          backgroundColor: DESIGN_SYSTEM.colors.background,
           borderRadius: '8px',
           boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.8)',
           display: 'flex',
           flexDirection: 'column',
-          border: '1px solid #2a2a2a',
+          border: `1px solid ${DESIGN_SYSTEM.colors.border}`,
           margin: '0 1rem',
           overflow: 'hidden',
           fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
@@ -397,18 +541,17 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
           {/* Header */}
           <div style={{
             padding: '20px 24px',
-            borderBottom: '1px solid #2a2a2a',
-            backgroundColor: '#0d0d0d',
+            borderBottom: `1px solid ${DESIGN_SYSTEM.colors.border}`,
+            backgroundColor: DESIGN_SYSTEM.colors.elevated,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
           }}>
             <div>
-              <h1 style={{ fontSize: '20px', fontWeight: 600, color: DESIGN_SYSTEM.colors.textPrimary, margin: 0, letterSpacing: '-0.5px' }}>{CZECH.nahrat_beaty_modal}</h1>
+              <h1 style={{ fontSize: '20px', fontWeight: 600, color: DESIGN_SYSTEM.colors.textPrimary, margin: 0, letterSpacing: '-0.5px' }}>Nahrát beaty</h1>
               <p style={{ fontSize: '13px', color: DESIGN_SYSTEM.colors.textSecondary, marginTop: '6px', margin: 0 }}>
-                {beats.length} beat{beats.length !== 1 ? 'y' : ''} {CZECH.v_poradi}
-                {completedCount > 0 && ` • ${completedCount} ${CZECH.dokonceno}`}
-                {errorCount > 0 && ` • ${errorCount} ${CZECH.chyby}`}
+                {beats.length} beat{beats.length !== 1 ? 'y' : ''} v pořadí
+                {isUploading && completedCount > 0 && ` • ${totalProgress}% hotovo`}
               </p>
             </div>
             <button
@@ -430,11 +573,11 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
           </div>
 
           {/* Global Settings */}
-          {beats.length > 0 && (
+          {beats.length > 0 && !isUploading && (
             <div style={{
               padding: '12px 24px',
-              borderBottom: '1px solid #2a2a2a',
-              backgroundColor: '#111',
+              borderBottom: `1px solid ${DESIGN_SYSTEM.colors.border}`,
+              backgroundColor: DESIGN_SYSTEM.colors.tertiary,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
@@ -445,33 +588,59 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                   type="checkbox"
                   checked={globalReleaseImmediately}
                   onChange={(e) => setGlobalReleaseImmediately(e.target.checked)}
-                  disabled={isUploading}
-                  style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#0055FF' }}
+                  style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: DESIGN_SYSTEM.colors.primary }}
                 />
-                <span style={{ fontSize: '13px', color: DESIGN_SYSTEM.colors.textPrimary }}>{CZECH.okamzite_vydani}</span>
+                <span style={{ fontSize: '13px', color: DESIGN_SYSTEM.colors.textPrimary }}>Vydat okamžitě</span>
               </label>
               {!globalReleaseImmediately && (
                 <button
                   onClick={() => setShowReleaseScheduler(true)}
-                  disabled={isUploading}
                   style={{
                     fontSize: '12px',
                     padding: '6px 12px',
-                    backgroundColor: '#0055FF',
-                    color: '#fff',
+                    backgroundColor: DESIGN_SYSTEM.colors.primary,
+                    color: DESIGN_SYSTEM.colors.textPrimary,
                     border: 'none',
                     borderRadius: '3px',
                     cursor: 'pointer',
                     fontWeight: 500,
-                    opacity: isUploading ? 0.6 : 1,
                     transition: 'opacity 0.15s',
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.opacity = isUploading ? '0.6' : '0.9')}
-                  onMouseLeave={(e) => (e.currentTarget.style.opacity = isUploading ? '0.6' : '1')}
+                  onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.9')}
+                  onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
                 >
-                  {CZECH.nastavit_datum_vydani}
+                  Nastavit datum vydání
                 </button>
               )}
+            </div>
+          )}
+
+          {/* Upload Progress Bar */}
+          {isUploading && beats.length > 0 && (
+            <div style={{
+              padding: '16px 24px',
+              borderBottom: `1px solid ${DESIGN_SYSTEM.colors.border}`,
+              backgroundColor: DESIGN_SYSTEM.colors.tertiary,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '13px', color: DESIGN_SYSTEM.colors.textPrimary }}>
+                  Nahrávání beatů...
+                </span>
+                <span style={{ fontSize: '13px', fontWeight: 600, color: DESIGN_SYSTEM.colors.primary }}>
+                  {totalProgress}%
+                </span>
+              </div>
+              <div style={{ height: '4px', backgroundColor: DESIGN_SYSTEM.colors.border, borderRadius: '2px', overflow: 'hidden' }}>
+                <div style={{ 
+                  height: '100%', 
+                  backgroundColor: DESIGN_SYSTEM.colors.primary,
+                  transition: 'width 0.3s ease', 
+                  width: `${totalProgress}%`,
+                }} />
+              </div>
             </div>
           )}
 
@@ -481,7 +650,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '200px', color: '#666' }}>
                 <div style={{ textAlign: 'center' }}>
                   <Upload className="w-10 h-10" style={{ margin: '0 auto 12px', opacity: 0.4 }} />
-                  <p style={{ fontSize: '14px', margin: 0 }}>{CZECH.zadny_beat_vybran}</p>
+                  <p style={{ fontSize: '14px', margin: 0 }}>Zatím není vybrán žádný beat</p>
                 </div>
               </div>
             ) : (
@@ -491,21 +660,20 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                   display: 'grid',
                   gap: '8px',
                   fontSize: '12px',
-                  color: '#666',
+                  color: DESIGN_SYSTEM.colors.textSecondary,
                   fontWeight: 500,
                   marginBottom: '8px',
                   paddingBottom: '8px',
-                  borderBottom: '1px solid #2a2a2a',
-                  gridTemplateColumns: '40px 1fr 60px 50px 100px 90px 100px 50px',
+                  borderBottom: `1px solid ${DESIGN_SYSTEM.colors.border}`,
+                  gridTemplateColumns: '1fr 60px 50px 100px 100px 50px',
                   letterSpacing: '0.3px',
+                  textTransform: 'uppercase',
                 }}>
-                  <div>Stav</div>
-                  <div>{CZECH.nazev_beatu}</div>
+                  <div>Název</div>
                   <div>BPM</div>
-                  <div>{CZECH.kluc}</div>
-                  <div>{CZECH.umeni}</div>
-                  <div>{CZECH.vydano}</div>
-                  <div>Postup</div>
+                  <div>Tónina</div>
+                  <div>Obrázek</div>
+                  <div>Datum vydání</div>
                   <div></div>
                 </div>
 
@@ -517,42 +685,43 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                     alignItems: 'center',
                     padding: '12px',
                     borderRadius: '6px',
-                    backgroundColor: '#0d0d0d',
-                    border: '1px solid #1e1e1e',
-                    gridTemplateColumns: '40px 1fr 60px 50px 100px 90px 100px 50px',
-                    transition: 'border-color 0.15s, background 0.15s',
+                    backgroundColor: DESIGN_SYSTEM.colors.elevated,
+                    border: `0.5px solid ${DESIGN_SYSTEM.colors.border}`,
+                    gridTemplateColumns: '1fr 60px 50px 100px 100px 50px',
+                    transition: 'all 0.15s',
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#2a2a2a')}
-                  onMouseLeave={(e) => (e.currentTarget.style.borderColor = '#1e1e1e')}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.borderColor = '#444';
+                    (e.currentTarget as HTMLElement).style.backgroundColor = DESIGN_SYSTEM.colors.tertiary;
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.borderColor = DESIGN_SYSTEM.colors.border;
+                    (e.currentTarget as HTMLElement).style.backgroundColor = DESIGN_SYSTEM.colors.elevated;
+                  }}
                   >
                     
-                    {/* Status */}
-                    <div style={{ textAlign: 'center', fontSize: '14px', fontWeight: 600, color: beat.status === 'completed' ? '#4caf50' : beat.status === 'error' ? '#f44336' : '#999' }}>
-                      {statusIcon[beat.status]}
-                    </div>
-
                     {/* Name */}
                     <input
                       type="text"
                       value={beat.name}
                       onChange={(e) => updateBeat(beat.id, { name: e.target.value })}
                       disabled={isUploading || beat.status === 'completed'}
-                      placeholder="Beat name"
+                      placeholder="Název beatu"
                       style={{
                         padding: '8px 10px',
                         fontSize: '13px',
-                        backgroundColor: '#111',
-                        border: '1px solid #2a2a2a',
+                        backgroundColor: DESIGN_SYSTEM.colors.inputs,
+                        border: `0.5px solid ${DESIGN_SYSTEM.colors.border}`,
                         borderRadius: '4px',
-                        color: '#fff',
+                        color: DESIGN_SYSTEM.colors.textPrimary,
                         opacity: isUploading || beat.status === 'completed' ? 0.6 : 1,
                         outline: 'none',
                         fontFamily: 'inherit',
                         boxSizing: 'border-box',
                         transition: 'border-color 0.15s',
                       }}
-                      onFocus={(e) => (e.currentTarget.style.borderColor = '#0055FF')}
-                      onBlur={(e) => (e.currentTarget.style.borderColor = '#2a2a2a')}
+                      onFocus={(e) => (e.currentTarget.style.borderColor = DESIGN_SYSTEM.colors.primary)}
+                      onBlur={(e) => (e.currentTarget.style.borderColor = DESIGN_SYSTEM.colors.border)}
                     />
 
                     {/* BPM */}
@@ -565,21 +734,21 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                       style={{
                         padding: '8px 10px',
                         fontSize: '13px',
-                        backgroundColor: '#111',
-                        border: '1px solid #2a2a2a',
+                        backgroundColor: DESIGN_SYSTEM.colors.inputs,
+                        border: `0.5px solid ${DESIGN_SYSTEM.colors.border}`,
                         borderRadius: '4px',
-                        color: '#fff',
+                        color: DESIGN_SYSTEM.colors.textPrimary,
                         opacity: isUploading || beat.status === 'completed' ? 0.6 : 1,
                         outline: 'none',
                         fontFamily: 'inherit',
                         boxSizing: 'border-box',
                         transition: 'border-color 0.15s',
                       }}
-                      onFocus={(e) => (e.currentTarget.style.borderColor = '#0055FF')}
-                      onBlur={(e) => (e.currentTarget.style.borderColor = '#2a2a2a')}
+                      onFocus={(e) => (e.currentTarget.style.borderColor = DESIGN_SYSTEM.colors.primary)}
+                      onBlur={(e) => (e.currentTarget.style.borderColor = DESIGN_SYSTEM.colors.border)}
                     />
 
-                    {/* Key */}
+                    {/* Key / Tónina */}
                     <select
                       value={beat.key}
                       onChange={(e) => updateBeat(beat.id, { key: e.target.value })}
@@ -587,10 +756,10 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                       style={{
                         padding: '8px 10px',
                         fontSize: '13px',
-                        backgroundColor: '#111',
-                        border: '1px solid #2a2a2a',
+                        backgroundColor: DESIGN_SYSTEM.colors.inputs,
+                        border: `0.5px solid ${DESIGN_SYSTEM.colors.border}`,
                         borderRadius: '4px',
-                        color: '#fff',
+                        color: DESIGN_SYSTEM.colors.textPrimary,
                         opacity: isUploading || beat.status === 'completed' ? 0.6 : 1,
                         outline: 'none',
                         fontFamily: 'inherit',
@@ -598,8 +767,8 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                         transition: 'border-color 0.15s',
                         cursor: 'pointer',
                       }}
-                      onFocus={(e) => (e.currentTarget.style.borderColor = '#0055FF')}
-                      onBlur={(e) => (e.currentTarget.style.borderColor = '#2a2a2a')}
+                      onFocus={(e) => (e.currentTarget.style.borderColor = DESIGN_SYSTEM.colors.primary)}
+                      onBlur={(e) => (e.currentTarget.style.borderColor = DESIGN_SYSTEM.colors.border)}
                     >
                       <option value="">-</option>
                       {['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'].map((k) => (
@@ -609,27 +778,26 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                       ))}
                     </select>
 
-                    {/* Artwork */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {/* Artwork - Empty slot with + sign */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '36px' }}>
                       {beat.artworkUrl ? (
-                        <>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', width: '100%' }}>
                           <img
                             src={beat.artworkUrl}
                             alt={beat.artworkFilename}
-                            style={{ width: '28px', height: '28px', borderRadius: '3px', objectFit: 'cover', border: '1px solid #2a2a2a' }}
+                            style={{ width: '28px', height: '28px', borderRadius: '3px', objectFit: 'cover', border: `0.5px solid ${DESIGN_SYSTEM.colors.border}` }}
                           />
                           <button
                             onClick={() => {
-                            console.log('[BeatUploadModal] Opening gallery for beat:', beat.id);
-                            setSelectedBeatForArtwork(beat.id);
-                            setShowGallery(true);
-                          }}
+                              setSelectedBeatForArtwork(beat.id);
+                              setShowGallery(true);
+                            }}
                             disabled={isUploading}
                             style={{
                               fontSize: '11px',
-                              padding: '6px 10px',
-                              backgroundColor: '#0055FF',
-                              color: '#fff',
+                              padding: '4px 8px',
+                              backgroundColor: DESIGN_SYSTEM.colors.primary,
+                              color: DESIGN_SYSTEM.colors.textPrimary,
                               border: 'none',
                               borderRadius: '3px',
                               cursor: 'pointer',
@@ -640,51 +808,48 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                             onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.8')}
                             onMouseLeave={(e) => (e.currentTarget.style.opacity = isUploading ? '0.6' : '1')}
                           >
-                            Change
+                            Změnit
                           </button>
-                        </>
+                        </div>
                       ) : (
                         <button
                           onClick={() => {
-                            console.log('[BeatUploadModal] Opening gallery for beat:', beat.id);
                             setSelectedBeatForArtwork(beat.id);
                             setShowGallery(true);
                           }}
                           disabled={isUploading}
                           style={{
-                            fontSize: '11px',
-                            padding: '6px 10px',
-                            backgroundColor: '#1e1e1e',
-                            color: '#999',
-                            border: '1px solid #2a2a2a',
-                            borderRadius: '3px',
+                            width: '32px',
+                            height: '32px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            backgroundColor: DESIGN_SYSTEM.colors.tertiary,
+                            border: `0.5px dashed ${DESIGN_SYSTEM.colors.border}`,
+                            borderRadius: '4px',
                             cursor: 'pointer',
                             opacity: isUploading ? 0.6 : 1,
                             transition: 'all 0.15s',
-                            fontWeight: 500,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px',
+                            color: DESIGN_SYSTEM.colors.textSecondary,
                           }}
                           onMouseEnter={(e) => {
-                            e.currentTarget.style.borderColor = '#3a3a3a';
-                            e.currentTarget.style.color = '#ccc';
+                            (e.currentTarget as HTMLElement).style.borderColor = '#666';
+                            (e.currentTarget as HTMLElement).style.color = DESIGN_SYSTEM.colors.textPrimary;
                           }}
                           onMouseLeave={(e) => {
-                            e.currentTarget.style.borderColor = '#2a2a2a';
-                            e.currentTarget.style.color = '#999';
+                            (e.currentTarget as HTMLElement).style.borderColor = DESIGN_SYSTEM.colors.border;
+                            (e.currentTarget as HTMLElement).style.color = DESIGN_SYSTEM.colors.textSecondary;
                           }}
                         >
-                          <ImageIcon className="w-3 h-3" />
-                          Select
+                          <Plus size={18} />
                         </button>
                       )}
                     </div>
 
-                    {/* Release */}
+                    {/* Release Date */}
                     <div style={{ fontSize: '12px' }}>
                       {beat.releaseImmediately ? (
-                        <span style={{ color: DESIGN_SYSTEM.colors.success, fontWeight: 500 }}>{CZECH.hned}</span>
+                        <span style={{ color: DESIGN_SYSTEM.colors.success, fontWeight: 500 }}>Okamžitě</span>
                       ) : (
                         <input
                           type="date"
@@ -695,10 +860,10 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                             width: '100%',
                             padding: '6px 8px',
                             fontSize: '12px',
-                            backgroundColor: '#111',
-                            border: '1px solid #2a2a2a',
+                            backgroundColor: DESIGN_SYSTEM.colors.inputs,
+                            border: `0.5px solid ${DESIGN_SYSTEM.colors.border}`,
                             borderRadius: '4px',
-                            color: '#fff',
+                            color: DESIGN_SYSTEM.colors.textPrimary,
                             opacity: isUploading ? 0.6 : 1,
                             outline: 'none',
                             fontFamily: 'inherit',
@@ -706,25 +871,18 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                             transition: 'border-color 0.15s',
                             cursor: 'pointer',
                           }}
-                          onFocus={(e) => (e.currentTarget.style.borderColor = '#0055FF')}
-                          onBlur={(e) => (e.currentTarget.style.borderColor = '#2a2a2a')}
+                          onFocus={(e) => (e.currentTarget.style.borderColor = DESIGN_SYSTEM.colors.primary)}
+                          onBlur={(e) => (e.currentTarget.style.borderColor = DESIGN_SYSTEM.colors.border)}
                         />
                       )}
                     </div>
-
-                    {/* Progress */}
-                    {beat.status === 'uploading' && (
-                      <div style={{ height: '4px', backgroundColor: '#1e1e1e', borderRadius: '2px', overflow: 'hidden' }}>
-                        <div style={{ height: '100%', backgroundColor: '#0055FF', transition: 'width 0.3s ease', width: `${beat.progress}%` }} />
-                      </div>
-                    )}
 
                     {/* Remove Button */}
                     {!isUploading && beat.status === 'pending' && (
                       <button
                         onClick={() => removeBeat(beat.id)}
                         style={{
-                          color: '#666',
+                          color: DESIGN_SYSTEM.colors.textSecondary,
                           backgroundColor: 'transparent',
                           border: 'none',
                           cursor: 'pointer',
@@ -748,8 +906,8 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
           {/* Footer */}
           <div style={{
             padding: '16px 24px',
-            borderTop: '1px solid #2a2a2a',
-            backgroundColor: '#0d0d0d',
+            borderTop: `1px solid ${DESIGN_SYSTEM.colors.border}`,
+            backgroundColor: DESIGN_SYSTEM.colors.elevated,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -769,9 +927,9 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                 alignItems: 'center',
                 gap: '6px',
                 padding: '8px 16px',
-                backgroundColor: '#1e1e1e',
-                color: '#ccc',
-                border: '1px solid #2a2a2a',
+                backgroundColor: DESIGN_SYSTEM.colors.inputs,
+                color: DESIGN_SYSTEM.colors.textSecondary,
+                border: `0.5px solid ${DESIGN_SYSTEM.colors.border}`,
                 borderRadius: '4px',
                 cursor: 'pointer',
                 fontSize: '13px',
@@ -780,16 +938,16 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                 transition: 'all 0.15s',
               }}
               onMouseEnter={(e: any) => {
-                e.currentTarget.style.backgroundColor = '#2a2a2a';
-                e.currentTarget.style.color = '#fff';
+                e.currentTarget.style.backgroundColor = DESIGN_SYSTEM.colors.tertiary;
+                e.currentTarget.style.color = DESIGN_SYSTEM.colors.textPrimary;
               }}
               onMouseLeave={(e: any) => {
-                e.currentTarget.style.backgroundColor = '#1e1e1e';
-                e.currentTarget.style.color = '#ccc';
+                e.currentTarget.style.backgroundColor = DESIGN_SYSTEM.colors.inputs;
+                e.currentTarget.style.color = DESIGN_SYSTEM.colors.textSecondary;
               }}
               >
                 <Upload className="w-4 h-4" />
-                {CZECH.pridat_beaty}
+                Přidat beaty
               </span>
             </label>
 
@@ -799,9 +957,9 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                 disabled={isUploading}
                 style={{
                   padding: '8px 16px',
-                  backgroundColor: '#1e1e1e',
-                  color: '#ccc',
-                  border: '1px solid #2a2a2a',
+                  backgroundColor: DESIGN_SYSTEM.colors.inputs,
+                  color: DESIGN_SYSTEM.colors.textSecondary,
+                  border: `0.5px solid ${DESIGN_SYSTEM.colors.border}`,
                   borderRadius: '4px',
                   cursor: 'pointer',
                   fontSize: '13px',
@@ -810,23 +968,23 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                   transition: 'all 0.15s',
                 }}
                 onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#2a2a2a';
-                  (e.currentTarget as HTMLButtonElement).style.color = '#fff';
+                  (e.currentTarget as HTMLButtonElement).style.backgroundColor = DESIGN_SYSTEM.colors.tertiary;
+                  (e.currentTarget as HTMLButtonElement).style.color = DESIGN_SYSTEM.colors.textPrimary;
                 }}
                 onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#1e1e1e';
-                  (e.currentTarget as HTMLButtonElement).style.color = '#ccc';
+                  (e.currentTarget as HTMLButtonElement).style.backgroundColor = DESIGN_SYSTEM.colors.inputs;
+                  (e.currentTarget as HTMLButtonElement).style.color = DESIGN_SYSTEM.colors.textSecondary;
                 }}
               >
-                {CZECH.zavrit}
+                Zavřít
               </button>
               <button
                 onClick={handleUpload}
                 disabled={beats.length === 0 || isUploading}
                 style={{
                   padding: '8px 20px',
-                  backgroundColor: '#0055FF',
-                  color: '#fff',
+                  backgroundColor: DESIGN_SYSTEM.colors.primary,
+                  color: DESIGN_SYSTEM.colors.textPrimary,
                   border: 'none',
                   borderRadius: '4px',
                   cursor: beats.length === 0 || isUploading ? 'not-allowed' : 'pointer',
@@ -844,7 +1002,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                   (e.currentTarget as HTMLButtonElement).style.opacity = beats.length === 0 || isUploading ? '0.6' : '1';
                 }}
               >
-                {isUploading ? CZECH.nahravani : CZECH.nahrat_vse}
+                {isUploading ? 'Nahrávání...' : 'Nahrát vše'}
               </button>
             </div>
           </div>
@@ -857,25 +1015,25 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
           style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)", zIndex: 10000, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
           onClick={(e) => { if (e.target === e.currentTarget) setShowGallery(false); }}
         >
-          <div style={{ background: "#111", border: "0.4px solid #333", borderRadius: "8px", width: "min(860px, 96vw)", maxHeight: "88vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "0.4px solid #2a2a2a", flexShrink: 0 }}>
+          <div style={{ background: DESIGN_SYSTEM.colors.tertiary, border: `0.4px solid ${DESIGN_SYSTEM.colors.border}`, borderRadius: "8px", width: "min(860px, 96vw)", maxHeight: "88vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: `0.4px solid ${DESIGN_SYSTEM.colors.border}`, flexShrink: 0 }}>
               <div>
-                <div style={{ color: DESIGN_SYSTEM.colors.textPrimary, fontSize: "14px", fontWeight: 500 }}>{CZECH.vybrat_umeni}</div>
-                <div style={{ color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "11px", marginTop: "2px" }}>{CZECH.vyberte_obrazek_nebo_nahrajte}</div>
+                <div style={{ color: DESIGN_SYSTEM.colors.textPrimary, fontSize: "14px", fontWeight: 500 }}>Vybrat umění</div>
+                <div style={{ color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "11px", marginTop: "2px" }}>Zvolte obrázek nebo nahrajte nové</div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                 {galleryUploading && (
                   <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: "220px" }}>
-                    <div style={{ flex: 1, height: "4px", background: "#1b1b1b", borderRadius: "999px", overflow: "hidden" }}>
-                      <div style={{ height: "100%", width: `${Math.min(galleryUploadProgress, 100)}%`, background: "linear-gradient(90deg,#0055FF,#3399FF)", transition: "width 200ms ease" }} />
+                    <div style={{ flex: 1, height: "4px", background: DESIGN_SYSTEM.colors.border, borderRadius: "999px", overflow: "hidden" }}>
+                      <div style={{ height: "100%", width: `${Math.min(galleryUploadProgress, 100)}%`, background: `linear-gradient(90deg,${DESIGN_SYSTEM.colors.primary},#3399FF)`, transition: "width 200ms ease" }} />
                     </div>
-                    <span style={{ fontSize: "11px", color: "#0055FF", fontWeight: 500, whiteSpace: "nowrap", minWidth: "50px", textAlign: "right" }}>
+                    <span style={{ fontSize: "11px", color: DESIGN_SYSTEM.colors.primary, fontWeight: 500, whiteSpace: "nowrap", minWidth: "50px", textAlign: "right" }}>
                       {Math.round(Math.min(galleryUploadProgress, 100))}%
                     </span>
                   </div>
                 )}
-                <label style={{ background: "transparent", border: "0.4px solid #555", color: galleryUploading ? "#555" : "#aaa", borderRadius: "3px", padding: "6px 12px", cursor: galleryUploading ? "default" : "pointer", fontSize: "12px", display: "flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap", transition: "all 0.15s" }}>
-                  {galleryUploading ? `${CZECH.nahravani} ${galleryUploadTotal} ${CZECH.obrazky}...` : `+ ${CZECH.nahrat_obrazky}`}
+                <label style={{ background: "transparent", border: `0.4px solid ${DESIGN_SYSTEM.colors.textSecondary}`, color: galleryUploading ? DESIGN_SYSTEM.colors.textTertiary : DESIGN_SYSTEM.colors.textSecondary, borderRadius: "3px", padding: "6px 12px", cursor: galleryUploading ? "default" : "pointer", fontSize: "12px", display: "flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap", transition: "all 0.15s" }}>
+                  {galleryUploading ? `Nahrávání ${galleryUploadTotal} obrázků...` : `+ Nahrát obrázky`}
                   <input
                     type="file"
                     accept="image/*"
@@ -888,7 +1046,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                 <button
                   onClick={() => setShowGallery(false)}
                   disabled={galleryUploading}
-                  style={{ background: "transparent", border: "none", color: galleryUploading ? "#555" : "#666", fontSize: "20px", cursor: galleryUploading ? "not-allowed" : "pointer", lineHeight: 1, padding: "0 4px", opacity: galleryUploading ? 0.5 : 1, transition: "all 0.15s" }}
+                  style={{ background: "transparent", border: "none", color: galleryUploading ? DESIGN_SYSTEM.colors.textTertiary : DESIGN_SYSTEM.colors.textSecondary, fontSize: "20px", cursor: galleryUploading ? "not-allowed" : "pointer", lineHeight: 1, padding: "0 4px", opacity: galleryUploading ? 0.5 : 1, transition: "all 0.15s" }}
                 >
                   ×
                 </button>
@@ -907,45 +1065,45 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
             >
               {galleryDragging && (
                 <div style={{ position: "absolute", inset: 0, background: "rgba(11,153,252,0.08)", border: "2px dashed #0055FF", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10, pointerEvents: "none" }}>
-                  <span style={{ color: "#0055FF", fontSize: "14px", fontWeight: 500 }}>Drag images here</span>
+                  <span style={{ color: "#0055FF", fontSize: "14px", fontWeight: 500 }}>Přetáhněte obrázky sem</span>
                 </div>
               )}
               {galleryLoading ? (
-                <div style={{ textAlign: "center", color: "#444", padding: "48px 0", fontSize: "12px" }}>Loading...</div>
+                <div style={{ textAlign: "center", color: DESIGN_SYSTEM.colors.textTertiary, padding: "48px 0", fontSize: "12px" }}>Načítání...</div>
               ) : galleryImages.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "48px 0" }}>
-                  <div style={{ color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "13px", marginBottom: "8px" }}>{CZECH.zadne_obrazky}</div>
-                  <div style={{ color: DESIGN_SYSTEM.colors.textTertiary, fontSize: "11px" }}>{CZECH.nahrajte_obrazky_pres_admin}</div>
+                  <div style={{ color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "13px", marginBottom: "8px" }}>V galerii nejsou žádné obrázky</div>
+                  <div style={{ color: DESIGN_SYSTEM.colors.textTertiary, fontSize: "11px" }}>Nahrajte obrázky prostřednictvím administrátorské galerie</div>
                 </div>
               ) : (
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: "12px" }}>
                   {galleryImages.map(img => (
                     <div
                       key={img.filename}
-                      style={{ position: "relative", border: "0.4px solid #2a2a2a", borderRadius: "5px", overflow: "hidden", cursor: "pointer", transition: "border-color 0.15s" }}
+                      style={{ position: "relative", border: `0.4px solid ${DESIGN_SYSTEM.colors.border}`, borderRadius: "5px", overflow: "hidden", cursor: "pointer", transition: "border-color 0.15s" }}
                       onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = "#666"}
-                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = "#2a2a2a"}
+                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = DESIGN_SYSTEM.colors.border}
                     >
                       <img
                         src={img.url}
                         alt={img.filename}
                         onClick={() => handleGallerySelect(img.url)}
-                        style={{ width: "100%", aspectRatio: "1", objectFit: "contain", background: "#080808", display: "block" }}
+                        style={{ width: "100%", aspectRatio: "1", objectFit: "contain", background: DESIGN_SYSTEM.colors.background, display: "block" }}
                       />
-                      <div style={{ padding: "6px 8px 4px", background: "#0e0e0e" }}>
-                        <div style={{ fontSize: "10px", color: "#555", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{img.filename}</div>
+                      <div style={{ padding: "6px 8px 4px", background: DESIGN_SYSTEM.colors.background }}>
+                        <div style={{ fontSize: "10px", color: DESIGN_SYSTEM.colors.textTertiary, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{img.filename}</div>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "4px", gap: "4px" }}>
                           <button
                             onClick={() => handleGallerySelect(img.url)}
-                            style={{ background: "transparent", border: "0.4px solid #444", color: "#aaa", borderRadius: "3px", padding: "2px 8px", cursor: "pointer", fontSize: "11px", flex: 1 }}
+                            style={{ background: "transparent", border: `0.4px solid ${DESIGN_SYSTEM.colors.border}`, color: DESIGN_SYSTEM.colors.textSecondary, borderRadius: "3px", padding: "2px 8px", cursor: "pointer", fontSize: "11px", flex: 1 }}
                           >
-                            Select
+                            Vybrat
                           </button>
                           <button
                             onClick={(e) => { e.stopPropagation(); handleGalleryImageDelete(img.filename); }}
-                            style={{ background: "transparent", border: "none", color: "#666", cursor: "pointer", fontSize: "16px", padding: "0 4px", lineHeight: 1, transition: "color 0.15s" }}
+                            style={{ background: "transparent", border: "none", color: DESIGN_SYSTEM.colors.textSecondary, cursor: "pointer", fontSize: "16px", padding: "0 4px", lineHeight: 1, transition: "color 0.15s" }}
                             onMouseEnter={(e) => (e.currentTarget.style.color = "#ff4444")}
-                            onMouseLeave={(e) => (e.currentTarget.style.color = "#666")}
+                            onMouseLeave={(e) => (e.currentTarget.style.color = DESIGN_SYSTEM.colors.textSecondary)}
                           >
                             ×
                           </button>
@@ -956,8 +1114,8 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                 </div>
               )}
             </div>
-            <div style={{ padding: "10px 20px", borderTop: "0.4px solid #1a1a1a", flexShrink: 0, display: "flex", justifyContent: "flex-end" }}>
-              <button onClick={() => setShowGallery(false)} style={{padding: '8px 16px', backgroundColor: '#0055FF', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 600}}>Close</button>
+            <div style={{ padding: "10px 20px", borderTop: `0.4px solid ${DESIGN_SYSTEM.colors.border}`, flexShrink: 0, display: "flex", justifyContent: "flex-end" }}>
+              <button onClick={() => setShowGallery(false)} style={{padding: '8px 16px', backgroundColor: DESIGN_SYSTEM.colors.primary, color: DESIGN_SYSTEM.colors.textPrimary, border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 600}}>Zavřít</button>
             </div>
           </div>
         </div>
@@ -968,16 +1126,16 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
           style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)", zIndex: 10001, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
           onClick={(e) => { if (e.target === e.currentTarget) setShowReleaseScheduler(false); }}
         >
-          <div style={{ background: "#111", border: "0.4px solid #333", borderRadius: "8px", width: "min(400px, 96vw)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+          <div style={{ background: DESIGN_SYSTEM.colors.tertiary, border: `0.4px solid ${DESIGN_SYSTEM.colors.border}`, borderRadius: "8px", width: "min(400px, 96vw)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
             {/* Header */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px", borderBottom: "0.4px solid #2a2a2a" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px", borderBottom: `0.4px solid ${DESIGN_SYSTEM.colors.border}` }}>
               <div>
-                <div style={{ color: DESIGN_SYSTEM.colors.textPrimary, fontSize: "16px", fontWeight: 600 }}>{CZECH.naplanovani_vydani}</div>
-                <div style={{ color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "12px", marginTop: "4px" }}>{CZECH.kdy_vydani}</div>
+                <div style={{ color: DESIGN_SYSTEM.colors.textPrimary, fontSize: "16px", fontWeight: 600 }}>Plánování vydání</div>
+                <div style={{ color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "12px", marginTop: "4px" }}>Kdy mají být vaše beaty zveřejněny</div>
               </div>
               <button
                 onClick={() => setShowReleaseScheduler(false)}
-                style={{ background: "transparent", border: "none", color: "#666", fontSize: "20px", cursor: "pointer", lineHeight: 1, padding: "0 4px" }}
+                style={{ background: "transparent", border: "none", color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "20px", cursor: "pointer", lineHeight: 1, padding: "0 4px" }}
               >
                 ×
               </button>
@@ -987,7 +1145,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
             <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
               {/* Date Input */}
               <div>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: 500, color: DESIGN_SYSTEM.colors.textPrimary, marginBottom: "8px" }}>{CZECH.datum_vydani}</label>
+                <label style={{ display: "block", fontSize: "13px", fontWeight: 500, color: DESIGN_SYSTEM.colors.textPrimary, marginBottom: "8px" }}>Datum vydání</label>
                 <input
                   type="date"
                   value={schedulerDate}
@@ -997,10 +1155,10 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                     width: "100%",
                     padding: "10px",
                     fontSize: "14px",
-                    backgroundColor: "#0d0d0d",
-                    border: "0.4px solid #2a2a2a",
+                    backgroundColor: DESIGN_SYSTEM.colors.inputs,
+                    border: `0.4px solid ${DESIGN_SYSTEM.colors.border}`,
                     borderRadius: "4px",
-                    color: "#fff",
+                    color: DESIGN_SYSTEM.colors.textPrimary,
                     outline: "none",
                     boxSizing: "border-box",
                   }}
@@ -1009,37 +1167,37 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
 
               {/* Quick Presets */}
               <div>
-                <label style={{ display: "block", fontSize: "13px", fontWeight: 500, color: DESIGN_SYSTEM.colors.textPrimary, marginBottom: "8px" }}>{CZECH.rychly_vyber}</label>
+                <label style={{ display: "block", fontSize: "13px", fontWeight: 500, color: DESIGN_SYSTEM.colors.textPrimary, marginBottom: "8px" }}>Rychlý výběr</label>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
                   {[
-                    { label: CZECH.zitra, get: () => new Date(Date.now() + 86400000).toISOString().split('T')[0] },
-                    { label: CZECH.dalsi_pracovni_den, get: getNextWeekday },
-                    { label: CZECH.dalsi_patek, get: getNextFriday },
-                    { label: CZECH.dalsi_tyden, get: () => new Date(Date.now() + 604800000).toISOString().split('T')[0] },
+                    { label: "Zítra", get: () => new Date(Date.now() + 86400000).toISOString().split('T')[0] },
+                    { label: "Další pracovní den", get: getNextWeekday },
+                    { label: "Příští pátek", get: getNextFriday },
+                    { label: "Příští týden", get: () => new Date(Date.now() + 604800000).toISOString().split('T')[0] },
                   ].map((preset) => (
                     <button
                       key={preset.label}
                       onClick={() => setSchedulerDate(preset.get())}
                       style={{
                         padding: "10px",
-                        backgroundColor: "#1e1e1e",
-                        border: "0.4px solid #2a2a2a",
+                        backgroundColor: DESIGN_SYSTEM.colors.inputs,
+                        border: `0.4px solid ${DESIGN_SYSTEM.colors.border}`,
                         borderRadius: "4px",
-                        color: "#aaa",
+                        color: DESIGN_SYSTEM.colors.textSecondary,
                         fontSize: "12px",
                         fontWeight: 500,
                         cursor: "pointer",
                         transition: "all 0.15s",
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = "#2a2a2a";
-                        e.currentTarget.style.color = "#fff";
+                        e.currentTarget.style.backgroundColor = DESIGN_SYSTEM.colors.tertiary;
+                        e.currentTarget.style.color = DESIGN_SYSTEM.colors.textPrimary;
                         e.currentTarget.style.borderColor = "#444";
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = "#1e1e1e";
-                        e.currentTarget.style.color = "#aaa";
-                        e.currentTarget.style.borderColor = "#2a2a2a";
+                        e.currentTarget.style.backgroundColor = DESIGN_SYSTEM.colors.inputs;
+                        e.currentTarget.style.color = DESIGN_SYSTEM.colors.textSecondary;
+                        e.currentTarget.style.borderColor = DESIGN_SYSTEM.colors.border;
                       }}
                     >
                       {preset.label}
@@ -1057,7 +1215,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                     onChange={(e) => setApplyToAll(e.target.checked)}
                     style={{ width: "16px", height: "16px", cursor: "pointer", accentColor: DESIGN_SYSTEM.colors.primary }}
                   />
-                  <span>{CZECH.pouzit_pro_vse} {beats.length} {CZECH.bitu}</span>
+                  <span>Použít pro všechny {beats.length} beatů</span>
                 </label>
                 {applyToAll && (
                   <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", fontSize: "13px", color: DESIGN_SYSTEM.colors.textPrimary, marginLeft: "24px" }}>
@@ -1067,12 +1225,12 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                       onChange={(e) => setAutoIncrement(e.target.checked)}
                       style={{ width: "16px", height: "16px", cursor: "pointer", accentColor: DESIGN_SYSTEM.colors.primary }}
                     />
-                    <span>{CZECH.auto_inkrementace}</span>
+                    <span>Automaticky zvyšovat o 1 den (05.09, 06.09, 07.09...)</span>
                   </label>
                 )}
                 {applyToAll && autoIncrement && (
-                  <div style={{ marginLeft: "24px", padding: "10px", backgroundColor: "#1a2a3a", border: "0.4px solid #2a4a6a", borderRadius: "4px", fontSize: "12px", color: "#aaa", lineHeight: "1.4" }}>
-                    <div style={{ fontWeight: 500, marginBottom: "6px" }}>{CZECH.nahled}</div>
+                  <div style={{ marginLeft: "24px", padding: "10px", backgroundColor: DESIGN_SYSTEM.colors.inputs, border: `0.4px solid ${DESIGN_SYSTEM.colors.border}`, borderRadius: "4px", fontSize: "12px", color: DESIGN_SYSTEM.colors.textSecondary, lineHeight: "1.4" }}>
+                    <div style={{ fontWeight: 500, marginBottom: "6px", color: DESIGN_SYSTEM.colors.textPrimary }}>Náhled:</div>
                     {beats.slice(0, 3).map((beat, idx) => {
                       const date = new Date(schedulerDate);
                       date.setDate(date.getDate() + idx);
@@ -1082,21 +1240,21 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                         </div>
                       );
                     })}
-                    {beats.length > 3 && <div style={{ fontSize: "11px", marginTop: "4px" }}>... {CZECH.a_dalsi} {beats.length - 3}</div>}
+                    {beats.length > 3 && <div style={{ fontSize: "11px", marginTop: "4px" }}>... a dalších {beats.length - 3}</div>}
                   </div>
                 )}
               </div>
             </div>
 
             {/* Footer */}
-            <div style={{ padding: "16px 20px", borderTop: "0.4px solid #2a2a2a", display: "flex", gap: "8px", justifyContent: "flex-end" }}>
+            <div style={{ padding: "16px 20px", borderTop: `0.4px solid ${DESIGN_SYSTEM.colors.border}`, display: "flex", gap: "8px", justifyContent: "flex-end" }}>
               <button
                 onClick={() => setShowReleaseScheduler(false)}
                 style={{
                   padding: "8px 16px",
-                  backgroundColor: "#1e1e1e",
-                  color: "#ccc",
-                  border: "0.4px solid #2a2a2a",
+                  backgroundColor: DESIGN_SYSTEM.colors.inputs,
+                  color: DESIGN_SYSTEM.colors.textSecondary,
+                  border: `0.4px solid ${DESIGN_SYSTEM.colors.border}`,
                   borderRadius: "4px",
                   cursor: "pointer",
                   fontSize: "13px",
@@ -1104,22 +1262,22 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                   transition: "all 0.15s",
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = "#2a2a2a";
-                  e.currentTarget.style.color = "#fff";
+                  e.currentTarget.style.backgroundColor = DESIGN_SYSTEM.colors.tertiary;
+                  e.currentTarget.style.color = DESIGN_SYSTEM.colors.textPrimary;
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = "#1e1e1e";
-                  e.currentTarget.style.color = "#ccc";
+                  e.currentTarget.style.backgroundColor = DESIGN_SYSTEM.colors.inputs;
+                  e.currentTarget.style.color = DESIGN_SYSTEM.colors.textSecondary;
                 }}
               >
-                {CZECH.zrusit}
+                Zrušit
               </button>
               <button
                 onClick={handleApplyReleaseDate}
                 style={{
                   padding: "8px 20px",
-                  backgroundColor: "#0055FF",
-                  color: "#fff",
+                  backgroundColor: DESIGN_SYSTEM.colors.primary,
+                  color: DESIGN_SYSTEM.colors.textPrimary,
                   border: "none",
                   borderRadius: "4px",
                   cursor: "pointer",
@@ -1130,7 +1288,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                 onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.9")}
                 onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
               >
-                {CZECH.aplikovat_plan}
+                Použít plán
               </button>
             </div>
           </div>

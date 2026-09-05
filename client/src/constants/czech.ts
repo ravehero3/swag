@@ -122,7 +122,10 @@ export const CZECH = {
   pridat_beaty: "Přidat beaty",
   nahrat_vse: "Nahrát vše",
   nahravani: "Nahrávání",
-  hned: "Hned",
+  hned: "Okamžitě",
+  tonina: "Tónina",
+  obrazek: "Obrázek",
+  datum_vydani_header: "Datum vydání",
   
   // Release Scheduler
   naplanovani_vydani: "Plánování vydání",
