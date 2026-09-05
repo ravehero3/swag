@@ -491,7 +491,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                     borderRadius: '6px',
                     backgroundColor: '#0d0d0d',
                     border: '1px solid #1e1e1e',
-                    gridTemplateColumns: '40px 1fr 60px 50px 70px 100px 90px 100px 50px',
+                    gridTemplateColumns: '40px 1fr 60px 50px 100px 90px 100px 50px',
                     transition: 'border-color 0.15s, background 0.15s',
                   }}
                   onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#2a2a2a')}
