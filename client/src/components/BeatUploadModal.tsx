@@ -48,10 +48,10 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
     }
 
     // Match key patterns: single notes (C, D, E, F, G, A, B) with optional # or b
-    // Also support: note + minor/major (e.g., "A minor", "C# major")
-    const keyMatch = nameWithoutExt.match(/\b([A-G](?:[#b])?(?:\s+(?:minor|major))?)\b/i);
+    // Also support: note + minor/major (e.g., "A minor", "E MINOR", "C# major")
+    const keyMatch = nameWithoutExt.match(/\b([A-G](?:[#b])?\s*(?:minor|major)?)\b/i);
     if (keyMatch) {
-      key = keyMatch[1].trim();
+      key = keyMatch[1].trim().replace(/\s+/g, ' ');
     }
 
     return { bpm, key };
