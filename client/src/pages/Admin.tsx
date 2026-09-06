@@ -417,64 +417,111 @@ const PRICE_TYPES_BEAT = [
 
 type BeatPriceType = typeof PRICE_TYPES_BEAT[number]["id"];
 
-async function computeWaveformInBrowser(previewUrl: string): Promise<number[] | null> {
+async function computeWaveformInBrowser(previewUrl: string, retries = 3): Promise<number[] | null> {
   const BAR_COUNT = 480;
-  try {
-    const proxyUrl = toAudioProxyUrl(previewUrl);
-    const response = await fetch(proxyUrl);
-    if (!response.ok) return null;
-    const arrayBuffer = await response.arrayBuffer();
-
-    const audioCtx = new AudioContext({ sampleRate: 22050 });
-    const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-
-    const numChannels = audioBuffer.numberOfChannels;
-    const length = audioBuffer.length;
-    const mono = new Float32Array(length);
-    for (let c = 0; c < numChannels; c++) {
-      const channelData = audioBuffer.getChannelData(c);
-      for (let i = 0; i < length; i++) mono[i] += channelData[i] / numChannels;
-    }
-
-    const samplesPerBin = Math.floor(length / BAR_COUNT);
-    if (samplesPerBin < 1) { await audioCtx.close(); return null; }
-
-    const rawPeaks = new Float32Array(BAR_COUNT);
-    const bassPeaks = new Float32Array(BAR_COUNT);
-    const alpha = 1 - Math.exp(-2 * Math.PI * 100 / 22050);
-    let lpState = 0;
-
-    for (let i = 0; i < BAR_COUNT; i++) {
-      const start = i * samplesPerBin;
-      const end = Math.min(start + samplesPerBin, length);
-      let maxRaw = 0;
-      let maxBass = 0;
-      for (let j = start; j < end; j++) {
-        const s = Math.abs(mono[j]);
-        lpState = lpState * (1 - alpha) + s * alpha;
-        if (s > maxRaw) maxRaw = s;
-        if (lpState > maxBass) maxBass = lpState;
+  
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const proxyUrl = toAudioProxyUrl(previewUrl);
+      console.log(`[Waveform] Attempt ${attempt}/${retries}: fetching from ${proxyUrl}`);
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+      
+      const response = await fetch(proxyUrl, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        console.warn(`[Waveform] Fetch failed: ${response.status} ${response.statusText}`);
+        if (attempt < retries) {
+          await new Promise(r => setTimeout(r, 1000 * attempt)); // Exponential backoff
+          continue;
+        }
+        return null;
       }
-      rawPeaks[i] = maxRaw;
-      bassPeaks[i] = maxBass;
+      
+      const arrayBuffer = await response.arrayBuffer();
+      if (arrayBuffer.byteLength === 0) {
+        console.warn(`[Waveform] Empty audio buffer`);
+        if (attempt < retries) {
+          await new Promise(r => setTimeout(r, 1000 * attempt));
+          continue;
+        }
+        return null;
+      }
+
+      const audioCtx = new AudioContext({ sampleRate: 22050 });
+      try {
+        const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+
+        const numChannels = audioBuffer.numberOfChannels;
+        const length = audioBuffer.length;
+        const mono = new Float32Array(length);
+        for (let c = 0; c < numChannels; c++) {
+          const channelData = audioBuffer.getChannelData(c);
+          for (let i = 0; i < length; i++) mono[i] += channelData[i] / numChannels;
+        }
+
+        const samplesPerBin = Math.floor(length / BAR_COUNT);
+        if (samplesPerBin < 1) {
+          await audioCtx.close();
+          console.warn(`[Waveform] Audio too short: ${length} samples`);
+          return null;
+        }
+
+        const rawPeaks = new Float32Array(BAR_COUNT);
+        const bassPeaks = new Float32Array(BAR_COUNT);
+        const alpha = 1 - Math.exp(-2 * Math.PI * 100 / 22050);
+        let lpState = 0;
+
+        for (let i = 0; i < BAR_COUNT; i++) {
+          const start = i * samplesPerBin;
+          const end = Math.min(start + samplesPerBin, length);
+          let maxRaw = 0;
+          let maxBass = 0;
+          for (let j = start; j < end; j++) {
+            const s = Math.abs(mono[j]);
+            lpState = lpState * (1 - alpha) + s * alpha;
+            if (s > maxRaw) maxRaw = s;
+            if (lpState > maxBass) maxBass = lpState;
+          }
+          rawPeaks[i] = maxRaw;
+          bassPeaks[i] = maxBass;
+        }
+
+        let maxR = 0.001, maxB = 0.001;
+        for (let i = 0; i < BAR_COUNT; i++) {
+          if (rawPeaks[i] > maxR) maxR = rawPeaks[i];
+          if (bassPeaks[i] > maxB) maxB = bassPeaks[i];
+        }
+
+        const result = Array.from({ length: BAR_COUNT }, (_, i) =>
+          Math.min(1, (rawPeaks[i] / maxR) * 0.60 + (bassPeaks[i] / maxB) * 0.55)
+        );
+
+        await audioCtx.close();
+        console.log(`[Waveform] Success on attempt ${attempt}: computed ${result.length} bars`);
+        return result;
+      } catch (decodeError) {
+        await audioCtx.close();
+        console.warn(`[Waveform] Audio decode failed on attempt ${attempt}:`, decodeError);
+        if (attempt < retries) {
+          await new Promise(r => setTimeout(r, 1000 * attempt));
+          continue;
+        }
+        return null;
+      }
+    } catch (e) {
+      console.warn(`[Waveform] Attempt ${attempt}/${retries} failed:`, e);
+      if (attempt === retries) {
+        console.error(`[Waveform] All ${retries} attempts failed for ${previewUrl}`);
+        return null;
+      }
+      await new Promise(r => setTimeout(r, 1000 * attempt));
     }
-
-    let maxR = 0.001, maxB = 0.001;
-    for (let i = 0; i < BAR_COUNT; i++) {
-      if (rawPeaks[i] > maxR) maxR = rawPeaks[i];
-      if (bassPeaks[i] > maxB) maxB = bassPeaks[i];
-    }
-
-    const result = Array.from({ length: BAR_COUNT }, (_, i) =>
-      Math.min(1, (rawPeaks[i] / maxR) * 0.60 + (bassPeaks[i] / maxB) * 0.55)
-    );
-
-    await audioCtx.close();
-    return result;
-  } catch (e) {
-    console.error("[Waveform] Browser computation failed:", e);
-    return null;
   }
+  
+  return null;
 }
 
 function getBeatWaveformQuality(data: number[]): { label: string; color: string } {
@@ -1070,8 +1117,10 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     if (!beat.preview_url) return;
     setRecomputingIds(prev => new Set([...prev, beat.id]));
     try {
+      console.log(`[Admin] Recomputing waveform for beat ${beat.id}`);
       const data = await computeWaveformInBrowser(beat.preview_url);
       if (data && data.length > 0) {
+        console.log(`[Admin] Waveform computed, saving to backend`);
         await fetch(`/api/beats/${beat.id}/waveform`, {
           method: "POST",
           credentials: "include",
@@ -1098,8 +1147,10 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
       setRecomputeAllProgress({ current: i + 1, total: pending.length });
       setRecomputingIds(prev => new Set([...prev, b.id]));
       try {
-        const data = await computeWaveformInBrowser(b.preview_url!);
+        console.log(`[Admin] Recomputing waveform ${i + 1}/${pending.length} for beat ${b.id}`);
+        const data = await computeWaveformInBrowser(b.preview_url!, 3);
         if (data && data.length > 0) {
+          console.log(`[Admin] Beat ${b.id} waveform computed successfully`);
           await fetch(`/api/beats/${b.id}/waveform`, {
             method: "POST",
             credentials: "include",
@@ -1107,7 +1158,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
             body: JSON.stringify({ data }),
           });
         } else {
-          console.warn(`Beat ${b.id} waveform returned null`);
+          console.warn(`Beat ${b.id} waveform returned null after retries`);
         }
         await loadData();
       } catch (e) {
@@ -1117,6 +1168,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
       }
     }
     setRecomputeAllProgress(null);
+    console.log(`[Admin] Waveform recomputation complete`);
   };
 
   const saveInlineBpmKey = async (beat: Beat, bpm: number, key: string) => {
