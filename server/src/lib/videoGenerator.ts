@@ -1,7 +1,6 @@
 import fs from 'fs';
 import path from 'path';
 import { spawn } from 'child_process';
-import fetch from 'node-fetch';
 
 const TEMP_DIR = process.env.NODE_ENV === 'production' ? '/tmp/video-gen' : path.join(process.cwd(), 'tmp/video-gen');
 
@@ -33,10 +32,11 @@ async function downloadFile(url: string, dest: string): Promise<void> {
     }
   }
 
-  const response = await fetch(fetchUrl);
+  const response = await fetch(fetchUrl) as Response;
   if (!response.ok) throw new Error(`Download failed: ${response.statusText}`);
   
-  const buffer = await response.buffer();
+  const arrayBuffer = await response.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
   fs.writeFileSync(dest, buffer);
 }
 
