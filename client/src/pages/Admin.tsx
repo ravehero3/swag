@@ -778,7 +778,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   const [autoAnalyzing, setAutoAnalyzing] = useState(false);
   const [autoDetected, setAutoDetected] = useState<{ bpm: number | null; key: string | null } | null>(null);
 
-  const openGallery = () => {
+  const openBeatGallery = () => {
     setShowGallery(true);
     loadGallery();
   };
@@ -1882,7 +1882,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                         <button
                           type="button"
                           className="btn btn-admin"
-                          onClick={openGallery}
+                          onClick={openBeatGallery}
                           data-testid="button-open-artwork-gallery-beat"
                           style={{ whiteSpace: "nowrap" }}
                         >
