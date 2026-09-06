@@ -401,7 +401,7 @@ router.post("/generate-video", requireAdmin, async (req: Request, res: Response)
   }
 });
 
-
+router.post("/bulk-publish", requireAdmin, async (req: Request, res: Response) => {
   try {
     const { ids } = req.body;
     if (!Array.isArray(ids) || ids.length === 0) {
