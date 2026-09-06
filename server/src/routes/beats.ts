@@ -4,6 +4,7 @@ import { requireAdmin, requireAuth } from "../middleware/auth.js";
 import { generateDownloadUrl, STORAGE_BUCKETS, deleteStorageFile } from "../lib/storage.js";
 import { computeWaveformFromUrl } from "../lib/waveform.js";
 import { analyzeAudio } from "../lib/audioAnalysis.js";
+import { generateSquareVideo } from "../lib/videoGenerator.js";
 
 async function triggerWaveformComputation(beatId: number, previewUrl: string) {
   try {
@@ -373,7 +374,34 @@ router.post("/bulk-delete", requireAdmin, async (req: Request, res: Response) =>
   }
 });
 
-router.post("/bulk-publish", requireAdmin, async (req: Request, res: Response) => {
+router.post("/generate-video", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { beatId, title, bpm, key, artworkUrl, audioUrl } = req.body;
+
+    if (!beatId || !artworkUrl || !audioUrl) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    console.log(`[API] Generating video for beat ${beatId}...`);
+    const videoBuffer = await generateSquareVideo({
+      beatId,
+      title: title || "Untitled",
+      bpm: bpm || 0,
+      key: key || "",
+      artworkUrl,
+      audioUrl,
+    });
+
+    res.setHeader("Content-Type", "video/mp4");
+    res.setHeader("Content-Disposition", `attachment; filename="${(title || 'beat').replace(/\s+/g, '-')}-square.mp4"`);
+    res.send(videoBuffer);
+  } catch (error) {
+    console.error("Video generation error:", error);
+    res.status(500).json({ error: "Video generation failed", detail: String(error) });
+  }
+});
+
+
   try {
     const { ids } = req.body;
     if (!Array.isArray(ids) || ids.length === 0) {

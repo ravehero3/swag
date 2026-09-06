@@ -10,8 +10,8 @@ import { filterAndSortBeatFiles } from "../lib/beatFolderUtils.js";
 import SoundWave from "../components/SoundWave.js";
 // Force rebuild 1788444345
 import { BeatUploadModal } from "../components/BeatUploadModal.js";
+import { VideoGeneratorButton } from "../components/VideoGeneratorButton.js";
 import { AdminErrorLog } from "../components/AdminErrorLog.js";
-import {
   BeatArtwork,
   parseArtworkConfig,
   DEFAULT_ARTWORK_CONFIG,
@@ -2633,6 +2633,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                                 <Pencil size={11} />
                               </button>
                               <button className="btn btn-admin" onClick={e => { e.stopPropagation(); setEditing(beat); setShowForm(true); }} style={{ fontSize: "11px", padding: "5px 10px" }} data-testid={`button-edit-beat-${beat.id}`}>Upravit</button>
+                              <VideoGeneratorButton beat={beat} onGenerated={() => {}} />
                             </>
                           )}
                         </div>
