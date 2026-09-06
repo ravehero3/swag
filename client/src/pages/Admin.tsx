@@ -12,6 +12,7 @@ import SoundWave from "../components/SoundWave.js";
 import { BeatUploadModal } from "../components/BeatUploadModal.js";
 import { VideoGeneratorButton } from "../components/VideoGeneratorButton.js";
 import { AdminErrorLog } from "../components/AdminErrorLog.js";
+import {
   BeatArtwork,
   parseArtworkConfig,
   DEFAULT_ARTWORK_CONFIG,
