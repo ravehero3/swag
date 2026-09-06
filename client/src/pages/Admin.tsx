@@ -778,69 +778,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   const [autoAnalyzing, setAutoAnalyzing] = useState(false);
   const [autoDetected, setAutoDetected] = useState<{ bpm: number | null; key: string | null } | null>(null);
 
-  const openBeatGallery = () => {
-    setShowGallery(true);
-    loadGallery();
-  };
-
-  const loadGallery = async () => {
-    setGalleryLoading(true);
-    try {
-      const res = await fetch("/api/kit-artworks", { credentials: "include" });
-      if (res.ok) setGalleryImages(await res.json());
-    } catch {}
-    setGalleryLoading(false);
-  };
-
-  const handleGalleryUpload = async (files: FileList | File[]) => {
-    const fileArr = Array.from(files);
-    if (fileArr.length === 0) return;
-    setGalleryUploading(true);
-    setGalleryUploadCount(fileArr.length);
-    setGalleryUploadDone(0);
-    try {
-      // Use batch endpoint for efficient multi-file upload
-      const fd = new FormData();
-      fileArr.forEach((f, i) => {
-        fd.append("files", f);
-        // Update progress every 2 files
-        if ((i + 1) % 2 === 0) {
-          setGalleryUploadDone(i + 1);
-        }
-      });
-      const res = await fetch("/api/kit-artworks/upload-batch", { 
-        method: "POST", 
-        body: fd, 
-        credentials: "include" 
-      });
-      if (res.ok) {
-        setGalleryUploadDone(fileArr.length);
-        await loadGallery();
-      } else {
-        const errData = await res.json().catch(() => ({}));
-        alert(`Chyba: ${errData.error || res.status}`);
-      }
-    } catch (e) { 
-      console.error("Gallery upload error:", e);
-      alert("Chyba při nahrávání: " + (e instanceof Error ? e.message : String(e))); 
-    } finally {
-      setGalleryUploading(false);
-      setGalleryUploadCount(0);
-      setGalleryUploadDone(0);
-    }
-  };
-
-  const handleGalleryDelete = async (filename: string) => {
-    if (!confirm(`Smazat ${filename}?`)) return;
-    const res = await fetch(`/api/kit-artworks/${encodeURIComponent(filename)}`, { method: "DELETE", credentials: "include" });
-    if (res.ok) setGalleryImages(prev => prev.filter(i => i.filename !== filename));
-    else alert("Nepodařilo se smazat");
-  };
-
-  const handleGallerySelect = (url: string) => {
-    setForm(f => ({ ...f, artworkUrl: url }));
-    setShowGallery(false);
-  };
+  
 
   // ── Beat folder handlers ────────────────────────────────────────────────────
   const loadBeatFolder = async () => {
@@ -1882,7 +1820,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                         <button
                           type="button"
                           className="btn btn-admin"
-                          onClick={openBeatGallery}
+                          onClick={() => openGallery("main")}
                           data-testid="button-open-artwork-gallery-beat"
                           style={{ whiteSpace: "nowrap" }}
                         >
