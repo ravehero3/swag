@@ -746,14 +746,25 @@ app.get("/api/audio-proxy", async (req: any, res: any) => {
   const b2Endpoint = process.env.B2_ENDPOINT || "";
   const b2PublicBase = process.env.B2_PUBLIC_BASE_URL || "";
   const r2PublicBase = process.env.R2_PUBLIC_BASE_URL || "";
+  const appUrl = (process.env.APP_URL || "").replace(/\/$/, "");
+  
+  // Allow: (1) cloud CDNs, (2) relative local URLs, (3) full app URLs
   const isAllowed =
     url.includes("backblazeb2.com") ||
     url.includes("r2.dev") ||
     url.includes("cloudflarestorage.com") ||
     (b2Endpoint && url.includes(b2Endpoint)) ||
     (b2PublicBase && url.startsWith(b2PublicBase)) ||
-    (r2PublicBase && url.startsWith(r2PublicBase));
+    (r2PublicBase && url.startsWith(r2PublicBase)) ||
+    url.startsWith("/uploads/") ||
+    (appUrl && url.startsWith(appUrl));
   if (!isAllowed) return res.status(403).json({ error: "URL not allowed" });
+  
+  // Convert relative local URLs to absolute
+  let fetchUrl = url;
+  if (url.startsWith("/uploads/")) {
+    fetchUrl = appUrl ? appUrl + url : url;
+  }
 
   try {
     const upstreamHeaders: Record<string, string> = {
@@ -762,7 +773,7 @@ app.get("/api/audio-proxy", async (req: any, res: any) => {
     const rangeHeader = req.headers["range"];
     if (rangeHeader) upstreamHeaders["Range"] = rangeHeader;
 
-    const upstream = await fetch(url, { headers: upstreamHeaders });
+    const upstream = await fetch(fetchUrl, { headers: upstreamHeaders });
     if (!upstream.ok && upstream.status !== 206) return res.status(upstream.status).end();
 
     res.setHeader("Content-Type", upstream.headers.get("content-type") || "audio/mpeg");
@@ -789,6 +800,7 @@ app.get("/api/audio-proxy", async (req: any, res: any) => {
     };
     await pump();
   } catch (err) {
+    console.error("[audio-proxy] fetch error for", fetchUrl, ":", err);
     if (!res.headersSent) res.status(500).json({ error: "Proxy error", detail: String(err) });
   }
 });

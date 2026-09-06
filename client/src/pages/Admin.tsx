@@ -316,20 +316,32 @@ function Admin() {
                   alignItems: "center",
                   width: "100%",
                   padding: "10px 20px",
-                  background: active ? "DESIGN_SYSTEM.colors.tertiary" : "transparent",
+                  background: active ? DESIGN_SYSTEM.colors.tertiary : "transparent",
                   border: "none",
                   borderLeft: active ? "2px solid #fff" : "2px solid transparent",
-                  color: active ? "DESIGN_SYSTEM.colors.textPrimary" : "#484848",
+                  color: active ? DESIGN_SYSTEM.colors.textPrimary : "#484848",
                   fontSize: "13px",
                   fontFamily: "inherit",
                   cursor: "pointer",
                   textAlign: "left",
                   letterSpacing: "0.01em",
-                  transition: "color 120ms, background 120ms",
+                  transition: "color 120ms ease, background 120ms ease, border-color 120ms ease",
                   boxSizing: "border-box",
                 }}
-                onMouseEnter={e => { if (!active) (e.currentTarget as HTMLButtonElement).style.color = "DESIGN_SYSTEM.colors.textSecondary"; }}
-                onMouseLeave={e => { if (!active) (e.currentTarget as HTMLButtonElement).style.color = "#484848"; }}
+                onMouseEnter={e => { 
+                  if (!active) {
+                    (e.currentTarget as HTMLButtonElement).style.color = DESIGN_SYSTEM.colors.textSecondary;
+                    (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.04)";
+                    (e.currentTarget as HTMLButtonElement).style.borderLeftColor = "#555555";
+                  }
+                }}
+                onMouseLeave={e => { 
+                  if (!active) {
+                    (e.currentTarget as HTMLButtonElement).style.color = "#484848";
+                    (e.currentTarget as HTMLButtonElement).style.background = "transparent";
+                    (e.currentTarget as HTMLButtonElement).style.borderLeftColor = "transparent";
+                  }
+                }}
               >
                 <span style={{ flex: 1 }}>{label}</span>
                 {badge && (

@@ -12,6 +12,11 @@ export function canDirectFetch(url: string): boolean {
 
 export function toAudioProxyUrl(url: string): string {
   if (!url) return url;
+  // If it's a relative local URL (/uploads/...), keep it as-is (will use /api/audio-proxy)
+  if (url.startsWith("/") && url.includes("/uploads/")) {
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    return `/api/audio-proxy?url=${encodeURIComponent(origin + url)}`;
+  }
   if (!url.startsWith("http")) return url;
   const origin = typeof window !== "undefined" ? window.location.origin : "";
   if (url.startsWith(origin)) return url;
