@@ -35,6 +35,13 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
   onClose,
   onUploadComplete,
 }) => {
+  // Czech plural forms: 1 beat, 2-4 beaty, 5+ beatů
+  const getCzechPlural = (count: number): string => {
+    if (count === 1) return 'beat';
+    if (count >= 2 && count <= 4) return 'beaty';
+    return 'beatů';
+  };
+
   const parseBeatMetadata = (filename: string) => {
     const nameWithoutExt = filename.replace(/\.[^/.]+$/, '');
     let bpm = '';
@@ -550,7 +557,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
             <div>
               <h1 style={{ fontSize: '20px', fontWeight: 600, color: DESIGN_SYSTEM.colors.textPrimary, margin: 0, letterSpacing: '-0.5px' }}>Nahrát beaty</h1>
               <p style={{ fontSize: '13px', color: DESIGN_SYSTEM.colors.textSecondary, marginTop: '6px', margin: 0 }}>
-                {beats.length} beat{beats.length !== 1 ? 'y' : ''} v pořadí
+                {beats.length} {getCzechPlural(beats.length)} v pořadí
                 {isUploading && completedCount > 0 && ` • ${totalProgress}% hotovo`}
               </p>
             </div>

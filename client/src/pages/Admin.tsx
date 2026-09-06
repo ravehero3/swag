@@ -1614,27 +1614,14 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     <div>
       {/* ── Toolbar ── */}
       <div style={{ display: "flex", gap: "8px", marginBottom: "20px", flexWrap: "wrap", alignItems: "center" }}>
-        <button
-          className="btn btn-filled"
-          onClick={() => { if (showForm) { resetForm(); } else { setEditing(null); setShowForm(true); } }}
-          data-testid="button-toggle-beat-form"
-          style={{ fontSize: "13px" }}
-        >
-          {showForm ? "× Zavřít formulář" : "+ Přidat beat"}
-        </button>
-        <button className="btn btn-admin" onClick={() => setShowBulkZone(v => !v)} style={{ borderColor: "#0B99FC", color: "#0B99FC", fontSize: "13px" }}>
-          {showBulkZone ? "Zavřít bulk upload" : "Bulk upload"}
-        </button>
         <button 
-          className="btn btn-admin" 
+          className="btn btn-filled" 
           onClick={() => {
-            console.log('[BUTTON] Upload Beats clicked');
-            console.log('[STATE] Before click - showBeatUploadModal:', showBeatUploadModal);
             setShowBeatUploadModal(true);
-            console.log('[STATE] After setShowBeatUploadModal(true)');
           }} 
-          style={{ borderColor: "#7c3aed", color: "#7c3aed", fontSize: "13px" }}
+          style={{ fontSize: "13px" }}
           type="button"
+          data-testid="button-open-beat-upload-modal"
         >
           ↑ Upload Beats
         </button>
@@ -1646,8 +1633,8 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
         <span style={{ marginLeft: "auto", fontSize: "12px", color: "#444" }}>{beats.length} beatů celkem</span>
       </div>
 
-      {/* ── Bulk upload zone ── */}
-      {showBulkZone && (
+      {/* ── Bulk upload zone (hidden - consolidated into Upload Beats modal) ── */}
+      {showBulkZone && false && (
         <div style={{ marginBottom: "24px", padding: "20px", background: "DESIGN_SYSTEM.colors.elevated", border: "1px solid #1e1e1e", borderRadius: "10px" }}>
           <div style={{ fontSize: "11px", fontWeight: 700, color: "#444", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "14px" }}>Hromadný upload</div>
           <div
