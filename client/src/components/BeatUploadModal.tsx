@@ -63,6 +63,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
   const [beats, setBeats] = useState<BeatFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedBeats, setUploadedBeats] = useState<BeatFile[]>([]);
+  const [showSuccessScreen, setShowSuccessScreen] = useState(false);
   const [globalReleaseImmediately, setGlobalReleaseImmediately] = useState(true);
   const [showReleaseScheduler, setShowReleaseScheduler] = useState(false);
   const [schedulerDate, setSchedulerDate] = useState<string>(new Date().toISOString().split('T')[0]);
@@ -76,6 +77,17 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
   const [galleryUploading, setGalleryUploading] = useState(false);
   const [galleryUploadProgress, setGalleryUploadProgress] = useState(0);
   const [galleryUploadTotal, setGalleryUploadTotal] = useState(0);
+
+  useEffect(() => {
+    if (!isUploading && uploadedBeats.length > 0 && completedCount === beats.length && beats.length > 0) {
+      setShowSuccessScreen(true);
+      const timer = setTimeout(() => {
+        setShowSuccessScreen(false);
+        onClose();
+      }, 2800);
+      return () => clearTimeout(timer);
+    }
+  }, [isUploading, uploadedBeats.length, completedCount, beats.length, onClose]);
 
   useEffect(() => {
     if (showGallery) {
@@ -333,7 +345,96 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Completion screen
+  // Success animation screen
+  if (showSuccessScreen && !isUploading && uploadedBeats.length > 0) {
+    return (
+      <>
+        <style>{`
+          @keyframes bounceIn {
+            to { opacity: 1; transform: scale(1); }
+          }
+          @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+          .success-icon-ring {
+            fill: none;
+            stroke: #2fd66b;
+            stroke-width: 5;
+            opacity: 0;
+            transform: scale(0.5);
+            transform-origin: center;
+          }
+          .success-icon-check {
+            fill: none;
+            stroke: #2fd66b;
+            stroke-width: 6;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            opacity: 0;
+            transform: scale(0.3);
+            transform-origin: center;
+          }
+          .success-playing .success-icon-ring {
+            animation: bounceIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+          }
+          .success-playing .success-icon-check {
+            animation: bounceIn 0.5s 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+          }
+          .success-playing .success-label {
+            animation: fadeUp 0.4s 0.55s ease-out forwards;
+          }
+        `}</style>
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          backdropFilter: 'blur(8px)',
+        }}>
+          <div className="success-playing" style={{
+            width: '320px',
+            backgroundColor: '#131315',
+            border: '1px solid #232326',
+            borderRadius: '16px',
+            padding: '40px 24px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            textAlign: 'center',
+          }}>
+            <div style={{
+              width: '64px',
+              height: '64px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <svg width="64" height="64" viewBox="0 0 64 64" style={{ display: 'block', overflow: 'visible' }}>
+                <circle className="success-icon-ring" cx="32" cy="32" r="27" />
+                <path className="success-icon-check" d="M20 33 L28 41 L45 23" />
+              </svg>
+            </div>
+            <div className="success-label" style={{
+              marginTop: '14px',
+              fontSize: '16px',
+              fontWeight: 600,
+              letterSpacing: '0.01em',
+              color: '#f4f4f5',
+              opacity: 0,
+            }}>
+              Hotovo
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  if (!isOpen) return null;
   if (isUploading && uploadedBeats.length > 0 && completedCount === beats.length) {
     return (
       <>
