@@ -296,7 +296,7 @@ function Admin() {
         {/* Brand */}
         <div style={{ padding: "22px 20px 18px", borderBottom: "1px solid #131313" }}>
           <a href="/" style={{ textDecoration: "none" }}>
-            <div style={{ fontSize: "12px", fontWeight: 700, letterSpacing: "0.22em", color: "DESIGN_SYSTEM.colors.textPrimary", textTransform: "uppercase" }}>VOODOO808</div>
+            <img src="/uploads/artwork/voodoo808-logo.png" alt="VOODOO808" style={{ height: "24px", width: "auto", border: "1px solid #000", borderRadius: "2px" }} />
             <div style={{ fontSize: "10px", color: "#2b2b2b", letterSpacing: "0.12em", marginTop: "3px", textTransform: "uppercase" }}>Admin</div>
           </a>
         </div>
@@ -1618,9 +1618,9 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
           className="btn btn-filled"
           onClick={() => { if (showForm) { resetForm(); } else { setEditing(null); setShowForm(true); } }}
           data-testid="button-toggle-beat-form"
-          style={{ fontSize: "13px" }}
+          style={{ display: "none",  fontSize: "13px" }}
         >
-          {showForm ? "× Zavřít formulář" : "+ Přidat beat"}
+          {"× Zavřít formulář"}
         </button>
         <button 
           className="btn btn-filled" 
@@ -1634,7 +1634,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
           style={{ fontSize: "13px" }}
           data-testid="button-open-beat-upload-modal"
         >
-          ↑ Upload Beats
+          ↑ Přidat beaty
         </button>
         {beats.some((b: any) => !b.is_published) && (
           <button className="btn btn-admin" onClick={handlePublishAll} style={{ borderColor: "DESIGN_SYSTEM.colors.success", color: "DESIGN_SYSTEM.colors.success", fontSize: "13px" }}>
@@ -1795,28 +1795,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                       <select value={form.key} onChange={e => { setForm({ ...form, key: e.target.value }); setAutoDetected(a => a ? { ...a, key: null } : null); }} style={{ ...inp, fontSize: "15px", fontWeight: 500, textAlign: "center", padding: "8px 10px", cursor: "pointer" }} data-testid="select-beat-key">
                         {MUSICAL_KEYS.map(k => <option key={k} value={k}>{k}</option>)}
                       </select>
-                    </div>
-
-                    {/* Card: Cena — full width */}
-                    <div style={{ ...card, gridColumn: "1 / -1" }}>
-                      <div style={lbl}>Cena</div>
-                      <div style={{ display: "flex", gap: "8px", marginBottom: form.priceType === "beat" ? "12px" : "0" }}>
-                        {PRICE_TYPES_BEAT.map(pt => (
-                          <button key={pt.id} type="button" onClick={() => setForm({ ...form, priceType: pt.id, price: pt.price })} style={{ flex: 1, padding: "10px 12px", background: form.priceType === pt.id ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.04)", color: form.priceType === pt.id ? "#000" : "DESIGN_SYSTEM.colors.textSecondary", border: `1px solid ${form.priceType === pt.id ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.07)"}`, borderRadius: "12px", cursor: "pointer", fontSize: "13px", fontWeight: form.priceType === pt.id ? 600 : 400, transition: "all 0.15s" }}>
-                            <div>{pt.label}</div>
-                            <div style={{ fontSize: "11px", opacity: 0.6, marginTop: "2px" }}>{pt.sublabel}</div>
-                          </button>
-                        ))}
-                      </div>
-                      {form.priceType === "beat" && (
-                        <div style={{ position: "relative" }}>
-                          <input type="number" min={0} value={form.price} onChange={e => setForm({ ...form, price: Number(e.target.value) })} style={{ ...inp, paddingRight: "40px" }} placeholder="5000" data-testid="input-beat-price" />
-                          <span style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", fontSize: "12px", color: "#444", pointerEvents: "none" }}>Kč</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Card: Preview Audio — spans 2 cols */}
+                    </div>                    {/* Card: Preview Audio — spans 2 cols */}
                     <div style={{ ...card, gridColumn: "span 2" }}>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
                         <div style={{ ...lbl, marginBottom: 0 }}>Preview Audio *</div>
@@ -2082,7 +2061,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                 <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
                   <button
                     type="button"
-                    style={{ padding: "8px 16px", background: "DESIGN_SYSTEM.colors.textPrimary", color: "#000", border: "none", borderRadius: "2px", fontSize: "12px", fontWeight: 600, cursor: "default", letterSpacing: "0.02em" }}
+                    style={{ padding: "8px 16px", background: "DESIGN_SYSTEM.colors.textPrimary", color: "DESIGN_SYSTEM.colors.textSecondary", border: "none", borderRadius: "2px", fontSize: "12px", fontWeight: 600, cursor: "default", letterSpacing: "0.02em" }}
                   >
                     {Number(form.price) === 0 ? "Zdarma" : `${Number(form.price).toLocaleString("cs-CZ")} Kč`}
                   </button>
