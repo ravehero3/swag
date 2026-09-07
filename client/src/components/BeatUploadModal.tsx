@@ -56,7 +56,6 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
   const [beats, setBeats] = useState<BeatFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedBeats, setUploadedBeats] = useState<BeatFile[]>([]);
-  const [showSuccessState, setShowSuccessState] = useState(false);
   const [globalReleaseImmediately, setGlobalReleaseImmediately] = useState(true);
   const [showReleaseScheduler, setShowReleaseScheduler] = useState(false);
   const [schedulerDate, setSchedulerDate] = useState<string>(new Date().toISOString().split('T')[0]);
@@ -312,23 +311,9 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
       });
 
       const uploadedBeatsResult = await Promise.all(uploadPromises);
-      const allCompleted = beats.every(b => b.status === 'completed' || beats.find(x => x.id === b.id)?.status === 'completed');
-      const hasErrors = beats.some(b => b.status === 'error');
 
       if (onUploadComplete) {
         onUploadComplete(uploadedBeatsResult.filter(Boolean));
-      }
-
-      // Show success state and auto-close if no errors
-      if (!hasErrors) {
-        setShowSuccessState(true);
-        setTimeout(() => {
-          setShowSuccessState(false);
-          onClose();
-          // Reset modal state
-          setBeats([]);
-          setUploadedBeats([]);
-        }, 2000);
       }
     } finally {
       setIsUploading(false);
@@ -340,86 +325,6 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
   const totalProgress = Math.round((completedCount / beats.length) * 100) || 0;
 
   if (!isOpen) return null;
-
-  // Success screen - shows briefly then auto-closes
-  if (showSuccessState) {
-    return (
-      <div style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 10000,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'rgba(0, 0, 0, 0.9)',
-        backdropFilter: 'blur(8px)',
-        animation: 'fadeInOut 2s ease-in-out',
-      }}>
-        <style>{`
-          @keyframes fadeInOut {
-            0% { opacity: 0; }
-            20% { opacity: 1; }
-            80% { opacity: 1; }
-            100% { opacity: 0; }
-          }
-          @keyframes successPulse {
-            0% { transform: scale(0.8); opacity: 0; }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); opacity: 1; }
-          }
-          @keyframes checkmarkDraw {
-            0% { stroke-dashoffset: 50; opacity: 0; }
-            50% { opacity: 1; }
-            100% { stroke-dashoffset: 0; opacity: 1; }
-          }
-        `}</style>
-        <div style={{
-          textAlign: 'center',
-          animation: 'successPulse 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
-        }}>
-          <div style={{
-            width: '80px',
-            height: '80px',
-            borderRadius: '50%',
-            background: 'linear-gradient(135deg, #4CAF50, #66BB6A)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 16px',
-            boxShadow: '0 4px 20px rgba(76, 175, 80, 0.3)',
-          }}>
-            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-              <path
-                d="M10 24L20 34L38 14"
-                stroke="white"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeDasharray="50"
-                style={{
-                  animation: 'checkmarkDraw 0.8s ease-out 0.2s forwards',
-                }}
-              />
-            </svg>
-          </div>
-          <div style={{
-            fontSize: '20px',
-            fontWeight: 600,
-            color: '#fff',
-            marginBottom: '8px',
-          }}>
-            Všechny beaty nahrány!
-          </div>
-          <div style={{
-            fontSize: '14px',
-            color: '#aaa',
-          }}>
-            Vaše beaty jsou nyní dostupné
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   // Completion screen
   if (isUploading && uploadedBeats.length > 0 && completedCount === beats.length) {
