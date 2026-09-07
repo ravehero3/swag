@@ -16,6 +16,7 @@ interface BeatFile {
   error?: string;
   artworkUrl?: string;
   artworkFilename?: string;
+  tags: string[];
 }
 
 interface GalleryImage {
@@ -215,6 +216,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
           releaseImmediately: globalReleaseImmediately,
           progress: 0,
           status: 'pending' as const,
+          tags: [],
         };
       });
 
@@ -284,7 +286,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
               previewUrl: uploadedFile.url,
               artworkUrl: beat.artworkUrl || '',
               isPublished: true,
-              tags: [],
+              tags: beat.tags.length > 0 ? beat.tags : [],
             }),
           });
 
@@ -311,9 +313,21 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
       });
 
       const uploadedBeatsResult = await Promise.all(uploadPromises);
+      const hasErrors = beats.some(b => b.status === 'error');
 
       if (onUploadComplete) {
         onUploadComplete(uploadedBeatsResult.filter(Boolean));
+      }
+
+      // Auto-close after successful upload (2 second delay)
+      if (!hasErrors && uploadedBeatsResult.filter(Boolean).length > 0) {
+        setTimeout(() => {
+          setIsUploading(false);
+          onClose();
+          setBeats([]);
+          setUploadedBeats([]);
+        }, 2000);
+        return;
       }
     } finally {
       setIsUploading(false);
@@ -665,13 +679,14 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                   marginBottom: '8px',
                   paddingBottom: '8px',
                   borderBottom: `1px solid ${DESIGN_SYSTEM.colors.border}`,
-                  gridTemplateColumns: '1fr 60px 50px 100px 100px 50px',
+                  gridTemplateColumns: '1fr 60px 50px 60px 100px 100px 50px',
                   letterSpacing: '0.3px',
                   textTransform: 'uppercase',
                 }}>
                   <div>Název</div>
                   <div>BPM</div>
                   <div>Tónina</div>
+                  <div>Tagy</div>
                   <div>Obrázek</div>
                   <div>Datum vydání</div>
                   <div></div>
@@ -687,7 +702,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                     borderRadius: '6px',
                     backgroundColor: DESIGN_SYSTEM.colors.elevated,
                     border: `0.5px solid ${DESIGN_SYSTEM.colors.border}`,
-                    gridTemplateColumns: '1fr 60px 50px 100px 100px 50px',
+                    gridTemplateColumns: '1fr 60px 50px 60px 100px 100px 50px',
                     transition: 'all 0.15s',
                   }}
                   onMouseEnter={(e) => {
@@ -777,6 +792,56 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                         </option>
                       ))}
                     </select>
+
+                    {/* Tags - up to 3 */}
+                    <div style={{ display: 'flex', gap: '4px', alignItems: 'center', overflow: 'hidden' }}>
+                      {beat.tags.map((tag, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => updateBeat(beat.id, { tags: beat.tags.filter((_, i) => i !== idx) })}
+                          disabled={isUploading}
+                          style={{
+                            fontSize: '10px',
+                            padding: '2px 6px',
+                            backgroundColor: DESIGN_SYSTEM.colors.primary,
+                            color: DESIGN_SYSTEM.colors.textPrimary,
+                            border: 'none',
+                            borderRadius: '2px',
+                            cursor: 'pointer',
+                            opacity: isUploading ? 0.6 : 1,
+                            whiteSpace: 'nowrap',
+                            flexShrink: 0,
+                          }}
+                          title="Klikněte pro odebrání"
+                        >
+                          {tag} ×
+                        </button>
+                      ))}
+                      {beat.tags.length < 3 && (
+                        <button
+                          onClick={() => {
+                            const tag = prompt('Přidat tag (max 20 znaků):');
+                            if (tag && tag.trim().length > 0 && tag.trim().length <= 20) {
+                              updateBeat(beat.id, { tags: [...beat.tags, tag.trim()] });
+                            }
+                          }}
+                          disabled={isUploading}
+                          style={{
+                            fontSize: '10px',
+                            padding: '2px 6px',
+                            backgroundColor: DESIGN_SYSTEM.colors.tertiary,
+                            color: DESIGN_SYSTEM.colors.textSecondary,
+                            border: `0.5px solid ${DESIGN_SYSTEM.colors.border}`,
+                            borderRadius: '2px',
+                            cursor: 'pointer',
+                            opacity: isUploading ? 0.6 : 1,
+                            fontWeight: 500,
+                          }}
+                        >
+                          +
+                        </button>
+                      )}
+                    </div>
 
                     {/* Artwork - Empty slot with + sign */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '36px' }}>
