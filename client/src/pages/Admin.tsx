@@ -1622,19 +1622,17 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
         >
           {showForm ? "× Zavřít formulář" : "+ Přidat beat"}
         </button>
-        <button className="btn btn-admin" onClick={() => setShowBulkZone(v => !v)} style={{ borderColor: "#0B99FC", color: "#0B99FC", fontSize: "13px" }}>
-          {showBulkZone ? "Zavřít bulk upload" : "Bulk upload"}
-        </button>
         <button 
-          className="btn btn-admin" 
+          className="btn btn-filled" 
           onClick={() => {
             console.log('[BUTTON] Upload Beats clicked');
             console.log('[STATE] Before click - showBeatUploadModal:', showBeatUploadModal);
             setShowBeatUploadModal(true);
             console.log('[STATE] After setShowBeatUploadModal(true)');
           }} 
-          style={{ borderColor: "#7c3aed", color: "#7c3aed", fontSize: "13px" }}
           type="button"
+          style={{ fontSize: "13px" }}
+          data-testid="button-open-beat-upload-modal"
         >
           ↑ Upload Beats
         </button>
