@@ -717,7 +717,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                   marginBottom: '8px',
                   paddingBottom: '8px',
                   borderBottom: `1px solid ${DESIGN_SYSTEM.colors.border}`,
-                  gridTemplateColumns: '1fr 60px 50px 60px 100px 100px 50px',
+                  gridTemplateColumns: '190px 55px 50px 175px 90px 100px 36px',
                   letterSpacing: '0.3px',
                   textTransform: 'uppercase',
                 }}>
@@ -740,7 +740,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                     borderRadius: '6px',
                     backgroundColor: DESIGN_SYSTEM.colors.elevated,
                     border: `0.5px solid ${DESIGN_SYSTEM.colors.border}`,
-                    gridTemplateColumns: '1fr 60px 50px 60px 100px 100px 50px',
+                    gridTemplateColumns: '190px 55px 50px 175px 90px 100px 36px',
                     transition: 'all 0.15s',
                   }}
                   onMouseEnter={(e) => {
@@ -761,6 +761,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                       disabled={isUploading || beat.status === 'completed'}
                       placeholder="Název beatu"
                       style={{
+                        width: '100%',
                         padding: '8px 10px',
                         fontSize: '13px',
                         backgroundColor: DESIGN_SYSTEM.colors.inputs,
@@ -785,7 +786,8 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                       disabled={isUploading || beat.status === 'completed'}
                       placeholder="BPM"
                       style={{
-                        padding: '8px 10px',
+                        width: '100%',
+                        padding: '8px 6px',
                         fontSize: '13px',
                         backgroundColor: DESIGN_SYSTEM.colors.inputs,
                         border: `0.5px solid ${DESIGN_SYSTEM.colors.border}`,
@@ -807,7 +809,8 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                       onChange={(e) => updateBeat(beat.id, { key: e.target.value })}
                       disabled={isUploading || beat.status === 'completed'}
                       style={{
-                        padding: '8px 10px',
+                        width: '100%',
+                        padding: '8px 4px',
                         fontSize: '13px',
                         backgroundColor: DESIGN_SYSTEM.colors.inputs,
                         border: `0.5px solid ${DESIGN_SYSTEM.colors.border}`,
@@ -831,54 +834,44 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                       ))}
                     </select>
 
-                    {/* Tags - up to 3 */}
-                    <div style={{ display: 'flex', gap: '4px', alignItems: 'center', overflow: 'hidden' }}>
-                      {beat.tags.map((tag, idx) => (
-                        <button
+                    {/* Tags - up to 3 editable fields */}
+                    <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+                      {[0, 1, 2].map((idx) => (
+                        <input
                           key={idx}
-                          onClick={() => updateBeat(beat.id, { tags: beat.tags.filter((_, i) => i !== idx) })}
-                          disabled={isUploading}
-                          style={{
-                            fontSize: '10px',
-                            padding: '2px 6px',
-                            backgroundColor: DESIGN_SYSTEM.colors.primary,
-                            color: DESIGN_SYSTEM.colors.textPrimary,
-                            border: 'none',
-                            borderRadius: '2px',
-                            cursor: 'pointer',
-                            opacity: isUploading ? 0.6 : 1,
-                            whiteSpace: 'nowrap',
-                            flexShrink: 0,
-                          }}
-                          title="Klikněte pro odebrání"
-                        >
-                          {tag} ×
-                        </button>
-                      ))}
-                      {beat.tags.length < 3 && (
-                        <button
-                          onClick={() => {
-                            const tag = prompt('Přidat tag (max 20 znaků):');
-                            if (tag && tag.trim().length > 0 && tag.trim().length <= 20) {
-                              updateBeat(beat.id, { tags: [...beat.tags, tag.trim()] });
+                          type="text"
+                          value={beat.tags[idx] || ''}
+                          onChange={(e) => {
+                            const value = e.target.value.slice(0, 20);
+                            const nextTags = [...beat.tags];
+                            if (value) {
+                              nextTags[idx] = value;
+                            } else {
+                              nextTags.splice(idx, 1);
                             }
+                            updateBeat(beat.id, { tags: nextTags.filter((t) => t !== undefined) });
                           }}
-                          disabled={isUploading}
+                          disabled={isUploading || beat.status === 'completed'}
+                          placeholder={`Tag ${idx + 1}`}
+                          maxLength={20}
                           style={{
-                            fontSize: '10px',
-                            padding: '2px 6px',
-                            backgroundColor: DESIGN_SYSTEM.colors.tertiary,
-                            color: DESIGN_SYSTEM.colors.textSecondary,
+                            width: '54px',
+                            padding: '6px 7px',
+                            fontSize: '11px',
+                            backgroundColor: DESIGN_SYSTEM.colors.inputs,
                             border: `0.5px solid ${DESIGN_SYSTEM.colors.border}`,
-                            borderRadius: '2px',
-                            cursor: 'pointer',
-                            opacity: isUploading ? 0.6 : 1,
-                            fontWeight: 500,
+                            borderRadius: '4px',
+                            color: DESIGN_SYSTEM.colors.textPrimary,
+                            opacity: isUploading || beat.status === 'completed' ? 0.6 : 1,
+                            outline: 'none',
+                            fontFamily: 'inherit',
+                            boxSizing: 'border-box',
+                            transition: 'border-color 0.15s',
                           }}
-                        >
-                          +
-                        </button>
-                      )}
+                          onFocus={(e) => (e.currentTarget.style.borderColor = DESIGN_SYSTEM.colors.primary)}
+                          onBlur={(e) => (e.currentTarget.style.borderColor = DESIGN_SYSTEM.colors.border)}
+                        />
+                      ))}
                     </div>
 
                     {/* Artwork - Empty slot with + sign */}

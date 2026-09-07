@@ -2583,9 +2583,9 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                             <div style={{ fontSize: "13px", fontWeight: 500, color: "#e0e0e0", marginBottom: "3px" }}>{beat.title}</div>
                             <div style={{ fontSize: "11px", color: "#444" }}>{beat.artist}</div>
                             {beat.tags && beat.tags.length > 0 && (
-                              <div style={{ display: "flex", gap: "4px", marginTop: "4px", flexWrap: "wrap" }}>
+                              <div style={{ display: "flex", gap: "4px", marginTop: "5px", flexWrap: "wrap" }}>
                                 {beat.tags.map((t: string, i: number) => (
-                                  <span key={i} style={{ fontSize: "10px", color: "#555", background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #1e1e1e", borderRadius: "999px", padding: "1px 7px" }}>{t}</span>
+                                  <span key={i} style={{ display: "inline-flex", alignItems: "center", fontSize: "10px", fontWeight: 500, color: DESIGN_SYSTEM.colors.textSecondary, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "999px", padding: "2px 8px", letterSpacing: "0.2px" }}>{t}</span>
                                 ))}
                               </div>
                             )}
@@ -2666,7 +2666,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                               onClick={() => { saveInlineTitle(beat, quickEditTitle); if (inlineBpmKey && inlineBpmKey.id === beat.id) { saveInlineBpmKey(beat, inlineBpmKey.bpm, inlineBpmKey.key); } else { setInlineBpmKey(null); } }}
                               title="Uložit"
                               data-testid={`button-save-quick-edit-${beat.id}`}
-                              style={{ background: "rgba(76,175,80,0.12)", border: "1px solid rgba(76,175,80,0.3)", color: "DESIGN_SYSTEM.colors.success", width: "28px", height: "28px", borderRadius: "6px", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
+                              style={{ background: "rgba(36,224,83,0.14)", border: "1px solid rgba(36,224,83,0.4)", color: "#24e053", width: "28px", height: "28px", borderRadius: "6px", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center" }}
                             >
                               <Check size={13} />
                             </button>
