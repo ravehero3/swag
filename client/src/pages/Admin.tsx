@@ -2,7 +2,7 @@ import { Button, Input, Select, Badge, Skeleton } from '../components/UI';
 import { DESIGN_SYSTEM } from '../constants/designSystem';
 import { CZECH } from '../constants/czech';
 import { useState, useEffect, useRef, useMemo } from "react";
-import { Music, Image as ImageIcon, Upload, Star, ChevronUp, ChevronDown, Pencil, Check, X, Clock } from "lucide-react";
+import { Music, Image as ImageIcon, Upload, Star, ChevronUp, ChevronDown, Pencil, Check, X, Clock, Plus } from "lucide-react";
 import { useApp } from "../App.js";
 import { useLocation } from "wouter";
 import { toAudioProxyUrl } from "../lib/audioProxy.js";
@@ -761,6 +761,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   const [galleryUploading, setGalleryUploading] = useState(false);
   const [galleryUploadCount, setGalleryUploadCount] = useState(0);
   const [galleryDragging, setGalleryDragging] = useState(false);
+  const [galleryDeduping, setGalleryDeduping] = useState(false);
 
   // ── Beat folder ("Složka s beatama") state ─────────────────────────────────
   const [showBeatFolder, setShowBeatFolder] = useState(false);
@@ -776,8 +777,10 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   // ── Auto BPM/Key detection state ────────────────────────────────────────────
   const [autoAnalyzing, setAutoAnalyzing] = useState(false);
   const [autoDetected, setAutoDetected] = useState<{ bpm: number | null; key: string | null } | null>(null);
+  const [galleryEditBeatId, setGalleryEditBeatId] = useState<number | null>(null);
 
-  const openGallery = () => {
+  const openGallery = (beatId?: number) => {
+    setGalleryEditBeatId(beatId ?? null);
     setShowGallery(true);
     loadGallery();
   };
@@ -836,7 +839,35 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     else alert("Nepodařilo se smazat");
   };
 
+  const handleGalleryDedupe = async () => {
+    if (!confirm("Odstranit duplicitní obrázky? Zůstane pouze jedna kopie každého obrázku.")) return;
+    setGalleryDeduping(true);
+    try {
+      const res = await fetch("/api/kit-artworks/dedupe", { method: "POST", credentials: "include" });
+      if (res.ok) {
+        const data = await res.json();
+        await loadGallery();
+        alert(data.removedCount > 0 ? `Odstraněno ${data.removedCount} duplicitních obrázků.` : "Žádné duplicity nenalezeny.");
+      } else {
+        alert("Nepodařilo se odstranit duplicity");
+      }
+    } catch {
+      alert("Nepodařilo se odstranit duplicity");
+    } finally {
+      setGalleryDeduping(false);
+    }
+  };
+
   const handleGallerySelect = (url: string) => {
+    if (galleryEditBeatId != null) {
+      const beat = beats.find((b: Beat) => b.id === galleryEditBeatId);
+      if (beat) {
+        saveInlineArtwork(beat, url);
+      }
+      setGalleryEditBeatId(null);
+      setShowGallery(false);
+      return;
+    }
     setForm(f => ({ ...f, artworkUrl: url }));
     setShowGallery(false);
   };
@@ -1211,6 +1242,23 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
         body: JSON.stringify({
           title: trimmed, artist: beat.artist, bpm: beat.bpm, key: beat.key, price: beat.price,
           previewUrl: beat.preview_url, fileUrl: beat.file_url, artworkUrl: beat.artwork_url,
+          trackoutUrl: beat.trackout_url || null, tags: beat.tags || [],
+          isPublished: beat.is_published, isHighlighted: beat.is_highlighted || false,
+        }),
+      });
+      onRefresh();
+    } catch {}
+  };
+
+  const saveInlineArtwork = async (beat: any, artworkUrl: string) => {
+    try {
+      await fetch(`/api/beats/${beat.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          title: beat.title, artist: beat.artist, bpm: beat.bpm, key: beat.key, price: beat.price,
+          previewUrl: beat.preview_url, fileUrl: beat.file_url, artworkUrl,
           trackoutUrl: beat.trackout_url || null, tags: beat.tags || [],
           isPublished: beat.is_published, isHighlighted: beat.is_highlighted || false,
         }),
@@ -1871,7 +1919,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                         <button
                           type="button"
                           className="btn btn-admin"
-                          onClick={openGallery}
+                          onClick={() => openGallery()}
                           data-testid="button-open-artwork-gallery-beat"
                           style={{ whiteSpace: "nowrap" }}
                         >
@@ -2111,7 +2159,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
       {showGallery && (
         <div
           style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)", zIndex: DESIGN_SYSTEM.zIndex.modal, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
-          onClick={(e) => { if (e.target === e.currentTarget) setShowGallery(false); }}
+          onClick={(e) => { if (e.target === e.currentTarget) { setShowGallery(false); setGalleryEditBeatId(null); } }}
         >
           <div style={{ background: DESIGN_SYSTEM.colors.tertiary, border: "0.4px solid #333", borderRadius: "8px", width: "min(860px, 96vw)", maxHeight: "88vh", display: "flex", flexDirection: "column", overflow: "hidden", zIndex: DESIGN_SYSTEM.zIndex.modalNested, position: "relative" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "0.4px solid #2a2a2a", flexShrink: 0 }}>
@@ -2142,7 +2190,15 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                   )}
                 </div>
                 <button
-                  onClick={() => setShowGallery(false)}
+                  onClick={handleGalleryDedupe}
+                  disabled={galleryDeduping || galleryUploading}
+                  style={{ background: "transparent", border: "0.4px solid #555", color: galleryDeduping ? "#555" : "DESIGN_SYSTEM.colors.textSecondary", borderRadius: "3px", padding: "6px 12px", cursor: galleryDeduping || galleryUploading ? "default" : "pointer", fontSize: "12px", whiteSpace: "nowrap" }}
+                  data-testid="button-dedupe-gallery-beat"
+                >
+                  {galleryDeduping ? "Odstraňování…" : "Odstranit duplicity"}
+                </button>
+                <button
+                  onClick={() => { setShowGallery(false); setGalleryEditBeatId(null); }}
                   style={{ background: "transparent", border: "none", color: "DESIGN_SYSTEM.colors.textSecondary", fontSize: "20px", cursor: "pointer", lineHeight: 1, padding: "0 4px" }}
                   data-testid="button-close-gallery-beat"
                 >
@@ -2214,7 +2270,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
               )}
             </div>
             <div style={{ padding: "10px 20px", borderTop: "0.4px solid #1a1a1a", flexShrink: 0, display: "flex", justifyContent: "flex-end" }}>
-              <button onClick={() => setShowGallery(false)} className="btn btn-admin" data-testid="button-close-gallery-footer-beat">Zavřít</button>
+              <button onClick={() => { setShowGallery(false); setGalleryEditBeatId(null); }} className="btn btn-admin" data-testid="button-close-gallery-footer-beat">Zavřít</button>
             </div>
           </div>
         </div>
@@ -2474,7 +2530,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                       style={{ borderBottom: "1px solid #111", background: isQuickEdit ? "#0b0b10" : hoveredBeatId === beat.id ? "DESIGN_SYSTEM.colors.tertiary" : "transparent", cursor: isQuickEdit ? "default" : "pointer", transition: "background 120ms" }}
                       onMouseEnter={() => setHoveredBeatId(beat.id)}
                       onMouseLeave={() => setHoveredBeatId(null)}
-                      onClick={() => { if (!isQuickEdit) { setEditing(beat); setShowForm(true); } }}
+                      onClick={() => { if (!isQuickEdit) { setQuickEditId(beat.id); setQuickEditTitle(beat.title); setInlineBpmKey({ id: beat.id, bpm: beat.bpm, key: beat.key || "Cm" }); } }}
                       data-testid={`row-beat-${beat.id}`}
                     >
                       <td style={{ padding: "10px 14px" }} onClick={e => e.stopPropagation()}>
@@ -2497,6 +2553,18 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="rgba(255,255,255,0.9)"><path d="M5 3l14 9-14 9V3z"/></svg>
                               ) : null}
                             </div>
+                          )}
+                          {hoveredBeatId === beat.id && (
+                            <button
+                              onClick={e => { e.stopPropagation(); openGallery(beat.id); }}
+                              title="Změnit artwork"
+                              data-testid={`button-edit-artwork-${beat.id}`}
+                              style={{ position: "absolute", bottom: "-2px", right: "-2px", width: "18px", height: "18px", borderRadius: "50%", background: "rgba(255,255,255,0.92)", border: "1px solid rgba(0,0,0,0.4)", color: "#000", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 1px 4px rgba(0,0,0,0.5)", transition: "transform 0.12s" }}
+                              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(1.1)"; }}
+                              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)"; }}
+                            >
+                              <Plus size={11} />
+                            </button>
                           )}
                         </div>
                       </td>
@@ -2622,7 +2690,6 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                               >
                                 <Pencil size={11} />
                               </button>
-                              <button className="btn btn-admin" onClick={e => { e.stopPropagation(); setEditing(beat); setShowForm(true); }} style={{ fontSize: "11px", padding: "5px 10px" }} data-testid={`button-edit-beat-${beat.id}`}>Upravit</button>
                             </>
                           )}
                         </div>
@@ -2692,6 +2759,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
   const [galleryUploadDone, setGalleryUploadDone] = useState(0);
   const [galleryDragging, setGalleryDragging] = useState(false);
   const [galleryTarget, setGalleryTarget] = useState<"main" | number>("main");
+  const [galleryDeduping, setGalleryDeduping] = useState(false);
 
   const openGallery = (target: "main" | number) => {
     setGalleryTarget(target);
@@ -2745,6 +2813,25 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
     const res = await fetch(`/api/kit-artworks/${encodeURIComponent(filename)}`, { method: "DELETE", credentials: "include" });
     if (res.ok) setGalleryImages(prev => prev.filter(i => i.filename !== filename));
     else alert("Nepodařilo se smazat");
+  };
+
+  const handleGalleryDedupe = async () => {
+    if (!confirm("Odstranit duplicitní obrázky? Zůstane pouze jedna kopie každého obrázku.")) return;
+    setGalleryDeduping(true);
+    try {
+      const res = await fetch("/api/kit-artworks/dedupe", { method: "POST", credentials: "include" });
+      if (res.ok) {
+        const data = await res.json();
+        await loadGallery();
+        alert(data.removedCount > 0 ? `Odstraněno ${data.removedCount} duplicitních obrázků.` : "Žádné duplicity nenalezeny.");
+      } else {
+        alert("Nepodařilo se odstranit duplicity");
+      }
+    } catch {
+      alert("Nepodařilo se odstranit duplicity");
+    } finally {
+      setGalleryDeduping(false);
+    }
   };
 
   const handleGallerySelect = (url: string) => {
@@ -3299,6 +3386,14 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
                     </div>
                   )}
                 </div>
+                <button
+                  onClick={handleGalleryDedupe}
+                  disabled={galleryDeduping || galleryUploading}
+                  style={{ background: "transparent", border: "0.4px solid #555", color: galleryDeduping ? "#555" : "DESIGN_SYSTEM.colors.textSecondary", borderRadius: "3px", padding: "6px 12px", cursor: galleryDeduping || galleryUploading ? "default" : "pointer", fontSize: "12px", whiteSpace: "nowrap" }}
+                  data-testid="button-dedupe-gallery"
+                >
+                  {galleryDeduping ? "Odstraňování…" : "Odstranit duplicity"}
+                </button>
                 <button
                   onClick={() => setShowGallery(false)}
                   style={{ background: "transparent", border: "none", color: "DESIGN_SYSTEM.colors.textSecondary", fontSize: "20px", cursor: "pointer", lineHeight: 1, padding: "0 4px" }}

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { X, Upload, Plus, CheckCircle } from 'lucide-react';
 import { CZECH } from '../constants/czech';
 import { DESIGN_SYSTEM } from '../constants/designSystem';
@@ -55,6 +55,8 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
   };
   
   const [beats, setBeats] = useState<BeatFile[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const hasAutoOpenedRef = useRef(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedBeats, setUploadedBeats] = useState<BeatFile[]>([]);
   const [globalReleaseImmediately, setGlobalReleaseImmediately] = useState(true);
@@ -68,8 +70,21 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
   const [galleryLoading, setGalleryLoading] = useState(false);
   const [galleryDragging, setGalleryDragging] = useState(false);
   const [galleryUploading, setGalleryUploading] = useState(false);
+  const [dedupingGallery, setDedupingGallery] = useState(false);
   const [galleryUploadProgress, setGalleryUploadProgress] = useState(0);
   const [galleryUploadTotal, setGalleryUploadTotal] = useState(0);
+
+  useEffect(() => {
+    if (isOpen && !hasAutoOpenedRef.current) {
+      hasAutoOpenedRef.current = true;
+      setTimeout(() => {
+        fileInputRef.current?.click();
+      }, 150);
+    }
+    if (!isOpen) {
+      hasAutoOpenedRef.current = false;
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (showGallery) {
@@ -195,6 +210,29 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
     } catch (err) {
       console.error('Delete failed:', err);
       alert('Delete failed');
+    }
+  };
+
+  const handleDedupeGallery = async () => {
+    if (!confirm('Odstranit duplicitní obrázky? Zůstane pouze jedna kopie každého obrázku.')) return;
+    setDedupingGallery(true);
+    try {
+      const res = await fetch('/api/kit-artworks/dedupe', {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (res.ok) {
+        const data = await res.json();
+        await loadGalleryImages();
+        alert(data.removedCount > 0 ? `Odstraněno ${data.removedCount} duplicitních obrázků.` : 'Žádné duplicity nenalezeny.');
+      } else {
+        alert('Nepodařilo se odstranit duplicity');
+      }
+    } catch (err) {
+      console.error('Dedupe failed:', err);
+      alert('Nepodařilo se odstranit duplicity');
+    } finally {
+      setDedupingGallery(false);
     }
   };
 
@@ -980,6 +1018,7 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
           }}>
             <label style={{ cursor: 'pointer' }}>
               <input
+                ref={fileInputRef}
                 type="file"
                 multiple
                 accept="audio/*"
@@ -1108,6 +1147,13 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
                     onChange={(e) => { if (e.target.files && e.target.files.length > 0) handleGalleryImageUpload(e.target.files); e.target.value = ""; }}
                   />
                 </label>
+                <button
+                  onClick={handleDedupeGallery}
+                  disabled={dedupingGallery || galleryUploading}
+                  style={{ background: "transparent", border: `0.4px solid ${DESIGN_SYSTEM.colors.textSecondary}`, color: dedupingGallery ? DESIGN_SYSTEM.colors.textTertiary : DESIGN_SYSTEM.colors.textSecondary, borderRadius: "3px", padding: "6px 12px", cursor: dedupingGallery || galleryUploading ? "default" : "pointer", fontSize: "12px", whiteSpace: "nowrap", transition: "all 0.15s" }}
+                >
+                  {dedupingGallery ? "Odstraňování…" : "Odstranit duplicity"}
+                </button>
                 <button
                   onClick={() => setShowGallery(false)}
                   disabled={galleryUploading}

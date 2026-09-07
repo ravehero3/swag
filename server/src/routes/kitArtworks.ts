@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import crypto from "crypto";
 import sharp from "sharp";
 import { requireAdmin } from "../middleware/auth.js";
 
@@ -110,6 +111,45 @@ router.post("/upload-batch", requireAdmin, uploadMany.array("files", 30), async 
   } catch (err) {
     console.error("Error batch uploading kit artworks:", err);
     res.status(500).json({ error: "Nepodařilo se nahrát obrázky" });
+  }
+});
+
+// Find and remove duplicate images (keeps the oldest copy of each duplicate group)
+router.post("/dedupe", requireAdmin, async (_req: Request, res: Response) => {
+  try {
+    ensureDir();
+    const files = fs.readdirSync(KIT_ARTWORKS_DIR)
+      .filter(f => {
+        const ext = path.extname(f).toLowerCase();
+        return ALLOWED_EXTS.has(ext) && !f.startsWith(".");
+      })
+      .map(filename => {
+        const filePath = path.join(KIT_ARTWORKS_DIR, filename);
+        const stats = fs.statSync(filePath);
+        return { filename, filePath, modified: stats.mtimeMs };
+      })
+      .sort((a, b) => a.modified - b.modified); // oldest first, so oldest is kept
+
+    const hashToKept: Map<string, string> = new Map();
+    const removed: string[] = [];
+
+    for (const file of files) {
+      const buffer = fs.readFileSync(file.filePath);
+      const hash = crypto.createHash("sha256").update(buffer).digest("hex");
+
+      if (hashToKept.has(hash)) {
+        // Duplicate found — remove this one, keep the first (oldest) one
+        fs.unlinkSync(file.filePath);
+        removed.push(file.filename);
+      } else {
+        hashToKept.set(hash, file.filename);
+      }
+    }
+
+    res.json({ success: true, removedCount: removed.length, removed });
+  } catch (err) {
+    console.error("Error deduping kit artworks:", err);
+    res.status(500).json({ error: "Nepodařilo se odstranit duplicity" });
   }
 });
 

@@ -541,7 +541,7 @@ function App() {
         <CartModal isOpen={isCartOpen} onClose={() => setIsCartOpen(false)} />
         <NewsletterWindow isOpen={isNewsletterOpen} onClose={() => setIsNewsletterOpen(false)} />
         <CookieConsent onConsent={(v) => setConsent(v)} />
-        {previewCurrentItem && !isAdminPage && !isPokladnaPage && (
+        {previewCurrentItem && !isPokladnaPage && (
           <MusicPlayer
             currentBeat={previewCurrentItem}
             isPlaying={isPreviewPlaying}
