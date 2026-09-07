@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { X, Upload, Plus, CheckCircle } from 'lucide-react';
+import { X, Upload, Plus } from 'lucide-react';
 import { CZECH } from '../constants/czech';
 import { DESIGN_SYSTEM } from '../constants/designSystem';
 
@@ -357,14 +357,14 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
         onUploadComplete(uploadedBeatsResult.filter(Boolean));
       }
 
-      // Auto-close after successful upload (2 second delay)
+      // Hold the animated success checkmark on screen, then auto-close
       if (!hasErrors && uploadedBeatsResult.filter(Boolean).length > 0) {
         setTimeout(() => {
           setIsUploading(false);
           onClose();
           setBeats([]);
           setUploadedBeats([]);
-        }, 2000);
+        }, 2400);
         return;
       }
     } finally {
@@ -378,13 +378,21 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Completion screen
+  // Completion screen — animated success checkmark (bounce-in)
   if (isUploading && uploadedBeats.length > 0 && completedCount === beats.length) {
     return (
       <>
         <style>{`
-          @keyframes slideIn {
-            from { opacity: 0; transform: translateY(10px); }
+          @keyframes bounceInRing {
+            0% { opacity: 0; transform: scale(0.5); }
+            100% { opacity: 1; transform: scale(1); }
+          }
+          @keyframes bounceInCheck {
+            0% { opacity: 0; transform: scale(0.3); }
+            100% { opacity: 1; transform: scale(1); }
+          }
+          @keyframes fadeUpLabel {
+            from { opacity: 0; transform: translateY(6px); }
             to { opacity: 1; transform: translateY(0); }
           }
         `}</style>
@@ -399,156 +407,67 @@ export const BeatUploadModal: React.FC<BeatUploadModalProps> = ({
           backdropFilter: 'blur(8px)',
         }}>
           <div style={{
-            position: 'relative',
-            width: '100%',
-            maxWidth: '1400px',
-            maxHeight: '85vh',
-            backgroundColor: DESIGN_SYSTEM.colors.background,
-            borderRadius: '8px',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.8)',
+            width: '320px',
+            backgroundColor: DESIGN_SYSTEM.colors.elevated,
+            border: `1px solid ${DESIGN_SYSTEM.colors.border}`,
+            borderRadius: '16px',
+            padding: '40px 24px',
             display: 'flex',
             flexDirection: 'column',
-            border: `1px solid ${DESIGN_SYSTEM.colors.border}`,
-            margin: '0 1rem',
-            overflow: 'hidden',
+            alignItems: 'center',
+            textAlign: 'center',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.8)',
             fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
           }}>
-            
-            {/* Header */}
-            <div style={{
-              padding: '20px 24px',
-              borderBottom: `1px solid ${DESIGN_SYSTEM.colors.border}`,
-              backgroundColor: DESIGN_SYSTEM.colors.elevated,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            }}>
-              <div>
-                <h1 style={{ 
-                  fontSize: '20px', 
-                  fontWeight: 600, 
-                  color: DESIGN_SYSTEM.colors.textPrimary, 
-                  margin: 0, 
-                  letterSpacing: '-0.5px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                }}>
-                  <CheckCircle size={24} color={DESIGN_SYSTEM.colors.success} />
-                  {globalReleaseImmediately ? 'Vaše beaty jsou live!' : 'Vaše beaty jsou připraveny na release'}
-                </h1>
-                <p style={{ fontSize: '13px', color: DESIGN_SYSTEM.colors.textSecondary, marginTop: '6px', margin: 0 }}>
-                  {uploadedBeats.length} beat{uploadedBeats.length !== 1 ? 'y' : ''} byly úspěšně nahrány
-                </p>
-              </div>
+            <div style={{ width: '64px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="64" height="64" viewBox="0 0 64 64" style={{ display: 'block', overflow: 'visible' }}>
+                <circle
+                  cx="32" cy="32" r="27"
+                  fill="none"
+                  stroke="#24e053"
+                  strokeWidth={5}
+                  style={{
+                    opacity: 0,
+                    transform: 'scale(0.5)',
+                    transformOrigin: '32px 32px',
+                    animation: 'bounceInRing 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+                  }}
+                />
+                <path
+                  d="M20 33 L28 41 L45 23"
+                  fill="none"
+                  stroke="#24e053"
+                  strokeWidth={6}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  style={{
+                    opacity: 0,
+                    transform: 'scale(0.3)',
+                    transformOrigin: '32px 32px',
+                    animation: 'bounceInCheck 0.5s 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+                  }}
+                />
+              </svg>
             </div>
-
-            {/* Uploaded Beats Grid */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '24px' }}>
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-                gap: '16px',
-              }}>
-                {uploadedBeats.map((beat) => (
-                  <div 
-                    key={beat.id}
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      backgroundColor: DESIGN_SYSTEM.colors.elevated,
-                      border: `0.5px solid ${DESIGN_SYSTEM.colors.border}`,
-                      borderRadius: '8px',
-                      overflow: 'hidden',
-                      transition: 'all 0.15s',
-                      animation: 'slideIn 0.3s ease-out',
-                    }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLElement).style.borderColor = '#444';
-                      (e.currentTarget as HTMLElement).style.boxShadow = `0 4px 16px rgba(0, 0, 0, 0.3)`;
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLElement).style.borderColor = DESIGN_SYSTEM.colors.border;
-                      (e.currentTarget as HTMLElement).style.boxShadow = 'none';
-                    }}
-                  >
-                    {/* Artwork placeholder */}
-                    <div style={{
-                      width: '100%',
-                      aspectRatio: '1',
-                      backgroundColor: DESIGN_SYSTEM.colors.tertiary,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      borderBottom: `0.5px solid ${DESIGN_SYSTEM.colors.border}`,
-                    }}>
-                      {beat.artworkUrl ? (
-                        <img 
-                          src={beat.artworkUrl} 
-                          alt={beat.name}
-                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                        />
-                      ) : (
-                        <div style={{ textAlign: 'center', color: DESIGN_SYSTEM.colors.textSecondary }}>
-                          <div style={{ fontSize: '32px', marginBottom: '8px' }}>♪</div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Info */}
-                    <div style={{ padding: '12px' }}>
-                      <div style={{
-                        fontSize: '13px',
-                        fontWeight: 500,
-                        color: DESIGN_SYSTEM.colors.textPrimary,
-                        marginBottom: '4px',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}>
-                        {beat.name}
-                      </div>
-                      <div style={{
-                        fontSize: '12px',
-                        color: DESIGN_SYSTEM.colors.textSecondary,
-                        display: 'flex',
-                        gap: '12px',
-                      }}>
-                        {beat.bpm && <span>{beat.bpm} BPM</span>}
-                        {beat.key && <span>{beat.key}</span>}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Footer */}
             <div style={{
-              padding: '16px 24px',
-              borderTop: `1px solid ${DESIGN_SYSTEM.colors.border}`,
-              backgroundColor: DESIGN_SYSTEM.colors.elevated,
-              display: 'flex',
-              justifyContent: 'flex-end',
+              marginTop: '14px',
+              fontSize: '16px',
+              fontWeight: 600,
+              letterSpacing: '0.01em',
+              color: DESIGN_SYSTEM.colors.textPrimary,
+              opacity: 0,
+              animation: 'fadeUpLabel 0.4s 0.55s ease-out forwards',
             }}>
-              <button
-                onClick={onClose}
-                style={{
-                  padding: '8px 20px',
-                  backgroundColor: DESIGN_SYSTEM.colors.primary,
-                  color: DESIGN_SYSTEM.colors.textPrimary,
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  transition: 'opacity 0.15s',
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.9')}
-                onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
-              >
-                Hotovo
-              </button>
+              Hotovo
+            </div>
+            <div style={{
+              marginTop: '6px',
+              fontSize: '13px',
+              color: DESIGN_SYSTEM.colors.textSecondary,
+              opacity: 0,
+              animation: 'fadeUpLabel 0.4s 0.65s ease-out forwards',
+            }}>
+              {uploadedBeats.length} beat{uploadedBeats.length !== 1 ? 'y' : ''} {globalReleaseImmediately ? 'jsou live' : 'připraveny na release'}
             </div>
           </div>
         </div>
