@@ -6509,10 +6509,10 @@ function PromoCodesTab() {
   );
 }
 
-type MktSubTab = "analytika" | "slevy" | "promo" | "seo" | "ig" | "emaily";
+type MktSubTab = "prehled" | "odberatele" | "journeys" | "kampane" | "sablony" | "analytika" | "slevy" | "promo" | "seo" | "ig" | "emaily";
 
 function MarketingTab({ settings, onRefresh }: { settings: Record<string, string>; onRefresh: () => Promise<void> }) {
-  const [sub, setSub] = useState<MktSubTab>("analytika");
+  const [sub, setSub] = useState<MktSubTab>("prehled");
   const [analytics, setAnalytics] = useState<any>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(true);
 
@@ -6528,6 +6528,11 @@ function MarketingTab({ settings, onRefresh }: { settings: Record<string, string
   useEffect(() => { loadAnalytics(); }, []);
 
   const SUB_TABS: { id: MktSubTab; label: string }[] = [
+    { id: "prehled",    label: "Přehled" },
+    { id: "odberatele", label: "Odběratelé" },
+    { id: "journeys",   label: "Journeys" },
+    { id: "kampane",    label: "Kampaně" },
+    { id: "sablony",    label: "Šablony" },
     { id: "analytika", label: "Analytika" },
     { id: "slevy",     label: "Slevy" },
     { id: "promo",     label: "Promo kódy" },
@@ -6849,6 +6854,629 @@ function MarketingTab({ settings, onRefresh }: { settings: Record<string, string
       {sub === "seo"    && <SEOTab settings={settings} onRefresh={onRefresh} />}
       {sub === "ig"     && <IGStoriesTab settings={settings} onRefresh={onRefresh} />}
       {sub === "emaily" && <EmailsTab />}
+      {sub === "prehled"    && <MarketingPrehledTab />}
+      {sub === "odberatele" && <OdberateleTab />}
+      {sub === "journeys"   && <JourneysTab />}
+      {sub === "kampane"    && <KampaneTab />}
+      {sub === "sablony"    && <SablonyTab />}
+    </div>
+  );
+}
+
+// ── Marketing → Přehled ──────────────────────────────────────────────────────
+function MarketingPrehledTab() {
+  const [overview, setOverview] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/marketing/overview", { credentials: "include" })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { setOverview(data); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
+
+  const card: React.CSSProperties = {
+    background: "rgba(255,255,255,0.03)",
+    border: "1px solid rgba(255,255,255,0.07)",
+    borderRadius: "14px",
+    padding: "22px 24px",
+  };
+  const statLabel: React.CSSProperties = { fontSize: "11px", color: "#555", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 600, marginBottom: "8px" };
+  const statValue: React.CSSProperties = { fontSize: "30px", fontWeight: 700, color: DESIGN_SYSTEM.colors.textPrimary, lineHeight: 1, letterSpacing: "-0.02em" };
+
+  if (loading) return <div style={{ color: "#444", fontSize: "13px", padding: "40px 0", textAlign: "center" }}>Načítám data…</div>;
+  if (!overview) return <div style={{ color: "#ff4444", fontSize: "13px" }}>Nepodařilo se načíst přehled.</div>;
+
+  return (
+    <div>
+      <p style={{ color: "#555", fontSize: "12px", marginBottom: "20px" }}>
+        Přehled marketingového systému — odběratelé, journeys a e-mailová aktivita za posledních 7 dní.
+      </p>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "14px", marginBottom: "20px" }}>
+        <div style={card}>
+          <div style={statLabel}>Odběratelé celkem</div>
+          <div style={statValue}>{overview.totalSubscribers.toLocaleString("cs-CZ")}</div>
+        </div>
+        <div style={card}>
+          <div style={statLabel}>Aktivní marketing</div>
+          <div style={statValue}>{overview.marketingSubscribers.toLocaleString("cs-CZ")}</div>
+        </div>
+        <div style={card}>
+          <div style={statLabel}>Odhlášení</div>
+          <div style={statValue}>{overview.unsubscribed.toLocaleString("cs-CZ")}</div>
+        </div>
+        <div style={card}>
+          <div style={statLabel}>Potlačeno (bounce)</div>
+          <div style={statValue}>{overview.suppressed.toLocaleString("cs-CZ")}</div>
+        </div>
+        <div style={card}>
+          <div style={statLabel}>Aktivní journeys</div>
+          <div style={statValue}>{overview.activeJourneys.toLocaleString("cs-CZ")}</div>
+        </div>
+        <div style={card}>
+          <div style={statLabel}>E-maily za 7 dní</div>
+          <div style={statValue}>{overview.emailsSent7d.toLocaleString("cs-CZ")}</div>
+        </div>
+      </div>
+      <div style={card}>
+        <div style={{ fontSize: "13px", fontWeight: 600, color: DESIGN_SYSTEM.colors.textPrimary, marginBottom: "14px" }}>Události e-mailů (7 dní)</div>
+        {Object.keys(overview.eventCounts7d || {}).length === 0 ? (
+          <div style={{ color: "#444", fontSize: "13px" }}>Zatím žádné události.</div>
+        ) : (
+          <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
+            {Object.entries(overview.eventCounts7d).map(([type, count]) => (
+              <div key={type}>
+                <div style={{ fontSize: "20px", fontWeight: 700, color: DESIGN_SYSTEM.colors.textPrimary }}>{count as number}</div>
+                <div style={{ fontSize: "11px", color: "#555", textTransform: "uppercase" }}>{type}</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Marketing → Odběratelé ────────────────────────────────────────────────────
+function OdberateleTab() {
+  const [subscribers, setSubscribers] = useState<any[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState("all");
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [selected, setSelected] = useState<any>(null);
+  const pageSize = 50;
+
+  const load = () => {
+    setLoading(true);
+    const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize), filter, search });
+    fetch(`/api/marketing/subscribers?${params}`, { credentials: "include" })
+      .then(r => r.ok ? r.json() : { subscribers: [], total: 0 })
+      .then(data => { setSubscribers(data.subscribers || []); setTotal(data.total || 0); setLoading(false); })
+      .catch(() => setLoading(false));
+  };
+
+  useEffect(() => { load(); }, [filter, page]);
+
+  const handleSearch = (e: React.FormEvent) => { e.preventDefault(); setPage(1); load(); };
+
+  const openDetail = (id: number) => {
+    fetch(`/api/marketing/subscribers/${id}`, { credentials: "include" })
+      .then(r => r.ok ? r.json() : null)
+      .then(setSelected)
+      .catch(() => {});
+  };
+
+  const cellStyle: any = { padding: "10px", borderBottom: "1px solid #1e1e1e", verticalAlign: "middle" };
+  const FILTERS = [
+    { id: "all", label: "Všichni" },
+    { id: "subscribed", label: "Přihlášení" },
+    { id: "unsubscribed", label: "Odhlášení" },
+    { id: "suppressed", label: "Potlačení" },
+    { id: "buyers", label: "Kupující" },
+    { id: "non_buyers", label: "Nekupující" },
+  ];
+
+  return (
+    <div>
+      <div style={{ display: "flex", gap: "8px", marginBottom: "16px", flexWrap: "wrap", alignItems: "center" }}>
+        {FILTERS.map(f => (
+          <button
+            key={f.id}
+            onClick={() => { setFilter(f.id); setPage(1); }}
+            className={filter === f.id ? "btn btn-filled" : "btn"}
+            style={{ borderRadius: "4px", fontSize: "12px", ...(filter !== f.id ? { borderColor: DESIGN_SYSTEM.colors.border, color: DESIGN_SYSTEM.colors.textSecondary } : {}) }}
+          >
+            {f.label}
+          </button>
+        ))}
+        <form onSubmit={handleSearch} style={{ marginLeft: "auto", display: "flex", gap: "6px" }}>
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Hledat email nebo jméno…"
+            style={{ padding: "7px 10px", fontSize: "12px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "4px", color: "#eee" }}
+          />
+          <button type="submit" className="btn" style={{ borderRadius: "4px", fontSize: "12px", borderColor: "#444" }}>Hledat</button>
+        </form>
+      </div>
+
+      {loading ? (
+        <div style={{ color: "#555", padding: "24px" }}>Načítám…</div>
+      ) : subscribers.length === 0 ? (
+        <div style={{ color: "#444", padding: "24px" }}>Žádní odběratelé neodpovídá filtru.</div>
+      ) : (
+        <>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr>
+                <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", textAlign: "left" }}>Email</th>
+                <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", textAlign: "left" }}>Zdroj</th>
+                <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", textAlign: "left" }}>Stav</th>
+                <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", textAlign: "left" }}>Kupující</th>
+                <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", textAlign: "left" }}>Připojen</th>
+              </tr>
+            </thead>
+            <tbody>
+              {subscribers.map(s => (
+                <tr key={s.id} onClick={() => openDetail(s.id)} style={{ cursor: "pointer" }}>
+                  <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textPrimary, fontWeight: 500 }}>{s.email}</td>
+                  <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "12px" }}>{s.first_source}</td>
+                  <td style={{ ...cellStyle }}>
+                    {s.suppressed_at ? (
+                      <span style={{ fontSize: "11px", color: "#ff5252" }}>Potlačeno</span>
+                    ) : s.unsubscribed_at ? (
+                      <span style={{ fontSize: "11px", color: "#888" }}>Odhlášen</span>
+                    ) : s.marketing_consent ? (
+                      <span style={{ fontSize: "11px", color: "#24e053" }}>Přihlášen</span>
+                    ) : (
+                      <span style={{ fontSize: "11px", color: "#555" }}>Bez souhlasu</span>
+                    )}
+                  </td>
+                  <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "12px" }}>{s.is_buyer ? "Ano" : "Ne"}</td>
+                  <td style={{ ...cellStyle, color: "#555", fontSize: "12px" }}>{new Date(s.created_at).toLocaleDateString("cs-CZ")}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "14px" }}>
+            <span style={{ fontSize: "12px", color: "#555" }}>{total} odběratelů celkem</span>
+            <div style={{ display: "flex", gap: "8px" }}>
+              <button className="btn" disabled={page <= 1} onClick={() => setPage(p => p - 1)} style={{ borderRadius: "4px", fontSize: "12px", borderColor: "#444" }}>Předchozí</button>
+              <button className="btn" disabled={page * pageSize >= total} onClick={() => setPage(p => p + 1)} style={{ borderRadius: "4px", fontSize: "12px", borderColor: "#444" }}>Další</button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {selected && (
+        <div
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 10000, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
+          onClick={(e) => { if (e.target === e.currentTarget) setSelected(null); }}
+        >
+          <div style={{ background: "#0a0a0a", border: "1px solid #222", borderRadius: "8px", width: "min(640px, 96vw)", maxHeight: "88vh", overflowY: "auto", padding: "24px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px" }}>
+              <div>
+                <div style={{ fontSize: "16px", fontWeight: 600, color: "#eee" }}>{selected.subscriber.email}</div>
+                <div style={{ fontSize: "12px", color: "#555", marginTop: "4px" }}>Připojen {new Date(selected.subscriber.created_at).toLocaleDateString("cs-CZ")} · zdroj: {selected.subscriber.first_source}</div>
+              </div>
+              <button onClick={() => setSelected(null)} style={{ background: "none", border: "none", color: "#555", fontSize: "20px", cursor: "pointer" }}>×</button>
+            </div>
+
+            <div style={{ display: "flex", gap: "8px", marginBottom: "20px" }}>
+              {selected.subscriber.unsubscribed_at ? (
+                <button
+                  className="btn"
+                  style={{ borderRadius: "4px", fontSize: "12px", borderColor: "#24e053", color: "#24e053" }}
+                  onClick={async () => { await fetch(`/api/marketing/subscribers/${selected.subscriber.id}/resubscribe`, { method: "POST", credentials: "include" }); openDetail(selected.subscriber.id); load(); }}
+                >
+                  Znovu přihlásit
+                </button>
+              ) : (
+                <button
+                  className="btn"
+                  style={{ borderRadius: "4px", fontSize: "12px", borderColor: "#ff5252", color: "#ff5252" }}
+                  onClick={async () => { if (!confirm("Odhlásit tohoto odběratele z marketingu?")) return; await fetch(`/api/marketing/subscribers/${selected.subscriber.id}/unsubscribe`, { method: "POST", credentials: "include" }); openDetail(selected.subscriber.id); load(); }}
+                >
+                  Odhlásit z marketingu
+                </button>
+              )}
+            </div>
+
+            <div style={{ marginBottom: "16px" }}>
+              <div style={{ fontSize: "11px", color: "#555", textTransform: "uppercase", marginBottom: "8px" }}>Tagy</div>
+              <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                {(selected.tags || []).map((t: any) => (
+                  <span key={t.id} style={{ fontSize: "11px", padding: "3px 10px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "999px", color: "#ccc" }}>{t.name}</span>
+                ))}
+                {(selected.tags || []).length === 0 && <span style={{ fontSize: "12px", color: "#444" }}>Žádné tagy</span>}
+              </div>
+            </div>
+
+            <div style={{ marginBottom: "16px" }}>
+              <div style={{ fontSize: "11px", color: "#555", textTransform: "uppercase", marginBottom: "8px" }}>Objednávky ({selected.orders?.length || 0})</div>
+              {(selected.orders || []).length === 0 ? (
+                <div style={{ fontSize: "12px", color: "#444" }}>Žádné objednávky</div>
+              ) : selected.orders.map((o: any) => (
+                <div key={o.id} style={{ fontSize: "12px", color: "#aaa", padding: "4px 0" }}>#{o.id} — {o.status} — {Number(o.total).toLocaleString("cs-CZ")} Kč — {new Date(o.created_at).toLocaleDateString("cs-CZ")}</div>
+              ))}
+            </div>
+
+            <div>
+              <div style={{ fontSize: "11px", color: "#555", textTransform: "uppercase", marginBottom: "8px" }}>Historie e-mailů ({selected.emailSends?.length || 0})</div>
+              {(selected.emailSends || []).length === 0 ? (
+                <div style={{ fontSize: "12px", color: "#444" }}>Žádné e-maily zatím nebyly odeslány</div>
+              ) : selected.emailSends.map((e: any) => (
+                <div key={e.id} style={{ fontSize: "12px", color: "#aaa", padding: "4px 0" }}>{e.subject} — {e.status} — {new Date(e.created_at).toLocaleDateString("cs-CZ")}</div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Marketing → Journeys ──────────────────────────────────────────────────
+function JourneysTab() {
+  const [journeys, setJourneys] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [detail, setDetail] = useState<any>(null);
+
+  const load = () => {
+    setLoading(true);
+    fetch("/api/marketing/journeys", { credentials: "include" })
+      .then(r => r.ok ? r.json() : [])
+      .then(data => { setJourneys(data); setLoading(false); })
+      .catch(() => setLoading(false));
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const openDetail = (id: number) => {
+    fetch(`/api/marketing/journeys/${id}`, { credentials: "include" })
+      .then(r => r.ok ? r.json() : null)
+      .then(setDetail)
+      .catch(() => {});
+  };
+
+  const setStatus = async (id: number, status: string) => {
+    await fetch(`/api/marketing/journeys/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ status }),
+    });
+    load();
+    if (detail?.journey?.id === id) openDetail(id);
+  };
+
+  const cellStyle: any = { padding: "10px", borderBottom: "1px solid #1e1e1e", verticalAlign: "middle" };
+
+  const STATUS_COLORS: Record<string, string> = { active: "#24e053", paused: "#f9a825", draft: "#555" };
+  const STEP_TYPE_LABELS: Record<string, string> = { email: "E-mail", wait: "Čekat", condition: "Podmínka", tag_add: "Přidat tag", tag_remove: "Odebrat tag", end: "Konec" };
+
+  return (
+    <div>
+      <p style={{ color: "#555", fontSize: "12px", marginBottom: "16px" }}>
+        Automatizované sekvence e-mailů spouštěné stahováním freebie, dokončením objednávky nebo registrací. Nové journeys se vytváří v draft stavu — aktivujte je až po zkontrolování kroků.
+      </p>
+      {loading ? (
+        <div style={{ color: "#555", padding: "24px" }}>Načítám…</div>
+      ) : journeys.length === 0 ? (
+        <div style={{ color: "#444", padding: "24px" }}>Zatím žádné journeys.</div>
+      ) : (
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr>
+              <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", textAlign: "left" }}>Název</th>
+              <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", textAlign: "left" }}>Trigger</th>
+              <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", textAlign: "left" }}>Stav</th>
+              <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", textAlign: "left" }}>Aktivní</th>
+              <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", textAlign: "left" }}>Dokončeno</th>
+              <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", textAlign: "left" }}>E-maily</th>
+              <th style={{ ...cellStyle, textAlign: "right" }}></th>
+            </tr>
+          </thead>
+          <tbody>
+            {journeys.map(j => (
+              <tr key={j.id}>
+                <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textPrimary, fontWeight: 500, cursor: "pointer" }} onClick={() => openDetail(j.id)}>{j.name}</td>
+                <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "12px" }}>{j.trigger_type}{j.trigger_value ? ` (${j.trigger_value})` : ""}</td>
+                <td style={{ ...cellStyle }}>
+                  <span style={{ fontSize: "11px", color: STATUS_COLORS[j.status] || "#555" }}>{j.status}</span>
+                </td>
+                <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "12px" }}>{j.activeEnrollments}</td>
+                <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "12px" }}>{j.completedEnrollments}</td>
+                <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "12px" }}>{j.emailsSent}</td>
+                <td style={{ ...cellStyle, textAlign: "right" }}>
+                  {j.status === "active" ? (
+                    <button className="btn" onClick={() => setStatus(j.id, "paused")} style={{ borderRadius: "4px", fontSize: "11px", borderColor: "#f9a825", color: "#f9a825" }}>Pozastavit</button>
+                  ) : (
+                    <button className="btn" onClick={() => setStatus(j.id, "active")} style={{ borderRadius: "4px", fontSize: "11px", borderColor: "#24e053", color: "#24e053" }}>Aktivovat</button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+
+      {detail && (
+        <div
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 10000, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
+          onClick={(e) => { if (e.target === e.currentTarget) setDetail(null); }}
+        >
+          <div style={{ background: "#0a0a0a", border: "1px solid #222", borderRadius: "8px", width: "min(560px, 96vw)", maxHeight: "88vh", overflowY: "auto", padding: "24px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px" }}>
+              <div>
+                <div style={{ fontSize: "16px", fontWeight: 600, color: "#eee" }}>{detail.journey.name}</div>
+                <div style={{ fontSize: "12px", color: "#555", marginTop: "4px" }}>{detail.journey.description || "Bez popisu"}</div>
+              </div>
+              <button onClick={() => setDetail(null)} style={{ background: "none", border: "none", color: "#555", fontSize: "20px", cursor: "pointer" }}>×</button>
+            </div>
+            <div style={{ fontSize: "11px", color: "#555", textTransform: "uppercase", marginBottom: "10px" }}>Kroky ({detail.steps.length})</div>
+            {detail.steps.length === 0 ? (
+              <div style={{ fontSize: "13px", color: "#444" }}>Tato journey zatím nemá žádné kroky.</div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                {detail.steps.map((s: any, idx: number) => (
+                  <div key={s.id} style={{ padding: "10px 12px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "8px", fontSize: "12px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span style={{ color: "#eee", fontWeight: 500 }}>{idx + 1}. {STEP_TYPE_LABELS[s.step_type] || s.step_type}</span>
+                      {s.delay_hours > 0 && <span style={{ color: "#555" }}>za {s.delay_hours}h</span>}
+                    </div>
+                    {s.step_type === "condition" && s.configuration?.condition && (
+                      <div style={{ color: "#888", marginTop: "4px" }}>Podmínka: {s.configuration.condition} {s.configuration.tag ? `(${s.configuration.tag})` : ""}</div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Marketing → Kampaně ────────────────────────────────────────────────
+function KampaneTab() {
+  const [campaigns, setCampaigns] = useState<any[]>([]);
+  const [templates, setTemplates] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showCreate, setShowCreate] = useState(false);
+  const [name, setName] = useState("");
+  const [subject, setSubject] = useState("");
+  const [templateId, setTemplateId] = useState<number | "">("");
+  const [audienceCounts, setAudienceCounts] = useState<Record<number, number>>({});
+
+  const load = () => {
+    setLoading(true);
+    Promise.all([
+      fetch("/api/marketing/campaigns", { credentials: "include" }).then(r => r.ok ? r.json() : []),
+      fetch("/api/marketing/templates", { credentials: "include" }).then(r => r.ok ? r.json() : []),
+    ]).then(([c, t]) => { setCampaigns(c); setTemplates(t); setLoading(false); }).catch(() => setLoading(false));
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await fetch("/api/marketing/campaigns", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ name, subject, templateId: templateId || null }),
+    });
+    setName(""); setSubject(""); setTemplateId(""); setShowCreate(false);
+    load();
+  };
+
+  const fetchAudienceCount = async (id: number) => {
+    const res = await fetch(`/api/marketing/campaigns/${id}/audience-count`, { credentials: "include" });
+    if (res.ok) {
+      const data = await res.json();
+      setAudienceCounts(prev => ({ ...prev, [id]: data.count }));
+      return data.count;
+    }
+    return 0;
+  };
+
+  const handleSend = async (campaign: any) => {
+    const count = await fetchAudienceCount(campaign.id);
+    if (!confirm(`Odeslat kampaň "${campaign.name}" celkem ${count} odběratelům? Tuto akci nelze vrátit zpět.`)) return;
+    const res = await fetch(`/api/marketing/campaigns/${campaign.id}/send`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ confirmedCount: count }),
+    });
+    const data = await res.json();
+    if (!res.ok) { alert(data.error || "Chyba při odesílání"); return; }
+    alert(`Kampaň se odesílá ${data.recipientCount} odběratelům.`);
+    load();
+  };
+
+  const handleCancel = async (id: number) => {
+    if (!confirm("Zrušit tuto kampaň?")) return;
+    await fetch(`/api/marketing/campaigns/${id}/cancel`, { method: "POST", credentials: "include" });
+    load();
+  };
+
+  const cellStyle: any = { padding: "10px", borderBottom: "1px solid #1e1e1e", verticalAlign: "middle" };
+  const STATUS_COLORS: Record<string, string> = { draft: "#555", sending: "#f9a825", sent: "#24e053", cancelled: "#ff5252" };
+
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+        <p style={{ color: "#555", fontSize: "12px", margin: 0 }}>
+          Jednorázové e-maily odeslané všem aktivním marketingovým odběratelům (bez odhlášení/potlačení).
+        </p>
+        <button className="btn btn-filled" onClick={() => setShowCreate(v => !v)} style={{ borderRadius: "4px", fontSize: "12px" }}>
+          {showCreate ? "Zavřít" : "+ Nová kampaň"}
+        </button>
+      </div>
+
+      {showCreate && (
+        <form onSubmit={handleCreate} style={{ marginBottom: "20px", padding: "16px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "10px" }}>
+          <input required value={name} onChange={e => setName(e.target.value)} placeholder="Název kampaně" style={{ padding: "8px 10px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "4px", color: "#eee", fontSize: "13px" }} />
+          <input value={subject} onChange={e => setSubject(e.target.value)} placeholder="Předmět e-mailu" style={{ padding: "8px 10px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "4px", color: "#eee", fontSize: "13px" }} />
+          <select value={templateId} onChange={e => setTemplateId(e.target.value ? Number(e.target.value) : "")} style={{ padding: "8px 10px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "4px", color: "#eee", fontSize: "13px" }}>
+            <option value="">Vyberte šablonu…</option>
+            {templates.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+          </select>
+          <button type="submit" className="btn btn-filled" style={{ borderRadius: "4px", fontSize: "12px", alignSelf: "flex-start" }}>Vytvořit draft</button>
+        </form>
+      )}
+
+      {loading ? (
+        <div style={{ color: "#555", padding: "24px" }}>Načítám…</div>
+      ) : campaigns.length === 0 ? (
+        <div style={{ color: "#444", padding: "24px" }}>Zatím žádné kampaně.</div>
+      ) : (
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr>
+              <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", textAlign: "left" }}>Název</th>
+              <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", textAlign: "left" }}>Šablona</th>
+              <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", textAlign: "left" }}>Stav</th>
+              <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", textAlign: "left" }}>Příjemci</th>
+              <th style={{ ...cellStyle, textAlign: "right" }}></th>
+            </tr>
+          </thead>
+          <tbody>
+            {campaigns.map(c => (
+              <tr key={c.id}>
+                <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textPrimary, fontWeight: 500 }}>{c.name}</td>
+                <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "12px" }}>{c.template_name || "—"}</td>
+                <td style={{ ...cellStyle }}><span style={{ fontSize: "11px", color: STATUS_COLORS[c.status] || "#555" }}>{c.status}</span></td>
+                <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "12px" }}>{c.recipient_count ?? (audienceCounts[c.id] ?? "—")}</td>
+                <td style={{ ...cellStyle, textAlign: "right", display: "flex", gap: "6px", justifyContent: "flex-end" }}>
+                  {c.status === "draft" && (
+                    <>
+                      <button className="btn" onClick={() => fetchAudienceCount(c.id)} style={{ borderRadius: "4px", fontSize: "11px", borderColor: "#444" }}>Náhled počtu</button>
+                      <button className="btn btn-filled" onClick={() => handleSend(c)} style={{ borderRadius: "4px", fontSize: "11px" }}>Odeslat</button>
+                      <button className="btn" onClick={() => handleCancel(c.id)} style={{ borderRadius: "4px", fontSize: "11px", borderColor: "#ff5252", color: "#ff5252" }}>Zrušit</button>
+                    </>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+}
+
+// ── Marketing → Šablony ─────────────────────────────────────────────────
+function SablonyTab() {
+  const [templates, setTemplates] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState<any>(null);
+  const [showForm, setShowForm] = useState(false);
+
+  const load = () => {
+    setLoading(true);
+    fetch("/api/marketing/templates", { credentials: "include" })
+      .then(r => r.ok ? r.json() : [])
+      .then(data => { setTemplates(data); setLoading(false); })
+      .catch(() => setLoading(false));
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const startNew = () => {
+    setEditing({ name: "", subject: "", preheader: "", html_content: "", text_content: "" });
+    setShowForm(true);
+  };
+
+  const startEdit = (t: any) => { setEditing({ ...t }); setShowForm(true); };
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editing.id) {
+      await fetch(`/api/marketing/templates/${editing.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ name: editing.name, subject: editing.subject, preheader: editing.preheader, htmlContent: editing.html_content, textContent: editing.text_content }),
+      });
+    } else {
+      await fetch("/api/marketing/templates", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ name: editing.name, subject: editing.subject, preheader: editing.preheader, htmlContent: editing.html_content, textContent: editing.text_content }),
+      });
+    }
+    setShowForm(false);
+    setEditing(null);
+    load();
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm("Smazat tuto šablonu?")) return;
+    const res = await fetch(`/api/marketing/templates/${id}`, { method: "DELETE", credentials: "include" });
+    const data = await res.json();
+    if (!res.ok) { alert(data.error); return; }
+    load();
+  };
+
+  const cellStyle: any = { padding: "10px", borderBottom: "1px solid #1e1e1e", verticalAlign: "middle" };
+  const inputStyle: React.CSSProperties = { width: "100%", padding: "8px 10px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "4px", color: "#eee", fontSize: "13px", boxSizing: "border-box" };
+
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+        <p style={{ color: "#555", fontSize: "12px", margin: 0 }}>
+          E-mailové šablony pro journeys a kampaně. Použijte proměnné {"{{first_name}}"}, {"{{email}}"}, {"{{unsubscribe_url}}"}, {"{{site_url}}"}.
+        </p>
+        <button className="btn btn-filled" onClick={startNew} style={{ borderRadius: "4px", fontSize: "12px" }}>+ Nová šablona</button>
+      </div>
+
+      {showForm && editing && (
+        <form onSubmit={handleSave} style={{ marginBottom: "20px", padding: "16px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "10px" }}>
+          <input required value={editing.name} onChange={e => setEditing({ ...editing, name: e.target.value })} placeholder="Název šablony" style={inputStyle} />
+          <input required value={editing.subject} onChange={e => setEditing({ ...editing, subject: e.target.value })} placeholder="Předmět (může obsahovat {{first_name}})" style={inputStyle} />
+          <input value={editing.preheader || ""} onChange={e => setEditing({ ...editing, preheader: e.target.value })} placeholder="Preheader (nepovinné)" style={inputStyle} />
+          <textarea required value={editing.html_content} onChange={e => setEditing({ ...editing, html_content: e.target.value })} placeholder="HTML obsah e-mailu…" style={{ ...inputStyle, minHeight: "160px", fontFamily: "monospace", fontSize: "12px" }} />
+          <div style={{ display: "flex", gap: "8px" }}>
+            <button type="submit" className="btn btn-filled" style={{ borderRadius: "4px", fontSize: "12px" }}>Uložit</button>
+            <button type="button" className="btn" onClick={() => { setShowForm(false); setEditing(null); }} style={{ borderRadius: "4px", fontSize: "12px", borderColor: "#444" }}>Zrušit</button>
+          </div>
+        </form>
+      )}
+
+      {loading ? (
+        <div style={{ color: "#555", padding: "24px" }}>Načítám…</div>
+      ) : templates.length === 0 ? (
+        <div style={{ color: "#444", padding: "24px" }}>Zatím žádné šablony.</div>
+      ) : (
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr>
+              <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", textAlign: "left" }}>Název</th>
+              <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", textAlign: "left" }}>Předmět</th>
+              <th style={{ ...cellStyle, textAlign: "right" }}></th>
+            </tr>
+          </thead>
+          <tbody>
+            {templates.map(t => (
+              <tr key={t.id}>
+                <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textPrimary, fontWeight: 500 }}>{t.name}</td>
+                <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "12px" }}>{t.subject}</td>
+                <td style={{ ...cellStyle, textAlign: "right", display: "flex", gap: "6px", justifyContent: "flex-end" }}>
+                  <button className="btn" onClick={() => startEdit(t)} style={{ borderRadius: "4px", fontSize: "11px", borderColor: "#444" }}>Upravit</button>
+                  <button className="btn" onClick={() => handleDelete(t.id)} style={{ borderRadius: "4px", fontSize: "11px", borderColor: "#ff5252", color: "#ff5252" }}>Smazat</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }
@@ -7796,7 +8424,97 @@ function KonfiguraceTab() {
   );
 }
 
-type NastaveniSubTab = "artworks" | "seo" | "emaily" | "konfigurace";
+type NastaveniSubTab = "artworks" | "seo" | "emaily" | "marketing" | "konfigurace";
+
+function MarketingEmailSettingsTab() {
+  const [mode, setMode] = useState<"production" | "test">("test");
+  const [testRecipients, setTestRecipients] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/marketing/settings", { credentials: "include" })
+      .then(r => r.ok ? r.json() : {})
+      .then(data => {
+        setMode(data.marketing_email_mode === "production" ? "production" : "test");
+        setTestRecipients(data.marketing_test_recipients || "");
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    setSaved(false);
+    try {
+      await fetch("/api/marketing/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ marketingEmailMode: mode, marketingTestRecipients: testRecipients }),
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) return <div style={{ color: "#555", padding: "24px" }}>Načítám…</div>;
+
+  return (
+    <div style={{ maxWidth: "560px" }}>
+      <div style={{ padding: "18px", background: mode === "production" ? "rgba(255,82,82,0.06)" : "rgba(36,224,83,0.06)", border: `1px solid ${mode === "production" ? "rgba(255,82,82,0.25)" : "rgba(36,224,83,0.25)"}`, borderRadius: "10px", marginBottom: "20px" }}>
+        <div style={{ fontSize: "13px", fontWeight: 600, color: mode === "production" ? "#ff5252" : "#24e053", marginBottom: "6px" }}>
+          {mode === "production" ? "⚠ Produkční režim aktivní" : "Testovací režim aktivní"}
+        </div>
+        <div style={{ fontSize: "12px", color: "#888", lineHeight: 1.6 }}>
+          {mode === "production"
+            ? "Marketingové journeys a kampaně odesílají skutečné e-maily všem způsobilým odběratelům."
+            : "Marketingové journeys a kampaně odesílají e-maily pouze na testovací adresy níže — odběratelé nic nedostanou."}
+        </div>
+      </div>
+
+      <div style={{ marginBottom: "16px" }}>
+        <label style={{ display: "block", fontSize: "12px", color: "#888", marginBottom: "8px" }}>Režim odesílání</label>
+        <div style={{ display: "flex", gap: "8px" }}>
+          <button
+            onClick={() => setMode("test")}
+            className={mode === "test" ? "btn btn-filled" : "btn"}
+            style={{ borderRadius: "4px", fontSize: "12px", flex: 1, ...(mode !== "test" ? { borderColor: "#444" } : {}) }}
+          >
+            Test
+          </button>
+          <button
+            onClick={() => setMode("production")}
+            className={mode === "production" ? "btn btn-filled" : "btn"}
+            style={{ borderRadius: "4px", fontSize: "12px", flex: 1, ...(mode !== "production" ? { borderColor: "#ff5252", color: "#ff5252" } : {}) }}
+          >
+            Produkce
+          </button>
+        </div>
+      </div>
+
+      <div style={{ marginBottom: "20px" }}>
+        <label style={{ display: "block", fontSize: "12px", color: "#888", marginBottom: "8px" }}>Testovací příjemci (odděleni čárkou)</label>
+        <input
+          value={testRecipients}
+          onChange={e => setTestRecipients(e.target.value)}
+          placeholder="vy@voodoo808.com"
+          style={{ width: "100%", padding: "9px 12px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "4px", color: "#eee", fontSize: "13px", boxSizing: "border-box" }}
+        />
+        <p style={{ fontSize: "11px", color: "#555", marginTop: "6px", lineHeight: 1.5 }}>
+          V testovacím režimu se všechny automatické marketingové e-maily přesměrují na první adresu v tomto seznamu.
+        </p>
+      </div>
+
+      <button onClick={handleSave} disabled={saving} className="btn btn-filled" style={{ borderRadius: "4px", fontSize: "13px" }}>
+        {saving ? "Ukládám…" : saved ? "Uloženo" : "Uložit nastavení"}
+      </button>
+    </div>
+  );
+}
 
 function NastaveniTab({ settings, onRefresh, beats }: { settings: Record<string, string>; onRefresh: () => Promise<void>; beats: Beat[] }) {
   const [sub, setSub] = useState<NastaveniSubTab>("artworks");
@@ -7805,6 +8523,7 @@ function NastaveniTab({ settings, onRefresh, beats }: { settings: Record<string,
     { id: "artworks",    label: "Artwork" },
     { id: "seo",         label: "SEO" },
     { id: "emaily",      label: "E-maily" },
+    { id: "marketing",   label: "Marketing e-maily" },
     { id: "konfigurace", label: "Konfigurace" },
   ];
 
@@ -7858,6 +8577,7 @@ function NastaveniTab({ settings, onRefresh, beats }: { settings: Record<string,
       {sub === "artworks"    && <ArtworksTab settings={settings} onRefresh={onRefresh} beats={beats} />}
       {sub === "seo"         && <SEOTab settings={settings} onRefresh={onRefresh} />}
       {sub === "emaily"      && <EmailsTab />}
+      {sub === "marketing"   && <MarketingEmailSettingsTab />}
       {sub === "konfigurace" && <KonfiguraceTab />}
     </div>
   );

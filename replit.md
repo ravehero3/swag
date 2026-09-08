@@ -16,10 +16,9 @@ VOODOO808 (voodoo808.com) is a Czech-language beat store where producers buy and
 - **PDF generation:** PDFKit
 
 ## File Structure
-- Frontend: `client/src/` (React components, pages, hooks)
-- Backend: `server/src/` (Express routes, middleware, db, email)
-- Routes: `server/src/routes/` (auth, beats, soundKits, orders, upload, saved, licenses, adminLicenses, leads, comments, kitArtworks)
-- Lib: `server/src/lib/` (storage, waveform, gopay, pricing, contracts, contractPdf, contractTemplate, appUrl)
+- Frontend: `client/src/pages/` (React components, pages, hooks)
+- Backend: `server/src/routes/` (auth, beats, soundKits, orders, upload, saved, licenses, adminLicenses, leads, comments, kitArtworks, marketing, resendWebhook)
+- Lib: `server/src/lib/` (storage, waveform, gopay, pricing, contracts, contractPdf, contractTemplate, appUrl, marketing/*)
 - Build output: `dist/`
 
 ## Key Scripts
@@ -51,8 +50,22 @@ The `./data/beats` directory on the VPS host holds all uploaded beat files perma
 - `R2_ACCOUNT_ID` / `R2_ACCESS_KEY_ID` / `R2_SECRET_ACCESS_KEY` / `R2_BUCKET` / `R2_PUBLIC_BASE_URL` — Cloudflare R2 (primary storage)
 - `B2_ENDPOINT` / `B2_KEY_ID` / `B2_APPLICATION_KEY` / `B2_PREVIEW_BUCKET` / `B2_PUBLIC_BASE_URL` — Backblaze B2 (fallback)
 - `RESEND_API_KEY` / `RESEND_FROM` — email
+- `RESEND_WEBHOOK_SECRET` — marketing email webhook signature verification (bounce/complaint/open/click). Webhook rejects everything if unset (fails closed).
 - `GOPAY_CLIENT_ID` / `GOPAY_CLIENT_SECRET` / `GOPAY_GOID` / `GOPAY_SANDBOX` — payments
 - `APP_URL` — production domain (for OAuth callbacks and GoPay return URLs)
+
+## Marketing Automation (first-party, replaces Mailchimp)
+- **Concept**: `subscribers` table is the single marketing identity per (normalized, case-insensitive) email — separate from the pre-existing `leads` table, which is left untouched for backward compatibility. Freebie downloads and purchases upsert into `subscribers` and never duplicate an identity.
+- **Schema**: `subscribers`, `tags` / `subscriber_tags`, `subscriber_freebies`, `marketing_templates`, `marketing_journeys` / `marketing_journey_steps`, `marketing_enrollments`, `marketing_segments`, `marketing_campaigns`, `marketing_email_sends`, `marketing_email_events`, `marketing_audit_log` — all created idempotently in `initDatabase()` in `server/src/db.ts`, same pattern as every other table.
+- **Event hooks** (`server/src/lib/marketing/hooks.ts`): `onFreebieDownloaded`, `onOrderCompleted`, `onUserSignedUp` — the single integration surface called (with `.catch(() => {})`, never blocking the underlying flow) from `leads.ts`, `orders.ts` (claim-free, check-payment, admin status change), `index.ts` (GoPay IPN, Google OAuth signup), and `auth.ts` (register).
+- **Journey engine** (`server/src/lib/marketing/journeys.ts`): enrollment is idempotent via `UNIQUE(subscriber_id, journey_id)`. Steps: `email`, `wait`, `condition` (`has_purchased`, `has_tag`, `not_has_tag`, `has_freebie`), `tag_add`, `tag_remove`, `end`.
+- **Scheduler** (`server/src/lib/marketing/scheduler.ts`): plain `setInterval` (every 2 min) started in `startServer()` in `index.ts`, alongside the pre-existing bank-transfer/abandoned-checkout interval jobs — NOT cron/Redis/BullMQ, matching this app's single persistent Docker process. Concurrency-safe via a Postgres advisory lock + `FOR UPDATE SKIP LOCKED` on the due-enrollments query.
+- **Sending** (`server/src/lib/marketing/sender.ts`): distinct from `server/src/email.ts` (transactional-only, untouched). Every marketing send re-checks eligibility, uses a deterministic Resend idempotency key (`journey/{enrollmentId}/step/{stepId}` or `campaign/{campaignId}/subscriber/{subscriberId}`), and writes a `marketing_email_sends` row before calling Resend.
+- **Test mode**: `settings.marketing_email_mode` (`test` default / `production`) + `settings.marketing_test_recipients`, editable at Admin → Nastavení → Marketing e-maily. Ships in `test` mode — the historical lead list receives nothing until an admin explicitly switches to production.
+- **Webhook**: `POST /api/webhooks/resend`, mounted in `index.ts` with `express.raw()` before the global `express.json()` so the raw body is available for Svix signature verification (`svix` — transitive dep of `resend`, already in `package-lock.json`). Fails closed if `RESEND_WEBHOOK_SECRET` is unset.
+- **Unsubscribe**: `/odhlasit-marketing?token=...` (frontend page) + `POST /api/marketing/unsubscribe`, HMAC-signed token (reuses `SESSION_SECRET`, no new secret).
+- **Admin UI**: Marketing tab gained Přehled / Odběratelé / Journeys / Kampaně / Šablony sub-tabs in `Admin.tsx` (existing SlevyTab/PromoCodesTab/etc. untouched).
+- **Seed data**: 3 example journeys (Welcome, Free 808 Kit follow-up, Post-purchase) + 5 templates seeded in `draft`/inactive status on boot — must be reviewed and activated manually.
 
 ## Critical Rules
 1. NEVER switch from raw pg/SQL to Prisma or use Drizzle ORM at runtime

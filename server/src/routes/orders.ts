@@ -7,6 +7,7 @@ import {
   isContractEligibleItem,
 } from "../lib/contracts.js";
 import { calculateOrderTotal, orderQualifiesForLicence } from "../lib/pricing.js";
+import { onOrderCompleted, onFreebieDownloaded } from "../lib/marketing/hooks.js";
 
 export const BANK_TRANSFER_DETAILS = {
   accountNumber: "2845557133/0800",
@@ -59,6 +60,22 @@ async function markExclusiveSoldForOrder(orderId: number): Promise<void> {
     }
   } catch (e) {
     console.error(`[Exclusive] markExclusiveSoldForOrder failed for order ${orderId}:`, e);
+  }
+}
+
+// Single choke point for "a real, paid order just became completed" — called
+// from every one of the 3 places an order can transition into completed/paid
+// (GoPay IPN, check-payment poll, admin manual status change). Never throws.
+async function notifyOrderCompletedForMarketing(orderId: number): Promise<void> {
+  try {
+    const orderRes = await pool.query("SELECT email, user_id, items, total FROM orders WHERE id = $1", [orderId]);
+    const order = orderRes.rows[0];
+    if (!order) return;
+    if (Number(order.total) <= 0) return; // $0 orders are freebies, handled by onFreebieDownloaded via claim-free
+    const items: any[] = Array.isArray(order.items) ? order.items : [];
+    await onOrderCompleted({ orderId, email: order.email, userId: order.user_id, items });
+  } catch (e) {
+    console.error(`[Marketing] notifyOrderCompletedForMarketing failed for order ${orderId}:`, e);
   }
 }
 
@@ -485,6 +502,7 @@ router.post("/:id/bank-transfer", async (req: Request, res: Response) => {
 router.post("/:id/claim-free", requireAuth, async (req: Request, res: Response) => {
   try {
     const orderId = parseInt(req.params.id, 10);
+    const { marketingConsent } = req.body || {};
 
     const orderResult = await pool.query(
       "SELECT * FROM orders WHERE id = $1 AND user_id = $2",
@@ -511,6 +529,15 @@ router.post("/:id/claim-free", requireAuth, async (req: Request, res: Response) 
     } catch (err) {
       console.error("[Email] Free download email error:", err);
     }
+
+    const items: any[] = Array.isArray(order.items) ? order.items : [];
+    onFreebieDownloaded({
+      email: order.email,
+      userId: order.user_id,
+      items,
+      source: "account_free_claim",
+      marketingConsent: !!marketingConsent,
+    }).catch(() => {});
 
     return res.json({ success: true });
   } catch (error) {
@@ -603,6 +630,7 @@ router.post("/:id/check-payment", async (req: Request, res: Response) => {
           console.error("[GoPay] check-payment email error:", err);
         }
         markExclusiveSoldForOrder(orderId).catch(() => {});
+        notifyOrderCompletedForMarketing(orderId).catch(() => {});
       }
     }
 
@@ -642,6 +670,7 @@ router.post("/:id/notify", async (req: Request, res: Response) => {
           console.error("[Email] Contract email error:", err);
         }
         markExclusiveSoldForOrder(orderId).catch(() => {});
+        notifyOrderCompletedForMarketing(orderId).catch(() => {});
       }
     }
 
@@ -696,6 +725,7 @@ router.put("/:id/status", requireAdmin, async (req: Request, res: Response) => {
         console.error("[Email] Contract email on admin approval error:", err);
       }
       markExclusiveSoldForOrder(updatedOrder.id).catch(() => {});
+      notifyOrderCompletedForMarketing(updatedOrder.id).catch(() => {});
     }
     res.json(updatedOrder);
   } catch (error) {

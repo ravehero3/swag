@@ -2,12 +2,16 @@ import { Router, Request, Response } from "express";
 import { pool } from "../db.js";
 import { requireAuth, requireAdmin } from "../middleware/auth.js";
 import { sendFreeDownloadEmail } from "../email.js";
+import { onFreebieDownloaded } from "../lib/marketing/hooks.js";
+import { rateLimit } from "../middleware/rateLimit.js";
 
 const router = Router();
 
-router.post("/", async (req: Request, res: Response) => {
+const leadSubmitLimiter = rateLimit({ windowMs: 60_000, max: 10, keyPrefix: "leads_submit" });
+
+router.post("/", leadSubmitLimiter, async (req: Request, res: Response) => {
   try {
-    const { email, items } = req.body;
+    const { email, items, marketingConsent } = req.body;
     const userId = req.session.userId || null;
 
     if (!email || !Array.isArray(items) || items.length === 0) {
@@ -26,6 +30,14 @@ router.post("/", async (req: Request, res: Response) => {
     } catch (err) {
       console.error("[Email] Free download email error:", err);
     }
+
+    onFreebieDownloaded({
+      email,
+      userId,
+      items,
+      source: "checkout_free_item",
+      marketingConsent: !!marketingConsent,
+    }).catch(() => {});
 
     return res.json({ success: true, id: lead.id });
   } catch (error) {

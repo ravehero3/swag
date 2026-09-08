@@ -8,6 +8,7 @@ import { v4 as uuidv4 } from "uuid";
 import { requireAuth, requireAdmin } from "../middleware/auth.js";
 import { uploadFile, getPublicUrl, STORAGE_BUCKETS } from "../lib/storage.js";
 import { sendPasswordResetEmail, sendWelcomeEmail } from "../email.js";
+import { onUserSignedUp } from "../lib/marketing/hooks.js";
 
 function getAvatarPublicUrl(key: string): string {
   return getPublicUrl(STORAGE_BUCKETS.PREVIEWS, key);
@@ -70,6 +71,7 @@ router.post("/register", async (req: Request, res: Response) => {
     req.session.isAdmin = result.rows[0].is_admin;
 
     sendWelcomeEmail(email).catch(() => {});
+    onUserSignedUp({ email, userId: result.rows[0].id, source: "signup" }).catch(() => {});
 
     res.json({ user: { id: result.rows[0].id, email: result.rows[0].email, isAdmin: result.rows[0].is_admin } });
   } catch (error) {

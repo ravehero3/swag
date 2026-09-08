@@ -28,6 +28,7 @@ const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy.js"));
 const CookiePolicy = lazy(() => import("./pages/CookiePolicy.js"));
 const CookieSettings = lazy(() => import("./pages/CookieSettings.js"));
 const ForgotPassword = lazy(() => import("./pages/ForgotPassword.js"));
+const OdhlasitMarketing = lazy(() => import("./pages/OdhlasitMarketing.js"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword.js"));
 const PaymentStatus = lazy(() => import("./pages/PaymentStatus.js"));
 const GopayRedirect = lazy(() => import("./pages/GopayRedirect.js"));
@@ -520,6 +521,7 @@ function App() {
               <Route path="/cookies" component={CookiePolicy} />
               <Route path="/nastaveni-cookies" component={CookieSettings} />
               <Route path="/zapomenute-heslo" component={ForgotPassword} />
+              <Route path="/odhlasit-marketing" component={OdhlasitMarketing} />
               <Route path="/resetovat-heslo" component={ResetPassword} />
               <Route path="/platba-status" component={PaymentStatus} />
               <Route path="/gopay-redirect" component={GopayRedirect} />

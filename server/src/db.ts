@@ -320,6 +320,323 @@ export async function initDatabase() {
       CREATE INDEX IF NOT EXISTS idx_page_views_session_id ON page_views (session_id);
     `);
 
+    // ─────────────────────────────────────────────────────────────────────
+    // Marketing automation schema (subscribers, tags, journeys, campaigns).
+    // Additive only — does not touch/rename the existing `leads` table.
+    // ─────────────────────────────────────────────────────────────────────
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS subscribers (
+        id SERIAL PRIMARY KEY,
+        email VARCHAR(255) NOT NULL,
+        email_normalized VARCHAR(255) NOT NULL,
+        user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        name VARCHAR(255),
+        first_source VARCHAR(100) DEFAULT 'unknown',
+        first_freebie VARCHAR(255),
+        utm_source VARCHAR(255),
+        utm_medium VARCHAR(255),
+        utm_campaign VARCHAR(255),
+        utm_content VARCHAR(255),
+        utm_term VARCHAR(255),
+        marketing_consent BOOLEAN NOT NULL DEFAULT FALSE,
+        marketing_consent_at TIMESTAMP,
+        marketing_consent_source VARCHAR(100),
+        unsubscribed_at TIMESTAMP,
+        unsubscribe_reason TEXT,
+        suppressed_at TIMESTAMP,
+        suppressed_reason TEXT,
+        is_buyer BOOLEAN NOT NULL DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_subscribers_email_normalized ON subscribers (email_normalized);
+      CREATE INDEX IF NOT EXISTS idx_subscribers_consent ON subscribers (marketing_consent, unsubscribed_at, suppressed_at);
+      CREATE INDEX IF NOT EXISTS idx_subscribers_created_at ON subscribers (created_at DESC);
+      CREATE INDEX IF NOT EXISTS idx_subscribers_user_id ON subscribers (user_id);
+
+      CREATE TABLE IF NOT EXISTS tags (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        slug VARCHAR(100) NOT NULL UNIQUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS subscriber_tags (
+        subscriber_id INTEGER NOT NULL REFERENCES subscribers(id) ON DELETE CASCADE,
+        tag_id INTEGER NOT NULL REFERENCES tags(id) ON DELETE CASCADE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (subscriber_id, tag_id)
+      );
+      CREATE INDEX IF NOT EXISTS idx_subscriber_tags_tag_id ON subscriber_tags (tag_id);
+
+      CREATE TABLE IF NOT EXISTS subscriber_freebies (
+        id SERIAL PRIMARY KEY,
+        subscriber_id INTEGER NOT NULL REFERENCES subscribers(id) ON DELETE CASCADE,
+        product_title VARCHAR(255),
+        product_type VARCHAR(50),
+        product_id INTEGER,
+        source VARCHAR(100),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX IF NOT EXISTS idx_subscriber_freebies_subscriber_id ON subscriber_freebies (subscriber_id);
+
+      CREATE TABLE IF NOT EXISTS marketing_templates (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        key VARCHAR(100) UNIQUE,
+        subject TEXT NOT NULL,
+        preheader TEXT,
+        html_content TEXT NOT NULL,
+        text_content TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS marketing_journeys (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        description TEXT,
+        trigger_type VARCHAR(50) NOT NULL,
+        trigger_value VARCHAR(255),
+        status VARCHAR(20) NOT NULL DEFAULT 'draft',
+        version INTEGER NOT NULL DEFAULT 1,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX IF NOT EXISTS idx_marketing_journeys_trigger ON marketing_journeys (trigger_type, status);
+
+      CREATE TABLE IF NOT EXISTS marketing_journey_steps (
+        id SERIAL PRIMARY KEY,
+        journey_id INTEGER NOT NULL REFERENCES marketing_journeys(id) ON DELETE CASCADE,
+        position INTEGER NOT NULL,
+        step_type VARCHAR(20) NOT NULL,
+        delay_hours INTEGER NOT NULL DEFAULT 0,
+        template_id INTEGER REFERENCES marketing_templates(id) ON DELETE SET NULL,
+        configuration JSONB NOT NULL DEFAULT '{}',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX IF NOT EXISTS idx_marketing_journey_steps_journey_id ON marketing_journey_steps (journey_id, position);
+
+      CREATE TABLE IF NOT EXISTS marketing_enrollments (
+        id SERIAL PRIMARY KEY,
+        subscriber_id INTEGER NOT NULL REFERENCES subscribers(id) ON DELETE CASCADE,
+        journey_id INTEGER NOT NULL REFERENCES marketing_journeys(id) ON DELETE CASCADE,
+        journey_version INTEGER NOT NULL DEFAULT 1,
+        current_step_id INTEGER REFERENCES marketing_journey_steps(id) ON DELETE SET NULL,
+        status VARCHAR(20) NOT NULL DEFAULT 'active',
+        next_run_at TIMESTAMP,
+        started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        completed_at TIMESTAMP,
+        last_error TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(subscriber_id, journey_id)
+      );
+      CREATE INDEX IF NOT EXISTS idx_marketing_enrollments_due ON marketing_enrollments (status, next_run_at);
+      CREATE INDEX IF NOT EXISTS idx_marketing_enrollments_subscriber ON marketing_enrollments (subscriber_id);
+      CREATE INDEX IF NOT EXISTS idx_marketing_enrollments_journey ON marketing_enrollments (journey_id);
+
+      CREATE TABLE IF NOT EXISTS marketing_segments (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        filter_type VARCHAR(50) NOT NULL,
+        filter_value VARCHAR(255),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS marketing_campaigns (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        subject TEXT,
+        template_id INTEGER REFERENCES marketing_templates(id) ON DELETE SET NULL,
+        segment_id INTEGER REFERENCES marketing_segments(id) ON DELETE SET NULL,
+        status VARCHAR(20) NOT NULL DEFAULT 'draft',
+        scheduled_at TIMESTAMP,
+        sent_at TIMESTAMP,
+        recipient_count INTEGER,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX IF NOT EXISTS idx_marketing_campaigns_status ON marketing_campaigns (status, scheduled_at);
+
+      CREATE TABLE IF NOT EXISTS marketing_email_sends (
+        id SERIAL PRIMARY KEY,
+        subscriber_id INTEGER REFERENCES subscribers(id) ON DELETE SET NULL,
+        journey_id INTEGER REFERENCES marketing_journeys(id) ON DELETE SET NULL,
+        journey_step_id INTEGER REFERENCES marketing_journey_steps(id) ON DELETE SET NULL,
+        enrollment_id INTEGER REFERENCES marketing_enrollments(id) ON DELETE SET NULL,
+        campaign_id INTEGER REFERENCES marketing_campaigns(id) ON DELETE SET NULL,
+        template_id INTEGER REFERENCES marketing_templates(id) ON DELETE SET NULL,
+        resend_email_id VARCHAR(255),
+        idempotency_key VARCHAR(255) NOT NULL UNIQUE,
+        email_type VARCHAR(20) NOT NULL DEFAULT 'marketing',
+        subject TEXT,
+        recipient VARCHAR(255) NOT NULL,
+        status VARCHAR(20) NOT NULL DEFAULT 'queued',
+        error TEXT,
+        sent_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX IF NOT EXISTS idx_marketing_email_sends_subscriber ON marketing_email_sends (subscriber_id);
+      CREATE INDEX IF NOT EXISTS idx_marketing_email_sends_resend_id ON marketing_email_sends (resend_email_id);
+      CREATE INDEX IF NOT EXISTS idx_marketing_email_sends_status ON marketing_email_sends (status);
+      CREATE INDEX IF NOT EXISTS idx_marketing_email_sends_campaign ON marketing_email_sends (campaign_id);
+
+      CREATE TABLE IF NOT EXISTS marketing_email_events (
+        id SERIAL PRIMARY KEY,
+        email_send_id INTEGER REFERENCES marketing_email_sends(id) ON DELETE CASCADE,
+        subscriber_id INTEGER REFERENCES subscribers(id) ON DELETE SET NULL,
+        resend_email_id VARCHAR(255),
+        event_type VARCHAR(50) NOT NULL,
+        event_id VARCHAR(255),
+        event_timestamp TIMESTAMP,
+        payload JSONB,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX IF NOT EXISTS idx_marketing_email_events_send_id ON marketing_email_events (email_send_id);
+      CREATE INDEX IF NOT EXISTS idx_marketing_email_events_created_at ON marketing_email_events (created_at DESC);
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_marketing_email_events_event_id ON marketing_email_events (event_id) WHERE event_id IS NOT NULL;
+
+      CREATE TABLE IF NOT EXISTS marketing_audit_log (
+        id SERIAL PRIMARY KEY,
+        action VARCHAR(100) NOT NULL,
+        actor_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+        target_type VARCHAR(50),
+        target_id INTEGER,
+        details JSONB,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX IF NOT EXISTS idx_marketing_audit_log_created_at ON marketing_audit_log (created_at DESC);
+    `);
+
+    // Backfill: normalise emails for any subscriber rows that predate the
+    // email_normalized column (safe no-op on fresh installs).
+    await client.query(`
+      UPDATE subscribers SET email_normalized = LOWER(TRIM(email)) WHERE email_normalized IS NULL OR email_normalized = '';
+    `);
+
+    // Seed default marketing settings (test mode ON by default — never send
+    // real marketing email to the historical list until an admin flips this).
+    await client.query(`
+      INSERT INTO settings (key, value) VALUES
+        ('marketing_email_mode', 'test'),
+        ('marketing_test_recipients', '')
+      ON CONFLICT (key) DO NOTHING;
+    `);
+
+    // Seed example templates + journeys, ALL in 'draft' status. Per spec §50/51/52
+    // and §53 ("do not automatically enroll every historical lead into a new
+    // aggressive sequence") — these ship inactive; an admin must explicitly
+    // review the steps and flip status to 'active' in Marketing → Journeys.
+    const seedTemplates: Array<{ key: string; name: string; subject: string; html: string }> = [
+      {
+        key: "welcome_intro",
+        name: "Vítejte u VOODOO808",
+        subject: "Vítejte u VOODOO808, {{first_name}}!",
+        html: `<div style="font-family:sans-serif;color:#eee;background:#0a0a0a;padding:32px;"><h1 style="color:#fff;">Vítejte!</h1><p>Díky, že jste se připojili k VOODOO808. Brzy vám zašleme tipy pro producenty a nové beaty.</p><p><a href="{{site_url}}" style="color:#0B99FC;">Prohlédnout beaty</a></p></div>`,
+      },
+      {
+        key: "producer_tip_1",
+        name: "Tip pro producenty",
+        subject: "Tip: jak dát vašim 808kám víc šťávy",
+        html: `<div style="font-family:sans-serif;color:#eee;background:#0a0a0a;padding:32px;"><h1 style="color:#fff;">Rýchlý tip</h1><p>Zkuste vrstvit dvě 808ky s různým laděním pro plnější základ tracku.</p></div>`,
+      },
+      {
+        key: "freebie_delivery",
+        name: "Zdarma soubor — doručení",
+        subject: "Vaše soubory zdarma jsou připraveny",
+        html: `<div style="font-family:sans-serif;color:#eee;background:#0a0a0a;padding:32px;"><h1 style="color:#fff;">Díky za stáhnutí!</h1><p>Doufáme, že se vám bude líbit. Podívejte se na další beaty a zvuky na našem webu.</p><p><a href="{{site_url}}" style="color:#0B99FC;">Prozkoumat VOODOO808</a></p></div>`,
+      },
+      {
+        key: "freebie_offer",
+        name: "Zdarma → nabídka",
+        subject: "Připraveni na další krok?",
+        html: `<div style="font-family:sans-serif;color:#eee;background:#0a0a0a;padding:32px;"><h1 style="color:#fff;">Ochutnávka nestačí?</h1><p>Podívejte se na naše nejnovější beaty a sound kity — vybráno přímo pro producenty jako vy.</p><p><a href="{{site_url}}/beaty" style="color:#0B99FC;">Zobrazit beaty</a></p></div>`,
+      },
+      {
+        key: "post_purchase_thanks",
+        name: "Po nákupu — poděkování",
+        subject: "Děkujeme za nákup u VOODOO808!",
+        html: `<div style="font-family:sans-serif;color:#eee;background:#0a0a0a;padding:32px;"><h1 style="color:#fff;">Děkujeme!</h1><p>Vážíme si vaší důvěry. Pokud budete mít jakékoliv otázky k licenci nebo souboru, napište nám.</p></div>`,
+      },
+    ];
+
+    for (const t of seedTemplates) {
+      await client.query(
+        `INSERT INTO marketing_templates (key, name, subject, html_content) VALUES ($1,$2,$3,$4)
+         ON CONFLICT (key) DO NOTHING`,
+        [t.key, t.name, t.subject, t.html]
+      );
+    }
+
+    const journeySeeds = [
+      {
+        name: "Welcome sekvence",
+        description: "Obecná uvítácí sekvence pro nově přihlášené odběratele (bez konkrétního freebie).",
+        triggerType: "subscriber_created",
+        triggerValue: null as string | null,
+        steps: [
+          { type: "email", delay: 0, templateKey: "welcome_intro" },
+          { type: "wait", delay: 72 },
+          { type: "email", delay: 0, templateKey: "producer_tip_1" },
+        ],
+      },
+      {
+        name: "Free 808 Kit následná sekvence",
+        description: "Sekvence po stáhnutí zdarma souboru: doručení → tip → nabídka (přeskočí nabídku, pokud už koupil).",
+        triggerType: "freebie_downloaded",
+        triggerValue: null as string | null,
+        steps: [
+          { type: "email", delay: 0, templateKey: "freebie_delivery" },
+          { type: "wait", delay: 72 },
+          { type: "email", delay: 0, templateKey: "producer_tip_1" },
+          { type: "wait", delay: 96 },
+          { type: "condition", delay: 0, condition: "has_purchased", onTrue: "end", onFalse: "continue" },
+          { type: "email", delay: 0, templateKey: "freebie_offer" },
+        ],
+      },
+      {
+        name: "Po nákupu (draft)",
+        description: "Draft sekvence po dokončené objednávce — poděkování a následný obsah. Zůstává v draft, dokud ji admin vědomě neaktivuje.",
+        triggerType: "order_completed",
+        triggerValue: null as string | null,
+        steps: [
+          { type: "email", delay: 0, templateKey: "post_purchase_thanks" },
+        ],
+      },
+    ];
+
+    for (const j of journeySeeds) {
+      const existing = await client.query("SELECT id FROM marketing_journeys WHERE name = $1", [j.name]);
+      if (existing.rows.length > 0) continue; // already seeded on a previous boot
+
+      const journeyRes = await client.query(
+        `INSERT INTO marketing_journeys (name, description, trigger_type, trigger_value, status)
+         VALUES ($1,$2,$3,$4,'draft') RETURNING id`,
+        [j.name, j.description, j.triggerType, j.triggerValue]
+      );
+      const journeyId = journeyRes.rows[0].id;
+
+      let position = 1;
+      for (const step of j.steps as any[]) {
+        let templateId: number | null = null;
+        if (step.templateKey) {
+          const tmplRes = await client.query("SELECT id FROM marketing_templates WHERE key = $1", [step.templateKey]);
+          templateId = tmplRes.rows[0]?.id || null;
+        }
+        const configuration = step.type === "condition"
+          ? { condition: step.condition, onTrue: step.onTrue, onFalse: step.onFalse }
+          : {};
+        await client.query(
+          `INSERT INTO marketing_journey_steps (journey_id, position, step_type, delay_hours, template_id, configuration)
+           VALUES ($1,$2,$3,$4,$5,$6)`,
+          [journeyId, position, step.type, step.delay, templateId, JSON.stringify(configuration)]
+        );
+        position++;
+      }
+    }
+
     console.log("Database initialized successfully");
   } finally {
     client.release();

@@ -16,6 +16,8 @@ import leadsRoutes from "./routes/leads.js";
 import commentsRoutes from "./routes/comments.js";
 import kitArtworksRoutes from "./routes/kitArtworks.js";
 import beatFilesRoutes from "./routes/beatFiles.js";
+import marketingRoutes from "./routes/marketing.js";
+import resendWebhookRoutes from "./routes/resendWebhook.js";
 import { requireAuth, requireAdmin } from "./middleware/auth.js";
 import bcrypt from "bcryptjs";
 import { configureBucketCors, STORAGE_BUCKETS } from "./lib/storage.js";
@@ -68,6 +70,9 @@ passport.use(
           );
           user = insertRes.rows[0];
           sendWelcomeEmail(email).catch(() => {});
+          import("./lib/marketing/hooks.js").then(({ onUserSignedUp }) =>
+            onUserSignedUp({ email, userId: user.id, source: "signup_google" })
+          ).catch(() => {});
         }
 
         return done(null, user);
@@ -92,6 +97,11 @@ app.use(cors({
   origin: true,
   credentials: true,
 }));
+
+// ── Resend webhook: MUST be mounted before the global express.json() parser
+// so we can verify the Svix signature against the raw request body. ─────────
+app.use("/api/webhooks", express.raw({ type: "application/json", limit: "2mb" }), resendWebhookRoutes);
+
 app.use(express.json({ limit: '500mb' }));
 app.use(express.urlencoded({ limit: '500mb', extended: true }));
 if (isProduction) {
@@ -142,6 +152,7 @@ app.use("/kit-artworks", (_req: any, res: any, next: any) => {
 }, express.static(path.join(rootDir, "public/kit-artworks")));
 app.use("/api/kit-artworks", kitArtworksRoutes);
 app.use("/api/beat-files", beatFilesRoutes);
+app.use("/api/marketing", marketingRoutes);
 app.use("/api/saved", savedRoutes);
 app.use("/api/licenses", licensesRoutes);
 app.use("/api/admin", adminLicensesRoutes);
@@ -233,6 +244,19 @@ app.post("/payment/notify", async (req: any, res: any) => {
         }
       } catch (err) {
         console.error("[GoPay] /payment/notify exclusive-sold error:", err);
+      }
+
+      // Marketing automation hook — upsert subscriber, tag buyer, fire order_completed journeys.
+      try {
+        const { onOrderCompleted } = await import("./lib/marketing/hooks.js");
+        const orderDataRes = await pool.query("SELECT email, user_id, items, total FROM orders WHERE id = $1", [order.id]);
+        const orderData = orderDataRes.rows[0];
+        if (orderData && Number(orderData.total) > 0) {
+          const items: any[] = Array.isArray(orderData.items) ? orderData.items : [];
+          await onOrderCompleted({ orderId: order.id, email: orderData.email, userId: orderData.user_id, items });
+        }
+      } catch (err) {
+        console.error("[GoPay] /payment/notify marketing hook error:", err);
       }
     } else if (status?.state === "CANCELED" || status?.state === "TIMEOUTED" || status?.state === "REFUNDED") {
       await pool.query("UPDATE orders SET status = 'cancelled' WHERE id = $1", [order.id]);
@@ -1054,6 +1078,9 @@ async function startServer() {
 
   sendAbandonedCheckoutReminders().catch(() => {});
   setInterval(() => sendAbandonedCheckoutReminders().catch(() => {}), 60 * 60 * 1000);
+
+  const { startMarketingScheduler } = await import("./lib/marketing/scheduler.js");
+  startMarketingScheduler(2 * 60 * 1000);
 
   if (process.env.NODE_ENV !== "production") {
     const { createServer: createViteServer } = await import("vite");

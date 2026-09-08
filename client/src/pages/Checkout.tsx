@@ -27,6 +27,7 @@ function Checkout() {
 
   const [agreeVop, setAgreeVop] = useState(false);
   const [agreeDigital, setAgreeDigital] = useState(false);
+  const [agreeMarketing, setAgreeMarketing] = useState(false);
 
   const cartItems = useMemo(
     () =>
@@ -125,7 +126,9 @@ function Checkout() {
 
         const claimRes = await fetch(`/api/orders/${order.id}/claim-free`, {
           method: "POST",
+          headers: { "Content-Type": "application/json" },
           credentials: "include",
+          body: JSON.stringify({ marketingConsent: agreeMarketing }),
         });
         if (!claimRes.ok) {
           const claimData = await claimRes.json();
@@ -136,7 +139,7 @@ function Checkout() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ email, items }),
+          body: JSON.stringify({ email, items, marketingConsent: agreeMarketing }),
         });
         if (!res.ok) {
           const data = await res.json();
@@ -471,6 +474,19 @@ function Checkout() {
                 style={{ width: "100%", borderRadius: "4px" }}
               />
               <p style={s.hint}>Na tento email zašleme odkaz ke stažení okamžitě po potvrzení</p>
+            </div>
+            <div style={{ marginBottom: "20px", display: "flex", alignItems: "flex-start", gap: "8px" }}>
+              <input
+                type="checkbox"
+                id="agree-marketing-free"
+                checked={agreeMarketing}
+                onChange={(e) => setAgreeMarketing(e.target.checked)}
+                data-testid="checkbox-marketing-consent-free"
+                style={{ marginTop: "2px", cursor: "pointer" }}
+              />
+              <label htmlFor="agree-marketing-free" style={{ fontSize: "12px", color: "#888", lineHeight: 1.5, cursor: "pointer" }}>
+                Chci dostávat příležitostné e-maily s tipy pro producenty a novými beaty/zvuky od VOODOO808 (nepovinné, kdykoliv se můžete odhlásit).
+              </label>
             </div>
             <button
               type="submit"
