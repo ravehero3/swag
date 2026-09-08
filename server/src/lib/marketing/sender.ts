@@ -1,5 +1,5 @@
 import { Resend } from "resend";
-import { pool } from "../db.js";
+import { pool } from "../../db.js";
 import type { Subscriber } from "./subscribers.js";
 import { isMarketingEligible } from "./subscribers.js";
 import { createUnsubscribeToken } from "./tokens.js";
