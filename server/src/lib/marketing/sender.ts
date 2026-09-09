@@ -129,12 +129,14 @@ export async function sendTestMarketingEmail(
       { from: fromAddress, to: [toEmail], subject: `[TEST] ${subject}`, html },
       { idempotencyKey }
     );
+    const status = error ? "failed" : "sent";
+    const sentAt = error ? null : new Date();
     await pool.query(
       `INSERT INTO marketing_email_sends
          (subscriber_id, template_id, idempotency_key, email_type, subject, recipient, status, resend_email_id, sent_at, error)
-       VALUES (NULL,$1,$2,'test',$3,$4,$5,$6,CASE WHEN $5='sent' THEN CURRENT_TIMESTAMP ELSE NULL END,$7)
+       VALUES (NULL,$1,$2,'test',$3,$4,$5,$6,$7,$8)
        ON CONFLICT (idempotency_key) DO NOTHING`,
-      [templateId, idempotencyKey, subject, toEmail, error ? "failed" : "sent", data?.id || null, error ? String(error.message || error) : null]
+      [templateId, idempotencyKey, subject, toEmail, status, data?.id || null, sentAt, error ? String(error.message || error) : null]
     );
     if (error) return { ok: false, error: String(error.message || error) };
     return { ok: true };
