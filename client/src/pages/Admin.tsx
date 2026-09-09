@@ -6948,6 +6948,40 @@ function OdberateleTab() {
   const [selected, setSelected] = useState<any>(null);
   const pageSize = 50;
 
+  const [importPreview, setImportPreview] = useState<any>(null);
+  const [importLoading, setImportLoading] = useState(false);
+  const [importRunning, setImportRunning] = useState(false);
+  const [importResult, setImportResult] = useState<string | null>(null);
+
+  const loadImportPreview = () => {
+    setImportLoading(true);
+    fetch("/api/marketing/import/preview", { credentials: "include" })
+      .then(r => r.ok ? r.json() : null)
+      .then(setImportPreview)
+      .catch(() => {})
+      .finally(() => setImportLoading(false));
+  };
+
+  useEffect(() => { loadImportPreview(); }, []);
+
+  const runImport = async () => {
+    if (!confirm("Naimportovat všechny existující zákazníky, zájemce o free a registrované uživatele do marketingového systému?\n\nDůležité: žádný z těchto kontaktů nebude moci dostat marketingový e-mail, dokud explicitně nesouhlasí (nebo dokud mu nenastavíte souhlas ručně). Import pouze zpřístupní kontakty pro tagování a segmentaci.")) return;
+    setImportRunning(true);
+    setImportResult(null);
+    try {
+      const res = await fetch("/api/marketing/import/run", { method: "POST", credentials: "include" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Import selhal");
+      setImportResult(`Hotovo — zpracováno ${data.processed} kontaktů.`);
+      loadImportPreview();
+      load();
+    } catch (err: any) {
+      setImportResult(`Chyba: ${err.message}`);
+    } finally {
+      setImportRunning(false);
+    }
+  };
+
   const load = () => {
     setLoading(true);
     const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize), filter, search });
@@ -6980,6 +7014,35 @@ function OdberateleTab() {
 
   return (
     <div>
+      {importPreview && (
+        <div style={{ background: "rgba(11,153,252,0.05)", border: "1px solid rgba(11,153,252,0.25)", borderRadius: "10px", padding: "16px 18px", marginBottom: "18px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "16px", flexWrap: "wrap" }}>
+            <div>
+              <div style={{ fontSize: "13px", fontWeight: 600, color: DESIGN_SYSTEM.colors.textPrimary, marginBottom: "6px" }}>
+                Import stávajících kontaktů
+              </div>
+              <div style={{ fontSize: "12px", color: DESIGN_SYSTEM.colors.textSecondary, lineHeight: 1.6 }}>
+                {importPreview.customers} zákazníků · {importPreview.leads} zájemců o free · {importPreview.registeredUsers} registrovaných uživatelů
+                {" "}({importPreview.uniqueTotal} unikátních e-mailů, {importPreview.alreadyImported} už v systému, <strong style={{ color: DESIGN_SYSTEM.colors.textPrimary }}>{importPreview.newToImport} nových</strong>)
+              </div>
+              <div style={{ fontSize: "11px", color: "#f9a825", marginTop: "8px", maxWidth: "520px", lineHeight: 1.5 }}>
+                ⚠ Import pouze zpřístupní kontakty pro tagování a segmentaci — NEPŘIDÁ souhlas s marketingem. Nikomu nic nepřijde, dokud mu ručně nenastavíte souhlas nebo nespustíte samostatnou re-engagement kampaň.
+              </div>
+            </div>
+            <button
+              onClick={runImport}
+              disabled={importRunning || importLoading || (importPreview.newToImport === 0)}
+              className="btn btn-filled"
+              style={{ borderRadius: "4px", fontSize: "12px", whiteSpace: "nowrap" }}
+            >
+              {importRunning ? "Importuji…" : importPreview.newToImport === 0 ? "Vše importováno" : `Importovat ${importPreview.newToImport} kontaktů`}
+            </button>
+          </div>
+          {importResult && (
+            <div style={{ marginTop: "10px", fontSize: "12px", color: importResult.startsWith("Chyba") ? "#ff5252" : "#24e053" }}>{importResult}</div>
+          )}
+        </div>
+      )}
       <div style={{ display: "flex", gap: "8px", marginBottom: "16px", flexWrap: "wrap", alignItems: "center" }}>
         {FILTERS.map(f => (
           <button
@@ -7064,8 +7127,16 @@ function OdberateleTab() {
               <button onClick={() => setSelected(null)} style={{ background: "none", border: "none", color: "#555", fontSize: "20px", cursor: "pointer" }}>×</button>
             </div>
 
-            <div style={{ display: "flex", gap: "8px", marginBottom: "20px" }}>
-              {selected.subscriber.unsubscribed_at ? (
+            <div style={{ display: "flex", gap: "8px", marginBottom: "20px", flexWrap: "wrap" }}>
+              {!selected.subscriber.marketing_consent ? (
+                <button
+                  className="btn btn-filled"
+                  style={{ borderRadius: "4px", fontSize: "12px" }}
+                  onClick={async () => { if (!confirm("Nastavit souhlas s marketingem pro tohoto odběratele ručně? Používejte pouze pokud jste s ním souhlas skutečně získali (např. telefonicky, písemně).")) return; await fetch(`/api/marketing/subscribers/${selected.subscriber.id}/resubscribe`, { method: "POST", credentials: "include" }); openDetail(selected.subscriber.id); load(); }}
+                >
+                  Nastavit souhlas s marketingem
+                </button>
+              ) : selected.subscriber.unsubscribed_at ? (
                 <button
                   className="btn"
                   style={{ borderRadius: "4px", fontSize: "12px", borderColor: "#24e053", color: "#24e053" }}
@@ -7123,6 +7194,21 @@ function JourneysTab() {
   const [journeys, setJourneys] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [detail, setDetail] = useState<any>(null);
+  const [testEmail, setTestEmail] = useState(() => localStorage.getItem("voodoo808_marketing_test_email") || "");
+  const [testSendingStepId, setTestSendingStepId] = useState<number | null>(null);
+  const [testResult, setTestResult] = useState<string | null>(null);
+  const [previewStepId, setPreviewStepId] = useState<number | null>(null);
+  const [templates, setTemplates] = useState<any[]>([]);
+  const [showStepForm, setShowStepForm] = useState(false);
+  const [editingStep, setEditingStep] = useState<any>(null);
+  const [stepForm, setStepForm] = useState<any>({ stepType: "email", delayHours: 0, templateId: "", condition: "has_purchased", conditionTag: "", onTrue: "end", onFalse: "continue" });
+
+  useEffect(() => {
+    fetch("/api/marketing/templates", { credentials: "include" })
+      .then(r => r.ok ? r.json() : [])
+      .then(setTemplates)
+      .catch(() => {});
+  }, []);
 
   const load = () => {
     setLoading(true);
@@ -7152,10 +7238,92 @@ function JourneysTab() {
     if (detail?.journey?.id === id) openDetail(id);
   };
 
+  const handleSendTest = async (stepId: number) => {
+    if (!testEmail || !testEmail.includes("@")) { alert("Zadejte platnou e-mailovou adresu."); return; }
+    localStorage.setItem("voodoo808_marketing_test_email", testEmail);
+    setTestSendingStepId(stepId);
+    setTestResult(null);
+    try {
+      const res = await fetch(`/api/marketing/journeys/${detail.journey.id}/steps/${stepId}/send-test`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email: testEmail }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Odeslání selhalo");
+      setTestResult(`Testovací e-mail odeslán na ${testEmail}.`);
+    } catch (err: any) {
+      setTestResult(`Chyba: ${err.message}`);
+    } finally {
+      setTestSendingStepId(null);
+    }
+  };
+
+  const openStepForm = (step?: any) => {
+    if (step) {
+      setEditingStep(step);
+      setStepForm({
+        stepType: step.step_type,
+        delayHours: step.delay_hours,
+        templateId: step.template_id || "",
+        condition: step.configuration?.condition || "has_purchased",
+        conditionTag: step.configuration?.tag || "",
+        onTrue: step.configuration?.onTrue || "end",
+        onFalse: step.configuration?.onFalse || "continue",
+      });
+    } else {
+      setEditingStep(null);
+      setStepForm({ stepType: "email", delayHours: 0, templateId: "", condition: "has_purchased", conditionTag: "", onTrue: "end", onFalse: "continue" });
+    }
+    setShowStepForm(true);
+  };
+
+  const saveStep = async () => {
+    const configuration = stepForm.stepType === "condition"
+      ? { condition: stepForm.condition, tag: stepForm.conditionTag || undefined, onTrue: stepForm.onTrue, onFalse: stepForm.onFalse }
+      : stepForm.stepType === "tag_add" || stepForm.stepType === "tag_remove"
+      ? { tag: stepForm.conditionTag }
+      : {};
+    const body = {
+      stepType: stepForm.stepType,
+      delayHours: Number(stepForm.delayHours) || 0,
+      templateId: stepForm.stepType === "email" ? (stepForm.templateId || null) : null,
+      configuration,
+    };
+    if (editingStep) {
+      await fetch(`/api/marketing/journeys/${detail.journey.id}/steps/${editingStep.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(body),
+      });
+    } else {
+      await fetch(`/api/marketing/journeys/${detail.journey.id}/steps`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(body),
+      });
+    }
+    setShowStepForm(false);
+    setEditingStep(null);
+    openDetail(detail.journey.id);
+    load();
+  };
+
+  const deleteStep = async (stepId: number) => {
+    if (!confirm("Smazat tento krok? Pokud už někteří odběratelé tento krok právě provádějí, jejich journey může skončit s chybou.")) return;
+    await fetch(`/api/marketing/journeys/${detail.journey.id}/steps/${stepId}`, { method: "DELETE", credentials: "include" });
+    openDetail(detail.journey.id);
+    load();
+  };
+
   const cellStyle: any = { padding: "10px", borderBottom: "1px solid #1e1e1e", verticalAlign: "middle" };
 
   const STATUS_COLORS: Record<string, string> = { active: "#24e053", paused: "#f9a825", draft: "#555" };
   const STEP_TYPE_LABELS: Record<string, string> = { email: "E-mail", wait: "Čekat", condition: "Podmínka", tag_add: "Přidat tag", tag_remove: "Odebrat tag", end: "Konec" };
+  const stepInputStyle: React.CSSProperties = { width: "100%", padding: "7px 10px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "4px", color: "#eee", fontSize: "12px", boxSizing: "border-box" };
 
   return (
     <div>
@@ -7208,7 +7376,7 @@ function JourneysTab() {
           style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 10000, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
           onClick={(e) => { if (e.target === e.currentTarget) setDetail(null); }}
         >
-          <div style={{ background: "#0a0a0a", border: "1px solid #222", borderRadius: "8px", width: "min(560px, 96vw)", maxHeight: "88vh", overflowY: "auto", padding: "24px" }}>
+          <div style={{ background: "#0a0a0a", border: "1px solid #222", borderRadius: "8px", width: "min(600px, 96vw)", maxHeight: "88vh", overflowY: "auto", padding: "24px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px" }}>
               <div>
                 <div style={{ fontSize: "16px", fontWeight: 600, color: "#eee" }}>{detail.journey.name}</div>
@@ -7216,24 +7384,173 @@ function JourneysTab() {
               </div>
               <button onClick={() => setDetail(null)} style={{ background: "none", border: "none", color: "#555", fontSize: "20px", cursor: "pointer" }}>×</button>
             </div>
-            <div style={{ fontSize: "11px", color: "#555", textTransform: "uppercase", marginBottom: "10px" }}>Kroky ({detail.steps.length})</div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px", padding: "10px 12px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "8px" }}>
+              <span style={{ fontSize: "11px", color: "#888", whiteSpace: "nowrap" }}>Testovací e-mail:</span>
+              <input
+                value={testEmail}
+                onChange={e => setTestEmail(e.target.value)}
+                placeholder="vase@e-mailova-adresa.cz"
+                style={{ flex: 1, padding: "7px 10px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "4px", color: "#eee", fontSize: "12px", boxSizing: "border-box" }}
+              />
+            </div>
+            {testResult && (
+              <div style={{ fontSize: "12px", color: testResult.startsWith("Chyba") ? "#ff5252" : "#24e053", marginBottom: "12px" }}>{testResult}</div>
+            )}
+
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+              <div style={{ fontSize: "11px", color: "#555", textTransform: "uppercase" }}>Kroky ({detail.steps.length})</div>
+              <button className="btn btn-filled" onClick={() => openStepForm()} style={{ borderRadius: "4px", fontSize: "11px", padding: "4px 10px" }}>+ Nový krok</button>
+            </div>
             {detail.steps.length === 0 ? (
-              <div style={{ fontSize: "13px", color: "#444" }}>Tato journey zatím nemá žádné kroky.</div>
+              <div style={{ fontSize: "13px", color: "#444" }}>Tato journey zatím nemá žádné kroky. Klikněte na „+ Nový krok“ výše.</div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                {detail.steps.map((s: any, idx: number) => (
+                {detail.steps.map((s: any, idx: number) => {
+                  const tpl = templates.find(t => t.id === s.template_id);
+                  return (
                   <div key={s.id} style={{ padding: "10px 12px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "8px", fontSize: "12px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <span style={{ color: "#eee", fontWeight: 500 }}>{idx + 1}. {STEP_TYPE_LABELS[s.step_type] || s.step_type}</span>
-                      {s.delay_hours > 0 && <span style={{ color: "#555" }}>za {s.delay_hours}h</span>}
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        {s.delay_hours > 0 && <span style={{ color: "#555" }}>za {s.delay_hours}h</span>}
+                        <button onClick={() => openStepForm(s)} style={{ background: "none", border: "none", color: "#666", fontSize: "11px", cursor: "pointer", padding: "2px 4px" }}>Upravit</button>
+                        <button onClick={() => deleteStep(s.id)} style={{ background: "none", border: "none", color: "#ff5252", fontSize: "11px", cursor: "pointer", padding: "2px 4px" }}>Smazat</button>
+                      </div>
                     </div>
                     {s.step_type === "condition" && s.configuration?.condition && (
-                      <div style={{ color: "#888", marginTop: "4px" }}>Podmínka: {s.configuration.condition} {s.configuration.tag ? `(${s.configuration.tag})` : ""}</div>
+                      <div style={{ color: "#888", marginTop: "4px" }}>Podmínka: {s.configuration.condition} {s.configuration.tag ? `(${s.configuration.tag})` : ""} → pokud ANO: {s.configuration.onTrue === "end" ? "konec" : "pokračovat"}, pokud NE: {s.configuration.onFalse === "end" ? "konec" : "pokračovat"}</div>
+                    )}
+                    {(s.step_type === "tag_add" || s.step_type === "tag_remove") && s.configuration?.tag && (
+                      <div style={{ color: "#888", marginTop: "4px" }}>Tag: {s.configuration.tag}</div>
+                    )}
+                    {s.step_type === "email" && (
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "8px" }}>
+                        <span style={{ color: s.template_id ? "#888" : "#ff5252", fontSize: "11px" }}>
+                          {s.template_id ? (tpl ? tpl.name : `Šablona #${s.template_id}`) : "⚠ Žádná šablona přiřazena"}
+                        </span>
+                        {s.template_id && (
+                          <div style={{ display: "flex", gap: "6px" }}>
+                            <button className="btn" onClick={() => setPreviewStepId(s.id)} style={{ borderRadius: "4px", fontSize: "10px", padding: "3px 8px", borderColor: "#444" }}>Náhled</button>
+                            <button
+                              className="btn"
+                              onClick={() => handleSendTest(s.id)}
+                              disabled={testSendingStepId === s.id}
+                              style={{ borderRadius: "4px", fontSize: "10px", padding: "3px 8px", borderColor: "#0B99FC", color: "#0B99FC" }}
+                            >
+                              {testSendingStepId === s.id ? "Odesílám…" : "Odeslat test"}
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {previewStepId && (
+        <div
+          onClick={() => setPreviewStepId(null)}
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.9)", zIndex: 10001, display: "flex", flexDirection: "column", alignItems: "center", overflowY: "auto", padding: "24px 16px 48px" }}
+        >
+          <div onClick={(e) => e.stopPropagation()} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", maxWidth: "640px", marginBottom: "16px", flexShrink: 0 }}>
+            <span style={{ fontWeight: 600, color: "#ddd", fontSize: "13px" }}>Náhled e-mailu kroku</span>
+            <button onClick={() => setPreviewStepId(null)} style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "4px", fontSize: "13px", cursor: "pointer", color: "#eee", padding: "4px 12px" }}>Zavřít ×</button>
+          </div>
+          <div onClick={(e) => e.stopPropagation()} style={{ width: "640px", maxWidth: "100%", background: "#0a0a0a", borderRadius: "4px", overflow: "hidden", border: "1px solid #222" }}>
+            <iframe src={`/api/marketing/journeys/${detail.journey.id}/steps/${previewStepId}/preview`} style={{ width: "100%", height: "700px", border: "none", display: "block" }} title="Náhled e-mailu" />
+          </div>
+        </div>
+      )}
+
+      {showStepForm && (
+        <div
+          onClick={() => { setShowStepForm(false); setEditingStep(null); }}
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 10002, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
+        >
+          <div onClick={(e) => e.stopPropagation()} style={{ background: "#0a0a0a", border: "1px solid #222", borderRadius: "8px", width: "min(420px, 96vw)", padding: "22px" }}>
+            <div style={{ fontSize: "15px", fontWeight: 600, color: "#eee", marginBottom: "16px" }}>{editingStep ? "Upravit krok" : "Nový krok"}</div>
+
+            <div style={{ marginBottom: "12px" }}>
+              <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "6px" }}>Typ kroku</label>
+              <select value={stepForm.stepType} onChange={e => setStepForm({ ...stepForm, stepType: e.target.value })} style={stepInputStyle}>
+                <option value="email">E-mail</option>
+                <option value="wait">Čekat</option>
+                <option value="condition">Podmínka</option>
+                <option value="tag_add">Přidat tag</option>
+                <option value="tag_remove">Odebrat tag</option>
+                <option value="end">Konec</option>
+              </select>
+            </div>
+
+            <div style={{ marginBottom: "12px" }}>
+              <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "6px" }}>Zpoždění před tímto krokem (hodiny)</label>
+              <input type="number" min={0} value={stepForm.delayHours} onChange={e => setStepForm({ ...stepForm, delayHours: e.target.value })} style={stepInputStyle} placeholder="0 = okamžitě" />
+              <div style={{ fontSize: "10px", color: "#555", marginTop: "4px" }}>0 = okamžitě, 24 = po 1 dni, 72 = po 3 dnech, 168 = po 1 týdnu</div>
+            </div>
+
+            {stepForm.stepType === "email" && (
+              <div style={{ marginBottom: "12px" }}>
+                <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "6px" }}>Šablona</label>
+                <select value={stepForm.templateId} onChange={e => setStepForm({ ...stepForm, templateId: e.target.value ? Number(e.target.value) : "" })} style={stepInputStyle}>
+                  <option value="">Vyberte šablonu…</option>
+                  {templates.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                </select>
+              </div>
+            )}
+
+            {stepForm.stepType === "condition" && (
+              <>
+                <div style={{ marginBottom: "12px" }}>
+                  <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "6px" }}>Podmínka</label>
+                  <select value={stepForm.condition} onChange={e => setStepForm({ ...stepForm, condition: e.target.value })} style={stepInputStyle}>
+                    <option value="has_purchased">Už něco koupil</option>
+                    <option value="has_tag">Má tag</option>
+                    <option value="not_has_tag">Nemá tag</option>
+                    <option value="has_freebie">Stáhl freebie</option>
+                  </select>
+                </div>
+                {(stepForm.condition === "has_tag" || stepForm.condition === "not_has_tag") && (
+                  <div style={{ marginBottom: "12px" }}>
+                    <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "6px" }}>Název tagu</label>
+                    <input value={stepForm.conditionTag} onChange={e => setStepForm({ ...stepForm, conditionTag: e.target.value })} style={stepInputStyle} placeholder="např. buyer" />
+                  </div>
+                )}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginBottom: "12px" }}>
+                  <div>
+                    <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "6px" }}>Pokud ANO</label>
+                    <select value={stepForm.onTrue} onChange={e => setStepForm({ ...stepForm, onTrue: e.target.value })} style={stepInputStyle}>
+                      <option value="end">Konec journey</option>
+                      <option value="continue">Pokračovat</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "6px" }}>Pokud NE</label>
+                    <select value={stepForm.onFalse} onChange={e => setStepForm({ ...stepForm, onFalse: e.target.value })} style={stepInputStyle}>
+                      <option value="end">Konec journey</option>
+                      <option value="continue">Pokračovat</option>
+                    </select>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {(stepForm.stepType === "tag_add" || stepForm.stepType === "tag_remove") && (
+              <div style={{ marginBottom: "12px" }}>
+                <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "6px" }}>Název tagu</label>
+                <input value={stepForm.conditionTag} onChange={e => setStepForm({ ...stepForm, conditionTag: e.target.value })} style={stepInputStyle} placeholder="např. buyer" />
+              </div>
+            )}
+
+            <div style={{ display: "flex", gap: "8px", marginTop: "18px" }}>
+              <button onClick={saveStep} className="btn btn-filled" style={{ borderRadius: "4px", fontSize: "12px" }}>Uložit krok</button>
+              <button onClick={() => { setShowStepForm(false); setEditingStep(null); }} className="btn" style={{ borderRadius: "4px", fontSize: "12px", borderColor: "#444" }}>Zrušit</button>
+            </div>
           </div>
         </div>
       )}
@@ -7377,6 +7694,11 @@ function SablonyTab() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<any>(null);
   const [showForm, setShowForm] = useState(false);
+  const [previewTemplate, setPreviewTemplate] = useState<any>(null);
+  const [previewWidth, setPreviewWidth] = useState<"desktop" | "mobile">("desktop");
+  const [testEmail, setTestEmail] = useState(() => localStorage.getItem("voodoo808_marketing_test_email") || "");
+  const [testSendingId, setTestSendingId] = useState<number | null>(null);
+  const [testResult, setTestResult] = useState<string | null>(null);
 
   const load = () => {
     setLoading(true);
@@ -7425,17 +7747,53 @@ function SablonyTab() {
     load();
   };
 
+  const handleSendTest = async (templateId: number) => {
+    if (!testEmail || !testEmail.includes("@")) { alert("Zadejte platnou e-mailovou adresu."); return; }
+    localStorage.setItem("voodoo808_marketing_test_email", testEmail);
+    setTestSendingId(templateId);
+    setTestResult(null);
+    try {
+      const res = await fetch(`/api/marketing/templates/${templateId}/send-test`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email: testEmail }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Odeslání selhalo");
+      setTestResult(`Testovací e-mail odeslán na ${testEmail}.`);
+    } catch (err: any) {
+      setTestResult(`Chyba: ${err.message}`);
+    } finally {
+      setTestSendingId(null);
+    }
+  };
+
   const cellStyle: any = { padding: "10px", borderBottom: "1px solid #1e1e1e", verticalAlign: "middle" };
   const inputStyle: React.CSSProperties = { width: "100%", padding: "8px 10px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "4px", color: "#eee", fontSize: "13px", boxSizing: "border-box" };
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
         <p style={{ color: "#555", fontSize: "12px", margin: 0 }}>
           E-mailové šablony pro journeys a kampaně. Použijte proměnné {"{{first_name}}"}, {"{{email}}"}, {"{{unsubscribe_url}}"}, {"{{site_url}}"}.
         </p>
         <button className="btn btn-filled" onClick={startNew} style={{ borderRadius: "4px", fontSize: "12px" }}>+ Nová šablona</button>
       </div>
+
+      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px", padding: "10px 12px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "8px" }}>
+        <span style={{ fontSize: "11px", color: "#888", whiteSpace: "nowrap" }}>Testovací e-mail:</span>
+        <input
+          value={testEmail}
+          onChange={e => setTestEmail(e.target.value)}
+          placeholder="vase@e-mailova-adresa.cz"
+          style={{ ...inputStyle, maxWidth: "280px" }}
+        />
+        <span style={{ fontSize: "11px", color: "#444" }}>Použito u tlačítka „Odeslat test“ u každé šablony níže.</span>
+      </div>
+      {testResult && (
+        <div style={{ fontSize: "12px", color: testResult.startsWith("Chyba") ? "#ff5252" : "#24e053", marginBottom: "12px" }}>{testResult}</div>
+      )}
 
       {showForm && editing && (
         <form onSubmit={handleSave} style={{ marginBottom: "20px", padding: "16px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -7445,6 +7803,9 @@ function SablonyTab() {
           <textarea required value={editing.html_content} onChange={e => setEditing({ ...editing, html_content: e.target.value })} placeholder="HTML obsah e-mailu…" style={{ ...inputStyle, minHeight: "160px", fontFamily: "monospace", fontSize: "12px" }} />
           <div style={{ display: "flex", gap: "8px" }}>
             <button type="submit" className="btn btn-filled" style={{ borderRadius: "4px", fontSize: "12px" }}>Uložit</button>
+            {editing.html_content && (
+              <button type="button" className="btn" onClick={() => setPreviewTemplate(editing)} style={{ borderRadius: "4px", fontSize: "12px", borderColor: "#444" }}>Náhled</button>
+            )}
             <button type="button" className="btn" onClick={() => { setShowForm(false); setEditing(null); }} style={{ borderRadius: "4px", fontSize: "12px", borderColor: "#444" }}>Zrušit</button>
           </div>
         </form>
@@ -7469,6 +7830,15 @@ function SablonyTab() {
                 <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textPrimary, fontWeight: 500 }}>{t.name}</td>
                 <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "12px" }}>{t.subject}</td>
                 <td style={{ ...cellStyle, textAlign: "right", display: "flex", gap: "6px", justifyContent: "flex-end" }}>
+                  <button className="btn" onClick={() => setPreviewTemplate(t)} style={{ borderRadius: "4px", fontSize: "11px", borderColor: "#444" }}>Náhled</button>
+                  <button
+                    className="btn"
+                    onClick={() => handleSendTest(t.id)}
+                    disabled={testSendingId === t.id}
+                    style={{ borderRadius: "4px", fontSize: "11px", borderColor: "#0B99FC", color: "#0B99FC" }}
+                  >
+                    {testSendingId === t.id ? "Odesílám…" : "Odeslat test"}
+                  </button>
                   <button className="btn" onClick={() => startEdit(t)} style={{ borderRadius: "4px", fontSize: "11px", borderColor: "#444" }}>Upravit</button>
                   <button className="btn" onClick={() => handleDelete(t.id)} style={{ borderRadius: "4px", fontSize: "11px", borderColor: "#ff5252", color: "#ff5252" }}>Smazat</button>
                 </td>
@@ -7476,6 +7846,41 @@ function SablonyTab() {
             ))}
           </tbody>
         </table>
+      )}
+
+      {previewTemplate && (
+        <div
+          onClick={() => setPreviewTemplate(null)}
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)", zIndex: DESIGN_SYSTEM.zIndex.modal, display: "flex", flexDirection: "column", alignItems: "center", overflowY: "auto", padding: "24px 16px 48px" }}
+        >
+          <div onClick={(e) => e.stopPropagation()} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", maxWidth: "640px", marginBottom: "16px", flexShrink: 0 }}>
+            <span style={{ fontWeight: 600, color: "#ddd", fontSize: "13px", letterSpacing: "0.04em" }}>Náhled — {previewTemplate.name}</span>
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <div style={{ display: "flex", background: "rgba(255,255,255,0.06)", borderRadius: "6px", padding: "2px" }}>
+                <button
+                  onClick={() => setPreviewWidth("desktop")}
+                  style={{ padding: "4px 10px", fontSize: "11px", border: "none", borderRadius: "4px", cursor: "pointer", background: previewWidth === "desktop" ? "rgba(255,255,255,0.12)" : "transparent", color: previewWidth === "desktop" ? "#eee" : "#666" }}
+                >
+                  Desktop
+                </button>
+                <button
+                  onClick={() => setPreviewWidth("mobile")}
+                  style={{ padding: "4px 10px", fontSize: "11px", border: "none", borderRadius: "4px", cursor: "pointer", background: previewWidth === "mobile" ? "rgba(255,255,255,0.12)" : "transparent", color: previewWidth === "mobile" ? "#eee" : "#666" }}
+                >
+                  Mobil
+                </button>
+              </div>
+              <button onClick={() => setPreviewTemplate(null)} style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "4px", fontSize: "13px", cursor: "pointer", color: DESIGN_SYSTEM.colors.textPrimary, padding: "4px 12px" }}>Zavřít ×</button>
+            </div>
+          </div>
+          <div onClick={(e) => e.stopPropagation()} style={{ width: previewWidth === "mobile" ? "390px" : "640px", maxWidth: "100%", background: DESIGN_SYSTEM.colors.elevated, borderRadius: "4px", overflow: "hidden", border: "1px solid #222", transition: "width 0.2s" }}>
+            {previewTemplate.id ? (
+              <iframe src={`/api/marketing/templates/${previewTemplate.id}/preview`} style={{ width: "100%", height: "700px", border: "none", display: "block" }} title="Náhled e-mailu" />
+            ) : (
+              <iframe srcDoc={previewTemplate.html_content} style={{ width: "100%", height: "700px", border: "none", display: "block" }} title="Náhled e-mailu" />
+            )}
+          </div>
+        </div>
       )}
     </div>
   );

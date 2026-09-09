@@ -47,6 +47,34 @@ function fillVariables(text: string, vars: Record<string, string>): string {
   });
 }
 
+function appendFooter(html: string, unsubscribeUrl: string): string {
+  const footer = `
+    <table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:24px auto 0;">
+      <tr><td style="padding:24px 0 0;border-top:1px solid #222;text-align:center;">
+        <p style="margin:0;font-size:11px;color:#555;line-height:1.7;">
+          VOODOO808 &bull; Vojtěch Vojkovský<br/>
+          <a href="${unsubscribeUrl}" style="color:#666;text-decoration:underline;">Odhlásit se z marketingových e-mailů</a>
+        </p>
+      </td></tr>
+    </table>`;
+  // If the template already has a </body>, inject before it; otherwise append.
+  if (/<\/body>/i.test(html)) {
+    return html.replace(/<\/body>/i, `${footer}</body>`);
+  }
+  return html + footer;
+}
+
+function buildPreviewVars(overrides?: Record<string, string>): Record<string, string> {
+  const appUrl = getAppUrl();
+  return {
+    first_name: "Petr",
+    email: "petr@example.com",
+    unsubscribe_url: `${appUrl}/odhlasit-marketing?token=NAHLED`,
+    site_url: appUrl,
+    ...overrides,
+  };
+}
+
 interface SendMarketingEmailInput {
   subscriber: Subscriber;
   templateId: number;
@@ -64,6 +92,56 @@ interface MarketingTemplate {
   preheader: string | null;
   html_content: string;
   text_content: string | null;
+}
+
+/** Render a template's subject + HTML with sample variables, for admin preview. Never sends anything. */
+export function renderTemplatePreview(template: { subject: string; html_content: string }): { subject: string; html: string } {
+  const vars = buildPreviewVars();
+  const subject = fillVariables(template.subject, vars);
+  const html = appendFooter(fillVariables(template.html_content, vars), vars.unsubscribe_url);
+  return { subject, html };
+}
+
+/**
+ * Send a real test email to an admin-specified address, completely bypassing
+ * subscriber eligibility and the test-mode recipient redirect — this IS the
+ * test send. Logged with email_type='test' and subscriber_id=NULL so it
+ * never pollutes real subscriber history or analytics.
+ */
+export async function sendTestMarketingEmail(
+  templateId: number,
+  toEmail: string
+): Promise<{ ok: boolean; error?: string }> {
+  const apiKey = process.env.RESEND_API_KEY || process.env.RESEND_API;
+  if (!apiKey) return { ok: false, error: "RESEND_API_KEY není nastaven" };
+
+  const templateRes = await pool.query<MarketingTemplate>("SELECT * FROM marketing_templates WHERE id = $1", [templateId]);
+  const template = templateRes.rows[0];
+  if (!template) return { ok: false, error: "Šablona nenalezena" };
+
+  const { subject, html } = renderTemplatePreview(template);
+  const fromAddress = process.env.RESEND_FROM || "VOODOO808 <info@voodoo808.com>";
+  const resend = new Resend(apiKey);
+  const idempotencyKey = `test/${templateId}/${toEmail}/${Date.now()}`;
+
+  try {
+    const { data, error } = await resend.emails.send(
+      { from: fromAddress, to: [toEmail], subject: `[TEST] ${subject}`, html },
+      { idempotencyKey }
+    );
+    await pool.query(
+      `INSERT INTO marketing_email_sends
+         (subscriber_id, template_id, idempotency_key, email_type, subject, recipient, status, resend_email_id, sent_at, error)
+       VALUES (NULL,$1,$2,'test',$3,$4,$5,$6,CASE WHEN $5='sent' THEN CURRENT_TIMESTAMP ELSE NULL END,$7)
+       ON CONFLICT (idempotency_key) DO NOTHING`,
+      [templateId, idempotencyKey, subject, toEmail, error ? "failed" : "sent", data?.id || null, error ? String(error.message || error) : null]
+    );
+    if (error) return { ok: false, error: String(error.message || error) };
+    return { ok: true };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return { ok: false, error: msg };
+  }
 }
 
 export async function sendMarketingEmail(input: SendMarketingEmailInput): Promise<{ skipped: boolean; reason?: string }> {
@@ -130,9 +208,9 @@ export async function sendMarketingEmail(input: SendMarketingEmailInput): Promis
   }
 
   // Insert the send record as "queued" BEFORE calling Resend. On conflict
-  // (retry with the same idempotency key) just return the existing row's id
-  // — we already checked above whether it was a terminal success, so
-  // reaching here means it's safe to retry (e.g. previous attempt failed).
+  // (retry with the same idempotency key) just reset status — we already
+  // checked above whether it was a terminal success, so reaching here means
+  // it's safe to retry (e.g. previous attempt failed).
   const insertRes = await pool.query(
     `INSERT INTO marketing_email_sends
        (subscriber_id, journey_id, journey_step_id, enrollment_id, campaign_id, template_id,
@@ -210,21 +288,4 @@ async function recordSkippedSend(input: SendMarketingEmailInput, recipient: stri
   } catch (err) {
     console.error("[Marketing] Failed to record skipped send:", err);
   }
-}
-
-function appendFooter(html: string, unsubscribeUrl: string): string {
-  const footer = `
-    <table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:24px auto 0;">
-      <tr><td style="padding:24px 0 0;border-top:1px solid #222;text-align:center;">
-        <p style="margin:0;font-size:11px;color:#555;line-height:1.7;">
-          VOODOO808 &bull; Vojtěch Vojkovský<br/>
-          <a href="${unsubscribeUrl}" style="color:#666;text-decoration:underline;">Odhlásit se z marketingových e-mailů</a>
-        </p>
-      </td></tr>
-    </table>`;
-  // If the template already has a </body>, inject before it; otherwise append.
-  if (/<\/body>/i.test(html)) {
-    return html.replace(/<\/body>/i, `${footer}</body>`);
-  }
-  return html + footer;
 }

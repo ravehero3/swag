@@ -232,6 +232,111 @@ router.get("/tags", requireAdmin, async (_req: Request, res: Response) => {
   }
 });
 
+// ── Admin: import existing contacts (Zákazníci tab → Odběratelé) ─────────────
+//
+// Pulls from the 3 existing customer sources — paid orders, free-download
+// leads, and registered users — and upserts each into `subscribers`.
+// CRITICAL: marketing_consent is ALWAYS left FALSE for imported contacts.
+// These people never explicitly opted into marketing email; importing them
+// only makes them visible/taggable in the marketing system (source tracking,
+// segmentation, manual re-engagement campaign later) — it does NOT make them
+// eligible to receive journey/campaign email. An admin must run a deliberate,
+// separate re-engagement opt-in flow before any of these receive marketing
+// email (per spec §53 — never auto-enroll historical contacts).
+router.get("/import/preview", requireAdmin, async (_req: Request, res: Response) => {
+  try {
+    const [customers, leads, users] = await Promise.all([
+      pool.query(
+        `SELECT DISTINCT ON (email) email FROM orders WHERE status IN ('completed','paid') AND total > 0`
+      ),
+      pool.query(`SELECT DISTINCT ON (email) email FROM leads`),
+      pool.query(`SELECT DISTINCT ON (email) email FROM users`),
+    ]);
+    const allEmails = new Set<string>();
+    for (const r of [...customers.rows, ...leads.rows, ...users.rows]) {
+      if (r.email) allEmails.add(String(r.email).trim().toLowerCase());
+    }
+    const existingRes = await pool.query("SELECT email_normalized FROM subscribers WHERE email_normalized = ANY($1::text[])", [Array.from(allEmails)]);
+    const alreadyImported = new Set(existingRes.rows.map((r: any) => r.email_normalized));
+    res.json({
+      customers: customers.rows.length,
+      leads: leads.rows.length,
+      registeredUsers: users.rows.length,
+      uniqueTotal: allEmails.size,
+      alreadyImported: alreadyImported.size,
+      newToImport: allEmails.size - alreadyImported.size,
+    });
+  } catch (error) {
+    console.error("Import preview error:", error);
+    res.status(500).json({ error: "Chyba při počítání kontaktů" });
+  }
+});
+
+router.post("/import/run", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { addTagToSubscriber, markBuyer } = await import("../lib/marketing/subscribers.js");
+
+    // 1) Paying customers
+    const customers = await pool.query(
+      `SELECT DISTINCT ON (email) email, user_id FROM orders WHERE status IN ('completed','paid') AND total > 0 ORDER BY email, created_at DESC`
+    );
+    let imported = 0;
+    for (const row of customers.rows) {
+      if (!row.email) continue;
+      const sub = await upsertSubscriberSafe(row.email, row.user_id, "import_customer");
+      if (sub) {
+        await markBuyer(sub.id);
+        await addTagToSubscriber(sub.id, "buyer");
+        await addTagToSubscriber(sub.id, "imported");
+        imported++;
+      }
+    }
+
+    // 2) Free-download leads (zájemci o free)
+    const leads = await pool.query(`SELECT DISTINCT ON (email) email, user_id FROM leads ORDER BY email, created_at DESC`);
+    for (const row of leads.rows) {
+      if (!row.email) continue;
+      const sub = await upsertSubscriberSafe(row.email, row.user_id, "import_lead");
+      if (sub) {
+        await addTagToSubscriber(sub.id, "freebie");
+        await addTagToSubscriber(sub.id, "imported");
+        imported++;
+      }
+    }
+
+    // 3) Registered users (registrovaní uživatelé)
+    const users = await pool.query(`SELECT id, email FROM users`);
+    for (const row of users.rows) {
+      if (!row.email) continue;
+      const sub = await upsertSubscriberSafe(row.email, row.id, "import_registered");
+      if (sub) {
+        await addTagToSubscriber(sub.id, "registered");
+        await addTagToSubscriber(sub.id, "imported");
+        imported++;
+      }
+    }
+
+    await logMarketingAction("subscribers.imported", req.session.userId || null, undefined, { imported });
+    res.json({ success: true, processed: imported });
+  } catch (error) {
+    console.error("Import run error:", error);
+    res.status(500).json({ error: "Chyba při importu kontaktů" });
+  }
+});
+
+async function upsertSubscriberSafe(email: string, userId: number | null, source: string) {
+  try {
+    const { upsertSubscriber } = await import("../lib/marketing/subscribers.js");
+    // marketingConsent intentionally omitted/undefined — upsertSubscriber never
+    // sets consent unless explicitly passed true, and defaults to FALSE on
+    // first insert. Imported contacts are NEVER marketing-eligible by default.
+    return await upsertSubscriber({ email, userId, source });
+  } catch (err) {
+    console.error(`[Marketing] import upsert failed for ${email}:`, err);
+    return null;
+  }
+}
+
 // ── Admin: templates ─────────────────────────────────────────────────────────
 
 router.get("/templates", requireAdmin, async (_req: Request, res: Response) => {
@@ -292,6 +397,42 @@ router.delete("/templates/:id", requireAdmin, async (req: Request, res: Response
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: "Chyba při mazání šablony" });
+  }
+});
+
+// Render a template with sample data for the admin preview iframe. Never sends anything.
+router.get("/templates/:id/preview", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const result = await pool.query("SELECT subject, html_content FROM marketing_templates WHERE id = $1", [req.params.id]);
+    if (result.rows.length === 0) return res.status(404).send("<p style='padding:40px;color:#666;font-family:sans-serif'>Šablona nenalezena.</p>");
+    const { renderTemplatePreview } = await import("../lib/marketing/sender.js");
+    const { html } = renderTemplatePreview(result.rows[0]);
+    res.setHeader("Content-Type", "text/html");
+    res.send(html);
+  } catch (error) {
+    res.status(500).send("<p style='padding:40px;color:#666;font-family:sans-serif'>Chyba při generování náhledu.</p>");
+  }
+});
+
+// Send a real test email for this template to an admin-specified address.
+// Bypasses subscriber eligibility/test-mode redirect entirely — this call IS
+// the test. Rate-limited lightly since it costs a real Resend send.
+const testSendLimiter = rateLimit({ windowMs: 60_000, max: 10, keyPrefix: "marketing_test_send" });
+router.post("/templates/:id/send-test", requireAdmin, testSendLimiter, async (req: Request, res: Response) => {
+  try {
+    const templateId = parseInt(req.params.id, 10);
+    const toEmail = String(req.body.email || "").trim();
+    if (!toEmail || !toEmail.includes("@")) {
+      return res.status(400).json({ error: "Zadejte platnou e-mailovou adresu pro test." });
+    }
+    const { sendTestMarketingEmail } = await import("../lib/marketing/sender.js");
+    const result = await sendTestMarketingEmail(templateId, toEmail);
+    if (!result.ok) return res.status(500).json({ error: result.error || "Odeslání testovacího e-mailu selhalo" });
+    await logMarketingAction("template.test_sent", req.session.userId || null, { type: "template", id: templateId }, { to: toEmail });
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Template test send error:", error);
+    res.status(500).json({ error: "Chyba při odesílání testovacího e-mailu" });
   }
 });
 
@@ -455,6 +596,46 @@ router.delete("/journeys/:id/steps/:stepId", requireAdmin, async (req: Request, 
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: "Chyba při mazání kroku" });
+  }
+});
+
+// Preview / test-send for a specific journey step's assigned template —
+// same underlying logic as /templates/:id/preview and /send-test, just
+// resolved via the step so the Journeys tab can offer "Preview"/"Send test"
+// buttons directly next to each email step.
+router.get("/journeys/:id/steps/:stepId/preview", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const stepRes = await pool.query("SELECT template_id FROM marketing_journey_steps WHERE id = $1", [req.params.stepId]);
+    const templateId = stepRes.rows[0]?.template_id;
+    if (!templateId) return res.status(404).send("<p style='padding:40px;color:#666;font-family:sans-serif'>Tento krok nemá přiřazenou šablonu.</p>");
+    const tplRes = await pool.query("SELECT subject, html_content FROM marketing_templates WHERE id = $1", [templateId]);
+    if (tplRes.rows.length === 0) return res.status(404).send("<p style='padding:40px;color:#666;font-family:sans-serif'>Šablona nenalezena.</p>");
+    const { renderTemplatePreview } = await import("../lib/marketing/sender.js");
+    const { html } = renderTemplatePreview(tplRes.rows[0]);
+    res.setHeader("Content-Type", "text/html");
+    res.send(html);
+  } catch (error) {
+    res.status(500).send("<p style='padding:40px;color:#666;font-family:sans-serif'>Chyba při generování náhledu.</p>");
+  }
+});
+
+router.post("/journeys/:id/steps/:stepId/send-test", requireAdmin, testSendLimiter, async (req: Request, res: Response) => {
+  try {
+    const toEmail = String(req.body.email || "").trim();
+    if (!toEmail || !toEmail.includes("@")) {
+      return res.status(400).json({ error: "Zadejte platnou e-mailovou adresu pro test." });
+    }
+    const stepRes = await pool.query("SELECT template_id FROM marketing_journey_steps WHERE id = $1", [req.params.stepId]);
+    const templateId = stepRes.rows[0]?.template_id;
+    if (!templateId) return res.status(400).json({ error: "Tento krok nemá přiřazenou šablonu." });
+    const { sendTestMarketingEmail } = await import("../lib/marketing/sender.js");
+    const result = await sendTestMarketingEmail(templateId, toEmail);
+    if (!result.ok) return res.status(500).json({ error: result.error || "Odeslání testovacího e-mailu selhalo" });
+    await logMarketingAction("journey_step.test_sent", req.session.userId || null, { type: "journey_step", id: parseInt(req.params.stepId, 10) }, { to: toEmail });
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Journey step test send error:", error);
+    res.status(500).json({ error: "Chyba při odesílání testovacího e-mailu" });
   }
 });
 
