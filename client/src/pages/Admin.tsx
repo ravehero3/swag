@@ -3612,88 +3612,326 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
   );
 }
 
-function RevenueChart({ orders }: { orders: any[] }) {
-  const DAYS = 30;
-  const W = 700, H = 220, PAD_L = 64, PAD_R = 16, PAD_T = 16, PAD_B = 48;
-  const chartW = W - PAD_L - PAD_R;
-  const chartH = H - PAD_T - PAD_B;
+// ─────────────────────────────────────────────────────────────────────────
+// SalesChart — real order data (day-by-day revenue), replaces the old
+// RevenueChart. Only counts orders with status paid/completed AND total > 0
+// as "sales" (matches the same definition already used for "Zaplaceno" above
+// in OrdersTab) — pending/cancelled/free orders are excluded from revenue.
+// ─────────────────────────────────────────────────────────────────────────
+const SALES_VB_W = 1000;
+const SALES_VB_H = 380;
+const SALES_PLOT_LEFT = 64;
+const SALES_PLOT_RIGHT = 992;
+const SALES_PLOT_TOP = 18;
+const SALES_PLOT_BOTTOM = 268;
+const SALES_LABEL_Y = 300;
+const SALES_PLOT_W = SALES_PLOT_RIGHT - SALES_PLOT_LEFT;
+const SALES_PLOT_H = SALES_PLOT_BOTTOM - SALES_PLOT_TOP;
+const SALES_LINE_DURATION = 1400;
 
-  // Build day buckets for last N days
-  const today = new Date();
-  today.setHours(23, 59, 59, 999);
-  const days: { label: string; date: string; revenue: number; count: number }[] = [];
-  for (let i = DAYS - 1; i >= 0; i--) {
-    const d = new Date(today);
-    d.setDate(d.getDate() - i);
-    const key = d.toISOString().slice(0, 10);
-    days.push({ label: i % 5 === 0 ? `${d.getDate()}.${d.getMonth() + 1}.` : "", date: key, revenue: 0, count: 0 });
+function salesFormatCurrency(n: number): string {
+  return `${Math.round(n).toLocaleString("cs-CZ", { maximumFractionDigits: 0 })} Kč`;
+}
+function salesFormatDateShort(iso: string): string {
+  return new Date(iso + "T00:00:00").toLocaleDateString("cs-CZ", { month: "short", day: "numeric" });
+}
+function salesFormatDateFull(iso: string): string {
+  return new Date(iso + "T00:00:00").toLocaleDateString("cs-CZ", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+}
+
+function salesSmoothPath(points: { x: number; y: number }[]): string {
+  if (points.length < 2) return "";
+  let d = `M ${points[0].x},${points[0].y}`;
+  for (let i = 0; i < points.length - 1; i++) {
+    const p0 = points[i === 0 ? i : i - 1];
+    const p1 = points[i];
+    const p2 = points[i + 1];
+    const p3 = points[i + 2 < points.length ? i + 2 : i + 1];
+    const cp1x = p1.x + (p2.x - p0.x) / 6;
+    const cp1y = p1.y + (p2.y - p0.y) / 6;
+    const cp2x = p2.x - (p3.x - p1.x) / 6;
+    const cp2y = p2.y - (p3.y - p1.y) / 6;
+    d += ` C ${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x},${p2.y}`;
   }
+  return d;
+}
 
-  for (const o of orders) {
-    const key = new Date(o.created_at).toISOString().slice(0, 10);
-    const slot = days.find(d => d.date === key);
-    if (slot) { slot.revenue += Number(o.total) || 0; slot.count += 1; }
-  }
+function salesAreaFromLine(lineD: string, points: { x: number; y: number }[]): string {
+  const first = points[0];
+  const last = points[points.length - 1];
+  return `${lineD} L ${last.x},${SALES_PLOT_BOTTOM} L ${first.x},${SALES_PLOT_BOTTOM} Z`;
+}
 
-  const maxRev = Math.max(...days.map(d => d.revenue), 1);
-  const maxCount = Math.max(...days.map(d => d.count), 1);
+function SalesDrawPath({ d, replayKey, duration = 1200, delay = 0, ...rest }: any) {
+  const ref = useRef<SVGPathElement>(null);
+  const [length, setLength] = useState(0);
+  const [go, setGo] = useState(false);
 
-  // Revenue line points
-  const revPoints = days.map((d, i) => {
-    const x = PAD_L + (i / (DAYS - 1)) * chartW;
-    const y = PAD_T + chartH - (d.revenue / maxRev) * chartH;
-    return `${x},${y}`;
-  }).join(" ");
-
-  // Order count bars
-  const barW = chartW / DAYS * 0.55;
-
-  // Y axis ticks (revenue)
-  const yTicks = [0, 0.25, 0.5, 0.75, 1].map(f => ({ y: PAD_T + chartH - f * chartH, val: Math.round(f * maxRev) }));
+  useEffect(() => {
+    if (!ref.current) return;
+    const len = ref.current.getTotalLength();
+    setLength(len);
+    setGo(false);
+    const raf1 = requestAnimationFrame(() => {
+      requestAnimationFrame(() => setGo(true));
+    });
+    return () => cancelAnimationFrame(raf1);
+  }, [d, replayKey]);
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto", display: "block" }}>
-      {/* Grid lines */}
-      {yTicks.map((t, i) => (
-        <line key={i} x1={PAD_L} y1={t.y} x2={W - PAD_R} y2={t.y} stroke="#222" strokeWidth="1" />
-      ))}
-      {/* Y axis labels */}
-      {yTicks.map((t, i) => (
-        <text key={i} x={PAD_L - 6} y={t.y + 4} textAnchor="end" fill="DESIGN_SYSTEM.colors.textSecondary" fontSize="10" fontFamily="Helvetica Neue, sans-serif">
-          {t.val >= 1000 ? `${Math.round(t.val / 1000)}k` : t.val}
-        </text>
-      ))}
-      {/* Count bars (light grey, behind) */}
-      {days.map((d, i) => {
-        const x = PAD_L + (i / (DAYS - 1)) * chartW;
-        const barH = (d.count / maxCount) * chartH;
-        return <rect key={i} x={x - barW / 2} y={PAD_T + chartH - barH} width={barW} height={barH} fill="DESIGN_SYSTEM.colors.inputs" rx="1" />;
-      })}
-      {/* Revenue area fill */}
-      <polyline
-        points={`${PAD_L},${PAD_T + chartH} ${revPoints} ${W - PAD_R},${PAD_T + chartH}`}
-        fill="rgba(255,255,255,0.04)"
-        stroke="none"
-      />
-      {/* Revenue line */}
-      <polyline points={revPoints} fill="none" stroke="DESIGN_SYSTEM.colors.textPrimary" strokeWidth="1.5" strokeLinejoin="round" />
-      {/* Data point dots */}
-      {days.map((d, i) => {
-        if (d.revenue === 0) return null;
-        const x = PAD_L + (i / (DAYS - 1)) * chartW;
-        const y = PAD_T + chartH - (d.revenue / maxRev) * chartH;
-        return <circle key={i} cx={x} cy={y} r="3" fill="DESIGN_SYSTEM.colors.textPrimary" />;
-      })}
-      {/* X axis labels */}
-      {days.map((d, i) => d.label ? (
-        <text key={i} x={PAD_L + (i / (DAYS - 1)) * chartW} y={H - 8} textAnchor="middle" fill="#555" fontSize="9" fontFamily="Helvetica Neue, sans-serif">
-          {d.label}
-        </text>
-      ) : null)}
-      {/* Axes */}
-      <line x1={PAD_L} y1={PAD_T} x2={PAD_L} y2={PAD_T + chartH} stroke="DESIGN_SYSTEM.colors.border" strokeWidth="1" />
-      <line x1={PAD_L} y1={PAD_T + chartH} x2={W - PAD_R} y2={PAD_T + chartH} stroke="DESIGN_SYSTEM.colors.border" strokeWidth="1" />
-    </svg>
+    <path
+      ref={ref}
+      d={d}
+      style={{
+        strokeDasharray: length,
+        strokeDashoffset: go ? 0 : length,
+        transition: `stroke-dashoffset ${duration}ms cubic-bezier(0.35,0.02,0.15,1) ${delay}ms`,
+      }}
+      {...rest}
+    />
+  );
+}
+
+function SalesChart({ orders }: { orders: any[] }) {
+  const [range, setRange] = useState<"30d" | "all">("30d");
+  const [hovered, setHovered] = useState<number | null>(null);
+  const [chartHovered, setChartHovered] = useState(false);
+  const svgRef = useRef<SVGSVGElement>(null);
+
+  const paidOrders = useMemo(
+    () => orders.filter((o: any) => (o.status === "paid" || o.status === "completed") && Number(o.total) > 0),
+    [orders]
+  );
+
+  const allTimeDays = useMemo(() => {
+    if (paidOrders.length === 0) return 30;
+    const earliest = Math.min(...paidOrders.map((o: any) => new Date(o.created_at).getTime()));
+    const days = Math.ceil((Date.now() - earliest) / 86400000) + 1;
+    return Math.min(Math.max(days, 30), 730);
+  }, [paidOrders]);
+
+  const buildDayBuckets = (days: number) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const out: { date: string; revenue: number }[] = [];
+    for (let i = days - 1; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      out.push({ date: d.toISOString().slice(0, 10), revenue: 0 });
+    }
+    const byDate = new Map(out.map((d) => [d.date, d]));
+    for (const o of paidOrders) {
+      const key = new Date(o.created_at).toISOString().slice(0, 10);
+      const slot = byDate.get(key);
+      if (slot) slot.revenue += Number(o.total) || 0;
+    }
+    return out;
+  };
+
+  const data = useMemo(() => buildDayBuckets(range === "30d" ? 30 : allTimeDays), [paidOrders, range, allTimeDays]);
+
+  const stats = useMemo(() => {
+    const total = data.reduce((s, d) => s + d.revenue, 0);
+    const activeDays = data.filter((d) => d.revenue > 0).length;
+    const best = data.reduce((m, d) => (d.revenue > m.revenue ? d : m), data[0] || { revenue: 0, date: "" });
+    return { total, activeDays, totalDays: data.length, best, avgOnActive: activeDays ? total / activeDays : 0 };
+  }, [data]);
+
+  const maxVal = useMemo(() => Math.max(1, ...data.map((d) => d.revenue)) * 1.18, [data]);
+
+  const points = useMemo(() => {
+    const n = data.length;
+    const stepX = n > 1 ? SALES_PLOT_W / (n - 1) : SALES_PLOT_W;
+    return data.map((d, i) => ({
+      x: SALES_PLOT_LEFT + i * stepX,
+      y: SALES_PLOT_TOP + SALES_PLOT_H * (1 - d.revenue / maxVal),
+      ...d,
+    }));
+  }, [data, maxVal]);
+
+  const lineD = useMemo(() => salesSmoothPath(points), [points]);
+  const areaD = useMemo(() => salesAreaFromLine(lineD, points), [lineD, points]);
+
+  const labelIndices = useMemo(() => {
+    const n = points.length;
+    const count = range === "30d" ? 6 : 8;
+    if (n <= count) return points.map((_, i) => i);
+    const idxs: number[] = [];
+    for (let k = 0; k < count; k++) idxs.push(Math.round((k * (n - 1)) / (count - 1)));
+    return Array.from(new Set(idxs));
+  }, [points, range]);
+
+  const gridFracs = [0, 0.33, 0.66, 1];
+  const replayKey = range;
+
+  function handleMove(e: React.MouseEvent<SVGSVGElement>) {
+    if (!svgRef.current || points.length === 0) return;
+    const rect = svgRef.current.getBoundingClientRect();
+    const relX = ((e.clientX - rect.left) / rect.width) * SALES_VB_W;
+    const stepX = points.length > 1 ? SALES_PLOT_W / (points.length - 1) : SALES_PLOT_W;
+    let idx = Math.round((relX - SALES_PLOT_LEFT) / stepX);
+    idx = Math.max(0, Math.min(points.length - 1, idx));
+    setHovered(idx);
+  }
+
+  const hp = hovered != null ? points[hovered] : null;
+  const tipW = 168;
+  const tipX = hp ? Math.min(Math.max(hp.x - tipW / 2, SALES_PLOT_LEFT), SALES_PLOT_RIGHT - tipW) : 0;
+
+  return (
+    <div
+      style={{
+        background: "#000000",
+        color: "#FAFAFA",
+        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        border: "1px solid #1a1a1a",
+        borderRadius: "10px",
+        padding: "32px 28px 36px",
+        boxSizing: "border-box",
+        marginBottom: "24px",
+      }}
+    >
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+        .sc-toggle-btn { background: transparent; border: 1px solid #262626; color: #8A8A8A; font-family: inherit; font-size: 13px; padding: 7px 16px; cursor: pointer; transition: border-color .15s, color .15s, background .15s; border-radius: 4px; }
+        .sc-toggle-btn:hover { border-color: #3A3A3A; color: #FAFAFA; }
+        .sc-toggle-btn.active { background: #FAFAFA; border-color: #FAFAFA; color: #000000; }
+        @media (max-width: 640px) { .sc-stats { flex-wrap: wrap; gap: 20px !important; } }
+        .sc-dot { transform-box: fill-box; transform-origin: center; opacity: 0; animation: scDotFade 500ms cubic-bezier(.2,.8,.2,1) forwards; }
+        @keyframes scDotFade { from { opacity: 0; transform: scale(.3); } to { opacity: 1; transform: scale(1); } }
+        .sc-area-fade { opacity: 0; animation: scAreaFade 900ms ease-out forwards; }
+        @keyframes scAreaFade { to { opacity: 1; } }
+        .sc-glow-wrap { opacity: 0; transition: opacity 380ms ease; }
+        .sc-glow-wrap.active { opacity: 1; }
+        .sc-glow-line { animation: scGlowPulse 2.2s ease-in-out infinite; }
+        @keyframes scGlowPulse { 0%, 100% { opacity: .35; } 50% { opacity: .72; } }
+      `}</style>
+
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 24, marginBottom: 32 }}>
+        <div>
+          <div style={{ color: "#8A8A8A", fontSize: 13, marginBottom: 10 }}>Tržby, den po dni</div>
+          <div style={{ fontSize: 38, fontWeight: 600, letterSpacing: "-0.02em", lineHeight: 1.1 }}>{salesFormatCurrency(stats.total)}</div>
+          <div style={{ color: "#5C5C5C", fontSize: 13, marginTop: 8 }}>
+            {range === "30d" ? "Posledních 30 dní" : `Posledních ${allTimeDays} dní`} · prodej proběhl {stats.activeDays} z {stats.totalDays} dní
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button className={`sc-toggle-btn ${range === "30d" ? "active" : ""}`} onClick={() => setRange("30d")}>Posledních 30 dní</button>
+          <button className={`sc-toggle-btn ${range === "all" ? "active" : ""}`} onClick={() => setRange("all")}>Za celou dobu</button>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="sc-stats" style={{ display: "flex", gap: 40, paddingBottom: 28, marginBottom: 8, borderBottom: "1px solid #1A1A1A" }}>
+        <div>
+          <div style={{ color: "#5C5C5C", fontSize: 12, marginBottom: 6 }}>Nejlepší den</div>
+          <div style={{ fontSize: 18, fontWeight: 500 }}>{stats.best.revenue > 0 ? salesFormatCurrency(stats.best.revenue) : "—"}</div>
+          <div style={{ color: "#5C5C5C", fontSize: 12, marginTop: 4 }}>{stats.best.revenue > 0 ? salesFormatDateShort(stats.best.date) : ""}</div>
+        </div>
+        <div>
+          <div style={{ color: "#5C5C5C", fontSize: 12, marginBottom: 6 }}>Průměr za aktivní dny</div>
+          <div style={{ fontSize: 18, fontWeight: 500 }}>{salesFormatCurrency(stats.avgOnActive)}</div>
+          <div style={{ color: "#5C5C5C", fontSize: 12, marginTop: 4 }}>na den s prodejem</div>
+        </div>
+        <div>
+          <div style={{ color: "#5C5C5C", fontSize: 12, marginBottom: 6 }}>Dny bez prodeje</div>
+          <div style={{ fontSize: 18, fontWeight: 500 }}>{stats.totalDays - stats.activeDays}</div>
+          <div style={{ color: "#5C5C5C", fontSize: 12, marginTop: 4 }}>z {stats.totalDays} celkem</div>
+        </div>
+      </div>
+
+      {/* Chart */}
+      <div style={{ width: "100%", aspectRatio: `${SALES_VB_W} / ${SALES_VB_H}`, marginTop: 28 }}>
+        <svg
+          ref={svgRef}
+          viewBox={`0 0 ${SALES_VB_W} ${SALES_VB_H}`}
+          width="100%"
+          height="100%"
+          onMouseMove={handleMove}
+          onMouseEnter={() => setChartHovered(true)}
+          onMouseLeave={() => { setHovered(null); setChartHovered(false); }}
+        >
+          <defs>
+            <linearGradient id="scAreaGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#FAFAFA" stopOpacity={0.26} />
+              <stop offset="100%" stopColor="#FAFAFA" stopOpacity={0} />
+            </linearGradient>
+            <filter id="scBlur"><feGaussianBlur stdDeviation="5" /></filter>
+          </defs>
+
+          {gridFracs.map((f) => {
+            const y = SALES_PLOT_BOTTOM - f * SALES_PLOT_H;
+            return (
+              <g key={f}>
+                <line x1={SALES_PLOT_LEFT} y1={y} x2={SALES_PLOT_RIGHT} y2={y} stroke="#161616" strokeWidth={1} />
+                <text x={SALES_PLOT_LEFT - 10} y={y + 4} textAnchor="end" fontSize={11} fill="#5C5C5C">
+                  {f === 0 ? "0" : salesFormatCurrency(Math.round((maxVal / 1.18) * f))}
+                </text>
+              </g>
+            );
+          })}
+          {labelIndices.map((i) => (
+            <text key={i} x={points[i].x} y={SALES_LABEL_Y} textAnchor="middle" fontSize={11} fill="#5C5C5C">
+              {salesFormatDateShort(points[i].date)}
+            </text>
+          ))}
+
+          <g key={replayKey}>
+            <path d={areaD} fill="url(#scAreaGradient)" className="sc-area-fade" style={{ animationDelay: `${SALES_LINE_DURATION - 400}ms` }} />
+
+            <g className={`sc-glow-wrap ${chartHovered ? "active" : ""}`}>
+              <path d={lineD} stroke="#FAFAFA" strokeWidth={7} fill="none" filter="url(#scBlur)" className="sc-glow-line" />
+            </g>
+
+            <SalesDrawPath d={lineD} replayKey={replayKey} duration={SALES_LINE_DURATION} stroke="#FAFAFA" strokeWidth={2} fill="none" />
+
+            {points.map((p, i) => {
+              const hasSale = p.revenue > 0;
+              const frac = points.length > 1 ? i / (points.length - 1) : 0;
+              return (
+                <circle
+                  key={p.date}
+                  cx={p.x}
+                  cy={p.y}
+                  r={hasSale ? 3.2 : 2.4}
+                  fill={hasSale ? "#FAFAFA" : "#1A1A1A"}
+                  stroke={hasSale ? "none" : "#3A3A3A"}
+                  strokeWidth={hasSale ? 0 : 1}
+                  className="sc-dot"
+                  style={{ animationDelay: `${frac * SALES_LINE_DURATION}ms` }}
+                />
+              );
+            })}
+          </g>
+
+          {hp && (
+            <g>
+              <line x1={hp.x} y1={SALES_PLOT_TOP} x2={hp.x} y2={SALES_PLOT_BOTTOM} stroke="#2A2A2A" strokeWidth={1} strokeDasharray="3 3" />
+              <circle cx={hp.x} cy={hp.y} r={5} fill="#FAFAFA" stroke="#000000" strokeWidth={2} />
+              <g transform={`translate(${tipX}, ${SALES_PLOT_TOP + 6})`}>
+                <rect width={tipW} height={52} rx={6} fill="#0D0D0D" stroke="#262626" />
+                <text x={14} y={20} fontSize={11} fill="#8A8A8A">{salesFormatDateFull(hp.date)}</text>
+                <text x={14} y={38} fontSize={15} fontWeight={500} fill={hp.revenue > 0 ? "#FAFAFA" : "#5C5C5C"}>
+                  {hp.revenue > 0 ? salesFormatCurrency(hp.revenue) : "Žádný prodej"}
+                </text>
+              </g>
+            </g>
+          )}
+        </svg>
+      </div>
+
+      <div style={{ display: "flex", alignItems: "center", gap: 20, marginTop: 14, color: "#5C5C5C", fontSize: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+          <span style={{ display: "inline-block", width: 9, height: 9, background: "#FAFAFA", borderRadius: "50%" }} />
+          Den s prodejem
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+          <span style={{ display: "inline-block", width: 9, height: 9, background: "#1A1A1A", border: "1px solid #3A3A3A", borderRadius: "50%" }} />
+          Bez prodeje
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -3929,28 +4167,7 @@ function OrdersTab({ orders, onRefresh }: any) {
       )}
 
       {/* Chart */}
-      <div style={{ border: "1px solid #222", borderRadius: "4px", padding: "20px 12px 8px", marginBottom: "24px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", paddingLeft: "52px" }}>
-          <span style={{ fontSize: "12px", color: "DESIGN_SYSTEM.colors.textSecondary", textTransform: "uppercase", letterSpacing: "0.08em" }}>Tržby – posledních 30 dní (Kč)</span>
-          <div style={{ display: "flex", gap: "16px" }}>
-            <span style={{ fontSize: "11px", color: "#555", display: "flex", alignItems: "center", gap: "6px" }}>
-              <span style={{ display: "inline-block", width: 20, height: 2, background: "DESIGN_SYSTEM.colors.textPrimary", borderRadius: 1 }} />
-              Tržby
-            </span>
-            <span style={{ fontSize: "11px", color: "#555", display: "flex", alignItems: "center", gap: "6px" }}>
-              <span style={{ display: "inline-block", width: 10, height: 10, background: "DESIGN_SYSTEM.colors.inputs", border: "1px solid #333", borderRadius: 2 }} />
-              Objednávky
-            </span>
-          </div>
-        </div>
-        {orders.length === 0 ? (
-          <div style={{ height: 120, display: "flex", alignItems: "center", justifyContent: "center", color: "#444", fontSize: "13px" }}>
-            Zatím žádné objednávky
-          </div>
-        ) : (
-          <RevenueChart orders={orders} />
-        )}
-      </div>
+      <SalesChart orders={orders} />
 
       {/* Orders list */}
       {orders.length === 0 ? (
