@@ -7789,6 +7789,8 @@ function KampaneTab() {
   const [visualCampaign, setVisualCampaign] = useState<any>(null);
   const [previewCampaign, setPreviewCampaign] = useState<any>(null);
   const [previewWidth, setPreviewWidth] = useState<"desktop" | "mobile">("desktop");
+  const [sendReview, setSendReview] = useState<{ campaign: any; count: number } | null>(null);
+  const [isExecutingSend, setIsExecutingSend] = useState(false);
 
   const load = () => {
     setLoading(true);
@@ -7883,19 +7885,31 @@ function KampaneTab() {
     return 0;
   };
 
-  const handleSend = async (campaign: any) => {
+  const openSendReview = async (campaign: any) => {
     const count = await fetchAudienceCount(campaign.id);
-    if (!confirm(`Odeslat kampaň "${campaign.name}" celkem ${count} odběratelům? Tuto akci nelze vrátit zpět.`)) return;
-    const res = await fetch(`/api/marketing/campaigns/${campaign.id}/send`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ confirmedCount: count }),
-    });
-    const data = await res.json();
-    if (!res.ok) { alert(data.error || "Chyba při odesílání"); return; }
-    alert(`Kampaň se odesílá ${data.recipientCount} odběratelům.`);
-    load();
+    setSendReview({ campaign, count });
+  };
+
+  const confirmAndSend = async () => {
+    if (!sendReview) return;
+    setIsExecutingSend(true);
+    try {
+      const res = await fetch(`/api/marketing/campaigns/${sendReview.campaign.id}/send`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ confirmedCount: sendReview.count }),
+      });
+      const data = await res.json();
+      if (!res.ok) { alert(data.error || "Chyba při odesílání"); return; }
+      alert(`Kampaň se odesílá ${data.recipientCount} odběratelům.`);
+      setSendReview(null);
+      load();
+    } catch (err: any) {
+      alert("Chyba při odesílání: " + err.message);
+    } finally {
+      setIsExecutingSend(false);
+    }
   };
 
   const handleCancel = async (id: number) => {
@@ -7965,7 +7979,7 @@ function KampaneTab() {
                     <>
                       <button className="btn" onClick={() => startEditVisual(c)} style={{ borderRadius: "4px", fontSize: "11px", borderColor: "#0B99FC", color: "#0B99FC" }}>Vizuální editor</button>
                       <button className="btn" onClick={() => fetchAudienceCount(c.id)} style={{ borderRadius: "4px", fontSize: "11px", borderColor: "#444" }}>Náhled počtu</button>
-                      <button className="btn btn-filled" onClick={() => handleSend(c)} style={{ borderRadius: "4px", fontSize: "11px" }}>Odeslat</button>
+                      <button className="btn btn-filled" onClick={() => openSendReview(c)} style={{ borderRadius: "4px", fontSize: "11px" }}>Odeslat…</button>
                       <button className="btn" onClick={() => handleCancel(c.id)} style={{ borderRadius: "4px", fontSize: "11px", borderColor: "#ff5252", color: "#ff5252" }}>Zrušit</button>
                     </>
                   )}
@@ -8015,6 +8029,105 @@ function KampaneTab() {
           </div>
           <div onClick={(e) => e.stopPropagation()} style={{ width: previewWidth === "mobile" ? "390px" : "640px", maxWidth: "100%", background: DESIGN_SYSTEM.colors.elevated, borderRadius: "4px", overflow: "hidden", border: "1px solid #222", transition: "width 0.2s" }}>
             <iframe src={`/api/marketing/campaigns/${previewCampaign.id}/preview`} style={{ width: "100%", height: "700px", border: "none", display: "block" }} title="Náhled kampaně" />
+          </div>
+        </div>
+      )}
+
+      {/* Send Review Modal before dispatching campaign */}
+      {sendReview && (
+        <div
+          onClick={() => !isExecutingSend && setSendReview(null)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.85)",
+            zIndex: DESIGN_SYSTEM.zIndex.modal + 10,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "20px",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "#0d0d0d",
+              border: "1px solid #282828",
+              borderRadius: "12px",
+              width: "min(480px, 96vw)",
+              padding: "24px",
+              boxShadow: "0 20px 60px rgba(0,0,0,0.9)",
+            }}
+          >
+            <div style={{ fontSize: "16px", fontWeight: 700, color: "#fff", marginBottom: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
+              <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#f59e0b" }} />
+              Kontrola kampaně před odesláním
+            </div>
+            <p style={{ fontSize: "12px", color: "#888", marginBottom: "16px", lineHeight: 1.5 }}>
+              Pečlivě zkontrolujte detaily kampaně. Po stisknutí tlačítka níže dojde k okamžitému rozeslání e-mailů.
+            </p>
+
+            <div style={{ background: "#141414", border: "1px solid #222", borderRadius: "8px", padding: "14px", marginBottom: "16px", display: "flex", flexDirection: "column", gap: "10px", fontSize: "12px" }}>
+              <div>
+                <span style={{ color: "#666", textTransform: "uppercase", fontSize: "10px", display: "block" }}>Název kampaně</span>
+                <strong style={{ color: "#fff", fontSize: "14px" }}>{sendReview.campaign.name}</strong>
+              </div>
+              <div>
+                <span style={{ color: "#666", textTransform: "uppercase", fontSize: "10px", display: "block" }}>Předmět e-mailu</span>
+                <span style={{ color: "#ddd" }}>{sendReview.campaign.subject || "(Neuveden — použije se název)"}</span>
+              </div>
+              <div>
+                <span style={{ color: "#666", textTransform: "uppercase", fontSize: "10px", display: "block" }}>Preheader</span>
+                <span style={{ color: "#888" }}>{sendReview.campaign.preheader || "(Bez preheaderu)"}</span>
+              </div>
+              <div style={{ paddingTop: "8px", borderTop: "1px solid #222", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ color: "#aaa" }}>Cílové publikum (aktivní odběratelé):</span>
+                <span style={{ fontSize: "15px", fontWeight: 800, color: sendReview.count > 0 ? "#22c55e" : "#ef4444" }}>
+                  {sendReview.count} příjemců
+                </span>
+              </div>
+            </div>
+
+            <div style={{ background: "rgba(239, 68, 68, 0.08)", border: "1px solid rgba(239, 68, 68, 0.25)", borderRadius: "8px", padding: "12px", marginBottom: "20px", fontSize: "12px", color: "#f87171", lineHeight: 1.5 }}>
+              ⚠️ <strong>Upozornění:</strong> Tuto akci <u>nelze vzít zpět</u>. E-maily budou odeslány na skutečné adresy příjemců přes Resend API.
+            </div>
+
+            <div style={{ display: "flex", gap: "10px" }}>
+              <button
+                onClick={() => setSendReview(null)}
+                disabled={isExecutingSend}
+                style={{
+                  flex: 1,
+                  background: "transparent",
+                  border: "1px solid #333",
+                  color: "#aaa",
+                  borderRadius: "6px",
+                  padding: "10px 16px",
+                  fontSize: "12px",
+                  cursor: isExecutingSend ? "not-allowed" : "pointer",
+                }}
+              >
+                Zrušit
+              </button>
+              <button
+                onClick={confirmAndSend}
+                disabled={isExecutingSend || sendReview.count === 0}
+                style={{
+                  flex: 1.6,
+                  background: "#ef4444",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "6px",
+                  padding: "10px 16px",
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  cursor: isExecutingSend || sendReview.count === 0 ? "not-allowed" : "pointer",
+                  opacity: sendReview.count === 0 ? 0.5 : 1,
+                }}
+              >
+                {isExecutingSend ? "Odesílám kampaň…" : "Potvrdit a odeslat kampaň"}
+              </button>
+            </div>
           </div>
         </div>
       )}

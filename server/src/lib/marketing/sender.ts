@@ -4,6 +4,7 @@ import type { Subscriber } from "./subscribers.js";
 import { isMarketingEligible } from "./subscribers.js";
 import { createUnsubscribeToken } from "./tokens.js";
 import { renderBrandedEmailShell } from "./brandKit.js";
+import { compileBlocksToHtml } from "./blockCompiler.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Marketing email sender. Distinct from server/src/email.ts (transactional
@@ -88,7 +89,6 @@ export function renderTemplatePreview(template: { subject: string; html_content:
   const subject = fillVariables(template.subject, vars);
   let bodyHtml = template.html_content ? fillVariables(template.html_content, vars) : "";
   if (!bodyHtml && Array.isArray(template.blocks) && template.blocks.length > 0) {
-    const { compileBlocksToHtml } = require("./blockCompiler.js");
     bodyHtml = fillVariables(compileBlocksToHtml(template.blocks), vars);
   }
   const html = renderBrandedEmailShell({

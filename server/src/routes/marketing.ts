@@ -1012,4 +1012,47 @@ router.post("/campaigns/:id/send", requireAdmin, async (req: Request, res: Respo
   }
 });
 
+// ── Admin: live block preview (WYSIWYG) ─────────────────────────────────────
+// Pure rendering endpoint — compiles blocks to full branded HTML and returns it.
+// No DB write, no email send. Used by the visual editor for real-time preview.
+router.post("/preview-blocks", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { blocks, subject, preheader } = req.body;
+    const appUrl = process.env.APP_URL || "https://voodoo808.com";
+    const { renderBrandedEmailShell } = await import("../lib/marketing/brandKit.js");
+
+    // Fill sample variables so preview looks like a real email
+    const sampleVars: Record<string, string> = {
+      first_name: "Petr",
+      email: "petr@example.com",
+      unsubscribe_url: `${appUrl}/odhlasit-marketing?token=NAHLED`,
+      site_url: appUrl,
+    };
+
+    function fillVars(text: string): string {
+      return text.replace(/\{\{\s*([a-zA-Z_]+)\s*\}\}/g, (m, key) => sampleVars[key] ?? m);
+    }
+
+    let bodyHtml = "";
+    if (Array.isArray(blocks) && blocks.length > 0) {
+      const rawHtml = compileBlocksToHtml(blocks);
+      bodyHtml = fillVars(rawHtml);
+    }
+
+    const html = renderBrandedEmailShell({
+      appUrl,
+      bodyHtml,
+      unsubscribeUrl: sampleVars.unsubscribe_url,
+      preheader: preheader ? fillVars(String(preheader)) : undefined,
+    });
+
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.send(html);
+  } catch (error) {
+    console.error("Preview-blocks error:", error);
+    res.status(500).json({ error: "Chyba při generování náhledu" });
+  }
+});
+
 export default router;
+

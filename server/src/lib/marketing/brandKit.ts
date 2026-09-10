@@ -112,17 +112,21 @@ export function emailButton(label: string, url: string): string {
 
 /** Dark bordered info box — same style as the "Přístup kdykoli" / payment-details boxes. */
 export function emailInfoBox(title: string, bodyHtml: string): string {
-  return `<div style="background:${BRAND.cardBg};border:1px solid ${BRAND.border};border-radius:6px;padding:18px 22px;margin:0 0 16px 0;">
-    <p style="margin:0 0 6px 0;font-size:13px;font-weight:700;color:${BRAND.textPrimary};">${title}</p>
-    <div style="font-size:13px;color:${BRAND.textMuted};line-height:1.6;">${bodyHtml}</div>
-  </div>`;
+  return `<table cellpadding="0" cellspacing="0" border="0" style="width:100%;background:${BRAND.cardBg};border:1px solid ${BRAND.border};border-radius:6px;margin:0 0 16px 0;">
+    <tr><td style="padding:18px 22px;">
+      <p style="margin:0 0 6px 0;font-size:13px;font-weight:700;color:${BRAND.textPrimary};">${title}</p>
+      <div style="font-size:13px;color:${BRAND.textMuted};line-height:1.6;">${bodyHtml}</div>
+    </td></tr>
+  </table>`;
 }
 
 /** Amber warning box — same style used for the bank-transfer "variable symbol" warning. */
 export function emailWarningBox(bodyHtml: string): string {
-  return `<div style="border:1px solid ${BRAND.accentWarningBorder};background:${BRAND.accentWarningBg};border-radius:4px;padding:14px;margin:0 0 16px 0;">
-    <div style="font-size:13px;color:${BRAND.accentWarning};line-height:1.6;">${bodyHtml}</div>
-  </div>`;
+  return `<table cellpadding="0" cellspacing="0" border="0" style="width:100%;border:1px solid ${BRAND.accentWarningBorder};background:${BRAND.accentWarningBg};border-radius:4px;margin:0 0 16px 0;">
+    <tr><td style="padding:14px;">
+      <div style="font-size:13px;color:${BRAND.accentWarning};line-height:1.6;">${bodyHtml}</div>
+    </td></tr>
+  </table>`;
 }
 
 export function emailDivider(): string {

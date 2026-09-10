@@ -34,6 +34,8 @@ export interface EmailBlock {
   // Paragraph
   paragraphText?: string;
   paragraphAlign?: "left" | "center" | "right";
+  paragraphColor?: string;
+  paragraphFontSize?: string;
 
   // Button
   buttonText?: string;
@@ -116,8 +118,10 @@ export function compileSingleBlockToHtml(block: EmailBlock): string {
     case "paragraph": {
       const text = block.paragraphText || "Text odstavce…";
       const align = block.paragraphAlign || "left";
+      const color = block.paragraphColor || BRAND.textSecondary;
+      const fontSize = block.paragraphFontSize || "15px";
       const formattedText = escapeHtml(text).replace(/\n/g, "<br/>");
-      return `<p style="margin:0 0 16px 0;font-size:15px;color:${BRAND.textSecondary};line-height:1.6;text-align:${align};">${formattedText}</p>`;
+      return `<p style="margin:0 0 16px 0;font-size:${fontSize};color:${color};line-height:1.6;text-align:${align};">${formattedText}</p>`;
     }
 
     case "button": {
@@ -163,7 +167,11 @@ export function compileSingleBlockToHtml(block: EmailBlock): string {
     case "divider": {
       const color = block.dividerColor || BRAND.border;
       const style = block.dividerStyle || "solid";
-      return `<div style="margin:20px 0;border-bottom:1px ${style} ${color};"></div>`;
+      return `<table cellpadding="0" cellspacing="0" border="0" style="width:100%;margin:20px 0;">
+        <tr>
+          <td style="border-bottom:1px ${style} ${color};font-size:0;line-height:0;height:1px;">&nbsp;</td>
+        </tr>
+      </table>`;
     }
 
     case "spacer": {
@@ -288,10 +296,14 @@ export function compileSingleBlockToHtml(block: EmailBlock): string {
       const border = block.infoBorderColor || BRAND.border;
       const bg = block.infoBgColor || BRAND.cardBg;
 
-      return `<div style="background:${bg};border:1px solid ${border};border-radius:6px;padding:18px 22px;margin:16px 0;">
-        ${title ? `<p style="margin:0 0 6px 0;font-size:14px;font-weight:700;color:${BRAND.textPrimary};">${escapeHtml(title)}</p>` : ""}
-        <p style="margin:0;font-size:13px;color:${BRAND.textSecondary};line-height:1.6;">${escapeHtml(text).replace(/\n/g, "<br/>")}</p>
-      </div>`;
+      return `<table cellpadding="0" cellspacing="0" border="0" style="width:100%;background:${bg};border:1px solid ${border};border-radius:6px;margin:16px 0;">
+        <tr>
+          <td style="padding:18px 22px;">
+            ${title ? `<p style="margin:0 0 6px 0;font-size:14px;font-weight:700;color:${BRAND.textPrimary};">${escapeHtml(title)}</p>` : ""}
+            <p style="margin:0;font-size:13px;color:${BRAND.textSecondary};line-height:1.6;">${escapeHtml(text).replace(/\n/g, "<br/>")}</p>
+          </td>
+        </tr>
+      </table>`;
     }
 
     default:

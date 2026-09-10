@@ -11,6 +11,7 @@ import {
   formatDateCzech,
   formatPriceCzech,
 } from "./lib/contractTemplate.js";
+import { renderBrandedEmailShell, BRAND } from "./lib/marketing/brandKit.js";
 
 export { fillContractTemplate, formatDateCzech, formatPriceCzech };
 
@@ -1108,40 +1109,25 @@ export async function sendWelcomeEmail(email: string): Promise<void> {
   const fromAddress = process.env.RESEND_FROM || "noreply@voodoo808.com";
   const appUrl = process.env.APP_URL || "https://voodoo808.com";
 
-  const html = `<!DOCTYPE html>
-<html lang="cs">
-<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head>
-<body style="margin:0;padding:0;background:#000;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#000;padding:40px 16px;">
-    <tr><td align="center">
-      <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#0a0a0a;border:1px solid #1a1a1a;border-radius:8px;overflow:hidden;">
-        <tr>
-          <td style="padding:28px 40px 24px;border-bottom:1px solid #1a1a1a;text-align:center;">
-            <img src="${appUrl}/uploads/artwork/voodoo808-main-logo.png" alt="VOODOO808" width="180" style="display:inline-block;height:auto;max-width:180px;"/>
-          </td>
-        </tr>
-        <tr>
-          <td style="padding:32px 40px 24px;">
-            <p style="margin:0 0 8px 0;font-size:18px;font-weight:600;color:#fff;">Vítej v VOODOO808</p>
-            <p style="margin:0 0 24px 0;font-size:14px;color:#888;line-height:1.8;">
-              Tvůj účet je aktivní. Procházej beaty a zvuky, ukládej oblíbené a nakupuj s licencí přímo na míru tvé tvorbě.
-            </p>
-            <a href="${appUrl}/beaty" style="display:inline-block;padding:13px 28px;background:#fff;color:#000;text-decoration:none;border-radius:4px;font-size:14px;font-weight:700;letter-spacing:0.02em;">Procházet beaty</a>
-          </td>
-        </tr>
-        <tr>
-          <td style="padding:24px 40px 32px;border-top:1px solid #1a1a1a;">
-            <p style="margin:0;font-size:12px;color:#444;text-align:center;line-height:1.7;">
-              VOODOO808 &bull; Vojtěch Vojkovský<br/>
-              <a href="mailto:info@voodoo808.com" style="color:#666;text-decoration:none;">info@voodoo808.com</a>
-            </p>
-          </td>
-        </tr>
-      </table>
-    </td></tr>
-  </table>
-</body>
-</html>`;
+  const bodyHtml = `
+    <p style="margin:0 0 8px 0;font-size:20px;font-weight:700;color:${BRAND.textPrimary};">Vítej v VOODOO808</p>
+    <p style="margin:0 0 24px 0;font-size:15px;color:${BRAND.textSecondary};line-height:1.7;">
+      Tvůj účet je aktivní. Procházej beaty a sound kity, ukládej oblíbené a nakupuj s licencí přímo na míru tvé tvorbě.
+    </p>
+    <table cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 24px 0;">
+      <tr>
+        <td>
+          <a href="${appUrl}/beaty" style="display:inline-block;padding:12px 28px;background:${BRAND.textPrimary};color:#000000;text-decoration:none;border-radius:4px;font-size:13px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;">Procházet beaty</a>
+        </td>
+      </tr>
+    </table>
+  `;
+
+  const html = renderBrandedEmailShell({
+    appUrl,
+    bodyHtml,
+    preheader: "Tvůj účet je aktivní. Začni tvořit s novými beaty.",
+  });
 
   try {
     const { error } = await resend.emails.send({
@@ -1168,49 +1154,44 @@ export async function sendAbandonedCheckoutEmail(orderId: number): Promise<void>
 
   const items: any[] = Array.isArray(order.items) ? order.items : [];
   const itemListHtml = items.map((it: any) =>
-    `<li style="margin:0 0 8px 0;padding:10px 14px;background:#111;border:1px solid #1f1f1f;border-radius:4px;font-size:13px;color:#ccc;list-style:none;">
-      <strong style="color:#fff;">${it.title || "Produkt"}</strong>
-      <span style="float:right;color:#888;">${Number(it.price).toLocaleString("cs-CZ")} Kč</span>
-    </li>`
+    `<table cellpadding="0" cellspacing="0" border="0" style="width:100%;margin:0 0 8px 0;background:${BRAND.cardBg};border:1px solid ${BRAND.border};border-radius:6px;">
+      <tr>
+        <td style="padding:12px 16px;font-size:14px;color:${BRAND.textPrimary};font-weight:600;">
+          ${it.title || "Produkt"}
+        </td>
+        <td align="right" style="padding:12px 16px;font-size:14px;color:${BRAND.textSecondary};font-weight:700;">
+          ${Number(it.price).toLocaleString("cs-CZ")} Kč
+        </td>
+      </tr>
+    </table>`
   ).join("");
 
-  const html = `<!DOCTYPE html>
-<html lang="cs">
-<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head>
-<body style="margin:0;padding:0;background:#000;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#000;padding:40px 16px;">
-    <tr><td align="center">
-      <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#0a0a0a;border:1px solid #1a1a1a;border-radius:8px;overflow:hidden;">
-        <tr>
-          <td style="padding:28px 40px 24px;border-bottom:1px solid #1a1a1a;text-align:center;">
-            <img src="${appUrl}/uploads/artwork/voodoo808-main-logo.png" alt="VOODOO808" width="180" style="display:inline-block;height:auto;max-width:180px;"/>
-          </td>
-        </tr>
-        <tr>
-          <td style="padding:32px 40px 8px;">
-            <p style="margin:0 0 8px 0;font-size:18px;font-weight:600;color:#fff;">Zapomněl/a jsi na svůj košík</p>
-            <p style="margin:0 0 24px 0;font-size:14px;color:#888;line-height:1.8;">
-              Máš v košíku ${items.length === 1 ? "beat" : "položky"}, které na tebe čekají. Dokončení platby ti zabere méně než minutu.
-            </p>
-            <ul style="margin:0 0 28px 0;padding:0;">${itemListHtml}</ul>
-            <p style="margin:0 0 6px 0;font-size:13px;color:#555;">Celkem</p>
-            <p style="margin:0 0 28px 0;font-size:20px;font-weight:700;color:#fff;">${Number(order.total).toLocaleString("cs-CZ")} Kč</p>
-            <a href="${appUrl}/ucet" style="display:inline-block;padding:13px 28px;background:#fff;color:#000;text-decoration:none;border-radius:4px;font-size:14px;font-weight:700;letter-spacing:0.02em;">Dokončit platbu</a>
-          </td>
-        </tr>
-        <tr>
-          <td style="padding:24px 40px 32px;border-top:1px solid #1a1a1a;margin-top:32px;">
-            <p style="margin:0;font-size:12px;color:#444;text-align:center;line-height:1.7;">
-              VOODOO808 &bull; Vojtěch Vojkovský<br/>
-              <a href="mailto:info@voodoo808.com" style="color:#666;text-decoration:none;">info@voodoo808.com</a>
-            </p>
-          </td>
-        </tr>
-      </table>
-    </td></tr>
-  </table>
-</body>
-</html>`;
+  const bodyHtml = `
+    <p style="margin:0 0 8px 0;font-size:20px;font-weight:700;color:${BRAND.textPrimary};">Zapomněl/a jsi na svůj košík</p>
+    <p style="margin:0 0 24px 0;font-size:15px;color:${BRAND.textSecondary};line-height:1.7;">
+      Máš v košíku ${items.length === 1 ? "beat" : "položky"}, které na tebe čekají. Dokončení objednávky ti zabere méně než minutu.
+    </p>
+    <div style="margin:0 0 24px 0;">${itemListHtml}</div>
+    <table cellpadding="0" cellspacing="0" border="0" style="width:100%;margin:0 0 28px 0;border-top:1px solid ${BRAND.border};padding-top:16px;">
+      <tr>
+        <td style="font-size:14px;color:${BRAND.textMuted};">Celkem k úhradě</td>
+        <td align="right" style="font-size:20px;font-weight:700;color:${BRAND.textPrimary};">${Number(order.total).toLocaleString("cs-CZ")} Kč</td>
+      </tr>
+    </table>
+    <table cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 20px 0;">
+      <tr>
+        <td>
+          <a href="${appUrl}/ucet" style="display:inline-block;padding:12px 28px;background:${BRAND.textPrimary};color:#000000;text-decoration:none;border-radius:4px;font-size:13px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;">Dokončit nákup</a>
+        </td>
+      </tr>
+    </table>
+  `;
+
+  const html = renderBrandedEmailShell({
+    appUrl,
+    bodyHtml,
+    preheader: "Máš v košíku položky, které na tebe čekají.",
+  });
 
   try {
     const { error } = await resend.emails.send({
