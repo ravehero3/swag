@@ -534,31 +534,31 @@ export async function initDatabase() {
         key: "welcome_intro",
         name: "Vítejte u VOODOO808",
         subject: "Vítejte u VOODOO808, {{first_name}}!",
-        html: `<div style="font-family:sans-serif;color:#eee;background:#0a0a0a;padding:32px;"><h1 style="color:#fff;">Vítejte!</h1><p>Díky, že jste se připojili k VOODOO808. Brzy vám zašleme tipy pro producenty a nové beaty.</p><p><a href="{{site_url}}" style="color:#0B99FC;">Prohlédnout beaty</a></p></div>`,
+        html: `<p style="margin:0 0 12px 0;font-size:22px;font-weight:700;color:#ffffff;">Vítejte u VOODOO808!</p><p style="margin:0 0 16px 0;font-size:15px;color:#aaaaaa;line-height:1.6;">Díky, že jste se připojili. Brzy vám zašleme tipy pro producenty a upozorníme vás na nové beaty a zvuky.</p><table cellpadding="0" cellspacing="0" style="margin:8px 0 4px 0;"><tr><td><a href="{{site_url}}/beaty" style="display:inline-block;background:#ffffff;color:#000000;font-weight:700;font-size:13px;padding:12px 28px;border-radius:4px;text-decoration:none;letter-spacing:0.5px;">PROCHÁZET BEATY</a></td></tr></table>`,
       },
       {
         key: "producer_tip_1",
         name: "Tip pro producenty",
         subject: "Tip: jak dát vašim 808kám víc šťávy",
-        html: `<div style="font-family:sans-serif;color:#eee;background:#0a0a0a;padding:32px;"><h1 style="color:#fff;">Rýchlý tip</h1><p>Zkuste vrstvit dvě 808ky s různým laděním pro plnější základ tracku.</p></div>`,
+        html: `<p style="margin:0 0 12px 0;font-size:22px;font-weight:700;color:#ffffff;">Rýchlý tip pro producenty</p><p style="margin:0 0 16px 0;font-size:15px;color:#aaaaaa;line-height:1.6;">Zkuste vrstvit dvě 808ky s různým laděním pro plnější základ tracku — jedna nese tón, druhá dodá hloubku a saturaci.</p><div style="background:#111111;border:1px solid #222222;border-radius:6px;padding:18px 22px;margin:0 0 16px 0;"><p style="margin:0 0 6px 0;font-size:13px;font-weight:700;color:#ffffff;">Chcete více?</p><p style="margin:0;font-size:13px;color:#888888;line-height:1.6;">Prohlédněte si naše <a href="{{site_url}}/zvuky" style="color:#ffffff;font-weight:600;">sound kity</a> s připravenými 808 vzorky.</p></div>`,
       },
       {
         key: "freebie_delivery",
         name: "Zdarma soubor — doručení",
         subject: "Vaše soubory zdarma jsou připraveny",
-        html: `<div style="font-family:sans-serif;color:#eee;background:#0a0a0a;padding:32px;"><h1 style="color:#fff;">Díky za stáhnutí!</h1><p>Doufáme, že se vám bude líbit. Podívejte se na další beaty a zvuky na našem webu.</p><p><a href="{{site_url}}" style="color:#0B99FC;">Prozkoumat VOODOO808</a></p></div>`,
+        html: `<p style="margin:0 0 12px 0;font-size:22px;font-weight:700;color:#ffffff;">Díky za stáhnutí!</p><p style="margin:0 0 16px 0;font-size:15px;color:#aaaaaa;line-height:1.6;">Doufáme, že se vám bude líbit. Podívejte se na další beaty a zvuky na našem webu.</p><table cellpadding="0" cellspacing="0" style="margin:8px 0 4px 0;"><tr><td><a href="{{site_url}}" style="display:inline-block;background:#ffffff;color:#000000;font-weight:700;font-size:13px;padding:12px 28px;border-radius:4px;text-decoration:none;letter-spacing:0.5px;">PROZKOUMAT VOODOO808</a></td></tr></table>`,
       },
       {
         key: "freebie_offer",
         name: "Zdarma → nabídka",
         subject: "Připraveni na další krok?",
-        html: `<div style="font-family:sans-serif;color:#eee;background:#0a0a0a;padding:32px;"><h1 style="color:#fff;">Ochutnávka nestačí?</h1><p>Podívejte se na naše nejnovější beaty a sound kity — vybráno přímo pro producenty jako vy.</p><p><a href="{{site_url}}/beaty" style="color:#0B99FC;">Zobrazit beaty</a></p></div>`,
+        html: `<p style="margin:0 0 12px 0;font-size:22px;font-weight:700;color:#ffffff;">Ochutnávka nestačí?</p><p style="margin:0 0 16px 0;font-size:15px;color:#aaaaaa;line-height:1.6;">Podívejte se na naše nejnovější beaty a sound kity — vybráno přímo pro producenty jako vy.</p><table cellpadding="0" cellspacing="0" style="margin:8px 0 4px 0;"><tr><td><a href="{{site_url}}/beaty" style="display:inline-block;background:#ffffff;color:#000000;font-weight:700;font-size:13px;padding:12px 28px;border-radius:4px;text-decoration:none;letter-spacing:0.5px;">ZOBRAZIT BEATY</a></td></tr></table>`,
       },
       {
         key: "post_purchase_thanks",
         name: "Po nákupu — poděkování",
         subject: "Děkujeme za nákup u VOODOO808!",
-        html: `<div style="font-family:sans-serif;color:#eee;background:#0a0a0a;padding:32px;"><h1 style="color:#fff;">Děkujeme!</h1><p>Vážíme si vaší důvěry. Pokud budete mít jakékoliv otázky k licenci nebo souboru, napište nám.</p></div>`,
+        html: `<p style="margin:0 0 12px 0;font-size:22px;font-weight:700;color:#ffffff;">Děkujeme za nákup!</p><p style="margin:0 0 16px 0;font-size:15px;color:#aaaaaa;line-height:1.6;">Vážíme si vaší důvěry. Pokud budete mít jakékoliv otázky k licenci nebo souboru, napište nám — rádi pomůžeme.</p><div style="background:#111111;border:1px solid #222222;border-radius:6px;padding:18px 22px;margin:0 0 16px 0;"><p style="margin:0 0 6px 0;font-size:13px;font-weight:700;color:#ffffff;">Přístup kdykoli</p><p style="margin:0;font-size:13px;color:#888888;line-height:1.6;">Všechny vaše nákupy jsou dostupné ve vašem <a href="{{site_url}}/ucet" style="color:#ffffff;font-weight:600;">účtu na VOODOO808</a>.</p></div>`,
       },
     ];
 
@@ -567,6 +567,16 @@ export async function initDatabase() {
         `INSERT INTO marketing_templates (key, name, subject, html_content) VALUES ($1,$2,$3,$4)
          ON CONFLICT (key) DO NOTHING`,
         [t.key, t.name, t.subject, t.html]
+      );
+      // One-time refresh: if this seed template still has its OLD placeholder
+      // styling (identifiable by the old "font-family:sans-serif" wrapper that
+      // only the original seed ever used), upgrade it to the new brand-kit
+      // markup. Never touches a template an admin has actually edited, since
+      // any real edit removes that marker.
+      await client.query(
+        `UPDATE marketing_templates SET html_content = $2, updated_at = CURRENT_TIMESTAMP
+         WHERE key = $1 AND html_content LIKE '%font-family:sans-serif%'`,
+        [t.key, t.html]
       );
     }
 

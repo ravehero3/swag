@@ -8014,6 +8014,15 @@ function SablonyTab() {
 
       {showForm && editing && (
         <form onSubmit={handleSave} style={{ marginBottom: "20px", padding: "16px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "10px" }}>
+          <div style={{ fontSize: "11px", color: "#666", lineHeight: 1.6, marginBottom: "4px" }}>
+            Logo, tmavé pozadí, patička a odhlášení se přidávají automaticky (stejný vzhled jako web/admin panel) — sem pište jen obsah e-mailu. Použijte hotové bloky níže nebo napište vlastní HTML.
+          </div>
+          <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginBottom: "4px" }}>
+            <button type="button" className="btn" style={{ borderRadius: "4px", fontSize: "11px", borderColor: "#444" }} onClick={() => setEditing({ ...editing, html_content: (editing.html_content || "") + '\n<p style="margin:0 0 12px 0;font-size:22px;font-weight:700;color:#ffffff;">Nadpis</p>' })}>+ Nadpis</button>
+            <button type="button" className="btn" style={{ borderRadius: "4px", fontSize: "11px", borderColor: "#444" }} onClick={() => setEditing({ ...editing, html_content: (editing.html_content || "") + '\n<p style="margin:0 0 16px 0;font-size:15px;color:#aaaaaa;line-height:1.6;">Text odstavce…</p>' })}>+ Odstavec</button>
+            <button type="button" className="btn" style={{ borderRadius: "4px", fontSize: "11px", borderColor: "#444" }} onClick={() => setEditing({ ...editing, html_content: (editing.html_content || "") + '\n<table cellpadding="0" cellspacing="0" style="margin:8px 0 4px 0;"><tr><td><a href="{{site_url}}" style="display:inline-block;background:#ffffff;color:#000000;font-weight:700;font-size:13px;padding:12px 28px;border-radius:4px;text-decoration:none;letter-spacing:0.5px;">TLAČÍTKO</a></td></tr></table>' })}>+ Tlačítko</button>
+            <button type="button" className="btn" style={{ borderRadius: "4px", fontSize: "11px", borderColor: "#444" }} onClick={() => setEditing({ ...editing, html_content: (editing.html_content || "") + '\n<div style="background:#111111;border:1px solid #222222;border-radius:6px;padding:18px 22px;margin:0 0 16px 0;"><p style="margin:0 0 6px 0;font-size:13px;font-weight:700;color:#ffffff;">Název boxu</p><p style="margin:0;font-size:13px;color:#888888;line-height:1.6;">Text boxu…</p></div>' })}>+ Info box</button>
+          </div>
           <input required value={editing.name} onChange={e => setEditing({ ...editing, name: e.target.value })} placeholder="Název šablony" style={inputStyle} />
           <input required value={editing.subject} onChange={e => setEditing({ ...editing, subject: e.target.value })} placeholder="Předmět (může obsahovat {{first_name}})" style={inputStyle} />
           <input value={editing.preheader || ""} onChange={e => setEditing({ ...editing, preheader: e.target.value })} placeholder="Preheader (nepovinné)" style={inputStyle} />

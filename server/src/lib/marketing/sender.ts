@@ -3,6 +3,7 @@ import { pool } from "../../db.js";
 import type { Subscriber } from "./subscribers.js";
 import { isMarketingEligible } from "./subscribers.js";
 import { createUnsubscribeToken } from "./tokens.js";
+import { renderBrandedEmailShell } from "./brandKit.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Marketing email sender. Distinct from server/src/email.ts (transactional
@@ -47,23 +48,6 @@ function fillVariables(text: string, vars: Record<string, string>): string {
   });
 }
 
-function appendFooter(html: string, unsubscribeUrl: string): string {
-  const footer = `
-    <table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:24px auto 0;">
-      <tr><td style="padding:24px 0 0;border-top:1px solid #222;text-align:center;">
-        <p style="margin:0;font-size:11px;color:#555;line-height:1.7;">
-          VOODOO808 &bull; Vojtěch Vojkovský<br/>
-          <a href="${unsubscribeUrl}" style="color:#666;text-decoration:underline;">Odhlásit se z marketingových e-mailů</a>
-        </p>
-      </td></tr>
-    </table>`;
-  // If the template already has a </body>, inject before it; otherwise append.
-  if (/<\/body>/i.test(html)) {
-    return html.replace(/<\/body>/i, `${footer}</body>`);
-  }
-  return html + footer;
-}
-
 function buildPreviewVars(overrides?: Record<string, string>): Record<string, string> {
   const appUrl = getAppUrl();
   return {
@@ -95,10 +79,16 @@ interface MarketingTemplate {
 }
 
 /** Render a template's subject + HTML with sample variables, for admin preview. Never sends anything. */
-export function renderTemplatePreview(template: { subject: string; html_content: string }): { subject: string; html: string } {
+export function renderTemplatePreview(template: { subject: string; html_content: string; preheader?: string | null }): { subject: string; html: string } {
   const vars = buildPreviewVars();
   const subject = fillVariables(template.subject, vars);
-  const html = appendFooter(fillVariables(template.html_content, vars), vars.unsubscribe_url);
+  const bodyHtml = fillVariables(template.html_content, vars);
+  const html = renderBrandedEmailShell({
+    appUrl: vars.site_url,
+    bodyHtml,
+    unsubscribeUrl: vars.unsubscribe_url,
+    preheader: template.preheader ? fillVariables(template.preheader, vars) : undefined,
+  });
   return { subject, html };
 }
 
@@ -195,7 +185,13 @@ export async function sendMarketingEmail(input: SendMarketingEmailInput): Promis
   };
 
   const subject = fillVariables(template.subject, vars);
-  const html = appendFooter(fillVariables(template.html_content, vars), unsubscribeUrl);
+  const bodyHtml = fillVariables(template.html_content, vars);
+  const html = renderBrandedEmailShell({
+    appUrl,
+    bodyHtml,
+    unsubscribeUrl,
+    preheader: template.preheader ? fillVariables(template.preheader, vars) : undefined,
+  });
 
   const mode = await getEmailMode();
   let recipient = subscriber.email;
