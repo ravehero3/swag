@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import { requireAdmin } from "../middleware/auth.js";
 import { rateLimit } from "../middleware/rateLimit.js";
 import { pool } from "../db.js";
+import { compileBlocksToHtml } from "../lib/marketing/blockCompiler.js";
 import {
   verifyUnsubscribeToken,
 } from "../lib/marketing/tokens.js";
@@ -350,14 +351,22 @@ router.get("/templates", requireAdmin, async (_req: Request, res: Response) => {
 
 router.post("/templates", requireAdmin, async (req: Request, res: Response) => {
   try {
-    const { name, key, subject, preheader, htmlContent, textContent } = req.body;
-    if (!name || !subject || !htmlContent) {
-      return res.status(400).json({ error: "Chybí povinná pole (název, předmět, obsah)" });
+    const { name, key, subject, preheader, htmlContent, textContent, blocks } = req.body;
+    if (!name || !subject) {
+      return res.status(400).json({ error: "Chybí povinná pole (název, předmět)" });
+    }
+    const blocksJson = Array.isArray(blocks) ? JSON.stringify(blocks) : (blocks ? JSON.stringify(blocks) : "[]");
+    let finalHtml = htmlContent || "";
+    if (!finalHtml && Array.isArray(blocks) && blocks.length > 0) {
+      finalHtml = compileBlocksToHtml(blocks);
+    }
+    if (!finalHtml) {
+      return res.status(400).json({ error: "Chybí obsah šablony (HTML nebo bloky)" });
     }
     const result = await pool.query(
-      `INSERT INTO marketing_templates (name, key, subject, preheader, html_content, text_content)
-       VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
-      [name, key || null, subject, preheader || null, htmlContent, textContent || null]
+      `INSERT INTO marketing_templates (name, key, subject, preheader, html_content, text_content, blocks)
+       VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb) RETURNING *`,
+      [name, key || null, subject, preheader || null, finalHtml, textContent || null, blocksJson]
     );
     await logMarketingAction("template.created", req.session.userId || null, { type: "template", id: result.rows[0].id });
     res.json(result.rows[0]);
@@ -369,11 +378,17 @@ router.post("/templates", requireAdmin, async (req: Request, res: Response) => {
 
 router.patch("/templates/:id", requireAdmin, async (req: Request, res: Response) => {
   try {
-    const { name, subject, preheader, htmlContent, textContent } = req.body;
+    const { name, subject, preheader, htmlContent, textContent, blocks } = req.body;
+    let finalHtml = htmlContent || "";
+    if (Array.isArray(blocks) && blocks.length > 0) {
+      finalHtml = compileBlocksToHtml(blocks);
+    }
+    const blocksJson = Array.isArray(blocks) ? JSON.stringify(blocks) : (blocks ? JSON.stringify(blocks) : "[]");
+
     const result = await pool.query(
       `UPDATE marketing_templates SET name = $1, subject = $2, preheader = $3, html_content = $4,
-       text_content = $5, updated_at = CURRENT_TIMESTAMP WHERE id = $6 RETURNING *`,
-      [name, subject, preheader || null, htmlContent, textContent || null, req.params.id]
+       text_content = $5, blocks = $6::jsonb, updated_at = CURRENT_TIMESTAMP WHERE id = $7 RETURNING *`,
+      [name, subject, preheader || null, finalHtml, textContent || null, blocksJson, req.params.id]
     );
     if (result.rows.length === 0) return res.status(404).json({ error: "Šablona nenalezena" });
     await logMarketingAction("template.edited", req.session.userId || null, { type: "template", id: parseInt(req.params.id, 10) });
@@ -737,16 +752,160 @@ router.get("/campaigns", requireAdmin, async (_req: Request, res: Response) => {
 
 router.post("/campaigns", requireAdmin, async (req: Request, res: Response) => {
   try {
-    const { name, subject, templateId } = req.body;
+    const { name, subject, preheader, templateId, blocks, htmlContent } = req.body;
     if (!name) return res.status(400).json({ error: "Chybí název kampaně" });
+
+    let finalHtml = htmlContent || "";
+    if (Array.isArray(blocks) && blocks.length > 0) {
+      finalHtml = compileBlocksToHtml(blocks);
+    }
+    const blocksJson = Array.isArray(blocks) ? JSON.stringify(blocks) : (blocks ? JSON.stringify(blocks) : "[]");
+
     const result = await pool.query(
-      `INSERT INTO marketing_campaigns (name, subject, template_id, status) VALUES ($1,$2,$3,'draft') RETURNING *`,
-      [name, subject || null, templateId || null]
+      `INSERT INTO marketing_campaigns (name, subject, preheader, template_id, status, blocks, html_content)
+       VALUES ($1,$2,$3,$4,'draft',$5::jsonb,$6) RETURNING *`,
+      [name, subject || null, preheader || null, templateId || null, blocksJson, finalHtml || null]
     );
     await logMarketingAction("campaign.created", req.session.userId || null, { type: "campaign", id: result.rows[0].id });
     res.json(result.rows[0]);
   } catch (error) {
+    console.error("Campaign create error:", error);
     res.status(500).json({ error: "Chyba při vytváření kampaně" });
+  }
+});
+
+router.patch("/campaigns/:id", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { name, subject, preheader, templateId, blocks, htmlContent } = req.body;
+    let finalHtml = htmlContent || "";
+    if (Array.isArray(blocks) && blocks.length > 0) {
+      finalHtml = compileBlocksToHtml(blocks);
+    }
+    const blocksJson = Array.isArray(blocks) ? JSON.stringify(blocks) : (blocks ? JSON.stringify(blocks) : "[]");
+
+    const result = await pool.query(
+      `UPDATE marketing_campaigns SET name = $1, subject = $2, preheader = $3, template_id = $4,
+       blocks = $5::jsonb, html_content = $6, updated_at = CURRENT_TIMESTAMP WHERE id = $7 RETURNING *`,
+      [name, subject || null, preheader || null, templateId || null, blocksJson, finalHtml || null, req.params.id]
+    );
+    if (result.rows.length === 0) return res.status(404).json({ error: "Kampaň nenalezena" });
+    await logMarketingAction("campaign.edited", req.session.userId || null, { type: "campaign", id: parseInt(req.params.id, 10) });
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error("Campaign update error:", error);
+    res.status(500).json({ error: "Chyba při ukládání kampaně" });
+  }
+});
+
+router.get("/campaigns/:id/preview", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const campaignRes = await pool.query("SELECT * FROM marketing_campaigns WHERE id = $1", [req.params.id]);
+    const campaign = campaignRes.rows[0];
+    if (!campaign) return res.status(404).send("<p style='padding:40px;color:#666;font-family:sans-serif'>Kampaň nenalezena.</p>");
+
+    let subject = campaign.subject || "Náhled kampaně";
+    let htmlContent = campaign.html_content || "";
+
+    if (!htmlContent && Array.isArray(campaign.blocks) && campaign.blocks.length > 0) {
+      htmlContent = compileBlocksToHtml(campaign.blocks);
+    }
+
+    if (!htmlContent && campaign.template_id) {
+      const templateRes = await pool.query("SELECT subject, html_content, preheader, blocks FROM marketing_templates WHERE id = $1", [campaign.template_id]);
+      const template = templateRes.rows[0];
+      if (template) {
+        if (!subject) subject = template.subject;
+        htmlContent = template.html_content || (Array.isArray(template.blocks) ? compileBlocksToHtml(template.blocks) : "");
+      }
+    }
+
+    const { renderTemplatePreview } = await import("../lib/marketing/sender.js");
+    const { html } = renderTemplatePreview({
+      subject,
+      preheader: campaign.preheader,
+      html_content: htmlContent,
+    });
+    res.setHeader("Content-Type", "text/html");
+    res.send(html);
+  } catch (error) {
+    res.status(500).send("<p style='padding:40px;color:#666;font-family:sans-serif'>Chyba při generování náhledu kampaně.</p>");
+  }
+});
+
+router.post("/campaigns/:id/send-test", requireAdmin, testSendLimiter, async (req: Request, res: Response) => {
+  try {
+    const campaignId = parseInt(req.params.id, 10);
+    const toEmail = String(req.body.email || "").trim();
+    if (!toEmail || !toEmail.includes("@")) {
+      return res.status(400).json({ error: "Zadejte platnou e-mailovou adresu pro test." });
+    }
+
+    const campaignRes = await pool.query("SELECT * FROM marketing_campaigns WHERE id = $1", [campaignId]);
+    const campaign = campaignRes.rows[0];
+    if (!campaign) return res.status(404).json({ error: "Kampaň nenalezena" });
+
+    let subject = campaign.subject || "Test kampaň";
+    let htmlContent = campaign.html_content || "";
+    if (!htmlContent && Array.isArray(campaign.blocks) && campaign.blocks.length > 0) {
+      htmlContent = compileBlocksToHtml(campaign.blocks);
+    }
+    if (!htmlContent && campaign.template_id) {
+      const templateRes = await pool.query("SELECT subject, html_content, preheader, blocks FROM marketing_templates WHERE id = $1", [campaign.template_id]);
+      const template = templateRes.rows[0];
+      if (template) {
+        if (!subject) subject = template.subject;
+        htmlContent = template.html_content || (Array.isArray(template.blocks) ? compileBlocksToHtml(template.blocks) : "");
+      }
+    }
+
+    const { sendTestCustomEmail } = await import("../lib/marketing/sender.js");
+    const result = await sendTestCustomEmail(
+      { subject, preheader: campaign.preheader, htmlContent },
+      toEmail
+    );
+    if (!result.ok) return res.status(500).json({ error: result.error || "Odeslání testovacího e-mailu selhalo" });
+    await logMarketingAction("campaign.test_sent", req.session.userId || null, { type: "campaign", id: campaignId }, { to: toEmail });
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Campaign test send error:", error);
+    res.status(500).json({ error: "Chyba při odesílání testovacího e-mailu" });
+  }
+});
+
+// Helper for selecting beats and sound kits inside the Beat Highlight block of the visual editor
+router.get("/beats-select", requireAdmin, async (_req: Request, res: Response) => {
+  try {
+    const beatsRes = await pool.query(
+      `SELECT id, title, bpm, scale_key, mp3_price, cover_art_url FROM beats WHERE is_published = true ORDER BY created_at DESC LIMIT 50`
+    );
+    const kitsRes = await pool.query(
+      `SELECT id, title, price, artwork_url FROM sound_kits WHERE is_published = true ORDER BY created_at DESC LIMIT 50`
+    );
+
+    const items = [
+      ...beatsRes.rows.map((b: any) => ({
+        id: `beat-${b.id}`,
+        title: b.title,
+        subtitle: "Beat",
+        coverUrl: b.cover_art_url,
+        price: b.mp3_price ? `od ${b.mp3_price} Kč` : "Bez ceny",
+        bpmKey: [b.bpm ? `${b.bpm} BPM` : "", b.scale_key || ""].filter(Boolean).join(" • "),
+        url: `/beaty?beat=${b.id}`,
+      })),
+      ...kitsRes.rows.map((k: any) => ({
+        id: `kit-${k.id}`,
+        title: k.title,
+        subtitle: "Sound Kit",
+        coverUrl: k.artwork_url,
+        price: k.price ? `${k.price} Kč` : "Zdarma",
+        bpmKey: "Sound Kit",
+        url: `/zvuky`,
+      })),
+    ];
+
+    res.json(items);
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při načítání položek" });
   }
 });
 
@@ -789,7 +948,15 @@ router.post("/campaigns/:id/send", requireAdmin, async (req: Request, res: Respo
     const campaign = campaignRes.rows[0];
     if (!campaign) return res.status(404).json({ error: "Kampaň nenalezena" });
     if (campaign.status !== "draft") return res.status(400).json({ error: "Kampaň již byla odeslána nebo zrušena" });
-    if (!campaign.template_id) return res.status(400).json({ error: "Kampaň nemá přiřazenou šablonu" });
+
+    let campaignHtml = campaign.html_content || "";
+    if (!campaignHtml && Array.isArray(campaign.blocks) && campaign.blocks.length > 0) {
+      campaignHtml = compileBlocksToHtml(campaign.blocks);
+    }
+
+    if (!campaign.template_id && !campaignHtml) {
+      return res.status(400).json({ error: "Kampaň nemá přiřazenou šablonu ani vlastní obsah" });
+    }
 
     const audienceRes = await pool.query(
       "SELECT * FROM subscribers WHERE marketing_consent = TRUE AND unsubscribed_at IS NULL AND suppressed_at IS NULL ORDER BY id ASC"
@@ -821,9 +988,12 @@ router.post("/campaigns/:id/send", requireAdmin, async (req: Request, res: Respo
           batch.map((subscriber: any) =>
             sendMarketingEmail({
               subscriber,
-              templateId: campaign.template_id,
+              templateId: campaign.template_id || undefined,
               campaignId,
               idempotencyKey: `campaign/${campaignId}/subscriber/${subscriber.id}`,
+              customSubject: campaign.subject || undefined,
+              customPreheader: campaign.preheader || undefined,
+              customHtml: campaignHtml || undefined,
             }).catch((err) => console.error(`[Marketing] campaign send failed for subscriber ${subscriber.id}:`, err))
           )
         );

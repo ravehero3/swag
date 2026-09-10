@@ -61,12 +61,15 @@ function buildPreviewVars(overrides?: Record<string, string>): Record<string, st
 
 interface SendMarketingEmailInput {
   subscriber: Subscriber;
-  templateId: number;
+  templateId?: number | null;
   journeyId?: number | null;
   journeyStepId?: number | null;
   enrollmentId?: number | null;
   campaignId?: number | null;
   idempotencyKey: string;
+  customSubject?: string;
+  customPreheader?: string;
+  customHtml?: string;
 }
 
 interface MarketingTemplate {
@@ -76,13 +79,18 @@ interface MarketingTemplate {
   preheader: string | null;
   html_content: string;
   text_content: string | null;
+  blocks?: any;
 }
 
 /** Render a template's subject + HTML with sample variables, for admin preview. Never sends anything. */
-export function renderTemplatePreview(template: { subject: string; html_content: string; preheader?: string | null }): { subject: string; html: string } {
+export function renderTemplatePreview(template: { subject: string; html_content: string; preheader?: string | null; blocks?: any }): { subject: string; html: string } {
   const vars = buildPreviewVars();
   const subject = fillVariables(template.subject, vars);
-  const bodyHtml = fillVariables(template.html_content, vars);
+  let bodyHtml = template.html_content ? fillVariables(template.html_content, vars) : "";
+  if (!bodyHtml && Array.isArray(template.blocks) && template.blocks.length > 0) {
+    const { compileBlocksToHtml } = require("./blockCompiler.js");
+    bodyHtml = fillVariables(compileBlocksToHtml(template.blocks), vars);
+  }
   const html = renderBrandedEmailShell({
     appUrl: vars.site_url,
     bodyHtml,
@@ -90,6 +98,48 @@ export function renderTemplatePreview(template: { subject: string; html_content:
     preheader: template.preheader ? fillVariables(template.preheader, vars) : undefined,
   });
   return { subject, html };
+}
+
+/**
+ * Send a custom test email (e.g. for campaign draft in visual builder) to an admin address.
+ */
+export async function sendTestCustomEmail(
+  opts: { subject: string; preheader?: string | null; htmlContent: string },
+  toEmail: string
+): Promise<{ ok: boolean; error?: string }> {
+  const apiKey = process.env.RESEND_API_KEY || process.env.RESEND_API;
+  if (!apiKey) return { ok: false, error: "RESEND_API_KEY není nastaven" };
+
+  const { subject, html } = renderTemplatePreview({
+    subject: opts.subject || "Test kampaň",
+    preheader: opts.preheader,
+    html_content: opts.htmlContent || "",
+  });
+
+  const fromAddress = process.env.RESEND_FROM || "VOODOO808 <info@voodoo808.com>";
+  const resend = new Resend(apiKey);
+  const idempotencyKey = `test/custom/${toEmail}/${Date.now()}`;
+
+  try {
+    const { data, error } = await resend.emails.send(
+      { from: fromAddress, to: [toEmail], subject: `[TEST] ${subject}`, html },
+      { idempotencyKey }
+    );
+    const status = error ? "failed" : "sent";
+    const sentAt = error ? null : new Date();
+    await pool.query(
+      `INSERT INTO marketing_email_sends
+         (subscriber_id, template_id, idempotency_key, email_type, subject, recipient, status, resend_email_id, sent_at, error)
+       VALUES (NULL,NULL,$1,'test',$2,$3,$4,$5,$6,$7)
+       ON CONFLICT (idempotency_key) DO NOTHING`,
+      [idempotencyKey, subject, toEmail, status, data?.id || null, sentAt, error ? String(error.message || error) : null]
+    );
+    if (error) return { ok: false, error: String(error.message || error) };
+    return { ok: true };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return { ok: false, error: msg };
+  }
 }
 
 /**
@@ -137,7 +187,7 @@ export async function sendTestMarketingEmail(
 }
 
 export async function sendMarketingEmail(input: SendMarketingEmailInput): Promise<{ skipped: boolean; reason?: string }> {
-  const { subscriber, templateId, idempotencyKey } = input;
+  const { subscriber, templateId, idempotencyKey, customSubject, customPreheader, customHtml } = input;
 
   // Re-check eligibility right before send (belt-and-suspenders).
   const eligibility = isMarketingEligible(subscriber);
@@ -156,14 +206,34 @@ export async function sendMarketingEmail(input: SendMarketingEmailInput): Promis
     return { skipped: true, reason: "already_sent" };
   }
 
-  const templateRes = await pool.query<MarketingTemplate>(
-    "SELECT * FROM marketing_templates WHERE id = $1",
-    [templateId]
-  );
-  const template = templateRes.rows[0];
-  if (!template) {
-    await recordSkippedSend(input, subscriber.email, "template_not_found");
-    return { skipped: true, reason: "template_not_found" };
+  let subjectText = customSubject || "";
+  let preheaderText = customPreheader || null;
+  let rawBodyHtml = customHtml || "";
+  let tplId = templateId || null;
+
+  if (!rawBodyHtml || !subjectText) {
+    if (!tplId) {
+      await recordSkippedSend(input, subscriber.email, "template_not_found");
+      return { skipped: true, reason: "template_not_found" };
+    }
+    const templateRes = await pool.query<MarketingTemplate>(
+      "SELECT * FROM marketing_templates WHERE id = $1",
+      [tplId]
+    );
+    const template = templateRes.rows[0];
+    if (!template) {
+      await recordSkippedSend(input, subscriber.email, "template_not_found");
+      return { skipped: true, reason: "template_not_found" };
+    }
+    if (!subjectText) subjectText = template.subject;
+    if (!preheaderText) preheaderText = template.preheader;
+    if (!rawBodyHtml) {
+      rawBodyHtml = template.html_content || "";
+      if (!rawBodyHtml && Array.isArray(template.blocks) && template.blocks.length > 0) {
+        const { compileBlocksToHtml } = require("./blockCompiler.js");
+        rawBodyHtml = compileBlocksToHtml(template.blocks);
+      }
+    }
   }
 
   const apiKey = process.env.RESEND_API_KEY || process.env.RESEND_API;
@@ -184,13 +254,13 @@ export async function sendMarketingEmail(input: SendMarketingEmailInput): Promis
     site_url: appUrl,
   };
 
-  const subject = fillVariables(template.subject, vars);
-  const bodyHtml = fillVariables(template.html_content, vars);
+  const subject = fillVariables(subjectText, vars);
+  const bodyHtml = fillVariables(rawBodyHtml, vars);
   const html = renderBrandedEmailShell({
     appUrl,
     bodyHtml,
     unsubscribeUrl,
-    preheader: template.preheader ? fillVariables(template.preheader, vars) : undefined,
+    preheader: preheaderText ? fillVariables(preheaderText, vars) : undefined,
   });
 
   const mode = await getEmailMode();

@@ -11,6 +11,7 @@ import SoundWave from "../components/SoundWave.js";
 // Force rebuild 1788444345
 import { BeatUploadModal } from "../components/BeatUploadModal.js";
 import { AdminErrorLog } from "../components/AdminErrorLog.js";
+import { VisualEmailBuilder } from "../components/VisualEmailBuilder.js";
 import {
   BeatArtwork,
   parseArtworkConfig,
@@ -7785,6 +7786,9 @@ function KampaneTab() {
   const [subject, setSubject] = useState("");
   const [templateId, setTemplateId] = useState<number | "">("");
   const [audienceCounts, setAudienceCounts] = useState<Record<number, number>>({});
+  const [visualCampaign, setVisualCampaign] = useState<any>(null);
+  const [previewCampaign, setPreviewCampaign] = useState<any>(null);
+  const [previewWidth, setPreviewWidth] = useState<"desktop" | "mobile">("desktop");
 
   const load = () => {
     setLoading(true);
@@ -7806,6 +7810,67 @@ function KampaneTab() {
     });
     setName(""); setSubject(""); setTemplateId(""); setShowCreate(false);
     load();
+  };
+
+  const startNewVisual = () => {
+    setVisualCampaign({ isNew: true, name: `Kampaň ${new Date().toLocaleDateString("cs-CZ")}`, subject: "", preheader: "", blocks: [] });
+  };
+
+  const startEditVisual = (c: any) => {
+    setVisualCampaign({ ...c, isNew: false, blocks: Array.isArray(c.blocks) ? c.blocks : [] });
+  };
+
+  const handleSaveVisual = async (data: { subject: string; preheader: string; blocks: any[] }) => {
+    if (visualCampaign?.id) {
+      await fetch(`/api/marketing/campaigns/${visualCampaign.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          name: visualCampaign.name || "Kampaň",
+          subject: data.subject,
+          preheader: data.preheader,
+          blocks: data.blocks,
+        }),
+      });
+    } else {
+      const campName = prompt("Zadejte název kampaně:", visualCampaign?.name || "Nová kampaň");
+      if (!campName) return;
+      await fetch("/api/marketing/campaigns", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          name: campName,
+          subject: data.subject,
+          preheader: data.preheader,
+          blocks: data.blocks,
+        }),
+      });
+    }
+    setVisualCampaign(null);
+    load();
+  };
+
+  const handleTestSendVisual = async (email: string, subject: string, preheader: string, blocks: any[]) => {
+    if (visualCampaign?.id) {
+      const res = await fetch(`/api/marketing/campaigns/${visualCampaign.id}/send-test`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Odeslání selhalo");
+    } else {
+      const res = await fetch("/api/marketing/templates/1/send-test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email }),
+      });
+      if (!res.ok) throw new Error("Odeslání selhalo");
+    }
   };
 
   const fetchAudienceCount = async (id: number) => {
@@ -7848,9 +7913,14 @@ function KampaneTab() {
         <p style={{ color: "#555", fontSize: "12px", margin: 0 }}>
           Jednorázové e-maily odeslané všem aktivním marketingovým odběratelům (bez odhlášení/potlačení).
         </p>
-        <button className="btn btn-filled" onClick={() => setShowCreate(v => !v)} style={{ borderRadius: "4px", fontSize: "12px" }}>
-          {showCreate ? "Zavřít" : "+ Nová kampaň"}
-        </button>
+        <div style={{ display: "flex", gap: "8px" }}>
+          <button className="btn btn-filled" onClick={startNewVisual} style={{ borderRadius: "4px", fontSize: "12px" }}>
+            ✨ + Vizuální kampaň
+          </button>
+          <button className="btn" onClick={() => setShowCreate(v => !v)} style={{ borderRadius: "4px", fontSize: "12px", borderColor: "#444" }}>
+            {showCreate ? "Zavřít" : "+ Rychlý draft ze šablony"}
+          </button>
+        </div>
       </div>
 
       {showCreate && (
@@ -7874,7 +7944,7 @@ function KampaneTab() {
           <thead>
             <tr>
               <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", textAlign: "left" }}>Název</th>
-              <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", textAlign: "left" }}>Šablona</th>
+              <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", textAlign: "left" }}>Předmět / Šablona</th>
               <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", textAlign: "left" }}>Stav</th>
               <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", textAlign: "left" }}>Příjemci</th>
               <th style={{ ...cellStyle, textAlign: "right" }}></th>
@@ -7884,12 +7954,16 @@ function KampaneTab() {
             {campaigns.map(c => (
               <tr key={c.id}>
                 <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textPrimary, fontWeight: 500 }}>{c.name}</td>
-                <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "12px" }}>{c.template_name || "—"}</td>
+                <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "12px" }}>
+                  {c.subject ? c.subject : (c.template_name || "—")}
+                </td>
                 <td style={{ ...cellStyle }}><span style={{ fontSize: "11px", color: STATUS_COLORS[c.status] || "#555" }}>{c.status}</span></td>
                 <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "12px" }}>{c.recipient_count ?? (audienceCounts[c.id] ?? "—")}</td>
                 <td style={{ ...cellStyle, textAlign: "right", display: "flex", gap: "6px", justifyContent: "flex-end" }}>
+                  <button className="btn" onClick={() => setPreviewCampaign(c)} style={{ borderRadius: "4px", fontSize: "11px", borderColor: "#444" }}>Náhled</button>
                   {c.status === "draft" && (
                     <>
+                      <button className="btn" onClick={() => startEditVisual(c)} style={{ borderRadius: "4px", fontSize: "11px", borderColor: "#0B99FC", color: "#0B99FC" }}>Vizuální editor</button>
                       <button className="btn" onClick={() => fetchAudienceCount(c.id)} style={{ borderRadius: "4px", fontSize: "11px", borderColor: "#444" }}>Náhled počtu</button>
                       <button className="btn btn-filled" onClick={() => handleSend(c)} style={{ borderRadius: "4px", fontSize: "11px" }}>Odeslat</button>
                       <button className="btn" onClick={() => handleCancel(c.id)} style={{ borderRadius: "4px", fontSize: "11px", borderColor: "#ff5252", color: "#ff5252" }}>Zrušit</button>
@@ -7901,6 +7975,49 @@ function KampaneTab() {
           </tbody>
         </table>
       )}
+
+      {visualCampaign && (
+        <VisualEmailBuilder
+          title={`Kampaně — ${visualCampaign.name || "Nová kampaň"}`}
+          initialSubject={visualCampaign.subject || ""}
+          initialPreheader={visualCampaign.preheader || ""}
+          initialBlocks={visualCampaign.blocks || []}
+          onSave={handleSaveVisual}
+          onClose={() => setVisualCampaign(null)}
+          onTestSend={handleTestSendVisual}
+        />
+      )}
+
+      {previewCampaign && (
+        <div
+          onClick={() => setPreviewCampaign(null)}
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)", zIndex: DESIGN_SYSTEM.zIndex.modal, display: "flex", flexDirection: "column", alignItems: "center", overflowY: "auto", padding: "24px 16px 48px" }}
+        >
+          <div onClick={(e) => e.stopPropagation()} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", maxWidth: "640px", marginBottom: "16px", flexShrink: 0 }}>
+            <span style={{ fontWeight: 600, color: "#ddd", fontSize: "13px", letterSpacing: "0.04em" }}>Náhled kampaně — {previewCampaign.name}</span>
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <div style={{ display: "flex", background: "rgba(255,255,255,0.06)", borderRadius: "6px", padding: "2px" }}>
+                <button
+                  onClick={() => setPreviewWidth("desktop")}
+                  style={{ padding: "4px 10px", fontSize: "11px", border: "none", borderRadius: "4px", cursor: "pointer", background: previewWidth === "desktop" ? "rgba(255,255,255,0.12)" : "transparent", color: previewWidth === "desktop" ? "#eee" : "#666" }}
+                >
+                  Desktop
+                </button>
+                <button
+                  onClick={() => setPreviewWidth("mobile")}
+                  style={{ padding: "4px 10px", fontSize: "11px", border: "none", borderRadius: "4px", cursor: "pointer", background: previewWidth === "mobile" ? "rgba(255,255,255,0.12)" : "transparent", color: previewWidth === "mobile" ? "#eee" : "#666" }}
+                >
+                  Mobil
+                </button>
+              </div>
+              <button onClick={() => setPreviewCampaign(null)} style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "4px", fontSize: "13px", cursor: "pointer", color: DESIGN_SYSTEM.colors.textPrimary, padding: "4px 12px" }}>Zavřít ×</button>
+            </div>
+          </div>
+          <div onClick={(e) => e.stopPropagation()} style={{ width: previewWidth === "mobile" ? "390px" : "640px", maxWidth: "100%", background: DESIGN_SYSTEM.colors.elevated, borderRadius: "4px", overflow: "hidden", border: "1px solid #222", transition: "width 0.2s" }}>
+            <iframe src={`/api/marketing/campaigns/${previewCampaign.id}/preview`} style={{ width: "100%", height: "700px", border: "none", display: "block" }} title="Náhled kampaně" />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -7911,6 +8028,7 @@ function SablonyTab() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<any>(null);
   const [showForm, setShowForm] = useState(false);
+  const [visualTemplate, setVisualTemplate] = useState<any>(null);
   const [previewTemplate, setPreviewTemplate] = useState<any>(null);
   const [previewWidth, setPreviewWidth] = useState<"desktop" | "mobile">("desktop");
   const [testEmail, setTestEmail] = useState(() => localStorage.getItem("voodoo808_marketing_test_email") || "");
@@ -7932,7 +8050,68 @@ function SablonyTab() {
     setShowForm(true);
   };
 
+  const startNewVisual = () => {
+    setVisualTemplate({ isNew: true, name: "Nová šablona", subject: "", preheader: "", blocks: [] });
+  };
+
   const startEdit = (t: any) => { setEditing({ ...t }); setShowForm(true); };
+
+  const startEditVisual = (t: any) => {
+    setVisualTemplate({ ...t, isNew: false, blocks: Array.isArray(t.blocks) ? t.blocks : [] });
+  };
+
+  const handleSaveVisual = async (data: { subject: string; preheader: string; blocks: any[] }) => {
+    if (visualTemplate?.id) {
+      await fetch(`/api/marketing/templates/${visualTemplate.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          name: visualTemplate.name || "Šablona",
+          subject: data.subject,
+          preheader: data.preheader,
+          blocks: data.blocks,
+        }),
+      });
+    } else {
+      const tmplName = prompt("Zadejte název šablony:", visualTemplate?.name || "Nová šablona");
+      if (!tmplName) return;
+      await fetch("/api/marketing/templates", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          name: tmplName,
+          subject: data.subject,
+          preheader: data.preheader,
+          blocks: data.blocks,
+        }),
+      });
+    }
+    setVisualTemplate(null);
+    load();
+  };
+
+  const handleTestSendVisual = async (email: string, subject: string, preheader: string, blocks: any[]) => {
+    if (visualTemplate?.id) {
+      const res = await fetch(`/api/marketing/templates/${visualTemplate.id}/send-test`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Odeslání selhalo");
+    } else {
+      const res = await fetch("/api/marketing/templates/1/send-test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email }),
+      });
+      if (!res.ok) throw new Error("Odeslání selhalo");
+    }
+  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -7995,7 +8174,14 @@ function SablonyTab() {
         <p style={{ color: "#555", fontSize: "12px", margin: 0 }}>
           E-mailové šablony pro journeys a kampaně. Použijte proměnné {"{{first_name}}"}, {"{{email}}"}, {"{{unsubscribe_url}}"}, {"{{site_url}}"}.
         </p>
-        <button className="btn btn-filled" onClick={startNew} style={{ borderRadius: "4px", fontSize: "12px" }}>+ Nová šablona</button>
+        <div style={{ display: "flex", gap: "8px" }}>
+          <button className="btn btn-filled" onClick={startNewVisual} style={{ borderRadius: "4px", fontSize: "12px" }}>
+            ✨ + Vizuální šablona
+          </button>
+          <button className="btn" onClick={startNew} style={{ borderRadius: "4px", fontSize: "12px", borderColor: "#444" }}>
+            + HTML šablona
+          </button>
+        </div>
       </div>
 
       <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px", padding: "10px 12px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "8px" }}>
@@ -8065,13 +8251,26 @@ function SablonyTab() {
                   >
                     {testSendingId === t.id ? "Odesílám…" : "Odeslat test"}
                   </button>
-                  <button className="btn" onClick={() => startEdit(t)} style={{ borderRadius: "4px", fontSize: "11px", borderColor: "#444" }}>Upravit</button>
+                  <button className="btn" onClick={() => startEditVisual(t)} style={{ borderRadius: "4px", fontSize: "11px", borderColor: "#0B99FC", color: "#0B99FC" }}>Vizuální editor</button>
+                  <button className="btn" onClick={() => startEdit(t)} style={{ borderRadius: "4px", fontSize: "11px", borderColor: "#444" }}>HTML Upravit</button>
                   <button className="btn" onClick={() => handleDelete(t.id)} style={{ borderRadius: "4px", fontSize: "11px", borderColor: "#ff5252", color: "#ff5252" }}>Smazat</button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
+      )}
+
+      {visualTemplate && (
+        <VisualEmailBuilder
+          title={`Šablona — ${visualTemplate.name || "Nová šablona"}`}
+          initialSubject={visualTemplate.subject || ""}
+          initialPreheader={visualTemplate.preheader || ""}
+          initialBlocks={visualTemplate.blocks || []}
+          onSave={handleSaveVisual}
+          onClose={() => setVisualTemplate(null)}
+          onTestSend={handleTestSendVisual}
+        />
       )}
 
       {previewTemplate && (

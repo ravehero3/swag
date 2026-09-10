@@ -510,6 +510,14 @@ export async function initDatabase() {
       CREATE INDEX IF NOT EXISTS idx_marketing_audit_log_created_at ON marketing_audit_log (created_at DESC);
     `);
 
+    // Ensure visual editor columns exist
+    await client.query(`
+      ALTER TABLE marketing_templates ADD COLUMN IF NOT EXISTS blocks JSONB DEFAULT '[]';
+      ALTER TABLE marketing_campaigns ADD COLUMN IF NOT EXISTS blocks JSONB DEFAULT '[]';
+      ALTER TABLE marketing_campaigns ADD COLUMN IF NOT EXISTS preheader TEXT;
+      ALTER TABLE marketing_campaigns ADD COLUMN IF NOT EXISTS html_content TEXT;
+    `);
+
     // Backfill: normalise emails for any subscriber rows that predate the
     // email_normalized column (safe no-op on fresh installs).
     await client.query(`

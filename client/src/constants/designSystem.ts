@@ -45,9 +45,9 @@ export const DESIGN_SYSTEM = {
     bold: 700,
     
     // Line heights
-    tight: 1.2,
-    normal: 1.5,
-    relaxed: 1.75,
+    lhTight: 1.2,
+    lhNormal: 1.5,
+    lhRelaxed: 1.75,
   },
 
   // Spacing Scale (8px base unit)
