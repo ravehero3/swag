@@ -2,7 +2,7 @@ import { Button, Input, Select, Badge, Skeleton } from '../components/UI';
 import { DESIGN_SYSTEM } from '../constants/designSystem';
 import { CZECH } from '../constants/czech';
 import { useState, useEffect, useRef, useMemo } from "react";
-import { Music, Image as ImageIcon, Upload, Star, ChevronUp, ChevronDown, Pencil, Check, X, Clock, Plus, Menu, Mail, AlertTriangle, CheckCircle2, Folder, Copy, Trash2, ArrowLeft, Tag, Zap, Sparkles, Search } from "lucide-react";
+import { Music, Image as ImageIcon, Upload, Star, ChevronUp, ChevronDown, Pencil, Check, X, Clock, Plus, Menu, Mail, AlertTriangle, CheckCircle2, Folder, Copy, Trash2, ArrowLeft, Tag, Zap, Sparkles, Search, Receipt, Layers, Users, ShieldCheck, MessageSquare, Settings, BarChart3, type LucideIcon } from "lucide-react";
 import { useApp } from "../App.js";
 import { useLocation } from "wouter";
 import { toAudioProxyUrl } from "../lib/audioProxy.js";
@@ -139,15 +139,15 @@ interface LicenseType {
 
 type AdminTab = "orders" | "beats" | "kits" | "zakaznici" | "licenses" | "marketing" | "komentare" | "nastaveni";
 
-const ADMIN_NAV: { id: AdminTab; label: string }[] = [
-  { id: "orders",    label: "Objednávky" },
-  { id: "beats",     label: "Beaty"      },
-  { id: "kits",      label: "Zvuky"      },
-  { id: "zakaznici", label: "Zákazníci"  },
-  { id: "licenses",  label: "Licence"    },
-  { id: "marketing", label: "Marketing"  },
-  { id: "komentare", label: "Komentáře"  },
-  { id: "nastaveni", label: "Nastavení"  },
+const ADMIN_NAV: { id: AdminTab; label: string; icon: LucideIcon }[] = [
+  { id: "orders",    label: "Objednávky", icon: Receipt        },
+  { id: "beats",     label: "Beaty",      icon: Music          },
+  { id: "kits",      label: "Zvuky",      icon: Layers         },
+  { id: "zakaznici", label: "Zákazníci",  icon: Users          },
+  { id: "licenses",  label: "Licence",    icon: ShieldCheck    },
+  { id: "marketing", label: "Marketing",  icon: BarChart3      },
+  { id: "komentare", label: "Komentáře",  icon: MessageSquare  },
+  { id: "nastaveni", label: "Nastavení",  icon: Settings       },
 ];
 
 const LEGACY_TAB_MAP: Record<string, AdminTab> = {
@@ -366,50 +366,54 @@ function Admin() {
       }}>
         {/* ── Sidebar (Drawer on mobile, Sticky on desktop) ── */}
         <aside style={{
-          width: "220px",
+          width: "232px",
           flexShrink: 0,
-          background: "#070707",
-          borderRight: "1px solid #181818",
+          background: "rgba(12, 12, 12, 0.92)",
+          backdropFilter: "saturate(180%) blur(20px)",
+          WebkitBackdropFilter: "saturate(180%) blur(20px)",
+          borderRight: "1px solid rgba(255, 255, 255, 0.06)",
           display: "flex",
           flexDirection: "column",
           position: isMobile ? "fixed" : "sticky",
           top: 0,
-          left: isMobile ? (sidebarOpen ? 0 : "-230px") : 0,
+          left: isMobile ? (sidebarOpen ? 0 : "-242px") : 0,
           zIndex: isMobile ? 100 : 1,
           height: "100vh",
           overflowY: "auto",
           scrollbarWidth: "none",
-          transition: isMobile ? "left 0.25s cubic-bezier(0.4, 0, 0.2, 1)" : "none",
-          boxShadow: isMobile && sidebarOpen ? "4px 0 24px rgba(0,0,0,0.85)" : "none",
+          transition: isMobile ? "left 0.3s cubic-bezier(0.32, 0.72, 0, 1)" : "none",
+          boxShadow: isMobile && sidebarOpen ? "4px 0 32px rgba(0,0,0,0.7)" : "none",
         }}>
           {/* Brand */}
-          <div style={{ padding: "22px 20px 18px", borderBottom: "1px solid #131313", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <a href="/" style={{ textDecoration: "none" }}>
-              <img src="/uploads/artwork/voodoo808-logo.png" alt="VOODOO808" style={{ height: "24px", width: "auto", border: "1px solid #000", borderRadius: "2px" }} />
-              <div style={{ fontSize: "10px", color: "#2b2b2b", letterSpacing: "0.12em", marginTop: "3px", textTransform: "uppercase" }}>Admin</div>
+          <div style={{ padding: "20px 20px 16px", borderBottom: "1px solid rgba(255, 255, 255, 0.06)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <a href="/" style={{ textDecoration: "none", display: "flex", flexDirection: "column", gap: "2px" }}>
+              <img src="/uploads/artwork/voodoo808-logo.png" alt="VOODOO808" style={{ height: "22px", width: "auto", opacity: 0.9 }} />
+              <div style={{ fontSize: "10px", color: "rgba(255, 255, 255, 0.2)", letterSpacing: "0.12em", marginTop: "4px", textTransform: "uppercase", fontWeight: 500 }}>Studio</div>
             </a>
             {isMobile && (
               <button
                 onClick={() => setSidebarOpen(false)}
                 style={{
-                  background: "transparent",
-                  border: "none",
-                  color: "#666",
-                  fontSize: "18px",
+                  background: "rgba(255, 255, 255, 0.06)",
+                  border: "1px solid rgba(255, 255, 255, 0.08)",
+                  color: "rgba(255, 255, 255, 0.5)",
                   cursor: "pointer",
-                  padding: "4px",
+                  padding: "6px",
+                  borderRadius: "8px",
                   display: "flex",
                   alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
-                <X size={18} />
+                <X size={16} />
               </button>
             )}
           </div>
 
           {/* Nav */}
-          <nav style={{ flex: 1, padding: "8px 0" }}>
-            {ADMIN_NAV.map(({ id, label }) => {
+          <nav style={{ flex: 1, padding: "12px 12px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+            {ADMIN_NAV.map(({ id, label, icon: Icon }) => {
               const active = tab === id;
               const badge = id === "orders" && pendingBank > 0 ? pendingBank : null;
               return (
@@ -423,56 +427,60 @@ function Admin() {
                   style={{
                     display: "flex",
                     alignItems: "center",
+                    gap: "10px",
                     width: "100%",
-                    padding: "10px 20px",
-                    background: active ? DESIGN_SYSTEM.colors.tertiary : "transparent",
+                    padding: "8px 12px",
+                    background: active ? "rgba(255, 255, 255, 0.09)" : "transparent",
                     border: "none",
-                    borderLeft: active ? "2px solid #fff" : "2px solid transparent",
-                    color: active ? DESIGN_SYSTEM.colors.textPrimary : "#484848",
+                    borderRadius: "9px",
+                    color: active ? "#ffffff" : "rgba(255, 255, 255, 0.45)",
                     fontSize: "13px",
                     fontFamily: "inherit",
+                    fontWeight: active ? 500 : 400,
                     cursor: "pointer",
                     textAlign: "left",
-                    letterSpacing: "0.01em",
-                    transition: "color 120ms ease, background 120ms ease, border-color 120ms ease",
+                    letterSpacing: "0.005em",
+                    transition: "all 180ms cubic-bezier(0.32, 0.72, 0, 1)",
                     boxSizing: "border-box",
+                    boxShadow: active ? "inset 0 0.5px 0 rgba(255, 255, 255, 0.1), 0 1px 3px rgba(0, 0, 0, 0.2)" : "none",
                   }}
-                  onMouseEnter={e => { 
+                  onMouseEnter={e => {
                     if (!active) {
-                      (e.currentTarget as HTMLButtonElement).style.color = DESIGN_SYSTEM.colors.textSecondary;
-                      (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.04)";
-                      (e.currentTarget as HTMLButtonElement).style.borderLeftColor = "#555555";
+                      (e.currentTarget as HTMLButtonElement).style.color = "rgba(255, 255, 255, 0.7)";
+                      (e.currentTarget as HTMLButtonElement).style.background = "rgba(255, 255, 255, 0.04)";
                     }
                   }}
-                  onMouseLeave={e => { 
+                  onMouseLeave={e => {
                     if (!active) {
-                      (e.currentTarget as HTMLButtonElement).style.color = "#484848";
+                      (e.currentTarget as HTMLButtonElement).style.color = "rgba(255, 255, 255, 0.45)";
                       (e.currentTarget as HTMLButtonElement).style.background = "transparent";
-                      (e.currentTarget as HTMLButtonElement).style.borderLeftColor = "transparent";
                     }
                   }}
                 >
+                  <Icon size={16} style={{ flexShrink: 0, opacity: active ? 1 : 0.6 }} />
                   <span style={{ flex: 1 }}>{label}</span>
                   {badge && (
                     <span style={{
-                      fontSize: "10px", fontWeight: 700, lineHeight: 1,
-                      background: "#fbbf24", color: "#000",
-                      borderRadius: "10px", padding: "2px 6px",
+                      fontSize: "10px", fontWeight: 600, lineHeight: 1,
+                      background: "rgba(255, 179, 64, 0.2)", color: "#ffb340",
+                      borderRadius: "9999px", padding: "2px 7px",
+                      border: "0.5px solid rgba(255, 179, 64, 0.25)",
                       flexShrink: 0,
                     }}>{badge}</span>
                   )}
                 </button>
               );
             })}
+            </div>
           </nav>
 
           {/* Footer */}
-          <div style={{ padding: "14px 20px", borderTop: "1px solid #131313" }}>
+          <div style={{ padding: "16px 20px", borderTop: "1px solid rgba(255, 255, 255, 0.06)" }}>
             <a
               href="/"
-              style={{ fontSize: "11px", color: "#2b2b2b", textDecoration: "none", letterSpacing: "0.03em", display: "inline-flex", alignItems: "center", gap: "6px" }}
-              onMouseEnter={e => (e.currentTarget.style.color = DESIGN_SYSTEM.colors.textSecondary)}
-              onMouseLeave={e => (e.currentTarget.style.color = "#2b2b2b")}
+              style={{ fontSize: "12px", color: "rgba(255, 255, 255, 0.25)", textDecoration: "none", letterSpacing: "0.02em", display: "inline-flex", alignItems: "center", gap: "6px", transition: "color 180ms" }}
+              onMouseEnter={e => (e.currentTarget.style.color = "rgba(255, 255, 255, 0.6)")}
+              onMouseLeave={e => (e.currentTarget.style.color = "rgba(255, 255, 255, 0.25)")}
             >
               <ArrowLeft size={12} />
               <span>Zpět na web</span>
@@ -1780,35 +1788,62 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
   return (
     <div>
       {/* ── Toolbar ── */}
-      <div style={{ display: "flex", gap: "8px", marginBottom: "20px", flexWrap: "wrap", alignItems: "center" }}>
+      <div style={{ display: "flex", gap: "10px", marginBottom: "24px", flexWrap: "wrap", alignItems: "center" }}>
         <button
           className="btn btn-filled"
           onClick={() => { if (showForm) { resetForm(); } else { setEditing(null); setShowForm(true); } }}
           data-testid="button-toggle-beat-form"
-          style={{ display: "none",  fontSize: "13px" }}
+          style={{ display: "none", fontSize: "13px" }}
         >
           {"× Zavřít formulář"}
         </button>
         <button 
-          className="btn btn-filled" 
           onClick={() => {
             console.log('[BUTTON] Upload Beats clicked');
-            console.log('[STATE] Before click - showBeatUploadModal:', showBeatUploadModal);
             setShowBeatUploadModal(true);
-            console.log('[STATE] After setShowBeatUploadModal(true)');
           }} 
           type="button"
-          style={{ fontSize: "13px" }}
+          style={{
+            background: "#ffffff",
+            color: "#000000",
+            border: "none",
+            borderRadius: "9px",
+            padding: "8px 16px",
+            fontSize: "13px",
+            fontWeight: 500,
+            cursor: "pointer",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "6px",
+            boxShadow: "0 1px 3px rgba(0, 0, 0, 0.2)",
+            transition: "all 140ms ease",
+          }}
           data-testid="button-open-beat-upload-modal"
         >
-          ↑ Přidat beaty
+          <Upload size={14} /> Přidat beaty
         </button>
         {beats.some((b: any) => !b.is_published) && (
-          <button className="btn btn-admin" onClick={handlePublishAll} style={{ borderColor: DESIGN_SYSTEM.colors.success, color: DESIGN_SYSTEM.colors.success, fontSize: "13px" }}>
-            ✓ Publikovat skryté ({beats.filter((b: any) => !b.is_published).length})
+          <button
+            onClick={handlePublishAll}
+            style={{
+              background: "rgba(36, 224, 83, 0.1)",
+              border: "0.5px solid rgba(36, 224, 83, 0.3)",
+              color: "#24e053",
+              borderRadius: "9px",
+              padding: "8px 16px",
+              fontSize: "13px",
+              fontWeight: 500,
+              cursor: "pointer",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              transition: "all 140ms ease",
+            }}
+          >
+            <Check size={14} /> Publikovat skryté ({beats.filter((b: any) => !b.is_published).length})
           </button>
         )}
-        <span style={{ marginLeft: "auto", fontSize: "12px", color: "#444" }}>{beats.length} beatů celkem</span>
+        <span style={{ marginLeft: "auto", fontSize: "12px", color: "rgba(255, 255, 255, 0.4)" }}>{beats.length} beatů celkem</span>
       </div>
 
       {/* ── Bulk upload zone ── */}
@@ -2630,21 +2665,27 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
             <div style={{ color: "#444", fontSize: "14px" }}>Žádné beaty. Přidejte první beat.</div>
           </div>
         ) : (
-          <div style={{ border: "1px solid #1a1a1a", borderRadius: "10px", overflow: "hidden" }}>
+          <div style={{
+            border: "1px solid rgba(255, 255, 255, 0.06)",
+            borderRadius: "14px",
+            overflow: "hidden",
+            background: "rgba(255, 255, 255, 0.015)",
+            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.2)",
+          }}>
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
-                <tr style={{ background: "#080808", borderBottom: "1px solid #1a1a1a" }}>
-                  <th style={{ padding: "10px 14px", width: "36px" }}>
-                    <input type="checkbox" checked={beats.length > 0 && selectedBeats.length === beats.length} onChange={handleSelectAll} data-testid="checkbox-select-all-beats" style={{ cursor: "pointer", accentColor: DESIGN_SYSTEM.colors.success }} />
+                <tr style={{ background: "rgba(255, 255, 255, 0.025)", borderBottom: "1px solid rgba(255, 255, 255, 0.06)" }}>
+                  <th style={{ padding: "12px 14px", width: "36px" }}>
+                    <input type="checkbox" checked={beats.length > 0 && selectedBeats.length === beats.length} onChange={handleSelectAll} data-testid="checkbox-select-all-beats" style={{ cursor: "pointer", accentColor: "#ffffff" }} />
                   </th>
-                  <th style={{ padding: "10px 8px", width: "52px" }}></th>
-                  <th style={{ textAlign: "left", padding: "10px 8px", fontSize: "10px", fontWeight: 700, color: "#444", textTransform: "uppercase", letterSpacing: "0.6px" }}>Název</th>
-                  <th style={{ textAlign: "center", padding: "10px 8px", fontSize: "10px", fontWeight: 700, color: "#444", textTransform: "uppercase", letterSpacing: "0.6px", width: "68px" }}>BPM</th>
-                  <th style={{ textAlign: "center", padding: "10px 8px", fontSize: "10px", fontWeight: 700, color: "#444", textTransform: "uppercase", letterSpacing: "0.6px", width: "68px" }}>Tónina</th>
-                  <th style={{ textAlign: "left", padding: "10px 8px", fontSize: "10px", fontWeight: 700, color: "#444", textTransform: "uppercase", letterSpacing: "0.6px", width: "80px" }}>Cena</th>
-                  <th style={{ textAlign: "left", padding: "10px 8px", fontSize: "10px", fontWeight: 700, color: "#444", textTransform: "uppercase", letterSpacing: "0.6px", width: "110px" }}>Status</th>
-                  <th style={{ textAlign: "left", padding: "10px 8px", fontSize: "10px", fontWeight: 700, color: "#444", textTransform: "uppercase", letterSpacing: "0.6px" }}>Waveform</th>
-                  <th style={{ textAlign: "right", padding: "10px 14px", width: "148px" }}></th>
+                  <th style={{ padding: "12px 8px", width: "52px" }}></th>
+                  <th style={{ textAlign: "left", padding: "12px 8px", fontSize: "11px", fontWeight: 500, color: "rgba(255, 255, 255, 0.4)", textTransform: "uppercase", letterSpacing: "0.06em" }}>Název</th>
+                  <th style={{ textAlign: "center", padding: "12px 8px", fontSize: "11px", fontWeight: 500, color: "rgba(255, 255, 255, 0.4)", textTransform: "uppercase", letterSpacing: "0.06em", width: "68px" }}>BPM</th>
+                  <th style={{ textAlign: "center", padding: "12px 8px", fontSize: "11px", fontWeight: 500, color: "rgba(255, 255, 255, 0.4)", textTransform: "uppercase", letterSpacing: "0.06em", width: "68px" }}>Tónina</th>
+                  <th style={{ textAlign: "left", padding: "12px 8px", fontSize: "11px", fontWeight: 500, color: "rgba(255, 255, 255, 0.4)", textTransform: "uppercase", letterSpacing: "0.06em", width: "80px" }}>Cena</th>
+                  <th style={{ textAlign: "left", padding: "12px 8px", fontSize: "11px", fontWeight: 500, color: "rgba(255, 255, 255, 0.4)", textTransform: "uppercase", letterSpacing: "0.06em", width: "110px" }}>Status</th>
+                  <th style={{ textAlign: "left", padding: "12px 8px", fontSize: "11px", fontWeight: 500, color: "rgba(255, 255, 255, 0.4)", textTransform: "uppercase", letterSpacing: "0.06em" }}>Waveform</th>
+                  <th style={{ textAlign: "right", padding: "12px 14px", width: "148px" }}></th>
                 </tr>
               </thead>
               <tbody>
@@ -3626,114 +3667,163 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
         </div>
       )}
 
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr style={{ borderBottom: "1px solid #333" }}>
-            <th style={{ textAlign: "left", padding: "12px", width: "40px" }}>
-              <input 
-                type="checkbox" 
-                checked={kits.length > 0 && selectedKits.length === kits.length}
-                onChange={handleSelectAll}
-                data-testid="checkbox-select-all-kits"
-              />
-            </th>
-            <th style={{ padding: "12px", width: "56px" }}></th>
-            <th style={{ textAlign: "left", padding: "12px" }}>Název</th>
-            <th style={{ textAlign: "left", padding: "12px" }}>Typ</th>
-            <th style={{ textAlign: "left", padding: "12px" }}>Cena</th>
-            <th style={{ textAlign: "left", padding: "12px" }}>Status</th>
-            <th style={{ textAlign: "right", padding: "12px" }}>Akce</th>
-          </tr>
-        </thead>
-        <tbody>
-          {[...kits].sort((a: SoundKit, b: SoundKit) => (a.order_index ?? a.id) - (b.order_index ?? b.id)).map((kit: SoundKit, rowIdx: number, sortedArr: SoundKit[]) => (
-            <tr
-              key={kit.id}
-              style={{
-                borderBottom: "1px solid #222",
-                background: hoveredKitId === kit.id ? "#161616" : "transparent",
-                cursor: "pointer",
-                transition: "background 150ms",
-              }}
-              onMouseEnter={() => setHoveredKitId(kit.id)}
-              onMouseLeave={() => setHoveredKitId(null)}
-              onClick={() => { setEditing(kit); setShowForm(true); }}
-              data-testid={`row-kit-${kit.id}`}
-            >
-              <td style={{ padding: "12px" }} onClick={(e) => e.stopPropagation()}>
+      <div style={{
+        border: "1px solid rgba(255, 255, 255, 0.06)",
+        borderRadius: "14px",
+        overflow: "hidden",
+        background: "rgba(255, 255, 255, 0.015)",
+        boxShadow: "0 4px 20px rgba(0, 0, 0, 0.2)",
+      }}>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr style={{ background: "rgba(255, 255, 255, 0.025)", borderBottom: "1px solid rgba(255, 255, 255, 0.06)" }}>
+              <th style={{ textAlign: "left", padding: "12px 14px", width: "40px" }}>
                 <input 
                   type="checkbox" 
-                  checked={selectedKits.includes(kit.id)}
-                  onChange={() => handleSelectKit(kit.id)}
-                  data-testid={`checkbox-kit-${kit.id}`}
+                  checked={kits.length > 0 && selectedKits.length === kits.length}
+                  onChange={handleSelectAll}
+                  data-testid="checkbox-select-all-kits"
+                  style={{ accentColor: "#ffffff" }}
                 />
-              </td>
-              <td style={{ padding: "8px 12px" }}>
-                {kit.artwork_url ? (
-                  <img
-                    src={kit.artwork_url}
-                    alt={kit.title}
-                    style={{ width: "40px", height: "40px", objectFit: "cover", borderRadius: "3px", display: "block" }}
-                    onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
-                  />
-                ) : (
-                  <div style={{ width: "40px", height: "40px", background: "#222", borderRadius: "3px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <span style={{ fontSize: "18px", color: "#444" }}>◈</span>
-                  </div>
-                )}
-              </td>
-              <td style={{ padding: "12px" }}>{kit.title}</td>
-              <td style={{ padding: "12px" }}>{kit.type}</td>
-              <td style={{ padding: "12px" }}>{kit.is_free ? "Zdarma" : `${kit.price} CZK`}</td>
-              <td style={{ padding: "12px" }}>{kit.is_published ? "Publikováno" : "Skryto"}</td>
-              <td style={{ padding: "12px", textAlign: "right" }} onClick={(e) => e.stopPropagation()}>
-                <button
-                  onClick={() => handleReorderKit(kit.id, "up")}
-                  disabled={rowIdx === 0}
-                  title="Posunout nahoru"
-                  style={{ background: "transparent", border: "1px solid #333", color: rowIdx === 0 ? DESIGN_SYSTEM.colors.border : DESIGN_SYSTEM.colors.textSecondary, cursor: rowIdx === 0 ? "default" : "pointer", padding: "4px 7px", borderRadius: "3px", marginRight: "4px", fontSize: "12px" }}
-                >▲</button>
-                <button
-                  onClick={() => handleReorderKit(kit.id, "down")}
-                  disabled={rowIdx === sortedArr.length - 1}
-                  title="Posunout dolů"
-                  style={{ background: "transparent", border: "1px solid #333", color: rowIdx === sortedArr.length - 1 ? DESIGN_SYSTEM.colors.border : DESIGN_SYSTEM.colors.textSecondary, cursor: rowIdx === sortedArr.length - 1 ? "default" : "pointer", padding: "4px 7px", borderRadius: "3px", marginRight: "8px", fontSize: "12px" }}
-                >▼</button>
-                <button
-                  className="btn btn-admin"
-                  onClick={async () => {
-                    if (!kit.preview_url) { alert("Kit nemá preview URL"); return; }
-                    setRecomputingKitIds(prev => new Set([...prev, kit.id]));
-                    try {
-                      const data = await computeWaveformInBrowser(kit.preview_url);
-                      if (data && data.length > 0) {
-                        await fetch(`/api/sound-kits/${kit.id}/waveform`, {
-                          method: "POST", credentials: "include",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ data }),
-                        });
-                        onRefresh();
-                      } else {
-                        alert("Waveform se nepodařilo vygenerovat — zkontroluj, že je preview URL přístupné.");
-                      }
-                    } finally {
-                      setRecomputingKitIds(prev => { const n = new Set(prev); n.delete(kit.id); return n; });
-                    }
-                  }}
-                  disabled={recomputingKitIds.has(kit.id) || !kit.preview_url}
-                  title={kit.waveform_data ? "Přegenerovat waveform" : "Vygenerovat waveform"}
-                  style={{ marginRight: "8px", color: kit.waveform_data ? DESIGN_SYSTEM.colors.success : "#0B99FC", borderColor: kit.waveform_data ? DESIGN_SYSTEM.colors.success : "#0B99FC" }}
-                  data-testid={`button-waveform-kit-${kit.id}`}
-                >
-                  {recomputingKitIds.has(kit.id) ? "Generuji…" : (kit.waveform_data ? "♪ OK" : "♪ Generovat")}
-                </button>
-                <button className="btn btn-admin" onClick={() => { setEditing(kit); setShowForm(true); }} style={{ marginRight: "8px" }} data-testid={`button-edit-kit-${kit.id}`}>Upravit</button>
-                <button className="btn btn-admin" onClick={() => handleDelete(kit.id)} style={{ color: DESIGN_SYSTEM.colors.border, borderColor: DESIGN_SYSTEM.colors.border }} data-testid={`button-delete-kit-${kit.id}`}>Smazat</button>
-              </td>
+              </th>
+              <th style={{ padding: "12px 8px", width: "56px" }}></th>
+              <th style={{ textAlign: "left", padding: "12px 10px", fontSize: "11px", fontWeight: 500, color: "rgba(255, 255, 255, 0.4)", textTransform: "uppercase", letterSpacing: "0.06em" }}>Název</th>
+              <th style={{ textAlign: "left", padding: "12px 10px", fontSize: "11px", fontWeight: 500, color: "rgba(255, 255, 255, 0.4)", textTransform: "uppercase", letterSpacing: "0.06em" }}>Typ</th>
+              <th style={{ textAlign: "left", padding: "12px 10px", fontSize: "11px", fontWeight: 500, color: "rgba(255, 255, 255, 0.4)", textTransform: "uppercase", letterSpacing: "0.06em" }}>Cena</th>
+              <th style={{ textAlign: "left", padding: "12px 10px", fontSize: "11px", fontWeight: 500, color: "rgba(255, 255, 255, 0.4)", textTransform: "uppercase", letterSpacing: "0.06em" }}>Status</th>
+              <th style={{ textAlign: "right", padding: "12px 14px", fontSize: "11px", fontWeight: 500, color: "rgba(255, 255, 255, 0.4)", textTransform: "uppercase", letterSpacing: "0.06em" }}>Akce</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {[...kits].sort((a: SoundKit, b: SoundKit) => (a.order_index ?? a.id) - (b.order_index ?? b.id)).map((kit: SoundKit, rowIdx: number, sortedArr: SoundKit[]) => (
+              <tr
+                key={kit.id}
+                style={{
+                  borderBottom: "1px solid rgba(255, 255, 255, 0.04)",
+                  background: hoveredKitId === kit.id ? "rgba(255, 255, 255, 0.025)" : "transparent",
+                  cursor: "pointer",
+                  transition: "background 140ms ease",
+                }}
+                onMouseEnter={() => setHoveredKitId(kit.id)}
+                onMouseLeave={() => setHoveredKitId(null)}
+                onClick={() => { setEditing(kit); setShowForm(true); }}
+                data-testid={`row-kit-${kit.id}`}
+              >
+                <td style={{ padding: "12px 14px" }} onClick={(e) => e.stopPropagation()}>
+                  <input 
+                    type="checkbox" 
+                    checked={selectedKits.includes(kit.id)}
+                    onChange={() => handleSelectKit(kit.id)}
+                    data-testid={`checkbox-kit-${kit.id}`}
+                    style={{ accentColor: "#ffffff" }}
+                  />
+                </td>
+                <td style={{ padding: "8px 8px" }}>
+                  {kit.artwork_url ? (
+                    <img
+                      src={kit.artwork_url}
+                      alt={kit.title}
+                      style={{ width: "42px", height: "42px", objectFit: "cover", borderRadius: "8px", display: "block" }}
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).src = "/uploads/artwork/metallic-logo.png"; }}
+                    />
+                  ) : (
+                    <div style={{ width: "42px", height: "42px", background: "rgba(255, 255, 255, 0.05)", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <span style={{ fontSize: "16px", color: "rgba(255, 255, 255, 0.3)" }}>◈</span>
+                    </div>
+                  )}
+                </td>
+                <td style={{ padding: "12px 10px", fontSize: "13px", fontWeight: 500, color: "#ffffff" }}>{kit.title}</td>
+                <td style={{ padding: "12px 10px", fontSize: "12px", color: "rgba(255, 255, 255, 0.5)" }}>{kit.type}</td>
+                <td style={{ padding: "12px 10px", fontSize: "13px", fontWeight: 600, color: "#ffffff" }}>{kit.is_free ? "Zdarma" : `${kit.price} CZK`}</td>
+                <td style={{ padding: "12px 10px" }}>
+                  <span style={{
+                    fontSize: "11px",
+                    fontWeight: 500,
+                    padding: "3px 9px",
+                    borderRadius: "9999px",
+                    background: kit.is_published ? "rgba(36, 224, 83, 0.12)" : "rgba(255, 255, 255, 0.05)",
+                    color: kit.is_published ? "#24e053" : "rgba(255, 255, 255, 0.4)",
+                    border: `0.5px solid ${kit.is_published ? "rgba(36, 224, 83, 0.28)" : "rgba(255, 255, 255, 0.08)"}`,
+                  }}>
+                    {kit.is_published ? "Publikováno" : "Skryto"}
+                  </span>
+                </td>
+                <td style={{ padding: "12px 14px", textAlign: "right" }} onClick={(e) => e.stopPropagation()}>
+                  <button
+                    onClick={() => handleReorderKit(kit.id, "up")}
+                    disabled={rowIdx === 0}
+                    title="Posunout nahoru"
+                    style={{ background: "rgba(255, 255, 255, 0.05)", border: "0.5px solid rgba(255, 255, 255, 0.1)", color: rowIdx === 0 ? "rgba(255, 255, 255, 0.15)" : "rgba(255, 255, 255, 0.7)", cursor: rowIdx === 0 ? "default" : "pointer", padding: "4px 8px", borderRadius: "6px", marginRight: "4px", fontSize: "11px" }}
+                  >▲</button>
+                  <button
+                    onClick={() => handleReorderKit(kit.id, "down")}
+                    disabled={rowIdx === sortedArr.length - 1}
+                    title="Posunout dolů"
+                    style={{ background: "rgba(255, 255, 255, 0.05)", border: "0.5px solid rgba(255, 255, 255, 0.1)", color: rowIdx === sortedArr.length - 1 ? "rgba(255, 255, 255, 0.15)" : "rgba(255, 255, 255, 0.7)", cursor: rowIdx === sortedArr.length - 1 ? "default" : "pointer", padding: "4px 8px", borderRadius: "6px", marginRight: "8px", fontSize: "11px" }}
+                  >▼</button>
+                  <button
+                    onClick={async () => {
+                      if (!kit.preview_url) { alert("Kit nemá preview URL"); return; }
+                      setRecomputingKitIds(prev => new Set([...prev, kit.id]));
+                      try {
+                        const data = await computeWaveformInBrowser(kit.preview_url);
+                        if (data && data.length > 0) {
+                          await fetch(`/api/sound-kits/${kit.id}/waveform`, {
+                            method: "POST", credentials: "include",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ data }),
+                          });
+                          onRefresh();
+                        } else {
+                          alert("Waveform se nepodařilo vygenerovat — zkontroluj, že je preview URL přístupné.");
+                        }
+                      } finally {
+                        setRecomputingKitIds(prev => { const n = new Set(prev); n.delete(kit.id); return n; });
+                      }
+                    }}
+                    disabled={recomputingKitIds.has(kit.id) || !kit.preview_url}
+                    title={kit.waveform_data ? "Přegenerovat waveform" : "Vygenerovat waveform"}
+                    style={{
+                      marginRight: "6px",
+                      background: "rgba(255, 255, 255, 0.05)",
+                      border: "0.5px solid rgba(255, 255, 255, 0.12)",
+                      borderRadius: "6px",
+                      padding: "4px 10px",
+                      fontSize: "11px",
+                      fontWeight: 500,
+                      color: kit.waveform_data ? "#24e053" : "#0B99FC",
+                      cursor: "pointer",
+                    }}
+                    data-testid={`button-waveform-kit-${kit.id}`}
+                  >
+                    {recomputingKitIds.has(kit.id) ? "Generuji…" : (kit.waveform_data ? "♪ OK" : "♪ Generovat")}
+                  </button>
+                  <button onClick={() => { setEditing(kit); setShowForm(true); }} style={{
+                    marginRight: "6px",
+                    background: "rgba(255, 255, 255, 0.08)",
+                    border: "0.5px solid rgba(255, 255, 255, 0.12)",
+                    borderRadius: "6px",
+                    padding: "4px 10px",
+                    fontSize: "11px",
+                    fontWeight: 500,
+                    color: "#ffffff",
+                    cursor: "pointer",
+                  }} data-testid={`button-edit-kit-${kit.id}`}>Upravit</button>
+                  <button onClick={() => handleDelete(kit.id)} style={{
+                    background: "transparent",
+                    border: "0.5px solid rgba(255, 255, 255, 0.08)",
+                    borderRadius: "6px",
+                    padding: "4px 10px",
+                    fontSize: "11px",
+                    color: "rgba(255, 255, 255, 0.4)",
+                    cursor: "pointer",
+                  }} data-testid={`button-delete-kit-${kit.id}`}>Smazat</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
     </div>
   );
@@ -4125,9 +4215,26 @@ function OrdersList({ orders, onRefresh }: { orders: any[]; onRefresh: () => voi
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-      <div style={{ display: "grid", gridTemplateColumns: "60px 1fr 110px 110px 110px 100px 180px", gap: "8px", padding: "8px", fontSize: "11px", color: "#555", textTransform: "uppercase", letterSpacing: "0.06em", borderBottom: "1px solid #1a1a1a" }}>
-        <div>ID</div><div>Email / Kupující</div><div>Celkem</div><div>Platba</div><div>Status</div><div>Datum</div><div>Akce</div>
+    <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "60px 1fr 110px 110px 120px 100px 190px",
+        gap: "12px",
+        padding: "8px 14px",
+        fontSize: "11px",
+        fontWeight: 500,
+        color: "rgba(255, 255, 255, 0.35)",
+        textTransform: "uppercase",
+        letterSpacing: "0.06em",
+        borderBottom: "1px solid rgba(255, 255, 255, 0.06)",
+      }}>
+        <div>ID</div>
+        <div>Email / Kupující</div>
+        <div>Celkem</div>
+        <div>Platba</div>
+        <div>Status</div>
+        <div>Datum</div>
+        <div style={{ textAlign: "right" }}>Akce</div>
       </div>
       {orders.map((order: any) => {
         const isPaid = order.status === "paid" || order.status === "completed";
@@ -4135,17 +4242,58 @@ function OrdersList({ orders, onRefresh }: { orders: any[]; onRefresh: () => voi
         const beatItems = items.filter((i: any) => i.productType === "beat");
         const isExpanded = expandedId === order.id;
         return (
-          <div key={order.id} style={{ border: "1px solid #1a1a1a", borderRadius: "3px", overflow: "hidden" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "60px 1fr 110px 110px 110px 100px 180px", gap: "8px", padding: "10px 8px", alignItems: "center", background: isExpanded ? "#161616" : "transparent", cursor: "pointer" }}
-              onClick={() => setExpandedId(isExpanded ? null : order.id)}>
-              <div style={{ fontSize: "12px", color: DESIGN_SYSTEM.colors.textSecondary }}>#{order.id}</div>
-              <div>
-                <div style={{ fontSize: "13px" }}>{order.email}</div>
-                {order.buyer_legal_name && <div style={{ fontSize: "11px", color: "#777", marginTop: "2px" }}>{order.buyer_legal_name}{order.buyer_artist_name ? ` · ${order.buyer_artist_name}` : ""}</div>}
+          <div
+            key={order.id}
+            style={{
+              border: `1px solid ${isExpanded ? "rgba(255, 255, 255, 0.12)" : "rgba(255, 255, 255, 0.05)"}`,
+              borderRadius: "12px",
+              overflow: "hidden",
+              background: isExpanded ? "rgba(255, 255, 255, 0.035)" : "rgba(255, 255, 255, 0.015)",
+              boxShadow: isExpanded
+                ? "inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 8px 32px rgba(0, 0, 0, 0.4)"
+                : "0 2px 8px rgba(0, 0, 0, 0.15)",
+              transition: "all 180ms cubic-bezier(0.32, 0.72, 0, 1)",
+            }}
+          >
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "60px 1fr 110px 110px 120px 100px 190px",
+                gap: "12px",
+                padding: "12px 14px",
+                alignItems: "center",
+                cursor: "pointer",
+                transition: "background 150ms ease",
+              }}
+              onClick={() => setExpandedId(isExpanded ? null : order.id)}
+              onMouseEnter={e => {
+                if (!isExpanded) (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.03)";
+              }}
+              onMouseLeave={e => {
+                if (!isExpanded) (e.currentTarget as HTMLElement).style.background = "transparent";
+              }}
+            >
+              <div style={{ fontSize: "12px", fontWeight: 500, color: "rgba(255, 255, 255, 0.45)", fontFamily: "monospace" }}>#{order.id}</div>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: "13px", fontWeight: 500, color: "#ffffff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{order.email}</div>
+                {order.buyer_legal_name && (
+                  <div style={{ fontSize: "11px", color: "rgba(255, 255, 255, 0.4)", marginTop: "2px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {order.buyer_legal_name}{order.buyer_artist_name ? ` · ${order.buyer_artist_name}` : ""}
+                  </div>
+                )}
               </div>
-              <div style={{ fontSize: "13px", fontWeight: 600 }}>{Number(order.total).toLocaleString("cs-CZ")} Kč</div>
+              <div style={{ fontSize: "13px", fontWeight: 600, color: "#ffffff", letterSpacing: "-0.01em" }}>{Number(order.total).toLocaleString("cs-CZ")} Kč</div>
               <div>
-                <span style={{ fontSize: "11px", padding: "3px 7px", borderRadius: "3px", background: order.payment_method === "bank_transfer" ? "rgba(120,170,255,0.10)" : "rgba(255,255,255,0.04)", color: order.payment_method === "bank_transfer" ? "#9bb8ff" : DESIGN_SYSTEM.colors.textSecondary, border: `1px solid ${order.payment_method === "bank_transfer" ? "rgba(120,170,255,0.25)" : DESIGN_SYSTEM.colors.border}` }}>
+                <span style={{
+                  fontSize: "11px",
+                  fontWeight: 500,
+                  padding: "3px 9px",
+                  borderRadius: "9999px",
+                  background: order.payment_method === "bank_transfer" ? "rgba(120, 170, 255, 0.12)" : "rgba(255, 255, 255, 0.05)",
+                  color: order.payment_method === "bank_transfer" ? "#9bb8ff" : "rgba(255, 255, 255, 0.65)",
+                  border: `0.5px solid ${order.payment_method === "bank_transfer" ? "rgba(120, 170, 255, 0.28)" : "rgba(255, 255, 255, 0.08)"}`,
+                  whiteSpace: "nowrap",
+                }}>
                   {order.payment_method === "bank_transfer" ? "převod" : (order.payment_method || "gopay")}
                 </span>
               </div>
@@ -4156,25 +4304,50 @@ function OrdersList({ orders, onRefresh }: { orders: any[]; onRefresh: () => voi
                   const isFreeS = isPaidS && Number(order.total) === 0;
                   const isAwaitingS = s === "awaiting_payment";
                   const isCancelledS = s === "cancelled";
-                  const bg = isFreeS ? "rgba(100,180,255,0.10)" : isPaidS ? "rgba(36,224,83,0.12)" : isAwaitingS ? "rgba(129,140,248,0.12)" : isCancelledS ? "rgba(239,68,68,0.10)" : "rgba(255,255,255,0.05)";
-                  const color = isFreeS ? "#64b4ff" : isPaidS ? "#24e053" : isAwaitingS ? "#818cf8" : isCancelledS ? DESIGN_SYSTEM.colors.error : DESIGN_SYSTEM.colors.textSecondary;
-                  const border = isFreeS ? "rgba(100,180,255,0.3)" : isPaidS ? "rgba(36,224,83,0.3)" : isAwaitingS ? "rgba(129,140,248,0.35)" : isCancelledS ? "rgba(239,68,68,0.3)" : DESIGN_SYSTEM.colors.border;
+                  const bg = isFreeS ? "rgba(100, 180, 255, 0.10)" : isPaidS ? "rgba(36, 224, 83, 0.12)" : isAwaitingS ? "rgba(255, 179, 64, 0.12)" : isCancelledS ? "rgba(239, 68, 68, 0.10)" : "rgba(255, 255, 255, 0.05)";
+                  const color = isFreeS ? "#64b4ff" : isPaidS ? "#24e053" : isAwaitingS ? "#ffb340" : isCancelledS ? "#ef4444" : "rgba(255, 255, 255, 0.6)";
+                  const border = isFreeS ? "rgba(100, 180, 255, 0.25)" : isPaidS ? "rgba(36, 224, 83, 0.25)" : isAwaitingS ? "rgba(255, 179, 64, 0.3)" : isCancelledS ? "rgba(239, 68, 68, 0.25)" : "rgba(255, 255, 255, 0.08)";
                   const label = isFreeS ? "soubory odeslány" : isPaidS ? "zaplaceno" : isAwaitingS ? "čeká na ověření" : isCancelledS ? "zrušeno" : s;
                   return (
-                    <span style={{ fontSize: "11px", padding: "3px 7px", borderRadius: "3px", background: bg, color, border: `1px solid ${border}` }}>
+                    <span style={{
+                      fontSize: "11px",
+                      fontWeight: 500,
+                      padding: "3px 9px",
+                      borderRadius: "9999px",
+                      background: bg,
+                      color,
+                      border: `0.5px solid ${border}`,
+                      whiteSpace: "nowrap",
+                    }}>
                       {label}
                     </span>
                   );
                 })()}
               </div>
-              <div style={{ fontSize: "12px", color: DESIGN_SYSTEM.colors.textSecondary }}>{new Date(order.created_at).toLocaleDateString("cs-CZ")}</div>
+              <div style={{ fontSize: "12px", color: "rgba(255, 255, 255, 0.45)" }}>{new Date(order.created_at).toLocaleDateString("cs-CZ")}</div>
               <div style={{ display: "flex", alignItems: "center", gap: "6px", justifyContent: "flex-end" }}>
-                <span style={{ fontSize: "12px", color: "#555", display: "flex", alignItems: "center" }}>{isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}</span>
+                <span style={{ fontSize: "12px", color: "rgba(255, 255, 255, 0.35)", display: "flex", alignItems: "center", marginRight: "4px" }}>
+                  {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                </span>
                 {!isPaid && order.status !== "cancelled" && (
                   <button
                     onClick={(e) => handleMarkPaid(e, order.id)}
                     data-testid={`button-mark-paid-${order.id}`}
-                    style={{ background: "rgba(36,224,83,0.08)", border: "1px solid rgba(36,224,83,0.3)", borderRadius: "3px", color: "#24e053", fontSize: "11px", padding: "3px 8px", cursor: "pointer", whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: "4px" }}
+                    style={{
+                      background: "rgba(36, 224, 83, 0.1)",
+                      border: "0.5px solid rgba(36, 224, 83, 0.3)",
+                      borderRadius: "8px",
+                      color: "#24e053",
+                      fontSize: "11px",
+                      fontWeight: 500,
+                      padding: "4px 9px",
+                      cursor: "pointer",
+                      whiteSpace: "nowrap",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "4px",
+                      transition: "all 140ms ease",
+                    }}
                     title="Označit jako zaplacené a odeslat email se soubory"
                   >
                     <CheckCircle2 size={12} /> Zaplaceno
@@ -4184,7 +4357,18 @@ function OrdersList({ orders, onRefresh }: { orders: any[]; onRefresh: () => voi
                   <button
                     onClick={(e) => handleCancel(e, order.id)}
                     data-testid={`button-cancel-order-admin-${order.id}`}
-                    style={{ background: "none", border: "1px solid rgba(239,68,68,0.4)", borderRadius: "3px", color: DESIGN_SYSTEM.colors.error, fontSize: "11px", padding: "3px 8px", cursor: "pointer", whiteSpace: "nowrap" }}
+                    style={{
+                      background: "rgba(239, 68, 68, 0.08)",
+                      border: "0.5px solid rgba(239, 68, 68, 0.25)",
+                      borderRadius: "8px",
+                      color: "#ef4444",
+                      fontSize: "11px",
+                      fontWeight: 500,
+                      padding: "4px 9px",
+                      cursor: "pointer",
+                      whiteSpace: "nowrap",
+                      transition: "all 140ms ease",
+                    }}
                     title="Zrušit objednávku"
                   >
                     Zrušit
@@ -4193,7 +4377,26 @@ function OrdersList({ orders, onRefresh }: { orders: any[]; onRefresh: () => voi
                 <button
                   onClick={(e) => handleDelete(e, order.id)}
                   data-testid={`button-delete-order-${order.id}`}
-                  style={{ background: "none", border: "1px solid #3a1a1a", borderRadius: "3px", color: "#884444", fontSize: "11px", padding: "3px 8px", cursor: "pointer" }}
+                  style={{
+                    background: "transparent",
+                    border: "0.5px solid rgba(255, 255, 255, 0.08)",
+                    borderRadius: "8px",
+                    color: "rgba(255, 255, 255, 0.35)",
+                    fontSize: "11px",
+                    padding: "4px 9px",
+                    cursor: "pointer",
+                    transition: "all 140ms ease",
+                  }}
+                  onMouseEnter={e => {
+                    (e.currentTarget as HTMLElement).style.color = "#ff6b6b";
+                    (e.currentTarget as HTMLElement).style.borderColor = "rgba(255, 107, 107, 0.3)";
+                    (e.currentTarget as HTMLElement).style.background = "rgba(255, 107, 107, 0.08)";
+                  }}
+                  onMouseLeave={e => {
+                    (e.currentTarget as HTMLElement).style.color = "rgba(255, 255, 255, 0.35)";
+                    (e.currentTarget as HTMLElement).style.borderColor = "rgba(255, 255, 255, 0.08)";
+                    (e.currentTarget as HTMLElement).style.background = "transparent";
+                  }}
                   title="Smazat objednávku"
                 >
                   Smazat
@@ -4201,37 +4404,61 @@ function OrdersList({ orders, onRefresh }: { orders: any[]; onRefresh: () => voi
               </div>
             </div>
             {isExpanded && (
-              <div style={{ borderTop: "1px solid #1a1a1a", padding: "14px 12px", background: "#090909" }}>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px", marginBottom: "14px" }}>
-                  <div>
-                    <div style={{ fontSize: "10px", color: "#555", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>Právní jméno</div>
-                    <div style={{ fontSize: "13px" }}>{order.buyer_legal_name || <span style={{ color: "#444" }}>—</span>}</div>
+              <div style={{
+                borderTop: "1px solid rgba(255, 255, 255, 0.06)",
+                padding: "16px 20px 20px",
+                background: "rgba(0, 0, 0, 0.2)",
+              }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px", marginBottom: "16px" }}>
+                  <div style={{ background: "rgba(255, 255, 255, 0.02)", padding: "12px 14px", borderRadius: "10px", border: "1px solid rgba(255, 255, 255, 0.04)" }}>
+                    <div style={{ fontSize: "10px", fontWeight: 500, color: "rgba(255, 255, 255, 0.35)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>Právní jméno</div>
+                    <div style={{ fontSize: "13px", color: "#ffffff" }}>{order.buyer_legal_name || <span style={{ color: "rgba(255, 255, 255, 0.25)" }}>—</span>}</div>
                   </div>
-                  <div>
-                    <div style={{ fontSize: "10px", color: "#555", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>Umělecké jméno</div>
-                    <div style={{ fontSize: "13px" }}>{order.buyer_artist_name || <span style={{ color: "#444" }}>—</span>}</div>
+                  <div style={{ background: "rgba(255, 255, 255, 0.02)", padding: "12px 14px", borderRadius: "10px", border: "1px solid rgba(255, 255, 255, 0.04)" }}>
+                    <div style={{ fontSize: "10px", fontWeight: 500, color: "rgba(255, 255, 255, 0.35)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>Umělecké jméno</div>
+                    <div style={{ fontSize: "13px", color: "#ffffff" }}>{order.buyer_artist_name || <span style={{ color: "rgba(255, 255, 255, 0.25)" }}>—</span>}</div>
                   </div>
-                  <div>
-                    <div style={{ fontSize: "10px", color: "#555", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>Adresa</div>
-                    <div style={{ fontSize: "13px" }}>{order.buyer_address || <span style={{ color: "#444" }}>—</span>}</div>
+                  <div style={{ background: "rgba(255, 255, 255, 0.02)", padding: "12px 14px", borderRadius: "10px", border: "1px solid rgba(255, 255, 255, 0.04)" }}>
+                    <div style={{ fontSize: "10px", fontWeight: 500, color: "rgba(255, 255, 255, 0.35)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>Adresa</div>
+                    <div style={{ fontSize: "13px", color: "#ffffff" }}>{order.buyer_address || <span style={{ color: "rgba(255, 255, 255, 0.25)" }}>—</span>}</div>
                   </div>
                 </div>
-                <div style={{ marginBottom: "12px" }}>
-                  <div style={{ fontSize: "10px", color: "#555", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "6px" }}>Položky objednávky</div>
+                <div style={{ marginBottom: "14px" }}>
+                  <div style={{ fontSize: "11px", fontWeight: 500, color: "rgba(255, 255, 255, 0.4)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "8px" }}>Položky objednávky</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                   {items.map((item: any, idx: number) => (
-                    <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 0", borderBottom: "1px solid #141414", gap: "12px" }}>
+                    <div key={idx} style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      padding: "8px 12px",
+                      background: "rgba(255, 255, 255, 0.02)",
+                      border: "1px solid rgba(255, 255, 255, 0.04)",
+                      borderRadius: "8px",
+                      gap: "12px",
+                    }}>
                       <div>
-                        <span style={{ fontSize: "13px" }}>{item.title}</span>
-                        <span style={{ fontSize: "11px", color: "#555", marginLeft: "8px" }}>{item.productType}</span>
+                        <span style={{ fontSize: "13px", fontWeight: 500, color: "#ffffff" }}>{item.title}</span>
+                        <span style={{ fontSize: "11px", color: "rgba(255, 255, 255, 0.4)", marginLeft: "8px" }}>{item.productType}</span>
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                        <span style={{ fontSize: "13px" }}>{Number(item.price).toLocaleString("cs-CZ")} Kč</span>
+                        <span style={{ fontSize: "13px", fontWeight: 600, color: "#ffffff" }}>{Number(item.price).toLocaleString("cs-CZ")} Kč</span>
                         {(item.productType === "beat" || item.productType === "sound_kit" || item.productType === "kit") && (
                           <a
                             href={`/api/admin/orders/${order.id}/contract/${idx}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            style={{ fontSize: "11px", color: DESIGN_SYSTEM.colors.textSecondary, border: "1px solid #2a2a2a", borderRadius: "3px", padding: "3px 8px", textDecoration: "none", background: "#161616" }}
+                            style={{
+                              fontSize: "11px",
+                              fontWeight: 500,
+                              color: "rgba(255, 255, 255, 0.75)",
+                              border: "0.5px solid rgba(255, 255, 255, 0.12)",
+                              borderRadius: "6px",
+                              padding: "4px 10px",
+                              textDecoration: "none",
+                              background: "rgba(255, 255, 255, 0.06)",
+                              transition: "all 140ms ease",
+                            }}
                             onClick={(e) => e.stopPropagation()}
                           >
                             Licence PDF
@@ -4240,42 +4467,49 @@ function OrdersList({ orders, onRefresh }: { orders: any[]; onRefresh: () => voi
                       </div>
                     </div>
                   ))}
+                  </div>
                 </div>
                 {beatItems.length > 0 && !order.buyer_legal_name && (
-                  <div style={{ fontSize: "11px", color: DESIGN_SYSTEM.colors.warning, background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.2)", borderRadius: "3px", padding: "8px 10px", display: "flex", alignItems: "center", gap: "6px" }}>
-                    <AlertTriangle size={13} /> Kupující nevyplnil právní jméno a adresu — smlouva bude obsahovat pouze email.
+                  <div style={{
+                    fontSize: "12px",
+                    color: "#ffb340",
+                    background: "rgba(255, 179, 64, 0.08)",
+                    border: "0.5px solid rgba(255, 179, 64, 0.25)",
+                    borderRadius: "8px",
+                    padding: "10px 14px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                  }}>
+                    <AlertTriangle size={14} color="#ffb340" /> Kupující nevyplnil právní jméno a adresu — smlouva bude obsahovat pouze email.
                   </div>
                 )}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "14px", paddingTop: "10px", borderTop: "1px solid #1a1a1a", flexWrap: "wrap", gap: "8px" }}>
-                  <div style={{ fontSize: "11px", color: "#666" }}>
-                    Stav: <span style={{ color: "#aaa" }}>{order.status}</span> · Vytvořeno: <span style={{ color: "#aaa" }}>{new Date(order.created_at).toLocaleString("cs-CZ")}</span>
-                  </div>
-                  <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                    {resendStatus[order.id] && (
-                      <span style={{ fontSize: "11px", color: resendStatus[order.id].startsWith("Chyba") ? "#ef4444" : "#24e053" }}>
-                        {resendStatus[order.id]}
-                      </span>
-                    )}
-                    <button
-                      onClick={(e) => handleResendDownloads(e, order.id)}
-                      disabled={resendingId === order.id}
-                      style={{
-                        background: "rgba(11,153,252,0.08)",
-                        border: "1px solid rgba(11,153,252,0.3)",
-                        borderRadius: "4px",
-                        color: "#0B99FC",
-                        fontSize: "11px",
-                        padding: "5px 12px",
-                        cursor: resendingId === order.id ? "default" : "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "6px",
-                      }}
-                    >
-                      <Mail size={13} />
-                      {resendingId === order.id ? "Odesílám soubory…" : "Znovu odeslat e-mail se soubory a licencí"}
-                    </button>
-                  </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "14px" }}>
+                  <button
+                    onClick={(e) => handleResendDownloads(e, order.id)}
+                    disabled={resendingId === order.id}
+                    style={{
+                      background: "rgba(255, 255, 255, 0.06)",
+                      border: "0.5px solid rgba(255, 255, 255, 0.12)",
+                      borderRadius: "8px",
+                      color: "rgba(255, 255, 255, 0.8)",
+                      fontSize: "12px",
+                      fontWeight: 500,
+                      padding: "6px 14px",
+                      cursor: resendingId === order.id ? "not-allowed" : "pointer",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      transition: "all 140ms ease",
+                    }}
+                  >
+                    <Mail size={13} /> {resendingId === order.id ? "Odesílám..." : "Znovu odeslat soubory na e-mail"}
+                  </button>
+                  {resendStatus[order.id] && (
+                    <span style={{ fontSize: "12px", color: resendStatus[order.id].startsWith("✓") ? "#24e053" : "#ff5252" }}>
+                      {resendStatus[order.id]}
+                    </span>
+                  )}
                 </div>
               </div>
             )}
@@ -4321,17 +4555,55 @@ function OrdersTab({ orders, onRefresh }: any) {
   }, [orders, search, statusFilter]);
 
   const statCard = (label: string, value: string, sub?: string) => (
-    <div style={{ flex: 1, padding: "20px", border: "1px solid #222", borderRadius: "4px", textAlign: "left", minWidth: 0 }}>
-      <div style={{ fontSize: "11px", color: DESIGN_SYSTEM.colors.textSecondary, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "8px" }}>{label}</div>
-      <div style={{ fontSize: "28px", fontWeight: 700, color: DESIGN_SYSTEM.colors.textPrimary, letterSpacing: "-0.02em", lineHeight: 1 }}>{value}</div>
-      {sub && <div style={{ fontSize: "11px", color: "#555", marginTop: "6px" }}>{sub}</div>}
+    <div style={{
+      flex: 1,
+      padding: "22px 24px",
+      background: "linear-gradient(135deg, rgba(255, 255, 255, 0.035) 0%, rgba(255, 255, 255, 0.012) 100%)",
+      border: "1px solid rgba(255, 255, 255, 0.07)",
+      borderRadius: "16px",
+      boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 8px 24px rgba(0, 0, 0, 0.25)",
+      backdropFilter: "blur(12px)",
+      WebkitBackdropFilter: "blur(12px)",
+      textAlign: "left",
+      minWidth: 0,
+      transition: "all 180ms cubic-bezier(0.32, 0.72, 0, 1)",
+    }}>
+      <div style={{
+        fontSize: "11px",
+        fontWeight: 500,
+        color: "rgba(255, 255, 255, 0.4)",
+        textTransform: "uppercase",
+        letterSpacing: "0.06em",
+        marginBottom: "10px",
+      }}>
+        {label}
+      </div>
+      <div style={{
+        fontSize: "30px",
+        fontWeight: 600,
+        color: "#ffffff",
+        letterSpacing: "-0.03em",
+        lineHeight: 1,
+      }}>
+        {value}
+      </div>
+      {sub && (
+        <div style={{
+          fontSize: "12px",
+          color: "rgba(255, 255, 255, 0.35)",
+          marginTop: "8px",
+          letterSpacing: "0.01em",
+        }}>
+          {sub}
+        </div>
+      )}
     </div>
   );
 
   return (
     <div>
       {/* Summary stats */}
-      <div style={{ display: "flex", gap: "12px", marginBottom: "24px" }}>
+      <div style={{ display: "flex", gap: "14px", marginBottom: "28px" }}>
         {statCard("Celkové tržby", `${totalRevenue.toLocaleString("cs-CZ")} Kč`, `${orders.length} objednávek celkem`)}
         {statCard("Zaplaceno", `${paidOrders.length}`, `z ${orders.length} objednávek (bez stažení zdarma)`)}
         {statCard("Průměrná objednávka", avgOrder > 0 ? `${avgOrder.toLocaleString("cs-CZ")} Kč` : "—", "zaplacené objednávky")}
@@ -4340,40 +4612,50 @@ function OrdersTab({ orders, onRefresh }: any) {
       {/* Pending bank transfer alert */}
       {pendingBankOrders.length > 0 && (
         <div style={{
-          marginBottom: "20px",
-          border: "1px solid rgba(251,191,36,0.35)",
-          borderRadius: "4px",
-          background: "rgba(251,191,36,0.06)",
-          padding: "16px 20px",
+          marginBottom: "24px",
+          border: "1px solid rgba(255, 179, 64, 0.25)",
+          borderRadius: "14px",
+          background: "rgba(255, 179, 64, 0.05)",
+          boxShadow: "inset 0 1px 0 rgba(255, 179, 64, 0.12), 0 4px 20px rgba(0, 0, 0, 0.2)",
+          padding: "18px 22px",
         }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: pendingBankOrders.length > 0 ? "12px" : 0 }}>
-            <Clock size={16} color="#fbbf24" style={{ flexShrink: 0 }} />
-            <span style={{ fontSize: "13px", fontWeight: 700, color: "#fbbf24", letterSpacing: "0.04em", textTransform: "uppercase" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: pendingBankOrders.length > 0 ? "14px" : 0 }}>
+            <Clock size={16} color="#ffb340" style={{ flexShrink: 0 }} />
+            <span style={{ fontSize: "12px", fontWeight: 600, color: "#ffb340", letterSpacing: "0.04em", textTransform: "uppercase" }}>
               Čeká na ověření — {pendingBankOrders.length} {pendingBankOrders.length === 1 ? "bankovní převod" : pendingBankOrders.length < 5 ? "bankovní převody" : "bankovních převodů"}
             </span>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
             {pendingBankOrders.map((o: any) => (
               <div key={o.id} style={{
                 display: "flex", alignItems: "center", gap: "12px",
                 padding: "10px 14px",
-                background: "rgba(0,0,0,0.3)",
-                borderRadius: "3px",
-                border: "1px solid rgba(251,191,36,0.15)",
+                background: "rgba(0, 0, 0, 0.35)",
+                borderRadius: "9px",
+                border: "1px solid rgba(255, 179, 64, 0.12)",
               }}>
-                <span style={{ fontSize: "11px", color: DESIGN_SYSTEM.colors.textSecondary, minWidth: 36 }}>#{o.id}</span>
-                <span style={{ fontSize: "13px", color: DESIGN_SYSTEM.colors.textPrimary, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{o.email}</span>
-                <span style={{ fontSize: "13px", fontWeight: 600, color: DESIGN_SYSTEM.colors.textPrimary, marginRight: "4px" }}>{Number(o.total).toLocaleString("cs-CZ")} Kč</span>
-                <span style={{ fontSize: "11px", color: DESIGN_SYSTEM.colors.textSecondary }}>
+                <span style={{ fontSize: "11px", color: "rgba(255, 255, 255, 0.4)", fontFamily: "monospace", minWidth: 36 }}>#{o.id}</span>
+                <span style={{ fontSize: "13px", fontWeight: 500, color: "#ffffff", flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{o.email}</span>
+                <span style={{ fontSize: "13px", fontWeight: 600, color: "#ffffff", marginRight: "4px" }}>{Number(o.total).toLocaleString("cs-CZ")} Kč</span>
+                <span style={{ fontSize: "11px", color: "rgba(255, 255, 255, 0.4)" }}>
                   {o.created_at ? new Date(o.created_at).toLocaleDateString("cs-CZ", { day: "numeric", month: "short" }) : ""}
                 </span>
-                <span style={{ fontSize: "11px", color: "#fbbf24", background: "rgba(251,191,36,0.12)", border: "1px solid rgba(251,191,36,0.3)", borderRadius: "3px", padding: "2px 8px", whiteSpace: "nowrap" }}>
+                <span style={{
+                  fontSize: "11px",
+                  fontWeight: 500,
+                  color: "#ffb340",
+                  background: "rgba(255, 179, 64, 0.12)",
+                  border: "0.5px solid rgba(255, 179, 64, 0.28)",
+                  borderRadius: "9999px",
+                  padding: "3px 9px",
+                  whiteSpace: "nowrap",
+                }}>
                   převod · čeká
                 </span>
               </div>
             ))}
           </div>
-          <div style={{ marginTop: "10px", fontSize: "11px", color: DESIGN_SYSTEM.colors.textSecondary }}>
+          <div style={{ marginTop: "12px", fontSize: "12px", color: "rgba(255, 255, 255, 0.4)" }}>
             Ověř přijetí plateb v internetovém bankovnictví a potvrď je v seznamu objednávek níže.
           </div>
         </div>
@@ -4382,43 +4664,52 @@ function OrdersTab({ orders, onRefresh }: any) {
       {/* Chart */}
       <SalesChart orders={orders} />
 
-      {/* Search and Filters toolbar */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px", margin: "24px 0 16px", flexWrap: "wrap" }}>
-        <div style={{ display: "flex", gap: "4px", padding: "3px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "7px", flexWrap: "wrap" }}>
-          <button
-            onClick={() => setStatusFilter("all")}
-            style={{ padding: "5px 12px", fontSize: "12px", border: "none", borderRadius: "5px", cursor: "pointer", background: statusFilter === "all" ? "rgba(255,255,255,0.1)" : "transparent", color: statusFilter === "all" ? "#fff" : "#888" }}
-          >
-            Vše ({orders.length})
-          </button>
-          <button
-            onClick={() => setStatusFilter("awaiting_payment")}
-            style={{ padding: "5px 12px", fontSize: "12px", border: "none", borderRadius: "5px", cursor: "pointer", background: statusFilter === "awaiting_payment" ? "rgba(251,191,36,0.15)" : "transparent", color: statusFilter === "awaiting_payment" ? "#fbbf24" : "#888" }}
-          >
-            Čeká na převod ({pendingBankOrders.length})
-          </button>
-          <button
-            onClick={() => setStatusFilter("paid")}
-            style={{ padding: "5px 12px", fontSize: "12px", border: "none", borderRadius: "5px", cursor: "pointer", background: statusFilter === "paid" ? "rgba(36,224,83,0.15)" : "transparent", color: statusFilter === "paid" ? "#24e053" : "#888" }}
-          >
-            Zaplaceno ({paidOrders.length})
-          </button>
-          <button
-            onClick={() => setStatusFilter("free")}
-            style={{ padding: "5px 12px", fontSize: "12px", border: "none", borderRadius: "5px", cursor: "pointer", background: statusFilter === "free" ? "rgba(100,180,255,0.15)" : "transparent", color: statusFilter === "free" ? "#64b4ff" : "#888" }}
-          >
-            Zdarma ({freeOrders.length})
-          </button>
-          <button
-            onClick={() => setStatusFilter("cancelled")}
-            style={{ padding: "5px 12px", fontSize: "12px", border: "none", borderRadius: "5px", cursor: "pointer", background: statusFilter === "cancelled" ? "rgba(239,68,68,0.15)" : "transparent", color: statusFilter === "cancelled" ? "#ef4444" : "#888" }}
-          >
-            Zrušeno ({cancelledOrders.length})
-          </button>
+      {/* Search and Filters toolbar (Apple Segmented Control + Search) */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "14px", margin: "28px 0 18px", flexWrap: "wrap" }}>
+        <div style={{
+          display: "flex",
+          gap: "2px",
+          padding: "3px",
+          background: "rgba(255, 255, 255, 0.05)",
+          border: "1px solid rgba(255, 255, 255, 0.07)",
+          borderRadius: "10px",
+          boxShadow: "inset 0 1px 2px rgba(0, 0, 0, 0.3)",
+          flexWrap: "wrap",
+        }}>
+          {[
+            { id: "all", label: `Vše (${orders.length})` },
+            { id: "awaiting_payment", label: `Čeká na převod (${pendingBankOrders.length})` },
+            { id: "paid", label: `Zaplaceno (${paidOrders.length})` },
+            { id: "free", label: `Zdarma (${freeOrders.length})` },
+            { id: "cancelled", label: `Zrušeno (${cancelledOrders.length})` },
+          ].map((item) => {
+            const active = statusFilter === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setStatusFilter(item.id as any)}
+                style={{
+                  padding: "6px 14px",
+                  fontSize: "12px",
+                  border: "none",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                  fontWeight: active ? 500 : 400,
+                  background: active ? "rgba(255, 255, 255, 0.12)" : "transparent",
+                  color: active ? "#ffffff" : "rgba(255, 255, 255, 0.45)",
+                  boxShadow: active ? "0 1px 3px rgba(0, 0, 0, 0.3), inset 0 0.5px 0 rgba(255, 255, 255, 0.18)" : "none",
+                  transition: "all 160ms cubic-bezier(0.32, 0.72, 0, 1)",
+                }}
+              >
+                {item.label}
+              </button>
+            );
+          })}
         </div>
 
-        <div style={{ position: "relative", minWidth: "260px" }}>
-          <Search size={13} color="#666" style={{ position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
+        <div style={{ position: "relative", minWidth: "280px" }}>
+          <Search size={14} color="rgba(255, 255, 255, 0.35)" style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
           <input
             type="text"
             value={search}
@@ -4426,21 +4717,50 @@ function OrdersTab({ orders, onRefresh }: any) {
             placeholder="Hledat e-mail, jméno, #ID..."
             style={{
               width: "100%",
-              padding: "7px 12px 7px 30px",
-              background: "#111",
-              border: "1px solid #2a2a2a",
-              borderRadius: "5px",
-              color: "#eee",
+              padding: "8px 12px 8px 34px",
+              background: "rgba(255, 255, 255, 0.05)",
+              border: "1px solid rgba(255, 255, 255, 0.08)",
+              borderRadius: "10px",
+              color: "#ffffff",
               fontSize: "12px",
+              outline: "none",
               boxSizing: "border-box",
+              transition: "all 160ms ease",
+              boxShadow: "inset 0 1px 2px rgba(0, 0, 0, 0.2)",
+            }}
+            onFocus={e => {
+              e.currentTarget.style.background = "rgba(255, 255, 255, 0.08)";
+              e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.2)";
+              e.currentTarget.style.boxShadow = "0 0 0 3px rgba(255, 255, 255, 0.06), inset 0 1px 2px rgba(0, 0, 0, 0.2)";
+            }}
+            onBlur={e => {
+              e.currentTarget.style.background = "rgba(255, 255, 255, 0.05)";
+              e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.08)";
+              e.currentTarget.style.boxShadow = "inset 0 1px 2px rgba(0, 0, 0, 0.2)";
             }}
           />
           {search && (
             <button
               onClick={() => setSearch("")}
-              style={{ position: "absolute", right: "8px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "#666", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+              style={{
+                position: "absolute",
+                right: "10px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                background: "rgba(255, 255, 255, 0.1)",
+                border: "none",
+                borderRadius: "9999px",
+                width: "16px",
+                height: "16px",
+                color: "rgba(255, 255, 255, 0.6)",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: 0,
+              }}
             >
-              <X size={13} />
+              <X size={10} />
             </button>
           )}
         </div>
@@ -4568,8 +4888,29 @@ function LicensesTab({ licenses, onRefresh }: any) {
   const [saving, setSaving] = useState(false);
   const [previewHtml, setPreviewHtml] = useState<string | null>(null);
 
-  const fieldStyle: React.CSSProperties = { width: "100%", background: "#111111", border: "1px solid #2a2a2a", color: DESIGN_SYSTEM.colors.textPrimary, padding: "8px 10px", fontSize: "13px", borderRadius: "3px", fontFamily: "inherit", boxSizing: "border-box" };
-  const labelStyle: React.CSSProperties = { display: "block", fontSize: "11px", color: DESIGN_SYSTEM.colors.textSecondary, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "5px" };
+  const fieldStyle: React.CSSProperties = {
+    width: "100%",
+    background: "rgba(255, 255, 255, 0.05)",
+    border: "1px solid rgba(255, 255, 255, 0.08)",
+    color: "#ffffff",
+    padding: "9px 12px",
+    fontSize: "13px",
+    borderRadius: "10px",
+    fontFamily: "inherit",
+    boxSizing: "border-box",
+    outline: "none",
+    boxShadow: "inset 0 1px 2px rgba(0, 0, 0, 0.2)",
+    transition: "all 140ms ease",
+  };
+  const labelStyle: React.CSSProperties = {
+    display: "block",
+    fontSize: "11px",
+    fontWeight: 500,
+    color: "rgba(255, 255, 255, 0.4)",
+    textTransform: "uppercase",
+    letterSpacing: "0.06em",
+    marginBottom: "6px",
+  };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -4660,15 +5001,15 @@ function LicensesTab({ licenses, onRefresh }: any) {
   };
 
   const renderContractForm = (form: any, setForm: (f: any) => void) => (
-    <div style={{ marginTop: "20px", borderTop: "1px solid #1f1f1f", paddingTop: "16px" }}>
-      <div style={{ fontSize: "11px", color: DESIGN_SYSTEM.colors.textSecondary, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px" }}>Šablona smlouvy</div>
-      <div style={{ marginBottom: "12px", padding: "12px", background: "#080808", border: "1px solid #1a1a1a", borderRadius: "3px" }}>
-        <div style={{ fontSize: "11px", color: "#555", marginBottom: "8px" }}>Dostupné proměnné (automaticky doplněny při nákupu):</div>
+    <div style={{ marginTop: "24px", borderTop: "1px solid rgba(255, 255, 255, 0.06)", paddingTop: "18px" }}>
+      <div style={{ fontSize: "11px", fontWeight: 500, color: "rgba(255, 255, 255, 0.4)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "10px" }}>Šablona smlouvy</div>
+      <div style={{ marginBottom: "14px", padding: "14px", background: "rgba(0, 0, 0, 0.3)", border: "1px solid rgba(255, 255, 255, 0.06)", borderRadius: "10px" }}>
+        <div style={{ fontSize: "11px", color: "rgba(255, 255, 255, 0.45)", marginBottom: "8px" }}>Dostupné proměnné (automaticky doplněny při nákupu):</div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
           {PLACEHOLDER_GUIDE.map(({ ph, desc }) => (
-            <div key={ph} style={{ fontSize: "10px", background: "#161616", border: "1px solid #222", borderRadius: "3px", padding: "3px 7px" }} title={desc}>
-              <span style={{ color: DESIGN_SYSTEM.colors.textSecondary, fontFamily: "monospace" }}>{ph}</span>
-              <span style={{ color: "#555", marginLeft: "6px" }}>{desc}</span>
+            <div key={ph} style={{ fontSize: "11px", background: "rgba(255, 255, 255, 0.04)", border: "0.5px solid rgba(255, 255, 255, 0.08)", borderRadius: "6px", padding: "3px 8px" }} title={desc}>
+              <span style={{ color: "#ffffff", fontFamily: "monospace" }}>{ph}</span>
+              <span style={{ color: "rgba(255, 255, 255, 0.4)", marginLeft: "6px" }}>{desc}</span>
             </div>
           ))}
         </div>
@@ -4679,12 +5020,32 @@ function LicensesTab({ licenses, onRefresh }: any) {
         style={{ ...fieldStyle, minHeight: "320px", resize: "vertical", fontFamily: "monospace", fontSize: "12px", lineHeight: "1.6" }}
         placeholder="Vložte text smlouvy s proměnnými jako {{DATUM}}, {{PRAVNI_JMENO}} atd."
       />
-      <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
-        <button type="button" className="btn btn-admin" style={{ fontSize: "12px", padding: "6px 12px" }}
+      <div style={{ display: "flex", gap: "8px", marginTop: "12px" }}>
+        <button type="button" style={{
+          background: "rgba(255, 255, 255, 0.06)",
+          border: "0.5px solid rgba(255, 255, 255, 0.12)",
+          borderRadius: "8px",
+          color: "rgba(255, 255, 255, 0.8)",
+          fontSize: "12px",
+          fontWeight: 500,
+          padding: "6px 14px",
+          cursor: "pointer",
+          transition: "all 140ms ease",
+        }}
           onClick={() => setForm({ ...form, contract_template: DEFAULT_CONTRACT_TEMPLATE })}>
           Načíst výchozí šablonu
         </button>
-        <button type="button" className="btn btn-admin" style={{ fontSize: "12px", padding: "6px 12px" }}
+        <button type="button" style={{
+          background: "rgba(255, 255, 255, 0.06)",
+          border: "0.5px solid rgba(255, 255, 255, 0.12)",
+          borderRadius: "8px",
+          color: "rgba(255, 255, 255, 0.8)",
+          fontSize: "12px",
+          fontWeight: 500,
+          padding: "6px 14px",
+          cursor: "pointer",
+          transition: "all 140ms ease",
+        }}
           onClick={() => previewContract(form.contract_template || DEFAULT_CONTRACT_TEMPLATE)}>
           Náhled smlouvy
         </button>
@@ -4697,15 +5058,15 @@ function LicensesTab({ licenses, onRefresh }: any) {
       {previewHtml && (
         <div
           onClick={() => setPreviewHtml(null)}
-          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)", zIndex: DESIGN_SYSTEM.zIndex.modal, display: "flex", flexDirection: "column", alignItems: "center", overflowY: "auto", padding: "24px 16px 48px" }}
+          style={{ position: "fixed", inset: 0, background: "rgba(0, 0, 0, 0.82)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", zIndex: DESIGN_SYSTEM.zIndex.modal, display: "flex", flexDirection: "column", alignItems: "center", overflowY: "auto", padding: "24px 16px 48px" }}
         >
           {/* Toolbar */}
           <div
             onClick={(e) => e.stopPropagation()}
             style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", maxWidth: "794px", marginBottom: "16px", flexShrink: 0 }}
           >
-            <span style={{ fontWeight: "600", color: "#ddd", fontSize: "13px", letterSpacing: "0.04em" }}>Náhled smlouvy (vzorová data)</span>
-            <button onClick={() => setPreviewHtml(null)} style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "4px", fontSize: "13px", cursor: "pointer", color: DESIGN_SYSTEM.colors.textPrimary, padding: "4px 12px" }}>Zavřít ×</button>
+            <span style={{ fontWeight: "600", color: "#ffffff", fontSize: "14px", letterSpacing: "-0.01em" }}>Náhled smlouvy (vzorová data)</span>
+            <button onClick={() => setPreviewHtml(null)} style={{ background: "rgba(255, 255, 255, 0.1)", border: "0.5px solid rgba(255, 255, 255, 0.15)", borderRadius: "8px", fontSize: "12px", fontWeight: 500, cursor: "pointer", color: "#ffffff", padding: "6px 14px", transition: "all 140ms ease" }}>Zavřít ×</button>
           </div>
           {/* A4 paper */}
           <div
@@ -4713,9 +5074,9 @@ function LicensesTab({ licenses, onRefresh }: any) {
             style={{
               width: "794px",
               minHeight: "1123px",
-              background: DESIGN_SYSTEM.colors.textPrimary,
-              boxShadow: "0 8px 40px rgba(0,0,0,0.6)",
-              borderRadius: "2px",
+              background: "#ffffff",
+              boxShadow: "0 12px 48px rgba(0, 0, 0, 0.7)",
+              borderRadius: "8px",
               overflow: "hidden",
               flexShrink: 0,
             }}
@@ -4729,16 +5090,38 @@ function LicensesTab({ licenses, onRefresh }: any) {
         </div>
       )}
 
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-        <div style={{ fontSize: "13px", color: DESIGN_SYSTEM.colors.textSecondary }}>Celkem licencí: {licenses.length}</div>
-        <button className="btn btn-admin" data-testid="button-add-license" onClick={() => { setShowCreate(!showCreate); setEditId(null); }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+        <div style={{ fontSize: "13px", color: "rgba(255, 255, 255, 0.45)" }}>Celkem licencí: {licenses.length}</div>
+        <button
+          onClick={() => { setShowCreate(!showCreate); setEditId(null); }}
+          data-testid="button-add-license"
+          style={{
+            background: showCreate ? "rgba(255, 255, 255, 0.08)" : "#ffffff",
+            color: showCreate ? "#ffffff" : "#000000",
+            border: showCreate ? "1px solid rgba(255, 255, 255, 0.12)" : "none",
+            borderRadius: "9px",
+            padding: "8px 16px",
+            fontSize: "13px",
+            fontWeight: 500,
+            cursor: "pointer",
+            boxShadow: showCreate ? "none" : "0 1px 3px rgba(0, 0, 0, 0.2)",
+            transition: "all 140ms ease",
+          }}
+        >
           {showCreate ? "Zrušit" : "+ Přidat licenci"}
         </button>
       </div>
 
       {showCreate && (
-        <form onSubmit={handleCreate} style={{ marginBottom: "24px", padding: "20px", border: "1px solid #2a2a2a", borderRadius: "4px", background: "#111111" }}>
-          <div style={{ fontSize: "12px", color: DESIGN_SYSTEM.colors.textSecondary, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "16px" }}>Nová licence</div>
+        <form onSubmit={handleCreate} style={{
+          marginBottom: "28px",
+          padding: "24px",
+          border: "1px solid rgba(255, 255, 255, 0.08)",
+          borderRadius: "16px",
+          background: "linear-gradient(135deg, rgba(255, 255, 255, 0.035) 0%, rgba(255, 255, 255, 0.012) 100%)",
+          boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 8px 32px rgba(0, 0, 0, 0.35)",
+        }}>
+          <div style={{ fontSize: "14px", fontWeight: 600, color: "#ffffff", letterSpacing: "-0.01em", marginBottom: "18px" }}>Nová licence</div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
             <div>
               <label style={labelStyle}>Název *</label>
@@ -4757,49 +5140,114 @@ function LicensesTab({ licenses, onRefresh }: any) {
               <input value={(createForm.file_types || []).join(", ")} onChange={(e) => setCreateForm({ ...createForm, file_types: e.target.value.split(",").map(s => s.trim()).filter(Boolean) })} style={fieldStyle} placeholder="WAV, MP3, Stems" />
             </div>
             <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
-              <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", cursor: "pointer" }}>
-                <input type="checkbox" checked={createForm.is_active} onChange={(e) => setCreateForm({ ...createForm, is_active: e.target.checked })} /> Aktivní
+              <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", color: "rgba(255, 255, 255, 0.8)", cursor: "pointer" }}>
+                <input type="checkbox" checked={createForm.is_active} onChange={(e) => setCreateForm({ ...createForm, is_active: e.target.checked })} style={{ accentColor: "#ffffff" }} /> Aktivní
               </label>
-              <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", cursor: "pointer" }}>
-                <input type="checkbox" checked={createForm.is_negotiable} onChange={(e) => setCreateForm({ ...createForm, is_negotiable: e.target.checked })} /> Na vyžádání
+              <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", color: "rgba(255, 255, 255, 0.8)", cursor: "pointer" }}>
+                <input type="checkbox" checked={createForm.is_negotiable} onChange={(e) => setCreateForm({ ...createForm, is_negotiable: e.target.checked })} style={{ accentColor: "#ffffff" }} /> Na vyžádání
               </label>
             </div>
           </div>
           {renderContractForm(createForm, setCreateForm)}
-          <div style={{ display: "flex", gap: "8px", marginTop: "20px" }}>
-            <button type="submit" className="btn btn-filled" disabled={saving}>{saving ? "Ukládám..." : "Uložit licenci"}</button>
-            <button type="button" className="btn btn-admin" onClick={() => setShowCreate(false)}>Zrušit</button>
+          <div style={{ display: "flex", gap: "10px", marginTop: "24px" }}>
+            <button type="submit" disabled={saving} style={{
+              background: "#ffffff",
+              color: "#000000",
+              border: "none",
+              borderRadius: "9px",
+              padding: "8px 18px",
+              fontSize: "13px",
+              fontWeight: 500,
+              cursor: "pointer",
+              boxShadow: "0 1px 3px rgba(0, 0, 0, 0.2)",
+            }}>
+              {saving ? "Ukládám..." : "Uložit licenci"}
+            </button>
+            <button type="button" onClick={() => setShowCreate(false)} style={{
+              background: "rgba(255, 255, 255, 0.06)",
+              border: "0.5px solid rgba(255, 255, 255, 0.12)",
+              borderRadius: "9px",
+              color: "rgba(255, 255, 255, 0.7)",
+              padding: "8px 16px",
+              fontSize: "13px",
+              cursor: "pointer",
+            }}>
+              Zrušit
+            </button>
           </div>
         </form>
       )}
 
       {licenses.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "40px", color: "#555" }}>Žádné licence. Přidejte první licenci tlačítkem výše.</div>
+        <div style={{ textAlign: "center", padding: "40px", color: "rgba(255, 255, 255, 0.3)" }}>Žádné licence. Přidejte první licenci tlačítkem výše.</div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
           {licenses.map((license: LicenseType) => (
-            <div key={license.id} style={{ border: "1px solid #1f1f1f", borderRadius: "4px", overflow: "hidden" }}>
+            <div key={license.id} style={{
+              border: `1px solid ${expandedId === license.id ? "rgba(255, 255, 255, 0.12)" : "rgba(255, 255, 255, 0.05)"}`,
+              borderRadius: "14px",
+              overflow: "hidden",
+              background: expandedId === license.id ? "rgba(255, 255, 255, 0.035)" : "rgba(255, 255, 255, 0.015)",
+              boxShadow: expandedId === license.id ? "inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 8px 32px rgba(0, 0, 0, 0.4)" : "0 2px 8px rgba(0, 0, 0, 0.15)",
+              transition: "all 180ms cubic-bezier(0.32, 0.72, 0, 1)",
+            }}>
               <div
-                style={{ display: "flex", alignItems: "center", gap: "12px", padding: "14px 16px", cursor: "pointer", background: expandedId === license.id ? "#161616" : "#111111" }}
+                style={{ display: "flex", alignItems: "center", gap: "14px", padding: "14px 18px", cursor: "pointer", transition: "background 140ms ease" }}
                 onClick={() => setExpandedId(expandedId === license.id ? null : license.id)}
+                onMouseEnter={e => {
+                  if (expandedId !== license.id) (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.025)";
+                }}
+                onMouseLeave={e => {
+                  if (expandedId !== license.id) (e.currentTarget as HTMLElement).style.background = "transparent";
+                }}
               >
                 <div style={{ flex: 1 }}>
-                  <span style={{ fontWeight: 600, fontSize: "14px" }}>{license.name}</span>
-                  {license.description && <span style={{ color: "#555", fontSize: "12px", marginLeft: "10px" }}>{license.description}</span>}
+                  <span style={{ fontWeight: 600, fontSize: "14px", color: "#ffffff" }}>{license.name}</span>
+                  {license.description && <span style={{ color: "rgba(255, 255, 255, 0.4)", fontSize: "12px", marginLeft: "10px" }}>{license.description}</span>}
                 </div>
-                <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-                  <span style={{ fontSize: "13px", fontWeight: 500 }}>{Number(license.price).toLocaleString("cs-CZ")} CZK</span>
+                <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                  <span style={{ fontSize: "13px", fontWeight: 600, color: "#ffffff" }}>{Number(license.price).toLocaleString("cs-CZ")} CZK</span>
                   {(license.file_types || []).map((ft: string) => (
-                    <span key={ft} style={{ fontSize: "10px", background: DESIGN_SYSTEM.colors.inputs, border: "1px solid #2a2a2a", borderRadius: "3px", padding: "2px 6px", color: DESIGN_SYSTEM.colors.textSecondary }}>{ft.toUpperCase()}</span>
+                    <span key={ft} style={{
+                      fontSize: "10px",
+                      fontWeight: 500,
+                      background: "rgba(255, 255, 255, 0.06)",
+                      border: "0.5px solid rgba(255, 255, 255, 0.12)",
+                      borderRadius: "9999px",
+                      padding: "2px 8px",
+                      color: "rgba(255, 255, 255, 0.75)",
+                    }}>{ft.toUpperCase()}</span>
                   ))}
-                  <span style={{ fontSize: "11px", color: license.is_active ? DESIGN_SYSTEM.colors.success : DESIGN_SYSTEM.colors.textSecondary }}>{license.is_active ? "Aktivní" : "Neaktivní"}</span>
-                  <span style={{ fontSize: "11px", color: license.contract_template ? DESIGN_SYSTEM.colors.success : "#ff6b6b" }}>{license.contract_template ? "✓ Smlouva" : "✗ Bez smlouvy"}</span>
-                  <span style={{ color: "#555", fontSize: "16px" }}>{expandedId === license.id ? "▲" : "▼"}</span>
+                  <span style={{
+                    fontSize: "11px",
+                    fontWeight: 500,
+                    padding: "3px 9px",
+                    borderRadius: "9999px",
+                    background: license.is_active ? "rgba(36, 224, 83, 0.12)" : "rgba(255, 255, 255, 0.05)",
+                    color: license.is_active ? "#24e053" : "rgba(255, 255, 255, 0.4)",
+                    border: `0.5px solid ${license.is_active ? "rgba(36, 224, 83, 0.28)" : "rgba(255, 255, 255, 0.08)"}`,
+                  }}>
+                    {license.is_active ? "Aktivní" : "Neaktivní"}
+                  </span>
+                  <span style={{
+                    fontSize: "11px",
+                    fontWeight: 500,
+                    padding: "3px 9px",
+                    borderRadius: "9999px",
+                    background: license.contract_template ? "rgba(36, 224, 83, 0.12)" : "rgba(239, 68, 68, 0.08)",
+                    color: license.contract_template ? "#24e053" : "#ff6b6b",
+                    border: `0.5px solid ${license.contract_template ? "rgba(36, 224, 83, 0.28)" : "rgba(239, 68, 68, 0.2)"}`,
+                  }}>
+                    {license.contract_template ? "✓ Smlouva" : "✗ Bez smlouvy"}
+                  </span>
+                  <span style={{ color: "rgba(255, 255, 255, 0.35)", fontSize: "14px", display: "flex", alignItems: "center" }}>
+                    {expandedId === license.id ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                  </span>
                 </div>
               </div>
 
               {expandedId === license.id && (
-                <div style={{ borderTop: "1px solid #1a1a1a", padding: "16px", background: "#080808" }}>
+                <div style={{ borderTop: "1px solid rgba(255, 255, 255, 0.06)", padding: "20px", background: "rgba(0, 0, 0, 0.2)" }}>
                   {editId === license.id ? (
                     <div>
                       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
@@ -4820,48 +5268,94 @@ function LicensesTab({ licenses, onRefresh }: any) {
                           <input value={(editForm.file_types || []).join(", ")} onChange={(e) => setEditForm({ ...editForm, file_types: e.target.value.split(",").map((s: string) => s.trim()).filter(Boolean) })} style={fieldStyle} />
                         </div>
                         <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
-                          <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", cursor: "pointer" }}>
-                            <input type="checkbox" checked={editForm.is_active} onChange={(e) => setEditForm({ ...editForm, is_active: e.target.checked })} /> Aktivní
+                          <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", color: "rgba(255, 255, 255, 0.8)", cursor: "pointer" }}>
+                            <input type="checkbox" checked={editForm.is_active} onChange={(e) => setEditForm({ ...editForm, is_active: e.target.checked })} style={{ accentColor: "#ffffff" }} /> Aktivní
                           </label>
-                          <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "13px", cursor: "pointer" }}>
-                            <input type="checkbox" checked={editForm.is_negotiable} onChange={(e) => setEditForm({ ...editForm, is_negotiable: e.target.checked })} /> Na vyžádání
+                          <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", color: "rgba(255, 255, 255, 0.8)", cursor: "pointer" }}>
+                            <input type="checkbox" checked={editForm.is_negotiable} onChange={(e) => setEditForm({ ...editForm, is_negotiable: e.target.checked })} style={{ accentColor: "#ffffff" }} /> Na vyžádání
                           </label>
                         </div>
                       </div>
                       {renderContractForm(editForm, setEditForm)}
-                      <div style={{ display: "flex", gap: "8px", marginTop: "16px" }}>
-                        <button className="btn btn-filled" onClick={() => handleSaveEdit(license.id)} disabled={saving}>{saving ? "Ukládám..." : "Uložit"}</button>
-                        <button className="btn btn-admin" onClick={() => { setEditId(null); setEditForm(null); }}>Zrušit</button>
-                        <button className="btn" style={{ marginLeft: "auto", color: "#ff4444", border: "1px solid #ff4444" }} onClick={() => handleDelete(license.id)}>Smazat</button>
+                      <div style={{ display: "flex", gap: "10px", marginTop: "20px" }}>
+                        <button style={{
+                          background: "#ffffff",
+                          color: "#000000",
+                          border: "none",
+                          borderRadius: "9px",
+                          padding: "8px 18px",
+                          fontSize: "13px",
+                          fontWeight: 500,
+                          cursor: "pointer",
+                        }} onClick={() => handleSaveEdit(license.id)} disabled={saving}>{saving ? "Ukládám..." : "Uložit"}</button>
+                        <button style={{
+                          background: "rgba(255, 255, 255, 0.06)",
+                          border: "0.5px solid rgba(255, 255, 255, 0.12)",
+                          borderRadius: "9px",
+                          color: "rgba(255, 255, 255, 0.7)",
+                          padding: "8px 16px",
+                          fontSize: "13px",
+                          cursor: "pointer",
+                        }} onClick={() => { setEditId(null); setEditForm(null); }}>Zrušit</button>
+                        <button style={{
+                          marginLeft: "auto",
+                          color: "#ff6b6b",
+                          border: "0.5px solid rgba(255, 107, 107, 0.25)",
+                          background: "rgba(255, 107, 107, 0.08)",
+                          borderRadius: "9px",
+                          padding: "8px 16px",
+                          fontSize: "13px",
+                          cursor: "pointer",
+                        }} onClick={() => handleDelete(license.id)}>Smazat</button>
                       </div>
                     </div>
                   ) : (
                     <div>
                       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px", marginBottom: "16px" }}>
-                        <div>
-                          <div style={{ fontSize: "11px", color: "#555", marginBottom: "4px" }}>Cena</div>
-                          <div style={{ fontSize: "14px", fontWeight: 600 }}>{Number(license.price).toLocaleString("cs-CZ")} CZK</div>
+                        <div style={{ background: "rgba(255, 255, 255, 0.02)", padding: "12px 14px", borderRadius: "10px", border: "1px solid rgba(255, 255, 255, 0.04)" }}>
+                          <div style={{ fontSize: "10px", fontWeight: 500, color: "rgba(255, 255, 255, 0.35)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>Cena</div>
+                          <div style={{ fontSize: "14px", fontWeight: 600, color: "#ffffff" }}>{Number(license.price).toLocaleString("cs-CZ")} CZK</div>
                         </div>
-                        <div>
-                          <div style={{ fontSize: "11px", color: "#555", marginBottom: "4px" }}>Soubory</div>
-                          <div style={{ fontSize: "13px" }}>{(license.file_types || []).join(", ") || "—"}</div>
+                        <div style={{ background: "rgba(255, 255, 255, 0.02)", padding: "12px 14px", borderRadius: "10px", border: "1px solid rgba(255, 255, 255, 0.04)" }}>
+                          <div style={{ fontSize: "10px", fontWeight: 500, color: "rgba(255, 255, 255, 0.35)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>Soubory</div>
+                          <div style={{ fontSize: "13px", color: "rgba(255, 255, 255, 0.8)" }}>{(license.file_types || []).join(", ") || "—"}</div>
                         </div>
-                        <div>
-                          <div style={{ fontSize: "11px", color: "#555", marginBottom: "4px" }}>Smlouva</div>
-                          <div style={{ fontSize: "13px", color: license.contract_template ? DESIGN_SYSTEM.colors.success : "#ff6b6b" }}>
+                        <div style={{ background: "rgba(255, 255, 255, 0.02)", padding: "12px 14px", borderRadius: "10px", border: "1px solid rgba(255, 255, 255, 0.04)" }}>
+                          <div style={{ fontSize: "10px", fontWeight: 500, color: "rgba(255, 255, 255, 0.35)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>Smlouva</div>
+                          <div style={{ fontSize: "13px", fontWeight: 500, color: license.contract_template ? "#24e053" : "#ff6b6b" }}>
                             {license.contract_template ? "Šablona nastavena" : "Není nastavena"}
                           </div>
                         </div>
                       </div>
                       {license.contract_template && (
-                        <div style={{ marginBottom: "12px", padding: "10px 14px", background: "#111111", border: "1px solid #1a1a1a", borderRadius: "3px", fontSize: "11px", color: "#555", fontFamily: "monospace", maxHeight: "80px", overflow: "hidden", whiteSpace: "pre-wrap" }}>
+                        <div style={{ marginBottom: "14px", padding: "12px 14px", background: "rgba(0, 0, 0, 0.3)", border: "1px solid rgba(255, 255, 255, 0.06)", borderRadius: "8px", fontSize: "11px", color: "rgba(255, 255, 255, 0.5)", fontFamily: "monospace", maxHeight: "80px", overflow: "hidden", whiteSpace: "pre-wrap" }}>
                           {license.contract_template.slice(0, 200)}...
                         </div>
                       )}
-                      <div style={{ display: "flex", gap: "8px" }}>
-                        <button className="btn btn-admin" data-testid={`button-edit-license-${license.id}`} onClick={() => handleEdit(license)}>Upravit</button>
+                      <div style={{ display: "flex", gap: "10px" }}>
+                        <button style={{
+                          background: "rgba(255, 255, 255, 0.08)",
+                          border: "0.5px solid rgba(255, 255, 255, 0.15)",
+                          borderRadius: "8px",
+                          color: "#ffffff",
+                          padding: "6px 14px",
+                          fontSize: "12px",
+                          fontWeight: 500,
+                          cursor: "pointer",
+                          transition: "all 140ms ease",
+                        }} data-testid={`button-edit-license-${license.id}`} onClick={() => handleEdit(license)}>Upravit</button>
                         {license.contract_template && (
-                          <button className="btn btn-admin" onClick={() => previewContract(license.contract_template!)}>Náhled smlouvy</button>
+                          <button style={{
+                            background: "rgba(255, 255, 255, 0.05)",
+                            border: "0.5px solid rgba(255, 255, 255, 0.1)",
+                            borderRadius: "8px",
+                            color: "rgba(255, 255, 255, 0.75)",
+                            padding: "6px 14px",
+                            fontSize: "12px",
+                            fontWeight: 500,
+                            cursor: "pointer",
+                            transition: "all 140ms ease",
+                          }} onClick={() => previewContract(license.contract_template!)}>Náhled smlouvy</button>
                         )}
                       </div>
                     </div>
@@ -5463,39 +5957,68 @@ function ZakazniciTab() {
     downloadCsv(rows, "zdarma-emaily.csv");
   };
 
-  const cellStyle: any = { padding: "12px 10px", borderBottom: "1px solid #1e1e1e", verticalAlign: "middle" };
+  const cellStyle: React.CSSProperties = { padding: "12px 14px", borderBottom: "1px solid rgba(255, 255, 255, 0.04)", verticalAlign: "middle" };
+  const thStyle: React.CSSProperties = { padding: "10px 14px", borderBottom: "1px solid rgba(255, 255, 255, 0.06)", color: "rgba(255, 255, 255, 0.4)", fontSize: "11px", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.06em", textAlign: "left" };
 
   return (
     <div>
-      <div style={{ display: "flex", gap: "12px", marginBottom: "24px", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" }}>
-        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-          <button
-            onClick={() => setSection("customers")}
-            className={section === "customers" ? "btn btn-filled" : "btn"}
-            style={{ borderRadius: "4px", ...(section !== "customers" ? { borderColor: DESIGN_SYSTEM.colors.border, color: DESIGN_SYSTEM.colors.textSecondary } : {}) }}
-          >
-            Zákazníci ({customers.length})
-          </button>
-          <button
-            onClick={() => setSection("leads")}
-            className={section === "leads" ? "btn btn-filled" : "btn"}
-            style={{ borderRadius: "4px", ...(section !== "leads" ? { borderColor: DESIGN_SYSTEM.colors.border, color: DESIGN_SYSTEM.colors.textSecondary } : {}) }}
-          >
-            Zájemci o free ({leads.length})
-          </button>
-          <button
-            onClick={() => setSection("registered")}
-            className={section === "registered" ? "btn btn-filled" : "btn"}
-            style={{ borderRadius: "4px", ...(section !== "registered" ? { borderColor: DESIGN_SYSTEM.colors.border, color: DESIGN_SYSTEM.colors.textSecondary } : {}) }}
-            data-testid="button-tab-registered"
-          >
-            Registrovaní uživatelé ({registeredUsers.length})
-          </button>
+      <div style={{ display: "flex", gap: "14px", marginBottom: "24px", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" }}>
+        <div style={{
+          display: "flex",
+          gap: "2px",
+          padding: "3px",
+          background: "rgba(255, 255, 255, 0.05)",
+          border: "1px solid rgba(255, 255, 255, 0.07)",
+          borderRadius: "10px",
+          boxShadow: "inset 0 1px 2px rgba(0, 0, 0, 0.3)",
+          flexWrap: "wrap",
+        }}>
+          {[
+            { id: "customers", label: `Zákazníci (${customers.length})`, testId: undefined },
+            { id: "leads", label: `Zájemci o free (${leads.length})`, testId: undefined },
+            { id: "registered", label: `Registrovaní uživatelé (${registeredUsers.length})`, testId: "button-tab-registered" },
+          ].map(tabItem => {
+            const active = section === tabItem.id;
+            return (
+              <button
+                key={tabItem.id}
+                onClick={() => setSection(tabItem.id as any)}
+                data-testid={tabItem.testId}
+                style={{
+                  padding: "6px 14px",
+                  fontSize: "12px",
+                  border: "none",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                  fontWeight: active ? 500 : 400,
+                  background: active ? "rgba(255, 255, 255, 0.12)" : "transparent",
+                  color: active ? "#ffffff" : "rgba(255, 255, 255, 0.45)",
+                  boxShadow: active ? "0 1px 3px rgba(0, 0, 0, 0.3), inset 0 0.5px 0 rgba(255, 255, 255, 0.18)" : "none",
+                  transition: "all 160ms cubic-bezier(0.32, 0.72, 0, 1)",
+                }}
+              >
+                {tabItem.label}
+              </button>
+            );
+          })}
         </div>
         <button
           onClick={section === "customers" ? exportCustomerEmails : exportLeadEmails}
-          className="btn"
-          style={{ borderRadius: "4px", borderColor: "#444", color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "12px" }}
+          style={{
+            borderRadius: "8px",
+            border: "1px solid rgba(255, 255, 255, 0.1)",
+            background: "rgba(255, 255, 255, 0.05)",
+            color: "rgba(255, 255, 255, 0.8)",
+            fontSize: "12px",
+            fontWeight: 500,
+            padding: "6px 14px",
+            cursor: "pointer",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "6px",
+            transition: "all 140ms ease",
+          }}
           data-testid="button-export-csv"
         >
           ↓ Stáhnout CSV
@@ -5504,111 +6027,135 @@ function ZakazniciTab() {
 
       {section === "customers" && (
         <div>
-          <p style={{ color: "#555", fontSize: "12px", marginBottom: "16px" }}>
+          <p style={{ color: "rgba(255, 255, 255, 0.4)", fontSize: "13px", marginBottom: "16px" }}>
             Lidé, kteří úspěšně zaplatili alespoň jednu objednávku. Zobrazena poslední objednávka na email.
           </p>
           {loadingCustomers ? (
-            <div style={{ color: DESIGN_SYSTEM.colors.textSecondary, padding: "24px" }}>Načítám...</div>
+            <div style={{ color: "rgba(255, 255, 255, 0.4)", padding: "32px", textAlign: "center", fontSize: "13px" }}>Načítám...</div>
           ) : customers.length === 0 ? (
-            <div style={{ color: "#444", padding: "24px" }}>Zatím žádní zákazníci.</div>
+            <div style={{ color: "rgba(255, 255, 255, 0.3)", padding: "32px", textAlign: "center", fontSize: "13px" }}>Zatím žádní zákazníci.</div>
           ) : (
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead>
-                <tr>
-                  <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", letterSpacing: "0.08em" }}>Email</th>
-                  <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", letterSpacing: "0.08em" }}>Objednávka</th>
-                  <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", letterSpacing: "0.08em" }}>Datum</th>
-                  <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", letterSpacing: "0.08em" }}>Celkem</th>
-                </tr>
-              </thead>
-              <tbody>
-                {customers.map((c, i) => (
-                  <tr key={i}>
-                    <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textPrimary, fontWeight: 500 }} data-testid={`text-customer-email-${i}`}>{c.email}</td>
-                    <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "13px" }}>#{c.id}</td>
-                    <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "12px" }}>{new Date(c.created_at).toLocaleDateString("cs-CZ")}</td>
-                    <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "13px" }}>{Number(c.total).toLocaleString("cs-CZ")} CZK</td>
+            <div style={{
+              border: "1px solid rgba(255, 255, 255, 0.06)",
+              borderRadius: "14px",
+              overflow: "hidden",
+              background: "rgba(255, 255, 255, 0.015)",
+              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.2)",
+            }}>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr style={{ background: "rgba(255, 255, 255, 0.025)" }}>
+                    <th style={thStyle}>Email</th>
+                    <th style={thStyle}>Objednávka</th>
+                    <th style={thStyle}>Datum</th>
+                    <th style={thStyle}>Celkem</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {customers.map((c, i) => (
+                    <tr key={i} style={{ transition: "background 140ms ease" }} onMouseEnter={e => (e.currentTarget.style.background = "rgba(255, 255, 255, 0.025)")} onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
+                      <td style={{ ...cellStyle, color: "#ffffff", fontWeight: 500, fontSize: "13px" }} data-testid={`text-customer-email-${i}`}>{c.email}</td>
+                      <td style={{ ...cellStyle, color: "rgba(255, 255, 255, 0.5)", fontSize: "12px", fontFamily: "monospace" }}>#{c.id}</td>
+                      <td style={{ ...cellStyle, color: "rgba(255, 255, 255, 0.4)", fontSize: "12px" }}>{new Date(c.created_at).toLocaleDateString("cs-CZ")}</td>
+                      <td style={{ ...cellStyle, color: "#ffffff", fontSize: "13px", fontWeight: 600 }}>{Number(c.total).toLocaleString("cs-CZ")} CZK</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       )}
 
       {section === "leads" && (
         <div>
-          <p style={{ color: "#555", fontSize: "12px", marginBottom: "16px" }}>
+          <p style={{ color: "rgba(255, 255, 255, 0.4)", fontSize: "13px", marginBottom: "16px" }}>
             Lidé, kteří si stáhli soubory zdarma. Tyto záznamy se nezobrazují v objednávkách.
           </p>
           {loadingLeads ? (
-            <div style={{ color: DESIGN_SYSTEM.colors.textSecondary, padding: "24px" }}>Načítám...</div>
+            <div style={{ color: "rgba(255, 255, 255, 0.4)", padding: "32px", textAlign: "center", fontSize: "13px" }}>Načítám...</div>
           ) : leads.length === 0 ? (
-            <div style={{ color: "#444", padding: "24px" }}>Zatím žádné free downloady.</div>
+            <div style={{ color: "rgba(255, 255, 255, 0.3)", padding: "32px", textAlign: "center", fontSize: "13px" }}>Zatím žádné free downloady.</div>
           ) : (
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead>
-                <tr>
-                  <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", letterSpacing: "0.08em" }}>Email</th>
-                  <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", letterSpacing: "0.08em" }}>Soubory</th>
-                  <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", letterSpacing: "0.08em" }}>Datum</th>
-                </tr>
-              </thead>
-              <tbody>
-                {leads.map((l, i) => {
-                  const items = Array.isArray(l.items) ? l.items : [];
-                  return (
-                    <tr key={i}>
-                      <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textPrimary, fontWeight: 500 }} data-testid={`text-lead-email-${i}`}>{l.email}</td>
-                      <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "12px" }}>
-                        {items.map((item: any) => item.title).join(", ") || "—"}
-                      </td>
-                      <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "12px" }}>{new Date(l.created_at).toLocaleDateString("cs-CZ")}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+            <div style={{
+              border: "1px solid rgba(255, 255, 255, 0.06)",
+              borderRadius: "14px",
+              overflow: "hidden",
+              background: "rgba(255, 255, 255, 0.015)",
+              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.2)",
+            }}>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr style={{ background: "rgba(255, 255, 255, 0.025)" }}>
+                    <th style={thStyle}>Email</th>
+                    <th style={thStyle}>Soubory</th>
+                    <th style={thStyle}>Datum</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {leads.map((l, i) => {
+                    const items = Array.isArray(l.items) ? l.items : [];
+                    return (
+                      <tr key={i} style={{ transition: "background 140ms ease" }} onMouseEnter={e => (e.currentTarget.style.background = "rgba(255, 255, 255, 0.025)")} onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
+                        <td style={{ ...cellStyle, color: "#ffffff", fontWeight: 500, fontSize: "13px" }} data-testid={`text-lead-email-${i}`}>{l.email}</td>
+                        <td style={{ ...cellStyle, color: "rgba(255, 255, 255, 0.6)", fontSize: "12px" }}>
+                          {items.map((item: any) => item.title).join(", ") || "—"}
+                        </td>
+                        <td style={{ ...cellStyle, color: "rgba(255, 255, 255, 0.4)", fontSize: "12px" }}>{new Date(l.created_at).toLocaleDateString("cs-CZ")}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       )}
 
       {section === "registered" && (
         <div>
-          <p style={{ color: "#555", fontSize: "12px", marginBottom: "16px" }}>
+          <p style={{ color: "rgba(255, 255, 255, 0.4)", fontSize: "13px", marginBottom: "16px" }}>
             Všichni registrovaní uživatelé — včetně těch, kteří ještě nic nekoupili.
           </p>
           {loadingRegistered ? (
-            <div style={{ color: DESIGN_SYSTEM.colors.textSecondary, padding: "24px" }}>Načítám...</div>
+            <div style={{ color: "rgba(255, 255, 255, 0.4)", padding: "32px", textAlign: "center", fontSize: "13px" }}>Načítám...</div>
           ) : registeredUsers.length === 0 ? (
-            <div style={{ color: "#444", padding: "24px" }}>Žádní registrovaní uživatelé.</div>
+            <div style={{ color: "rgba(255, 255, 255, 0.3)", padding: "32px", textAlign: "center", fontSize: "13px" }}>Žádní registrovaní uživatelé.</div>
           ) : (
-            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-              <thead>
-                <tr>
-                  <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", letterSpacing: "0.08em" }}>Email</th>
-                  <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", letterSpacing: "0.08em" }}>Uživatelské jméno</th>
-                  <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", letterSpacing: "0.08em" }}>Role</th>
-                  <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", letterSpacing: "0.08em" }}>Registrace</th>
-                </tr>
-              </thead>
-              <tbody>
-                {registeredUsers.map((u, i) => (
-                  <tr key={i}>
-                    <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textPrimary, fontWeight: 500 }} data-testid={`text-user-email-${i}`}>{u.email}</td>
-                    <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "13px" }}>{u.username || <span style={{ color: "#444" }}>—</span>}</td>
-                    <td style={{ ...cellStyle }}>
-                      {u.is_admin ? (
-                        <span style={{ fontSize: "11px", color: "#e8304a", background: "rgba(232,48,74,0.1)", padding: "2px 8px", borderRadius: "3px", border: "1px solid rgba(232,48,74,0.3)" }}>Admin</span>
-                      ) : (
-                        <span style={{ fontSize: "11px", color: "#555" }}>Uživatel</span>
-                      )}
-                    </td>
-                    <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "12px" }}>{new Date(u.created_at).toLocaleDateString("cs-CZ")}</td>
+            <div style={{
+              border: "1px solid rgba(255, 255, 255, 0.06)",
+              borderRadius: "14px",
+              overflow: "hidden",
+              background: "rgba(255, 255, 255, 0.015)",
+              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.2)",
+            }}>
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr style={{ background: "rgba(255, 255, 255, 0.025)" }}>
+                    <th style={thStyle}>Email</th>
+                    <th style={thStyle}>Uživatelské jméno</th>
+                    <th style={thStyle}>Role</th>
+                    <th style={thStyle}>Registrace</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {registeredUsers.map((u, i) => (
+                    <tr key={i} style={{ transition: "background 140ms ease" }} onMouseEnter={e => (e.currentTarget.style.background = "rgba(255, 255, 255, 0.025)")} onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
+                      <td style={{ ...cellStyle, color: "#ffffff", fontWeight: 500, fontSize: "13px" }} data-testid={`text-user-email-${i}`}>{u.email}</td>
+                      <td style={{ ...cellStyle, color: "rgba(255, 255, 255, 0.6)", fontSize: "13px" }}>{u.username || <span style={{ color: "rgba(255, 255, 255, 0.25)" }}>—</span>}</td>
+                      <td style={{ ...cellStyle }}>
+                        {u.is_admin ? (
+                          <span style={{ fontSize: "10px", fontWeight: 600, color: "#ff4d6d", background: "rgba(255, 77, 109, 0.12)", padding: "2px 8px", borderRadius: "9999px", border: "0.5px solid rgba(255, 77, 109, 0.3)", textTransform: "uppercase", letterSpacing: "0.04em" }}>Admin</span>
+                        ) : (
+                          <span style={{ fontSize: "11px", color: "rgba(255, 255, 255, 0.4)" }}>Uživatel</span>
+                        )}
+                      </td>
+                      <td style={{ ...cellStyle, color: "rgba(255, 255, 255, 0.4)", fontSize: "12px" }}>{new Date(u.created_at).toLocaleDateString("cs-CZ")}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       )}
