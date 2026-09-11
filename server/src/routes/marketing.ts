@@ -351,11 +351,12 @@ router.get("/templates", requireAdmin, async (_req: Request, res: Response) => {
 
 router.post("/templates", requireAdmin, async (req: Request, res: Response) => {
   try {
-    const { name, key, subject, preheader, htmlContent, textContent, blocks } = req.body;
+    const { name, key, subject, preheader, htmlContent, textContent, blocks, headerOptions } = req.body;
     if (!name || !subject) {
       return res.status(400).json({ error: "Chybí povinná pole (název, předmět)" });
     }
     const blocksJson = Array.isArray(blocks) ? JSON.stringify(blocks) : (blocks ? JSON.stringify(blocks) : "[]");
+    const headerOptionsJson = headerOptions ? JSON.stringify(headerOptions) : "{}";
     let finalHtml = htmlContent || "";
     if (!finalHtml && Array.isArray(blocks) && blocks.length > 0) {
       finalHtml = compileBlocksToHtml(blocks);
@@ -364,9 +365,9 @@ router.post("/templates", requireAdmin, async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Chybí obsah šablony (HTML nebo bloky)" });
     }
     const result = await pool.query(
-      `INSERT INTO marketing_templates (name, key, subject, preheader, html_content, text_content, blocks)
-       VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb) RETURNING *`,
-      [name, key || null, subject, preheader || null, finalHtml, textContent || null, blocksJson]
+      `INSERT INTO marketing_templates (name, key, subject, preheader, html_content, text_content, blocks, header_options)
+       VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb,$8::jsonb) RETURNING *`,
+      [name, key || null, subject, preheader || null, finalHtml, textContent || null, blocksJson, headerOptionsJson]
     );
     await logMarketingAction("template.created", req.session.userId || null, { type: "template", id: result.rows[0].id });
     res.json(result.rows[0]);
@@ -378,17 +379,18 @@ router.post("/templates", requireAdmin, async (req: Request, res: Response) => {
 
 router.patch("/templates/:id", requireAdmin, async (req: Request, res: Response) => {
   try {
-    const { name, subject, preheader, htmlContent, textContent, blocks } = req.body;
+    const { name, subject, preheader, htmlContent, textContent, blocks, headerOptions } = req.body;
     let finalHtml = htmlContent || "";
     if (Array.isArray(blocks) && blocks.length > 0) {
       finalHtml = compileBlocksToHtml(blocks);
     }
     const blocksJson = Array.isArray(blocks) ? JSON.stringify(blocks) : (blocks ? JSON.stringify(blocks) : "[]");
+    const headerOptionsJson = headerOptions ? JSON.stringify(headerOptions) : null;
 
     const result = await pool.query(
       `UPDATE marketing_templates SET name = $1, subject = $2, preheader = $3, html_content = $4,
-       text_content = $5, blocks = $6::jsonb, updated_at = CURRENT_TIMESTAMP WHERE id = $7 RETURNING *`,
-      [name, subject, preheader || null, finalHtml, textContent || null, blocksJson, req.params.id]
+       text_content = $5, blocks = $6::jsonb, header_options = COALESCE($7::jsonb, header_options), updated_at = CURRENT_TIMESTAMP WHERE id = $8 RETURNING *`,
+      [name, subject, preheader || null, finalHtml, textContent || null, blocksJson, headerOptionsJson, req.params.id]
     );
     if (result.rows.length === 0) return res.status(404).json({ error: "Šablona nenalezena" });
     await logMarketingAction("template.edited", req.session.userId || null, { type: "template", id: parseInt(req.params.id, 10) });
@@ -418,10 +420,13 @@ router.delete("/templates/:id", requireAdmin, async (req: Request, res: Response
 // Render a template with sample data for the admin preview iframe. Never sends anything.
 router.get("/templates/:id/preview", requireAdmin, async (req: Request, res: Response) => {
   try {
-    const result = await pool.query("SELECT subject, html_content FROM marketing_templates WHERE id = $1", [req.params.id]);
+    const result = await pool.query("SELECT subject, html_content, preheader, blocks, header_options FROM marketing_templates WHERE id = $1", [req.params.id]);
     if (result.rows.length === 0) return res.status(404).send("<p style='padding:40px;color:#666;font-family:sans-serif'>Šablona nenalezena.</p>");
     const { renderTemplatePreview } = await import("../lib/marketing/sender.js");
-    const { html } = renderTemplatePreview(result.rows[0]);
+    const { html } = renderTemplatePreview({
+      ...result.rows[0],
+      headerOptions: result.rows[0].header_options,
+    });
     res.setHeader("Content-Type", "text/html");
     res.send(html);
   } catch (error) {
@@ -623,10 +628,13 @@ router.get("/journeys/:id/steps/:stepId/preview", requireAdmin, async (req: Requ
     const stepRes = await pool.query("SELECT template_id FROM marketing_journey_steps WHERE id = $1", [req.params.stepId]);
     const templateId = stepRes.rows[0]?.template_id;
     if (!templateId) return res.status(404).send("<p style='padding:40px;color:#666;font-family:sans-serif'>Tento krok nemá přiřazenou šablonu.</p>");
-    const tplRes = await pool.query("SELECT subject, html_content FROM marketing_templates WHERE id = $1", [templateId]);
+    const tplRes = await pool.query("SELECT subject, html_content, preheader, blocks, header_options FROM marketing_templates WHERE id = $1", [templateId]);
     if (tplRes.rows.length === 0) return res.status(404).send("<p style='padding:40px;color:#666;font-family:sans-serif'>Šablona nenalezena.</p>");
     const { renderTemplatePreview } = await import("../lib/marketing/sender.js");
-    const { html } = renderTemplatePreview(tplRes.rows[0]);
+    const { html } = renderTemplatePreview({
+      ...tplRes.rows[0],
+      headerOptions: tplRes.rows[0].header_options,
+    });
     res.setHeader("Content-Type", "text/html");
     res.send(html);
   } catch (error) {
@@ -752,7 +760,7 @@ router.get("/campaigns", requireAdmin, async (_req: Request, res: Response) => {
 
 router.post("/campaigns", requireAdmin, async (req: Request, res: Response) => {
   try {
-    const { name, subject, preheader, templateId, blocks, htmlContent } = req.body;
+    const { name, subject, preheader, templateId, blocks, htmlContent, headerOptions } = req.body;
     if (!name) return res.status(400).json({ error: "Chybí název kampaně" });
 
     let finalHtml = htmlContent || "";
@@ -760,11 +768,12 @@ router.post("/campaigns", requireAdmin, async (req: Request, res: Response) => {
       finalHtml = compileBlocksToHtml(blocks);
     }
     const blocksJson = Array.isArray(blocks) ? JSON.stringify(blocks) : (blocks ? JSON.stringify(blocks) : "[]");
+    const headerOptionsJson = headerOptions ? JSON.stringify(headerOptions) : "{}";
 
     const result = await pool.query(
-      `INSERT INTO marketing_campaigns (name, subject, preheader, template_id, status, blocks, html_content)
-       VALUES ($1,$2,$3,$4,'draft',$5::jsonb,$6) RETURNING *`,
-      [name, subject || null, preheader || null, templateId || null, blocksJson, finalHtml || null]
+      `INSERT INTO marketing_campaigns (name, subject, preheader, template_id, status, blocks, html_content, header_options)
+       VALUES ($1,$2,$3,$4,'draft',$5::jsonb,$6,$7::jsonb) RETURNING *`,
+      [name, subject || null, preheader || null, templateId || null, blocksJson, finalHtml || null, headerOptionsJson]
     );
     await logMarketingAction("campaign.created", req.session.userId || null, { type: "campaign", id: result.rows[0].id });
     res.json(result.rows[0]);
@@ -776,17 +785,18 @@ router.post("/campaigns", requireAdmin, async (req: Request, res: Response) => {
 
 router.patch("/campaigns/:id", requireAdmin, async (req: Request, res: Response) => {
   try {
-    const { name, subject, preheader, templateId, blocks, htmlContent } = req.body;
+    const { name, subject, preheader, templateId, blocks, htmlContent, headerOptions } = req.body;
     let finalHtml = htmlContent || "";
     if (Array.isArray(blocks) && blocks.length > 0) {
       finalHtml = compileBlocksToHtml(blocks);
     }
     const blocksJson = Array.isArray(blocks) ? JSON.stringify(blocks) : (blocks ? JSON.stringify(blocks) : "[]");
+    const headerOptionsJson = headerOptions ? JSON.stringify(headerOptions) : null;
 
     const result = await pool.query(
       `UPDATE marketing_campaigns SET name = $1, subject = $2, preheader = $3, template_id = $4,
-       blocks = $5::jsonb, html_content = $6, updated_at = CURRENT_TIMESTAMP WHERE id = $7 RETURNING *`,
-      [name, subject || null, preheader || null, templateId || null, blocksJson, finalHtml || null, req.params.id]
+       blocks = $5::jsonb, html_content = $6, header_options = COALESCE($7::jsonb, header_options), updated_at = CURRENT_TIMESTAMP WHERE id = $8 RETURNING *`,
+      [name, subject || null, preheader || null, templateId || null, blocksJson, finalHtml || null, headerOptionsJson, req.params.id]
     );
     if (result.rows.length === 0) return res.status(404).json({ error: "Kampaň nenalezena" });
     await logMarketingAction("campaign.edited", req.session.userId || null, { type: "campaign", id: parseInt(req.params.id, 10) });
@@ -811,11 +821,12 @@ router.get("/campaigns/:id/preview", requireAdmin, async (req: Request, res: Res
     }
 
     if (!htmlContent && campaign.template_id) {
-      const templateRes = await pool.query("SELECT subject, html_content, preheader, blocks FROM marketing_templates WHERE id = $1", [campaign.template_id]);
+      const templateRes = await pool.query("SELECT subject, html_content, preheader, blocks, header_options FROM marketing_templates WHERE id = $1", [campaign.template_id]);
       const template = templateRes.rows[0];
       if (template) {
         if (!subject) subject = template.subject;
         htmlContent = template.html_content || (Array.isArray(template.blocks) ? compileBlocksToHtml(template.blocks) : "");
+        if (!campaign.header_options) campaign.header_options = template.header_options;
       }
     }
 
@@ -824,6 +835,7 @@ router.get("/campaigns/:id/preview", requireAdmin, async (req: Request, res: Res
       subject,
       preheader: campaign.preheader,
       html_content: htmlContent,
+      headerOptions: campaign.header_options,
     });
     res.setHeader("Content-Type", "text/html");
     res.send(html);
@@ -850,17 +862,18 @@ router.post("/campaigns/:id/send-test", requireAdmin, testSendLimiter, async (re
       htmlContent = compileBlocksToHtml(campaign.blocks);
     }
     if (!htmlContent && campaign.template_id) {
-      const templateRes = await pool.query("SELECT subject, html_content, preheader, blocks FROM marketing_templates WHERE id = $1", [campaign.template_id]);
+      const templateRes = await pool.query("SELECT subject, html_content, preheader, blocks, header_options FROM marketing_templates WHERE id = $1", [campaign.template_id]);
       const template = templateRes.rows[0];
       if (template) {
         if (!subject) subject = template.subject;
         htmlContent = template.html_content || (Array.isArray(template.blocks) ? compileBlocksToHtml(template.blocks) : "");
+        if (!campaign.header_options) campaign.header_options = template.header_options;
       }
     }
 
     const { sendTestCustomEmail } = await import("../lib/marketing/sender.js");
     const result = await sendTestCustomEmail(
-      { subject, preheader: campaign.preheader, htmlContent },
+      { subject, preheader: campaign.preheader, htmlContent, headerOptions: campaign.header_options },
       toEmail
     );
     if (!result.ok) return res.status(500).json({ error: result.error || "Odeslání testovacího e-mailu selhalo" });
@@ -1017,7 +1030,7 @@ router.post("/campaigns/:id/send", requireAdmin, async (req: Request, res: Respo
 // No DB write, no email send. Used by the visual editor for real-time preview.
 router.post("/preview-blocks", requireAdmin, async (req: Request, res: Response) => {
   try {
-    const { blocks, subject, preheader } = req.body;
+    const { blocks, subject, preheader, headerOptions } = req.body;
     const appUrl = process.env.APP_URL || "https://voodoo808.com";
     const { renderBrandedEmailShell } = await import("../lib/marketing/brandKit.js");
 
@@ -1044,6 +1057,7 @@ router.post("/preview-blocks", requireAdmin, async (req: Request, res: Response)
       bodyHtml,
       unsubscribeUrl: sampleVars.unsubscribe_url,
       preheader: preheader ? fillVars(String(preheader)) : undefined,
+      headerOptions,
     });
 
     res.setHeader("Content-Type", "text/html; charset=utf-8");

@@ -29,11 +29,12 @@ import {
   Eye,
   Sliders,
   HelpCircle,
-  AlertTriangle,
-  ExternalLink,
-  Code2,
+  Clock,
+  Layers,
   CheckCircle2,
-  Layers
+  Settings2,
+  ExternalLink,
+  Edit3
 } from "lucide-react";
 
 export type BlockType =
@@ -48,7 +49,8 @@ export type BlockType =
   | "multi_beat_grid"
   | "info_box"
   | "coupon_box"
-  | "social_links";
+  | "social_links"
+  | "countdown";
 
 export interface EmailBlockGridItem {
   title: string;
@@ -56,6 +58,12 @@ export interface EmailBlockGridItem {
   coverUrl?: string;
   price?: string;
   url?: string;
+}
+
+export interface EmailHeaderConfig {
+  logoType: "metallic" | "white";
+  logoSize: "sm" | "md" | "lg";
+  showText: boolean;
 }
 
 export interface EmailBlock {
@@ -86,6 +94,7 @@ export interface EmailBlock {
   imageLink?: string;
   imageAlign?: "left" | "center" | "right";
   imageWidth?: string;
+  imageFullBleed?: boolean;
 
   // Divider
   dividerColor?: string;
@@ -130,6 +139,16 @@ export interface EmailBlock {
   youtubeUrl?: string;
   spotifyUrl?: string;
   beatstarsUrl?: string;
+
+  // Countdown Timer
+  countdownTitle?: string;
+  countdownTargetDate?: string;
+  countdownDays?: number | string;
+  countdownHours?: number | string;
+  countdownMinutes?: number | string;
+  countdownSeconds?: number | string;
+  countdownButtonText?: string;
+  countdownButtonUrl?: string;
 }
 
 interface SelectItem {
@@ -142,14 +161,35 @@ interface SelectItem {
   url: string;
 }
 
+interface PromoCodeItem {
+  id: number;
+  code: string;
+  discount_percent: number;
+  is_active: boolean;
+  expires_at?: string;
+}
+
 interface VisualEmailBuilderProps {
   initialSubject?: string;
   initialPreheader?: string;
   initialBlocks?: EmailBlock[];
+  initialHeaderConfig?: EmailHeaderConfig;
   title?: string;
-  onSave: (data: { subject: string; preheader: string; blocks: EmailBlock[] }) => Promise<void>;
+  onSave: (data: {
+    subject: string;
+    preheader: string;
+    blocks: EmailBlock[];
+    headerOptions?: EmailHeaderConfig;
+    name?: string;
+  }) => Promise<void>;
   onClose: () => void;
-  onTestSend?: (email: string, subject: string, preheader: string, blocks: EmailBlock[]) => Promise<void>;
+  onTestSend?: (
+    email: string,
+    subject: string,
+    preheader: string,
+    blocks: EmailBlock[],
+    headerOptions?: EmailHeaderConfig
+  ) => Promise<void>;
 }
 
 const BRAND_COLORS = [
@@ -179,9 +219,16 @@ const BLOCK_TYPE_LABELS: Record<BlockType, string> = {
   info_box: "Informační box",
   coupon_box: "Slevový kód",
   social_links: "Sociální sítě",
+  countdown: "Odpočet (Timer)",
 };
 
-// Replaces template variables with sample values for realistic WYSIWYG preview
+const URL_PRESETS = [
+  { label: "🎵 Beaty", url: "/beaty" },
+  { label: "🔊 Zvuky", url: "/zvuky" },
+  { label: "🛒 Košík", url: "/ucet" },
+  { label: "🏠 Domů", url: "/" },
+];
+
 function substituteSampleVars(text?: string): string {
   if (!text) return "";
   const samples: Record<string, string> = {
@@ -197,15 +244,28 @@ export function VisualEmailBuilder({
   initialSubject = "",
   initialPreheader = "",
   initialBlocks = [],
+  initialHeaderConfig,
   title = "Vizuální editor e-mailu",
   onSave,
   onClose,
   onTestSend,
 }: VisualEmailBuilderProps) {
+  const [builderTitle, setBuilderTitle] = useState(title);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [subject, setSubject] = useState(initialSubject);
   const [preheader, setPreheader] = useState(initialPreheader);
 
-  // Starter blocks default
+  // Header configuration state
+  const [headerConfig, setHeaderConfig] = useState<EmailHeaderConfig>(() => {
+    return (
+      initialHeaderConfig || {
+        logoType: "metallic",
+        logoSize: "md",
+        showText: false,
+      }
+    );
+  });
+
   const defaultBlocks: EmailBlock[] = [
     {
       id: "b1",
@@ -231,13 +291,13 @@ export function VisualEmailBuilder({
       heroSubtitle: "Prémiové trap & drill beaty se 100% autorskými právy.",
       heroImageUrl: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=1200&q=80",
       heroButtonText: "PROHLÉDNOUT SI KATALOG",
-      heroButtonUrl: "{{site_url}}/beaty",
+      heroButtonUrl: "/beaty",
     },
     {
       id: "b4",
       type: "button",
       buttonText: "ZÍSKAT SLEVU NA BEATY",
-      buttonUrl: "{{site_url}}/beaty",
+      buttonUrl: "/beaty",
       buttonAlign: "center",
       buttonBgColor: "#ffffff",
       buttonTextColor: "#000000",
@@ -248,19 +308,18 @@ export function VisualEmailBuilder({
     return Array.isArray(initialBlocks) && initialBlocks.length > 0 ? initialBlocks : defaultBlocks;
   });
 
-  // Track initial snapshot for dirty state & unsaved changes warning
   const initialSnapshotRef = useRef(
     JSON.stringify({
       subject: initialSubject,
       preheader: initialPreheader,
       blocks: Array.isArray(initialBlocks) && initialBlocks.length > 0 ? initialBlocks : defaultBlocks,
+      headerConfig,
     })
   );
 
   const isDirty =
-    JSON.stringify({ subject, preheader, blocks }) !== initialSnapshotRef.current;
+    JSON.stringify({ subject, preheader, blocks, headerConfig }) !== initialSnapshotRef.current;
 
-  // Warn on browser tab / window close if unsaved
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (isDirty) {
@@ -272,10 +331,9 @@ export function VisualEmailBuilder({
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [isDirty]);
 
-  // Safe close handler with prompt
   const handleSafeClose = () => {
     if (isDirty) {
-      if (window.confirm("Máte neuložené změny. Opravdu chcete editor zavřít bez uložení?")) {
+      if (window.confirm("Máte neuložené změny v e-mailu. Opravdu chcete editor zavřít bez uložení?")) {
         onClose();
       }
     } else {
@@ -317,7 +375,6 @@ export function VisualEmailBuilder({
     }
   }, [historyIndex, history]);
 
-  // Keyboard shortcut listener for Ctrl+Z / Cmd+Z
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z") {
@@ -343,11 +400,14 @@ export function VisualEmailBuilder({
   const [isSaving, setIsSaving] = useState(false);
   const [hoveredBlockId, setHoveredBlockId] = useState<string | null>(null);
 
+  // References to DOM block elements for auto-scroll
+  const blockRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
   // Live compiled HTML for iframe preview
   const [previewHtml, setPreviewHtml] = useState<string>("");
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
 
-  // Debounced fetch of live compiled HTML from backend endpoint
+  // Debounced fetch of live compiled HTML from backend
   useEffect(() => {
     let timer = setTimeout(async () => {
       setIsPreviewLoading(true);
@@ -356,7 +416,12 @@ export function VisualEmailBuilder({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ blocks, subject, preheader }),
+          body: JSON.stringify({
+            blocks,
+            subject,
+            preheader,
+            headerOptions: headerConfig,
+          }),
         });
         if (res.ok) {
           const html = await res.text();
@@ -367,10 +432,10 @@ export function VisualEmailBuilder({
       } finally {
         setIsPreviewLoading(false);
       }
-    }, 450);
+    }, 400);
 
     return () => clearTimeout(timer);
-  }, [blocks, subject, preheader]);
+  }, [blocks, subject, preheader, headerConfig]);
 
   const [testEmail, setTestEmail] = useState(
     () => localStorage.getItem("voodoo808_marketing_test_email") || ""
@@ -382,11 +447,17 @@ export function VisualEmailBuilder({
 
   // Store beat items from DB for selection
   const [selectItems, setSelectItems] = useState<SelectItem[]>([]);
+  const [promoCodes, setPromoCodes] = useState<PromoCodeItem[]>([]);
 
   useEffect(() => {
     fetch("/api/marketing/beats-select", { credentials: "include" })
       .then((r) => (r.ok ? r.json() : []))
       .then(setSelectItems)
+      .catch(() => {});
+
+    fetch("/api/promo-codes", { credentials: "include" })
+      .then((r) => (r.ok ? r.json() : []))
+      .then(setPromoCodes)
       .catch(() => {});
   }, []);
 
@@ -406,7 +477,7 @@ export function VisualEmailBuilder({
       newBlock.paragraphFontSize = "15px";
     } else if (type === "button") {
       newBlock.buttonText = "KLIKNĚTE ZDE";
-      newBlock.buttonUrl = "{{site_url}}";
+      newBlock.buttonUrl = "/beaty";
       newBlock.buttonAlign = "center";
       newBlock.buttonBgColor = "#ffffff";
       newBlock.buttonTextColor = "#000000";
@@ -415,6 +486,7 @@ export function VisualEmailBuilder({
       newBlock.imageAlt = "Obrázek";
       newBlock.imageAlign = "center";
       newBlock.imageWidth = "100%";
+      newBlock.imageFullBleed = false;
     } else if (type === "divider") {
       newBlock.dividerColor = "#222222";
       newBlock.dividerStyle = "solid";
@@ -425,12 +497,12 @@ export function VisualEmailBuilder({
       newBlock.heroSubtitle = "Nové beaty a zvukové sady pro vaši tvorbu.";
       newBlock.heroImageUrl = "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=1200&q=80";
       newBlock.heroButtonText = "ZOBRAZIT NABÍDKU";
-      newBlock.heroButtonUrl = "{{site_url}}/beaty";
+      newBlock.heroButtonUrl = "/beaty";
     } else if (type === "beat_highlight") {
       newBlock.beatTitle = selectItems[0]?.title || "Exkluzivní Beat / Kit";
       newBlock.beatSubtitle = selectItems[0]?.subtitle || "Čerstvě přidaný do katalogu";
       newBlock.beatPrice = selectItems[0]?.price || "od 990 Kč";
-      newBlock.beatUrl = selectItems[0] ? `{{site_url}}${selectItems[0].url}` : "{{site_url}}/beaty";
+      newBlock.beatUrl = selectItems[0] ? selectItems[0].url : "/beaty";
       newBlock.beatCoverUrl = selectItems[0]?.coverUrl || "";
       newBlock.beatBpmKey = selectItems[0]?.bpmKey || "";
     } else if (type === "multi_beat_grid") {
@@ -440,20 +512,21 @@ export function VisualEmailBuilder({
           subtitle: selectItems[0]?.bpmKey || "140 BPM",
           price: selectItems[0]?.price || "990 Kč",
           coverUrl: selectItems[0]?.coverUrl || "",
-          url: selectItems[0] ? `{{site_url}}${selectItems[0].url}` : "{{site_url}}/beaty",
+          url: selectItems[0] ? selectItems[0].url : "/beaty",
         },
         {
           title: selectItems[1]?.title || "Beat #2",
           subtitle: selectItems[1]?.bpmKey || "130 BPM",
           price: selectItems[1]?.price || "990 Kč",
           coverUrl: selectItems[1]?.coverUrl || "",
-          url: selectItems[1] ? `{{site_url}}${selectItems[1].url}` : "{{site_url}}/beaty",
+          url: selectItems[1] ? selectItems[1].url : "/beaty",
         },
       ];
     } else if (type === "coupon_box") {
-      newBlock.couponCode = "VOODOO20";
-      newBlock.couponDiscount = "20% SLEVA";
-      newBlock.couponDescription = "Použijte tento kód v nákupním košíku pro získání slevy na váš nákup.";
+      const activeCode = promoCodes[0];
+      newBlock.couponCode = activeCode?.code || "VOODOO20";
+      newBlock.couponDiscount = activeCode ? `${activeCode.discount_percent}% SLEVA` : "20% SLEVA";
+      newBlock.couponDescription = "Použijte tento kód v nákupním košíku pro získání slevy.";
     } else if (type === "social_links") {
       newBlock.instagramUrl = "https://instagram.com/voodoo808";
       newBlock.youtubeUrl = "https://youtube.com/@voodoo808";
@@ -464,15 +537,28 @@ export function VisualEmailBuilder({
       newBlock.infoText = "Při zakoupení 2 beatů získáte 3. zdarma s promo kódem VOODOO3FOR2.";
       newBlock.infoBorderColor = "#222222";
       newBlock.infoBgColor = "#111111";
+    } else if (type === "countdown") {
+      newBlock.countdownTitle = "LIMITOVANÁ SLEVA KONČÍ ZA:";
+      newBlock.countdownDays = "01";
+      newBlock.countdownHours = "18";
+      newBlock.countdownMinutes = "45";
+      newBlock.countdownSeconds = "00";
+      newBlock.countdownButtonText = "VYUŽÍT NABÍDKU";
+      newBlock.countdownButtonUrl = "/beaty";
     }
 
     const nextList = [...blocks, newBlock];
     updateBlocksState(nextList);
     setSelectedBlockId(newId);
+
+    // Auto-scroll smooth down to the new block so the user immediately sees it
+    setTimeout(() => {
+      blockRefs.current[newId]?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 80);
   };
 
   const updateSelectedBlock = (patch: Partial<EmailBlock>) => {
-    if (!selectedBlockId) return;
+    if (!selectedBlockId || selectedBlockId === "header") return;
     const nextList = blocks.map((b) => (b.id === selectedBlockId ? { ...b, ...patch } : b));
     updateBlocksState(nextList);
   };
@@ -495,6 +581,9 @@ export function VisualEmailBuilder({
     list.splice(index + 1, 0, copy);
     updateBlocksState(list);
     setSelectedBlockId(newId);
+    setTimeout(() => {
+      blockRefs.current[newId]?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 80);
   };
 
   const deleteBlock = (id: string) => {
@@ -512,8 +601,19 @@ export function VisualEmailBuilder({
     }
     setIsSaving(true);
     try {
-      await onSave({ subject, preheader, blocks });
-      initialSnapshotRef.current = JSON.stringify({ subject, preheader, blocks });
+      await onSave({
+        subject,
+        preheader,
+        blocks,
+        headerOptions: headerConfig,
+        name: builderTitle,
+      });
+      initialSnapshotRef.current = JSON.stringify({
+        subject,
+        preheader,
+        blocks,
+        headerConfig,
+      });
     } finally {
       setIsSaving(false);
     }
@@ -529,13 +629,19 @@ export function VisualEmailBuilder({
     setTestResult(null);
     try {
       if (onTestSend) {
-        await onTestSend(testEmail, subject, preheader, blocks);
+        await onTestSend(testEmail, subject, preheader, blocks, headerConfig);
       } else {
         const res = await fetch("/api/marketing/templates/1/send-test", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ email: testEmail, subject, preheader, blocks }),
+          body: JSON.stringify({
+            email: testEmail,
+            subject,
+            preheader,
+            blocks,
+            headerOptions: headerConfig,
+          }),
         });
         if (!res.ok) throw new Error("Chyba při odesílání testu");
       }
@@ -552,9 +658,9 @@ export function VisualEmailBuilder({
     else setPreheader((prev) => prev + ` {{${varName}}}`);
   };
 
-  const selectedBlock = blocks.find((b) => b.id === selectedBlockId);
+  const selectedBlock = selectedBlockId === "header" ? null : blocks.find((b) => b.id === selectedBlockId);
 
-  // Subject line character length guidance
+  // Subject line guidance
   const subjectLen = subject.length;
   let subjectBadgeColor = "#22c55e";
   let subjectBadgeText = `Ideální délka (${subjectLen}/60)`;
@@ -563,10 +669,10 @@ export function VisualEmailBuilder({
     subjectBadgeText = "Vyžadováno";
   } else if (subjectLen > 70) {
     subjectBadgeColor = "#ef4444";
-    subjectBadgeText = `Příliš dlouhé (${subjectLen}/60) — na mobilech se ořízne`;
+    subjectBadgeText = `Příliš dlouhé (${subjectLen}/60) — ořízne se`;
   } else if (subjectLen > 50) {
     subjectBadgeColor = "#f59e0b";
-    subjectBadgeText = `Delší předmět (${subjectLen}/60)`;
+    subjectBadgeText = `Delší (${subjectLen}/60)`;
   }
 
   const BLOCK_CATEGORIES = [
@@ -596,9 +702,10 @@ export function VisualEmailBuilder({
       ],
     },
     {
-      title: "🔘 Odkazy & Akce",
+      title: "⚡ Konverze & Odkazy",
       items: [
         { type: "button" as BlockType, label: "Tlačítko (CTA)", icon: Square },
+        { type: "countdown" as BlockType, label: "Odpočet (Timer)", icon: Clock },
         { type: "social_links" as BlockType, label: "Sociální sítě", icon: Share2 },
       ],
     },
@@ -613,20 +720,28 @@ export function VisualEmailBuilder({
     color: "#eee",
     fontSize: "12px",
     boxSizing: "border-box",
-    transition: "border-color 0.15s ease",
   };
+
+  const headerLogoSrc =
+    headerConfig.logoType === "white"
+      ? "/uploads/artwork/voodoo808-logo.png"
+      : "/uploads/artwork/voodoo808-main-logo.png";
+  const headerLogoWidth =
+    headerConfig.logoSize === "sm" ? 140 : headerConfig.logoSize === "lg" ? 240 : 190;
 
   return (
     <div
       style={{
         position: "fixed",
         inset: 0,
+        height: "100vh",
         background: "#080808",
         zIndex: 10005,
         display: "flex",
         flexDirection: "column",
         color: "#eee",
         fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+        overflow: "hidden",
       }}
     >
       {/* ── Top Bar Header ─────────────────────────────────────────────────── */}
@@ -640,6 +755,8 @@ export function VisualEmailBuilder({
           backdropFilter: "blur(12px)",
           borderBottom: "1px solid #1a1a1a",
           flexShrink: 0,
+          height: "56px",
+          boxSizing: "border-box",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
@@ -657,10 +774,55 @@ export function VisualEmailBuilder({
           >
             <Sparkles style={{ width: 16, height: 16, color: "#fff" }} />
           </div>
+
+          {/* Inline Editable Title */}
           <div>
-            <div style={{ fontWeight: 700, fontSize: "14px", letterSpacing: "-0.01em", color: "#fff" }}>
-              {title}
-            </div>
+            {isEditingTitle ? (
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <input
+                  value={builderTitle}
+                  onChange={(e) => setBuilderTitle(e.target.value)}
+                  onBlur={() => setIsEditingTitle(false)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") setIsEditingTitle(false);
+                  }}
+                  autoFocus
+                  style={{
+                    background: "#161616",
+                    border: "1px solid #0B99FC",
+                    borderRadius: "4px",
+                    color: "#fff",
+                    fontSize: "13px",
+                    fontWeight: 700,
+                    padding: "3px 8px",
+                  }}
+                />
+                <button
+                  onClick={() => setIsEditingTitle(false)}
+                  style={{ background: "none", border: "none", color: "#22c55e", cursor: "pointer" }}
+                >
+                  <Check size={14} />
+                </button>
+              </div>
+            ) : (
+              <div
+                onClick={() => setIsEditingTitle(true)}
+                title="Klikněte pro přejmenování"
+                style={{
+                  fontWeight: 700,
+                  fontSize: "13px",
+                  letterSpacing: "-0.01em",
+                  color: "#fff",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  cursor: "pointer",
+                }}
+              >
+                <span>{builderTitle}</span>
+                <Edit3 size={12} style={{ color: "#666" }} />
+              </div>
+            )}
             <div style={{ fontSize: "11px", display: "flex", alignItems: "center", gap: "8px" }}>
               <span style={{ color: "#666" }}>{blocks.length} bloků</span>
               <span style={{ color: "#444" }}>•</span>
@@ -864,7 +1026,7 @@ export function VisualEmailBuilder({
               display: "flex",
               alignItems: "center",
               gap: "6px",
-              padding: "7px 16px",
+              padding: "7px 18px",
               background: "#ffffff",
               color: "#000000",
               border: "none",
@@ -874,7 +1036,7 @@ export function VisualEmailBuilder({
               cursor: isSaving ? "not-allowed" : "pointer",
             }}
           >
-            <Check size={14} /> {isSaving ? "Ukládám…" : "Uložit šablonu"}
+            <Check size={14} /> {isSaving ? "Ukládám…" : "Uložit e-mail"}
           </button>
 
           <button
@@ -897,8 +1059,17 @@ export function VisualEmailBuilder({
         </div>
       </div>
 
-      {/* ── Main Workspace Layout ─────────────────────────────────────────── */}
-      <div style={{ display: "grid", gridTemplateColumns: "280px 1fr 340px", flex: 1, overflow: "hidden" }}>
+      {/* ── Main Workspace Layout (Strictly constrained for flawless scrolling) ── */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "280px 1fr 340px",
+          flex: 1,
+          height: "calc(100vh - 56px)",
+          minHeight: 0,
+          overflow: "hidden",
+        }}
+      >
         {/* Left Drawer: Block Palette */}
         <div
           style={{
@@ -906,6 +1077,8 @@ export function VisualEmailBuilder({
             borderRight: "1px solid #1a1a1a",
             padding: "16px 14px",
             overflowY: "auto",
+            minHeight: 0,
+            height: "100%",
           }}
         >
           <div
@@ -1022,14 +1195,18 @@ export function VisualEmailBuilder({
           </div>
         </div>
 
-        {/* ── Middle Live Workspace ─────────────────────────────────────────── */}
+        {/* ── Middle Live Workspace (With flawless vertical scrolling) ──────── */}
         <div
           style={{
             background: "#050505",
             display: "flex",
             flexDirection: "column",
             overflowY: "auto",
-            padding: "20px 16px 40px 16px",
+            minHeight: 0,
+            height: "100%",
+            padding: "20px 16px 48px 16px",
+            boxSizing: "border-box",
+            scrollBehavior: "smooth",
           }}
         >
           {/* Inbox Preview Header Box */}
@@ -1041,6 +1218,7 @@ export function VisualEmailBuilder({
               border: "1px solid #1f1f1f",
               borderRadius: "10px",
               padding: "16px",
+              flexShrink: 0,
             }}
           >
             <div
@@ -1109,7 +1287,7 @@ export function VisualEmailBuilder({
 
               <div>
                 <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "4px" }}>
-                  Preheader (náhledový text zobrazený v seznamu e-mailů)
+                  Preheader (náhledový text zobrazený v seznamu doručené pošty)
                 </label>
                 <input
                   value={preheader}
@@ -1129,6 +1307,7 @@ export function VisualEmailBuilder({
                 width: previewMode === "mobile" ? "390px" : "640px",
                 maxWidth: "100%",
                 height: "750px",
+                minHeight: "750px",
                 margin: "0 auto",
                 background: "#0a0a0a",
                 border: previewMode === "mobile" ? "12px solid #1a1a1a" : "1px solid #222",
@@ -1182,35 +1361,88 @@ export function VisualEmailBuilder({
                 border: previewMode === "mobile" ? "12px solid #1a1a1a" : "1px solid #222",
                 borderRadius: previewMode === "mobile" ? "40px" : "10px",
                 boxShadow: "0 15px 50px rgba(0,0,0,0.85)",
-                overflow: "hidden",
+                overflow: "visible",
                 transition: "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
                 position: "relative",
               }}
             >
               {/* Phone Notch Mockup in Mobile Mode */}
               {previewMode === "mobile" && (
-                <div style={{ background: "#1a1a1a", padding: "8px 0 4px 0", textAlign: "center" }}>
+                <div style={{ background: "#1a1a1a", padding: "8px 0 4px 0", textAlign: "center", borderRadius: "28px 28px 0 0" }}>
                   <div style={{ width: "120px", height: "14px", background: "#0a0a0a", borderRadius: "10px", margin: "0 auto" }} />
                 </div>
               )}
 
-              {/* Header Logo Banner */}
-              <div style={{ padding: "32px 0 24px 0", textAlign: "center", borderBottom: "1px solid #1f1f1f", background: "#0a0a0a" }}>
+              {/* ── Clickable & Customizable Header Banner ───────────────── */}
+              <div
+                onClick={() => setSelectedBlockId("header")}
+                title="Klikněte pro úpravu záhlaví e-mailu a loga"
+                style={{
+                  padding: "30px 20px 24px 20px",
+                  textAlign: "center",
+                  borderBottom: "1px solid #1f1f1f",
+                  background: "#0a0a0a",
+                  cursor: "pointer",
+                  position: "relative",
+                  outline: selectedBlockId === "header" ? "2px solid #ffffff" : "none",
+                  outlineOffset: "-2px",
+                  transition: "all 0.15s ease",
+                }}
+              >
+                {selectedBlockId === "header" && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      right: "12px",
+                      top: "10px",
+                      background: "#1c1c1c",
+                      border: "1px solid #333",
+                      borderRadius: "6px",
+                      padding: "2px 8px",
+                      fontSize: "10px",
+                      fontWeight: 700,
+                      color: "#0B99FC",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "4px",
+                    }}
+                  >
+                    <Settings2 size={12} /> Záhlaví (Header)
+                  </div>
+                )}
+
                 <img
-                  src="/uploads/artwork/voodoo808-main-logo.png"
+                  src={headerLogoSrc}
                   alt="VOODOO808"
-                  style={{ width: "200px", height: "auto", display: "inline-block" }}
+                  style={{
+                    width: `${headerLogoWidth}px`,
+                    height: "auto",
+                    display: "inline-block",
+                    transition: "width 0.2s ease",
+                  }}
                   onError={(e) => {
                     (e.currentTarget as any).style.display = "none";
                   }}
                 />
-                <div style={{ color: "#fff", fontWeight: 900, fontSize: "18px", letterSpacing: "3px", textTransform: "uppercase" }}>
-                  VOODOO808
-                </div>
+
+                {headerConfig.showText && (
+                  <div
+                    style={{
+                      color: "#fff",
+                      fontWeight: 900,
+                      fontSize: "16px",
+                      letterSpacing: "3px",
+                      textTransform: "uppercase",
+                      marginTop: "8px",
+                    }}
+                  >
+                    VOODOO808
+                  </div>
+                )}
               </div>
 
               {/* Block Canvas Area */}
-              <div style={{ padding: "24px 20px" }}>
+              <div style={{ padding: "20px 18px" }}>
                 {blocks.length === 0 ? (
                   <div
                     style={{
@@ -1266,139 +1498,153 @@ export function VisualEmailBuilder({
                     const showToolbar = isSelected || isHovered;
 
                     return (
-                      <div
-                        key={block.id}
-                        onClick={() => setSelectedBlockId(block.id)}
-                        onMouseEnter={() => setHoveredBlockId(block.id)}
-                        onMouseLeave={() => setHoveredBlockId(null)}
-                        style={{
-                          position: "relative",
-                          marginBottom: "12px",
-                          padding: "10px 12px",
-                          border: isSelected
-                            ? "2px solid #ffffff"
-                            : isHovered
-                            ? "1px solid rgba(255,255,255,0.25)"
-                            : "1px dashed rgba(255,255,255,0.07)",
-                          borderRadius: "8px",
-                          background: isSelected ? "rgba(255,255,255,0.02)" : "transparent",
-                          cursor: "pointer",
-                          transition: "border 0.15s ease, background 0.15s ease",
-                        }}
-                      >
-                        {/* Block Action Controls Toolbar (Shows on Hover & on Select) */}
+                      <React.Fragment key={block.id}>
                         <div
+                          ref={(el) => (blockRefs.current[block.id] = el)}
+                          onClick={() => setSelectedBlockId(block.id)}
+                          onMouseEnter={() => setHoveredBlockId(block.id)}
+                          onMouseLeave={() => setHoveredBlockId(null)}
                           style={{
-                            position: "absolute",
-                            right: "8px",
-                            top: "-12px",
-                            display: showToolbar ? "flex" : "none",
-                            alignItems: "center",
-                            gap: "3px",
-                            background: "#1c1c1c",
-                            border: "1px solid #333",
-                            borderRadius: "6px",
-                            padding: "3px 6px",
-                            zIndex: 20,
-                            boxShadow: "0 4px 14px rgba(0,0,0,0.6)",
+                            position: "relative",
+                            padding: "10px 12px",
+                            border: isSelected
+                              ? "2px solid #ffffff"
+                              : isHovered
+                              ? "1px solid rgba(255,255,255,0.3)"
+                              : "1px solid rgba(255,255,255,0.08)",
+                            borderRadius: "8px",
+                            background: isSelected ? "rgba(255,255,255,0.02)" : "rgba(255,255,255,0.01)",
+                            cursor: "pointer",
+                            transition: "all 0.15s ease",
                           }}
                         >
-                          <span
+                          {/* Block Action Controls Toolbar (Hover & Select) */}
+                          <div
                             style={{
-                              fontSize: "9px",
-                              fontWeight: 700,
-                              color: "#888",
-                              textTransform: "uppercase",
-                              paddingRight: "4px",
-                              borderRight: "1px solid #333",
-                              marginRight: "2px",
+                              position: "absolute",
+                              right: "8px",
+                              top: "-12px",
+                              display: showToolbar ? "flex" : "none",
+                              alignItems: "center",
+                              gap: "3px",
+                              background: "#1c1c1c",
+                              border: "1px solid #333",
+                              borderRadius: "6px",
+                              padding: "3px 6px",
+                              zIndex: 20,
+                              boxShadow: "0 4px 14px rgba(0,0,0,0.6)",
                             }}
                           >
-                            {BLOCK_TYPE_LABELS[block.type] || block.type}
-                          </span>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              moveBlock(idx, -1);
-                            }}
-                            disabled={idx === 0}
-                            title="Posunout nahoru"
-                            style={{
-                              background: "none",
-                              border: "none",
-                              color: idx === 0 ? "#444" : "#ccc",
-                              cursor: idx === 0 ? "not-allowed" : "pointer",
-                              padding: "2px 4px",
-                            }}
-                          >
-                            <ArrowUp size={12} />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              moveBlock(idx, 1);
-                            }}
-                            disabled={idx === blocks.length - 1}
-                            title="Posunout dolů"
-                            style={{
-                              background: "none",
-                              border: "none",
-                              color: idx === blocks.length - 1 ? "#444" : "#ccc",
-                              cursor: idx === blocks.length - 1 ? "not-allowed" : "pointer",
-                              padding: "2px 4px",
-                            }}
-                          >
-                            <ArrowDown size={12} />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              duplicateBlock(idx);
-                            }}
-                            title="Duplikovat blok"
-                            style={{
-                              background: "none",
-                              border: "none",
-                              color: "#ccc",
-                              cursor: "pointer",
-                              padding: "2px 4px",
-                            }}
-                          >
-                            <Copy size={12} />
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              deleteBlock(block.id);
-                            }}
-                            title="Smazat blok"
-                            style={{
-                              background: "none",
-                              border: "none",
-                              color: "#ef4444",
-                              cursor: "pointer",
-                              padding: "2px 4px",
-                            }}
-                          >
-                            <Trash2 size={12} />
-                          </button>
+                            <span
+                              style={{
+                                fontSize: "9px",
+                                fontWeight: 700,
+                                color: "#888",
+                                textTransform: "uppercase",
+                                paddingRight: "4px",
+                                borderRight: "1px solid #333",
+                                marginRight: "2px",
+                              }}
+                            >
+                              {BLOCK_TYPE_LABELS[block.type] || block.type}
+                            </span>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                moveBlock(idx, -1);
+                              }}
+                              disabled={idx === 0}
+                              title="Posunout nahoru"
+                              style={{
+                                background: "none",
+                                border: "none",
+                                color: idx === 0 ? "#444" : "#ccc",
+                                cursor: idx === 0 ? "not-allowed" : "pointer",
+                                padding: "2px 4px",
+                              }}
+                            >
+                              <ArrowUp size={12} />
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                moveBlock(idx, 1);
+                              }}
+                              disabled={idx === blocks.length - 1}
+                              title="Posunout dolů"
+                              style={{
+                                background: "none",
+                                border: "none",
+                                color: idx === blocks.length - 1 ? "#444" : "#ccc",
+                                cursor: idx === blocks.length - 1 ? "not-allowed" : "pointer",
+                                padding: "2px 4px",
+                              }}
+                            >
+                              <ArrowDown size={12} />
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                duplicateBlock(idx);
+                              }}
+                              title="Duplikovat blok"
+                              style={{
+                                background: "none",
+                                border: "none",
+                                color: "#ccc",
+                                cursor: "pointer",
+                                padding: "2px 4px",
+                              }}
+                            >
+                              <Copy size={12} />
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                deleteBlock(block.id);
+                              }}
+                              title="Smazat blok"
+                              style={{
+                                background: "none",
+                                border: "none",
+                                color: "#ef4444",
+                                cursor: "pointer",
+                                padding: "2px 4px",
+                              }}
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
+
+                          {/* Render Block visually with variable substitutions */}
+                          <BlockRenderer block={block} />
                         </div>
 
-                        {/* Render Block visually with variable substitutions */}
-                        <BlockRenderer block={block} />
-                      </div>
+                        {/* Distinct Section Separator Line */}
+                        {idx < blocks.length - 1 && (
+                          <div
+                            style={{
+                              height: "1px",
+                              background: "rgba(255,255,255,0.06)",
+                              margin: "8px 0",
+                              borderBottom: "1px dashed rgba(255,255,255,0.08)",
+                            }}
+                          />
+                        )}
+                      </React.Fragment>
                     );
                   })
                 )}
               </div>
 
-              {/* Branded Footer Preview (Matches brandKit.ts exactly) */}
+              {/* Branded Footer Preview */}
               <div
                 style={{
                   padding: "32px 20px",
                   borderTop: "1px solid #1f1f1f",
                   textAlign: "center",
                   background: "#080808",
+                  borderRadius: previewMode === "mobile" ? "0 0 28px 28px" : "0 0 10px 10px",
                 }}
               >
                 <p style={{ margin: 0, fontSize: "11px", color: "#555555", lineHeight: 1.7 }}>
@@ -1419,9 +1665,14 @@ export function VisualEmailBuilder({
             borderLeft: "1px solid #1a1a1a",
             padding: "16px 14px",
             overflowY: "auto",
+            minHeight: 0,
+            height: "100%",
           }}
         >
-          {selectedBlock ? (
+          {selectedBlockId === "header" ? (
+            /* Header Inspector */
+            <HeaderInspector config={headerConfig} onChange={setHeaderConfig} />
+          ) : selectedBlock ? (
             <div>
               {/* Tab Selector: Obsah vs Vzhled */}
               <div
@@ -1480,12 +1731,19 @@ export function VisualEmailBuilder({
                 block={selectedBlock}
                 onChange={updateSelectedBlock}
                 selectItems={selectItems}
+                promoCodes={promoCodes}
+                onPromoCodesRefresh={() => {
+                  fetch("/api/promo-codes", { credentials: "include" })
+                    .then((r) => (r.ok ? r.json() : []))
+                    .then(setPromoCodes)
+                    .catch(() => {});
+                }}
                 activeTab={activeInspectorTab}
               />
             </div>
           ) : (
             <div style={{ padding: "40px 10px", textAlign: "center", color: "#555", fontSize: "12px" }}>
-              Klikněte na jakýkoliv blok v e-mailu pro úpravu jeho obsahu nebo vzhledu.
+              Klikněte na jakýkoliv blok nebo na záhlaví e-mailu pro úpravu jeho vlastností.
             </div>
           )}
         </div>
@@ -1534,7 +1792,6 @@ export function VisualEmailBuilder({
               Zašleme kompletní náhled se všemi styly a {blocks.length} bloky přes Resend API.
             </p>
 
-            {/* Subject preview inside test modal so admin verifies what's being tested */}
             <div
               style={{
                 background: "#141414",
@@ -1624,7 +1881,151 @@ export function VisualEmailBuilder({
   );
 }
 
-// ── Block Renderer (Visual Canvas Representation with Variable Substitution) ──
+// ── Header Inspector Component ─────────────────────────────────────────────
+function HeaderInspector({
+  config,
+  onChange,
+}: {
+  config: EmailHeaderConfig;
+  onChange: (cfg: EmailHeaderConfig) => void;
+}) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
+      <div
+        style={{
+          fontSize: "12px",
+          fontWeight: 700,
+          color: "#eee",
+          borderBottom: "1px solid #1a1a1a",
+          paddingBottom: "8px",
+          display: "flex",
+          alignItems: "center",
+          gap: "6px",
+        }}
+      >
+        <Settings2 size={14} style={{ color: "#0B99FC" }} />
+        <span>Nastavení záhlaví e-mailu</span>
+      </div>
+
+      {/* Choice of Logo */}
+      <div>
+        <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "8px" }}>
+          Oficiální logo značky
+        </label>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+          {/* Metallic Logo */}
+          <div
+            onClick={() => onChange({ ...config, logoType: "metallic" })}
+            style={{
+              background: config.logoType === "metallic" ? "rgba(11, 153, 252, 0.12)" : "#121212",
+              border: config.logoType === "metallic" ? "2px solid #0B99FC" : "1px solid #262626",
+              borderRadius: "8px",
+              padding: "12px 8px",
+              textAlign: "center",
+              cursor: "pointer",
+              transition: "all 0.15s ease",
+            }}
+          >
+            <img
+              src="/uploads/artwork/voodoo808-main-logo.png"
+              alt="Metalické logo"
+              style={{ width: "100%", maxHeight: "36px", objectFit: "contain", marginBottom: "6px" }}
+            />
+            <div style={{ fontSize: "11px", fontWeight: 600, color: config.logoType === "metallic" ? "#fff" : "#888" }}>
+              Metalické 3D
+            </div>
+          </div>
+
+          {/* White Header Logo */}
+          <div
+            onClick={() => onChange({ ...config, logoType: "white" })}
+            style={{
+              background: config.logoType === "white" ? "rgba(11, 153, 252, 0.12)" : "#121212",
+              border: config.logoType === "white" ? "2px solid #0B99FC" : "1px solid #262626",
+              borderRadius: "8px",
+              padding: "12px 8px",
+              textAlign: "center",
+              cursor: "pointer",
+              transition: "all 0.15s ease",
+            }}
+          >
+            <img
+              src="/uploads/artwork/voodoo808-logo.png"
+              alt="Bílé logo"
+              style={{ width: "100%", maxHeight: "36px", objectFit: "contain", marginBottom: "6px" }}
+            />
+            <div style={{ fontSize: "11px", fontWeight: 600, color: config.logoType === "white" ? "#fff" : "#888" }}>
+              Bílé z lišty
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Choice of Size */}
+      <div>
+        <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "6px" }}>
+          Velikost loga
+        </label>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "6px" }}>
+          {(["sm", "md", "lg"] as const).map((size) => {
+            const isSelected = config.logoSize === size;
+            const labels = { sm: "Malé (140px)", md: "Střední (190px)", lg: "Velké (240px)" };
+            return (
+              <button
+                key={size}
+                type="button"
+                onClick={() => onChange({ ...config, logoSize: size })}
+                style={{
+                  padding: "8px 4px",
+                  background: isSelected ? "rgba(255,255,255,0.15)" : "#141414",
+                  border: isSelected ? "1px solid #ffffff" : "1px solid #282828",
+                  borderRadius: "6px",
+                  color: isSelected ? "#fff" : "#888",
+                  fontSize: "11px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
+              >
+                {labels[size]}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Plain Text Toggle (Off by default for professional look) */}
+      <div style={{ paddingTop: "6px", borderTop: "1px solid #1a1a1a" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div>
+            <div style={{ fontSize: "12px", fontWeight: 600, color: "#eee" }}>Text pod logem</div>
+            <div style={{ fontSize: "11px", color: "#666" }}>Zobrazit nápis „VOODOO808“</div>
+          </div>
+          <button
+            type="button"
+            onClick={() => onChange({ ...config, showText: !config.showText })}
+            style={{
+              padding: "4px 12px",
+              background: config.showText ? "rgba(11, 153, 252, 0.2)" : "#1a1a1a",
+              border: config.showText ? "1px solid #0B99FC" : "1px solid #333",
+              borderRadius: "4px",
+              color: config.showText ? "#0B99FC" : "#666",
+              fontSize: "11px",
+              fontWeight: 700,
+              cursor: "pointer",
+            }}
+          >
+            {config.showText ? "ZAPNUTO" : "VYPNUTO"}
+          </button>
+        </div>
+        <p style={{ fontSize: "11px", color: "#555", marginTop: "8px", lineHeight: 1.4 }}>
+          Doporučujeme ponechat <strong>VYPNUTO</strong>. Samotné logo již název obsahuje a čisté logo působí prémiově.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ── Block Renderer Component ───────────────────────────────────────────────
 function BlockRenderer({ block }: { block: EmailBlock }) {
   switch (block.type) {
     case "heading": {
@@ -1683,18 +2084,24 @@ function BlockRenderer({ block }: { block: EmailBlock }) {
       );
     }
     case "image": {
+      const isFullBleed = block.imageFullBleed || block.imageWidth === "full_bleed";
       return (
-        <div style={{ textAlign: block.imageAlign || "center", margin: "8px 0" }}>
+        <div
+          style={{
+            textAlign: block.imageAlign || "center",
+            margin: isFullBleed ? "4px -12px" : "8px 0",
+          }}
+        >
           {block.imageUrl ? (
             <img
               src={block.imageUrl}
               alt={block.imageAlt || ""}
               style={{
-                maxWidth: "100%",
-                width: block.imageWidth || "100%",
+                maxWidth: isFullBleed ? "calc(100% + 24px)" : "100%",
+                width: isFullBleed ? "100%" : block.imageWidth || "100%",
                 height: "auto",
-                borderRadius: "6px",
-                border: "1px solid #222",
+                borderRadius: isFullBleed ? "0" : "6px",
+                border: isFullBleed ? "none" : "1px solid #222",
                 display: "inline-block",
               }}
             />
@@ -1990,6 +2397,94 @@ function BlockRenderer({ block }: { block: EmailBlock }) {
         </div>
       );
     }
+    case "countdown": {
+      return (
+        <div
+          style={{
+            background: "#111111",
+            border: "1px solid #262626",
+            borderRadius: "8px",
+            padding: "18px 14px",
+            margin: "8px 0",
+            textAlign: "center",
+          }}
+        >
+          <span
+            style={{
+              display: "inline-block",
+              background: "rgba(255,45,85,0.15)",
+              color: "#ff2d55",
+              fontSize: "10px",
+              fontWeight: 700,
+              padding: "3px 10px",
+              borderRadius: "12px",
+              textTransform: "uppercase",
+              marginBottom: "6px",
+              letterSpacing: "0.5px",
+            }}
+          >
+            Časově omezená nabídka
+          </span>
+          <div
+            style={{
+              fontSize: "14px",
+              fontWeight: 800,
+              letterSpacing: "1px",
+              color: "#fff",
+              textTransform: "uppercase",
+              marginBottom: "12px",
+            }}
+          >
+            {block.countdownTitle || "LIMITOVANÁ SLEVA KONČÍ ZA:"}
+          </div>
+
+          <div style={{ display: "flex", justifyContent: "center", gap: "8px", marginBottom: "14px" }}>
+            {[
+              { val: block.countdownDays ?? "01", lbl: "Dny" },
+              { val: block.countdownHours ?? "18", lbl: "Hod" },
+              { val: block.countdownMinutes ?? "45", lbl: "Min" },
+              { val: block.countdownSeconds ?? "00", lbl: "Sek", hl: true },
+            ].map((t, idx) => (
+              <div
+                key={idx}
+                style={{
+                  background: "#050505",
+                  border: "1px solid #282828",
+                  borderRadius: "6px",
+                  padding: "6px 10px",
+                  minWidth: "42px",
+                }}
+              >
+                <div style={{ fontSize: "18px", fontWeight: 800, color: t.hl ? "#0B99FC" : "#fff", fontFamily: "monospace" }}>
+                  {String(t.val).padStart(2, "0")}
+                </div>
+                <div style={{ fontSize: "8px", color: "#666", textTransform: "uppercase", marginTop: "2px" }}>
+                  {t.lbl}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {block.countdownButtonText && (
+            <span
+              style={{
+                display: "inline-block",
+                background: "#ffffff",
+                color: "#000000",
+                fontSize: "11px",
+                fontWeight: 700,
+                padding: "8px 20px",
+                borderRadius: "4px",
+                textTransform: "uppercase",
+                letterSpacing: "0.5px",
+              }}
+            >
+              {block.countdownButtonText}
+            </span>
+          )}
+        </div>
+      );
+    }
     case "social_links": {
       return (
         <div
@@ -2008,6 +2503,8 @@ function BlockRenderer({ block }: { block: EmailBlock }) {
           <span>YouTube</span>
           <span>•</span>
           <span>Spotify</span>
+          <span>•</span>
+          <span>Beatstars</span>
         </div>
       );
     }
@@ -2043,11 +2540,15 @@ function BlockInspector({
   block,
   onChange,
   selectItems,
+  promoCodes,
+  onPromoCodesRefresh,
   activeTab,
 }: {
   block: EmailBlock;
   onChange: (patch: Partial<EmailBlock>) => void;
   selectItems: SelectItem[];
+  promoCodes: PromoCodeItem[];
+  onPromoCodesRefresh: () => void;
   activeTab: "content" | "style";
 }) {
   const inputStyle: React.CSSProperties = {
@@ -2061,6 +2562,42 @@ function BlockInspector({
     boxSizing: "border-box",
   };
 
+  const [isRegisteringPromo, setIsRegisteringPromo] = useState(false);
+  const [promoRegisterSuccess, setPromoRegisterSuccess] = useState<string | null>(null);
+
+  const handleCreatePromoInDB = async () => {
+    const code = block.couponCode?.trim().toUpperCase();
+    if (!code) {
+      alert("Nejprve zadejte kód kupónu.");
+      return;
+    }
+    setIsRegisteringPromo(true);
+    setPromoRegisterSuccess(null);
+    try {
+      const discountNum = parseInt(block.couponDiscount?.replace(/\D/g, "") || "20", 10) || 20;
+      const res = await fetch("/api/admin/promo-codes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          code,
+          discount_percent: discountNum,
+          is_active: true,
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Chyba při zakládání kódu");
+      }
+      onPromoCodesRefresh();
+      setPromoRegisterSuccess(`Kód ${code} byl úspěšně aktivován v e-shopu!`);
+    } catch (err: any) {
+      alert("Chyba: " + err.message);
+    } finally {
+      setIsRegisteringPromo(false);
+    }
+  };
+
   const handleSelectBeatChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedId = e.target.value;
     const found = selectItems.find((item) => item.id === selectedId);
@@ -2070,7 +2607,7 @@ function BlockInspector({
         beatSubtitle: found.subtitle,
         beatCoverUrl: found.coverUrl,
         beatPrice: found.price,
-        beatUrl: `{{site_url}}${found.url}`,
+        beatUrl: found.url || "/beaty",
         beatBpmKey: found.bpmKey,
       });
     }
@@ -2116,7 +2653,7 @@ function BlockInspector({
       {activeTab === "style" ? (
         /* ── Style Tab for All Blocks ─────────────────────────────────────── */
         <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-          {/* Quick Color Palette for color-supporting blocks */}
+          {/* Quick Color Palette */}
           {(block.type === "heading" ||
             block.type === "paragraph" ||
             block.type === "button" ||
@@ -2130,6 +2667,7 @@ function BlockInspector({
                 {BRAND_COLORS.map((c) => (
                   <button
                     key={c}
+                    type="button"
                     onClick={() => {
                       if (block.type === "heading") onChange({ headingColor: c });
                       else if (block.type === "paragraph") onChange({ paragraphColor: c });
@@ -2269,19 +2807,27 @@ function BlockInspector({
             </>
           )}
 
-          {/* Image Style */}
+          {/* Image Style with Full Bleed */}
           {block.type === "image" && (
             <>
               <div>
                 <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "4px" }}>
-                  Šířka obrázku
+                  Šířka a rozvržení
                 </label>
                 <select
-                  value={block.imageWidth || "100%"}
-                  onChange={(e) => onChange({ imageWidth: e.target.value })}
+                  value={block.imageFullBleed ? "full_bleed" : block.imageWidth || "100%"}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === "full_bleed") {
+                      onChange({ imageFullBleed: true, imageWidth: "full_bleed" });
+                    } else {
+                      onChange({ imageFullBleed: false, imageWidth: val });
+                    }
+                  }}
                   style={inputStyle}
                 >
-                  <option value="100%">100% (Plná šířka)</option>
+                  <option value="full_bleed">🌟 Plná šířka sekce (100% bez okrajů)</option>
+                  <option value="100%">100% (S vnitřním okrajem)</option>
                   <option value="80%">80%</option>
                   <option value="60%">60%</option>
                   <option value="40%">40%</option>
@@ -2462,7 +3008,6 @@ function BlockInspector({
                   onChange={(e) => onChange({ paragraphText: e.target.value })}
                   style={{ ...inputStyle, fontFamily: "inherit", resize: "vertical" }}
                 />
-                {/* Variable insertion chips right in the inspector */}
                 <div style={{ marginTop: "6px", display: "flex", alignItems: "center", gap: "4px", flexWrap: "wrap" }}>
                   <span style={{ fontSize: "10px", color: "#666" }}>+ Vložit:</span>
                   {["first_name", "email", "site_url"].map((v) => (
@@ -2488,7 +3033,7 @@ function BlockInspector({
             </>
           )}
 
-          {/* Button Content */}
+          {/* Button Content with URL Presets */}
           {block.type === "button" && (
             <>
               <div>
@@ -2508,9 +3053,30 @@ function BlockInspector({
                 <input
                   value={block.buttonUrl || ""}
                   onChange={(e) => onChange({ buttonUrl: e.target.value })}
-                  placeholder="{{site_url}}/beaty"
+                  placeholder="/beaty"
                   style={inputStyle}
                 />
+                {/* Clean URL Presets */}
+                <div style={{ marginTop: "6px", display: "flex", gap: "4px", flexWrap: "wrap" }}>
+                  {URL_PRESETS.map((p) => (
+                    <button
+                      key={p.url}
+                      type="button"
+                      onClick={() => onChange({ buttonUrl: p.url })}
+                      style={{
+                        background: "rgba(255,255,255,0.05)",
+                        border: "1px solid #333",
+                        borderRadius: "3px",
+                        padding: "3px 6px",
+                        fontSize: "10px",
+                        color: "#ccc",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             </>
           )}
@@ -2531,18 +3097,18 @@ function BlockInspector({
               </div>
               <div>
                 <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "4px" }}>
-                  Odkaz po kliknutí (Link URL)
+                  Odkaz po kliknutí na obrázek (volitelné)
                 </label>
                 <input
                   value={block.imageLink || ""}
                   onChange={(e) => onChange({ imageLink: e.target.value })}
-                  placeholder="{{site_url}}/beaty"
+                  placeholder="/beaty"
                   style={inputStyle}
                 />
               </div>
               <div>
                 <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "4px" }}>
-                  Alt text (popisek pro čtečky / blokované obrázky)
+                  Alt text (popisek)
                 </label>
                 <input
                   value={block.imageAlt || ""}
@@ -2554,7 +3120,7 @@ function BlockInspector({
             </>
           )}
 
-          {/* Hero Content (Includes Button Text & Button URL) */}
+          {/* Hero Content */}
           {block.type === "hero" && (
             <>
               <div>
@@ -2606,7 +3172,251 @@ function BlockInspector({
                 <input
                   value={block.heroButtonUrl || ""}
                   onChange={(e) => onChange({ heroButtonUrl: e.target.value })}
-                  placeholder="{{site_url}}/beaty"
+                  placeholder="/beaty"
+                  style={inputStyle}
+                />
+                <div style={{ marginTop: "4px", display: "flex", gap: "4px", flexWrap: "wrap" }}>
+                  {URL_PRESETS.map((p) => (
+                    <button
+                      key={p.url}
+                      type="button"
+                      onClick={() => onChange({ heroButtonUrl: p.url })}
+                      style={{
+                        background: "rgba(255,255,255,0.05)",
+                        border: "1px solid #333",
+                        borderRadius: "3px",
+                        padding: "2px 6px",
+                        fontSize: "10px",
+                        color: "#ccc",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Countdown Timer Content */}
+          {block.type === "countdown" && (
+            <>
+              <div>
+                <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "4px" }}>
+                  Titulek odpočtu
+                </label>
+                <input
+                  value={block.countdownTitle || ""}
+                  onChange={(e) => onChange({ countdownTitle: e.target.value })}
+                  placeholder="LIMITOVANÁ NABÍDKA KONČÍ ZA:"
+                  style={inputStyle}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "4px" }}>
+                  Cílové datum a čas konce
+                </label>
+                <input
+                  type="datetime-local"
+                  value={block.countdownTargetDate || ""}
+                  onChange={(e) => onChange({ countdownTargetDate: e.target.value })}
+                  style={{ ...inputStyle, cursor: "pointer" }}
+                />
+                <span style={{ fontSize: "10px", color: "#666", display: "block", marginTop: "2px" }}>
+                  Nebo zadejte ruční hodnoty níže:
+                </span>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "6px" }}>
+                <div>
+                  <label style={{ display: "block", fontSize: "10px", color: "#666" }}>Dny</label>
+                  <input
+                    value={block.countdownDays ?? ""}
+                    onChange={(e) => onChange({ countdownDays: e.target.value })}
+                    style={inputStyle}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: "block", fontSize: "10px", color: "#666" }}>Hodiny</label>
+                  <input
+                    value={block.countdownHours ?? ""}
+                    onChange={(e) => onChange({ countdownHours: e.target.value })}
+                    style={inputStyle}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: "block", fontSize: "10px", color: "#666" }}>Minuty</label>
+                  <input
+                    value={block.countdownMinutes ?? ""}
+                    onChange={(e) => onChange({ countdownMinutes: e.target.value })}
+                    style={inputStyle}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: "block", fontSize: "10px", color: "#666" }}>Sekundy</label>
+                  <input
+                    value={block.countdownSeconds ?? ""}
+                    onChange={(e) => onChange({ countdownSeconds: e.target.value })}
+                    style={inputStyle}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "4px" }}>
+                  Text CTA tlačítka (volitelné)
+                </label>
+                <input
+                  value={block.countdownButtonText || ""}
+                  onChange={(e) => onChange({ countdownButtonText: e.target.value })}
+                  placeholder="VYUŽÍT SLEVU"
+                  style={inputStyle}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "4px" }}>
+                  Cílová URL tlačítka
+                </label>
+                <input
+                  value={block.countdownButtonUrl || ""}
+                  onChange={(e) => onChange({ countdownButtonUrl: e.target.value })}
+                  placeholder="/beaty"
+                  style={inputStyle}
+                />
+                <div style={{ marginTop: "4px", display: "flex", gap: "4px", flexWrap: "wrap" }}>
+                  {URL_PRESETS.map((p) => (
+                    <button
+                      key={p.url}
+                      type="button"
+                      onClick={() => onChange({ countdownButtonUrl: p.url })}
+                      style={{
+                        background: "rgba(255,255,255,0.05)",
+                        border: "1px solid #333",
+                        borderRadius: "3px",
+                        padding: "2px 6px",
+                        fontSize: "10px",
+                        color: "#ccc",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Coupon Box Content with Real DB Sync & One-Click Creation */}
+          {block.type === "coupon_box" && (
+            <>
+              {/* Select from existing DB promo codes */}
+              <div>
+                <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "4px" }}>
+                  Vybrat existující promo kód z e-shopu
+                </label>
+                <select
+                  onChange={(e) => {
+                    const found = promoCodes.find((p) => p.code === e.target.value);
+                    if (found) {
+                      onChange({
+                        couponCode: found.code,
+                        couponDiscount: `${found.discount_percent}% SLEVA`,
+                        couponDescription: `Použijte kód v košíku a získejte ${found.discount_percent}% slevu na váš nákup.`,
+                      });
+                    }
+                  }}
+                  style={inputStyle}
+                >
+                  <option value="">-- Vyberte existující kód z DB --</option>
+                  {promoCodes.map((p) => (
+                    <option key={p.id} value={p.code}>
+                      {p.code} ({p.discount_percent}% sleva {p.is_active ? "✓ aktivní" : "pozastaven"})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "4px" }}>
+                  Promo kód
+                </label>
+                <input
+                  value={block.couponCode || ""}
+                  onChange={(e) => onChange({ couponCode: e.target.value.toUpperCase() })}
+                  placeholder="VOODOO20"
+                  style={{ ...inputStyle, fontFamily: "monospace", fontWeight: 700 }}
+                />
+              </div>
+
+              {/* DB Sync status & Register Button */}
+              {(() => {
+                const currentCode = block.couponCode?.trim().toUpperCase();
+                const existsInDB = promoCodes.some((p) => p.code.toUpperCase() === currentCode);
+
+                return (
+                  <div style={{ background: existsInDB ? "rgba(34,197,94,0.08)" : "rgba(245,158,11,0.08)", border: `1px solid ${existsInDB ? "rgba(34,197,94,0.25)" : "rgba(245,158,11,0.25)"}`, borderRadius: "6px", padding: "10px", fontSize: "11px" }}>
+                    {existsInDB ? (
+                      <div style={{ color: "#22c55e", display: "flex", alignItems: "center", gap: "6px" }}>
+                        <CheckCircle2 size={13} />
+                        <span>Kód <strong>{currentCode}</strong> je aktivní v databázi e-shopu.</span>
+                      </div>
+                    ) : (
+                      <div>
+                        <div style={{ color: "#f59e0b", marginBottom: "6px" }}>
+                          ⚠️ Kód <strong>{currentCode || "—"}</strong> zatím v databázi e-shopu neexistuje.
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleCreatePromoInDB}
+                          disabled={isRegisteringPromo || !currentCode}
+                          style={{
+                            width: "100%",
+                            padding: "6px",
+                            background: "#0B99FC",
+                            color: "#fff",
+                            border: "none",
+                            borderRadius: "4px",
+                            fontSize: "11px",
+                            fontWeight: 700,
+                            cursor: isRegisteringPromo || !currentCode ? "not-allowed" : "pointer",
+                          }}
+                        >
+                          {isRegisteringPromo ? "Aktivuji kód…" : "+ Založit a aktivovat tento kód v e-shopu"}
+                        </button>
+                      </div>
+                    )}
+                    {promoRegisterSuccess && (
+                      <div style={{ color: "#22c55e", marginTop: "6px", fontWeight: 600 }}>
+                        {promoRegisterSuccess}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+
+              <div>
+                <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "4px" }}>
+                  Sleva (Štítek)
+                </label>
+                <input
+                  value={block.couponDiscount || ""}
+                  onChange={(e) => onChange({ couponDiscount: e.target.value })}
+                  placeholder="20% SLEVA"
+                  style={inputStyle}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "4px" }}>
+                  Popis akce
+                </label>
+                <input
+                  value={block.couponDescription || ""}
+                  onChange={(e) => onChange({ couponDescription: e.target.value })}
                   style={inputStyle}
                 />
               </div>
@@ -2618,7 +3428,7 @@ function BlockInspector({
             <>
               <div>
                 <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "4px" }}>
-                  Vybrat z obchodu (Beat / Sound Kit)
+                  Vybrat ze skladu (Beat / Kit)
                 </label>
                 <select onChange={handleSelectBeatChange} style={inputStyle}>
                   <option value="">-- Vyberte položku pro předvyplnění --</option>
@@ -2688,13 +3498,14 @@ function BlockInspector({
                 <input
                   value={block.beatUrl || ""}
                   onChange={(e) => onChange({ beatUrl: e.target.value })}
+                  placeholder="/beaty"
                   style={inputStyle}
                 />
               </div>
             </>
           )}
 
-          {/* Multi Beat Grid Content (Full Item Editor!) */}
+          {/* Multi Beat Grid Content */}
           {block.type === "multi_beat_grid" && (
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               <div
@@ -2710,7 +3521,7 @@ function BlockInspector({
                   onClick={() => {
                     const current = block.gridItems || [];
                     if (current.length >= 4) {
-                      alert("Mřížka podporuje maximálně 4 položky pro zachování čitelnosti v e-mailu.");
+                      alert("Mřížka podporuje maximálně 4 položky pro zachování čitelnosti.");
                       return;
                     }
                     const newItem: EmailBlockGridItem = {
@@ -2718,9 +3529,7 @@ function BlockInspector({
                       subtitle: selectItems[current.length]?.bpmKey || "140 BPM",
                       price: selectItems[current.length]?.price || "990 Kč",
                       coverUrl: selectItems[current.length]?.coverUrl || "",
-                      url: selectItems[current.length]
-                        ? `{{site_url}}${selectItems[current.length].url}`
-                        : "{{site_url}}/beaty",
+                      url: selectItems[current.length] ? selectItems[current.length].url : "/beaty",
                     };
                     onChange({ gridItems: [...current, newItem] });
                   }}
@@ -2773,7 +3582,6 @@ function BlockInspector({
                     )}
                   </div>
 
-                  {/* Pick from store dropdown */}
                   <select
                     onChange={(e) => {
                       const found = selectItems.find((s) => s.id === e.target.value);
@@ -2785,7 +3593,7 @@ function BlockInspector({
                           subtitle: found.bpmKey || found.subtitle,
                           price: found.price,
                           coverUrl: found.coverUrl,
-                          url: `{{site_url}}${found.url}`,
+                          url: found.url || "/beaty",
                         };
                         onChange({ gridItems: next });
                       }
@@ -2852,7 +3660,7 @@ function BlockInspector({
                       next[idx] = { ...next[idx], url: e.target.value };
                       onChange({ gridItems: next });
                     }}
-                    placeholder="Cílová URL adresa"
+                    placeholder="/beaty"
                     style={inputStyle}
                   />
                 </div>
@@ -2860,70 +3668,7 @@ function BlockInspector({
             </div>
           )}
 
-          {/* Coupon Box Content */}
-          {block.type === "coupon_box" && (
-            <>
-              <div>
-                <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "4px" }}>
-                  Promo kód
-                </label>
-                <input
-                  value={block.couponCode || ""}
-                  onChange={(e) => onChange({ couponCode: e.target.value })}
-                  style={inputStyle}
-                />
-              </div>
-              <div>
-                <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "4px" }}>
-                  Výše slevy (Štítek)
-                </label>
-                <input
-                  value={block.couponDiscount || ""}
-                  onChange={(e) => onChange({ couponDiscount: e.target.value })}
-                  style={inputStyle}
-                />
-              </div>
-              <div>
-                <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "4px" }}>
-                  Popis slevové akce
-                </label>
-                <input
-                  value={block.couponDescription || ""}
-                  onChange={(e) => onChange({ couponDescription: e.target.value })}
-                  style={inputStyle}
-                />
-              </div>
-            </>
-          )}
-
-          {/* Info Box Content */}
-          {block.type === "info_box" && (
-            <>
-              <div>
-                <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "4px" }}>
-                  Nadpis boxu
-                </label>
-                <input
-                  value={block.infoTitle || ""}
-                  onChange={(e) => onChange({ infoTitle: e.target.value })}
-                  style={inputStyle}
-                />
-              </div>
-              <div>
-                <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "4px" }}>
-                  Text informace
-                </label>
-                <textarea
-                  rows={4}
-                  value={block.infoText || ""}
-                  onChange={(e) => onChange({ infoText: e.target.value })}
-                  style={{ ...inputStyle, fontFamily: "inherit", resize: "vertical" }}
-                />
-              </div>
-            </>
-          )}
-
-          {/* Social Links Content (Instagram, YouTube, Spotify, Beatstars) */}
+          {/* Social Links Content */}
           {block.type === "social_links" && (
             <>
               <div>
@@ -2968,6 +3713,33 @@ function BlockInspector({
                   onChange={(e) => onChange({ beatstarsUrl: e.target.value })}
                   placeholder="https://beatstars.com/voodoo808"
                   style={inputStyle}
+                />
+              </div>
+            </>
+          )}
+
+          {/* Info Box Content */}
+          {block.type === "info_box" && (
+            <>
+              <div>
+                <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "4px" }}>
+                  Nadpis boxu
+                </label>
+                <input
+                  value={block.infoTitle || ""}
+                  onChange={(e) => onChange({ infoTitle: e.target.value })}
+                  style={inputStyle}
+                />
+              </div>
+              <div>
+                <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "4px" }}>
+                  Text informace
+                </label>
+                <textarea
+                  rows={4}
+                  value={block.infoText || ""}
+                  onChange={(e) => onChange({ infoText: e.target.value })}
+                  style={{ ...inputStyle, fontFamily: "inherit", resize: "vertical" }}
                 />
               </div>
             </>

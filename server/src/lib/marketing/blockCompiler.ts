@@ -12,7 +12,8 @@ export type BlockType =
   | "multi_beat_grid"
   | "info_box"
   | "coupon_box"
-  | "social_links";
+  | "social_links"
+  | "countdown";
 
 export interface EmailBlockGridItem {
   title: string;
@@ -50,6 +51,7 @@ export interface EmailBlock {
   imageLink?: string;
   imageAlign?: "left" | "center" | "right";
   imageWidth?: string;
+  imageFullBleed?: boolean;
 
   // Divider
   dividerColor?: string;
@@ -92,6 +94,16 @@ export interface EmailBlock {
   youtubeUrl?: string;
   spotifyUrl?: string;
   beatstarsUrl?: string;
+
+  // Countdown Timer
+  countdownTitle?: string;
+  countdownTargetDate?: string;
+  countdownDays?: number | string;
+  countdownHours?: number | string;
+  countdownMinutes?: number | string;
+  countdownSeconds?: number | string;
+  countdownButtonText?: string;
+  countdownButtonUrl?: string;
 }
 
 function escapeHtml(str: string): string {
@@ -100,6 +112,15 @@ function escapeHtml(str: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+function normalizeUrl(url?: string): string {
+  if (!url) return "{{site_url}}";
+  const trimmed = url.trim();
+  if (trimmed.startsWith("/")) {
+    return `{{site_url}}${trimmed}`;
+  }
+  return trimmed;
 }
 
 export function compileSingleBlockToHtml(block: EmailBlock): string {
@@ -126,7 +147,7 @@ export function compileSingleBlockToHtml(block: EmailBlock): string {
 
     case "button": {
       const text = block.buttonText || "TLAČÍTKO";
-      const url = block.buttonUrl || "{{site_url}}";
+      const url = normalizeUrl(block.buttonUrl);
       const align = block.buttonAlign || "left";
       const bg = block.buttonBgColor || "#ffffff";
       const textColor = block.buttonTextColor || "#000000";
@@ -143,19 +164,22 @@ export function compileSingleBlockToHtml(block: EmailBlock): string {
     case "image": {
       const url = block.imageUrl || "";
       const alt = block.imageAlt || "";
-      const link = block.imageLink || "";
+      const link = block.imageLink ? normalizeUrl(block.imageLink) : "";
       const align = block.imageAlign || "center";
-      const width = block.imageWidth || "100%";
+      const isFullBleed = block.imageFullBleed || block.imageWidth === "full_bleed";
+      const width = isFullBleed ? "100%" : (block.imageWidth || "100%");
+      const borderRadius = isFullBleed ? "0px" : "6px";
+      const border = isFullBleed ? "none" : `1px solid ${BRAND.border}`;
 
       if (!url) return "";
 
-      const imgHtml = `<img src="${escapeHtml(url)}" alt="${escapeHtml(alt)}" style="display:block;max-width:100%;width:${width};height:auto;border-radius:6px;border:1px solid ${BRAND.border};" />`;
+      const imgHtml = `<img src="${escapeHtml(url)}" alt="${escapeHtml(alt)}" style="display:block;max-width:100%;width:${width};height:auto;border-radius:${borderRadius};border:${border};margin:0 auto;" />`;
 
       const wrappedImg = link
-        ? `<a href="${escapeHtml(link)}" style="display:inline-block;text-decoration:none;">${imgHtml}</a>`
+        ? `<a href="${escapeHtml(link)}" style="display:inline-block;text-decoration:none;width:100%;">${imgHtml}</a>`
         : imgHtml;
 
-      return `<table cellpadding="0" cellspacing="0" style="margin:16px 0;width:100%;">
+      return `<table cellpadding="0" cellspacing="0" style="margin:${isFullBleed ? "8px 0" : "16px 0"};width:100%;">
         <tr>
           <td align="${align}">
             ${wrappedImg}
@@ -301,6 +325,68 @@ export function compileSingleBlockToHtml(block: EmailBlock): string {
           <td style="padding:18px 22px;">
             ${title ? `<p style="margin:0 0 6px 0;font-size:14px;font-weight:700;color:${BRAND.textPrimary};">${escapeHtml(title)}</p>` : ""}
             <p style="margin:0;font-size:13px;color:${BRAND.textSecondary};line-height:1.6;">${escapeHtml(text).replace(/\n/g, "<br/>")}</p>
+          </td>
+        </tr>
+      </table>`;
+    }
+
+    case "countdown": {
+      const title = block.countdownTitle || "LIMITOVANÁ NABÍDKA KONČÍ ZA:";
+      const targetDate = block.countdownTargetDate;
+      let days = String(block.countdownDays ?? "01").padStart(2, "0");
+      let hours = String(block.countdownHours ?? "14").padStart(2, "0");
+      let mins = String(block.countdownMinutes ?? "30").padStart(2, "0");
+      let secs = String(block.countdownSeconds ?? "00").padStart(2, "0");
+
+      if (targetDate) {
+        const diff = new Date(targetDate).getTime() - Date.now();
+        if (diff > 0) {
+          days = String(Math.floor(diff / (1000 * 60 * 60 * 24))).padStart(2, "0");
+          hours = String(Math.floor((diff / (1000 * 60 * 60)) % 24)).padStart(2, "0");
+          mins = String(Math.floor((diff / 1000 / 60) % 60)).padStart(2, "0");
+          secs = String(Math.floor((diff / 1000) % 60)).padStart(2, "0");
+        } else {
+          days = "00"; hours = "00"; mins = "00"; secs = "00";
+        }
+      }
+
+      const btnText = block.countdownButtonText;
+      const btnUrl = normalizeUrl(block.countdownButtonUrl || "/beaty");
+
+      return `<table cellpadding="0" cellspacing="0" style="width:100%;background:${BRAND.cardBg};border:1px solid ${BRAND.border};border-radius:8px;padding:22px 16px;margin:20px 0;text-align:center;">
+        <tr>
+          <td>
+            <span style="display:inline-block;background:rgba(255,45,85,0.15);color:#ff2d55;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;">Časově omezená nabídka</span>
+            <p style="margin:8px 0 16px 0;font-size:15px;font-weight:800;letter-spacing:1px;color:${BRAND.textPrimary};text-transform:uppercase;">${escapeHtml(title)}</p>
+            <table cellpadding="0" cellspacing="0" style="margin:0 auto 16px auto;">
+              <tr>
+                <td style="padding:0 5px;">
+                  <div style="background:#050505;border:1px solid #282828;border-radius:6px;padding:8px 12px;min-width:44px;">
+                    <div style="font-size:22px;font-weight:800;color:#ffffff;font-family:monospace;">${days}</div>
+                    <div style="font-size:9px;color:${BRAND.textMuted};text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;">Dny</div>
+                  </div>
+                </td>
+                <td style="padding:0 5px;">
+                  <div style="background:#050505;border:1px solid #282828;border-radius:6px;padding:8px 12px;min-width:44px;">
+                    <div style="font-size:22px;font-weight:800;color:#ffffff;font-family:monospace;">${hours}</div>
+                    <div style="font-size:9px;color:${BRAND.textMuted};text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;">Hod</div>
+                  </div>
+                </td>
+                <td style="padding:0 5px;">
+                  <div style="background:#050505;border:1px solid #282828;border-radius:6px;padding:8px 12px;min-width:44px;">
+                    <div style="font-size:22px;font-weight:800;color:#ffffff;font-family:monospace;">${mins}</div>
+                    <div style="font-size:9px;color:${BRAND.textMuted};text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;">Min</div>
+                  </div>
+                </td>
+                <td style="padding:0 5px;">
+                  <div style="background:#050505;border:1px solid #282828;border-radius:6px;padding:8px 12px;min-width:44px;">
+                    <div style="font-size:22px;font-weight:800;color:#0B99FC;font-family:monospace;">${secs}</div>
+                    <div style="font-size:9px;color:${BRAND.textMuted};text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;">Sek</div>
+                  </div>
+                </td>
+              </tr>
+            </table>
+            ${btnText ? `<div style="margin-top:8px;"><a href="${escapeHtml(btnUrl)}" style="display:inline-block;background:#ffffff;color:#000000;font-weight:700;font-size:12px;padding:10px 24px;border-radius:4px;text-decoration:none;text-transform:uppercase;letter-spacing:0.5px;">${escapeHtml(btnText)}</a></div>` : ""}
           </td>
         </tr>
       </table>`;

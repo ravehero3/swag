@@ -32,8 +32,23 @@ export const BRAND = {
   accentWarningBorder: "#3a2a10",
 };
 
-function resolveLogoUrl(appUrl: string): string {
+export interface EmailHeaderOptions {
+  logoType?: "metallic" | "white";
+  logoSize?: "sm" | "md" | "lg";
+  showText?: boolean;
+}
+
+function resolveLogoUrl(appUrl: string, logoType?: "metallic" | "white"): string {
+  if (logoType === "white") {
+    return `${appUrl}/uploads/artwork/voodoo808-logo.png`;
+  }
   return `${appUrl}/uploads/artwork/voodoo808-main-logo.png`;
+}
+
+function resolveLogoWidth(size?: "sm" | "md" | "lg"): number {
+  if (size === "sm") return 140;
+  if (size === "lg") return 240;
+  return 190;
 }
 
 /**
@@ -48,9 +63,12 @@ export function renderBrandedEmailShell(opts: {
   bodyHtml: string;
   unsubscribeUrl?: string;
   preheader?: string;
+  headerOptions?: EmailHeaderOptions;
 }): string {
-  const { appUrl, bodyHtml, unsubscribeUrl, preheader } = opts;
-  const logoUrl = resolveLogoUrl(appUrl);
+  const { appUrl, bodyHtml, unsubscribeUrl, preheader, headerOptions } = opts;
+  const logoUrl = resolveLogoUrl(appUrl, headerOptions?.logoType);
+  const logoWidth = resolveLogoWidth(headerOptions?.logoSize);
+  const showText = !!headerOptions?.showText;
 
   const footer = unsubscribeUrl
     ? `<p style="margin:0;font-size:11px;color:${BRAND.textFainter};line-height:1.7;">
@@ -73,8 +91,11 @@ export function renderBrandedEmailShell(opts: {
   <table width="100%" cellpadding="0" cellspacing="0" style="background:${BRAND.bg};padding:40px 0;">
     <tr><td align="center">
       <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
-        <tr><td style="padding:0 0 32px 0;text-align:center;border-bottom:1px solid ${BRAND.border};">
-          <img src="${logoUrl}" alt="VOODOO808" width="220" style="display:inline-block;height:auto;max-width:220px;"/>
+        <tr><td style="padding:0 0 28px 0;text-align:center;border-bottom:1px solid ${BRAND.border};">
+          <a href="${appUrl}" style="display:inline-block;text-decoration:none;">
+            <img src="${logoUrl}" alt="VOODOO808" width="${logoWidth}" style="display:inline-block;height:auto;max-width:${logoWidth}px;" />
+          </a>
+          ${showText ? `<div style="color:#ffffff;font-size:16px;font-weight:900;letter-spacing:3px;margin-top:8px;">VOODOO808</div>` : ""}
         </td></tr>
         <tr><td style="padding:32px 0 0 0;">
           ${bodyHtml}

@@ -513,7 +513,9 @@ export async function initDatabase() {
     // Ensure visual editor columns exist
     await client.query(`
       ALTER TABLE marketing_templates ADD COLUMN IF NOT EXISTS blocks JSONB DEFAULT '[]';
+      ALTER TABLE marketing_templates ADD COLUMN IF NOT EXISTS header_options JSONB DEFAULT '{}';
       ALTER TABLE marketing_campaigns ADD COLUMN IF NOT EXISTS blocks JSONB DEFAULT '[]';
+      ALTER TABLE marketing_campaigns ADD COLUMN IF NOT EXISTS header_options JSONB DEFAULT '{}';
       ALTER TABLE marketing_campaigns ADD COLUMN IF NOT EXISTS preheader TEXT;
       ALTER TABLE marketing_campaigns ADD COLUMN IF NOT EXISTS html_content TEXT;
     `);

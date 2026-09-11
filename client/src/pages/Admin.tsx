@@ -7420,6 +7420,7 @@ function JourneysTab() {
   const [showStepForm, setShowStepForm] = useState(false);
   const [editingStep, setEditingStep] = useState<any>(null);
   const [stepForm, setStepForm] = useState<any>({ stepType: "email", delayHours: 0, templateId: "", condition: "has_purchased", conditionTag: "", onTrue: "end", onFalse: "continue" });
+  const [visualStep, setVisualStep] = useState<{ step: any; template: any } | null>(null);
 
   useEffect(() => {
     fetch("/api/marketing/templates", { credentials: "include" })
@@ -7537,6 +7538,97 @@ function JourneysTab() {
     load();
   };
 
+  const openVisualStep = (s: any) => {
+    let tpl = s.template_id ? templates.find(t => t.id === s.template_id) : null;
+    if (!tpl) {
+      tpl = {
+        name: `${detail?.journey?.name || "Journey"} — E-mail krok ${s.id}`,
+        subject: "",
+        preheader: "",
+        blocks: [],
+        header_options: { logoStyle: "metallic", logoSize: "medium", showBrandText: false },
+      };
+    }
+    setVisualStep({ step: s, template: tpl });
+  };
+
+  const handleSaveVisualStep = async (data: { subject: string; preheader: string; blocks: any[]; headerOptions?: any; name?: string }) => {
+    if (!visualStep || !detail?.journey?.id) return;
+    const currentTpl = visualStep.template;
+    let tplId = currentTpl?.id;
+    const tplName = data.name || currentTpl?.name || `${detail.journey.name} — E-mail krok`;
+
+    if (tplId) {
+      await fetch(`/api/marketing/templates/${tplId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          name: tplName,
+          subject: data.subject,
+          preheader: data.preheader,
+          blocks: data.blocks,
+          headerOptions: data.headerOptions,
+        }),
+      });
+    } else {
+      const res = await fetch("/api/marketing/templates", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          name: tplName,
+          subject: data.subject,
+          preheader: data.preheader,
+          blocks: data.blocks,
+          headerOptions: data.headerOptions,
+        }),
+      });
+      if (res.ok) {
+        const created = await res.json();
+        tplId = created.id;
+        await fetch(`/api/marketing/journeys/${detail.journey.id}/steps/${visualStep.step.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            stepType: visualStep.step.step_type,
+            delayHours: visualStep.step.delay_hours,
+            templateId: tplId,
+            configuration: visualStep.step.configuration,
+          }),
+        });
+      }
+    }
+
+    const tplsRes = await fetch("/api/marketing/templates", { credentials: "include" });
+    if (tplsRes.ok) setTemplates(await tplsRes.json());
+    openDetail(detail.journey.id);
+    load();
+    setVisualStep(null);
+  };
+
+  const handleTestSendVisualStep = async (email: string, subject: string, preheader: string, blocks: any[], headerOptions?: any) => {
+    if (visualStep?.template?.id) {
+      const res = await fetch(`/api/marketing/templates/${visualStep.template.id}/send-test`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Odeslání selhalo");
+    } else {
+      const res = await fetch("/api/marketing/test-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ to: email, subject: subject || "Test", previewText: preheader, blocks, headerOptions }),
+      });
+      if (!res.ok) throw new Error("Odeslání selhalo");
+    }
+  };
+
   const cellStyle: any = { padding: "10px", borderBottom: "1px solid #1e1e1e", verticalAlign: "middle" };
 
   const STATUS_COLORS: Record<string, string> = { active: "#24e053", paused: "#f9a825", draft: "#555" };
@@ -7643,23 +7735,32 @@ function JourneysTab() {
                       <div style={{ color: "#888", marginTop: "4px" }}>Tag: {s.configuration.tag}</div>
                     )}
                     {s.step_type === "email" && (
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "8px" }}>
-                        <span style={{ color: s.template_id ? "#888" : "#ff5252", fontSize: "11px" }}>
-                          {s.template_id ? (tpl ? tpl.name : `Šablona #${s.template_id}`) : "⚠ Žádná šablona přiřazena"}
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "8px", flexWrap: "wrap", gap: "6px" }}>
+                        <span style={{ color: s.template_id ? "#888" : "#f9a825", fontSize: "11px" }}>
+                          {s.template_id ? (tpl ? tpl.name : `Šablona #${s.template_id}`) : "⚠ Žádná šablona — klikněte na Vizuální editor"}
                         </span>
-                        {s.template_id && (
-                          <div style={{ display: "flex", gap: "6px" }}>
-                            <button className="btn" onClick={() => setPreviewStepId(s.id)} style={{ borderRadius: "4px", fontSize: "10px", padding: "3px 8px", borderColor: "#444" }}>Náhled</button>
-                            <button
-                              className="btn"
-                              onClick={() => handleSendTest(s.id)}
-                              disabled={testSendingStepId === s.id}
-                              style={{ borderRadius: "4px", fontSize: "10px", padding: "3px 8px", borderColor: "#0B99FC", color: "#0B99FC" }}
-                            >
-                              {testSendingStepId === s.id ? "Odesílám…" : "Odeslat test"}
-                            </button>
-                          </div>
-                        )}
+                        <div style={{ display: "flex", gap: "6px" }}>
+                          <button
+                            className="btn"
+                            onClick={() => openVisualStep(s)}
+                            style={{ borderRadius: "4px", fontSize: "10px", padding: "3px 8px", borderColor: "#0B99FC", color: "#0B99FC" }}
+                          >
+                            ✨ Vizuální editor
+                          </button>
+                          {s.template_id && (
+                            <>
+                              <button className="btn" onClick={() => setPreviewStepId(s.id)} style={{ borderRadius: "4px", fontSize: "10px", padding: "3px 8px", borderColor: "#444" }}>Náhled</button>
+                              <button
+                                className="btn"
+                                onClick={() => handleSendTest(s.id)}
+                                disabled={testSendingStepId === s.id}
+                                style={{ borderRadius: "4px", fontSize: "10px", padding: "3px 8px", borderColor: "#24e053", color: "#24e053" }}
+                              >
+                                {testSendingStepId === s.id ? "Odesílám…" : "Odeslat test"}
+                              </button>
+                            </>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -7772,6 +7873,19 @@ function JourneysTab() {
           </div>
         </div>
       )}
+
+      {visualStep && (
+        <VisualEmailBuilder
+          title={visualStep.template?.name || "E-mail kroku Journey"}
+          initialSubject={visualStep.template?.subject || ""}
+          initialPreheader={visualStep.template?.preheader || ""}
+          initialBlocks={Array.isArray(visualStep.template?.blocks) ? visualStep.template.blocks : []}
+          initialHeaderConfig={visualStep.template?.header_options || visualStep.template?.headerOptions}
+          onSave={handleSaveVisualStep}
+          onClose={() => setVisualStep(null)}
+          onTestSend={handleTestSendVisualStep}
+        />
+      )}
     </div>
   );
 }
@@ -7822,22 +7936,22 @@ function KampaneTab() {
     setVisualCampaign({ ...c, isNew: false, blocks: Array.isArray(c.blocks) ? c.blocks : [] });
   };
 
-  const handleSaveVisual = async (data: { subject: string; preheader: string; blocks: any[] }) => {
+  const handleSaveVisual = async (data: { subject: string; preheader: string; blocks: any[]; headerOptions?: any; name?: string }) => {
+    const campName = data.name || visualCampaign?.name || "Nová kampaň";
     if (visualCampaign?.id) {
       await fetch(`/api/marketing/campaigns/${visualCampaign.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
-          name: visualCampaign.name || "Kampaň",
+          name: campName,
           subject: data.subject,
           preheader: data.preheader,
           blocks: data.blocks,
+          headerOptions: data.headerOptions,
         }),
       });
     } else {
-      const campName = prompt("Zadejte název kampaně:", visualCampaign?.name || "Nová kampaň");
-      if (!campName) return;
       await fetch("/api/marketing/campaigns", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -7847,6 +7961,7 @@ function KampaneTab() {
           subject: data.subject,
           preheader: data.preheader,
           blocks: data.blocks,
+          headerOptions: data.headerOptions,
         }),
       });
     }
@@ -7854,7 +7969,7 @@ function KampaneTab() {
     load();
   };
 
-  const handleTestSendVisual = async (email: string, subject: string, preheader: string, blocks: any[]) => {
+  const handleTestSendVisual = async (email: string, subject: string, preheader: string, blocks: any[], headerOptions?: any) => {
     if (visualCampaign?.id) {
       const res = await fetch(`/api/marketing/campaigns/${visualCampaign.id}/send-test`, {
         method: "POST",
@@ -7865,11 +7980,11 @@ function KampaneTab() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Odeslání selhalo");
     } else {
-      const res = await fetch("/api/marketing/templates/1/send-test", {
+      const res = await fetch("/api/marketing/test-email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ to: email, subject: subject || "Test", previewText: preheader, blocks, headerOptions }),
       });
       if (!res.ok) throw new Error("Odeslání selhalo");
     }
@@ -7992,10 +8107,11 @@ function KampaneTab() {
 
       {visualCampaign && (
         <VisualEmailBuilder
-          title={`Kampaně — ${visualCampaign.name || "Nová kampaň"}`}
+          title={visualCampaign.name || "Nová kampaň"}
           initialSubject={visualCampaign.subject || ""}
           initialPreheader={visualCampaign.preheader || ""}
           initialBlocks={visualCampaign.blocks || []}
+          initialHeaderConfig={visualCampaign.header_options || visualCampaign.headerOptions}
           onSave={handleSaveVisual}
           onClose={() => setVisualCampaign(null)}
           onTestSend={handleTestSendVisual}
@@ -8173,22 +8289,22 @@ function SablonyTab() {
     setVisualTemplate({ ...t, isNew: false, blocks: Array.isArray(t.blocks) ? t.blocks : [] });
   };
 
-  const handleSaveVisual = async (data: { subject: string; preheader: string; blocks: any[] }) => {
+  const handleSaveVisual = async (data: { subject: string; preheader: string; blocks: any[]; headerOptions?: any; name?: string }) => {
+    const tmplName = data.name || visualTemplate?.name || "Nová šablona";
     if (visualTemplate?.id) {
       await fetch(`/api/marketing/templates/${visualTemplate.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
-          name: visualTemplate.name || "Šablona",
+          name: tmplName,
           subject: data.subject,
           preheader: data.preheader,
           blocks: data.blocks,
+          headerOptions: data.headerOptions,
         }),
       });
     } else {
-      const tmplName = prompt("Zadejte název šablony:", visualTemplate?.name || "Nová šablona");
-      if (!tmplName) return;
       await fetch("/api/marketing/templates", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -8198,6 +8314,7 @@ function SablonyTab() {
           subject: data.subject,
           preheader: data.preheader,
           blocks: data.blocks,
+          headerOptions: data.headerOptions,
         }),
       });
     }
@@ -8205,7 +8322,7 @@ function SablonyTab() {
     load();
   };
 
-  const handleTestSendVisual = async (email: string, subject: string, preheader: string, blocks: any[]) => {
+  const handleTestSendVisual = async (email: string, subject: string, preheader: string, blocks: any[], headerOptions?: any) => {
     if (visualTemplate?.id) {
       const res = await fetch(`/api/marketing/templates/${visualTemplate.id}/send-test`, {
         method: "POST",
@@ -8216,11 +8333,11 @@ function SablonyTab() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Odeslání selhalo");
     } else {
-      const res = await fetch("/api/marketing/templates/1/send-test", {
+      const res = await fetch("/api/marketing/test-email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ to: email, subject: subject || "Test", previewText: preheader, blocks, headerOptions }),
       });
       if (!res.ok) throw new Error("Odeslání selhalo");
     }
@@ -8376,10 +8493,11 @@ function SablonyTab() {
 
       {visualTemplate && (
         <VisualEmailBuilder
-          title={`Šablona — ${visualTemplate.name || "Nová šablona"}`}
+          title={visualTemplate.name || "Nová šablona"}
           initialSubject={visualTemplate.subject || ""}
           initialPreheader={visualTemplate.preheader || ""}
           initialBlocks={visualTemplate.blocks || []}
+          initialHeaderConfig={visualTemplate.header_options || visualTemplate.headerOptions}
           onSave={handleSaveVisual}
           onClose={() => setVisualTemplate(null)}
           onTestSend={handleTestSendVisual}

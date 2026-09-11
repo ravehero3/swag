@@ -84,7 +84,13 @@ interface MarketingTemplate {
 }
 
 /** Render a template's subject + HTML with sample variables, for admin preview. Never sends anything. */
-export function renderTemplatePreview(template: { subject: string; html_content: string; preheader?: string | null; blocks?: any }): { subject: string; html: string } {
+export function renderTemplatePreview(template: {
+  subject: string;
+  html_content: string;
+  preheader?: string | null;
+  blocks?: any;
+  headerOptions?: any;
+}): { subject: string; html: string } {
   const vars = buildPreviewVars();
   const subject = fillVariables(template.subject, vars);
   let bodyHtml = template.html_content ? fillVariables(template.html_content, vars) : "";
@@ -96,6 +102,7 @@ export function renderTemplatePreview(template: { subject: string; html_content:
     bodyHtml,
     unsubscribeUrl: vars.unsubscribe_url,
     preheader: template.preheader ? fillVariables(template.preheader, vars) : undefined,
+    headerOptions: template.headerOptions,
   });
   return { subject, html };
 }
@@ -104,7 +111,7 @@ export function renderTemplatePreview(template: { subject: string; html_content:
  * Send a custom test email (e.g. for campaign draft in visual builder) to an admin address.
  */
 export async function sendTestCustomEmail(
-  opts: { subject: string; preheader?: string | null; htmlContent: string },
+  opts: { subject: string; preheader?: string | null; htmlContent: string; headerOptions?: any },
   toEmail: string
 ): Promise<{ ok: boolean; error?: string }> {
   const apiKey = process.env.RESEND_API_KEY || process.env.RESEND_API;
@@ -114,6 +121,7 @@ export async function sendTestCustomEmail(
     subject: opts.subject || "Test kampaň",
     preheader: opts.preheader,
     html_content: opts.htmlContent || "",
+    headerOptions: opts.headerOptions,
   });
 
   const fromAddress = process.env.RESEND_FROM || "VOODOO808 <info@voodoo808.com>";
