@@ -733,6 +733,21 @@ router.put("/:id/status", requireAdmin, async (req: Request, res: Response) => {
   }
 });
 
+router.post("/:id/resend-downloads", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const orderId = parseInt(req.params.id, 10);
+    const orderRes = await pool.query("SELECT * FROM orders WHERE id = $1", [orderId]);
+    const order = orderRes.rows[0];
+    if (!order) return res.status(404).json({ error: "Objednávka nenalezena" });
+
+    await sendContractEmail(order.id);
+    res.json({ success: true, message: `E-mail se soubory byl znovu odeslán na ${order.email}` });
+  } catch (error: any) {
+    console.error("[Orders] Resend downloads error:", error);
+    res.status(500).json({ error: error.message || "Nepodařilo se odeslat e-mail se soubory" });
+  }
+});
+
 router.delete("/:id", requireAdmin, async (req: Request, res: Response) => {
   try {
     const result = await pool.query("DELETE FROM orders WHERE id = $1 RETURNING id", [req.params.id]);

@@ -42,12 +42,12 @@ function AdminAudioPreview({ src }: { src: string }) {
   }, []);
 
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: "12px", background: "DESIGN_SYSTEM.colors.elevated", borderRadius: "8px", padding: "10px 14px", border: "1px solid #1a1a1a" }}>
+    <div style={{ display: "flex", alignItems: "center", gap: "12px", background: DESIGN_SYSTEM.colors.elevated, borderRadius: "8px", padding: "10px 14px", border: "1px solid #1a1a1a" }}>
       <audio ref={audioRef} src={src} />
       <button
         type="button"
         onClick={toggle}
-        style={{ width: "36px", height: "36px", borderRadius: "50%", background: "DESIGN_SYSTEM.colors.textPrimary", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.15s" }}
+        style={{ width: "36px", height: "36px", borderRadius: "50%", background: DESIGN_SYSTEM.colors.textPrimary, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.15s" }}
       >
         {isPlaying
           ? <svg width="11" height="11" viewBox="0 0 24 24" fill="#000"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
@@ -179,6 +179,15 @@ function Admin() {
   const [adminLoading, setAdminLoading] = useState(true);
   const [adminError, setAdminError] = useState<string | null>(null);
   const [showBeatUploadModal, setShowBeatUploadModal] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 900);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   useEffect(() => {
     const checkAdmin = async () => {
@@ -259,7 +268,7 @@ function Admin() {
     return (
       <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#000", padding: "24px" }}>
         <div style={{ maxWidth: "480px", textAlign: "center" }}>
-          <div style={{ fontSize: "14px", color: "DESIGN_SYSTEM.colors.textPrimary", marginBottom: "20px" }}>{adminError}</div>
+          <div style={{ fontSize: "14px", color: DESIGN_SYSTEM.colors.textPrimary, marginBottom: "20px" }}>{adminError}</div>
           <button className="btn btn-filled" onClick={loadData}>Zkusit znovu</button>
         </div>
       </div>
@@ -279,100 +288,202 @@ function Admin() {
   return (
     <>
       <AdminErrorLog />
-      <div style={{ display: "flex", minHeight: "100vh", background: "#000", color: "DESIGN_SYSTEM.colors.textPrimary", paddingBottom: "32px" }}>
-        {/* ── Sidebar ── */}
-        <aside style={{
-        width: "214px",
-        flexShrink: 0,
-        background: "#070707",
-        borderRight: "1px solid #181818",
-        display: "flex",
-        flexDirection: "column",
-        position: "sticky",
-        top: 0,
-        height: "100vh",
-        overflowY: "auto",
-        scrollbarWidth: "none",
-      }}>
-        {/* Brand */}
-        <div style={{ padding: "22px 20px 18px", borderBottom: "1px solid #131313" }}>
-          <a href="/" style={{ textDecoration: "none" }}>
-            <img src="/uploads/artwork/voodoo808-logo.png" alt="VOODOO808" style={{ height: "24px", width: "auto", border: "1px solid #000", borderRadius: "2px" }} />
-            <div style={{ fontSize: "10px", color: "#2b2b2b", letterSpacing: "0.12em", marginTop: "3px", textTransform: "uppercase" }}>Admin</div>
-          </a>
-        </div>
 
-        {/* Nav */}
-        <nav style={{ flex: 1, padding: "8px 0" }}>
-          {ADMIN_NAV.map(({ id, label }) => {
-            const active = tab === id;
-            const badge = id === "orders" && pendingBank > 0 ? pendingBank : null;
-            return (
+      {/* Mobile sticky header */}
+      {isMobile && (
+        <header style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 90,
+          height: "56px",
+          background: "rgba(10,10,10,0.95)",
+          backdropFilter: "blur(12px)",
+          borderBottom: "1px solid #1a1a1a",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "0 16px",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <button
+              onClick={() => setSidebarOpen(prev => !prev)}
+              aria-label="Otevřít menu"
+              style={{
+                background: "rgba(255,255,255,0.06)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                color: DESIGN_SYSTEM.colors.textPrimary,
+                fontSize: "18px",
+                cursor: "pointer",
+                padding: "6px 10px",
+                borderRadius: "8px",
+                display: "flex",
+                alignItems: "center",
+                lineHeight: 1,
+              }}
+            >
+              {sidebarOpen ? "✕" : "☰"}
+            </button>
+            <a href="/" style={{ display: "flex", alignItems: "center" }}>
+              <img src="/uploads/artwork/voodoo808-logo.png" alt="VOODOO808" style={{ height: "20px", width: "auto" }} />
+            </a>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ fontSize: "11px", color: DESIGN_SYSTEM.colors.textSecondary, textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 600 }}>
+              {ADMIN_NAV.find(n => n.id === tab)?.label}
+            </span>
+            {pendingBank > 0 && (
+              <span style={{
+                fontSize: "10px", fontWeight: 700,
+                background: "#fbbf24", color: "#000",
+                borderRadius: "10px", padding: "2px 6px",
+              }}>{pendingBank}</span>
+            )}
+          </div>
+        </header>
+      )}
+
+      {/* Mobile drawer backdrop */}
+      {isMobile && sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.75)",
+            backdropFilter: "blur(4px)",
+            zIndex: 99,
+          }}
+        />
+      )}
+
+      <div style={{
+        display: "flex",
+        flexDirection: isMobile ? "column" : "row",
+        minHeight: "100vh",
+        background: "#000",
+        color: DESIGN_SYSTEM.colors.textPrimary,
+        paddingBottom: "32px",
+      }}>
+        {/* ── Sidebar (Drawer on mobile, Sticky on desktop) ── */}
+        <aside style={{
+          width: "220px",
+          flexShrink: 0,
+          background: "#070707",
+          borderRight: "1px solid #181818",
+          display: "flex",
+          flexDirection: "column",
+          position: isMobile ? "fixed" : "sticky",
+          top: 0,
+          left: isMobile ? (sidebarOpen ? 0 : "-230px") : 0,
+          zIndex: isMobile ? 100 : 1,
+          height: "100vh",
+          overflowY: "auto",
+          scrollbarWidth: "none",
+          transition: isMobile ? "left 0.25s cubic-bezier(0.4, 0, 0.2, 1)" : "none",
+          boxShadow: isMobile && sidebarOpen ? "4px 0 24px rgba(0,0,0,0.85)" : "none",
+        }}>
+          {/* Brand */}
+          <div style={{ padding: "22px 20px 18px", borderBottom: "1px solid #131313", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <a href="/" style={{ textDecoration: "none" }}>
+              <img src="/uploads/artwork/voodoo808-logo.png" alt="VOODOO808" style={{ height: "24px", width: "auto", border: "1px solid #000", borderRadius: "2px" }} />
+              <div style={{ fontSize: "10px", color: "#2b2b2b", letterSpacing: "0.12em", marginTop: "3px", textTransform: "uppercase" }}>Admin</div>
+            </a>
+            {isMobile && (
               <button
-                key={id}
-                data-testid={`tab-${id}`}
-                onClick={() => setTab(id)}
+                onClick={() => setSidebarOpen(false)}
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  width: "100%",
-                  padding: "10px 20px",
-                  background: active ? DESIGN_SYSTEM.colors.tertiary : "transparent",
+                  background: "transparent",
                   border: "none",
-                  borderLeft: active ? "2px solid #fff" : "2px solid transparent",
-                  color: active ? DESIGN_SYSTEM.colors.textPrimary : "#484848",
-                  fontSize: "13px",
-                  fontFamily: "inherit",
+                  color: "#666",
+                  fontSize: "18px",
                   cursor: "pointer",
-                  textAlign: "left",
-                  letterSpacing: "0.01em",
-                  transition: "color 120ms ease, background 120ms ease, border-color 120ms ease",
-                  boxSizing: "border-box",
-                }}
-                onMouseEnter={e => { 
-                  if (!active) {
-                    (e.currentTarget as HTMLButtonElement).style.color = DESIGN_SYSTEM.colors.textSecondary;
-                    (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.04)";
-                    (e.currentTarget as HTMLButtonElement).style.borderLeftColor = "#555555";
-                  }
-                }}
-                onMouseLeave={e => { 
-                  if (!active) {
-                    (e.currentTarget as HTMLButtonElement).style.color = "#484848";
-                    (e.currentTarget as HTMLButtonElement).style.background = "transparent";
-                    (e.currentTarget as HTMLButtonElement).style.borderLeftColor = "transparent";
-                  }
+                  padding: "4px",
                 }}
               >
-                <span style={{ flex: 1 }}>{label}</span>
-                {badge && (
-                  <span style={{
-                    fontSize: "10px", fontWeight: 700, lineHeight: 1,
-                    background: "#fbbf24", color: "#000",
-                    borderRadius: "10px", padding: "2px 6px",
-                    flexShrink: 0,
-                  }}>{badge}</span>
-                )}
+                ✕
               </button>
-            );
-          })}
-        </nav>
+            )}
+          </div>
 
-        {/* Footer */}
-        <div style={{ padding: "14px 20px", borderTop: "1px solid #131313" }}>
-          <a
-            href="/"
-            style={{ fontSize: "11px", color: "#2b2b2b", textDecoration: "none", letterSpacing: "0.03em" }}
-            onMouseEnter={e => (e.currentTarget.style.color = "DESIGN_SYSTEM.colors.textSecondary")}
-            onMouseLeave={e => (e.currentTarget.style.color = "#2b2b2b")}
-          >
-            ← Zpět na web
-          </a>
-        </div>
-      </aside>
+          {/* Nav */}
+          <nav style={{ flex: 1, padding: "8px 0" }}>
+            {ADMIN_NAV.map(({ id, label }) => {
+              const active = tab === id;
+              const badge = id === "orders" && pendingBank > 0 ? pendingBank : null;
+              return (
+                <button
+                  key={id}
+                  data-testid={`tab-${id}`}
+                  onClick={() => {
+                    setTab(id);
+                    if (isMobile) setSidebarOpen(false);
+                  }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    width: "100%",
+                    padding: "10px 20px",
+                    background: active ? DESIGN_SYSTEM.colors.tertiary : "transparent",
+                    border: "none",
+                    borderLeft: active ? "2px solid #fff" : "2px solid transparent",
+                    color: active ? DESIGN_SYSTEM.colors.textPrimary : "#484848",
+                    fontSize: "13px",
+                    fontFamily: "inherit",
+                    cursor: "pointer",
+                    textAlign: "left",
+                    letterSpacing: "0.01em",
+                    transition: "color 120ms ease, background 120ms ease, border-color 120ms ease",
+                    boxSizing: "border-box",
+                  }}
+                  onMouseEnter={e => { 
+                    if (!active) {
+                      (e.currentTarget as HTMLButtonElement).style.color = DESIGN_SYSTEM.colors.textSecondary;
+                      (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.04)";
+                      (e.currentTarget as HTMLButtonElement).style.borderLeftColor = "#555555";
+                    }
+                  }}
+                  onMouseLeave={e => { 
+                    if (!active) {
+                      (e.currentTarget as HTMLButtonElement).style.color = "#484848";
+                      (e.currentTarget as HTMLButtonElement).style.background = "transparent";
+                      (e.currentTarget as HTMLButtonElement).style.borderLeftColor = "transparent";
+                    }
+                  }}
+                >
+                  <span style={{ flex: 1 }}>{label}</span>
+                  {badge && (
+                    <span style={{
+                      fontSize: "10px", fontWeight: 700, lineHeight: 1,
+                      background: "#fbbf24", color: "#000",
+                      borderRadius: "10px", padding: "2px 6px",
+                      flexShrink: 0,
+                    }}>{badge}</span>
+                  )}
+                </button>
+              );
+            })}
+          </nav>
 
-      {/* ── Main content ── */}
-      <main style={{ flex: 1, minWidth: 0, padding: "36px 44px 80px", overflowX: "hidden" }}>
+          {/* Footer */}
+          <div style={{ padding: "14px 20px", borderTop: "1px solid #131313" }}>
+            <a
+              href="/"
+              style={{ fontSize: "11px", color: "#2b2b2b", textDecoration: "none", letterSpacing: "0.03em" }}
+              onMouseEnter={e => (e.currentTarget.style.color = DESIGN_SYSTEM.colors.textSecondary)}
+              onMouseLeave={e => (e.currentTarget.style.color = "#2b2b2b")}
+            >
+              ← Zpět na web
+            </a>
+          </div>
+        </aside>
+
+        {/* ── Main content ── */}
+        <main style={{
+          flex: 1,
+          minWidth: 0,
+          padding: isMobile ? "20px 16px 60px" : "36px 44px 80px",
+          overflowX: "hidden",
+        }}>
         {tab === "beats" && (
           <BeatsTab
             beats={beats}
@@ -483,7 +594,7 @@ function getBeatWaveformQuality(data: number[]): { label: string; color: string 
   const max = Math.max(...data);
   const nonZero = data.filter(v => v > 0.01).length / data.length;
   if (max < 0.1 || nonZero < 0.3) return { label: "nízká", color: "#e53935" };
-  if (avg > 0.35 && nonZero > 0.8 && data.length >= 100) return { label: "výborná", color: "DESIGN_SYSTEM.colors.success" };
+  if (avg > 0.35 && nonZero > 0.8 && data.length >= 100) return { label: "výborná", color: DESIGN_SYSTEM.colors.success };
   if (avg > 0.2 && nonZero > 0.6) return { label: "dobrá", color: "#7cb342" };
   return { label: "střední", color: "#f9a825" };
 }
@@ -547,7 +658,7 @@ function WaveformModal({ beat, onClose }: { beat: Beat; onClose: () => void }) {
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
           <div>
-            <div style={{ fontSize: "14px", fontWeight: 600, color: "DESIGN_SYSTEM.colors.textPrimary", marginBottom: "2px" }}>{beat.title}</div>
+            <div style={{ fontSize: "14px", fontWeight: 600, color: DESIGN_SYSTEM.colors.textPrimary, marginBottom: "2px" }}>{beat.title}</div>
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
               <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: quality.color, boxShadow: `0 0 5px ${quality.color}` }} />
               <span style={{ fontSize: "11px", color: quality.color, fontFamily: "monospace" }}>{quality.label}</span>
@@ -571,9 +682,9 @@ function WaveformModal({ beat, onClose }: { beat: Beat; onClose: () => void }) {
         </svg>
         <div style={{ display: "flex", justifyContent: "space-between", marginTop: "12px", fontSize: "10px", color: "#444" }}>
           <span>0:00</span>
-          <span style={{ color: "DESIGN_SYSTEM.colors.success", display: "flex", alignItems: "center", gap: "4px" }}>
+          <span style={{ color: DESIGN_SYSTEM.colors.success, display: "flex", alignItems: "center", gap: "4px" }}>
             <svg width="8" height="8" viewBox="0 0 10 10" fill="none">
-              <circle cx="5" cy="5" r="4" fill="DESIGN_SYSTEM.colors.success" />
+              <circle cx="5" cy="5" r="4" fill={DESIGN_SYSTEM.colors.success} />
               <path d="M3 5l1.5 1.5L7.5 3.5" stroke="#000" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             Připraveno
@@ -626,7 +737,7 @@ function GDriveLinkStatus({ url }: { url: string }) {
     );
   }
 
-  const colour = state.status === "ok" ? "DESIGN_SYSTEM.colors.success" : state.status === "bad" ? "#ff5252" : state.status === "checking" ? "#0B99FC" : "DESIGN_SYSTEM.colors.textSecondary";
+  const colour = state.status === "ok" ? DESIGN_SYSTEM.colors.success : state.status === "bad" ? "#ff5252" : state.status === "checking" ? "#0B99FC" : DESIGN_SYSTEM.colors.textSecondary;
   const icon = state.status === "ok" ? "✓" : state.status === "bad" ? "✗" : state.status === "checking" ? "…" : "?";
 
   return (
@@ -639,7 +750,7 @@ function GDriveLinkStatus({ url }: { url: string }) {
         type="button"
         onClick={verify}
         disabled={state.status === "checking"}
-        style={{ background: "transparent", border: "1px solid #333", color: "DESIGN_SYSTEM.colors.textSecondary", padding: "2px 8px", borderRadius: "3px", fontSize: "11px", cursor: state.status === "checking" ? "default" : "pointer" }}
+        style={{ background: "transparent", border: "1px solid #333", color: DESIGN_SYSTEM.colors.textSecondary, padding: "2px 8px", borderRadius: "3px", fontSize: "11px", cursor: state.status === "checking" ? "default" : "pointer" }}
         data-testid="button-verify-gdrive"
       >
         {state.status === "idle" ? "Ověřit dostupnost" : "Ověřit znovu"}
@@ -672,10 +783,10 @@ function ArtworkPreview({ url, onDelete, testId }: { url: string; onDelete: () =
         />
         <div style={{ flex: 1, minWidth: 0 }}>
           {status === "loading" && (
-            <div style={{ fontSize: "12px", color: "DESIGN_SYSTEM.colors.textSecondary" }}>Načítám náhled…</div>
+            <div style={{ fontSize: "12px", color: DESIGN_SYSTEM.colors.textSecondary }}>Načítám náhled…</div>
           )}
           {status === "ok" && (
-            <div style={{ fontSize: "12px", color: "DESIGN_SYSTEM.colors.success", marginBottom: "4px" }}>✓ Obrázek načten – tak ho uvidí návštěvníci</div>
+            <div style={{ fontSize: "12px", color: DESIGN_SYSTEM.colors.success, marginBottom: "4px" }}>✓ Obrázek načten – tak ho uvidí návštěvníci</div>
           )}
           {status === "error" && (
             <div style={{ fontSize: "12px", color: "#ff5252", marginBottom: "6px", lineHeight: 1.4 }}>
@@ -683,19 +794,19 @@ function ArtworkPreview({ url, onDelete, testId }: { url: string; onDelete: () =
               Nejčastější příčina: chybí nebo je špatně nastavená proměnná <code style={{ background: "#222", padding: "1px 4px", borderRadius: "2px" }}>R2_PUBLIC_BASE_URL</code> (Cloudflare R2 public dev URL nebo custom doména).
             </div>
           )}
-          <div style={{ fontSize: "11px", color: "DESIGN_SYSTEM.colors.textSecondary", wordBreak: "break-all", marginBottom: "8px" }}>
+          <div style={{ fontSize: "11px", color: DESIGN_SYSTEM.colors.textSecondary, wordBreak: "break-all", marginBottom: "8px" }}>
             <a href={url} target="_blank" rel="noreferrer" style={{ color: "#0B99FC", textDecoration: "none" }}>{url}</a>
           </div>
           <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
             <button
               type="button"
               onClick={() => setBust(Date.now())}
-              style={{ background: "none", border: "1px solid #444", color: "DESIGN_SYSTEM.colors.textSecondary", padding: "4px 10px", borderRadius: "3px", fontSize: "12px", cursor: "pointer" }}
+              style={{ background: "none", border: "1px solid #444", color: DESIGN_SYSTEM.colors.textSecondary, padding: "4px 10px", borderRadius: "3px", fontSize: "12px", cursor: "pointer" }}
             >Zkusit znovu</button>
             <button
               type="button"
               onClick={onDelete}
-              style={{ background: "none", border: "1px solid #444", color: "DESIGN_SYSTEM.colors.textSecondary", padding: "4px 10px", borderRadius: "3px", fontSize: "12px", cursor: "pointer" }}
+              style={{ background: "none", border: "1px solid #444", color: DESIGN_SYSTEM.colors.textSecondary, padding: "4px 10px", borderRadius: "3px", fontSize: "12px", cursor: "pointer" }}
               data-testid={testId}
             >Smazat obrázek</button>
           </div>
@@ -1540,18 +1651,18 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
 
   const inputStyle: React.CSSProperties = {
     width: "100%", padding: "9px 12px", background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #2a2a2a",
-    color: "DESIGN_SYSTEM.colors.textPrimary", borderRadius: "6px", fontSize: "13px", boxSizing: "border-box",
+    color: DESIGN_SYSTEM.colors.textPrimary, borderRadius: "6px", fontSize: "13px", boxSizing: "border-box",
     outline: "none", transition: "border-color 0.15s",
   };
   const selectStyle: React.CSSProperties = { ...inputStyle, cursor: "pointer", appearance: "none" as any };
-  const labelStyle: React.CSSProperties = { display: "block", marginBottom: "6px", fontSize: "11px", fontWeight: 600, color: "DESIGN_SYSTEM.colors.textSecondary", textTransform: "uppercase", letterSpacing: "0.6px" };
+  const labelStyle: React.CSSProperties = { display: "block", marginBottom: "6px", fontSize: "11px", fontWeight: 600, color: DESIGN_SYSTEM.colors.textSecondary, textTransform: "uppercase", letterSpacing: "0.6px" };
   const sectionStyle: React.CSSProperties = { borderBottom: "1px solid #1e1e1e", paddingBottom: "20px", marginBottom: "20px" };
   const sectionHeadStyle: React.CSSProperties = { fontSize: "10px", fontWeight: 700, color: "#444", textTransform: "uppercase", letterSpacing: "1.2px", marginBottom: "14px" };
 
   const UploadStatus = ({ type, url }: { type: string; url: string }) => {
-    if (uploading[type]) return <span style={{ fontSize: "12px", color: "DESIGN_SYSTEM.colors.textSecondary" }}>Nahrávám…</span>;
+    if (uploading[type]) return <span style={{ fontSize: "12px", color: DESIGN_SYSTEM.colors.textSecondary }}>Nahrávám…</span>;
     if (uploadError[type]) return <span style={{ fontSize: "12px", color: "#ff5252" }}>✗ {uploadError[type]}</span>;
-    if (url) return <span style={{ fontSize: "12px", color: "DESIGN_SYSTEM.colors.success" }}>✓ {uploadedNames[type] || "Nahráno"}</span>;
+    if (url) return <span style={{ fontSize: "12px", color: DESIGN_SYSTEM.colors.success }}>✓ {uploadedNames[type] || "Nahráno"}</span>;
     return null;
   };
 
@@ -1575,10 +1686,10 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
         {/* File info row */}
         {fileInfo && (
           <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
-            <span style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.05em", color: "#555", background: "DESIGN_SYSTEM.colors.inputs", border: "1px solid #2a2a2a", borderRadius: "4px", padding: "2px 5px", textTransform: "uppercase" }}>
+            <span style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.05em", color: "#555", background: DESIGN_SYSTEM.colors.inputs, border: "1px solid #2a2a2a", borderRadius: "4px", padding: "2px 5px", textTransform: "uppercase" }}>
               {fileInfo.ext || "?"}
             </span>
-            <span style={{ fontSize: "12px", color: "DESIGN_SYSTEM.colors.textSecondary", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
+            <span style={{ fontSize: "12px", color: DESIGN_SYSTEM.colors.textSecondary, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
               {fileInfo.name}
             </span>
             <span style={{ fontSize: "11px", color: "#555", flexShrink: 0 }}>
@@ -1608,7 +1719,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
         </div>
         {/* Status row */}
         <div style={{ marginTop: "6px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ fontSize: "11px", color: isDone ? "DESIGN_SYSTEM.colors.success" : isProcessing ? "#0B99FC" : "DESIGN_SYSTEM.colors.textSecondary" }}>
+          <span style={{ fontSize: "11px", color: isDone ? DESIGN_SYSTEM.colors.success : isProcessing ? "#0B99FC" : DESIGN_SYSTEM.colors.textSecondary }}>
             {isDone ? "✓ Nahráno" : isProcessing ? "Zpracování na serveru…" : `Přenos dat… ${pct}%`}
           </span>
           {!isDone && !isProcessing && (
@@ -1631,7 +1742,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
     const isUp = uploading[type];
     const hasError = !!uploadError[type];
     const isDone = !isUp && (uploadProgress[type] ?? 0) >= 100;
-    const borderColor = isDragging ? "#0B99FC" : hasError ? "#ff5252" : isDone || uploadedUrl ? "#2e7d32" : "DESIGN_SYSTEM.colors.border";
+    const borderColor = isDragging ? "#0B99FC" : hasError ? "#ff5252" : isDone || uploadedUrl ? "#2e7d32" : DESIGN_SYSTEM.colors.border;
     return (
       <div>
         <div
@@ -1642,12 +1753,12 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
           style={{
             border: `1.5px dashed ${borderColor}`, borderRadius: "8px", padding: "20px 16px",
             textAlign: "center", cursor: isUp ? "not-allowed" : "pointer",
-            background: isDragging ? "rgba(11,153,252,0.05)" : isDone || uploadedUrl ? "rgba(46,125,50,0.04)" : "DESIGN_SYSTEM.colors.elevated",
+            background: isDragging ? "rgba(11,153,252,0.05)" : isDone || uploadedUrl ? "rgba(46,125,50,0.04)" : DESIGN_SYSTEM.colors.elevated,
             transition: "all 0.15s ease", minHeight: "80px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "6px",
           }}
         >
           <span style={{ fontSize: "22px" }}>{icon}</span>
-          <div style={{ fontSize: "12px", color: isUp ? "#555" : isDone || uploadedUrl ? "DESIGN_SYSTEM.colors.success" : "DESIGN_SYSTEM.colors.textSecondary", lineHeight: 1.4 }}>
+          <div style={{ fontSize: "12px", color: isUp ? "#555" : isDone || uploadedUrl ? DESIGN_SYSTEM.colors.success : DESIGN_SYSTEM.colors.textSecondary, lineHeight: 1.4 }}>
             {isUp ? "Nahrávám…" : uploadedUrl ? (uploadedName || label) : label}
           </div>
           <div style={{ fontSize: "11px", color: "#444" }}>{hint}</div>
@@ -1686,7 +1797,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
           ↑ Přidat beaty
         </button>
         {beats.some((b: any) => !b.is_published) && (
-          <button className="btn btn-admin" onClick={handlePublishAll} style={{ borderColor: "DESIGN_SYSTEM.colors.success", color: "DESIGN_SYSTEM.colors.success", fontSize: "13px" }}>
+          <button className="btn btn-admin" onClick={handlePublishAll} style={{ borderColor: DESIGN_SYSTEM.colors.success, color: DESIGN_SYSTEM.colors.success, fontSize: "13px" }}>
             ✓ Publikovat skryté ({beats.filter((b: any) => !b.is_published).length})
           </button>
         )}
@@ -1695,17 +1806,17 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
 
       {/* ── Bulk upload zone ── */}
       {showBulkZone && (
-        <div style={{ marginBottom: "24px", padding: "20px", background: "DESIGN_SYSTEM.colors.elevated", border: "1px solid #1e1e1e", borderRadius: "10px" }}>
+        <div style={{ marginBottom: "24px", padding: "20px", background: DESIGN_SYSTEM.colors.elevated, border: "1px solid #1e1e1e", borderRadius: "10px" }}>
           <div style={{ fontSize: "11px", fontWeight: 700, color: "#444", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "14px" }}>Hromadný upload</div>
           <div
             onDragOver={e => { e.preventDefault(); setIsDragOver(true); }}
             onDragLeave={() => setIsDragOver(false)}
             onDrop={e => { e.preventDefault(); setIsDragOver(false); handleBulkFiles(e.dataTransfer.files); }}
             onClick={() => bulkFileInputRef.current?.click()}
-            style={{ border: `1.5px dashed ${isDragOver ? "#0B99FC" : "DESIGN_SYSTEM.colors.border"}`, borderRadius: "8px", padding: "32px 24px", textAlign: "center", cursor: "pointer", background: isDragOver ? "rgba(11,153,252,0.05)" : "transparent", transition: "all 0.15s ease", marginBottom: stagedBeats.length > 0 ? "16px" : "0" }}
+            style={{ border: `1.5px dashed ${isDragOver ? "#0B99FC" : DESIGN_SYSTEM.colors.border}`, borderRadius: "8px", padding: "32px 24px", textAlign: "center", cursor: "pointer", background: isDragOver ? "rgba(11,153,252,0.05)" : "transparent", transition: "all 0.15s ease", marginBottom: stagedBeats.length > 0 ? "16px" : "0" }}
           >
             <Upload size={28} color="#444" style={{ marginBottom: "8px" }} />
-            <div style={{ color: "DESIGN_SYSTEM.colors.textSecondary", fontSize: "13px" }}>Přetáhněte audio soubory nebo klikněte</div>
+            <div style={{ color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "13px" }}>Přetáhněte audio soubory nebo klikněte</div>
             <div style={{ color: "#444", fontSize: "11px", marginTop: "4px" }}>MP3, WAV, AIFF, FLAC — více souborů najednou</div>
             <input ref={bulkFileInputRef} type="file" multiple accept="audio/*,.mp3,.wav,.aiff,.flac,.ogg,.m4a" style={{ display: "none" }} onChange={e => { if (e.target.files) handleBulkFiles(e.target.files); e.target.value = ""; }} />
           </div>
@@ -1728,8 +1839,8 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                       <td style={{ padding: "8px 10px" }}>
                         {b.status === "uploading" || b.status === "pending" ? (
                           <div>
-                            <div style={{ color: "DESIGN_SYSTEM.colors.textSecondary", fontSize: "11px", marginBottom: "4px" }}>{b.file.name}</div>
-                            <div style={{ height: "3px", background: "DESIGN_SYSTEM.colors.inputs", borderRadius: "2px", overflow: "hidden" }}>
+                            <div style={{ color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "11px", marginBottom: "4px" }}>{b.file.name}</div>
+                            <div style={{ height: "3px", background: DESIGN_SYSTEM.colors.inputs, borderRadius: "2px", overflow: "hidden" }}>
                               <div style={{ height: "100%", width: `${b.progress}%`, background: "linear-gradient(90deg,#0B99FC,#4cc3ff)", transition: "width 200ms" }} />
                             </div>
                             <div style={{ fontSize: "10px", color: "#444", marginTop: "2px" }}>{b.progress}%</div>
@@ -1768,9 +1879,9 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                 <button className="btn btn-filled" onClick={handleBulkCreate} disabled={bulkCreating || stagedBeats.filter(b => b.status === "done").length === 0} style={{ opacity: bulkCreating || stagedBeats.filter(b => b.status === "done").length === 0 ? 0.45 : 1, fontSize: "13px" }}>
                   {bulkCreating ? "Vytváří se…" : `Vytvořit ${stagedBeats.filter(b => b.status === "done").length} beatů`}
                 </button>
-                <button className="btn btn-admin" onClick={() => setStagedBeats([])} style={{ color: "#555", borderColor: "DESIGN_SYSTEM.colors.border", fontSize: "13px" }}>Vymazat vše</button>
+                <button className="btn btn-admin" onClick={() => setStagedBeats([])} style={{ color: "#555", borderColor: DESIGN_SYSTEM.colors.border, fontSize: "13px" }}>Vymazat vše</button>
                 {stagedBeats.some(b => b.status === "uploading" || b.status === "pending") && (
-                  <span style={{ color: "DESIGN_SYSTEM.colors.textSecondary", fontSize: "11px" }}>Nahrávám {stagedBeats.filter(b => b.status === "uploading" || b.status === "pending").length} souborů…</span>
+                  <span style={{ color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "11px" }}>Nahrávám {stagedBeats.filter(b => b.status === "uploading" || b.status === "pending").length} souborů…</span>
                 )}
               </div>
             </div>
@@ -1784,16 +1895,16 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
           {/* Bento form header */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
             <div>
-              <div style={{ fontSize: "16px", fontWeight: 600, color: "DESIGN_SYSTEM.colors.textPrimary", letterSpacing: "-0.01em" }}>
+              <div style={{ fontSize: "16px", fontWeight: 600, color: DESIGN_SYSTEM.colors.textPrimary, letterSpacing: "-0.01em" }}>
                 {editing ? "Upravit beat" : "Přidat nový beat"}
               </div>
-              {editing && <div style={{ fontSize: "11px", color: "DESIGN_SYSTEM.colors.border", marginTop: "2px" }}>ID #{editing.id} · {editing.title}</div>}
+              {editing && <div style={{ fontSize: "11px", color: DESIGN_SYSTEM.colors.border, marginTop: "2px" }}>ID #{editing.id} · {editing.title}</div>}
             </div>
             <button
               type="button"
               onClick={resetForm}
               style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "#555", width: "32px", height: "32px", borderRadius: "8px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s" }}
-              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.1)"; (e.currentTarget as HTMLButtonElement).style.color = "DESIGN_SYSTEM.colors.textSecondary"; }}
+              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.1)"; (e.currentTarget as HTMLButtonElement).style.color = DESIGN_SYSTEM.colors.textSecondary; }}
               onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.05)"; (e.currentTarget as HTMLButtonElement).style.color = "#555"; }}
             >
               <X size={15} />
@@ -1827,7 +1938,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", marginBottom: "10px" }}>
                         <div style={{ ...lbl, marginBottom: 0, minWidth: "40px" }}>BPM</div>
                         {autoDetected?.bpm && (
-                          <span style={{ fontSize: "9px", fontWeight: 700, color: "DESIGN_SYSTEM.colors.success", background: "rgba(76,175,80,0.12)", border: "1px solid rgba(76,175,80,0.25)", borderRadius: "999px", padding: "2px 6px", letterSpacing: "0.05em" }}>AUTO</span>
+                          <span style={{ fontSize: "9px", fontWeight: 700, color: DESIGN_SYSTEM.colors.success, background: "rgba(76,175,80,0.12)", border: "1px solid rgba(76,175,80,0.25)", borderRadius: "999px", padding: "2px 6px", letterSpacing: "0.05em" }}>AUTO</span>
                         )}
                       </div>
                       <input type="number" min={40} max={300} value={form.bpm} onChange={e => { setForm({ ...form, bpm: Number(e.target.value) }); setAutoDetected(a => a ? { ...a, bpm: null } : null); }} style={{ ...inp, fontSize: "22px", fontWeight: 700, fontFamily: "monospace", textAlign: "center", padding: "8px 10px" }} placeholder="140" data-testid="input-beat-bpm" />
@@ -1838,7 +1949,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", marginBottom: "10px" }}>
                         <div style={{ ...lbl, marginBottom: 0 }}>Tónina</div>
                         {autoDetected?.key && (
-                          <span style={{ fontSize: "9px", fontWeight: 700, color: "DESIGN_SYSTEM.colors.success", background: "rgba(76,175,80,0.12)", border: "1px solid rgba(76,175,80,0.25)", borderRadius: "999px", padding: "2px 6px", letterSpacing: "0.05em" }}>AUTO</span>
+                          <span style={{ fontSize: "9px", fontWeight: 700, color: DESIGN_SYSTEM.colors.success, background: "rgba(76,175,80,0.12)", border: "1px solid rgba(76,175,80,0.25)", borderRadius: "999px", padding: "2px 6px", letterSpacing: "0.05em" }}>AUTO</span>
                         )}
                       </div>
                       <select value={form.key} onChange={e => { setForm({ ...form, key: e.target.value }); setAutoDetected(a => a ? { ...a, key: null } : null); }} style={{ ...inp, fontSize: "15px", fontWeight: 500, textAlign: "center", padding: "8px 10px", cursor: "pointer" }} data-testid="select-beat-key">
@@ -1887,7 +1998,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                       {/* Analysis status */}
                       {autoAnalyzing && (
                         <div style={{ marginTop: "8px", display: "flex", alignItems: "center", gap: "6px" }}>
-                          <div style={{ width: "10px", height: "10px", borderRadius: "50%", border: "2px solid #555", borderTopColor: "DESIGN_SYSTEM.colors.textSecondary", animation: "spin 0.8s linear infinite", flexShrink: 0 }} />
+                          <div style={{ width: "10px", height: "10px", borderRadius: "50%", border: "2px solid #555", borderTopColor: DESIGN_SYSTEM.colors.textSecondary, animation: "spin 0.8s linear infinite", flexShrink: 0 }} />
                           <span style={{ fontSize: "11px", color: "#555" }}>Analyzuji BPM a tóninu…</span>
                         </div>
                       )}
@@ -1899,7 +2010,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                                 <div>
                                   <div style={{ fontSize: "10px", color: "#555", marginBottom: "4px", textTransform: "uppercase", letterSpacing: "0.08em" }}>Soubor</div>
-                                  <div style={{ fontSize: "12px", color: "DESIGN_SYSTEM.colors.textSecondary", fontFamily: "monospace", wordBreak: "break-all" }}>{uploadedNames["beat-preview"] || "—"}</div>
+                                  <div style={{ fontSize: "12px", color: DESIGN_SYSTEM.colors.textSecondary, fontFamily: "monospace", wordBreak: "break-all" }}>{uploadedNames["beat-preview"] || "—"}</div>
                                 </div>
                                 <div>
                                   <div style={{ fontSize: "10px", color: "#555", marginBottom: "4px", textTransform: "uppercase", letterSpacing: "0.08em" }}>Náhled waveformu</div>
@@ -1947,7 +2058,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                         <div>
                           <label style={labelStyle}>Soubor beatu ke stažení *</label>
                           <div style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "8px" }}>
-                            <label style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "9px 14px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "10px", cursor: uploading["beat-local"] ? "default" : "pointer", fontSize: "13px", color: uploading["beat-local"] ? "#555" : "DESIGN_SYSTEM.colors.textSecondary", opacity: uploading["beat-local"] ? 0.6 : 1 }}>
+                            <label style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "9px 14px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "10px", cursor: uploading["beat-local"] ? "default" : "pointer", fontSize: "13px", color: uploading["beat-local"] ? "#555" : DESIGN_SYSTEM.colors.textSecondary, opacity: uploading["beat-local"] ? 0.6 : 1 }}>
                               <input type="file" accept="audio/*,.wav,.mp3,.flac,.aif,.aiff,.zip,.rar" disabled={uploading["beat-local"]} style={{ display: "none" }} data-testid="input-beat-local-file" onChange={async (e) => { if (e.target.files?.[0]) { const url = await uploadFile(e.target.files[0], "beat-local"); if (url) { setForm(f => ({ ...f, fileUrl: url as string, previewUrl: f.previewUrl || (url as string) })); analyzePreviewAudio(url as string); } } }} />
                               {uploading["beat-local"] ? "Nahrávám…" : "Nahrát soubor přímo"}
                             </label>
@@ -1965,15 +2076,15 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                           {uploadError["beat-local"] && <div style={{ fontSize: "12px", color: "#ff5252", marginBottom: "6px" }}>Chyba: {uploadError["beat-local"]}</div>}
                           {form.fileUrl && (form.fileUrl.startsWith("/uploads/") || form.fileUrl.startsWith("http")) && !form.fileUrl.includes("drive.google.com") ? (
                             <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 10px", background: "#0d1a0d", border: "1px solid #1a3a1a", borderRadius: "8px", marginBottom: "6px" }}>
-                              <Check size={12} color="DESIGN_SYSTEM.colors.success" style={{ flexShrink: 0 }} />
-                              <span style={{ fontSize: "12px", color: "DESIGN_SYSTEM.colors.success", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{decodeURIComponent(form.fileUrl.split("/").pop() || "")}</span>
+                              <Check size={12} color={DESIGN_SYSTEM.colors.success} style={{ flexShrink: 0 }} />
+                              <span style={{ fontSize: "12px", color: DESIGN_SYSTEM.colors.success, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{decodeURIComponent(form.fileUrl.split("/").pop() || "")}</span>
                               <button type="button" onClick={() => setForm(f => ({ ...f, fileUrl: "" }))} style={{ background: "none", border: "none", color: "#555", cursor: "pointer", padding: "0 2px", flexShrink: 0, display: "flex", alignItems: "center" }}><X size={13} /></button>
                             </div>
                           ) : (
                             <div>
                               <div style={{ display: "flex", alignItems: "center", gap: "6px", margin: "6px 0 4px" }}>
                                 <div style={{ flex: 1, height: "1px", background: "rgba(255,255,255,0.06)" }} />
-                                <span style={{ fontSize: "10px", color: "DESIGN_SYSTEM.colors.border" }}>nebo Google Drive</span>
+                                <span style={{ fontSize: "10px", color: DESIGN_SYSTEM.colors.border }}>nebo Google Drive</span>
                                 <div style={{ flex: 1, height: "1px", background: "rgba(255,255,255,0.06)" }} />
                               </div>
                               <input type="url" placeholder="https://drive.google.com/drive/folders/…" value={form.fileUrl || ""} onChange={e => setForm({ ...form, fileUrl: e.target.value })} style={inp} data-testid="input-gdrive-url-beat" />
@@ -1983,7 +2094,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                           )}
                         </div>
                         <div>
-                          <label style={labelStyle}>URL trackoutu <span style={{ color: "DESIGN_SYSTEM.colors.border", fontWeight: 400 }}>(volitelné)</span></label>
+                          <label style={labelStyle}>URL trackoutu <span style={{ color: DESIGN_SYSTEM.colors.border, fontWeight: 400 }}>(volitelné)</span></label>
                           <input type="url" placeholder="https://drive.google.com/drive/folders/…" value={form.trackoutUrl || ""} onChange={e => setForm({ ...form, trackoutUrl: e.target.value })} style={inp} data-testid="input-gdrive-url-trackout" />
                           <GDriveLinkStatus url={form.trackoutUrl || ""} />
                         </div>
@@ -1995,12 +2106,12 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                       <div style={lbl}>Tagy <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0, opacity: 0.6 }}>(max 3)</span></div>
                       <div style={{ display: "flex", gap: "8px" }}>
                         <input value={tagInput} onChange={e => setTagInput(e.target.value)} onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); if (tagInput.trim() && form.tags.length < 3) { setForm({ ...form, tags: [...form.tags, tagInput.trim()] }); setTagInput(""); } } }} placeholder="Přidat tag… (Enter)" style={{ ...inp, flex: 1 }} disabled={form.tags.length >= 3} data-testid="input-beat-tag" />
-                        <button type="button" onClick={() => { if (tagInput.trim() && form.tags.length < 3) { setForm({ ...form, tags: [...form.tags, tagInput.trim()] }); setTagInput(""); } }} style={{ padding: "0 16px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.07)", color: "DESIGN_SYSTEM.colors.textSecondary", borderRadius: "10px", cursor: "pointer", fontSize: "18px", flexShrink: 0 }}>+</button>
+                        <button type="button" onClick={() => { if (tagInput.trim() && form.tags.length < 3) { setForm({ ...form, tags: [...form.tags, tagInput.trim()] }); setTagInput(""); } }} style={{ padding: "0 16px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.07)", color: DESIGN_SYSTEM.colors.textSecondary, borderRadius: "10px", cursor: "pointer", fontSize: "18px", flexShrink: 0 }}>+</button>
                       </div>
                       {form.tags.length > 0 && (
                         <div style={{ display: "flex", gap: "6px", marginTop: "10px", flexWrap: "wrap" }}>
                           {form.tags.map((tag, i) => (
-                            <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "5px 12px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "999px", fontSize: "12px", color: "DESIGN_SYSTEM.colors.textPrimary" }}>
+                            <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: "4px", padding: "5px 12px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "999px", fontSize: "12px", color: DESIGN_SYSTEM.colors.textPrimary }}>
                               {tag}
                               <button type="button" onClick={() => setForm({ ...form, tags: form.tags.filter((_, j) => j !== i) })} style={{ background: "none", border: "none", color: "#555", cursor: "pointer", lineHeight: 1, padding: "0 0 0 2px", display: "flex", alignItems: "center" }}><X size={11} /></button>
                             </span>
@@ -2013,8 +2124,8 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                     <div style={{ ...card, display: "flex", flexDirection: "column", gap: "10px", justifyContent: "center" }}>
                       <div style={lbl}>Status</div>
                       <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", padding: "10px 12px", background: "rgba(255,255,255,0.03)", border: `1px solid ${form.isPublished ? "rgba(76,175,80,0.25)" : "rgba(255,255,255,0.06)"}`, borderRadius: "12px", transition: "border-color 0.15s" }}>
-                        <input type="checkbox" checked={form.isPublished} onChange={e => setForm({ ...form, isPublished: e.target.checked })} style={{ width: "16px", height: "16px", cursor: "pointer", accentColor: "DESIGN_SYSTEM.colors.success" }} data-testid="checkbox-beat-published" />
-                        <span style={{ fontSize: "13px", color: form.isPublished ? "DESIGN_SYSTEM.colors.success" : "#555" }}>{form.isPublished ? "Publikováno" : "Skryto"}</span>
+                        <input type="checkbox" checked={form.isPublished} onChange={e => setForm({ ...form, isPublished: e.target.checked })} style={{ width: "16px", height: "16px", cursor: "pointer", accentColor: DESIGN_SYSTEM.colors.success }} data-testid="checkbox-beat-published" />
+                        <span style={{ fontSize: "13px", color: form.isPublished ? DESIGN_SYSTEM.colors.success : "#555" }}>{form.isPublished ? "Publikováno" : "Skryto"}</span>
                       </label>
                       <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer", padding: "10px 12px", background: "rgba(255,255,255,0.03)", border: `1px solid ${form.isHighlighted ? "rgba(249,168,37,0.25)" : "rgba(255,255,255,0.06)"}`, borderRadius: "12px", transition: "border-color 0.15s" }}>
                         <input type="checkbox" checked={form.isHighlighted} onChange={e => setForm({ ...form, isHighlighted: e.target.checked })} style={{ width: "16px", height: "16px", cursor: "pointer", accentColor: "#f9a825" }} data-testid="checkbox-beat-highlighted" />
@@ -2061,7 +2172,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                 {/* Heart icon (decorative) */}
                 <div className="mobile-hide" style={{ display: "flex", alignItems: "center", marginRight: "-4px" }}>
                   <div style={{ width: "28px", height: "28px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="DESIGN_SYSTEM.colors.border" strokeWidth="1">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={DESIGN_SYSTEM.colors.border} strokeWidth="1">
                       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                     </svg>
                   </div>
@@ -2073,14 +2184,14 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                     <img src={form.artworkUrl} alt={form.title} style={{ width: 48, height: 48, borderRadius: 4, objectFit: "cover", display: "block" }} />
                   ) : (
                     <div style={{ width: 48, height: 48, borderRadius: 4, background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #1e1e1e", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <Music size={18} color="DESIGN_SYSTEM.colors.border" />
+                      <Music size={18} color={DESIGN_SYSTEM.colors.border} />
                     </div>
                   )}
                 </div>
 
                 {/* Title + mobile BPM/Key */}
                 <div style={{ width: "240px", marginRight: "12px", display: "flex", flexDirection: "column", gap: "4px" }}>
-                  <div style={{ fontWeight: 500, fontSize: "15px", letterSpacing: "0.01em", color: form.title ? "DESIGN_SYSTEM.colors.textPrimary" : "DESIGN_SYSTEM.colors.border" }}>
+                  <div style={{ fontWeight: 500, fontSize: "15px", letterSpacing: "0.01em", color: form.title ? DESIGN_SYSTEM.colors.textPrimary : DESIGN_SYSTEM.colors.border }}>
                     {form.title || "Název beatu"}
                   </div>
                 </div>
@@ -2099,7 +2210,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                 {form.tags.length > 0 && (
                   <div style={{ display: "flex", gap: "4px", flexWrap: "wrap", marginLeft: "12px", alignItems: "center" }}>
                     {form.tags.map(tag => (
-                      <span key={tag} style={{ padding: "3px 8px", background: "#111111", color: "DESIGN_SYSTEM.colors.textSecondary", border: "1px solid #333", borderRadius: "20px", fontSize: "10px", whiteSpace: "nowrap" }}>
+                      <span key={tag} style={{ padding: "3px 8px", background: "#111111", color: DESIGN_SYSTEM.colors.textSecondary, border: "1px solid #333", borderRadius: "20px", fontSize: "10px", whiteSpace: "nowrap" }}>
                         {tag}
                       </span>
                     ))}
@@ -2110,7 +2221,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                 <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
                   <button
                     type="button"
-                    style={{ padding: "8px 16px", background: "DESIGN_SYSTEM.colors.textPrimary", color: "DESIGN_SYSTEM.colors.textSecondary", border: "none", borderRadius: "2px", fontSize: "12px", fontWeight: 600, cursor: "default", letterSpacing: "0.02em" }}
+                    style={{ padding: "8px 16px", background: DESIGN_SYSTEM.colors.textPrimary, color: DESIGN_SYSTEM.colors.textSecondary, border: "none", borderRadius: "2px", fontSize: "12px", fontWeight: 600, cursor: "default", letterSpacing: "0.02em" }}
                   >
                     {Number(form.price) === 0 ? "Zdarma" : `${Number(form.price).toLocaleString("cs-CZ")} Kč`}
                   </button>
@@ -2165,12 +2276,12 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
           <div style={{ background: DESIGN_SYSTEM.colors.tertiary, border: "0.4px solid #333", borderRadius: "8px", width: "min(860px, 96vw)", maxHeight: "88vh", display: "flex", flexDirection: "column", overflow: "hidden", zIndex: DESIGN_SYSTEM.zIndex.modalNested, position: "relative" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "0.4px solid #2a2a2a", flexShrink: 0 }}>
               <div>
-                <div style={{ color: "DESIGN_SYSTEM.colors.textPrimary", fontSize: "14px", fontWeight: 500 }}>Galerie obrázků</div>
+                <div style={{ color: DESIGN_SYSTEM.colors.textPrimary, fontSize: "14px", fontWeight: 500 }}>Galerie obrázků</div>
                 <div style={{ color: "#555", fontSize: "11px", marginTop: "2px" }}>Obrázky jsou uloženy přímo v aplikaci — žádný Backblaze bandwidth</div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: "1", minWidth: 0, position: "relative", zIndex: 1 }}>
-                  <label style={{ background: "transparent", border: "0.4px solid #555", color: galleryUploading ? "#555" : "DESIGN_SYSTEM.colors.textSecondary", borderRadius: "3px", padding: "6px 12px", cursor: galleryUploading ? "default" : "pointer", fontSize: "12px", display: "flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap", position: "relative", zIndex: 2 }}>
+                  <label style={{ background: "transparent", border: "0.4px solid #555", color: galleryUploading ? "#555" : DESIGN_SYSTEM.colors.textSecondary, borderRadius: "3px", padding: "6px 12px", cursor: galleryUploading ? "default" : "pointer", fontSize: "12px", display: "flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap", position: "relative", zIndex: 2 }}>
                     {galleryUploading
                       ? `Nahrávám${galleryUploadCount > 1 ? ` ${galleryUploadCount} obrázků` : ""}…`
                       : "+ Nahrát obrázky"}
@@ -2193,14 +2304,14 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                 <button
                   onClick={handleGalleryDedupe}
                   disabled={galleryDeduping || galleryUploading}
-                  style={{ background: "transparent", border: "0.4px solid #555", color: galleryDeduping ? "#555" : "DESIGN_SYSTEM.colors.textSecondary", borderRadius: "3px", padding: "6px 12px", cursor: galleryDeduping || galleryUploading ? "default" : "pointer", fontSize: "12px", whiteSpace: "nowrap" }}
+                  style={{ background: "transparent", border: "0.4px solid #555", color: galleryDeduping ? "#555" : DESIGN_SYSTEM.colors.textSecondary, borderRadius: "3px", padding: "6px 12px", cursor: galleryDeduping || galleryUploading ? "default" : "pointer", fontSize: "12px", whiteSpace: "nowrap" }}
                   data-testid="button-dedupe-gallery-beat"
                 >
                   {galleryDeduping ? "Odstraňování…" : "Odstranit duplicity"}
                 </button>
                 <button
                   onClick={() => { setShowGallery(false); setGalleryEditBeatId(null); }}
-                  style={{ background: "transparent", border: "none", color: "DESIGN_SYSTEM.colors.textSecondary", fontSize: "20px", cursor: "pointer", lineHeight: 1, padding: "0 4px" }}
+                  style={{ background: "transparent", border: "none", color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "20px", cursor: "pointer", lineHeight: 1, padding: "0 4px" }}
                   data-testid="button-close-gallery-beat"
                 >
                   ×
@@ -2228,7 +2339,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
               ) : galleryImages.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "48px 0" }}>
                   <div style={{ color: "#444", fontSize: "13px", marginBottom: "8px" }}>Galerie je prázdná</div>
-                  <div style={{ color: "DESIGN_SYSTEM.colors.border", fontSize: "11px" }}>Nahraj obrázky tlačítkem výše nebo je sem přetáhni</div>
+                  <div style={{ color: DESIGN_SYSTEM.colors.border, fontSize: "11px" }}>Nahraj obrázky tlačítkem výše nebo je sem přetáhni</div>
                 </div>
               ) : (
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: "12px" }}>
@@ -2236,8 +2347,8 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                     <div
                       key={img.filename}
                       style={{ position: "relative", border: "0.4px solid #2a2a2a", borderRadius: "5px", overflow: "hidden", cursor: "pointer", transition: "border-color 0.15s" }}
-                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = "DESIGN_SYSTEM.colors.textSecondary"}
-                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = "DESIGN_SYSTEM.colors.border"}
+                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = DESIGN_SYSTEM.colors.textSecondary}
+                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = DESIGN_SYSTEM.colors.border}
                     >
                       <img
                         src={img.url}
@@ -2251,7 +2362,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "4px" }}>
                           <button
                             onClick={() => handleGallerySelect(img.url)}
-                            style={{ background: "transparent", border: "0.4px solid #444", color: "DESIGN_SYSTEM.colors.textSecondary", borderRadius: "3px", padding: "2px 8px", cursor: "pointer", fontSize: "11px" }}
+                            style={{ background: "transparent", border: "0.4px solid #444", color: DESIGN_SYSTEM.colors.textSecondary, borderRadius: "3px", padding: "2px 8px", cursor: "pointer", fontSize: "11px" }}
                             data-testid={`button-select-gallery-beat-${img.filename}`}
                           >
                             Vybrat
@@ -2287,7 +2398,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
             {/* Header */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "0.4px solid #2a2a2a", flexShrink: 0 }}>
               <div>
-                <div style={{ color: "DESIGN_SYSTEM.colors.textPrimary", fontSize: "14px", fontWeight: 500 }}>
+                <div style={{ color: DESIGN_SYSTEM.colors.textPrimary, fontSize: "14px", fontWeight: 500 }}>
                   {beatFolderTarget === "previewUrl" ? "Vybrat preview audio" : "Složka s beatama"}
                 </div>
                 <div style={{ color: "#555", fontSize: "11px", marginTop: "2px" }}>
@@ -2313,7 +2424,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                   if (errors > 0) return <span style={{ fontSize: "11px", color: "#ff5252" }}>{errors} chyb</span>;
                   return null;
                 })()}
-                <label style={{ background: "transparent", border: "0.4px solid #555", color: "DESIGN_SYSTEM.colors.textSecondary", borderRadius: "3px", padding: "6px 12px", cursor: "pointer", fontSize: "12px", display: "flex", alignItems: "center", gap: "6px" }}>
+                <label style={{ background: "transparent", border: "0.4px solid #555", color: DESIGN_SYSTEM.colors.textSecondary, borderRadius: "3px", padding: "6px 12px", cursor: "pointer", fontSize: "12px", display: "flex", alignItems: "center", gap: "6px" }}>
                   + Přidat soubory
                   <input
                     type="file"
@@ -2331,7 +2442,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                 )}
                 <button
                   onClick={() => setShowBeatFolder(false)}
-                  style={{ background: "transparent", border: "none", color: "DESIGN_SYSTEM.colors.textSecondary", fontSize: "20px", cursor: "pointer", lineHeight: 1, padding: "0 4px" }}
+                  style={{ background: "transparent", border: "none", color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "20px", cursor: "pointer", lineHeight: 1, padding: "0 4px" }}
                   data-testid="button-close-beat-folder"
                 >×</button>
               </div>
@@ -2344,12 +2455,12 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                 placeholder="Hledat soubor…"
                 value={beatFolderSearch}
                 onChange={(e) => setBeatFolderSearch(e.target.value)}
-                style={{ flex: 1, background: "rgba(255,255,255,0.04)", border: "0.4px solid #333", borderRadius: "6px", padding: "8px 12px", fontSize: "13px", color: "DESIGN_SYSTEM.colors.textPrimary", outline: "none" }}
+                style={{ flex: 1, background: "rgba(255,255,255,0.04)", border: "0.4px solid #333", borderRadius: "6px", padding: "8px 12px", fontSize: "13px", color: DESIGN_SYSTEM.colors.textPrimary, outline: "none" }}
               />
               <select
                 value={beatFolderSort}
                 onChange={(e) => setBeatFolderSort(e.target.value as any)}
-                style={{ background: "rgba(255,255,255,0.04)", border: "0.4px solid #333", borderRadius: "6px", padding: "8px 12px", fontSize: "12px", color: "DESIGN_SYSTEM.colors.textSecondary", outline: "none", cursor: "pointer" }}
+                style={{ background: "rgba(255,255,255,0.04)", border: "0.4px solid #333", borderRadius: "6px", padding: "8px 12px", fontSize: "12px", color: DESIGN_SYSTEM.colors.textSecondary, outline: "none", cursor: "pointer" }}
               >
                 <option value="name-asc">Název A–Z</option>
                 <option value="name-desc">Název Z–A</option>
@@ -2381,11 +2492,11 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                       border: `1px solid ${item.status === "error" ? "rgba(255,82,82,0.2)" : item.status === "done" ? "rgba(76,175,80,0.2)" : "rgba(11,153,252,0.15)"}`,
                       borderRadius: "6px",
                     }}>
-                      {item.status === "done"      ? <span style={{ fontSize: "11px", color: "DESIGN_SYSTEM.colors.success", flexShrink: 0 }}>✓</span>
+                      {item.status === "done"      ? <span style={{ fontSize: "11px", color: DESIGN_SYSTEM.colors.success, flexShrink: 0 }}>✓</span>
                        : item.status === "error"   ? <span style={{ fontSize: "11px", color: "#ff5252", flexShrink: 0 }}>✕</span>
                        : item.status === "uploading" ? <div style={{ width: "10px", height: "10px", borderRadius: "50%", border: "2px solid #1b4a6b", borderTopColor: "#0B99FC", animation: "spin 0.8s linear infinite", flexShrink: 0 }} />
-                       : <div style={{ width: "10px", height: "10px", borderRadius: "50%", background: "DESIGN_SYSTEM.colors.border", flexShrink: 0 }} />}
-                      <span style={{ fontSize: "12px", color: item.status === "error" ? "#ff5252" : item.status === "done" ? "DESIGN_SYSTEM.colors.success" : "DESIGN_SYSTEM.colors.textSecondary", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                       : <div style={{ width: "10px", height: "10px", borderRadius: "50%", background: DESIGN_SYSTEM.colors.border, flexShrink: 0 }} />}
+                      <span style={{ fontSize: "12px", color: item.status === "error" ? "#ff5252" : item.status === "done" ? DESIGN_SYSTEM.colors.success : DESIGN_SYSTEM.colors.textSecondary, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         {item.name}
                       </span>
                       {item.status === "uploading" && (
@@ -2396,7 +2507,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                           <span style={{ fontSize: "10px", color: "#555", minWidth: "28px" }}>{item.progress}%</span>
                         </div>
                       )}
-                      {item.status === "queued"   && <span style={{ fontSize: "10px", color: "DESIGN_SYSTEM.colors.border", flexShrink: 0 }}>čeká</span>}
+                      {item.status === "queued"   && <span style={{ fontSize: "10px", color: DESIGN_SYSTEM.colors.border, flexShrink: 0 }}>čeká</span>}
                       {item.status === "error"    && <span style={{ fontSize: "10px", color: "#ff5252", flexShrink: 0, maxWidth: "120px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.error}</span>}
                       {item.status === "error"    && <button onClick={() => setFolderQueue(prev => prev.filter(q => q.id !== item.id))} style={{ background: "none", border: "none", color: "#555", cursor: "pointer", fontSize: "14px", padding: "0 2px", lineHeight: 1, flexShrink: 0 }}>×</button>}
                     </div>
@@ -2410,7 +2521,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                 <div style={{ textAlign: "center", padding: "48px 0" }}>
                   <div style={{ fontSize: "28px", marginBottom: "12px" }}>📁</div>
                   <div style={{ color: "#444", fontSize: "13px", marginBottom: "6px" }}>Složka je prázdná</div>
-                  <div style={{ color: "DESIGN_SYSTEM.colors.border", fontSize: "11px" }}>Nahraj beaty tlačítkem výše nebo je sem přetáhni</div>
+                  <div style={{ color: DESIGN_SYSTEM.colors.border, fontSize: "11px" }}>Nahraj beaty tlačítkem výše nebo je sem přetáhni</div>
                 </div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
@@ -2423,23 +2534,23 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                     return (
                       <div
                         key={f.filename}
-                        style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 12px", background: isSelected ? "rgba(11,153,252,0.08)" : "rgba(255,255,255,0.02)", border: `1px solid ${isSelected ? "rgba(11,153,252,0.3)" : "DESIGN_SYSTEM.colors.inputs"}`, borderRadius: "8px", transition: "border-color 0.15s, background 0.15s" }}
+                        style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 12px", background: isSelected ? "rgba(11,153,252,0.08)" : "rgba(255,255,255,0.02)", border: `1px solid ${isSelected ? "rgba(11,153,252,0.3)" : DESIGN_SYSTEM.colors.inputs}`, borderRadius: "8px", transition: "border-color 0.15s, background 0.15s" }}
                         onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)"; }}
                         onMouseLeave={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.02)"; }}
                       >
-                        <span style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.05em", color: "#555", background: "DESIGN_SYSTEM.colors.inputs", border: "1px solid #2a2a2a", borderRadius: "4px", padding: "2px 6px", textTransform: "uppercase", flexShrink: 0 }}>{ext}</span>
-                        <span style={{ fontSize: "13px", color: isSelected ? "#0B99FC" : "DESIGN_SYSTEM.colors.textPrimary", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{decodeURIComponent(f.filename)}</span>
+                        <span style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "0.05em", color: "#555", background: DESIGN_SYSTEM.colors.inputs, border: "1px solid #2a2a2a", borderRadius: "4px", padding: "2px 6px", textTransform: "uppercase", flexShrink: 0 }}>{ext}</span>
+                        <span style={{ fontSize: "13px", color: isSelected ? "#0B99FC" : DESIGN_SYSTEM.colors.textPrimary, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{decodeURIComponent(f.filename)}</span>
                         <span style={{ fontSize: "11px", color: "#444", flexShrink: 0 }}>{sizeMB} MB</span>
                         <button
                           onClick={() => handleBeatFolderSelect(f.url)}
-                          style={{ background: isSelected ? "rgba(11,153,252,0.15)" : "transparent", border: `0.4px solid ${isSelected ? "#0B99FC" : "#444"}`, color: isSelected ? "#0B99FC" : "DESIGN_SYSTEM.colors.textSecondary", borderRadius: "4px", padding: "4px 12px", cursor: "pointer", fontSize: "12px", flexShrink: 0, fontWeight: isSelected ? 600 : 400 }}
+                          style={{ background: isSelected ? "rgba(11,153,252,0.15)" : "transparent", border: `0.4px solid ${isSelected ? "#0B99FC" : "#444"}`, color: isSelected ? "#0B99FC" : DESIGN_SYSTEM.colors.textSecondary, borderRadius: "4px", padding: "4px 12px", cursor: "pointer", fontSize: "12px", flexShrink: 0, fontWeight: isSelected ? 600 : 400 }}
                           data-testid={`button-select-beat-file-${f.filename}`}
                         >
                           {isSelected ? "✓ Vybráno" : "Vybrat"}
                         </button>
                         <button
                           onClick={(e) => { e.stopPropagation(); handleBeatFolderDelete(f.filename); }}
-                          style={{ background: "transparent", border: "none", color: "DESIGN_SYSTEM.colors.border", cursor: "pointer", fontSize: "16px", padding: "0 2px", lineHeight: 1, flexShrink: 0 }}
+                          style={{ background: "transparent", border: "none", color: DESIGN_SYSTEM.colors.border, cursor: "pointer", fontSize: "16px", padding: "0 2px", lineHeight: 1, flexShrink: 0 }}
                           data-testid={`button-delete-beat-file-${f.filename}`}
                         >×</button>
                       </div>
@@ -2460,8 +2571,8 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
       {/* ── Selection bar ── */}
       {selectedBeats.length > 0 && (
         <div style={{ marginBottom: "16px", padding: "10px 14px", background: "#0d1a0d", border: "1px solid #1a3d1a", borderRadius: "8px", display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
-          <span data-testid="text-selected-count" style={{ fontSize: "12px", color: "DESIGN_SYSTEM.colors.success", fontWeight: 600 }}>{selectedBeats.length} vybráno</span>
-          <button className="btn btn-admin" onClick={handleBulkPublish} style={{ color: "DESIGN_SYSTEM.colors.success", borderColor: "DESIGN_SYSTEM.colors.success", fontSize: "12px" }} data-testid="button-bulk-publish-beats">Zveřejnit</button>
+          <span data-testid="text-selected-count" style={{ fontSize: "12px", color: DESIGN_SYSTEM.colors.success, fontWeight: 600 }}>{selectedBeats.length} vybráno</span>
+          <button className="btn btn-admin" onClick={handleBulkPublish} style={{ color: DESIGN_SYSTEM.colors.success, borderColor: DESIGN_SYSTEM.colors.success, fontSize: "12px" }} data-testid="button-bulk-publish-beats">Zveřejnit</button>
           <button className="btn btn-admin" onClick={handleBulkDelete} style={{ color: "#ff5252", borderColor: "#ff5252", fontSize: "12px" }} data-testid="button-bulk-delete-beats">Smazat</button>
           <button className="btn btn-admin" onClick={() => setSelectedBeats([])} style={{ fontSize: "12px" }} data-testid="button-clear-selection">Zrušit výběr</button>
         </div>
@@ -2474,10 +2585,10 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
         const withPreview = beats.filter((b: Beat) => b.preview_url).length;
         const allReady = withWave >= withPreview && withPreview > 0;
         return (
-          <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "6px 12px", marginBottom: "14px", background: allReady ? "rgba(255,255,255,0.01)" : "rgba(255,200,50,0.03)", border: `1px solid ${allReady ? "DESIGN_SYSTEM.colors.inputs" : "#2a2000"}`, borderRadius: "6px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "6px 12px", marginBottom: "14px", background: allReady ? "rgba(255,255,255,0.01)" : "rgba(255,200,50,0.03)", border: `1px solid ${allReady ? DESIGN_SYSTEM.colors.inputs : "#2a2000"}`, borderRadius: "6px" }}>
             <div style={{ display: "flex", gap: "3px", flexShrink: 0 }}>
               {beats.filter((b: Beat) => b.preview_url).map((b: Beat) => (
-                <div key={b.id} title={b.title} style={{ width: "6px", height: "6px", borderRadius: "50%", background: (b.waveform_data && Array.isArray(b.waveform_data)) ? "DESIGN_SYSTEM.colors.success" : "DESIGN_SYSTEM.colors.border" }} />
+                <div key={b.id} title={b.title} style={{ width: "6px", height: "6px", borderRadius: "50%", background: (b.waveform_data && Array.isArray(b.waveform_data)) ? DESIGN_SYSTEM.colors.success : DESIGN_SYSTEM.colors.border }} />
               ))}
             </div>
             <span style={{ fontSize: "11px", color: allReady ? "#444" : "#8a6e1a", flex: 1 }}>
@@ -2500,7 +2611,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
         const defaultArtworkUrl = (() => { try { return JSON.parse(settings?.artwork_config || '{}')?.defaultArtworkUrl || ''; } catch { return ''; } })();
         return beats.length === 0 ? (
           <div style={{ padding: "48px 24px", textAlign: "center", border: "1px dashed #1e1e1e", borderRadius: "10px" }}>
-            <Music size={32} color="DESIGN_SYSTEM.colors.border" style={{ marginBottom: "12px" }} />
+            <Music size={32} color={DESIGN_SYSTEM.colors.border} style={{ marginBottom: "12px" }} />
             <div style={{ color: "#444", fontSize: "14px" }}>Žádné beaty. Přidejte první beat.</div>
           </div>
         ) : (
@@ -2509,7 +2620,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
               <thead>
                 <tr style={{ background: "#080808", borderBottom: "1px solid #1a1a1a" }}>
                   <th style={{ padding: "10px 14px", width: "36px" }}>
-                    <input type="checkbox" checked={beats.length > 0 && selectedBeats.length === beats.length} onChange={handleSelectAll} data-testid="checkbox-select-all-beats" style={{ cursor: "pointer", accentColor: "DESIGN_SYSTEM.colors.success" }} />
+                    <input type="checkbox" checked={beats.length > 0 && selectedBeats.length === beats.length} onChange={handleSelectAll} data-testid="checkbox-select-all-beats" style={{ cursor: "pointer", accentColor: DESIGN_SYSTEM.colors.success }} />
                   </th>
                   <th style={{ padding: "10px 8px", width: "52px" }}></th>
                   <th style={{ textAlign: "left", padding: "10px 8px", fontSize: "10px", fontWeight: 700, color: "#444", textTransform: "uppercase", letterSpacing: "0.6px" }}>Název</th>
@@ -2528,14 +2639,14 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                   return (
                     <tr
                       key={beat.id}
-                      style={{ borderBottom: "1px solid #111", background: isQuickEdit ? "#0b0b10" : hoveredBeatId === beat.id ? "DESIGN_SYSTEM.colors.tertiary" : "transparent", cursor: isQuickEdit ? "default" : "pointer", transition: "background 120ms" }}
+                      style={{ borderBottom: "1px solid #111", background: isQuickEdit ? "#0b0b10" : hoveredBeatId === beat.id ? DESIGN_SYSTEM.colors.tertiary : "transparent", cursor: isQuickEdit ? "default" : "pointer", transition: "background 120ms" }}
                       onMouseEnter={() => setHoveredBeatId(beat.id)}
                       onMouseLeave={() => setHoveredBeatId(null)}
                       onClick={() => { if (!isQuickEdit) { setQuickEditId(beat.id); setQuickEditTitle(beat.title); setInlineBpmKey({ id: beat.id, bpm: beat.bpm, key: beat.key || "Cm" }); } }}
                       data-testid={`row-beat-${beat.id}`}
                     >
                       <td style={{ padding: "10px 14px" }} onClick={e => e.stopPropagation()}>
-                        <input type="checkbox" checked={selectedBeats.includes(beat.id)} onChange={() => handleSelectBeat(beat.id)} data-testid={`checkbox-beat-${beat.id}`} style={{ cursor: "pointer", accentColor: "DESIGN_SYSTEM.colors.success" }} />
+                        <input type="checkbox" checked={selectedBeats.includes(beat.id)} onChange={() => handleSelectBeat(beat.id)} data-testid={`checkbox-beat-${beat.id}`} style={{ cursor: "pointer", accentColor: DESIGN_SYSTEM.colors.success }} />
                       </td>
                       <td style={{ padding: "8px" }} onClick={e => { e.stopPropagation(); toggleBeatPreview(beat, e); }}>
                         <div style={{ position: "relative", width: "44px", height: "44px", cursor: beat.preview_url ? "pointer" : "default", flexShrink: 0, borderRadius: "6px", overflow: "hidden" }}>
@@ -2543,13 +2654,13 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                             <img src={artworkSrc} alt={beat.title} style={{ width: "44px", height: "44px", objectFit: "cover", display: "block", transition: "opacity 0.15s", opacity: previewBeatId === beat.id ? 0.4 : 1 }} onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
                           ) : (
                             <div style={{ width: "44px", height: "44px", background: "#161616", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                              <Music size={16} color="DESIGN_SYSTEM.colors.border" />
+                              <Music size={16} color={DESIGN_SYSTEM.colors.border} />
                             </div>
                           )}
                           {beat.preview_url && (
                             <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: previewBeatId === beat.id ? "rgba(0,0,0,0.5)" : hoveredBeatId === beat.id ? "rgba(0,0,0,0.25)" : "transparent", transition: "background 0.15s" }}>
                               {previewBeatId === beat.id ? (
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="DESIGN_SYSTEM.colors.textPrimary"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill={DESIGN_SYSTEM.colors.textPrimary}><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
                               ) : hoveredBeatId === beat.id ? (
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="rgba(255,255,255,0.9)"><path d="M5 3l14 9-14 9V3z"/></svg>
                               ) : null}
@@ -2600,10 +2711,10 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                             min={40} max={300}
                             value={inlineBpmKey?.bpm ?? beat.bpm}
                             onChange={e => setInlineBpmKey(v => v ? { ...v, bpm: Number(e.target.value) } : { id: beat.id, bpm: Number(e.target.value), key: beat.key || "Cm" })}
-                            style={{ width: "56px", padding: "4px 5px", background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid rgba(255,255,255,0.15)", borderRadius: "4px", color: "DESIGN_SYSTEM.colors.textPrimary", fontSize: "12px", fontFamily: "monospace", outline: "none", textAlign: "center" }}
+                            style={{ width: "56px", padding: "4px 5px", background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid rgba(255,255,255,0.15)", borderRadius: "4px", color: DESIGN_SYSTEM.colors.textPrimary, fontSize: "12px", fontFamily: "monospace", outline: "none", textAlign: "center" }}
                           />
                         ) : (
-                          <div style={{ fontSize: "12px", color: "DESIGN_SYSTEM.colors.textPrimary", fontFamily: "monospace" }}>{beat.bpm}</div>
+                          <div style={{ fontSize: "12px", color: DESIGN_SYSTEM.colors.textPrimary, fontFamily: "monospace" }}>{beat.bpm}</div>
                         )}
                       </td>
                       <td style={{ padding: "6px 8px", textAlign: "center" }} onClick={e => e.stopPropagation()}>
@@ -2611,21 +2722,21 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                           <select
                             value={inlineBpmKey?.key ?? beat.key ?? "Cm"}
                             onChange={e => setInlineBpmKey(v => v ? { ...v, key: e.target.value } : { id: beat.id, bpm: beat.bpm, key: e.target.value })}
-                            style={{ width: "62px", padding: "4px 3px", background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid rgba(255,255,255,0.15)", borderRadius: "4px", color: "DESIGN_SYSTEM.colors.textSecondary", fontSize: "11px", outline: "none" }}
+                            style={{ width: "62px", padding: "4px 3px", background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid rgba(255,255,255,0.15)", borderRadius: "4px", color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "11px", outline: "none" }}
                           >
                             {MUSICAL_KEYS.map(k => <option key={k} value={k}>{k}</option>)}
                           </select>
                         ) : (
-                          <div style={{ fontSize: "12px", color: "DESIGN_SYSTEM.colors.textPrimary", fontFamily: "monospace" }}>{beat.key || "—"}</div>
+                          <div style={{ fontSize: "12px", color: DESIGN_SYSTEM.colors.textPrimary, fontFamily: "monospace" }}>{beat.key || "—"}</div>
                         )}
                       </td>
                       <td style={{ padding: "10px 8px" }}>
-                        <div style={{ fontSize: "12px", color: beat.price === 0 ? "#555" : "DESIGN_SYSTEM.colors.textPrimary", fontFamily: "monospace" }}>{beat.price === 0 ? "Free" : `${beat.price.toLocaleString("cs-CZ")} Kč`}</div>
+                        <div style={{ fontSize: "12px", color: beat.price === 0 ? "#555" : DESIGN_SYSTEM.colors.textPrimary, fontFamily: "monospace" }}>{beat.price === 0 ? "Free" : `${beat.price.toLocaleString("cs-CZ")} Kč`}</div>
                       </td>
                       <td style={{ padding: "10px 8px" }}>
                         <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                          <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "10px", fontWeight: 600, padding: "2px 8px", borderRadius: "999px", background: beat.is_published ? "rgba(76,175,80,0.12)" : "rgba(255,255,255,0.04)", color: beat.is_published ? "DESIGN_SYSTEM.colors.success" : "#444", border: `1px solid ${beat.is_published ? "rgba(76,175,80,0.25)" : "DESIGN_SYSTEM.colors.inputs"}`, width: "fit-content" }}>
-                            <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: beat.is_published ? "DESIGN_SYSTEM.colors.success" : "DESIGN_SYSTEM.colors.border", flexShrink: 0 }} />
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: "4px", fontSize: "10px", fontWeight: 600, padding: "2px 8px", borderRadius: "999px", background: beat.is_published ? "rgba(76,175,80,0.12)" : "rgba(255,255,255,0.04)", color: beat.is_published ? DESIGN_SYSTEM.colors.success : "#444", border: `1px solid ${beat.is_published ? "rgba(76,175,80,0.25)" : DESIGN_SYSTEM.colors.inputs}`, width: "fit-content" }}>
+                            <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: beat.is_published ? DESIGN_SYSTEM.colors.success : DESIGN_SYSTEM.colors.border, flexShrink: 0 }} />
                             {beat.is_published ? "Publik." : "Skryto"}
                           </span>
                           {beat.is_highlighted && (
@@ -2638,7 +2749,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                       </td>
                       <td style={{ padding: "10px 8px" }} onClick={e => e.stopPropagation()}>
                         {!beat.preview_url ? (
-                          <span style={{ fontSize: "11px", color: "DESIGN_SYSTEM.colors.border" }}>—</span>
+                          <span style={{ fontSize: "11px", color: DESIGN_SYSTEM.colors.border }}>—</span>
                         ) : (beat.waveform_data && Array.isArray(beat.waveform_data)) ? (() => {
                           const quality = getBeatWaveformQuality(beat.waveform_data);
                           const isHov = hoveredBeatId === beat.id;
@@ -2647,7 +2758,7 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                               <BeatWaveformSparkline data={beat.waveform_data} hovered={isHov} />
                               <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                                 <div style={{ width: "4px", height: "4px", borderRadius: "50%", background: quality.color, flexShrink: 0 }} />
-                                <span style={{ fontSize: "9px", color: isHov ? quality.color : "DESIGN_SYSTEM.colors.border", fontFamily: "monospace", letterSpacing: "0.3px", transition: "color 120ms" }}>{quality.label}</span>
+                                <span style={{ fontSize: "9px", color: isHov ? quality.color : DESIGN_SYSTEM.colors.border, fontFamily: "monospace", letterSpacing: "0.3px", transition: "color 120ms" }}>{quality.label}</span>
                               </div>
                             </div>
                           );
@@ -2674,10 +2785,10 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                           ) : (
                             <>
                               <div style={{ display: "inline-flex", border: "1px solid #1e1e1e", borderRadius: "6px", overflow: "hidden" }}>
-                                <button onClick={() => handleBeatReorder(beatIdx, "up")} disabled={beatIdx === 0} data-testid={`button-beat-up-${beat.id}`} title="Nahoru" style={{ background: "transparent", border: "none", color: beatIdx === 0 ? "#222" : "#444", cursor: beatIdx === 0 ? "default" : "pointer", padding: "5px 7px", lineHeight: 1, transition: "color 0.12s", display: "flex", alignItems: "center" }} onMouseEnter={e => { if (beatIdx > 0) (e.currentTarget as HTMLButtonElement).style.color = "DESIGN_SYSTEM.colors.textSecondary"; }} onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = beatIdx === 0 ? "#222" : "#444"; }}>
+                                <button onClick={() => handleBeatReorder(beatIdx, "up")} disabled={beatIdx === 0} data-testid={`button-beat-up-${beat.id}`} title="Nahoru" style={{ background: "transparent", border: "none", color: beatIdx === 0 ? "#222" : "#444", cursor: beatIdx === 0 ? "default" : "pointer", padding: "5px 7px", lineHeight: 1, transition: "color 0.12s", display: "flex", alignItems: "center" }} onMouseEnter={e => { if (beatIdx > 0) (e.currentTarget as HTMLButtonElement).style.color = DESIGN_SYSTEM.colors.textSecondary; }} onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = beatIdx === 0 ? "#222" : "#444"; }}>
                                   <ChevronUp size={12} />
                                 </button>
-                                <button onClick={() => handleBeatReorder(beatIdx, "down")} disabled={beatIdx === beats.length - 1} data-testid={`button-beat-down-${beat.id}`} title="Dolů" style={{ background: "transparent", border: "none", borderLeft: "1px solid #1e1e1e", color: beatIdx === beats.length - 1 ? "#222" : "#444", cursor: beatIdx === beats.length - 1 ? "default" : "pointer", padding: "5px 7px", lineHeight: 1, transition: "color 0.12s", display: "flex", alignItems: "center" }} onMouseEnter={e => { if (beatIdx < beats.length - 1) (e.currentTarget as HTMLButtonElement).style.color = "DESIGN_SYSTEM.colors.textSecondary"; }} onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = beatIdx === beats.length - 1 ? "#222" : "#444"; }}>
+                                <button onClick={() => handleBeatReorder(beatIdx, "down")} disabled={beatIdx === beats.length - 1} data-testid={`button-beat-down-${beat.id}`} title="Dolů" style={{ background: "transparent", border: "none", borderLeft: "1px solid #1e1e1e", color: beatIdx === beats.length - 1 ? "#222" : "#444", cursor: beatIdx === beats.length - 1 ? "default" : "pointer", padding: "5px 7px", lineHeight: 1, transition: "color 0.12s", display: "flex", alignItems: "center" }} onMouseEnter={e => { if (beatIdx < beats.length - 1) (e.currentTarget as HTMLButtonElement).style.color = DESIGN_SYSTEM.colors.textSecondary; }} onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = beatIdx === beats.length - 1 ? "#222" : "#444"; }}>
                                   <ChevronDown size={12} />
                                 </button>
                               </div>
@@ -2686,8 +2797,8 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                                 title="Rychlá úprava"
                                 data-testid={`button-quick-edit-${beat.id}`}
                                 style={{ background: "transparent", border: "1px solid #1e1e1e", color: "#444", width: "28px", height: "28px", borderRadius: "6px", cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", transition: "all 0.12s" }}
-                                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = "DESIGN_SYSTEM.colors.textSecondary"; (e.currentTarget as HTMLButtonElement).style.borderColor = "DESIGN_SYSTEM.colors.border"; }}
-                                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = "#444"; (e.currentTarget as HTMLButtonElement).style.borderColor = "DESIGN_SYSTEM.colors.inputs"; }}
+                                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = DESIGN_SYSTEM.colors.textSecondary; (e.currentTarget as HTMLButtonElement).style.borderColor = DESIGN_SYSTEM.colors.border; }}
+                                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = "#444"; (e.currentTarget as HTMLButtonElement).style.borderColor = DESIGN_SYSTEM.colors.inputs; }}
                               >
                                 <Pencil size={11} />
                               </button>
@@ -3079,13 +3190,13 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
           {isUploading ? (
             <>
-              <span style={{ fontSize: "12px", color: "DESIGN_SYSTEM.colors.textSecondary" }}>Nahrávám…</span>
-              <span style={{ fontSize: "12px", color: "DESIGN_SYSTEM.colors.textSecondary" }}>{pct}%</span>
+              <span style={{ fontSize: "12px", color: DESIGN_SYSTEM.colors.textSecondary }}>Nahrávám…</span>
+              <span style={{ fontSize: "12px", color: DESIGN_SYSTEM.colors.textSecondary }}>{pct}%</span>
             </>
           ) : (
             <>
-              <span style={{ fontSize: "12px", color: "DESIGN_SYSTEM.colors.success" }}>✓ Nahráno – bezpečné pokračovat</span>
-              <span style={{ fontSize: "12px", color: "DESIGN_SYSTEM.colors.success" }}>100%</span>
+              <span style={{ fontSize: "12px", color: DESIGN_SYSTEM.colors.success }}>✓ Nahráno – bezpečné pokračovat</span>
+              <span style={{ fontSize: "12px", color: DESIGN_SYSTEM.colors.success }}>100%</span>
             </>
           )}
         </div>
@@ -3163,8 +3274,8 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
                     style={{
                       flex: 1,
                       padding: "10px 8px",
-                      background: form.priceType === pt.id ? "DESIGN_SYSTEM.colors.textPrimary" : "#000",
-                      color: form.priceType === pt.id ? "#000" : "DESIGN_SYSTEM.colors.textPrimary",
+                      background: form.priceType === pt.id ? DESIGN_SYSTEM.colors.textPrimary : "#000",
+                      color: form.priceType === pt.id ? "#000" : DESIGN_SYSTEM.colors.textPrimary,
                       border: "1px solid #555",
                       borderRadius: "4px",
                       cursor: "pointer",
@@ -3194,7 +3305,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
               <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", marginTop: "8px" }}>
                 {form.tags.map((tag, i) => (
                   <span key={i} style={{ padding: "4px 8px", border: "1px solid #fff", fontSize: "12px" }}>
-                    {tag} <button type="button" onClick={() => setForm({ ...form, tags: form.tags.filter((_, j) => j !== i) })} style={{ background: "none", border: "none", color: "DESIGN_SYSTEM.colors.textPrimary", cursor: "pointer" }}>×</button>
+                    {tag} <button type="button" onClick={() => setForm({ ...form, tags: form.tags.filter((_, j) => j !== i) })} style={{ background: "none", border: "none", color: DESIGN_SYSTEM.colors.textPrimary, cursor: "pointer" }}>×</button>
                   </span>
                 ))}
               </div>
@@ -3214,7 +3325,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
                         previewUrls: f.previewUrls.filter((_, i) => i !== idx),
                         previewLabels: f.previewLabels.filter((_, i) => i !== idx),
                       }))}
-                      style={{ background: "none", border: "1px solid #444", color: "DESIGN_SYSTEM.colors.textSecondary", padding: "2px 8px", cursor: "pointer", borderRadius: "3px", fontSize: "13px", flexShrink: 0 }}
+                      style={{ background: "none", border: "1px solid #444", color: DESIGN_SYSTEM.colors.textSecondary, padding: "2px 8px", cursor: "pointer", borderRadius: "3px", fontSize: "13px", flexShrink: 0 }}
                     >×</button>
                   </div>
                   <div style={{ marginBottom: "10px" }}>
@@ -3226,7 +3337,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
                         labels[idx] = e.target.value;
                         return { ...f, previewLabels: labels };
                       })}
-                      style={{ width: "100%", background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #333", color: "DESIGN_SYSTEM.colors.textPrimary", padding: "6px 8px", borderRadius: "3px", fontSize: "12px" }}
+                      style={{ width: "100%", background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #333", color: DESIGN_SYSTEM.colors.textPrimary, padding: "6px 8px", borderRadius: "3px", fontSize: "12px" }}
                     >
                       <option value="">— vyberte popis —</option>
                       <option value="Melodie tohohle beatu je ze zvuků z tohohle kitu">Melodie tohohle beatu je ze zvuků z tohohle kitu</option>
@@ -3266,7 +3377,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
                 placeholder="https://drive.google.com/drive/folders/..."
                 value={form.fileUrl || ""}
                 onChange={(e) => setForm({ ...form, fileUrl: e.target.value })}
-                style={{ width: "100%", padding: "8px 10px", background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #333", color: "DESIGN_SYSTEM.colors.textPrimary", borderRadius: "3px", fontSize: "13px", boxSizing: "border-box" }}
+                style={{ width: "100%", padding: "8px 10px", background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #333", color: DESIGN_SYSTEM.colors.textPrimary, borderRadius: "3px", fontSize: "13px", boxSizing: "border-box" }}
                 data-testid="input-gdrive-url"
               />
               <p style={{ fontSize: "11px", color: "#555", marginTop: "5px" }}>
@@ -3329,7 +3440,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
                 <button
                   type="button"
                   onClick={() => setForm(f => ({ ...f, extraArtworkUrls: (f.extraArtworkUrls || []).filter((_, i) => i !== idx) }))}
-                  style={{ background: "transparent", border: "0.4px solid #555", color: "DESIGN_SYSTEM.colors.textSecondary", borderRadius: "3px", padding: "4px 8px", cursor: "pointer", flexShrink: 0 }}
+                  style={{ background: "transparent", border: "0.4px solid #555", color: DESIGN_SYSTEM.colors.textSecondary, borderRadius: "3px", padding: "4px 8px", cursor: "pointer", flexShrink: 0 }}
                   data-testid={`button-delete-extra-artwork-kit-${idx}`}
                 >
                   ×
@@ -3362,12 +3473,12 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
           <div style={{ background: DESIGN_SYSTEM.colors.tertiary, border: "0.4px solid #333", borderRadius: "8px", width: "min(860px, 96vw)", maxHeight: "88vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "0.4px solid #2a2a2a", flexShrink: 0 }}>
               <div>
-                <div style={{ color: "DESIGN_SYSTEM.colors.textPrimary", fontSize: "14px", fontWeight: 500 }}>Galerie obrázků</div>
+                <div style={{ color: DESIGN_SYSTEM.colors.textPrimary, fontSize: "14px", fontWeight: 500 }}>Galerie obrázků</div>
                 <div style={{ color: "#555", fontSize: "11px", marginTop: "2px" }}>Obrázky jsou uloženy přímo v aplikaci — žádný Backblaze bandwidth</div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: "1", minWidth: 0 }}>
-                  <label style={{ background: "transparent", border: "0.4px solid #555", color: galleryUploading ? "#555" : "DESIGN_SYSTEM.colors.textSecondary", borderRadius: "3px", padding: "6px 12px", cursor: galleryUploading ? "default" : "pointer", fontSize: "12px", display: "flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap" }}>
+                  <label style={{ background: "transparent", border: "0.4px solid #555", color: galleryUploading ? "#555" : DESIGN_SYSTEM.colors.textSecondary, borderRadius: "3px", padding: "6px 12px", cursor: galleryUploading ? "default" : "pointer", fontSize: "12px", display: "flex", alignItems: "center", gap: "6px", whiteSpace: "nowrap" }}>
                     {galleryUploading
                       ? `Nahrávám${galleryUploadCount > 1 ? ` ${galleryUploadCount} obrázků` : ""}…`
                       : "+ Nahrát obrázky"}
@@ -3390,14 +3501,14 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
                 <button
                   onClick={handleGalleryDedupe}
                   disabled={galleryDeduping || galleryUploading}
-                  style={{ background: "transparent", border: "0.4px solid #555", color: galleryDeduping ? "#555" : "DESIGN_SYSTEM.colors.textSecondary", borderRadius: "3px", padding: "6px 12px", cursor: galleryDeduping || galleryUploading ? "default" : "pointer", fontSize: "12px", whiteSpace: "nowrap" }}
+                  style={{ background: "transparent", border: "0.4px solid #555", color: galleryDeduping ? "#555" : DESIGN_SYSTEM.colors.textSecondary, borderRadius: "3px", padding: "6px 12px", cursor: galleryDeduping || galleryUploading ? "default" : "pointer", fontSize: "12px", whiteSpace: "nowrap" }}
                   data-testid="button-dedupe-gallery"
                 >
                   {galleryDeduping ? "Odstraňování…" : "Odstranit duplicity"}
                 </button>
                 <button
                   onClick={() => setShowGallery(false)}
-                  style={{ background: "transparent", border: "none", color: "DESIGN_SYSTEM.colors.textSecondary", fontSize: "20px", cursor: "pointer", lineHeight: 1, padding: "0 4px" }}
+                  style={{ background: "transparent", border: "none", color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "20px", cursor: "pointer", lineHeight: 1, padding: "0 4px" }}
                   data-testid="button-close-gallery"
                 >
                   ×
@@ -3430,7 +3541,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
               ) : galleryImages.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "48px 0" }}>
                   <div style={{ color: "#444", fontSize: "13px", marginBottom: "8px" }}>Galerie je prázdná</div>
-                  <div style={{ color: "DESIGN_SYSTEM.colors.border", fontSize: "11px" }}>Nahraj obrázky tlačítkem výše nebo je sem přetáhni</div>
+                  <div style={{ color: DESIGN_SYSTEM.colors.border, fontSize: "11px" }}>Nahraj obrázky tlačítkem výše nebo je sem přetáhni</div>
                 </div>
               ) : (
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: "12px" }}>
@@ -3438,8 +3549,8 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
                     <div
                       key={img.filename}
                       style={{ position: "relative", border: "0.4px solid #2a2a2a", borderRadius: "5px", overflow: "hidden", cursor: "pointer", transition: "border-color 0.15s" }}
-                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = "DESIGN_SYSTEM.colors.textSecondary"}
-                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = "DESIGN_SYSTEM.colors.border"}
+                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.borderColor = DESIGN_SYSTEM.colors.textSecondary}
+                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = DESIGN_SYSTEM.colors.border}
                     >
                       <img
                         src={img.url}
@@ -3453,7 +3564,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "4px" }}>
                           <button
                             onClick={() => handleGallerySelect(img.url)}
-                            style={{ background: "transparent", border: "0.4px solid #444", color: "DESIGN_SYSTEM.colors.textSecondary", borderRadius: "3px", padding: "2px 8px", cursor: "pointer", fontSize: "11px" }}
+                            style={{ background: "transparent", border: "0.4px solid #444", color: DESIGN_SYSTEM.colors.textSecondary, borderRadius: "3px", padding: "2px 8px", cursor: "pointer", fontSize: "11px" }}
                             data-testid={`button-select-gallery-${img.filename}`}
                           >
                             Vybrat
@@ -3480,7 +3591,7 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
       )}
 
       {selectedKits.length > 0 && (
-        <div style={{ marginBottom: "16px", padding: "12px", background: "DESIGN_SYSTEM.colors.inputs", borderRadius: "3px", display: "flex", alignItems: "center", gap: "16px" }}>
+        <div style={{ marginBottom: "16px", padding: "12px", background: DESIGN_SYSTEM.colors.inputs, borderRadius: "3px", display: "flex", alignItems: "center", gap: "16px" }}>
           <span data-testid="text-selected-kits-count">{selectedKits.length} vybráno</span>
           <button 
             className="btn btn-admin" 
@@ -3565,13 +3676,13 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
                   onClick={() => handleReorderKit(kit.id, "up")}
                   disabled={rowIdx === 0}
                   title="Posunout nahoru"
-                  style={{ background: "transparent", border: "1px solid #333", color: rowIdx === 0 ? "DESIGN_SYSTEM.colors.border" : "DESIGN_SYSTEM.colors.textSecondary", cursor: rowIdx === 0 ? "default" : "pointer", padding: "4px 7px", borderRadius: "3px", marginRight: "4px", fontSize: "12px" }}
+                  style={{ background: "transparent", border: "1px solid #333", color: rowIdx === 0 ? DESIGN_SYSTEM.colors.border : DESIGN_SYSTEM.colors.textSecondary, cursor: rowIdx === 0 ? "default" : "pointer", padding: "4px 7px", borderRadius: "3px", marginRight: "4px", fontSize: "12px" }}
                 >▲</button>
                 <button
                   onClick={() => handleReorderKit(kit.id, "down")}
                   disabled={rowIdx === sortedArr.length - 1}
                   title="Posunout dolů"
-                  style={{ background: "transparent", border: "1px solid #333", color: rowIdx === sortedArr.length - 1 ? "DESIGN_SYSTEM.colors.border" : "DESIGN_SYSTEM.colors.textSecondary", cursor: rowIdx === sortedArr.length - 1 ? "default" : "pointer", padding: "4px 7px", borderRadius: "3px", marginRight: "8px", fontSize: "12px" }}
+                  style={{ background: "transparent", border: "1px solid #333", color: rowIdx === sortedArr.length - 1 ? DESIGN_SYSTEM.colors.border : DESIGN_SYSTEM.colors.textSecondary, cursor: rowIdx === sortedArr.length - 1 ? "default" : "pointer", padding: "4px 7px", borderRadius: "3px", marginRight: "8px", fontSize: "12px" }}
                 >▼</button>
                 <button
                   className="btn btn-admin"
@@ -3596,13 +3707,13 @@ function KitsTab({ kits, showForm, setShowForm, editing, setEditing, onRefresh }
                   }}
                   disabled={recomputingKitIds.has(kit.id) || !kit.preview_url}
                   title={kit.waveform_data ? "Přegenerovat waveform" : "Vygenerovat waveform"}
-                  style={{ marginRight: "8px", color: kit.waveform_data ? "DESIGN_SYSTEM.colors.success" : "#0B99FC", borderColor: kit.waveform_data ? "DESIGN_SYSTEM.colors.success" : "#0B99FC" }}
+                  style={{ marginRight: "8px", color: kit.waveform_data ? DESIGN_SYSTEM.colors.success : "#0B99FC", borderColor: kit.waveform_data ? DESIGN_SYSTEM.colors.success : "#0B99FC" }}
                   data-testid={`button-waveform-kit-${kit.id}`}
                 >
                   {recomputingKitIds.has(kit.id) ? "Generuji…" : (kit.waveform_data ? "♪ OK" : "♪ Generovat")}
                 </button>
                 <button className="btn btn-admin" onClick={() => { setEditing(kit); setShowForm(true); }} style={{ marginRight: "8px" }} data-testid={`button-edit-kit-${kit.id}`}>Upravit</button>
-                <button className="btn btn-admin" onClick={() => handleDelete(kit.id)} style={{ color: "DESIGN_SYSTEM.colors.border", borderColor: "DESIGN_SYSTEM.colors.border" }} data-testid={`button-delete-kit-${kit.id}`}>Smazat</button>
+                <button className="btn btn-admin" onClick={() => handleDelete(kit.id)} style={{ color: DESIGN_SYSTEM.colors.border, borderColor: DESIGN_SYSTEM.colors.border }} data-testid={`button-delete-kit-${kit.id}`}>Smazat</button>
               </td>
             </tr>
           ))}
@@ -3938,6 +4049,34 @@ function SalesChart({ orders }: { orders: any[] }) {
 
 function OrdersList({ orders, onRefresh }: { orders: any[]; onRefresh: () => void }) {
   const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [resendingId, setResendingId] = useState<number | null>(null);
+  const [resendStatus, setResendStatus] = useState<Record<number, string>>({});
+
+  const handleResendDownloads = async (e: React.MouseEvent, id: number) => {
+    e.stopPropagation();
+    setResendingId(id);
+    setResendStatus(prev => ({ ...prev, [id]: "Odesílám..." }));
+    try {
+      const res = await fetch(`/api/orders/${id}/resend-downloads`, {
+        method: "POST",
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Chyba při odesílání");
+      setResendStatus(prev => ({ ...prev, [id]: "✓ E-mail byl úspěšně znovu odeslán!" }));
+      setTimeout(() => {
+        setResendStatus(prev => {
+          const next = { ...prev };
+          delete next[id];
+          return next;
+        });
+      }, 4000);
+    } catch (err: any) {
+      setResendStatus(prev => ({ ...prev, [id]: `Chyba: ${err.message}` }));
+    } finally {
+      setResendingId(null);
+    }
+  };
 
   const handleDelete = async (e: React.MouseEvent, id: number) => {
     e.stopPropagation();
@@ -3984,14 +4123,14 @@ function OrdersList({ orders, onRefresh }: { orders: any[]; onRefresh: () => voi
           <div key={order.id} style={{ border: "1px solid #1a1a1a", borderRadius: "3px", overflow: "hidden" }}>
             <div style={{ display: "grid", gridTemplateColumns: "60px 1fr 110px 110px 110px 100px 180px", gap: "8px", padding: "10px 8px", alignItems: "center", background: isExpanded ? "#161616" : "transparent", cursor: "pointer" }}
               onClick={() => setExpandedId(isExpanded ? null : order.id)}>
-              <div style={{ fontSize: "12px", color: "DESIGN_SYSTEM.colors.textSecondary" }}>#{order.id}</div>
+              <div style={{ fontSize: "12px", color: DESIGN_SYSTEM.colors.textSecondary }}>#{order.id}</div>
               <div>
                 <div style={{ fontSize: "13px" }}>{order.email}</div>
                 {order.buyer_legal_name && <div style={{ fontSize: "11px", color: "#777", marginTop: "2px" }}>{order.buyer_legal_name}{order.buyer_artist_name ? ` · ${order.buyer_artist_name}` : ""}</div>}
               </div>
               <div style={{ fontSize: "13px", fontWeight: 600 }}>{Number(order.total).toLocaleString("cs-CZ")} Kč</div>
               <div>
-                <span style={{ fontSize: "11px", padding: "3px 7px", borderRadius: "3px", background: order.payment_method === "bank_transfer" ? "rgba(120,170,255,0.10)" : "rgba(255,255,255,0.04)", color: order.payment_method === "bank_transfer" ? "#9bb8ff" : "DESIGN_SYSTEM.colors.textSecondary", border: `1px solid ${order.payment_method === "bank_transfer" ? "rgba(120,170,255,0.25)" : "DESIGN_SYSTEM.colors.border"}` }}>
+                <span style={{ fontSize: "11px", padding: "3px 7px", borderRadius: "3px", background: order.payment_method === "bank_transfer" ? "rgba(120,170,255,0.10)" : "rgba(255,255,255,0.04)", color: order.payment_method === "bank_transfer" ? "#9bb8ff" : DESIGN_SYSTEM.colors.textSecondary, border: `1px solid ${order.payment_method === "bank_transfer" ? "rgba(120,170,255,0.25)" : DESIGN_SYSTEM.colors.border}` }}>
                   {order.payment_method === "bank_transfer" ? "převod" : (order.payment_method || "gopay")}
                 </span>
               </div>
@@ -4003,8 +4142,8 @@ function OrdersList({ orders, onRefresh }: { orders: any[]; onRefresh: () => voi
                   const isAwaitingS = s === "awaiting_payment";
                   const isCancelledS = s === "cancelled";
                   const bg = isFreeS ? "rgba(100,180,255,0.10)" : isPaidS ? "rgba(36,224,83,0.12)" : isAwaitingS ? "rgba(129,140,248,0.12)" : isCancelledS ? "rgba(239,68,68,0.10)" : "rgba(255,255,255,0.05)";
-                  const color = isFreeS ? "#64b4ff" : isPaidS ? "#24e053" : isAwaitingS ? "#818cf8" : isCancelledS ? "DESIGN_SYSTEM.colors.error" : "DESIGN_SYSTEM.colors.textSecondary";
-                  const border = isFreeS ? "rgba(100,180,255,0.3)" : isPaidS ? "rgba(36,224,83,0.3)" : isAwaitingS ? "rgba(129,140,248,0.35)" : isCancelledS ? "rgba(239,68,68,0.3)" : "DESIGN_SYSTEM.colors.border";
+                  const color = isFreeS ? "#64b4ff" : isPaidS ? "#24e053" : isAwaitingS ? "#818cf8" : isCancelledS ? DESIGN_SYSTEM.colors.error : DESIGN_SYSTEM.colors.textSecondary;
+                  const border = isFreeS ? "rgba(100,180,255,0.3)" : isPaidS ? "rgba(36,224,83,0.3)" : isAwaitingS ? "rgba(129,140,248,0.35)" : isCancelledS ? "rgba(239,68,68,0.3)" : DESIGN_SYSTEM.colors.border;
                   const label = isFreeS ? "soubory odeslány" : isPaidS ? "zaplaceno" : isAwaitingS ? "čeká na ověření" : isCancelledS ? "zrušeno" : s;
                   return (
                     <span style={{ fontSize: "11px", padding: "3px 7px", borderRadius: "3px", background: bg, color, border: `1px solid ${border}` }}>
@@ -4013,7 +4152,7 @@ function OrdersList({ orders, onRefresh }: { orders: any[]; onRefresh: () => voi
                   );
                 })()}
               </div>
-              <div style={{ fontSize: "12px", color: "DESIGN_SYSTEM.colors.textSecondary" }}>{new Date(order.created_at).toLocaleDateString("cs-CZ")}</div>
+              <div style={{ fontSize: "12px", color: DESIGN_SYSTEM.colors.textSecondary }}>{new Date(order.created_at).toLocaleDateString("cs-CZ")}</div>
               <div style={{ display: "flex", alignItems: "center", gap: "6px", justifyContent: "flex-end" }}>
                 <span style={{ fontSize: "12px", color: "#555" }}>{isExpanded ? "▲" : "▼"}</span>
                 {!isPaid && order.status !== "cancelled" && (
@@ -4030,7 +4169,7 @@ function OrdersList({ orders, onRefresh }: { orders: any[]; onRefresh: () => voi
                   <button
                     onClick={(e) => handleCancel(e, order.id)}
                     data-testid={`button-cancel-order-admin-${order.id}`}
-                    style={{ background: "none", border: "1px solid rgba(239,68,68,0.4)", borderRadius: "3px", color: "DESIGN_SYSTEM.colors.error", fontSize: "11px", padding: "3px 8px", cursor: "pointer", whiteSpace: "nowrap" }}
+                    style={{ background: "none", border: "1px solid rgba(239,68,68,0.4)", borderRadius: "3px", color: DESIGN_SYSTEM.colors.error, fontSize: "11px", padding: "3px 8px", cursor: "pointer", whiteSpace: "nowrap" }}
                     title="Zrušit objednávku"
                   >
                     Zrušit
@@ -4077,7 +4216,7 @@ function OrdersList({ orders, onRefresh }: { orders: any[]; onRefresh: () => voi
                             href={`/api/admin/orders/${order.id}/contract/${idx}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            style={{ fontSize: "11px", color: "DESIGN_SYSTEM.colors.textSecondary", border: "1px solid #2a2a2a", borderRadius: "3px", padding: "3px 8px", textDecoration: "none", background: "#161616" }}
+                            style={{ fontSize: "11px", color: DESIGN_SYSTEM.colors.textSecondary, border: "1px solid #2a2a2a", borderRadius: "3px", padding: "3px 8px", textDecoration: "none", background: "#161616" }}
                             onClick={(e) => e.stopPropagation()}
                           >
                             Licence PDF
@@ -4088,10 +4227,40 @@ function OrdersList({ orders, onRefresh }: { orders: any[]; onRefresh: () => voi
                   ))}
                 </div>
                 {beatItems.length > 0 && !order.buyer_legal_name && (
-                  <div style={{ fontSize: "11px", color: "DESIGN_SYSTEM.colors.warning", background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.2)", borderRadius: "3px", padding: "8px 10px" }}>
+                  <div style={{ fontSize: "11px", color: DESIGN_SYSTEM.colors.warning, background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.2)", borderRadius: "3px", padding: "8px 10px" }}>
                     ⚠ Kupující nevyplnil právní jméno a adresu — smlouva bude obsahovat pouze email.
                   </div>
                 )}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "14px", paddingTop: "10px", borderTop: "1px solid #1a1a1a", flexWrap: "wrap", gap: "8px" }}>
+                  <div style={{ fontSize: "11px", color: "#666" }}>
+                    Stav: <span style={{ color: "#aaa" }}>{order.status}</span> · Vytvořeno: <span style={{ color: "#aaa" }}>{new Date(order.created_at).toLocaleString("cs-CZ")}</span>
+                  </div>
+                  <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                    {resendStatus[order.id] && (
+                      <span style={{ fontSize: "11px", color: resendStatus[order.id].startsWith("Chyba") ? "#ef4444" : "#24e053" }}>
+                        {resendStatus[order.id]}
+                      </span>
+                    )}
+                    <button
+                      onClick={(e) => handleResendDownloads(e, order.id)}
+                      disabled={resendingId === order.id}
+                      style={{
+                        background: "rgba(11,153,252,0.08)",
+                        border: "1px solid rgba(11,153,252,0.3)",
+                        borderRadius: "4px",
+                        color: "#0B99FC",
+                        fontSize: "11px",
+                        padding: "5px 12px",
+                        cursor: resendingId === order.id ? "default" : "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                      }}
+                    >
+                      ✉ {resendingId === order.id ? "Odesílám soubory…" : "Znovu odeslat e-mail se soubory a licencí"}
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -4102,16 +4271,43 @@ function OrdersList({ orders, onRefresh }: { orders: any[]; onRefresh: () => voi
 }
 
 function OrdersTab({ orders, onRefresh }: any) {
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "awaiting_payment" | "paid" | "free" | "cancelled">("all");
+
   const allCompletedOrders = orders.filter((o: any) => o.status === "paid" || o.status === "completed");
   const paidOrders = allCompletedOrders.filter((o: any) => Number(o.total) > 0);
+  const freeOrders = allCompletedOrders.filter((o: any) => Number(o.total) === 0);
   const totalRevenue = paidOrders.reduce((s: number, o: any) => s + (Number(o.total) || 0), 0);
   const avgOrder = paidOrders.length > 0 ? Math.round(totalRevenue / paidOrders.length) : 0;
   const pendingBankOrders = orders.filter((o: any) => o.status === "awaiting_payment" && o.payment_method === "bank_transfer");
+  const cancelledOrders = orders.filter((o: any) => o.status === "cancelled");
+
+  const filteredOrders = useMemo(() => {
+    return orders.filter((o: any) => {
+      if (statusFilter === "awaiting_payment" && (o.status !== "awaiting_payment" || o.payment_method !== "bank_transfer")) return false;
+      if (statusFilter === "paid" && ((o.status !== "paid" && o.status !== "completed") || Number(o.total) === 0)) return false;
+      if (statusFilter === "free" && ((o.status !== "paid" && o.status !== "completed") || Number(o.total) > 0)) return false;
+      if (statusFilter === "cancelled" && o.status !== "cancelled") return false;
+
+      if (search.trim()) {
+        const q = search.toLowerCase().trim();
+        const idStr = String(o.id);
+        const email = (o.email || "").toLowerCase();
+        const legalName = (o.buyer_legal_name || "").toLowerCase();
+        const artistName = (o.buyer_artist_name || "").toLowerCase();
+        const items = Array.isArray(o.items) ? o.items.map((it: any) => (it.title || "").toLowerCase()).join(" ") : "";
+        if (!idStr.includes(q) && !email.includes(q) && !legalName.includes(q) && !artistName.includes(q) && !items.includes(q)) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [orders, search, statusFilter]);
 
   const statCard = (label: string, value: string, sub?: string) => (
     <div style={{ flex: 1, padding: "20px", border: "1px solid #222", borderRadius: "4px", textAlign: "left", minWidth: 0 }}>
-      <div style={{ fontSize: "11px", color: "DESIGN_SYSTEM.colors.textSecondary", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "8px" }}>{label}</div>
-      <div style={{ fontSize: "28px", fontWeight: 700, color: "DESIGN_SYSTEM.colors.textPrimary", letterSpacing: "-0.02em", lineHeight: 1 }}>{value}</div>
+      <div style={{ fontSize: "11px", color: DESIGN_SYSTEM.colors.textSecondary, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "8px" }}>{label}</div>
+      <div style={{ fontSize: "28px", fontWeight: 700, color: DESIGN_SYSTEM.colors.textPrimary, letterSpacing: "-0.02em", lineHeight: 1 }}>{value}</div>
       {sub && <div style={{ fontSize: "11px", color: "#555", marginTop: "6px" }}>{sub}</div>}
     </div>
   );
@@ -4149,10 +4345,10 @@ function OrdersTab({ orders, onRefresh }: any) {
                 borderRadius: "3px",
                 border: "1px solid rgba(251,191,36,0.15)",
               }}>
-                <span style={{ fontSize: "11px", color: "DESIGN_SYSTEM.colors.textSecondary", minWidth: 36 }}>#{o.id}</span>
-                <span style={{ fontSize: "13px", color: "DESIGN_SYSTEM.colors.textPrimary", flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{o.email}</span>
-                <span style={{ fontSize: "13px", fontWeight: 600, color: "DESIGN_SYSTEM.colors.textPrimary", marginRight: "4px" }}>{Number(o.total).toLocaleString("cs-CZ")} Kč</span>
-                <span style={{ fontSize: "11px", color: "DESIGN_SYSTEM.colors.textSecondary" }}>
+                <span style={{ fontSize: "11px", color: DESIGN_SYSTEM.colors.textSecondary, minWidth: 36 }}>#{o.id}</span>
+                <span style={{ fontSize: "13px", color: DESIGN_SYSTEM.colors.textPrimary, flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{o.email}</span>
+                <span style={{ fontSize: "13px", fontWeight: 600, color: DESIGN_SYSTEM.colors.textPrimary, marginRight: "4px" }}>{Number(o.total).toLocaleString("cs-CZ")} Kč</span>
+                <span style={{ fontSize: "11px", color: DESIGN_SYSTEM.colors.textSecondary }}>
                   {o.created_at ? new Date(o.created_at).toLocaleDateString("cs-CZ", { day: "numeric", month: "short" }) : ""}
                 </span>
                 <span style={{ fontSize: "11px", color: "#fbbf24", background: "rgba(251,191,36,0.12)", border: "1px solid rgba(251,191,36,0.3)", borderRadius: "3px", padding: "2px 8px", whiteSpace: "nowrap" }}>
@@ -4161,7 +4357,7 @@ function OrdersTab({ orders, onRefresh }: any) {
               </div>
             ))}
           </div>
-          <div style={{ marginTop: "10px", fontSize: "11px", color: "DESIGN_SYSTEM.colors.textSecondary" }}>
+          <div style={{ marginTop: "10px", fontSize: "11px", color: DESIGN_SYSTEM.colors.textSecondary }}>
             Ověř přijetí plateb v internetovém bankovnictví a potvrď je v seznamu objednávek níže.
           </div>
         </div>
@@ -4170,11 +4366,76 @@ function OrdersTab({ orders, onRefresh }: any) {
       {/* Chart */}
       <SalesChart orders={orders} />
 
+      {/* Search and Filters toolbar */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px", margin: "24px 0 16px", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: "4px", padding: "3px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "7px", flexWrap: "wrap" }}>
+          <button
+            onClick={() => setStatusFilter("all")}
+            style={{ padding: "5px 12px", fontSize: "12px", border: "none", borderRadius: "5px", cursor: "pointer", background: statusFilter === "all" ? "rgba(255,255,255,0.1)" : "transparent", color: statusFilter === "all" ? "#fff" : "#888" }}
+          >
+            Vše ({orders.length})
+          </button>
+          <button
+            onClick={() => setStatusFilter("awaiting_payment")}
+            style={{ padding: "5px 12px", fontSize: "12px", border: "none", borderRadius: "5px", cursor: "pointer", background: statusFilter === "awaiting_payment" ? "rgba(251,191,36,0.15)" : "transparent", color: statusFilter === "awaiting_payment" ? "#fbbf24" : "#888" }}
+          >
+            Čeká na převod ({pendingBankOrders.length})
+          </button>
+          <button
+            onClick={() => setStatusFilter("paid")}
+            style={{ padding: "5px 12px", fontSize: "12px", border: "none", borderRadius: "5px", cursor: "pointer", background: statusFilter === "paid" ? "rgba(36,224,83,0.15)" : "transparent", color: statusFilter === "paid" ? "#24e053" : "#888" }}
+          >
+            Zaplaceno ({paidOrders.length})
+          </button>
+          <button
+            onClick={() => setStatusFilter("free")}
+            style={{ padding: "5px 12px", fontSize: "12px", border: "none", borderRadius: "5px", cursor: "pointer", background: statusFilter === "free" ? "rgba(100,180,255,0.15)" : "transparent", color: statusFilter === "free" ? "#64b4ff" : "#888" }}
+          >
+            Zdarma ({freeOrders.length})
+          </button>
+          <button
+            onClick={() => setStatusFilter("cancelled")}
+            style={{ padding: "5px 12px", fontSize: "12px", border: "none", borderRadius: "5px", cursor: "pointer", background: statusFilter === "cancelled" ? "rgba(239,68,68,0.15)" : "transparent", color: statusFilter === "cancelled" ? "#ef4444" : "#888" }}
+          >
+            Zrušeno ({cancelledOrders.length})
+          </button>
+        </div>
+
+        <div style={{ position: "relative", minWidth: "260px" }}>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="🔍 Hledat e-mail, jméno, #ID..."
+            style={{
+              width: "100%",
+              padding: "7px 12px",
+              background: "#111",
+              border: "1px solid #2a2a2a",
+              borderRadius: "5px",
+              color: "#eee",
+              fontSize: "12px",
+              boxSizing: "border-box",
+            }}
+          />
+          {search && (
+            <button
+              onClick={() => setSearch("")}
+              style={{ position: "absolute", right: "8px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "#666", cursor: "pointer", fontSize: "12px" }}
+            >
+              ✕
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* Orders list */}
-      {orders.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "40px", color: "#444", fontSize: "13px" }}>Žádné objednávky</div>
+      {filteredOrders.length === 0 ? (
+        <div style={{ textAlign: "center", padding: "40px", color: "#444", fontSize: "13px" }}>
+          {search || statusFilter !== "all" ? "Žádné objednávky neodpovídají zadanému filtru." : "Žádné objednávky"}
+        </div>
       ) : (
-        <OrdersList orders={orders} onRefresh={onRefresh} />
+        <OrdersList orders={filteredOrders} onRefresh={onRefresh} />
       )}
     </div>
   );
@@ -4290,8 +4551,8 @@ function LicensesTab({ licenses, onRefresh }: any) {
   const [saving, setSaving] = useState(false);
   const [previewHtml, setPreviewHtml] = useState<string | null>(null);
 
-  const fieldStyle: React.CSSProperties = { width: "100%", background: "#111111", border: "1px solid #2a2a2a", color: "DESIGN_SYSTEM.colors.textPrimary", padding: "8px 10px", fontSize: "13px", borderRadius: "3px", fontFamily: "inherit", boxSizing: "border-box" };
-  const labelStyle: React.CSSProperties = { display: "block", fontSize: "11px", color: "DESIGN_SYSTEM.colors.textSecondary", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "5px" };
+  const fieldStyle: React.CSSProperties = { width: "100%", background: "#111111", border: "1px solid #2a2a2a", color: DESIGN_SYSTEM.colors.textPrimary, padding: "8px 10px", fontSize: "13px", borderRadius: "3px", fontFamily: "inherit", boxSizing: "border-box" };
+  const labelStyle: React.CSSProperties = { display: "block", fontSize: "11px", color: DESIGN_SYSTEM.colors.textSecondary, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "5px" };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -4383,13 +4644,13 @@ function LicensesTab({ licenses, onRefresh }: any) {
 
   const renderContractForm = (form: any, setForm: (f: any) => void) => (
     <div style={{ marginTop: "20px", borderTop: "1px solid #1f1f1f", paddingTop: "16px" }}>
-      <div style={{ fontSize: "11px", color: "DESIGN_SYSTEM.colors.textSecondary", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px" }}>Šablona smlouvy</div>
+      <div style={{ fontSize: "11px", color: DESIGN_SYSTEM.colors.textSecondary, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px" }}>Šablona smlouvy</div>
       <div style={{ marginBottom: "12px", padding: "12px", background: "#080808", border: "1px solid #1a1a1a", borderRadius: "3px" }}>
         <div style={{ fontSize: "11px", color: "#555", marginBottom: "8px" }}>Dostupné proměnné (automaticky doplněny při nákupu):</div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
           {PLACEHOLDER_GUIDE.map(({ ph, desc }) => (
             <div key={ph} style={{ fontSize: "10px", background: "#161616", border: "1px solid #222", borderRadius: "3px", padding: "3px 7px" }} title={desc}>
-              <span style={{ color: "DESIGN_SYSTEM.colors.textSecondary", fontFamily: "monospace" }}>{ph}</span>
+              <span style={{ color: DESIGN_SYSTEM.colors.textSecondary, fontFamily: "monospace" }}>{ph}</span>
               <span style={{ color: "#555", marginLeft: "6px" }}>{desc}</span>
             </div>
           ))}
@@ -4427,7 +4688,7 @@ function LicensesTab({ licenses, onRefresh }: any) {
             style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", maxWidth: "794px", marginBottom: "16px", flexShrink: 0 }}
           >
             <span style={{ fontWeight: "600", color: "#ddd", fontSize: "13px", letterSpacing: "0.04em" }}>Náhled smlouvy (vzorová data)</span>
-            <button onClick={() => setPreviewHtml(null)} style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "4px", fontSize: "13px", cursor: "pointer", color: "DESIGN_SYSTEM.colors.textPrimary", padding: "4px 12px" }}>Zavřít ×</button>
+            <button onClick={() => setPreviewHtml(null)} style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "4px", fontSize: "13px", cursor: "pointer", color: DESIGN_SYSTEM.colors.textPrimary, padding: "4px 12px" }}>Zavřít ×</button>
           </div>
           {/* A4 paper */}
           <div
@@ -4435,7 +4696,7 @@ function LicensesTab({ licenses, onRefresh }: any) {
             style={{
               width: "794px",
               minHeight: "1123px",
-              background: "DESIGN_SYSTEM.colors.textPrimary",
+              background: DESIGN_SYSTEM.colors.textPrimary,
               boxShadow: "0 8px 40px rgba(0,0,0,0.6)",
               borderRadius: "2px",
               overflow: "hidden",
@@ -4452,7 +4713,7 @@ function LicensesTab({ licenses, onRefresh }: any) {
       )}
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-        <div style={{ fontSize: "13px", color: "DESIGN_SYSTEM.colors.textSecondary" }}>Celkem licencí: {licenses.length}</div>
+        <div style={{ fontSize: "13px", color: DESIGN_SYSTEM.colors.textSecondary }}>Celkem licencí: {licenses.length}</div>
         <button className="btn btn-admin" data-testid="button-add-license" onClick={() => { setShowCreate(!showCreate); setEditId(null); }}>
           {showCreate ? "Zrušit" : "+ Přidat licenci"}
         </button>
@@ -4460,7 +4721,7 @@ function LicensesTab({ licenses, onRefresh }: any) {
 
       {showCreate && (
         <form onSubmit={handleCreate} style={{ marginBottom: "24px", padding: "20px", border: "1px solid #2a2a2a", borderRadius: "4px", background: "#111111" }}>
-          <div style={{ fontSize: "12px", color: "DESIGN_SYSTEM.colors.textSecondary", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "16px" }}>Nová licence</div>
+          <div style={{ fontSize: "12px", color: DESIGN_SYSTEM.colors.textSecondary, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "16px" }}>Nová licence</div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
             <div>
               <label style={labelStyle}>Název *</label>
@@ -4512,10 +4773,10 @@ function LicensesTab({ licenses, onRefresh }: any) {
                 <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
                   <span style={{ fontSize: "13px", fontWeight: 500 }}>{Number(license.price).toLocaleString("cs-CZ")} CZK</span>
                   {(license.file_types || []).map((ft: string) => (
-                    <span key={ft} style={{ fontSize: "10px", background: "DESIGN_SYSTEM.colors.inputs", border: "1px solid #2a2a2a", borderRadius: "3px", padding: "2px 6px", color: "DESIGN_SYSTEM.colors.textSecondary" }}>{ft.toUpperCase()}</span>
+                    <span key={ft} style={{ fontSize: "10px", background: DESIGN_SYSTEM.colors.inputs, border: "1px solid #2a2a2a", borderRadius: "3px", padding: "2px 6px", color: DESIGN_SYSTEM.colors.textSecondary }}>{ft.toUpperCase()}</span>
                   ))}
-                  <span style={{ fontSize: "11px", color: license.is_active ? "DESIGN_SYSTEM.colors.success" : "DESIGN_SYSTEM.colors.textSecondary" }}>{license.is_active ? "Aktivní" : "Neaktivní"}</span>
-                  <span style={{ fontSize: "11px", color: license.contract_template ? "DESIGN_SYSTEM.colors.success" : "#ff6b6b" }}>{license.contract_template ? "✓ Smlouva" : "✗ Bez smlouvy"}</span>
+                  <span style={{ fontSize: "11px", color: license.is_active ? DESIGN_SYSTEM.colors.success : DESIGN_SYSTEM.colors.textSecondary }}>{license.is_active ? "Aktivní" : "Neaktivní"}</span>
+                  <span style={{ fontSize: "11px", color: license.contract_template ? DESIGN_SYSTEM.colors.success : "#ff6b6b" }}>{license.contract_template ? "✓ Smlouva" : "✗ Bez smlouvy"}</span>
                   <span style={{ color: "#555", fontSize: "16px" }}>{expandedId === license.id ? "▲" : "▼"}</span>
                 </div>
               </div>
@@ -4570,7 +4831,7 @@ function LicensesTab({ licenses, onRefresh }: any) {
                         </div>
                         <div>
                           <div style={{ fontSize: "11px", color: "#555", marginBottom: "4px" }}>Smlouva</div>
-                          <div style={{ fontSize: "13px", color: license.contract_template ? "DESIGN_SYSTEM.colors.success" : "#ff6b6b" }}>
+                          <div style={{ fontSize: "13px", color: license.contract_template ? DESIGN_SYSTEM.colors.success : "#ff6b6b" }}>
                             {license.contract_template ? "Šablona nastavena" : "Není nastavena"}
                           </div>
                         </div>
@@ -4600,7 +4861,7 @@ function LicensesTab({ licenses, onRefresh }: any) {
 
 function CharCounter({ value, ideal, max }: { value: string; ideal: [number, number]; max: number }) {
   const len = value.length;
-  const color = len >= ideal[0] && len <= ideal[1] ? "DESIGN_SYSTEM.colors.success" : len > 0 && len <= max ? "DESIGN_SYSTEM.colors.warning" : len > max ? "DESIGN_SYSTEM.colors.error" : "#555";
+  const color = len >= ideal[0] && len <= ideal[1] ? DESIGN_SYSTEM.colors.success : len > 0 && len <= max ? DESIGN_SYSTEM.colors.warning : len > max ? DESIGN_SYSTEM.colors.error : "#555";
   return (
     <span style={{ fontSize: "11px", color, marginLeft: "6px" }}>
       {len}/{max}
@@ -4612,10 +4873,10 @@ function GooglePreview({ title, description, url }: { title: string; description
   const displayTitle = title.length > 65 ? title.slice(0, 62) + "..." : title;
   const displayDesc = description.length > 165 ? description.slice(0, 162) + "..." : description;
   return (
-    <div style={{ background: "DESIGN_SYSTEM.colors.textPrimary", borderRadius: "8px", padding: "16px 20px", maxWidth: "600px", fontFamily: "Arial, sans-serif" }}>
+    <div style={{ background: DESIGN_SYSTEM.colors.textPrimary, borderRadius: "8px", padding: "16px 20px", maxWidth: "600px", fontFamily: "Arial, sans-serif" }}>
       <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
         <div style={{ width: "28px", height: "28px", borderRadius: "50%", background: "#222", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <span style={{ fontSize: "12px", color: "DESIGN_SYSTEM.colors.textPrimary", fontWeight: "bold" }}>V</span>
+          <span style={{ fontSize: "12px", color: DESIGN_SYSTEM.colors.textPrimary, fontWeight: "bold" }}>V</span>
         </div>
         <div>
           <div style={{ fontSize: "14px", color: "#202124", fontWeight: 500 }}>VOODOO808</div>
@@ -4623,10 +4884,10 @@ function GooglePreview({ title, description, url }: { title: string; description
         </div>
       </div>
       <div style={{ fontSize: "20px", color: "#1a0dab", lineHeight: "1.3", marginBottom: "4px", cursor: "pointer" }}>
-        {displayTitle || <span style={{ color: "DESIGN_SYSTEM.colors.textPrimary" }}>Nadpis stránky...</span>}
+        {displayTitle || <span style={{ color: DESIGN_SYSTEM.colors.textPrimary }}>Nadpis stránky...</span>}
       </div>
       <div style={{ fontSize: "14px", color: "#4d5156", lineHeight: "1.5" }}>
-        {displayDesc || <span style={{ color: "DESIGN_SYSTEM.colors.textPrimary" }}>Popis stránky...</span>}
+        {displayDesc || <span style={{ color: DESIGN_SYSTEM.colors.textPrimary }}>Popis stránky...</span>}
       </div>
     </div>
   );
@@ -4645,12 +4906,12 @@ function SEOSection({
   const title = values[titleKey] || "";
   const description = values[descKey] || "";
   const keywords = values[keywordsKey] || "";
-  const fieldStyle: React.CSSProperties = { width: "100%", background: "#111111", border: "1px solid #2a2a2a", color: "DESIGN_SYSTEM.colors.textPrimary", padding: "8px 10px", fontSize: "13px", borderRadius: "3px", fontFamily: "inherit", boxSizing: "border-box" };
-  const labelStyle: React.CSSProperties = { display: "block", fontSize: "11px", color: "DESIGN_SYSTEM.colors.textSecondary", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "5px" };
+  const fieldStyle: React.CSSProperties = { width: "100%", background: "#111111", border: "1px solid #2a2a2a", color: DESIGN_SYSTEM.colors.textPrimary, padding: "8px 10px", fontSize: "13px", borderRadius: "3px", fontFamily: "inherit", boxSizing: "border-box" };
+  const labelStyle: React.CSSProperties = { display: "block", fontSize: "11px", color: DESIGN_SYSTEM.colors.textSecondary, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "5px" };
 
   return (
     <div style={{ border: "1px solid #1f1f1f", borderRadius: "4px", padding: "20px", marginBottom: "16px" }}>
-      <div style={{ fontSize: "12px", color: "DESIGN_SYSTEM.colors.textSecondary", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "16px", borderBottom: "1px solid #1a1a1a", paddingBottom: "10px" }}>
+      <div style={{ fontSize: "12px", color: DESIGN_SYSTEM.colors.textSecondary, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "16px", borderBottom: "1px solid #1a1a1a", paddingBottom: "10px" }}>
         {label}
       </div>
 
@@ -4769,7 +5030,7 @@ function SlevyTab({ settings, onRefresh }: any) {
     width: "100%",
     background: "rgba(20, 20, 20, 0.8)",
     border: "1px solid rgba(255, 255, 255, 0.1)",
-    color: "DESIGN_SYSTEM.colors.textPrimary",
+    color: DESIGN_SYSTEM.colors.textPrimary,
     padding: "10px 14px",
     fontSize: "14px",
     borderRadius: "6px",
@@ -4788,7 +5049,7 @@ function SlevyTab({ settings, onRefresh }: any) {
   const labelStyle: React.CSSProperties = {
     display: "block",
     fontSize: "12px",
-    color: "DESIGN_SYSTEM.colors.textSecondary",
+    color: DESIGN_SYSTEM.colors.textSecondary,
     textTransform: "uppercase",
     letterSpacing: "0.06em",
     fontWeight: 600,
@@ -4801,10 +5062,10 @@ function SlevyTab({ settings, onRefresh }: any) {
 
   return (
     <div style={{ padding: "20px 0" }} data-testid="tab-slevy">
-      <h2 style={{ color: "DESIGN_SYSTEM.colors.textPrimary", fontSize: "20px", marginBottom: "16px", textShadow: "0 0 10px rgba(255,0,128,0.3)" }}>
+      <h2 style={{ color: DESIGN_SYSTEM.colors.textPrimary, fontSize: "20px", marginBottom: "16px", textShadow: "0 0 10px rgba(255,0,128,0.3)" }}>
         Správa speciální časově omezené slevy
       </h2>
-      <p style={{ color: "DESIGN_SYSTEM.colors.textSecondary", fontSize: "14px", marginBottom: "24px", lineHeight: "1.5" }}>
+      <p style={{ color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "14px", marginBottom: "24px", lineHeight: "1.5" }}>
         Nastavte parametry pro slevovou akci na stránce Zvuky. Každý zákazník obdrží unikátní kód, 
         který expiruje za nastavený počet minut. Po vypršení se banner schová.
       </p>
@@ -4863,7 +5124,7 @@ function SlevyTab({ settings, onRefresh }: any) {
             required
             data-testid="special-offer-text-textarea"
           />
-          <span style={{ fontSize: "11px", color: "DESIGN_SYSTEM.colors.textSecondary", marginTop: "4px", display: "block" }}>
+          <span style={{ fontSize: "11px", color: DESIGN_SYSTEM.colors.textSecondary, marginTop: "4px", display: "block" }}>
             Za tento text se automaticky připojí vygenerovaný slevový kód a odpočet (např. VOODOO8796).
           </span>
         </div>
@@ -4996,8 +5257,8 @@ function SEOTab({ settings, onRefresh }: any) {
     }
   };
 
-  const fieldStyle: React.CSSProperties = { width: "100%", background: "#111111", border: "1px solid #2a2a2a", color: "DESIGN_SYSTEM.colors.textPrimary", padding: "8px 10px", fontSize: "13px", borderRadius: "3px", fontFamily: "inherit", boxSizing: "border-box" };
-  const labelStyle: React.CSSProperties = { display: "block", fontSize: "11px", color: "DESIGN_SYSTEM.colors.textSecondary", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "5px" };
+  const fieldStyle: React.CSSProperties = { width: "100%", background: "#111111", border: "1px solid #2a2a2a", color: DESIGN_SYSTEM.colors.textPrimary, padding: "8px 10px", fontSize: "13px", borderRadius: "3px", fontFamily: "inherit", boxSizing: "border-box" };
+  const labelStyle: React.CSSProperties = { display: "block", fontSize: "11px", color: DESIGN_SYSTEM.colors.textSecondary, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "5px" };
 
   const VideoField = ({ field, label, hint, inputRef }: { field: string; label: string; hint: string; inputRef: React.RefObject<HTMLInputElement> }) => (
     <div>
@@ -5014,7 +5275,7 @@ function SEOTab({ settings, onRefresh }: any) {
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={videoUploading[field]}
-          style={{ background: "DESIGN_SYSTEM.colors.inputs", border: "1px solid #2a2a2a", color: "DESIGN_SYSTEM.colors.textSecondary", padding: "0 10px", fontSize: "11px", borderRadius: "3px", cursor: "pointer", whiteSpace: "nowrap", opacity: videoUploading[field] ? 0.6 : 1 }}
+          style={{ background: DESIGN_SYSTEM.colors.inputs, border: "1px solid #2a2a2a", color: DESIGN_SYSTEM.colors.textSecondary, padding: "0 10px", fontSize: "11px", borderRadius: "3px", cursor: "pointer", whiteSpace: "nowrap", opacity: videoUploading[field] ? 0.6 : 1 }}
           data-testid={`button-upload-${field}`}
         >
           {videoUploading[field] ? `${videoUploadProgress[field] ?? 0}%` : "Nahrát"}
@@ -5041,7 +5302,7 @@ function SEOTab({ settings, onRefresh }: any) {
       </div>
 
       <div style={{ marginBottom: "24px", padding: "16px", border: "1px solid #1f1f1f", borderRadius: "4px" }}>
-        <div style={{ fontSize: "12px", color: "DESIGN_SYSTEM.colors.textSecondary", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "14px", borderBottom: "1px solid #1a1a1a", paddingBottom: "10px" }}>
+        <div style={{ fontSize: "12px", color: DESIGN_SYSTEM.colors.textSecondary, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "14px", borderBottom: "1px solid #1a1a1a", paddingBottom: "10px" }}>
           Globální nastavení
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "14px" }}>
@@ -5064,7 +5325,7 @@ function SEOTab({ settings, onRefresh }: any) {
               <button
                 onClick={() => ogImageInputRef.current?.click()}
                 disabled={ogImageUploading}
-                style={{ background: "DESIGN_SYSTEM.colors.inputs", border: "1px solid #2a2a2a", color: "DESIGN_SYSTEM.colors.textSecondary", padding: "8px 12px", fontSize: "12px", cursor: "pointer", borderRadius: "3px", whiteSpace: "nowrap", opacity: ogImageUploading ? 0.6 : 1 }}
+                style={{ background: DESIGN_SYSTEM.colors.inputs, border: "1px solid #2a2a2a", color: DESIGN_SYSTEM.colors.textSecondary, padding: "8px 12px", fontSize: "12px", cursor: "pointer", borderRadius: "3px", whiteSpace: "nowrap", opacity: ogImageUploading ? 0.6 : 1 }}
                 data-testid="button-upload-og-image"
               >
                 {ogImageUploading ? "Nahrávám..." : "Nahrát"}
@@ -5125,980 +5386,6 @@ function SEOTab({ settings, onRefresh }: any) {
         saved={!!saved["zvuky"]}
       />
 
-    </div>
-  );
-}
-
-type IGLayer = { id: string; visible: boolean; y: number; mode: "text" | "image"; imageUrl: string | null; align?: "left" | "center" | "right" };
-
-const IG_STORY_DEFAULT_LAYERS: IGLayer[] = [
-  { id: "logo",      visible: true, y: 42,  mode: "text", imageUrl: null },
-  { id: "listening", visible: true, y: 58,  mode: "text", imageUrl: null },
-  { id: "title",     visible: true, y: 70,  mode: "text", imageUrl: null },
-  { id: "website",   visible: true, y: 340, mode: "text", imageUrl: null },
-];
-
-const IG_LAYER_LABELS: Record<string, string> = {
-  logo: "Logo VOODOO808",
-  listening: "Text nad názvem",
-  title: "Název beatu / kitu",
-  website: "Text webu",
-};
-
-const ZVUKY_PREV_H = 630;
-
-const IG_ZVUKY_DEFAULT_LAYERS: IGLayer[] = [
-  { id: "logo",    visible: true, y: 40,  mode: "text", imageUrl: null, align: "center" },
-  { id: "title",   visible: true, y: 450, mode: "text", imageUrl: null, align: "center" },
-  { id: "website", visible: true, y: 480, mode: "text", imageUrl: null, align: "center" },
-];
-
-const IG_ZVUKY_LAYER_LABELS: Record<string, string> = {
-  logo: "Logo",
-  title: "Název sound kitu",
-  website: "Text webu (VOODOO808.COM)",
-};
-
-// Deterministic waveform bar heights for visual preview (0–1) — 60 bars, organic hip-hop shape
-const WAVE_BARS = [
-  0.38,0.55,0.72,0.48,0.91,0.63,0.44,0.78,0.95,0.67,
-  0.52,0.41,0.69,0.85,0.73,0.56,0.38,0.80,1.00,0.88,
-  0.70,0.59,0.43,0.66,0.79,0.92,0.61,0.47,0.74,0.88,
-  0.95,0.77,0.62,0.50,0.83,0.97,0.72,0.58,0.41,0.69,
-  0.84,0.75,0.91,0.63,0.50,0.78,1.00,0.86,0.68,0.55,
-  0.43,0.72,0.89,0.76,0.60,0.45,0.66,0.82,0.58,0.40,
-];
-const PLAYHEAD_FRACTION = 2 / 3;
-
-// Matches the SoundWave.tsx dual-axis design: tall top bars + shorter bottom reflection
-function _REMOVED_IGWaveformPreview({ width }: { width: number }) {
-  const barCount = WAVE_BARS.length;
-  const gap = 0.8;
-  const barW = Math.max(1, (width - gap * (barCount - 1)) / barCount);
-  const h = 28;
-  const divY = h * 0.70;
-  const topMaxAmp = divY * 0.90;
-  const botMaxAmp = (h - divY) * 0.90;
-  const radius = Math.min(barW / 2, 1.5);
-  return (
-    <svg width={width} height={h} style={{ display: "block" }}>
-      {WAVE_BARS.map((v, i) => {
-        const x = i * (barW + gap);
-        const played = (i / barCount) < PLAYHEAD_FRACTION;
-        const isHead = Math.abs(i / barCount - PLAYHEAD_FRACTION) < (1 / barCount) * 0.8;
-        const topAmp = Math.max(v * topMaxAmp, 1.2);
-        const botAmp = Math.max(v * botMaxAmp, 0.5);
-        if (isHead) {
-          return <rect key={i} x={x} y={divY - topAmp} width={barW} height={topAmp + botAmp} rx={radius} fill="rgba(255,255,255,1)" />;
-        }
-        return (
-          <g key={i}>
-            <rect x={x} y={divY - topAmp} width={barW} height={topAmp} rx={radius}
-              fill={played ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.28)"} />
-            <rect x={x} y={divY} width={barW} height={botAmp} rx={radius}
-              fill={played ? "rgba(255,255,255,0.61)" : "rgba(255,255,255,0.13)"} />
-          </g>
-        );
-      })}
-      {/* Center dividing line (like SoundWave) */}
-      <rect x={0} y={divY} width={width} height={0.75} fill="rgba(0,0,0,0.6)" />
-      {/* Vertical playhead */}
-      <rect x={PLAYHEAD_FRACTION * width - 0.75} y={0} width={1.5} height={h} fill="rgba(255,255,255,0.95)" rx={0.75} />
-    </svg>
-  );
-}
-
-function formatDuration(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = Math.floor(seconds % 60);
-  return `${m}:${s.toString().padStart(2, "0")}`;
-}
-
-function IGStoriesTab({ settings, onRefresh }: any) {
-  const [values, setValues] = useState<Record<string, string>>({
-    ig_story_bg_color: settings.ig_story_bg_color || "DESIGN_SYSTEM.colors.background",
-    ig_story_text_color: settings.ig_story_text_color || "DESIGN_SYSTEM.colors.textPrimary",
-    ig_story_accent_color: settings.ig_story_accent_color || "#aaaaaa",
-    ig_story_overlay_opacity: settings.ig_story_overlay_opacity || "0.45",
-    ig_story_listening_text: settings.ig_story_listening_text || "právě poslouchám",
-    ig_story_website_text: settings.ig_story_website_text || "NA VOODOO808.COM",
-    ig_story_bg_mode: settings.ig_story_bg_mode || "artwork",
-    ig_story_blur: settings.ig_story_blur || "20",
-    ig_story_layers: settings.ig_story_layers || JSON.stringify(IG_STORY_DEFAULT_LAYERS),
-    ig_story_card_show: settings.ig_story_card_show ?? "true",
-    ig_story_card_radius: settings.ig_story_card_radius || "24",
-    ig_story_card_blur: settings.ig_story_card_blur || "14",
-    ig_story_card_brightness: settings.ig_story_card_brightness || "0.18",
-    ig_story_card_shadow: settings.ig_story_card_shadow ?? "true",
-    ig_story_card_shadow_amount: settings.ig_story_card_shadow_amount || "24",
-    ig_story_card_padding: settings.ig_story_card_padding || "16",
-    ig_story_card_title_line_height: settings.ig_story_card_title_line_height || "1.2",
-    ig_story_card_y_offset: settings.ig_story_card_y_offset || "0",
-    ig_story_card_title_align: settings.ig_story_card_title_align || "center",
-    ig_story_card_brand_align: settings.ig_story_card_brand_align || "right",
-    ig_story_logo_url: settings.ig_story_logo_url || "",
-    ig_story_logo_invert: settings.ig_story_logo_invert || "false",
-  });
-  const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-  const [previewBeat, setPreviewBeat] = useState<any>(null);
-  const [previewBeatDuration, setPreviewBeatDuration] = useState<number | null>(null);
-  const [previewComment, setPreviewComment] = useState<{ text: string; email: string; avatar_url?: string | null; username?: string | null } | null>(null);
-  const [uploading, setUploading] = useState<Record<number, boolean>>({});
-  const [logoUploading, setLogoUploading] = useState(false);
-  const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const logoInputRef = useRef<HTMLInputElement | null>(null);
-
-  const [storySubTab, setStorySubTab] = useState<"beaty" | "zvuky">("beaty");
-
-  const [zvukyValues, setZvukyValues] = useState<Record<string, string>>({
-    ig_zvuky_bg_blur: settings.ig_zvuky_bg_blur || "20",
-    ig_zvuky_overlay_opacity: settings.ig_zvuky_overlay_opacity || "0.5",
-    ig_zvuky_text_color: settings.ig_zvuky_text_color || "DESIGN_SYSTEM.colors.textPrimary",
-    ig_zvuky_layers: settings.ig_zvuky_layers || JSON.stringify(IG_ZVUKY_DEFAULT_LAYERS),
-    ig_zvuky_show_hover_card: settings.ig_zvuky_show_hover_card || "false",
-    ig_zvuky_hover_show_sounds: settings.ig_zvuky_hover_show_sounds || "false",
-    ig_zvuky_show_artwork_bg: settings.ig_zvuky_show_artwork_bg || "false",
-    ig_zvuky_logo_url: settings.ig_zvuky_logo_url || "",
-    ig_zvuky_logo_invert: settings.ig_zvuky_logo_invert || "false",
-  });
-  const [zvukySaving, setZvukySaving] = useState(false);
-  const [zvukySaved, setZvukySaved] = useState(false);
-  const [previewKit, setPreviewKit] = useState<any>(null);
-  const [zvukyLogoUploading, setZvukyLogoUploading] = useState(false);
-  const [zvukyLayerUploading, setZvukyLayerUploading] = useState<Record<number, boolean>>({});
-  const zvukyLogoInputRef = useRef<HTMLInputElement | null>(null);
-  const zvukyFileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
-
-  useEffect(() => {
-    fetch("/api/sound-kits", { credentials: "include" })
-      .then(r => r.ok ? r.json() : [])
-      .then(kits => { if (Array.isArray(kits) && kits.length > 0) setPreviewKit(kits[0]); })
-      .catch(() => {});
-  }, []);
-
-  const handleZvukyChange = (key: string, val: string) => setZvukyValues(prev => ({ ...prev, [key]: val }));
-
-  const zvukyLayers: IGLayer[] = (() => {
-    try {
-      const parsed = JSON.parse(zvukyValues.ig_zvuky_layers);
-      return parsed.map((l: any) => ({
-        id: l.id,
-        visible: l.visible ?? true,
-        y: typeof l.y === "number" ? l.y : (IG_ZVUKY_DEFAULT_LAYERS.find((d: IGLayer) => d.id === l.id)?.y ?? 60),
-        mode: l.mode ?? "text",
-        imageUrl: l.imageUrl ?? null,
-        align: l.align ?? "center",
-      }));
-    } catch { return IG_ZVUKY_DEFAULT_LAYERS; }
-  })();
-
-  const setZvukyLayers = (nl: IGLayer[]) => handleZvukyChange("ig_zvuky_layers", JSON.stringify(nl));
-  const updateZvukyLayer = (i: number, patch: Partial<IGLayer>) => setZvukyLayers(zvukyLayers.map((l, idx) => idx === i ? { ...l, ...patch } : l));
-  const moveZvukyLayerY = (i: number, dir: "up" | "down") => updateZvukyLayer(i, { y: zvukyLayers[i].y + (dir === "up" ? -20 : 20) });
-
-  const handleZvukyLogoUpload = async (file: File) => {
-    setZvukyLogoUploading(true);
-    try {
-      const form = new FormData();
-      form.append("file", file);
-      const res = await fetch("/api/upload?type=artwork", { method: "POST", credentials: "include", body: form });
-      if (res.ok) { const data = await res.json(); handleZvukyChange("ig_zvuky_logo_url", data.url); }
-    } finally { setZvukyLogoUploading(false); }
-  };
-
-  const handleZvukyLayerImageUpload = async (i: number, file: File) => {
-    setZvukyLayerUploading(prev => ({ ...prev, [i]: true }));
-    try {
-      const form = new FormData();
-      form.append("file", file);
-      const res = await fetch("/api/upload?type=artwork", { method: "POST", credentials: "include", body: form });
-      if (res.ok) { const data = await res.json(); updateZvukyLayer(i, { imageUrl: data.url, mode: "image" }); }
-    } finally { setZvukyLayerUploading(prev => ({ ...prev, [i]: false })); }
-  };
-
-  const handleZvukySave = async () => {
-    setZvukySaving(true);
-    try {
-      await Promise.all(Object.keys(zvukyValues).map(key =>
-        fetch("/api/admin/settings", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ key, value: zvukyValues[key] }) })
-      ));
-      setZvukySaved(true);
-      setTimeout(() => setZvukySaved(false), 2500);
-      onRefresh();
-    } finally { setZvukySaving(false); }
-  };
-
-  useEffect(() => {
-    fetch("/api/beats", { credentials: "include" })
-      .then(r => r.ok ? r.json() : [])
-      .then(beats => {
-        if (Array.isArray(beats) && beats.length > 0) {
-          const beat = beats[0];
-          setPreviewBeat(beat);
-          fetch(`/api/beats/${beat.id}/comments`, { credentials: "include" })
-            .then(r => r.ok ? r.json() : [])
-            .then((comments: any[]) => {
-              if (Array.isArray(comments) && comments.length > 0) {
-                const c = comments[0];
-                setPreviewComment({ text: c.text, email: c.email, avatar_url: c.avatar_url, username: c.username });
-              } else {
-                setPreviewComment(null);
-              }
-            })
-            .catch(() => setPreviewComment(null));
-        }
-      })
-      .catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    if (!previewBeat?.preview_url) { setPreviewBeatDuration(null); return; }
-    const audio = new Audio();
-    audio.crossOrigin = "anonymous";
-    audio.src = toAudioProxyUrl(previewBeat.preview_url);
-    audio.onloadedmetadata = () => { setPreviewBeatDuration(audio.duration); };
-    audio.onerror = () => { setPreviewBeatDuration(null); };
-  }, [previewBeat?.preview_url]);
-
-  const handleChange = (key: string, val: string) => setValues(prev => ({ ...prev, [key]: val }));
-
-  const layers: IGLayer[] = (() => {
-    try {
-      const parsed = JSON.parse(values.ig_story_layers);
-      return parsed.map((l: any) => ({
-        id: l.id,
-        visible: l.visible ?? true,
-        y: typeof l.y === "number" ? l.y : (IG_STORY_DEFAULT_LAYERS.find(d => d.id === l.id)?.y ?? 60),
-        mode: l.mode ?? "text",
-        imageUrl: l.imageUrl ?? null,
-      }));
-    } catch { return IG_STORY_DEFAULT_LAYERS; }
-  })();
-
-  const setLayers = (nl: IGLayer[]) => handleChange("ig_story_layers", JSON.stringify(nl));
-  const updateLayer = (i: number, patch: Partial<IGLayer>) => setLayers(layers.map((l, idx) => idx === i ? { ...l, ...patch } : l));
-  const moveLayerY = (i: number, dir: "up" | "down") => updateLayer(i, { y: layers[i].y + (dir === "up" ? -5 : 5) });
-
-  const handleImageUpload = async (i: number, file: File) => {
-    setUploading(prev => ({ ...prev, [i]: true }));
-    try {
-      const form = new FormData();
-      form.append("file", file);
-      const res = await fetch("/api/upload?type=artwork", { method: "POST", credentials: "include", body: form });
-      if (res.ok) {
-        const data = await res.json();
-        updateLayer(i, { imageUrl: data.url, mode: "image" });
-      }
-    } finally {
-      setUploading(prev => ({ ...prev, [i]: false }));
-    }
-  };
-
-  const handleLogoUpload = async (file: File) => {
-    setLogoUploading(true);
-    try {
-      const form = new FormData();
-      form.append("file", file);
-      const res = await fetch("/api/upload?type=artwork", { method: "POST", credentials: "include", body: form });
-      if (res.ok) {
-        const data = await res.json();
-        handleChange("ig_story_logo_url", data.url);
-      }
-    } finally {
-      setLogoUploading(false);
-    }
-  };
-
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      await Promise.all(Object.keys(values).map(key =>
-        fetch("/api/admin/settings", { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ key, value: values[key] }) })
-      ));
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2500);
-      onRefresh();
-    } finally { setSaving(false); }
-  };
-
-  const bgMode = values.ig_story_bg_mode;
-  const bgColor = values.ig_story_bg_color;
-  const textColor = values.ig_story_text_color;
-  const overlayOpacity = parseFloat(values.ig_story_overlay_opacity);
-  const blurVal = parseFloat(values.ig_story_blur);
-  const listeningText = values.ig_story_listening_text;
-  const websiteText = values.ig_story_website_text;
-  const previewArtwork = previewBeat?.artwork_url;
-  const previewTitle = previewBeat?.title || "BEAT NÁZEV";
-  const previewArtist = previewBeat?.artist || "VOODOO808.COM";
-  const titleLineHeight = parseFloat(values.ig_story_card_title_line_height);
-
-  // Card settings
-  const cardShow = values.ig_story_card_show !== "false";
-  const cardRadius = parseFloat(values.ig_story_card_radius);
-  const cardBlur = parseFloat(values.ig_story_card_blur);
-  const cardBrightness = parseFloat(values.ig_story_card_brightness);
-  const cardShadow = values.ig_story_card_shadow !== "false";
-  const cardShadowAmount = parseFloat(values.ig_story_card_shadow_amount);
-  const cardPadding = parseFloat(values.ig_story_card_padding);
-  const cardYOffset = parseInt(values.ig_story_card_y_offset || "0", 10);
-  const cardTitleAlign = (values.ig_story_card_title_align || "center") as "left" | "center" | "right";
-  const cardBrandAlign = (values.ig_story_card_brand_align || "right") as "left" | "right";
-  const logoUrl = values.ig_story_logo_url || "";
-  const logoInvert = values.ig_story_logo_invert === "true";
-
-  // Duration display
-  const durationStr = previewBeatDuration !== null ? formatDuration(previewBeatDuration) : "–:––";
-  const playedStr = previewBeatDuration !== null ? formatDuration(previewBeatDuration * PLAYHEAD_FRACTION) : "–:––";
-
-  // Preview card — iPhone 16 Pro proportions (402×874 pt → ratio 2.174)
-  const PREVIEW_W = 290;
-  const PREVIEW_H = Math.round(PREVIEW_W * 874 / 402); // ≈ 470px
-  const CARD_MARGIN = 24;
-  const cardW = PREVIEW_W - CARD_MARGIN * 2;           // 168px
-  const artworkW = cardW - cardPadding * 2;             // inner artwork size
-  const cardGlassBg = `rgba(255,255,255,${cardBrightness})`;
-  const cardBoxShadow = cardShadow ? `0 ${cardShadowAmount * 0.5}px ${cardShadowAmount}px rgba(0,0,0,0.55)` : "none";
-
-  const labelStyle = { fontSize: "11px", color: "DESIGN_SYSTEM.colors.textSecondary", marginBottom: "6px", display: "block", letterSpacing: "0.05em", textTransform: "uppercase" as const };
-  const fieldStyle = { width: "100%", padding: "9px 12px", background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #2a2a2a", borderRadius: "3px", color: "DESIGN_SYSTEM.colors.textPrimary", fontSize: "13px", fontFamily: "inherit", outline: "none", boxSizing: "border-box" as const };
-  const modeBtnStyle = (active: boolean) => ({ padding: "4px 10px", background: active ? "DESIGN_SYSTEM.colors.textPrimary" : "transparent", color: active ? "#000" : "#555", border: "1px solid " + (active ? "DESIGN_SYSTEM.colors.textPrimary" : "DESIGN_SYSTEM.colors.border"), borderRadius: "3px", fontSize: "11px", cursor: "pointer", fontFamily: "inherit" });
-  const sectionHeadStyle = { fontSize: "10px", color: "#555", textTransform: "uppercase" as const, letterSpacing: "0.1em", borderBottom: "1px solid #1a1a1a", paddingBottom: "8px", marginBottom: "14px" };
-
-  const renderLayerPreview = (layer: IGLayer) => {
-    if (!layer.visible) return null;
-    const style: React.CSSProperties = { position: "absolute", left: 0, right: 0, top: layer.y + "px", textAlign: "center", pointerEvents: "none" };
-    if (layer.mode === "image" && layer.imageUrl) {
-      return <img key={layer.id} src={layer.imageUrl} alt="" style={{ ...style, height: "16px", width: "auto", maxWidth: "80%", margin: "0 auto", display: "block", objectFit: "contain" }} />;
-    }
-    if (layer.id === "logo") return <div key="logo" style={{ ...style, fontSize: "10px", fontWeight: 700, color: textColor, letterSpacing: "3px" }}>VOODOO808.COM</div>;
-    if (layer.id === "listening") return <div key="listening" style={{ ...style, fontSize: "7px", color: textColor + "88", fontStyle: "italic" }}>{listeningText}</div>;
-    if (layer.id === "title") return <div key="title" style={{ ...style, fontSize: "13px", fontWeight: 700, color: textColor, letterSpacing: "0.05em", lineHeight: 1.2 }}>{previewTitle.toUpperCase()}</div>;
-    if (layer.id === "website") return <div key="website" style={{ ...style, fontSize: "6px", color: textColor + "66", letterSpacing: "1px" }}>{websiteText}</div>;
-    return null;
-  };
-
-  // Compute card top position so it sits centered in the iPhone 16 Pro preview
-  // Card height: padding + artworkW + 10 (name gap) + 14 (name) + 3 (brand gap) + 7 (brand) + 10 (wave gap) + 28 (wave) + 3 (time) + 6 (time labels) + 8 (controls gap) + 18 (controls) + 10 (volume gap) + 6 (volume) + [comment: 8+20 if present] + padding
-  const waveW = artworkW;
-  const commentRowH = previewComment ? 28 : 0;
-  const estimatedCardH = cardPadding + artworkW + 10 + 14 + 3 + 7 + 10 + 28 + 3 + 6 + 8 + 18 + 10 + 6 + commentRowH + cardPadding;
-  const centeredCardTop = (PREVIEW_H - estimatedCardH) / 2;
-  const cardTop = Math.max(10, centeredCardTop + cardYOffset);
-
-  const zvukyBgBlur = parseFloat(zvukyValues.ig_zvuky_bg_blur);
-  const zvukyOverlay = parseFloat(zvukyValues.ig_zvuky_overlay_opacity);
-  const zvukyTextColor = zvukyValues.ig_zvuky_text_color;
-  const zvukyShowHoverCard = zvukyValues.ig_zvuky_show_hover_card === "true";
-  const zvukyHoverShowSounds = zvukyValues.ig_zvuky_hover_show_sounds !== "false";
-  const zvukyShowArtworkBg = zvukyValues.ig_zvuky_show_artwork_bg === "true";
-  const zvukyLogoUrl = zvukyValues.ig_zvuky_logo_url;
-  const zvukyLogoInvert = zvukyValues.ig_zvuky_logo_invert === "true";
-  const zvukyPreviewArtwork = previewKit?.artwork_url || "";
-  const zvukyPreviewTitle = previewKit?.title || "SOUND KIT NÁZEV";
-  const ZVUKY_PREV_H_DISPLAY = 470;
-  const ZVUKY_PREV_W_DISPLAY = Math.round(ZVUKY_PREV_H_DISPLAY * 1080 / 1920);
-
-  return (
-    <div style={{ padding: "24px 0" }}>
-      <div style={{ fontSize: "12px", color: "DESIGN_SYSTEM.colors.textSecondary", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "16px", borderBottom: "1px solid #1a1a1a", paddingBottom: "12px" }}>
-        Instagram Stories šablona
-      </div>
-      <div style={{ display: "flex", gap: "0", marginBottom: "24px", borderBottom: "1px solid #1a1a1a" }}>
-        {(["beaty", "zvuky"] as const).map(t => (
-          <button key={t} onClick={() => setStorySubTab(t)} style={{ padding: "9px 22px", background: "transparent", border: "none", borderBottom: storySubTab === t ? "2px solid #fff" : "2px solid transparent", color: storySubTab === t ? "DESIGN_SYSTEM.colors.textPrimary" : "#555", fontSize: "13px", fontWeight: storySubTab === t ? 600 : 400, cursor: "pointer", fontFamily: "inherit", marginBottom: "-1px" }}>
-            {t === "beaty" ? "BEATY" : "ZVUKY"}
-          </button>
-        ))}
-      </div>
-
-      {storySubTab === "beaty" && <div style={{ display: "flex", gap: "32px", alignItems: "flex-start" }}>
-
-        {/* ───── Preview card ───── */}
-        <div style={{ flexShrink: 0 }}>
-          <div style={{ fontSize: "11px", color: "#555", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-            Náhled{previewBeat ? ` — ${previewBeat.title}` : ""}
-          </div>
-          <div style={{ width: `${PREVIEW_W}px`, height: `${PREVIEW_H}px`, position: "relative", overflow: "hidden", borderRadius: "8px", border: "1px solid #2a2a2a", background: bgMode === "color" ? bgColor : "DESIGN_SYSTEM.colors.tertiary" }}>
-            {/* Background */}
-            {bgMode === "artwork" && previewArtwork && (
-              <img src={previewArtwork} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", filter: `blur(${blurVal}px)`, transform: "scale(1.3)" }} />
-            )}
-            {bgMode === "artwork" && !previewArtwork && (
-              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, #333 0%, #111 100%)" }} />
-            )}
-            {/* Dark overlay */}
-            <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${overlayOpacity})` }} />
-
-            {/* Text layers */}
-            {layers.map(layer => renderLayerPreview(layer))}
-
-            {/* ── Glassmorphism player card ── */}
-            {cardShow && (
-              <div
-                style={{
-                  position: "absolute",
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  top: `${cardTop}px`,
-                  width: `${cardW}px`,
-                  borderRadius: `${cardRadius}px`,
-                  backdropFilter: `blur(${cardBlur}px)`,
-                  WebkitBackdropFilter: `blur(${cardBlur}px)`,
-                  background: cardGlassBg,
-                  border: "1px solid rgba(255,255,255,0.18)",
-                  boxShadow: cardBoxShadow,
-                  padding: `${cardPadding}px`,
-                  boxSizing: "border-box",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: "0",
-                }}
-              >
-                {/* Artwork */}
-                <div style={{ width: `${artworkW}px`, height: `${artworkW}px`, borderRadius: `${Math.max(0, cardRadius - cardPadding)}px`, overflow: "hidden", background: "DESIGN_SYSTEM.colors.inputs", flexShrink: 0 }}>
-                  {previewArtwork
-                    ? <img src={previewArtwork} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                    : <div style={{ width: "100%", height: "100%", background: "linear-gradient(135deg,#2a2a2a,#111)" }} />
-                  }
-                </div>
-
-                {/* Beat name */}
-                <div style={{ marginTop: "10px", fontSize: "9px", fontWeight: 700, color: "DESIGN_SYSTEM.colors.textPrimary", letterSpacing: "0.06em", textAlign: cardTitleAlign, width: "100%", wordBreak: "break-word", lineHeight: titleLineHeight, overflowWrap: "break-word", fontFamily: "Inter, sans-serif" }}>
-                  {previewTitle.toUpperCase()}
-                </div>
-                {/* Artist / brand */}
-                <div style={{ marginTop: "3px", fontSize: "7px", color: "rgba(255,255,255,0.6)", letterSpacing: "0.04em", textAlign: cardBrandAlign, width: "100%", fontFamily: "Inter, sans-serif" }}>
-                  VOODOO808.COM
-                </div>
-
-                {/* Waveform timeline — mirrors SoundWave.tsx dual-axis design */}
-                <div style={{ marginTop: "10px", width: "100%" }}>
-                  <IGWaveformPreview width={waveW} />
-                  {/* Time labels */}
-                  <div style={{ display: "flex", justifyContent: "space-between", marginTop: "3px" }}>
-                    <span style={{ fontSize: "5px", color: "rgba(255,255,255,0.5)", fontFamily: "Inter, sans-serif" }}>{playedStr}</span>
-                    <span style={{ fontSize: "5px", color: "rgba(255,255,255,0.35)", fontFamily: "Inter, sans-serif" }}>{durationStr}</span>
-                  </div>
-                </div>
-
-                {/* Player controls */}
-                <div style={{ marginTop: "8px", display: "flex", alignItems: "center", justifyContent: "center", gap: "12px", width: "100%" }}>
-                  {/* Prev — two filled left-pointing arrows touching, 2px radius corners */}
-                  <svg width="13" height="10" viewBox="0 0 14 10" fill="rgba(255,255,255,0.75)">
-                    <path d="M6.5,2 L6.5,8 Q6.5,10 5,10 L0.5,5.6 Q0,5 0.5,4.4 L5,0 Q6.5,0 6.5,2 Z"/>
-                    <path d="M13.5,2 L13.5,8 Q13.5,10 12,10 L7.5,5.6 Q7,5 7.5,4.4 L12,0 Q13.5,0 13.5,2 Z"/>
-                  </svg>
-                  {/* Pause — two white rounded bars, no circle */}
-                  <svg width="10" height="12" viewBox="0 0 10 12" fill="DESIGN_SYSTEM.colors.textPrimary">
-                    <rect x="0.5" y="0.5" width="3" height="11" rx="2"/>
-                    <rect x="6.5" y="0.5" width="3" height="11" rx="2"/>
-                  </svg>
-                  {/* Next — two filled right-pointing arrows touching, 2px radius corners */}
-                  <svg width="13" height="10" viewBox="0 0 14 10" fill="rgba(255,255,255,0.75)">
-                    <path d="M0,2 L0,8 Q0,10 1.5,10 L6,5.6 Q6.5,5 6,4.4 L1.5,0 Q0,0 0,2 Z"/>
-                    <path d="M7,2 L7,8 Q7,10 8.5,10 L13,5.6 Q13.5,5 13,4.4 L8.5,0 Q7,0 7,2 Z"/>
-                  </svg>
-                </div>
-
-                {/* Volume bar */}
-                <div style={{ marginTop: "10px", width: "100%", display: "flex", alignItems: "center", gap: "5px" }}>
-                  {/* Volume low — filled speaker body + filled small wave */}
-                  <svg width="8" height="8" viewBox="0 0 20 20" fill="rgba(255,255,255,0.45)">
-                    <path d="M10 3.5 L5.5 7.5 H2 Q1 7.5 1 8.5 V11.5 Q1 12.5 2 12.5 H5.5 L10 16.5 Z"/>
-                    <path d="M12.5 7 Q15.5 10 12.5 13 L11.5 12 Q14 10 11.5 8 Z"/>
-                  </svg>
-                  <div style={{ flex: 1, height: "3px", background: "rgba(255,255,255,0.18)", borderRadius: "2px", position: "relative", overflow: "hidden" }}>
-                    <div style={{ position: "absolute", left: 0, top: 0, height: "100%", width: "70%", background: "rgba(255,255,255,0.75)", borderRadius: "2px" }} />
-                  </div>
-                  {/* Volume high — filled speaker + two filled waves */}
-                  <svg width="8" height="8" viewBox="0 0 20 20" fill="rgba(255,255,255,0.45)">
-                    <path d="M10 3.5 L5.5 7.5 H2 Q1 7.5 1 8.5 V11.5 Q1 12.5 2 12.5 H5.5 L10 16.5 Z"/>
-                    <path d="M12.5 7 Q15.5 10 12.5 13 L11.5 12 Q14 10 11.5 8 Z"/>
-                    <path d="M14.5 5 Q19 10 14.5 15 L13.5 14 Q17.5 10 13.5 6 Z"/>
-                  </svg>
-                </div>
-
-                {/* Comment bubble — only shown if a comment exists */}
-                {previewComment && (
-                  <div style={{ marginTop: "8px", width: "100%", display: "flex", alignItems: "flex-start", gap: "5px" }}>
-                    {/* Avatar */}
-                    <div style={{ width: "14px", height: "14px", borderRadius: "50%", background: "rgba(255,255,255,0.18)", flexShrink: 0, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      {previewComment.avatar_url
-                        ? <img src={previewComment.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                        : <span style={{ fontSize: "5px", color: "rgba(255,255,255,0.7)", fontFamily: "Inter,sans-serif", fontWeight: 700 }}>
-                            {(previewComment.username || previewComment.email || "?").charAt(0).toUpperCase()}
-                          </span>
-                      }
-                    </div>
-                    {/* Bubble */}
-                    <div style={{ flex: 1, background: "rgba(255,255,255,0.1)", borderRadius: "6px", padding: "3px 5px", minWidth: 0 }}>
-                      <div style={{ fontSize: "5px", color: "rgba(255,255,255,0.5)", fontFamily: "Inter,sans-serif", marginBottom: "1px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {previewComment.username || previewComment.email?.split("@")[0] || "user"}
-                      </div>
-                      <div style={{ fontSize: "5.5px", color: "rgba(255,255,255,0.85)", fontFamily: "Inter,sans-serif", lineHeight: 1.3, wordBreak: "break-word" }}>
-                        {previewComment.text}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* ───── Settings panel ───── */}
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "18px", minWidth: 0 }}>
-
-          {/* Background mode */}
-          <div>
-            <div style={sectionHeadStyle}>Pozadí</div>
-            <label style={labelStyle}>Typ pozadí</label>
-            <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
-              {([["artwork", "Artwork + blur"], ["color", "Plná barva"]] as const).map(([val, label]) => (
-                <button key={val} onClick={() => handleChange("ig_story_bg_mode", val)} style={{ flex: 1, padding: "9px", background: bgMode === val ? "DESIGN_SYSTEM.colors.textPrimary" : "DESIGN_SYSTEM.colors.tertiary", color: bgMode === val ? "#000" : "DESIGN_SYSTEM.colors.textSecondary", border: "1px solid " + (bgMode === val ? "DESIGN_SYSTEM.colors.textPrimary" : "DESIGN_SYSTEM.colors.border"), borderRadius: "3px", fontSize: "12px", cursor: "pointer", fontFamily: "inherit" }}>
-                  {label}
-                </button>
-              ))}
-            </div>
-
-            {bgMode === "artwork" && (
-              <>
-                <label style={labelStyle}>Rozmazání pozadí — {values.ig_story_blur}px</label>
-                <input type="range" min="0" max="40" step="1" value={blurVal} onChange={(e) => handleChange("ig_story_blur", e.target.value)} style={{ width: "100%", accentColor: "DESIGN_SYSTEM.colors.textPrimary" }} />
-              </>
-            )}
-
-            {bgMode === "color" && (
-              <>
-                <label style={labelStyle}>Barva pozadí</label>
-                <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                  <input type="color" value={bgColor} onChange={(e) => handleChange("ig_story_bg_color", e.target.value)} style={{ width: "36px", height: "36px", padding: "2px", background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #2a2a2a", borderRadius: "3px", cursor: "pointer" }} />
-                  <input type="text" value={bgColor} onChange={(e) => handleChange("ig_story_bg_color", e.target.value)} style={{ ...fieldStyle, width: "90px" }} />
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* Colors + overlay */}
-          <div style={{ display: "flex", gap: "12px" }}>
-            <div style={{ flex: 1 }}>
-              <label style={labelStyle}>Barva textu</label>
-              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                <input type="color" value={textColor} onChange={(e) => handleChange("ig_story_text_color", e.target.value)} style={{ width: "36px", height: "36px", padding: "2px", background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #2a2a2a", borderRadius: "3px", cursor: "pointer" }} />
-                <input type="text" value={textColor} onChange={(e) => handleChange("ig_story_text_color", e.target.value)} style={{ ...fieldStyle, width: "90px" }} />
-              </div>
-            </div>
-            <div style={{ flex: 1 }}>
-              <label style={labelStyle}>Překryv — {Math.round(overlayOpacity * 100)}%</label>
-              <input type="range" min="0" max="1" step="0.05" value={overlayOpacity} onChange={(e) => handleChange("ig_story_overlay_opacity", e.target.value)} style={{ width: "100%", accentColor: "DESIGN_SYSTEM.colors.textPrimary", marginTop: "10px" }} />
-            </div>
-          </div>
-
-          {/* ── Glassmorphism card settings ── */}
-          <div>
-            <div style={sectionHeadStyle}>Player karta (glassmorphism)</div>
-
-            {/* Show/hide toggle */}
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "14px" }}>
-              <button
-                onClick={() => handleChange("ig_story_card_show", cardShow ? "false" : "true")}
-                style={{ padding: "6px 14px", background: cardShow ? "DESIGN_SYSTEM.colors.textPrimary" : "DESIGN_SYSTEM.colors.tertiary", color: cardShow ? "#000" : "#555", border: "1px solid " + (cardShow ? "DESIGN_SYSTEM.colors.textPrimary" : "DESIGN_SYSTEM.colors.border"), borderRadius: "3px", fontSize: "12px", cursor: "pointer", fontFamily: "inherit" }}
-              >
-                {cardShow ? "✓ Zobrazit kartu" : "Skrýt kartu"}
-              </button>
-            </div>
-
-            {cardShow && (
-              <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-
-                {/* Radius + Padding row */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-                  <div>
-                    <label style={labelStyle}>Zaoblení rohů — {values.ig_story_card_radius}px</label>
-                    <input type="range" min="0" max="40" step="1" value={cardRadius} onChange={(e) => handleChange("ig_story_card_radius", e.target.value)} style={{ width: "100%", accentColor: "DESIGN_SYSTEM.colors.textPrimary" }} />
-                  </div>
-                  <div>
-                    <label style={labelStyle}>Vnitřní padding — {values.ig_story_card_padding}px</label>
-                    <input type="range" min="8" max="32" step="1" value={cardPadding} onChange={(e) => handleChange("ig_story_card_padding", e.target.value)} style={{ width: "100%", accentColor: "DESIGN_SYSTEM.colors.textPrimary" }} />
-                  </div>
-                </div>
-
-                {/* Title line height */}
-                <div>
-                  <label style={labelStyle}>Výška řádku názvu — {values.ig_story_card_title_line_height}</label>
-                  <input type="range" min="1.0" max="2.0" step="0.05" value={titleLineHeight} onChange={(e) => handleChange("ig_story_card_title_line_height", e.target.value)} style={{ width: "100%", accentColor: "DESIGN_SYSTEM.colors.textPrimary" }} />
-                </div>
-
-                {/* Glass blur + brightness row */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-                  <div>
-                    <label style={labelStyle}>Rozmazání skla — {values.ig_story_card_blur}px</label>
-                    <input type="range" min="0" max="40" step="1" value={cardBlur} onChange={(e) => handleChange("ig_story_card_blur", e.target.value)} style={{ width: "100%", accentColor: "DESIGN_SYSTEM.colors.textPrimary" }} />
-                  </div>
-                  <div>
-                    <label style={labelStyle}>Světlost skla — {Math.round(cardBrightness * 100)}%</label>
-                    <input type="range" min="0" max="0.6" step="0.01" value={cardBrightness} onChange={(e) => handleChange("ig_story_card_brightness", e.target.value)} style={{ width: "100%", accentColor: "DESIGN_SYSTEM.colors.textPrimary" }} />
-                  </div>
-                </div>
-
-                {/* Shadow */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", alignItems: "end" }}>
-                  <div>
-                    <label style={labelStyle}>Stín</label>
-                    <button
-                      onClick={() => handleChange("ig_story_card_shadow", cardShadow ? "false" : "true")}
-                      style={{ width: "100%", padding: "9px", background: cardShadow ? "DESIGN_SYSTEM.colors.textPrimary" : "DESIGN_SYSTEM.colors.tertiary", color: cardShadow ? "#000" : "#555", border: "1px solid " + (cardShadow ? "DESIGN_SYSTEM.colors.textPrimary" : "DESIGN_SYSTEM.colors.border"), borderRadius: "3px", fontSize: "12px", cursor: "pointer", fontFamily: "inherit" }}
-                    >
-                      {cardShadow ? "✓ Stín zapnut" : "Stín vypnut"}
-                    </button>
-                  </div>
-                  {cardShadow && (
-                    <div>
-                      <label style={labelStyle}>Intenzita stínu — {values.ig_story_card_shadow_amount}px</label>
-                      <input type="range" min="0" max="60" step="2" value={cardShadowAmount} onChange={(e) => handleChange("ig_story_card_shadow_amount", e.target.value)} style={{ width: "100%", accentColor: "DESIGN_SYSTEM.colors.textPrimary" }} />
-                    </div>
-                  )}
-                </div>
-
-                {/* Vertical position */}
-                <div>
-                  <label style={labelStyle}>Vertikální pozice — {cardYOffset >= 0 ? "+" : ""}{cardYOffset}px</label>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <button onClick={() => handleChange("ig_story_card_y_offset", String(cardYOffset - 5))} style={{ padding: "5px 12px", background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #2a2a2a", borderRadius: "3px", color: "DESIGN_SYSTEM.colors.textPrimary", cursor: "pointer", fontSize: "14px", fontFamily: "inherit", lineHeight: 1 }}>▲</button>
-                    <button onClick={() => handleChange("ig_story_card_y_offset", String(cardYOffset + 5))} style={{ padding: "5px 12px", background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #2a2a2a", borderRadius: "3px", color: "DESIGN_SYSTEM.colors.textPrimary", cursor: "pointer", fontSize: "14px", fontFamily: "inherit", lineHeight: 1 }}>▼</button>
-                    <button onClick={() => handleChange("ig_story_card_y_offset", "0")} style={{ padding: "5px 10px", background: "transparent", border: "1px solid #222", borderRadius: "3px", color: "#555", cursor: "pointer", fontSize: "11px", fontFamily: "inherit" }}>Reset</button>
-                    <span style={{ fontSize: "11px", color: "#444" }}>vycentrováno ± posun</span>
-                  </div>
-                </div>
-
-                {/* Title alignment */}
-                <div>
-                  <label style={labelStyle}>Zarovnání názvu</label>
-                  <div style={{ display: "flex", gap: "6px" }}>
-                    {(["left", "center", "right"] as const).map(a => (
-                      <button key={a} onClick={() => handleChange("ig_story_card_title_align", a)} style={{ flex: 1, padding: "6px", background: cardTitleAlign === a ? "DESIGN_SYSTEM.colors.textPrimary" : "DESIGN_SYSTEM.colors.tertiary", color: cardTitleAlign === a ? "#000" : "#555", border: "1px solid " + (cardTitleAlign === a ? "DESIGN_SYSTEM.colors.textPrimary" : "DESIGN_SYSTEM.colors.border"), borderRadius: "3px", fontSize: "11px", cursor: "pointer", fontFamily: "inherit" }}>
-                        {a === "left" ? "← Vlevo" : a === "center" ? "― Střed" : "→ Vpravo"}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Brand text alignment */}
-                <div>
-                  <label style={labelStyle}>Zarovnání VOODOO808.COM</label>
-                  <div style={{ display: "flex", gap: "6px" }}>
-                    {(["left", "right"] as const).map(a => (
-                      <button key={a} onClick={() => handleChange("ig_story_card_brand_align", a)} style={{ flex: 1, padding: "6px", background: cardBrandAlign === a ? "DESIGN_SYSTEM.colors.textPrimary" : "DESIGN_SYSTEM.colors.tertiary", color: cardBrandAlign === a ? "#000" : "#555", border: "1px solid " + (cardBrandAlign === a ? "DESIGN_SYSTEM.colors.textPrimary" : "DESIGN_SYSTEM.colors.border"), borderRadius: "3px", fontSize: "11px", cursor: "pointer", fontFamily: "inherit" }}>
-                        {a === "left" ? "← Vlevo" : "→ Vpravo"}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-              </div>
-            )}
-          </div>
-
-          {/* Logo upload */}
-          <div>
-            <div style={sectionHeadStyle}>Logo</div>
-            <input ref={logoInputRef} type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => { const f = e.target.files?.[0]; if (f) handleLogoUpload(f); e.target.value = ""; }} />
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
-              <button onClick={() => logoInputRef.current?.click()} style={{ padding: "7px 14px", background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #2a2a2a", borderRadius: "3px", color: "DESIGN_SYSTEM.colors.textPrimary", fontSize: "12px", cursor: "pointer", fontFamily: "inherit" }}>
-                {logoUploading ? "Nahrávám…" : logoUrl ? "Změnit logo" : "Nahrát logo"}
-              </button>
-              {logoUrl && (
-                <>
-                  <img src={logoUrl} alt="logo" style={{ height: "28px", maxWidth: "100px", objectFit: "contain", filter: logoInvert ? "invert(1)" : "none", background: logoInvert ? "#222" : "transparent", borderRadius: "3px", padding: "2px" }} />
-                  <button onClick={() => handleChange("ig_story_logo_invert", logoInvert ? "false" : "true")} style={{ padding: "6px 12px", background: logoInvert ? "DESIGN_SYSTEM.colors.textPrimary" : "DESIGN_SYSTEM.colors.tertiary", color: logoInvert ? "#000" : "DESIGN_SYSTEM.colors.textSecondary", border: "1px solid " + (logoInvert ? "DESIGN_SYSTEM.colors.textPrimary" : "DESIGN_SYSTEM.colors.border"), borderRadius: "3px", fontSize: "11px", cursor: "pointer", fontFamily: "inherit" }}>
-                    {logoInvert ? "✓ Invertováno" : "Invertovat"}
-                  </button>
-                  <button onClick={() => handleChange("ig_story_logo_url", "")} style={{ background: "transparent", border: "none", color: "#555", cursor: "pointer", fontSize: "14px", padding: "0 4px" }} title="Odebrat logo">×</button>
-                </>
-              )}
-            </div>
-            {logoUrl && (
-              <p style={{ fontSize: "11px", color: "#555", marginTop: "8px" }}>Logo bude zobrazeno v exportu story. Invertovat změní bílé logo na černé a naopak.</p>
-            )}
-          </div>
-
-          {/* Text layers */}
-          <div>
-            <div style={sectionHeadStyle}>Textové vrstvy</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-              {layers.map((layer, i) => (
-                <div key={layer.id} style={{ background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #2a2a2a", borderRadius: "4px", padding: "10px 12px", display: "flex", flexDirection: "column", gap: "8px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <span style={{ flex: 1, fontSize: "12px", color: layer.visible ? "DESIGN_SYSTEM.colors.textPrimary" : "#444", textDecoration: layer.visible ? "none" : "line-through" }}>{IG_LAYER_LABELS[layer.id]}</span>
-                    <span style={{ fontSize: "10px", color: "#444", whiteSpace: "nowrap" }}>Y: {layer.y}px</span>
-                    <button onClick={() => moveLayerY(i, "up")} title="Posunout nahoru" style={{ background: "transparent", border: "1px solid #2a2a2a", borderRadius: "3px", color: "DESIGN_SYSTEM.colors.textSecondary", cursor: "pointer", padding: "2px 7px", fontSize: "10px", lineHeight: 1.4, fontFamily: "inherit" }}>▲</button>
-                    <button onClick={() => moveLayerY(i, "down")} title="Posunout dolů" style={{ background: "transparent", border: "1px solid #2a2a2a", borderRadius: "3px", color: "DESIGN_SYSTEM.colors.textSecondary", cursor: "pointer", padding: "2px 7px", fontSize: "10px", lineHeight: 1.4, fontFamily: "inherit" }}>▼</button>
-                    <button onClick={() => updateLayer(i, { visible: !layer.visible })} title={layer.visible ? "Skrýt" : "Zobrazit"} style={{ background: "transparent", border: "none", color: layer.visible ? "DESIGN_SYSTEM.colors.textSecondary" : "#3a3a3a", cursor: "pointer", padding: "2px 4px", display: "flex", alignItems: "center" }}>
-                      {layer.visible ? (
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                      ) : (
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-                      )}
-                    </button>
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <button onClick={() => updateLayer(i, { mode: "text" })} style={modeBtnStyle(layer.mode === "text")}>Aa Text</button>
-                    <button onClick={() => fileInputRefs.current[i]?.click()} style={modeBtnStyle(layer.mode === "image")}>
-                      {uploading[i] ? "Nahrávám…" : layer.mode === "image" && layer.imageUrl ? "Změnit logo" : "Nahrát logo"}
-                    </button>
-                    <input
-                      ref={el => { fileInputRefs.current[i] = el; }}
-                      type="file"
-                      accept="image/*"
-                      style={{ display: "none" }}
-                      onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImageUpload(i, f); e.target.value = ""; }}
-                    />
-                    {layer.mode === "image" && layer.imageUrl && (
-                      <>
-                        <img src={layer.imageUrl} alt="" style={{ height: "20px", borderRadius: "2px", border: "1px solid #333" }} />
-                        <button onClick={() => updateLayer(i, { mode: "text", imageUrl: null })} style={{ background: "transparent", border: "none", color: "#555", cursor: "pointer", fontSize: "14px", lineHeight: 1, padding: "0 4px" }} title="Odebrat logo">×</button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Editable texts */}
-          <div>
-            <div style={sectionHeadStyle}>Texty</div>
-            <div style={{ marginBottom: "12px" }}>
-              <label style={labelStyle}>Text nad názvem</label>
-              <input type="text" value={listeningText} onChange={(e) => handleChange("ig_story_listening_text", e.target.value)} placeholder="právě poslouchám" style={fieldStyle} />
-            </div>
-            <div>
-              <label style={labelStyle}>Text webu</label>
-              <input type="text" value={websiteText} onChange={(e) => handleChange("ig_story_website_text", e.target.value)} placeholder="NA VOODOO808.COM" style={fieldStyle} />
-            </div>
-          </div>
-
-          <button className="btn btn-filled" onClick={handleSave} disabled={saving} style={{ alignSelf: "flex-start", opacity: saving ? 0.6 : 1 }}>
-            {saved ? "✓ Uloženo" : saving ? "Ukládám…" : "Uložit šablonu"}
-          </button>
-        </div>
-      </div>}
-
-      {storySubTab === "zvuky" && (
-        <div style={{ display: "flex", gap: "32px", alignItems: "flex-start" }}>
-          {/* ── ZVUKY Preview ── */}
-          <div style={{ flexShrink: 0 }}>
-            <div style={{ fontSize: "11px", color: "#555", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-              Náhled{previewKit ? ` — ${previewKit.title}` : ""}
-            </div>
-            <div style={{ width: `${ZVUKY_PREV_W_DISPLAY}px`, height: `${ZVUKY_PREV_H_DISPLAY}px`, position: "relative", overflow: "hidden", borderRadius: "8px", border: "1px solid #2a2a2a", background: DESIGN_SYSTEM.colors.tertiary }}>
-              {zvukyPreviewArtwork && (
-                <img src={zvukyPreviewArtwork} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", filter: `blur(${zvukyBgBlur}px)`, transform: "scale(1.3)" }} />
-              )}
-              <div style={{ position: "absolute", inset: 0, background: `rgba(0,0,0,${zvukyOverlay})` }} />
-              {zvukyPreviewArtwork && (() => {
-                const artSide = Math.round(ZVUKY_PREV_W_DISPLAY * 0.7);
-                const ax = (ZVUKY_PREV_W_DISPLAY - artSide) / 2;
-                const ay = (ZVUKY_PREV_H_DISPLAY - artSide) / 2 - Math.round(ZVUKY_PREV_H_DISPLAY * 0.06);
-                return (
-                  <>
-                    {/* White glow beneath artwork */}
-                    <div style={{ position: "absolute", left: `${ax}px`, top: `${ay + artSide * 0.7}px`, width: `${artSide}px`, height: `${artSide * 0.5}px`, background: "radial-gradient(ellipse at center top, rgba(255,255,255,0.35) 0%, transparent 70%)", pointerEvents: "none" }} />
-                    <div style={{ position: "absolute", left: `${ax}px`, top: `${ay}px`, width: `${artSide}px`, height: `${artSide}px`, borderRadius: "6px", overflow: "hidden", background: zvukyShowArtworkBg ? "DESIGN_SYSTEM.colors.elevated" : "transparent" }}>
-                      <img src={zvukyPreviewArtwork} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
-                    </div>
-                  </>
-                );
-              })()}
-              {zvukyShowHoverCard && zvukyPreviewArtwork && (() => {
-                const artSide = Math.round(ZVUKY_PREV_W_DISPLAY * 0.7);
-                const ax = (ZVUKY_PREV_W_DISPLAY - artSide) / 2;
-                const ay = (ZVUKY_PREV_H_DISPLAY - artSide) / 2 - Math.round(ZVUKY_PREV_H_DISPLAY * 0.06);
-                const pillTop = ay + artSide + 6;
-                const pillLeft = ax;
-                return (
-                  <div style={{ position: "absolute", left: `${pillLeft}px`, top: `${pillTop}px`, width: `${artSide}px`, boxSizing: "border-box" }}>
-                    {/* V-arrow caret */}
-                    <div style={{ position: "relative", width: "10px", height: "10px", background: "rgba(10,10,10,0.92)", border: "1px solid #333", borderRight: "none", borderBottom: "none", transform: "rotate(45deg)", margin: "0 auto", marginBottom: "-5px", zIndex: 1 }} />
-                    {/* Pill body */}
-                    <div style={{ background: "rgba(10,10,10,0.92)", border: "1px solid #333", borderRadius: "5px", padding: "5px 7px", backdropFilter: "blur(8px)", position: "relative", zIndex: 2 }}>
-                      {(() => {
-                        const kitTypeLabels: Record<string, string> = { drum_kit: "Drum Kit", one_shot_kit: "One Shot Kit", loop_kit: "Loop Kit", one_shot_bundle: "One Shot Bundle", drum_kit_bundle: "Drum Kit Bundle", free: "FREE" };
-                        return <div style={{ fontSize: "5px", color: "DESIGN_SYSTEM.colors.textSecondary", marginBottom: "2px" }}>{(kitTypeLabels[previewKit?.type] || "Sound Kit").toUpperCase()}</div>;
-                      })()}
-                      <div style={{ fontSize: "7px", fontWeight: 700, color: "DESIGN_SYSTEM.colors.textPrimary", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", marginBottom: "2px" }}>{zvukyPreviewTitle}</div>
-                      {zvukyHoverShowSounds
-                        ? previewKit?.number_of_sounds != null && <div style={{ fontSize: "5.5px", color: "DESIGN_SYSTEM.colors.textSecondary" }}>{previewKit.number_of_sounds} zvuků</div>
-                        : previewKit?.price !== undefined && <div style={{ fontSize: "5.5px", color: "DESIGN_SYSTEM.colors.textSecondary" }}>{previewKit.is_free ? "ZDARMA" : `${previewKit.price} CZK`}</div>
-                      }
-                    </div>
-                  </div>
-                );
-              })()}
-              {zvukyLayers.map(layer => {
-                if (!layer.visible) return null;
-                const lAlign = (layer.align ?? "center") as "left" | "center" | "right";
-                const adminMargin = "8px";
-                const style: React.CSSProperties = {
-                  position: "absolute",
-                  top: `${(layer.y ?? 280) * ZVUKY_PREV_H_DISPLAY / ZVUKY_PREV_H}px`,
-                  pointerEvents: "none",
-                  transform: "translateY(-50%)",
-                  ...(lAlign === "center" ? { left: 0, right: 0, textAlign: "center" as const } :
-                      lAlign === "left" ? { left: adminMargin, right: "auto", textAlign: "left" as const } :
-                      { right: adminMargin, left: "auto", textAlign: "right" as const }),
-                };
-                if (layer.mode === "image" && layer.imageUrl) {
-                  const imgStyle: React.CSSProperties = { height: "14px", width: "auto", objectFit: "contain" as const, display: "block", filter: zvukyLogoInvert ? "invert(1)" : "none",
-                    ...(lAlign === "center" ? { margin: "0 auto", maxWidth: "80%" } : lAlign === "left" ? { marginRight: "auto" } : { marginLeft: "auto" }) };
-                  return <img key={layer.id} src={layer.imageUrl} alt="" style={{ ...style, ...imgStyle }} />;
-                }
-                if (layer.id === "logo") return <div key="logo" style={{ ...style, fontSize: "9px", fontWeight: 700, color: zvukyTextColor, letterSpacing: "2px" }}>VOODOO808.COM</div>;
-                if (layer.id === "title") return <div key="title" style={{ ...style, fontSize: "14px", fontWeight: 700, color: zvukyTextColor, letterSpacing: "0.04em", lineHeight: 1.2, wordBreak: "break-word" as const }}>{zvukyPreviewTitle.toUpperCase()}</div>;
-                if (layer.id === "website") return <div key="website" style={{ ...style, fontSize: "7px", color: zvukyTextColor + "88" }}>VOODOO808.COM</div>;
-                return null;
-              })}
-            </div>
-          </div>
-
-          {/* ── ZVUKY Settings ── */}
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "18px", minWidth: 0 }}>
-
-            {/* Background */}
-            <div>
-              <div style={sectionHeadStyle}>Pozadí</div>
-              <label style={labelStyle}>Rozmazání pozadí — {zvukyValues.ig_zvuky_bg_blur}px</label>
-              <input type="range" min="0" max="40" step="1" value={zvukyBgBlur} onChange={(e) => handleZvukyChange("ig_zvuky_bg_blur", e.target.value)} style={{ width: "100%", accentColor: "DESIGN_SYSTEM.colors.textPrimary" }} />
-            </div>
-
-            {/* Colors + overlay */}
-            <div style={{ display: "flex", gap: "12px" }}>
-              <div style={{ flex: 1 }}>
-                <label style={labelStyle}>Barva textu</label>
-                <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                  <input type="color" value={zvukyTextColor} onChange={(e) => handleZvukyChange("ig_zvuky_text_color", e.target.value)} style={{ width: "36px", height: "36px", padding: "2px", background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #2a2a2a", borderRadius: "3px", cursor: "pointer" }} />
-                  <input type="text" value={zvukyTextColor} onChange={(e) => handleZvukyChange("ig_zvuky_text_color", e.target.value)} style={{ ...fieldStyle, width: "90px" }} />
-                </div>
-              </div>
-              <div style={{ flex: 1 }}>
-                <label style={labelStyle}>Překryv — {Math.round(zvukyOverlay * 100)}%</label>
-                <input type="range" min="0" max="1" step="0.05" value={zvukyOverlay} onChange={(e) => handleZvukyChange("ig_zvuky_overlay_opacity", e.target.value)} style={{ width: "100%", accentColor: "DESIGN_SYSTEM.colors.textPrimary", marginTop: "10px" }} />
-              </div>
-            </div>
-
-            {/* Artwork bg + glow */}
-            <div>
-              <div style={sectionHeadStyle}>Artwork</div>
-              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                <button
-                  onClick={() => handleZvukyChange("ig_zvuky_show_artwork_bg", zvukyShowArtworkBg ? "false" : "true")}
-                  style={{ padding: "6px 14px", background: zvukyShowArtworkBg ? "DESIGN_SYSTEM.colors.textPrimary" : "DESIGN_SYSTEM.colors.tertiary", color: zvukyShowArtworkBg ? "#000" : "#555", border: "1px solid " + (zvukyShowArtworkBg ? "DESIGN_SYSTEM.colors.textPrimary" : "DESIGN_SYSTEM.colors.border"), borderRadius: "3px", fontSize: "12px", cursor: "pointer", fontFamily: "inherit" }}
-                >
-                  {zvukyShowArtworkBg ? "✓ Tmavé pozadí artwork" : "Tmavé pozadí artwork"}
-                </button>
-              </div>
-              <p style={{ fontSize: "11px", color: "#444", marginTop: "8px" }}>Vypněte pro průhledné pozadí za artworkem (bíle záře pod ním zůstane).</p>
-            </div>
-
-            {/* Hover card */}
-            <div>
-              <div style={sectionHeadStyle}>Hover karta produktu</div>
-              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                <button
-                  onClick={() => handleZvukyChange("ig_zvuky_show_hover_card", zvukyShowHoverCard ? "false" : "true")}
-                  style={{ padding: "6px 14px", background: zvukyShowHoverCard ? "DESIGN_SYSTEM.colors.textPrimary" : "DESIGN_SYSTEM.colors.tertiary", color: zvukyShowHoverCard ? "#000" : "#555", border: "1px solid " + (zvukyShowHoverCard ? "DESIGN_SYSTEM.colors.textPrimary" : "DESIGN_SYSTEM.colors.border"), borderRadius: "3px", fontSize: "12px", cursor: "pointer", fontFamily: "inherit" }}
-                >
-                  {zvukyShowHoverCard ? "✓ Zobrazit kartu" : "Skrýt kartu"}
-                </button>
-                {zvukyShowHoverCard && (
-                  <button
-                    onClick={() => handleZvukyChange("ig_zvuky_hover_show_sounds", zvukyHoverShowSounds ? "false" : "true")}
-                    style={{ padding: "6px 14px", background: zvukyHoverShowSounds ? "DESIGN_SYSTEM.colors.textPrimary" : "DESIGN_SYSTEM.colors.tertiary", color: zvukyHoverShowSounds ? "#000" : "#555", border: "1px solid " + (zvukyHoverShowSounds ? "DESIGN_SYSTEM.colors.textPrimary" : "DESIGN_SYSTEM.colors.border"), borderRadius: "3px", fontSize: "12px", cursor: "pointer", fontFamily: "inherit" }}
-                  >
-                    {zvukyHoverShowSounds ? "✓ Počet zvuků" : "Zobrazit počet zvuků"}
-                  </button>
-                )}
-              </div>
-              <p style={{ fontSize: "11px", color: "#444", marginTop: "8px" }}>Karta pod artworkem se šipkou — stejný design jako na webu. Přepněte mezi cenou a počtem zvuků.</p>
-            </div>
-
-            {/* Logo */}
-            <div>
-              <div style={sectionHeadStyle}>Logo</div>
-              <input ref={zvukyLogoInputRef} type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => { const f = e.target.files?.[0]; if (f) handleZvukyLogoUpload(f); e.target.value = ""; }} />
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
-                <button onClick={() => zvukyLogoInputRef.current?.click()} style={{ padding: "7px 14px", background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #2a2a2a", borderRadius: "3px", color: "DESIGN_SYSTEM.colors.textPrimary", fontSize: "12px", cursor: "pointer", fontFamily: "inherit" }}>
-                  {zvukyLogoUploading ? "Nahrávám…" : zvukyLogoUrl ? "Změnit logo" : "Nahrát logo"}
-                </button>
-                {zvukyLogoUrl && (
-                  <>
-                    <img src={zvukyLogoUrl} alt="logo" style={{ height: "28px", maxWidth: "100px", objectFit: "contain", filter: zvukyLogoInvert ? "invert(1)" : "none", background: zvukyLogoInvert ? "#222" : "transparent", borderRadius: "3px", padding: "2px" }} />
-                    <button onClick={() => handleZvukyChange("ig_zvuky_logo_invert", zvukyLogoInvert ? "false" : "true")} style={{ padding: "6px 12px", background: zvukyLogoInvert ? "DESIGN_SYSTEM.colors.textPrimary" : "DESIGN_SYSTEM.colors.tertiary", color: zvukyLogoInvert ? "#000" : "DESIGN_SYSTEM.colors.textSecondary", border: "1px solid " + (zvukyLogoInvert ? "DESIGN_SYSTEM.colors.textPrimary" : "DESIGN_SYSTEM.colors.border"), borderRadius: "3px", fontSize: "11px", cursor: "pointer", fontFamily: "inherit" }}>
-                      {zvukyLogoInvert ? "✓ Invertováno" : "Invertovat"}
-                    </button>
-                    <button onClick={() => handleZvukyChange("ig_zvuky_logo_url", "")} style={{ background: "transparent", border: "none", color: "#555", cursor: "pointer", fontSize: "14px", padding: "0 4px" }} title="Odebrat logo">×</button>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Text layers */}
-            <div>
-              <div style={sectionHeadStyle}>Textové vrstvy</div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                {zvukyLayers.map((layer, i) => (
-                  <div key={layer.id} style={{ background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #2a2a2a", borderRadius: "4px", padding: "10px 12px", display: "flex", flexDirection: "column", gap: "8px" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <span style={{ flex: 1, fontSize: "12px", color: layer.visible ? "DESIGN_SYSTEM.colors.textPrimary" : "#444", textDecoration: layer.visible ? "none" : "line-through" }}>{IG_ZVUKY_LAYER_LABELS[layer.id]}</span>
-                      <span style={{ fontSize: "10px", color: "#444", whiteSpace: "nowrap" }}>Y: {layer.y}px</span>
-                      <button onClick={() => moveZvukyLayerY(i, "up")} style={{ background: "transparent", border: "1px solid #2a2a2a", borderRadius: "3px", color: "DESIGN_SYSTEM.colors.textSecondary", cursor: "pointer", padding: "2px 7px", fontSize: "10px", lineHeight: 1.4, fontFamily: "inherit" }}>▲</button>
-                      <button onClick={() => moveZvukyLayerY(i, "down")} style={{ background: "transparent", border: "1px solid #2a2a2a", borderRadius: "3px", color: "DESIGN_SYSTEM.colors.textSecondary", cursor: "pointer", padding: "2px 7px", fontSize: "10px", lineHeight: 1.4, fontFamily: "inherit" }}>▼</button>
-                      {(["left", "center", "right"] as const).map(al => (
-                        <button key={al} onClick={() => updateZvukyLayer(i, { align: al })} title={al === "left" ? "Vlevo" : al === "center" ? "Na střed" : "Vpravo"} style={{ background: (layer.align ?? "center") === al ? "#222" : "transparent", border: "1px solid " + ((layer.align ?? "center") === al ? "#555" : "DESIGN_SYSTEM.colors.border"), borderRadius: "3px", color: (layer.align ?? "center") === al ? "DESIGN_SYSTEM.colors.textPrimary" : "#444", cursor: "pointer", padding: "2px 5px", fontSize: "9px", lineHeight: 1.4, fontFamily: "inherit" }}>
-                          {al === "left" ? "◁" : al === "center" ? "◇" : "▷"}
-                        </button>
-                      ))}
-                      <button onClick={() => updateZvukyLayer(i, { visible: !layer.visible })} style={{ background: "transparent", border: "none", color: layer.visible ? "DESIGN_SYSTEM.colors.textSecondary" : "#3a3a3a", cursor: "pointer", padding: "2px 4px", display: "flex", alignItems: "center" }}>
-                        {layer.visible ? (
-                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                        ) : (
-                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-                        )}
-                      </button>
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <button onClick={() => updateZvukyLayer(i, { mode: "text" })} style={modeBtnStyle(layer.mode === "text")}>Aa Text</button>
-                      <button onClick={() => zvukyFileInputRefs.current[i]?.click()} style={modeBtnStyle(layer.mode === "image")}>
-                        {zvukyLayerUploading[i] ? "Nahrávám…" : layer.mode === "image" && layer.imageUrl ? "Změnit logo" : "Nahrát logo"}
-                      </button>
-                      <input
-                        ref={el => { zvukyFileInputRefs.current[i] = el; }}
-                        type="file"
-                        accept="image/*"
-                        style={{ display: "none" }}
-                        onChange={(e) => { const f = e.target.files?.[0]; if (f) handleZvukyLayerImageUpload(i, f); e.target.value = ""; }}
-                      />
-                      {layer.mode === "image" && layer.imageUrl && (
-                        <>
-                          <img src={layer.imageUrl} alt="" style={{ height: "20px", borderRadius: "2px", border: "1px solid #333" }} />
-                          <button onClick={() => updateZvukyLayer(i, { mode: "text", imageUrl: null })} style={{ background: "transparent", border: "none", color: "#555", cursor: "pointer", fontSize: "14px", lineHeight: 1, padding: "0 4px" }} title="Odebrat logo">×</button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <button className="btn btn-filled" onClick={handleZvukySave} disabled={zvukySaving} style={{ alignSelf: "flex-start", opacity: zvukySaving ? 0.6 : 1 }}>
-              {zvukySaved ? "✓ Uloženo" : zvukySaving ? "Ukládám…" : "Uložit ZVUKY šablonu"}
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -6168,21 +5455,21 @@ function ZakazniciTab() {
           <button
             onClick={() => setSection("customers")}
             className={section === "customers" ? "btn btn-filled" : "btn"}
-            style={{ borderRadius: "4px", ...(section !== "customers" ? { borderColor: "DESIGN_SYSTEM.colors.border", color: "DESIGN_SYSTEM.colors.textSecondary" } : {}) }}
+            style={{ borderRadius: "4px", ...(section !== "customers" ? { borderColor: DESIGN_SYSTEM.colors.border, color: DESIGN_SYSTEM.colors.textSecondary } : {}) }}
           >
             Zákazníci ({customers.length})
           </button>
           <button
             onClick={() => setSection("leads")}
             className={section === "leads" ? "btn btn-filled" : "btn"}
-            style={{ borderRadius: "4px", ...(section !== "leads" ? { borderColor: "DESIGN_SYSTEM.colors.border", color: "DESIGN_SYSTEM.colors.textSecondary" } : {}) }}
+            style={{ borderRadius: "4px", ...(section !== "leads" ? { borderColor: DESIGN_SYSTEM.colors.border, color: DESIGN_SYSTEM.colors.textSecondary } : {}) }}
           >
             Zájemci o free ({leads.length})
           </button>
           <button
             onClick={() => setSection("registered")}
             className={section === "registered" ? "btn btn-filled" : "btn"}
-            style={{ borderRadius: "4px", ...(section !== "registered" ? { borderColor: "DESIGN_SYSTEM.colors.border", color: "DESIGN_SYSTEM.colors.textSecondary" } : {}) }}
+            style={{ borderRadius: "4px", ...(section !== "registered" ? { borderColor: DESIGN_SYSTEM.colors.border, color: DESIGN_SYSTEM.colors.textSecondary } : {}) }}
             data-testid="button-tab-registered"
           >
             Registrovaní uživatelé ({registeredUsers.length})
@@ -6191,7 +5478,7 @@ function ZakazniciTab() {
         <button
           onClick={section === "customers" ? exportCustomerEmails : exportLeadEmails}
           className="btn"
-          style={{ borderRadius: "4px", borderColor: "#444", color: "DESIGN_SYSTEM.colors.textSecondary", fontSize: "12px" }}
+          style={{ borderRadius: "4px", borderColor: "#444", color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "12px" }}
           data-testid="button-export-csv"
         >
           ↓ Stáhnout CSV
@@ -6204,7 +5491,7 @@ function ZakazniciTab() {
             Lidé, kteří úspěšně zaplatili alespoň jednu objednávku. Zobrazena poslední objednávka na email.
           </p>
           {loadingCustomers ? (
-            <div style={{ color: "DESIGN_SYSTEM.colors.textSecondary", padding: "24px" }}>Načítám...</div>
+            <div style={{ color: DESIGN_SYSTEM.colors.textSecondary, padding: "24px" }}>Načítám...</div>
           ) : customers.length === 0 ? (
             <div style={{ color: "#444", padding: "24px" }}>Zatím žádní zákazníci.</div>
           ) : (
@@ -6220,10 +5507,10 @@ function ZakazniciTab() {
               <tbody>
                 {customers.map((c, i) => (
                   <tr key={i}>
-                    <td style={{ ...cellStyle, color: "DESIGN_SYSTEM.colors.textPrimary", fontWeight: 500 }} data-testid={`text-customer-email-${i}`}>{c.email}</td>
-                    <td style={{ ...cellStyle, color: "DESIGN_SYSTEM.colors.textSecondary", fontSize: "13px" }}>#{c.id}</td>
-                    <td style={{ ...cellStyle, color: "DESIGN_SYSTEM.colors.textSecondary", fontSize: "12px" }}>{new Date(c.created_at).toLocaleDateString("cs-CZ")}</td>
-                    <td style={{ ...cellStyle, color: "DESIGN_SYSTEM.colors.textSecondary", fontSize: "13px" }}>{Number(c.total).toLocaleString("cs-CZ")} CZK</td>
+                    <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textPrimary, fontWeight: 500 }} data-testid={`text-customer-email-${i}`}>{c.email}</td>
+                    <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "13px" }}>#{c.id}</td>
+                    <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "12px" }}>{new Date(c.created_at).toLocaleDateString("cs-CZ")}</td>
+                    <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "13px" }}>{Number(c.total).toLocaleString("cs-CZ")} CZK</td>
                   </tr>
                 ))}
               </tbody>
@@ -6238,7 +5525,7 @@ function ZakazniciTab() {
             Lidé, kteří si stáhli soubory zdarma. Tyto záznamy se nezobrazují v objednávkách.
           </p>
           {loadingLeads ? (
-            <div style={{ color: "DESIGN_SYSTEM.colors.textSecondary", padding: "24px" }}>Načítám...</div>
+            <div style={{ color: DESIGN_SYSTEM.colors.textSecondary, padding: "24px" }}>Načítám...</div>
           ) : leads.length === 0 ? (
             <div style={{ color: "#444", padding: "24px" }}>Zatím žádné free downloady.</div>
           ) : (
@@ -6255,11 +5542,11 @@ function ZakazniciTab() {
                   const items = Array.isArray(l.items) ? l.items : [];
                   return (
                     <tr key={i}>
-                      <td style={{ ...cellStyle, color: "DESIGN_SYSTEM.colors.textPrimary", fontWeight: 500 }} data-testid={`text-lead-email-${i}`}>{l.email}</td>
-                      <td style={{ ...cellStyle, color: "DESIGN_SYSTEM.colors.textSecondary", fontSize: "12px" }}>
+                      <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textPrimary, fontWeight: 500 }} data-testid={`text-lead-email-${i}`}>{l.email}</td>
+                      <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "12px" }}>
                         {items.map((item: any) => item.title).join(", ") || "—"}
                       </td>
-                      <td style={{ ...cellStyle, color: "DESIGN_SYSTEM.colors.textSecondary", fontSize: "12px" }}>{new Date(l.created_at).toLocaleDateString("cs-CZ")}</td>
+                      <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "12px" }}>{new Date(l.created_at).toLocaleDateString("cs-CZ")}</td>
                     </tr>
                   );
                 })}
@@ -6275,7 +5562,7 @@ function ZakazniciTab() {
             Všichni registrovaní uživatelé — včetně těch, kteří ještě nic nekoupili.
           </p>
           {loadingRegistered ? (
-            <div style={{ color: "DESIGN_SYSTEM.colors.textSecondary", padding: "24px" }}>Načítám...</div>
+            <div style={{ color: DESIGN_SYSTEM.colors.textSecondary, padding: "24px" }}>Načítám...</div>
           ) : registeredUsers.length === 0 ? (
             <div style={{ color: "#444", padding: "24px" }}>Žádní registrovaní uživatelé.</div>
           ) : (
@@ -6291,8 +5578,8 @@ function ZakazniciTab() {
               <tbody>
                 {registeredUsers.map((u, i) => (
                   <tr key={i}>
-                    <td style={{ ...cellStyle, color: "DESIGN_SYSTEM.colors.textPrimary", fontWeight: 500 }} data-testid={`text-user-email-${i}`}>{u.email}</td>
-                    <td style={{ ...cellStyle, color: "DESIGN_SYSTEM.colors.textSecondary", fontSize: "13px" }}>{u.username || <span style={{ color: "#444" }}>—</span>}</td>
+                    <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textPrimary, fontWeight: 500 }} data-testid={`text-user-email-${i}`}>{u.email}</td>
+                    <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "13px" }}>{u.username || <span style={{ color: "#444" }}>—</span>}</td>
                     <td style={{ ...cellStyle }}>
                       {u.is_admin ? (
                         <span style={{ fontSize: "11px", color: "#e8304a", background: "rgba(232,48,74,0.1)", padding: "2px 8px", borderRadius: "3px", border: "1px solid rgba(232,48,74,0.3)" }}>Admin</span>
@@ -6300,7 +5587,7 @@ function ZakazniciTab() {
                         <span style={{ fontSize: "11px", color: "#555" }}>Uživatel</span>
                       )}
                     </td>
-                    <td style={{ ...cellStyle, color: "DESIGN_SYSTEM.colors.textSecondary", fontSize: "12px" }}>{new Date(u.created_at).toLocaleDateString("cs-CZ")}</td>
+                    <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "12px" }}>{new Date(u.created_at).toLocaleDateString("cs-CZ")}</td>
                   </tr>
                 ))}
               </tbody>
@@ -6399,7 +5686,7 @@ function EmailsTab() {
 
   const cellStyle: any = { padding: "14px 12px", borderBottom: "1px solid #1e1e1e", verticalAlign: "top" };
 
-  if (loading) return <div style={{ color: "DESIGN_SYSTEM.colors.textSecondary", padding: "24px" }}>Načítám...</div>;
+  if (loading) return <div style={{ color: DESIGN_SYSTEM.colors.textSecondary, padding: "24px" }}>Načítám...</div>;
   if (error) return <div style={{ color: "#ff4444", padding: "24px" }}>{error}</div>;
 
   if (editingKey) {
@@ -6413,9 +5700,9 @@ function EmailsTab() {
           >
             <div onClick={(e) => e.stopPropagation()} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", maxWidth: "640px", marginBottom: "16px", flexShrink: 0 }}>
               <span style={{ fontWeight: "600", color: "#ddd", fontSize: "13px", letterSpacing: "0.04em" }}>Náhled emailu – {scenario?.label}</span>
-              <button onClick={() => setPreviewHtml(null)} style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "4px", fontSize: "13px", cursor: "pointer", color: "DESIGN_SYSTEM.colors.textPrimary", padding: "4px 12px" }}>Zavřít ×</button>
+              <button onClick={() => setPreviewHtml(null)} style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "4px", fontSize: "13px", cursor: "pointer", color: DESIGN_SYSTEM.colors.textPrimary, padding: "4px 12px" }}>Zavřít ×</button>
             </div>
-            <div onClick={(e) => e.stopPropagation()} style={{ width: "640px", maxWidth: "100%", background: "DESIGN_SYSTEM.colors.elevated", borderRadius: "4px", overflow: "hidden", border: "1px solid #222" }}>
+            <div onClick={(e) => e.stopPropagation()} style={{ width: "640px", maxWidth: "100%", background: DESIGN_SYSTEM.colors.elevated, borderRadius: "4px", overflow: "hidden", border: "1px solid #222" }}>
               <iframe srcDoc={previewHtml} style={{ width: "100%", height: "700px", border: "none", display: "block" }} title="Náhled emailu" />
             </div>
           </div>
@@ -6423,7 +5710,7 @@ function EmailsTab() {
         <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "24px" }}>
           <button
             onClick={() => setEditingKey(null)}
-            style={{ background: "none", border: "1px solid #333", color: "DESIGN_SYSTEM.colors.textSecondary", padding: "6px 14px", borderRadius: "4px", cursor: "pointer", fontFamily: "inherit" }}
+            style={{ background: "none", border: "1px solid #333", color: DESIGN_SYSTEM.colors.textSecondary, padding: "6px 14px", borderRadius: "4px", cursor: "pointer", fontFamily: "inherit" }}
           >
             ← Zpět
           </button>
@@ -6434,32 +5721,32 @@ function EmailsTab() {
         </div>
 
         <div style={{ marginBottom: "20px" }}>
-          <label style={{ display: "block", marginBottom: "6px", fontSize: "12px", color: "DESIGN_SYSTEM.colors.textSecondary" }}>Předmět emailu</label>
+          <label style={{ display: "block", marginBottom: "6px", fontSize: "12px", color: DESIGN_SYSTEM.colors.textSecondary }}>Předmět emailu</label>
           <input
             value={editForm.subject}
             onChange={e => setEditForm(f => ({ ...f, subject: e.target.value }))}
-            style={{ width: "100%", padding: "10px 12px", background: "DESIGN_SYSTEM.colors.inputs", border: "1px solid #333", color: "DESIGN_SYSTEM.colors.textPrimary", borderRadius: "4px", fontFamily: "inherit", fontSize: "13px" }}
+            style={{ width: "100%", padding: "10px 12px", background: DESIGN_SYSTEM.colors.inputs, border: "1px solid #333", color: DESIGN_SYSTEM.colors.textPrimary, borderRadius: "4px", fontFamily: "inherit", fontSize: "13px" }}
           />
           <p style={{ margin: "6px 0 0", fontSize: "11px", color: "#555" }}>Placeholdery: &#123;id&#125; = číslo objednávky, &#123;datum&#125; = datum</p>
         </div>
 
         <div style={{ marginBottom: "24px" }}>
-          <label style={{ display: "block", marginBottom: "6px", fontSize: "12px", color: "DESIGN_SYSTEM.colors.textSecondary" }}>Úvodní text emailu</label>
+          <label style={{ display: "block", marginBottom: "6px", fontSize: "12px", color: DESIGN_SYSTEM.colors.textSecondary }}>Úvodní text emailu</label>
           <textarea
             value={editForm.intro_text}
             onChange={e => setEditForm(f => ({ ...f, intro_text: e.target.value }))}
             rows={5}
-            style={{ width: "100%", padding: "10px 12px", background: "DESIGN_SYSTEM.colors.inputs", border: "1px solid #333", color: "DESIGN_SYSTEM.colors.textPrimary", borderRadius: "4px", fontFamily: "inherit", fontSize: "13px", resize: "vertical" }}
+            style={{ width: "100%", padding: "10px 12px", background: DESIGN_SYSTEM.colors.inputs, border: "1px solid #333", color: DESIGN_SYSTEM.colors.textPrimary, borderRadius: "4px", fontFamily: "inherit", fontSize: "13px", resize: "vertical" }}
           />
           <p style={{ margin: "6px 0 0", fontSize: "11px", color: "#555" }}>Tento text se zobrazí zákazníkovi hned po pozdravu. Placeholdery: &#123;id&#125;, &#123;datum&#125;</p>
         </div>
 
         <div style={{ background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #222", borderRadius: "6px", padding: "18px 22px", marginBottom: "24px" }}>
           <p style={{ margin: "0 0 8px", fontSize: "11px", color: "#555", textTransform: "uppercase", letterSpacing: "1px" }}>Náhled emailu</p>
-          <div style={{ background: "DESIGN_SYSTEM.colors.elevated", padding: "16px", borderRadius: "4px" }}>
-            <p style={{ margin: "0 0 8px", fontSize: "11px", color: "DESIGN_SYSTEM.colors.textSecondary" }}>Předmět: <span style={{ color: "DESIGN_SYSTEM.colors.textSecondary" }}>{editForm.subject.replace("{id}", "1234").replace("{datum}", "1. ledna 2026")}</span></p>
+          <div style={{ background: DESIGN_SYSTEM.colors.elevated, padding: "16px", borderRadius: "4px" }}>
+            <p style={{ margin: "0 0 8px", fontSize: "11px", color: DESIGN_SYSTEM.colors.textSecondary }}>Předmět: <span style={{ color: DESIGN_SYSTEM.colors.textSecondary }}>{editForm.subject.replace("{id}", "1234").replace("{datum}", "1. ledna 2026")}</span></p>
             <hr style={{ border: "none", borderTop: "1px solid #222", margin: "10px 0" }} />
-            <p style={{ margin: 0, fontSize: "13px", color: "DESIGN_SYSTEM.colors.textSecondary", lineHeight: "1.6" }}>
+            <p style={{ margin: 0, fontSize: "13px", color: DESIGN_SYSTEM.colors.textSecondary, lineHeight: "1.6" }}>
               {editForm.intro_text.replace("{id}", "1234").replace("{datum}", "1. ledna 2026")}
             </p>
             <p style={{ margin: "12px 0 0", fontSize: "12px", color: "#555" }}>[... odkaz ke stažení ...]</p>
@@ -6514,17 +5801,17 @@ function EmailsTab() {
             return (
               <tr key={scenario.key}>
                 <td style={cellStyle}>
-                  <div style={{ fontWeight: 600, fontSize: "14px", color: "DESIGN_SYSTEM.colors.textPrimary", marginBottom: "2px" }}>{scenario.label}</div>
+                  <div style={{ fontWeight: 600, fontSize: "14px", color: DESIGN_SYSTEM.colors.textPrimary, marginBottom: "2px" }}>{scenario.label}</div>
                   <div style={{ fontSize: "12px", color: "#555" }}>{scenario.description}</div>
                 </td>
-                <td style={{ ...cellStyle, fontSize: "13px", color: "DESIGN_SYSTEM.colors.textSecondary", maxWidth: "260px" }}>
+                <td style={{ ...cellStyle, fontSize: "13px", color: DESIGN_SYSTEM.colors.textSecondary, maxWidth: "260px" }}>
                   {tpl ? <span style={{ overflow: "hidden", textOverflow: "ellipsis", display: "block", whiteSpace: "nowrap" }}>{tpl.subject}</span> : <span style={{ color: "#444" }}>Nenačteno</span>}
                 </td>
                 <td style={{ ...cellStyle, textAlign: "right" }}>
                   {tpl && (
                     <button
                       onClick={() => startEdit(tpl)}
-                      style={{ background: "transparent", border: "1px solid #333", color: "DESIGN_SYSTEM.colors.textSecondary", padding: "4px 14px", fontSize: "12px", borderRadius: "3px", cursor: "pointer", fontFamily: "inherit" }}
+                      style={{ background: "transparent", border: "1px solid #333", color: DESIGN_SYSTEM.colors.textSecondary, padding: "4px 14px", fontSize: "12px", borderRadius: "3px", cursor: "pointer", fontFamily: "inherit" }}
                     >
                       Upravit
                     </button>
@@ -6611,26 +5898,26 @@ function PromoCodesTab() {
   };
 
   const cellStyle: React.CSSProperties = { padding: "10px 14px", borderBottom: "1px solid #1a1a1a", fontSize: "13px", verticalAlign: "middle" };
-  const headStyle: React.CSSProperties = { ...cellStyle, color: "DESIGN_SYSTEM.colors.textSecondary", fontWeight: 400, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "1px solid #222" };
+  const headStyle: React.CSSProperties = { ...cellStyle, color: DESIGN_SYSTEM.colors.textSecondary, fontWeight: 400, fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "1px solid #222" };
 
   return (
     <div>
       {/* Add form */}
       <form onSubmit={handleAdd} style={{ marginBottom: "28px", padding: "16px", border: "1px solid #222", borderRadius: "3px", background: "#111111" }}>
-        <div style={{ fontSize: "11px", color: "DESIGN_SYSTEM.colors.textSecondary", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: "14px" }}>Nový promo kód</div>
+        <div style={{ fontSize: "11px", color: DESIGN_SYSTEM.colors.textSecondary, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: "14px" }}>Nový promo kód</div>
         <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "flex-end" }}>
           <div style={{ flex: "1 1 160px" }}>
-            <label style={{ display: "block", fontSize: "11px", color: "DESIGN_SYSTEM.colors.textSecondary", marginBottom: "4px" }}>KÓD</label>
+            <label style={{ display: "block", fontSize: "11px", color: DESIGN_SYSTEM.colors.textSecondary, marginBottom: "4px" }}>KÓD</label>
             <input
               data-testid="input-promo-code"
               value={form.code}
               onChange={e => setForm({ ...form, code: e.target.value.toUpperCase() })}
               placeholder="napr. LETO2025"
-              style={{ width: "100%", background: "#161616", border: "1px solid #333", color: "DESIGN_SYSTEM.colors.textPrimary", padding: "8px 10px", fontSize: "13px", borderRadius: "2px", fontFamily: "inherit", textTransform: "uppercase" }}
+              style={{ width: "100%", background: "#161616", border: "1px solid #333", color: DESIGN_SYSTEM.colors.textPrimary, padding: "8px 10px", fontSize: "13px", borderRadius: "2px", fontFamily: "inherit", textTransform: "uppercase" }}
             />
           </div>
           <div style={{ flex: "0 0 120px" }}>
-            <label style={{ display: "block", fontSize: "11px", color: "DESIGN_SYSTEM.colors.textSecondary", marginBottom: "4px" }}>SLEVA (%)</label>
+            <label style={{ display: "block", fontSize: "11px", color: DESIGN_SYSTEM.colors.textSecondary, marginBottom: "4px" }}>SLEVA (%)</label>
             <input
               data-testid="input-promo-discount"
               type="number"
@@ -6638,7 +5925,7 @@ function PromoCodesTab() {
               max={100}
               value={form.discountPercent}
               onChange={e => setForm({ ...form, discountPercent: Number(e.target.value) })}
-              style={{ width: "100%", background: "#161616", border: "1px solid #333", color: "DESIGN_SYSTEM.colors.textPrimary", padding: "8px 10px", fontSize: "13px", borderRadius: "2px", fontFamily: "inherit" }}
+              style={{ width: "100%", background: "#161616", border: "1px solid #333", color: DESIGN_SYSTEM.colors.textPrimary, padding: "8px 10px", fontSize: "13px", borderRadius: "2px", fontFamily: "inherit" }}
             />
           </div>
           <div style={{ flex: "0 0 auto", display: "flex", alignItems: "center", gap: "8px", paddingBottom: "2px" }}>
@@ -6648,15 +5935,15 @@ function PromoCodesTab() {
               id="promo-active"
               checked={form.isActive}
               onChange={e => setForm({ ...form, isActive: e.target.checked })}
-              style={{ accentColor: "DESIGN_SYSTEM.colors.textPrimary", width: "14px", height: "14px" }}
+              style={{ accentColor: DESIGN_SYSTEM.colors.textPrimary, width: "14px", height: "14px" }}
             />
-            <label htmlFor="promo-active" style={{ fontSize: "12px", color: "DESIGN_SYSTEM.colors.textSecondary", cursor: "pointer" }}>Aktivní</label>
+            <label htmlFor="promo-active" style={{ fontSize: "12px", color: DESIGN_SYSTEM.colors.textSecondary, cursor: "pointer" }}>Aktivní</label>
           </div>
           <button
             data-testid="button-add-promo"
             type="submit"
             disabled={saving}
-            style={{ flex: "0 0 auto", padding: "8px 20px", background: saving ? "#222" : "DESIGN_SYSTEM.colors.textPrimary", color: saving ? "DESIGN_SYSTEM.colors.textSecondary" : "#000", border: "none", borderRadius: "2px", fontSize: "12px", cursor: saving ? "not-allowed" : "pointer", fontFamily: "inherit", letterSpacing: "0.04em" }}
+            style={{ flex: "0 0 auto", padding: "8px 20px", background: saving ? "#222" : DESIGN_SYSTEM.colors.textPrimary, color: saving ? DESIGN_SYSTEM.colors.textSecondary : "#000", border: "none", borderRadius: "2px", fontSize: "12px", cursor: saving ? "not-allowed" : "pointer", fontFamily: "inherit", letterSpacing: "0.04em" }}
           >
             {saving ? "Ukládám…" : "Přidat kód"}
           </button>
@@ -6685,8 +5972,8 @@ function PromoCodesTab() {
           <tbody>
             {codes.map(c => (
               <tr key={c.id} style={{ background: "transparent" }}>
-                <td style={{ ...cellStyle, fontFamily: "monospace", fontSize: "14px", letterSpacing: "0.06em", color: "DESIGN_SYSTEM.colors.textPrimary" }} data-testid={`text-promo-code-${c.id}`}>{c.code}</td>
-                <td style={{ ...cellStyle, color: "DESIGN_SYSTEM.colors.textPrimary" }} data-testid={`text-promo-discount-${c.id}`}>{c.discount_percent} %</td>
+                <td style={{ ...cellStyle, fontFamily: "monospace", fontSize: "14px", letterSpacing: "0.06em", color: DESIGN_SYSTEM.colors.textPrimary }} data-testid={`text-promo-code-${c.id}`}>{c.code}</td>
+                <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textPrimary }} data-testid={`text-promo-discount-${c.id}`}>{c.discount_percent} %</td>
                 <td style={cellStyle}>
                   <button
                     data-testid={`button-toggle-promo-${c.id}`}
@@ -6697,7 +5984,7 @@ function PromoCodesTab() {
                       border: `1px solid ${c.is_active ? "#3a3" : "#444"}`,
                       borderRadius: "2px",
                       background: c.is_active ? "rgba(50,170,50,0.12)" : "transparent",
-                      color: c.is_active ? "#4d4" : "DESIGN_SYSTEM.colors.textSecondary",
+                      color: c.is_active ? "#4d4" : DESIGN_SYSTEM.colors.textSecondary,
                       cursor: "pointer",
                       fontFamily: "inherit",
                       letterSpacing: "0.03em",
@@ -6713,7 +6000,7 @@ function PromoCodesTab() {
                   <button
                     data-testid={`button-delete-promo-${c.id}`}
                     onClick={() => handleDelete(c.id, c.code)}
-                    style={{ background: "transparent", border: "1px solid #333", color: "DESIGN_SYSTEM.colors.textSecondary", padding: "3px 10px", fontSize: "11px", borderRadius: "2px", cursor: "pointer", fontFamily: "inherit" }}
+                    style={{ background: "transparent", border: "1px solid #333", color: DESIGN_SYSTEM.colors.textSecondary, padding: "3px 10px", fontSize: "11px", borderRadius: "2px", cursor: "pointer", fontFamily: "inherit" }}
                   >
                     Smazat
                   </button>
@@ -6727,12 +6014,101 @@ function PromoCodesTab() {
   );
 }
 
-type MktSubTab = "prehled" | "odberatele" | "journeys" | "kampane" | "sablony" | "analytika" | "slevy" | "promo" | "seo" | "ig" | "emaily";
+function SlevyAKuponyTab({ settings, onRefresh }: { settings: Record<string, string>; onRefresh: () => Promise<void> }) {
+  const [activeSub, setActiveSub] = useState<"promo" | "slevy">("promo");
+
+  return (
+    <div>
+      <div style={{
+        display: "flex",
+        gap: "4px",
+        padding: "4px",
+        background: "rgba(255,255,255,0.03)",
+        border: "1px solid rgba(255,255,255,0.07)",
+        borderRadius: "8px",
+        marginBottom: "24px",
+        width: "fit-content",
+      }}>
+        <button
+          onClick={() => setActiveSub("promo")}
+          style={{
+            padding: "6px 14px",
+            fontSize: "12px",
+            fontFamily: "inherit",
+            border: "none",
+            borderRadius: "6px",
+            cursor: "pointer",
+            background: activeSub === "promo" ? "rgba(255,255,255,0.1)" : "transparent",
+            color: activeSub === "promo" ? DESIGN_SYSTEM.colors.textPrimary : "#888",
+            fontWeight: activeSub === "promo" ? 600 : 400,
+          }}
+        >
+          🏷️ Slevové kódy (Kupóny do košíku)
+        </button>
+        <button
+          onClick={() => setActiveSub("slevy")}
+          style={{
+            padding: "6px 14px",
+            fontSize: "12px",
+            fontFamily: "inherit",
+            border: "none",
+            borderRadius: "6px",
+            cursor: "pointer",
+            background: activeSub === "slevy" ? "rgba(255,255,255,0.1)" : "transparent",
+            color: activeSub === "slevy" ? DESIGN_SYSTEM.colors.textPrimary : "#888",
+            fontWeight: activeSub === "slevy" ? 600 : 400,
+          }}
+        >
+          ⚡ Plošná sleva (Banner & Odpočet na webu)
+        </button>
+      </div>
+
+      {activeSub === "promo" && <PromoCodesTab />}
+      {activeSub === "slevy" && <SlevyTab settings={settings} onRefresh={onRefresh} />}
+    </div>
+  );
+}
+
+type MktSubTab = "prehled" | "odberatele" | "journeys" | "kampane" | "sablony" | "analytika" | "discounts";
 
 function MarketingTab({ settings, onRefresh }: { settings: Record<string, string>; onRefresh: () => Promise<void> }) {
   const [sub, setSub] = useState<MktSubTab>("prehled");
   const [analytics, setAnalytics] = useState<any>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(true);
+  const [marketingMode, setMarketingMode] = useState<"production" | "test">("test");
+  const [marketingTestRecipient, setMarketingTestRecipient] = useState<string>("");
+  const [modeChanging, setModeChanging] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/marketing/settings", { credentials: "include" })
+      .then(r => r.ok ? r.json() : {})
+      .then(d => {
+        setMarketingMode(d.marketing_email_mode === "production" ? "production" : "test");
+        setMarketingTestRecipient(d.marketing_test_recipients || "");
+      })
+      .catch(() => {});
+  }, []);
+
+  const toggleMarketingMode = async () => {
+    const nextMode = marketingMode === "production" ? "test" : "production";
+    if (nextMode === "production") {
+      if (!confirm("OPRAVDU přepnout na PRODUKČNÍ režim? Všechny e-maily v kampaních a journeys budou odcházet skutečným odběratelům!")) {
+        return;
+      }
+    }
+    setModeChanging(true);
+    try {
+      await fetch("/api/marketing/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ marketingEmailMode: nextMode, marketingTestRecipients: marketingTestRecipient }),
+      });
+      setMarketingMode(nextMode);
+    } finally {
+      setModeChanging(false);
+    }
+  };
 
   const loadAnalytics = async () => {
     setAnalyticsLoading(true);
@@ -6751,12 +6127,8 @@ function MarketingTab({ settings, onRefresh }: { settings: Record<string, string
     { id: "journeys",   label: "Journeys" },
     { id: "kampane",    label: "Kampaně" },
     { id: "sablony",    label: "Šablony" },
-    { id: "analytika", label: "Analytika" },
-    { id: "slevy",     label: "Slevy" },
-    { id: "promo",     label: "Promo kódy" },
-    { id: "seo",       label: "SEO" },
-    { id: "ig",        label: "IG Stories" },
-    { id: "emaily",    label: "E-maily" },
+    { id: "analytika",  label: "Analytika" },
+    { id: "discounts",  label: "Slevy & Kupóny" },
   ];
 
   const PAGE_LABELS: Record<string, string> = {
@@ -6812,7 +6184,7 @@ function MarketingTab({ settings, onRefresh }: { settings: Record<string, string
   const statValue: React.CSSProperties = {
     fontSize: "34px",
     fontWeight: 700,
-    color: "DESIGN_SYSTEM.colors.textPrimary",
+    color: DESIGN_SYSTEM.colors.textPrimary,
     lineHeight: 1,
     letterSpacing: "-0.02em",
   };
@@ -6822,36 +6194,69 @@ function MarketingTab({ settings, onRefresh }: { settings: Record<string, string
       {/* ── Page header with live visitor pill ── */}
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "28px", gap: "16px", flexWrap: "wrap" }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: "22px", fontWeight: 700, letterSpacing: "-0.01em", color: "DESIGN_SYSTEM.colors.textPrimary" }}>Marketing</h1>
+          <h1 style={{ margin: 0, fontSize: "22px", fontWeight: 700, letterSpacing: "-0.01em", color: DESIGN_SYSTEM.colors.textPrimary }}>Marketing</h1>
           <p style={{ margin: "6px 0 0", fontSize: "13px", color: "#444" }}>Analytika, slevy, SEO a e-mailové šablony</p>
         </div>
-        {!analyticsLoading && analytics && (
-          <div style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "8px",
-            padding: "6px 14px 6px 10px",
-            background: "rgba(255,255,255,0.05)",
-            border: "1px solid rgba(255,255,255,0.1)",
-            borderRadius: "999px",
-            backdropFilter: "blur(12px)",
-            fontSize: "13px",
-            color: "DESIGN_SYSTEM.colors.textPrimary",
-            whiteSpace: "nowrap",
-          }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+          <button
+            onClick={toggleMarketingMode}
+            disabled={modeChanging}
+            title={marketingMode === "production" ? "Klikněte pro přepnutí do Testovacího režimu" : "Klikněte pro přepnutí do Produkčního režimu"}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              padding: "6px 14px",
+              borderRadius: "999px",
+              border: marketingMode === "production" ? "1px solid rgba(34,197,94,0.4)" : "1px solid rgba(234,179,8,0.4)",
+              background: marketingMode === "production" ? "rgba(34,197,94,0.12)" : "rgba(234,179,8,0.12)",
+              color: marketingMode === "production" ? "#4ade80" : "#facc15",
+              fontSize: "12px",
+              fontWeight: 600,
+              cursor: modeChanging ? "wait" : "pointer",
+              transition: "all 0.2s",
+            }}
+          >
             <span style={{
               width: "7px", height: "7px", borderRadius: "50%",
-              background: "#22c55e",
-              boxShadow: "0 0 6px #22c55e",
+              background: marketingMode === "production" ? "#22c55e" : "#eab308",
+              boxShadow: marketingMode === "production" ? "0 0 8px #22c55e" : "0 0 8px #eab308",
               flexShrink: 0,
-              animation: "pulse-green 2s infinite",
             }} />
-            <span style={{ fontWeight: 600, color: "DESIGN_SYSTEM.colors.textPrimary" }}>{analytics.uniqueSessions7d.toLocaleString("cs-CZ")}</span>
-            <span style={{ color: "#555" }}>návštěvníků</span>
-            <span style={{ color: "DESIGN_SYSTEM.colors.border", margin: "0 2px" }}>·</span>
-            <span style={{ color: "DESIGN_SYSTEM.colors.textSecondary" }}>7 dní</span>
-          </div>
-        )}
+            <span>{modeChanging ? "Měním…" : marketingMode === "production" ? "PRODUKČNÍ REŽIM" : "TESTOVACÍ REŽIM"}</span>
+            <span style={{ fontSize: "10px", opacity: 0.7, textDecoration: "underline", marginLeft: "2px" }}>
+              (přepnout)
+            </span>
+          </button>
+
+          {!analyticsLoading && analytics && (
+            <div style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "8px",
+              padding: "6px 14px 6px 10px",
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: "999px",
+              backdropFilter: "blur(12px)",
+              fontSize: "13px",
+              color: DESIGN_SYSTEM.colors.textPrimary,
+              whiteSpace: "nowrap",
+            }}>
+              <span style={{
+                width: "7px", height: "7px", borderRadius: "50%",
+                background: "#22c55e",
+                boxShadow: "0 0 6px #22c55e",
+                flexShrink: 0,
+                animation: "pulse-green 2s infinite",
+              }} />
+              <span style={{ fontWeight: 600, color: DESIGN_SYSTEM.colors.textPrimary }}>{analytics.uniqueSessions7d.toLocaleString("cs-CZ")}</span>
+              <span style={{ color: "#555" }}>návštěvníků</span>
+              <span style={{ color: DESIGN_SYSTEM.colors.border, margin: "0 2px" }}>·</span>
+              <span style={{ color: DESIGN_SYSTEM.colors.textSecondary }}>7 dní</span>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ── Sub-tab nav ── */}
@@ -6881,11 +6286,11 @@ function MarketingTab({ settings, onRefresh }: { settings: Record<string, string
                 cursor: "pointer",
                 transition: "all 140ms",
                 background: active ? "rgba(255,255,255,0.1)" : "transparent",
-                color: active ? "DESIGN_SYSTEM.colors.textPrimary" : "#555",
+                color: active ? DESIGN_SYSTEM.colors.textPrimary : "#555",
                 fontWeight: active ? 600 : 400,
                 letterSpacing: "0.01em",
               }}
-              onMouseEnter={e => { if (!active) (e.currentTarget as HTMLButtonElement).style.color = "DESIGN_SYSTEM.colors.textSecondary"; }}
+              onMouseEnter={e => { if (!active) (e.currentTarget as HTMLButtonElement).style.color = DESIGN_SYSTEM.colors.textSecondary; }}
               onMouseLeave={e => { if (!active) (e.currentTarget as HTMLButtonElement).style.color = "#555"; }}
             >
               {label}
@@ -6934,7 +6339,7 @@ function MarketingTab({ settings, onRefresh }: { settings: Record<string, string
                 <div style={{ ...card, minWidth: 0 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
                     <div>
-                      <div style={{ fontSize: "13px", fontWeight: 600, color: "DESIGN_SYSTEM.colors.textPrimary" }}>Denní trend</div>
+                      <div style={{ fontSize: "13px", fontWeight: 600, color: DESIGN_SYSTEM.colors.textPrimary }}>Denní trend</div>
                       <div style={{ fontSize: "11px", color: "#444", marginTop: "2px" }}>zobrazení za posledních 14 dní</div>
                     </div>
                     <button
@@ -6945,7 +6350,7 @@ function MarketingTab({ settings, onRefresh }: { settings: Record<string, string
                     </button>
                   </div>
                   {analytics.dailyTrend.length === 0 ? (
-                    <div style={{ color: "DESIGN_SYSTEM.colors.border", fontSize: "13px", textAlign: "center", padding: "32px 0" }}>Zatím žádná data</div>
+                    <div style={{ color: DESIGN_SYSTEM.colors.border, fontSize: "13px", textAlign: "center", padding: "32px 0" }}>Zatím žádná data</div>
                   ) : (
                     <div style={{ display: "flex", alignItems: "flex-end", gap: "4px", height: "90px" }}>
                       {analytics.dailyTrend.map((day: any, i: number) => {
@@ -6974,7 +6379,7 @@ function MarketingTab({ settings, onRefresh }: { settings: Record<string, string
                   )}
                   {analytics.dailyTrend.length > 0 && (
                     <div style={{ display: "flex", justifyContent: "space-between", marginTop: "8px" }}>
-                      <span style={{ fontSize: "10px", color: "DESIGN_SYSTEM.colors.border" }}>{formatDate(analytics.dailyTrend[0].date)}</span>
+                      <span style={{ fontSize: "10px", color: DESIGN_SYSTEM.colors.border }}>{formatDate(analytics.dailyTrend[0].date)}</span>
                       <span style={{ fontSize: "10px", color: "#555" }}>dnes</span>
                     </div>
                   )}
@@ -6982,8 +6387,8 @@ function MarketingTab({ settings, onRefresh }: { settings: Record<string, string
 
                 {/* Avg pages per visitor card */}
                 <div style={{ ...card, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                  <div style={{ fontSize: "13px", fontWeight: 600, color: "DESIGN_SYSTEM.colors.textPrimary", marginBottom: "6px" }}>Průměrné stránky / návštěva</div>
-                  <div style={{ fontSize: "52px", fontWeight: 800, color: "DESIGN_SYSTEM.colors.textPrimary", letterSpacing: "-0.03em", lineHeight: 1 }}>
+                  <div style={{ fontSize: "13px", fontWeight: 600, color: DESIGN_SYSTEM.colors.textPrimary, marginBottom: "6px" }}>Průměrné stránky / návštěva</div>
+                  <div style={{ fontSize: "52px", fontWeight: 800, color: DESIGN_SYSTEM.colors.textPrimary, letterSpacing: "-0.03em", lineHeight: 1 }}>
                     {analytics.uniqueSessions7d > 0
                       ? (analytics.totalVisits7d / analytics.uniqueSessions7d).toFixed(1)
                       : "—"}
@@ -7005,11 +6410,11 @@ function MarketingTab({ settings, onRefresh }: { settings: Record<string, string
               {/* Top pages bar chart */}
               <div style={card}>
                 <div style={{ marginBottom: "20px" }}>
-                  <div style={{ fontSize: "13px", fontWeight: 600, color: "DESIGN_SYSTEM.colors.textPrimary" }}>Nejnavštěvovanější stránky</div>
+                  <div style={{ fontSize: "13px", fontWeight: 600, color: DESIGN_SYSTEM.colors.textPrimary }}>Nejnavštěvovanější stránky</div>
                   <div style={{ fontSize: "11px", color: "#444", marginTop: "2px" }}>zobrazení za posledních 7 dní</div>
                 </div>
                 {analytics.topPages.length === 0 ? (
-                  <div style={{ color: "DESIGN_SYSTEM.colors.border", fontSize: "13px", textAlign: "center", padding: "24px 0" }}>Zatím žádná data — stránky se začnou zobrazovat po prvních návštěvách</div>
+                  <div style={{ color: DESIGN_SYSTEM.colors.border, fontSize: "13px", textAlign: "center", padding: "24px 0" }}>Zatím žádná data — stránky se začnou zobrazovat po prvních návštěvách</div>
                 ) : (
                   <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                     {analytics.topPages.map((page: any, i: number) => {
@@ -7019,11 +6424,11 @@ function MarketingTab({ settings, onRefresh }: { settings: Record<string, string
                         <div key={page.path} style={{ display: "grid", gridTemplateColumns: "180px 1fr 60px 60px", alignItems: "center", gap: "12px" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: "8px", minWidth: 0 }}>
                             <span style={{
-                              fontSize: "10px", fontWeight: 700, color: isTop ? "#818cf8" : "DESIGN_SYSTEM.colors.border",
+                              fontSize: "10px", fontWeight: 700, color: isTop ? "#818cf8" : DESIGN_SYSTEM.colors.border,
                               width: "18px", textAlign: "right", flexShrink: 0,
                             }}>#{i + 1}</span>
                             <span style={{
-                              fontSize: "12px", color: "DESIGN_SYSTEM.colors.textPrimary", whiteSpace: "nowrap", overflow: "hidden",
+                              fontSize: "12px", color: DESIGN_SYSTEM.colors.textPrimary, whiteSpace: "nowrap", overflow: "hidden",
                               textOverflow: "ellipsis", fontFamily: "monospace",
                             }} title={page.path}>
                               {formatPath(page.path)}
@@ -7040,7 +6445,7 @@ function MarketingTab({ settings, onRefresh }: { settings: Record<string, string
                               transition: "width 0.5s ease",
                             }} />
                           </div>
-                          <div style={{ fontSize: "12px", color: "DESIGN_SYSTEM.colors.textPrimary", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
+                          <div style={{ fontSize: "12px", color: DESIGN_SYSTEM.colors.textPrimary, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
                             {parseInt(page.views).toLocaleString("cs-CZ")}
                           </div>
                           <div style={{ fontSize: "11px", color: "#444", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
@@ -7067,11 +6472,7 @@ function MarketingTab({ settings, onRefresh }: { settings: Record<string, string
         </div>
       )}
 
-      {sub === "slevy"  && <SlevyTab settings={settings} onRefresh={onRefresh} />}
-      {sub === "promo"  && <PromoCodesTab />}
-      {sub === "seo"    && <SEOTab settings={settings} onRefresh={onRefresh} />}
-      {sub === "ig"     && <IGStoriesTab settings={settings} onRefresh={onRefresh} />}
-      {sub === "emaily" && <EmailsTab />}
+      {sub === "discounts"  && <SlevyAKuponyTab settings={settings} onRefresh={onRefresh} />}
       {sub === "prehled"    && <MarketingPrehledTab />}
       {sub === "odberatele" && <OdberateleTab />}
       {sub === "journeys"   && <JourneysTab />}
@@ -8585,8 +7986,8 @@ function KomentareTab() {
   const cellStyle = { padding: "8px 12px", borderBottom: "1px solid #1a1a1a", verticalAlign: "top" as const };
 
   return (
-    <div style={{ color: "DESIGN_SYSTEM.colors.textPrimary" }}>
-      <h2 style={{ fontSize: "18px", fontWeight: 400, marginBottom: "20px", color: "DESIGN_SYSTEM.colors.textSecondary" }}>Komentáře</h2>
+    <div style={{ color: DESIGN_SYSTEM.colors.textPrimary }}>
+      <h2 style={{ fontSize: "18px", fontWeight: 400, marginBottom: "20px", color: DESIGN_SYSTEM.colors.textSecondary }}>Komentáře</h2>
       {loading ? (
         <div style={{ color: "#555", fontSize: "13px" }}>Načítám…</div>
       ) : error ? (
@@ -8607,14 +8008,14 @@ function KomentareTab() {
           <tbody>
             {comments.map(c => (
               <tr key={c.id} data-testid={`row-comment-${c.id}`}>
-                <td style={{ ...cellStyle, color: "DESIGN_SYSTEM.colors.textSecondary", fontSize: "13px" }}>{c.beat_title}</td>
-                <td style={{ ...cellStyle, color: "DESIGN_SYSTEM.colors.textSecondary", fontSize: "12px" }}>
+                <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "13px" }}>{c.beat_title}</td>
+                <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "12px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                     {c.avatar_url && <img src={c.avatar_url} alt="" style={{ width: "20px", height: "20px", borderRadius: "50%", objectFit: "cover" }} />}
                     {c.email?.split("@")[0]}
                   </div>
                 </td>
-                <td style={{ ...cellStyle, color: "DESIGN_SYSTEM.colors.textPrimary", fontSize: "13px", maxWidth: "280px", wordBreak: "break-word" }}>{c.text}</td>
+                <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textPrimary, fontSize: "13px", maxWidth: "280px", wordBreak: "break-word" }}>{c.text}</td>
                 <td style={{ ...cellStyle, color: "#555", fontSize: "12px", whiteSpace: "nowrap" }}>
                   {new Date(c.created_at).toLocaleDateString("cs-CZ")}
                 </td>
@@ -8623,7 +8024,7 @@ function KomentareTab() {
                     data-testid={`button-delete-comment-${c.id}`}
                     onClick={() => handleDelete(c.beat_id, c.id)}
                     disabled={deleting === c.id}
-                    style={{ background: "transparent", border: "1px solid #333", color: "DESIGN_SYSTEM.colors.textSecondary", padding: "3px 10px", fontSize: "11px", borderRadius: "2px", cursor: deleting === c.id ? "not-allowed" : "pointer", fontFamily: "inherit" }}
+                    style={{ background: "transparent", border: "1px solid #333", color: DESIGN_SYSTEM.colors.textSecondary, padding: "3px 10px", fontSize: "11px", borderRadius: "2px", cursor: deleting === c.id ? "not-allowed" : "pointer", fontFamily: "inherit" }}
                   >
                     {deleting === c.id ? "…" : "Smazat"}
                   </button>
@@ -8725,7 +8126,7 @@ const ARTWORK_PRESETS: { name: string; config: ArtworkConfig }[] = [
     name: "Tmavý mono",
     config: {
       ...DEFAULT_ARTWORK_CONFIG,
-      overlay: { enabled: true, color: "DESIGN_SYSTEM.colors.background", opacity: 35, blendMode: "multiply" },
+      overlay: { enabled: true, color: DESIGN_SYSTEM.colors.background, opacity: 35, blendMode: "multiply" },
       filter: { ...DEFAULT_ARTWORK_CONFIG.filter, grayscale: 100, contrast: 120, brightness: 85 },
     },
   },
@@ -8780,13 +8181,13 @@ function ZoomThumb({ url, zoom, active, onClick }: { url: string; zoom: number; 
             }}
           />
         ) : (
-          <div style={{ width: "100%", height: "100%", background: "DESIGN_SYSTEM.colors.inputs" }} />
+          <div style={{ width: "100%", height: "100%", background: DESIGN_SYSTEM.colors.inputs }} />
         )}
         {active && (
           <div style={{
             position: "absolute", top: "6px", right: "6px",
             width: "18px", height: "18px", borderRadius: "50%",
-            background: "DESIGN_SYSTEM.colors.textPrimary", display: "flex", alignItems: "center", justifyContent: "center",
+            background: DESIGN_SYSTEM.colors.textPrimary, display: "flex", alignItems: "center", justifyContent: "center",
             fontSize: "10px", color: "#000", fontWeight: 700, lineHeight: 1,
           }}>✓</div>
         )}
@@ -8855,7 +8256,7 @@ function ArtworksTab({ settings, onRefresh, beats }: { settings: Record<string, 
     }
   };
 
-  const sec: React.CSSProperties = { padding: "20px", background: "DESIGN_SYSTEM.colors.elevated", border: "1px solid #1a1a1a", borderRadius: "6px", marginBottom: "14px" };
+  const sec: React.CSSProperties = { padding: "20px", background: DESIGN_SYSTEM.colors.elevated, border: "1px solid #1a1a1a", borderRadius: "6px", marginBottom: "14px" };
   const secTitle: React.CSSProperties = { fontSize: "11px", fontWeight: 600, color: "#555", marginBottom: "16px", textTransform: "uppercase", letterSpacing: "0.1em" };
   const lbl: React.CSSProperties = { display: "block", fontSize: "12px", color: "#777", marginBottom: "5px" };
 
@@ -8867,14 +8268,14 @@ function ArtworksTab({ settings, onRefresh, beats }: { settings: Record<string, 
       {/* ── Header ── */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
         <div>
-          <h2 style={{ margin: 0, fontSize: "18px", color: "DESIGN_SYSTEM.colors.textPrimary" }}>Artworks</h2>
+          <h2 style={{ margin: 0, fontSize: "18px", color: DESIGN_SYSTEM.colors.textPrimary }}>Artworks</h2>
           <div style={{ fontSize: "12px", color: "#555", marginTop: "4px" }}>
             Výřez, překryv a filtry — projeví se na všech beatech po uložení.
           </div>
         </div>
         <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-          {savedAt && Date.now() - savedAt < 5000 && <span style={{ fontSize: "12px", color: "DESIGN_SYSTEM.colors.success" }}>✓ Uloženo</span>}
-          <button type="button" className="btn btn-admin" onClick={() => setConfig(initial)} disabled={!isDirty || saving} style={{ borderColor: "DESIGN_SYSTEM.colors.border", color: isDirty ? "DESIGN_SYSTEM.colors.textSecondary" : "#444" }} data-testid="button-artworks-revert">Vrátit</button>
+          {savedAt && Date.now() - savedAt < 5000 && <span style={{ fontSize: "12px", color: DESIGN_SYSTEM.colors.success }}>✓ Uloženo</span>}
+          <button type="button" className="btn btn-admin" onClick={() => setConfig(initial)} disabled={!isDirty || saving} style={{ borderColor: DESIGN_SYSTEM.colors.border, color: isDirty ? DESIGN_SYSTEM.colors.textSecondary : "#444" }} data-testid="button-artworks-revert">Vrátit</button>
           <button type="button" className="btn btn-filled" onClick={handleSave} disabled={!isDirty || saving} data-testid="button-artworks-save">{saving ? "Ukládám…" : "Uložit"}</button>
         </div>
       </div>
@@ -8892,14 +8293,14 @@ function ArtworksTab({ settings, onRefresh, beats }: { settings: Record<string, 
                 onClick={() => setConfig(c => ({ ...c, zoom: z.value }))}
               />
               <div style={{ textAlign: "center" }}>
-                <div style={{ fontSize: "13px", color: Math.abs(config.zoom - z.value) < 0.01 ? "DESIGN_SYSTEM.colors.textPrimary" : "DESIGN_SYSTEM.colors.textSecondary", fontWeight: Math.abs(config.zoom - z.value) < 0.01 ? 600 : 400, transition: "color 0.15s" }}>{z.label}</div>
+                <div style={{ fontSize: "13px", color: Math.abs(config.zoom - z.value) < 0.01 ? DESIGN_SYSTEM.colors.textPrimary : DESIGN_SYSTEM.colors.textSecondary, fontWeight: Math.abs(config.zoom - z.value) < 0.01 ? 600 : 400, transition: "color 0.15s" }}>{z.label}</div>
                 <div style={{ fontSize: "11px", color: "#444", marginTop: "2px" }}>{z.desc}</div>
               </div>
             </div>
           ))}
         </div>
         {!activeZoom && (
-          <div style={{ marginTop: "12px", fontSize: "12px", color: "DESIGN_SYSTEM.colors.textSecondary" }}>
+          <div style={{ marginTop: "12px", fontSize: "12px", color: DESIGN_SYSTEM.colors.textSecondary }}>
             Vlastní zoom: ×{config.zoom.toFixed(2)} — výběrem jedné z možností výše ho přepíšete.
           </div>
         )}
@@ -8912,8 +8313,8 @@ function ArtworksTab({ settings, onRefresh, beats }: { settings: Record<string, 
           <BeatArtwork artworkUrl={config.defaultArtworkUrl} alt="Výchozí" width={120} height={120} borderRadius={6} applyEffects={false} configOverride={config} testId="preview-default-artwork" />
           <div style={{ flex: 1, minWidth: "200px" }}>
             <label style={lbl}>Nahrát nový výchozí obrázek (PNG/JPG, min. 1500 × 1500 px)</label>
-            <input ref={fileInputRef} type="file" accept="image/*" disabled={uploading} onChange={(e) => e.target.files?.[0] && handleDefaultArtworkUpload(e.target.files[0])} style={{ width: "100%", color: "DESIGN_SYSTEM.colors.textSecondary", fontSize: "12px" }} data-testid="input-default-artwork-upload" />
-            {uploading && <div style={{ fontSize: "12px", color: "DESIGN_SYSTEM.colors.textSecondary", marginTop: "8px" }}>Nahrávám…</div>}
+            <input ref={fileInputRef} type="file" accept="image/*" disabled={uploading} onChange={(e) => e.target.files?.[0] && handleDefaultArtworkUpload(e.target.files[0])} style={{ width: "100%", color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "12px" }} data-testid="input-default-artwork-upload" />
+            {uploading && <div style={{ fontSize: "12px", color: DESIGN_SYSTEM.colors.textSecondary, marginTop: "8px" }}>Nahrávám…</div>}
             {uploadError && <div style={{ fontSize: "12px", color: "#ff5252", marginTop: "8px" }}>Chyba: {uploadError}</div>}
             <div style={{ marginTop: "8px", fontSize: "11px", color: "#444", wordBreak: "break-all" }}>{config.defaultArtworkUrl}</div>
           </div>
@@ -8975,9 +8376,9 @@ function ArtworksTab({ settings, onRefresh, beats }: { settings: Record<string, 
 
       {/* ── Bottom bar ── */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "8px" }}>
-        <button type="button" className="btn btn-admin" onClick={() => setConfig(DEFAULT_ARTWORK_CONFIG)} style={{ borderColor: "DESIGN_SYSTEM.colors.border", color: "#555", fontSize: "12px" }} data-testid="button-artworks-reset-defaults">Reset na výchozí</button>
+        <button type="button" className="btn btn-admin" onClick={() => setConfig(DEFAULT_ARTWORK_CONFIG)} style={{ borderColor: DESIGN_SYSTEM.colors.border, color: "#555", fontSize: "12px" }} data-testid="button-artworks-reset-defaults">Reset na výchozí</button>
         <div style={{ display: "flex", gap: "8px" }}>
-          <button type="button" className="btn btn-admin" onClick={() => setConfig(initial)} disabled={!isDirty || saving} style={{ borderColor: "DESIGN_SYSTEM.colors.border", color: isDirty ? "DESIGN_SYSTEM.colors.textSecondary" : "#444" }}>Vrátit</button>
+          <button type="button" className="btn btn-admin" onClick={() => setConfig(initial)} disabled={!isDirty || saving} style={{ borderColor: DESIGN_SYSTEM.colors.border, color: isDirty ? DESIGN_SYSTEM.colors.textSecondary : "#444" }}>Vrátit</button>
           <button type="button" className="btn btn-filled" onClick={handleSave} disabled={!isDirty || saving} data-testid="button-artworks-save-bottom">{saving ? "Ukládám…" : "Uložit"}</button>
         </div>
       </div>
@@ -9037,7 +8438,7 @@ function GoogleOAuthDiagPanel() {
     }
   };
 
-  const mono: React.CSSProperties = { fontFamily: "monospace", fontSize: "12px", color: "DESIGN_SYSTEM.colors.textSecondary", wordBreak: "break-all" };
+  const mono: React.CSSProperties = { fontFamily: "monospace", fontSize: "12px", color: DESIGN_SYSTEM.colors.textSecondary, wordBreak: "break-all" };
   const copy = (text: string) => navigator.clipboard.writeText(text).catch(() => {});
 
   return (
@@ -9078,17 +8479,17 @@ function GoogleOAuthDiagPanel() {
               border: `1px solid ${diag.clientIdSet && diag.clientSecretSet ? "#1a4d1a" : "#4d1a1a"}`,
               fontSize: "13px", lineHeight: 1.7,
             }}>
-              <div style={{ fontWeight: 600, color: diag.clientIdSet && diag.clientSecretSet ? "DESIGN_SYSTEM.colors.success" : "#e55", marginBottom: "6px" }}>
+              <div style={{ fontWeight: 600, color: diag.clientIdSet && diag.clientSecretSet ? DESIGN_SYSTEM.colors.success : "#e55", marginBottom: "6px" }}>
                 {diag.clientIdSet && diag.clientSecretSet
                   ? "Credentials nastaveny — přidej redirect URI do Google Console"
                   : "Chybí GOOGLE_CLIENT_ID nebo GOOGLE_CLIENT_SECRET v prostředí"}
               </div>
-              <div style={{ color: "DESIGN_SYSTEM.colors.textSecondary", fontSize: "12px" }}>
+              <div style={{ color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "12px" }}>
                 APP_URL: <span style={mono}>{diag.appUrl}</span> · NODE_ENV: <span style={mono}>{diag.nodeEnv}</span>
               </div>
             </div>
 
-            <div style={{ fontSize: "11px", color: "DESIGN_SYSTEM.colors.textSecondary", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+            <div style={{ fontSize: "11px", color: DESIGN_SYSTEM.colors.textSecondary, marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.08em" }}>
               Authorized redirect URIs (zkopíruj do Google Cloud Console)
             </div>
             {diag.authorizedRedirectUris.map((uri) => (
@@ -9107,7 +8508,7 @@ function GoogleOAuthDiagPanel() {
               </div>
             ))}
 
-            <div style={{ fontSize: "11px", color: "DESIGN_SYSTEM.colors.textSecondary", margin: "16px 0 8px", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+            <div style={{ fontSize: "11px", color: DESIGN_SYSTEM.colors.textSecondary, margin: "16px 0 8px", textTransform: "uppercase", letterSpacing: "0.08em" }}>
               Authorized JavaScript origins
             </div>
             {diag.authorizedJavaScriptOrigins.map((origin) => (
@@ -9117,11 +8518,11 @@ function GoogleOAuthDiagPanel() {
               </div>
             ))}
 
-            <div style={{ marginTop: "16px", padding: "12px 14px", background: DESIGN_SYSTEM.colors.tertiary, borderRadius: "5px", fontSize: "12px", color: "DESIGN_SYSTEM.colors.textSecondary", lineHeight: 1.9 }}>
-              <div style={{ color: "DESIGN_SYSTEM.colors.textPrimary", fontWeight: 600, marginBottom: "8px" }}>Postup v Google Cloud Console</div>
+            <div style={{ marginTop: "16px", padding: "12px 14px", background: DESIGN_SYSTEM.colors.tertiary, borderRadius: "5px", fontSize: "12px", color: DESIGN_SYSTEM.colors.textSecondary, lineHeight: 1.9 }}>
+              <div style={{ color: DESIGN_SYSTEM.colors.textPrimary, fontWeight: 600, marginBottom: "8px" }}>Postup v Google Cloud Console</div>
               <div>1. Otevři <a href={diag.consoleUrl} target="_blank" rel="noopener noreferrer" style={{ color: "#0B99FC" }}>APIs &amp; Services → Credentials</a></div>
               <div>2. Vyber OAuth 2.0 Client ID (typ Web application) — stejný jako <span style={mono}>GOOGLE_CLIENT_ID</span> v Renderu</div>
-              <div>3. Přidej výše uvedené <strong style={{ color: "DESIGN_SYSTEM.colors.textSecondary" }}>Authorized redirect URIs</strong> a <strong style={{ color: "DESIGN_SYSTEM.colors.textSecondary" }}>JavaScript origins</strong></div>
+              <div>3. Přidej výše uvedené <strong style={{ color: DESIGN_SYSTEM.colors.textSecondary }}>Authorized redirect URIs</strong> a <strong style={{ color: DESIGN_SYSTEM.colors.textSecondary }}>JavaScript origins</strong></div>
               <div>4. Ulož, počkej ~5 minut, zkus přihlášení znovu</div>
               {diag.googleCallbackUrlEnv !== "(not set)" && (
                 <div style={{ marginTop: "8px", color: "#f5b150" }}>
@@ -9154,7 +8555,7 @@ function GopayDiagPanel() {
     }
   };
 
-  const mono: React.CSSProperties = { fontFamily: "monospace", fontSize: "12px", color: "DESIGN_SYSTEM.colors.textSecondary" };
+  const mono: React.CSSProperties = { fontFamily: "monospace", fontSize: "12px", color: DESIGN_SYSTEM.colors.textSecondary };
   const row = (label: string, value: React.ReactNode) => (
     <div style={{ display: "flex", gap: "12px", padding: "8px 0", borderBottom: "1px solid #1a1a1a", alignItems: "flex-start" }}>
       <span style={{ fontSize: "12px", color: "#555", width: "200px", flexShrink: 0 }}>{label}</span>
@@ -9205,7 +8606,7 @@ function GopayDiagPanel() {
             }} data-testid="gopay-diag-token-result">
               <span style={{ fontSize: "16px", flexShrink: 0 }}>{diag.tokenOk ? "✓" : "✗"}</span>
               <div>
-                <div style={{ fontSize: "13px", fontWeight: 600, color: diag.tokenOk ? "DESIGN_SYSTEM.colors.success" : "#e55" }}>
+                <div style={{ fontSize: "13px", fontWeight: 600, color: diag.tokenOk ? DESIGN_SYSTEM.colors.success : "#e55" }}>
                   Krok 1 – OAuth token: {diag.tokenOk ? "OK" : "SELHAL"}
                 </div>
                 {diag.tokenError && (
@@ -9226,7 +8627,7 @@ function GopayDiagPanel() {
               }} data-testid="gopay-diag-payment-result">
                 <span style={{ fontSize: "16px", flexShrink: 0 }}>{diag.paymentTestOk ? "✓" : "✗"}</span>
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: "13px", fontWeight: 600, color: diag.paymentTestOk ? "DESIGN_SYSTEM.colors.success" : "#e55" }}>
+                  <div style={{ fontSize: "13px", fontWeight: 600, color: diag.paymentTestOk ? DESIGN_SYSTEM.colors.success : "#e55" }}>
                     Krok 2 – Vytvoření platby (1 CZK test): {diag.paymentTestOk ? "OK — GoPay přijal platbu" : "SELHAL — GoPay odmítl platbu"}
                   </div>
                   {diag.paymentTestDetail && !diag.paymentTestOk && (
@@ -9242,11 +8643,11 @@ function GopayDiagPanel() {
                       {diag.paymentTestUrl && diag.paymentTestUrl !== diag.domain && (
                         <div style={{ padding: "10px 12px", background: "#1a1000", border: "1px solid #4d3000", borderRadius: "4px", fontSize: "12px", color: "#f5b150", lineHeight: 1.8 }}>
                           <strong>⚠ Funguje jiná URL než APP_URL!</strong><br />
-                          GoPay přijal: <span style={{ fontFamily: "monospace", color: "DESIGN_SYSTEM.colors.textPrimary" }}>{diag.paymentTestUrl}</span><br />
+                          GoPay přijal: <span style={{ fontFamily: "monospace", color: DESIGN_SYSTEM.colors.textPrimary }}>{diag.paymentTestUrl}</span><br />
                           Tvůj APP_URL: <span style={{ fontFamily: "monospace", color: "#e55" }}>{diag.domain}</span><br />
                           <span style={{ color: "#e8c97a" }}>
                             Oprav v Render → Environment:<br />
-                            <span style={{ fontFamily: "monospace", color: "DESIGN_SYSTEM.colors.textPrimary" }}>APP_URL = {diag.paymentTestUrl}</span>
+                            <span style={{ fontFamily: "monospace", color: DESIGN_SYSTEM.colors.textPrimary }}>APP_URL = {diag.paymentTestUrl}</span>
                           </span>
                         </div>
                       )}
@@ -9265,12 +8666,12 @@ function GopayDiagPanel() {
                         Doména musí být aktivována GoPay týmem. Jde o jejich povinný Krok 4.
                       </div>
                       <div style={{ borderTop: "1px solid #4d3000", paddingTop: "12px" }}>
-                        <div style={{ color: "DESIGN_SYSTEM.colors.textPrimary", fontWeight: 700, marginBottom: "8px" }}>
+                        <div style={{ color: DESIGN_SYSTEM.colors.textPrimary, fontWeight: 700, marginBottom: "8px" }}>
                           Pošli email na <span style={{ fontFamily: "monospace", color: "#ffd080" }}>integrace@gopay.cz</span>
                         </div>
-                        <div style={{ background: "#0d0a00", border: "1px solid #3d2d00", borderRadius: "4px", padding: "12px 14px", fontSize: "11px", color: "DESIGN_SYSTEM.colors.textPrimary", lineHeight: 2.1 }}>
-                          <div style={{ color: "DESIGN_SYSTEM.colors.textSecondary", marginBottom: "4px" }}>── zkopíruj tento email ──</div>
-                          <div><span style={{ color: "DESIGN_SYSTEM.colors.textSecondary" }}>Předmět:</span> Aktivace integrace GoPay API – voodoo808.com</div>
+                        <div style={{ background: "#0d0a00", border: "1px solid #3d2d00", borderRadius: "4px", padding: "12px 14px", fontSize: "11px", color: DESIGN_SYSTEM.colors.textPrimary, lineHeight: 2.1 }}>
+                          <div style={{ color: DESIGN_SYSTEM.colors.textSecondary, marginBottom: "4px" }}>── zkopíruj tento email ──</div>
+                          <div><span style={{ color: DESIGN_SYSTEM.colors.textSecondary }}>Předmět:</span> Aktivace integrace GoPay API – voodoo808.com</div>
                           <div style={{ marginTop: "8px" }}>
                             Dobrý den,<br />
                             chci aktivovat GoPay platební bránu přes API pro e-shop <strong>voodoo808.com</strong>.<br />
@@ -9286,7 +8687,7 @@ function GopayDiagPanel() {
                             Děkuji.
                           </div>
                         </div>
-                        <div style={{ marginTop: "10px", color: "DESIGN_SYSTEM.colors.textSecondary", fontSize: "11px" }}>
+                        <div style={{ marginTop: "10px", color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "11px" }}>
                           GoPay odpoví do 1 pracovního dne (integrace@gopay.cz). Po aktivaci spusť test znovu — Krok 2 se zezelená a platby začnou fungovat.
                         </div>
                       </div>
@@ -9297,24 +8698,24 @@ function GopayDiagPanel() {
             )}
 
             <div style={{ borderTop: "1px solid #1a1a1a" }}>
-              {row("Režim", <span style={{ color: diag.isSandbox ? "#f5a623" : "DESIGN_SYSTEM.colors.success", fontWeight: 600 }}>{diag.isSandbox ? "SANDBOX (testovací)" : "PRODUCTION (ostrý)"}</span>)}
+              {row("Režim", <span style={{ color: diag.isSandbox ? "#f5a623" : DESIGN_SYSTEM.colors.success, fontWeight: 600 }}>{diag.isSandbox ? "SANDBOX (testovací)" : "PRODUCTION (ostrý)"}</span>)}
               {row("GoPay API URL", diag.apiUrl)}
               {row("NODE_ENV", diag.nodeEnv)}
               {row("GOPAY_SANDBOX", diag.gopaySandboxEnv)}
               {row("APP_URL", (
-                <span style={{ color: diag.rawAppUrl === "(not set)" ? "#e55" : "DESIGN_SYSTEM.colors.textSecondary" }}>
+                <span style={{ color: diag.rawAppUrl === "(not set)" ? "#e55" : DESIGN_SYSTEM.colors.textSecondary }}>
                   {diag.rawAppUrl}
                   {diag.rawAppUrl === "(not set)" && " ⚠ není nastaveno"}
                 </span>
               ))}
               {row("GOPAY_RETURN_DOMAIN", (
-                <span style={{ color: diag.gopayReturnDomain === "(not set)" ? "DESIGN_SYSTEM.colors.textSecondary" : "#24e053" }}>
+                <span style={{ color: diag.gopayReturnDomain === "(not set)" ? DESIGN_SYSTEM.colors.textSecondary : "#24e053" }}>
                   {diag.gopayReturnDomain}
                   {diag.gopayReturnDomain === "(not set)" && " (volitelné — nastavit pro fix chyby 111)"}
                 </span>
               ))}
               {row("Aktivní return URL doména", (
-                <span style={{ color: diag.domain.startsWith("http://localhost") ? "#e55" : "DESIGN_SYSTEM.colors.textSecondary" }}>
+                <span style={{ color: diag.domain.startsWith("http://localhost") ? "#e55" : DESIGN_SYSTEM.colors.textSecondary }}>
                   {diag.domain}
                   {diag.domain.startsWith("http://localhost") && " ⚠ GoPay odmítá localhost — nastav APP_URL"}
                   {!diag.domain.startsWith("http://localhost") && ` (zdroj: ${diag.appUrlVar})`}
@@ -9326,22 +8727,22 @@ function GopayDiagPanel() {
             </div>
 
             {(!diag.tokenOk || !diag.paymentTestOk) && (
-              <div style={{ marginTop: "16px", padding: "12px 14px", background: DESIGN_SYSTEM.colors.tertiary, borderRadius: "5px", fontSize: "12px", color: "DESIGN_SYSTEM.colors.textSecondary", lineHeight: "1.9" }}>
-                <div style={{ color: "DESIGN_SYSTEM.colors.textSecondary", fontWeight: 600, marginBottom: "6px" }}>Jak opravit:</div>
+              <div style={{ marginTop: "16px", padding: "12px 14px", background: DESIGN_SYSTEM.colors.tertiary, borderRadius: "5px", fontSize: "12px", color: DESIGN_SYSTEM.colors.textSecondary, lineHeight: "1.9" }}>
+                <div style={{ color: DESIGN_SYSTEM.colors.textSecondary, fontWeight: 600, marginBottom: "6px" }}>Jak opravit:</div>
                 {diag.domain.startsWith("http://localhost") && (
-                  <div>• Nastav <span style={{ color: "DESIGN_SYSTEM.colors.textSecondary", fontFamily: "monospace" }}>APP_URL = https://www.voodoo808.com</span> v Render → Environment</div>
+                  <div>• Nastav <span style={{ color: DESIGN_SYSTEM.colors.textSecondary, fontFamily: "monospace" }}>APP_URL = https://www.voodoo808.com</span> v Render → Environment</div>
                 )}
-                {!diag.clientIdSet && <div>• Nastav <span style={{ color: "DESIGN_SYSTEM.colors.textSecondary", fontFamily: "monospace" }}>GOPAY_CLIENT_ID</span> v Render</div>}
-                {!diag.clientSecretSet && <div>• Nastav <span style={{ color: "DESIGN_SYSTEM.colors.textSecondary", fontFamily: "monospace" }}>GOPAY_CLIENT_SECRET</span> v Render</div>}
-                {!diag.goIdSet && <div>• Nastav <span style={{ color: "DESIGN_SYSTEM.colors.textSecondary", fontFamily: "monospace" }}>GOPAY_GOID</span> v Render</div>}
+                {!diag.clientIdSet && <div>• Nastav <span style={{ color: DESIGN_SYSTEM.colors.textSecondary, fontFamily: "monospace" }}>GOPAY_CLIENT_ID</span> v Render</div>}
+                {!diag.clientSecretSet && <div>• Nastav <span style={{ color: DESIGN_SYSTEM.colors.textSecondary, fontFamily: "monospace" }}>GOPAY_CLIENT_SECRET</span> v Render</div>}
+                {!diag.goIdSet && <div>• Nastav <span style={{ color: DESIGN_SYSTEM.colors.textSecondary, fontFamily: "monospace" }}>GOPAY_GOID</span> v Render</div>}
                 {diag.tokenOk && !diag.paymentTestOk && diag.paymentTestDetail && diag.paymentTestDetail.includes("return_url") && (
-                  <div>• <strong style={{ color: "DESIGN_SYSTEM.colors.textSecondary" }}>Přihlas se do GoPay merchant portálu</strong> a přidej doménu <span style={{ color: "DESIGN_SYSTEM.colors.textSecondary", fontFamily: "monospace" }}>https://www.voodoo808.com</span> jako povolenou return URL adresu.</div>
+                  <div>• <strong style={{ color: DESIGN_SYSTEM.colors.textSecondary }}>Přihlas se do GoPay merchant portálu</strong> a přidej doménu <span style={{ color: DESIGN_SYSTEM.colors.textSecondary, fontFamily: "monospace" }}>https://www.voodoo808.com</span> jako povolenou return URL adresu.</div>
                 )}
                 {diag.tokenOk && !diag.paymentTestOk && diag.paymentTestDetail && !diag.paymentTestDetail.includes("return_url") && (
                   <div>• Token OK, ale vytvoření platby selhalo. Zkontroluj detail chyby výše — může jít o problém s GoID nebo konfigurací účtu.</div>
                 )}
                 {!diag.tokenOk && diag.clientIdSet && diag.clientSecretSet && diag.goIdSet && !diag.domain.startsWith("http://localhost") && (
-                  <div>• Přihlašovací údaje jsou nastaveny, ale token selhal. Zkontroluj, že <span style={{ color: "DESIGN_SYSTEM.colors.textSecondary", fontFamily: "monospace" }}>GOPAY_SANDBOX</span> odpovídá druhu credentials.</div>
+                  <div>• Přihlašovací údaje jsou nastaveny, ale token selhal. Zkontroluj, že <span style={{ color: DESIGN_SYSTEM.colors.textSecondary, fontFamily: "monospace" }}>GOPAY_SANDBOX</span> odpovídá druhu credentials.</div>
                 )}
                 <div>• Po každé změně v GoPay portálu nebo Renderu spusť test znovu.</div>
               </div>
@@ -9396,7 +8797,7 @@ function KonfiguraceTab() {
 
   return (
     <div data-testid="tab-konfigurace">
-      <h2 style={{ marginBottom: "6px", color: "DESIGN_SYSTEM.colors.textPrimary", fontSize: "18px" }}>Konfigurace prostředí</h2>
+      <h2 style={{ marginBottom: "6px", color: DESIGN_SYSTEM.colors.textPrimary, fontSize: "18px" }}>Konfigurace prostředí</h2>
       <p style={{ marginBottom: "24px", color: "#555", fontSize: "13px" }}>
         Přehled environment variables potřebných pro správný chod webu — zkontroluj je v nastavení Renderu.
       </p>
@@ -9407,9 +8808,9 @@ function KonfiguraceTab() {
         const health = ffmpegHealth !== "loading" ? ffmpegHealth : null;
         const ok = health?.ok;
         return (
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 14px", marginBottom: "24px", background: isLoading ? "rgba(255,255,255,0.01)" : ok ? "rgba(76,175,80,0.04)" : "rgba(229,57,53,0.06)", border: `1px solid ${isLoading ? "DESIGN_SYSTEM.colors.inputs" : ok ? "#1a3d1a" : "#3a1010"}`, borderRadius: "6px" }}>
-            <div style={{ width: "7px", height: "7px", borderRadius: "50%", background: isLoading ? "DESIGN_SYSTEM.colors.border" : ok ? "DESIGN_SYSTEM.colors.success" : "#e53935", flexShrink: 0, boxShadow: !isLoading ? `0 0 6px ${ok ? "DESIGN_SYSTEM.colors.success" : "#e53935"}` : "none" }} />
-            <span style={{ fontSize: "12px", color: isLoading ? "#444" : ok ? "DESIGN_SYSTEM.colors.success" : "#e53935", fontFamily: "monospace", flex: 1 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 14px", marginBottom: "24px", background: isLoading ? "rgba(255,255,255,0.01)" : ok ? "rgba(76,175,80,0.04)" : "rgba(229,57,53,0.06)", border: `1px solid ${isLoading ? DESIGN_SYSTEM.colors.inputs : ok ? "#1a3d1a" : "#3a1010"}`, borderRadius: "6px" }}>
+            <div style={{ width: "7px", height: "7px", borderRadius: "50%", background: isLoading ? DESIGN_SYSTEM.colors.border : ok ? DESIGN_SYSTEM.colors.success : "#e53935", flexShrink: 0, boxShadow: !isLoading ? `0 0 6px ${ok ? DESIGN_SYSTEM.colors.success : "#e53935"}` : "none" }} />
+            <span style={{ fontSize: "12px", color: isLoading ? "#444" : ok ? DESIGN_SYSTEM.colors.success : "#e53935", fontFamily: "monospace", flex: 1 }}>
               {isLoading ? "ffmpeg: ověřuji…" : ok ? `ffmpeg ${health.version} · ${health.source}` : "ffmpeg NEDOSTUPNÝ — waveformy nebudou generovány"}
             </span>
             <button onClick={checkFfmpegHealth} disabled={isLoading} data-testid="button-check-ffmpeg-health" style={{ background: "none", border: "1px solid #222", color: "#444", fontSize: "10px", padding: "2px 7px", borderRadius: "4px", cursor: isLoading ? "not-allowed" : "pointer", opacity: isLoading ? 0.4 : 1 }}>{isLoading ? "…" : "Ověřit"}</button>
@@ -9460,9 +8861,9 @@ function KonfiguraceTab() {
                       )}
                       <span style={{
                         fontSize: "12px", fontWeight: 600, padding: "3px 10px", borderRadius: "4px",
-                        background: item.set ? "#0d2b0d" : (item.required ? "#2b0d0d" : "DESIGN_SYSTEM.colors.inputs"),
-                        color: item.set ? "DESIGN_SYSTEM.colors.success" : (item.required ? "#e55" : "#555"),
-                        border: `1px solid ${item.set ? "#1a4d1a" : (item.required ? "#4d1a1a" : "DESIGN_SYSTEM.colors.border")}`,
+                        background: item.set ? "#0d2b0d" : (item.required ? "#2b0d0d" : DESIGN_SYSTEM.colors.inputs),
+                        color: item.set ? DESIGN_SYSTEM.colors.success : (item.required ? "#e55" : "#555"),
+                        border: `1px solid ${item.set ? "#1a4d1a" : (item.required ? "#4d1a1a" : DESIGN_SYSTEM.colors.border)}`,
                       }} data-testid={`config-status-${item.key}`}>
                         {item.set ? "Nastaveno" : "Chybí"}
                       </span>
@@ -9475,8 +8876,8 @@ function KonfiguraceTab() {
 
           <div style={{ padding: "16px", background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #1a1a1a", borderRadius: "6px", fontSize: "12px", color: "#444", lineHeight: "1.8" }}>
             <div style={{ color: "#555", marginBottom: "8px", fontWeight: 600 }}>Jak přidat chybějící proměnné na Renderu:</div>
-            <div>1. Přejdi do <span style={{ color: "DESIGN_SYSTEM.colors.textSecondary", fontFamily: "monospace" }}>dashboard.render.com → projekt → Environment</span></div>
-            <div>2. Přidej každou chybějící proměnnou pod <span style={{ color: "DESIGN_SYSTEM.colors.textSecondary", fontFamily: "monospace" }}>Environment Variables</span></div>
+            <div>1. Přejdi do <span style={{ color: DESIGN_SYSTEM.colors.textSecondary, fontFamily: "monospace" }}>dashboard.render.com → projekt → Environment</span></div>
+            <div>2. Přidej každou chybějící proměnnou pod <span style={{ color: DESIGN_SYSTEM.colors.textSecondary, fontFamily: "monospace" }}>Environment Variables</span></div>
             <div>3. Ulož změny — Render automaticky provede redeploy a načte nové proměnné</div>
           </div>
         </>
@@ -9591,7 +8992,7 @@ function NastaveniTab({ settings, onRefresh, beats }: { settings: Record<string,
   return (
     <div style={{ paddingBottom: "60px" }}>
       <div style={{ marginBottom: "28px" }}>
-        <h1 style={{ margin: 0, fontSize: "22px", fontWeight: 700, letterSpacing: "-0.01em", color: "DESIGN_SYSTEM.colors.textPrimary" }}>Nastavení</h1>
+        <h1 style={{ margin: 0, fontSize: "22px", fontWeight: 700, letterSpacing: "-0.01em", color: DESIGN_SYSTEM.colors.textPrimary }}>Nastavení</h1>
         <p style={{ margin: "6px 0 0", fontSize: "13px", color: "#444" }}>Výchozí artwork, SEO, e-maily a konfigurace prostředí</p>
       </div>
 
@@ -9622,11 +9023,11 @@ function NastaveniTab({ settings, onRefresh, beats }: { settings: Record<string,
                 cursor: "pointer",
                 transition: "all 140ms",
                 background: active ? "rgba(255,255,255,0.1)" : "transparent",
-                color: active ? "DESIGN_SYSTEM.colors.textPrimary" : "#555",
+                color: active ? DESIGN_SYSTEM.colors.textPrimary : "#555",
                 fontWeight: active ? 600 : 400,
                 letterSpacing: "0.01em",
               }}
-              onMouseEnter={e => { if (!active) (e.currentTarget as HTMLButtonElement).style.color = "DESIGN_SYSTEM.colors.textSecondary"; }}
+              onMouseEnter={e => { if (!active) (e.currentTarget as HTMLButtonElement).style.color = DESIGN_SYSTEM.colors.textSecondary; }}
               onMouseLeave={e => { if (!active) (e.currentTarget as HTMLButtonElement).style.color = "#555"; }}
             >
               {label}
@@ -9653,8 +9054,8 @@ function FilterSlider({
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "6px" }}>
-        <span style={{ fontSize: "12px", color: "DESIGN_SYSTEM.colors.textSecondary" }}>{label}</span>
-        <span style={{ fontSize: "11px", color: isAtRest ? "#444" : "DESIGN_SYSTEM.colors.textSecondary", fontFamily: "monospace" }}>
+        <span style={{ fontSize: "12px", color: DESIGN_SYSTEM.colors.textSecondary }}>{label}</span>
+        <span style={{ fontSize: "11px", color: isAtRest ? "#444" : DESIGN_SYSTEM.colors.textSecondary, fontFamily: "monospace" }}>
           {value}{suffix}
         </span>
       </div>
