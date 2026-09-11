@@ -80,17 +80,48 @@ export function renderBrandedEmailShell(opts: {
          <a href="mailto:info@voodoo808.com" style="color:${BRAND.textFaint};text-decoration:none;">info@voodoo808.com</a>
        </p>`;
 
+  const preheaderPadding = "&#847; &zwnj;&nbsp;".repeat(35);
+
   return `<!DOCTYPE html>
-<html lang="cs">
+<html lang="cs" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
 <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="color-scheme" content="dark only"/>
+<meta name="supported-color-schemes" content="dark only"/>
+<meta name="x-apple-disable-message-reformatting"/>
+<title>VOODOO808</title>
+<!--[if mso]>
+<noscript>
+<xml>
+<o:OfficeDocumentSettings>
+<o:PixelsPerInch>96</o:PixelsPerInch>
+</o:OfficeDocumentSettings>
+</xml>
+</noscript>
+<![endif]-->
+<style>
+  :root {
+    color-scheme: dark only;
+    supported-color-schemes: dark only;
+  }
+  @media (prefers-color-scheme: dark) {
+    body, .email-body-wrapper {
+      background-color: #0a0a0a !important;
+    }
+  }
+  /* Outlook App & Samsung Mail dark mode protection */
+  [data-ogsc] .email-body-wrapper {
+    background-color: #0a0a0a !important;
+  }
+</style>
 </head>
-<body style="margin:0;padding:0;background:${BRAND.bg};font-family:${BRAND.fontFamily};">
-  ${preheader ? `<div style="display:none;max-height:0;overflow:hidden;opacity:0;">${preheader}</div>` : ""}
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:${BRAND.bg};padding:40px 0;">
+<body class="email-body-wrapper" style="margin:0;padding:0;background:${BRAND.bg};background-color:${BRAND.bg};font-family:${BRAND.fontFamily};-webkit-font-smoothing:antialiased;">
+  ${preheader ? `<div style="display:none;font-size:1px;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;mso-hide:all;">${preheader}${preheaderPadding}</div>` : ""}
+  <table class="email-body-wrapper" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${BRAND.bg};background-color:${BRAND.bg};padding:40px 0;">
     <tr><td align="center">
-      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+      <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;">
         <tr><td style="padding:0 0 28px 0;text-align:center;border-bottom:1px solid ${BRAND.border};">
           <a href="${appUrl}" style="display:inline-block;text-decoration:none;">
             <img src="${logoUrl}" alt="VOODOO808" width="${logoWidth}" style="display:inline-block;height:auto;max-width:${logoWidth}px;" />

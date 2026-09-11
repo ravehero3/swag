@@ -68,6 +68,19 @@ export async function enrollByTrigger(
   }
 }
 
+function calculateSendTime(delayHours: number): Date {
+  const target = new Date(Date.now() + delayHours * 60 * 60 * 1000);
+  // Avoid sending marketing emails in the dead of night (22:00 - 08:00)
+  const hour = target.getHours();
+  if (hour >= 22) {
+    target.setDate(target.getDate() + 1);
+    target.setHours(10, 0, 0, 0);
+  } else if (hour < 8) {
+    target.setHours(10, 0, 0, 0);
+  }
+  return target;
+}
+
 export async function enrollSubscriberInJourney(subscriberId: number, journeyId: number): Promise<Enrollment | null> {
   const journeyRes = await pool.query<Journey>("SELECT * FROM marketing_journeys WHERE id = $1", [journeyId]);
   const journey = journeyRes.rows[0];
@@ -83,7 +96,7 @@ export async function enrollSubscriberInJourney(subscriberId: number, journeyId:
     return null;
   }
 
-  const nextRunAt = new Date(Date.now() + firstStep.delay_hours * 60 * 60 * 1000);
+  const nextRunAt = calculateSendTime(firstStep.delay_hours);
 
   try {
     const result = await pool.query<Enrollment>(
@@ -154,7 +167,7 @@ async function failEnrollment(enrollmentId: number, error: string): Promise<void
 }
 
 async function advanceToStep(enrollmentId: number, step: JourneyStep): Promise<void> {
-  const nextRunAt = new Date(Date.now() + step.delay_hours * 60 * 60 * 1000);
+  const nextRunAt = calculateSendTime(step.delay_hours);
   await pool.query(
     "UPDATE marketing_enrollments SET current_step_id = $2, next_run_at = $3, updated_at = CURRENT_TIMESTAMP WHERE id = $1",
     [enrollmentId, step.id, nextRunAt]

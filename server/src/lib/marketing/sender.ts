@@ -48,6 +48,22 @@ function fillVariables(text: string, vars: Record<string, string>): string {
     return key in vars ? vars[key] : match; // leave unknown placeholders as-is (fail gracefully, don't crash)
   });
 }
+ 
+export function appendUtmParams(html: string, campaign: string): string {
+  if (!html) return html;
+  const utmSource = "voodoo_email";
+  const utmMedium = "email";
+  const utmCampaign = encodeURIComponent(campaign || "marketing");
+
+  return html.replace(/href=["']([^"']+)["']/gi, (match, url: string) => {
+    if (url.startsWith("mailto:") || url.includes("odhlasit-marketing") || url.startsWith("#")) {
+      return match;
+    }
+    if (url.includes("utm_source=")) return match;
+    const separator = url.includes("?") ? "&" : "?";
+    return `href="${url}${separator}utm_source=${utmSource}&utm_medium=${utmMedium}&utm_campaign=${utmCampaign}"`;
+  });
+}
 
 function buildPreviewVars(overrides?: Record<string, string>): Record<string, string> {
   const appUrl = getAppUrl();
@@ -264,9 +280,12 @@ export async function sendMarketingEmail(input: SendMarketingEmailInput): Promis
 
   const subject = fillVariables(subjectText, vars);
   const bodyHtml = fillVariables(rawBodyHtml, vars);
+  const campaignTag = input.campaignId ? `campaign_${input.campaignId}` : input.journeyId ? `journey_${input.journeyId}` : "direct_send";
+  const taggedBodyHtml = appendUtmParams(bodyHtml, campaignTag);
+
   const html = renderBrandedEmailShell({
     appUrl,
-    bodyHtml,
+    bodyHtml: taggedBodyHtml,
     unsubscribeUrl,
     preheader: preheaderText ? fillVariables(preheaderText, vars) : undefined,
   });

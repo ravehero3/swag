@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { Upload } from "lucide-react";
+import { Upload, Rocket } from "lucide-react";
 
 interface StagedBeat {
   localId: string;
@@ -155,9 +155,10 @@ export function BulkAutoPublish({ onBeatsAdded, onRefresh }: BulkAutoPublishProp
         <button
           className="btn btn-admin"
           onClick={() => setShowZone(v => !v)}
-          style={{ borderColor: "#0B99FC", color: "#0B99FC", fontSize: "13px" }}
+          style={{ borderColor: "#0B99FC", color: "#0B99FC", fontSize: "13px", display: "inline-flex", alignItems: "center", gap: "6px" }}
         >
-          {showZone ? "Zavřít hromadný upload" : "🚀 Hromadný upload s auto-publikací"}
+          <Rocket size={14} />
+          {showZone ? "Zavřít hromadný upload" : "Hromadný upload s auto-publikací"}
         </button>
         <span style={{ fontSize: "11px", color: "#555" }}>Nahraj až 50 beatů najednou a publikuj jedním kliknutím</span>
       </div>
@@ -264,9 +265,10 @@ export function BulkAutoPublish({ onBeatsAdded, onRefresh }: BulkAutoPublishProp
                     className="btn btn-filled"
                     onClick={handleBulkCreate}
                     disabled={bulkPublishing}
-                    style={{ background: "#24e053", color: "#000", fontSize: "13px" }}
+                    style={{ background: "#24e053", color: "#000", fontSize: "13px", display: "inline-flex", alignItems: "center", gap: "6px" }}
                   >
-                    {bulkPublishing ? "Publikuji…" : "🚀 PUBLIKOVAT VŠE"}
+                    <Rocket size={14} />
+                    {bulkPublishing ? "Publikuji…" : "PUBLIKOVAT VŠE"}
                   </button>
                 )}
 

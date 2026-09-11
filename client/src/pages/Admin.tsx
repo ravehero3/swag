@@ -2,7 +2,7 @@ import { Button, Input, Select, Badge, Skeleton } from '../components/UI';
 import { DESIGN_SYSTEM } from '../constants/designSystem';
 import { CZECH } from '../constants/czech';
 import { useState, useEffect, useRef, useMemo } from "react";
-import { Music, Image as ImageIcon, Upload, Star, ChevronUp, ChevronDown, Pencil, Check, X, Clock, Plus } from "lucide-react";
+import { Music, Image as ImageIcon, Upload, Star, ChevronUp, ChevronDown, Pencil, Check, X, Clock, Plus, Menu, Mail, AlertTriangle, CheckCircle2, Folder, Copy, Trash2, ArrowLeft, Tag, Zap, Sparkles, Search } from "lucide-react";
 import { useApp } from "../App.js";
 import { useLocation } from "wouter";
 import { toAudioProxyUrl } from "../lib/audioProxy.js";
@@ -321,7 +321,7 @@ function Admin() {
                 lineHeight: 1,
               }}
             >
-              {sidebarOpen ? "✕" : "☰"}
+              {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
             </button>
             <a href="/" style={{ display: "flex", alignItems: "center" }}>
               <img src="/uploads/artwork/voodoo808-logo.png" alt="VOODOO808" style={{ height: "20px", width: "auto" }} />
@@ -398,9 +398,11 @@ function Admin() {
                   fontSize: "18px",
                   cursor: "pointer",
                   padding: "4px",
+                  display: "flex",
+                  alignItems: "center",
                 }}
               >
-                ✕
+                <X size={18} />
               </button>
             )}
           </div>
@@ -468,11 +470,12 @@ function Admin() {
           <div style={{ padding: "14px 20px", borderTop: "1px solid #131313" }}>
             <a
               href="/"
-              style={{ fontSize: "11px", color: "#2b2b2b", textDecoration: "none", letterSpacing: "0.03em" }}
+              style={{ fontSize: "11px", color: "#2b2b2b", textDecoration: "none", letterSpacing: "0.03em", display: "inline-flex", alignItems: "center", gap: "6px" }}
               onMouseEnter={e => (e.currentTarget.style.color = DESIGN_SYSTEM.colors.textSecondary)}
               onMouseLeave={e => (e.currentTarget.style.color = "#2b2b2b")}
             >
-              ← Zpět na web
+              <ArrowLeft size={12} />
+              <span>Zpět na web</span>
             </a>
           </div>
         </aside>
@@ -731,8 +734,9 @@ function GDriveLinkStatus({ url }: { url: string }) {
   // Format check first (fast, no network)
   if (!driveIdMatch) {
     return (
-      <div style={{ marginTop: "6px", fontSize: "12px", color: "#ff9800", display: "flex", alignItems: "center", gap: "8px" }}>
-        <span>⚠</span><span>Toto nevypadá jako Google Drive URL</span>
+      <div style={{ marginTop: "6px", fontSize: "12px", color: "#ff9800", display: "flex", alignItems: "center", gap: "6px" }}>
+        <AlertTriangle size={13} style={{ flexShrink: 0 }} />
+        <span>Toto nevypadá jako Google Drive URL</span>
       </div>
     );
   }
@@ -789,9 +793,12 @@ function ArtworkPreview({ url, onDelete, testId }: { url: string; onDelete: () =
             <div style={{ fontSize: "12px", color: DESIGN_SYSTEM.colors.success, marginBottom: "4px" }}>✓ Obrázek načten – tak ho uvidí návštěvníci</div>
           )}
           {status === "error" && (
-            <div style={{ fontSize: "12px", color: "#ff5252", marginBottom: "6px", lineHeight: 1.4 }}>
-              ⚠ Náhled selhal. Soubor je nahraný, ale prohlížeč ho nedokáže načíst z této URL.<br />
-              Nejčastější příčina: chybí nebo je špatně nastavená proměnná <code style={{ background: "#222", padding: "1px 4px", borderRadius: "2px" }}>R2_PUBLIC_BASE_URL</code> (Cloudflare R2 public dev URL nebo custom doména).
+            <div style={{ fontSize: "12px", color: "#ff5252", marginBottom: "6px", lineHeight: 1.4, display: "flex", alignItems: "flex-start", gap: "6px" }}>
+              <AlertTriangle size={13} style={{ flexShrink: 0, marginTop: "2px" }} />
+              <div>
+                Náhled selhal. Soubor je nahraný, ale prohlížeč ho nedokáže načíst z této URL.<br />
+                Nejčastější příčina: chybí nebo je špatně nastavená proměnná <code style={{ background: "#222", padding: "1px 4px", borderRadius: "2px" }}>R2_PUBLIC_BASE_URL</code> (Cloudflare R2 public dev URL nebo custom doména).
+              </div>
             </div>
           )}
           <div style={{ fontSize: "11px", color: DESIGN_SYSTEM.colors.textSecondary, wordBreak: "break-all", marginBottom: "8px" }}>
@@ -1965,7 +1972,10 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                           onClick={() => openBeatFolder("previewUrl")}
                           style={{ fontSize: "11px", padding: "4px 10px", whiteSpace: "nowrap" }}
                         >
-                          📁 Složka s beatama
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                            <Folder size={12} />
+                            <span>Složka s beatama</span>
+                          </span>
                         </button>
                       </div>
                       <DropZone
@@ -2069,7 +2079,10 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                               data-testid="button-open-beat-folder"
                               style={{ whiteSpace: "nowrap", flexShrink: 0 }}
                             >
-                              📁 Složka s beatama
+                              <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+                                <Folder size={12} />
+                                <span>Složka s beatama</span>
+                              </span>
                             </button>
                           </div>
                           <UploadProgressBar type="beat-local" />
@@ -2519,7 +2532,9 @@ function BeatsTab({ beats, showForm, setShowForm, editing, setEditing, onRefresh
                 <div style={{ textAlign: "center", color: "#444", padding: "48px 0", fontSize: "12px" }}>Načítám…</div>
               ) : filteredBeatFolderFiles.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "48px 0" }}>
-                  <div style={{ fontSize: "28px", marginBottom: "12px" }}>📁</div>
+                  <div style={{ display: "flex", justifyContent: "center", marginBottom: "12px" }}>
+                    <Folder size={32} color="#555" />
+                  </div>
                   <div style={{ color: "#444", fontSize: "13px", marginBottom: "6px" }}>Složka je prázdná</div>
                   <div style={{ color: DESIGN_SYSTEM.colors.border, fontSize: "11px" }}>Nahraj beaty tlačítkem výše nebo je sem přetáhni</div>
                 </div>
@@ -4154,15 +4169,15 @@ function OrdersList({ orders, onRefresh }: { orders: any[]; onRefresh: () => voi
               </div>
               <div style={{ fontSize: "12px", color: DESIGN_SYSTEM.colors.textSecondary }}>{new Date(order.created_at).toLocaleDateString("cs-CZ")}</div>
               <div style={{ display: "flex", alignItems: "center", gap: "6px", justifyContent: "flex-end" }}>
-                <span style={{ fontSize: "12px", color: "#555" }}>{isExpanded ? "▲" : "▼"}</span>
+                <span style={{ fontSize: "12px", color: "#555", display: "flex", alignItems: "center" }}>{isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}</span>
                 {!isPaid && order.status !== "cancelled" && (
                   <button
                     onClick={(e) => handleMarkPaid(e, order.id)}
                     data-testid={`button-mark-paid-${order.id}`}
-                    style={{ background: "rgba(36,224,83,0.08)", border: "1px solid rgba(36,224,83,0.3)", borderRadius: "3px", color: "#24e053", fontSize: "11px", padding: "3px 8px", cursor: "pointer", whiteSpace: "nowrap" }}
+                    style={{ background: "rgba(36,224,83,0.08)", border: "1px solid rgba(36,224,83,0.3)", borderRadius: "3px", color: "#24e053", fontSize: "11px", padding: "3px 8px", cursor: "pointer", whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: "4px" }}
                     title="Označit jako zaplacené a odeslat email se soubory"
                   >
-                    ✓ Zaplaceno
+                    <CheckCircle2 size={12} /> Zaplaceno
                   </button>
                 )}
                 {order.status !== "cancelled" && (
@@ -4227,8 +4242,8 @@ function OrdersList({ orders, onRefresh }: { orders: any[]; onRefresh: () => voi
                   ))}
                 </div>
                 {beatItems.length > 0 && !order.buyer_legal_name && (
-                  <div style={{ fontSize: "11px", color: DESIGN_SYSTEM.colors.warning, background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.2)", borderRadius: "3px", padding: "8px 10px" }}>
-                    ⚠ Kupující nevyplnil právní jméno a adresu — smlouva bude obsahovat pouze email.
+                  <div style={{ fontSize: "11px", color: DESIGN_SYSTEM.colors.warning, background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.2)", borderRadius: "3px", padding: "8px 10px", display: "flex", alignItems: "center", gap: "6px" }}>
+                    <AlertTriangle size={13} /> Kupující nevyplnil právní jméno a adresu — smlouva bude obsahovat pouze email.
                   </div>
                 )}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "14px", paddingTop: "10px", borderTop: "1px solid #1a1a1a", flexWrap: "wrap", gap: "8px" }}>
@@ -4257,7 +4272,8 @@ function OrdersList({ orders, onRefresh }: { orders: any[]; onRefresh: () => voi
                         gap: "6px",
                       }}
                     >
-                      ✉ {resendingId === order.id ? "Odesílám soubory…" : "Znovu odeslat e-mail se soubory a licencí"}
+                      <Mail size={13} />
+                      {resendingId === order.id ? "Odesílám soubory…" : "Znovu odeslat e-mail se soubory a licencí"}
                     </button>
                   </div>
                 </div>
@@ -4331,7 +4347,7 @@ function OrdersTab({ orders, onRefresh }: any) {
           padding: "16px 20px",
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: pendingBankOrders.length > 0 ? "12px" : 0 }}>
-            <span style={{ fontSize: "15px" }}>⏳</span>
+            <Clock size={16} color="#fbbf24" style={{ flexShrink: 0 }} />
             <span style={{ fontSize: "13px", fontWeight: 700, color: "#fbbf24", letterSpacing: "0.04em", textTransform: "uppercase" }}>
               Čeká na ověření — {pendingBankOrders.length} {pendingBankOrders.length === 1 ? "bankovní převod" : pendingBankOrders.length < 5 ? "bankovní převody" : "bankovních převodů"}
             </span>
@@ -4402,14 +4418,15 @@ function OrdersTab({ orders, onRefresh }: any) {
         </div>
 
         <div style={{ position: "relative", minWidth: "260px" }}>
+          <Search size={13} color="#666" style={{ position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="🔍 Hledat e-mail, jméno, #ID..."
+            placeholder="Hledat e-mail, jméno, #ID..."
             style={{
               width: "100%",
-              padding: "7px 12px",
+              padding: "7px 12px 7px 30px",
               background: "#111",
               border: "1px solid #2a2a2a",
               borderRadius: "5px",
@@ -4421,9 +4438,9 @@ function OrdersTab({ orders, onRefresh }: any) {
           {search && (
             <button
               onClick={() => setSearch("")}
-              style={{ position: "absolute", right: "8px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "#666", cursor: "pointer", fontSize: "12px" }}
+              style={{ position: "absolute", right: "8px", top: "50%", transform: "translateY(-50%)", background: "none", border: "none", color: "#666", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
             >
-              ✕
+              <X size={13} />
             </button>
           )}
         </div>
@@ -6038,12 +6055,16 @@ function SlevyAKuponyTab({ settings, onRefresh }: { settings: Record<string, str
             border: "none",
             borderRadius: "6px",
             cursor: "pointer",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "6px",
             background: activeSub === "promo" ? "rgba(255,255,255,0.1)" : "transparent",
             color: activeSub === "promo" ? DESIGN_SYSTEM.colors.textPrimary : "#888",
             fontWeight: activeSub === "promo" ? 600 : 400,
           }}
         >
-          🏷️ Slevové kódy (Kupóny do košíku)
+          <Tag size={13} />
+          Slevové kódy (Kupóny do košíku)
         </button>
         <button
           onClick={() => setActiveSub("slevy")}
@@ -6054,12 +6075,16 @@ function SlevyAKuponyTab({ settings, onRefresh }: { settings: Record<string, str
             border: "none",
             borderRadius: "6px",
             cursor: "pointer",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "6px",
             background: activeSub === "slevy" ? "rgba(255,255,255,0.1)" : "transparent",
             color: activeSub === "slevy" ? DESIGN_SYSTEM.colors.textPrimary : "#888",
             fontWeight: activeSub === "slevy" ? 600 : 400,
           }}
         >
-          ⚡ Plošná sleva (Banner & Odpočet na webu)
+          <Zap size={13} />
+          Plošná sleva (Banner & Odpočet na webu)
         </button>
       </div>
 
@@ -6644,8 +6669,9 @@ function OdberateleTab() {
                 {importPreview.customers} zákazníků · {importPreview.leads} zájemců o free · {importPreview.registeredUsers} registrovaných uživatelů
                 {" "}({importPreview.uniqueTotal} unikátních e-mailů, {importPreview.alreadyImported} už v systému, <strong style={{ color: DESIGN_SYSTEM.colors.textPrimary }}>{importPreview.newToImport} nových</strong>)
               </div>
-              <div style={{ fontSize: "11px", color: "#f9a825", marginTop: "8px", maxWidth: "520px", lineHeight: 1.5 }}>
-                ⚠ Import pouze zpřístupní kontakty pro tagování a segmentaci — NEPŘIDÁ souhlas s marketingem. Nikomu nic nepřijde, dokud mu ručně nenastavíte souhlas nebo nespustíte samostatnou re-engagement kampaň.
+              <div style={{ fontSize: "11px", color: "#f9a825", marginTop: "8px", maxWidth: "520px", lineHeight: 1.5, display: "flex", alignItems: "flex-start", gap: "6px" }}>
+                <AlertTriangle size={13} style={{ flexShrink: 0, marginTop: "2px" }} />
+                <span>Import pouze zpřístupní kontakty pro tagování a segmentaci — NEPŘIDÁ souhlas s marketingem. Nikomu nic nepřijde, dokud mu ručně nenastavíte souhlas nebo nespustíte samostatnou re-engagement kampaň.</span>
               </div>
             </div>
             <button
@@ -7137,16 +7163,17 @@ function JourneysTab() {
                     )}
                     {s.step_type === "email" && (
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "8px", flexWrap: "wrap", gap: "6px" }}>
-                        <span style={{ color: s.template_id ? "#888" : "#f9a825", fontSize: "11px" }}>
-                          {s.template_id ? (tpl ? tpl.name : `Šablona #${s.template_id}`) : "⚠ Žádná šablona — klikněte na Vizuální editor"}
+                        <span style={{ color: s.template_id ? "#888" : "#f9a825", fontSize: "11px", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                          {s.template_id ? (tpl ? tpl.name : `Šablona #${s.template_id}`) : (<><AlertTriangle size={12} /> Žádná šablona — klikněte na Vizuální editor</>)}
                         </span>
                         <div style={{ display: "flex", gap: "6px" }}>
                           <button
                             className="btn"
                             onClick={() => openVisualStep(s)}
-                            style={{ borderRadius: "4px", fontSize: "10px", padding: "3px 8px", borderColor: "#0B99FC", color: "#0B99FC" }}
+                            style={{ borderRadius: "4px", fontSize: "10px", padding: "3px 8px", borderColor: "#0B99FC", color: "#0B99FC", display: "inline-flex", alignItems: "center", gap: "4px" }}
                           >
-                            ✨ Vizuální editor
+                            <Sparkles size={11} />
+                            Vizuální editor
                           </button>
                           {s.template_id && (
                             <>
@@ -7444,8 +7471,9 @@ function KampaneTab() {
           Jednorázové e-maily odeslané všem aktivním marketingovým odběratelům (bez odhlášení/potlačení).
         </p>
         <div style={{ display: "flex", gap: "8px" }}>
-          <button className="btn btn-filled" onClick={startNewVisual} style={{ borderRadius: "4px", fontSize: "12px" }}>
-            ✨ + Vizuální kampaň
+          <button className="btn btn-filled" onClick={startNewVisual} style={{ borderRadius: "4px", fontSize: "12px", display: "inline-flex", alignItems: "center", gap: "6px" }}>
+            <Sparkles size={13} />
+            <span>+ Vizuální kampaň</span>
           </button>
           <button className="btn" onClick={() => setShowCreate(v => !v)} style={{ borderRadius: "4px", fontSize: "12px", borderColor: "#444" }}>
             {showCreate ? "Zavřít" : "+ Rychlý draft ze šablony"}
@@ -7605,8 +7633,9 @@ function KampaneTab() {
               </div>
             </div>
 
-            <div style={{ background: "rgba(239, 68, 68, 0.08)", border: "1px solid rgba(239, 68, 68, 0.25)", borderRadius: "8px", padding: "12px", marginBottom: "20px", fontSize: "12px", color: "#f87171", lineHeight: 1.5 }}>
-              ⚠️ <strong>Upozornění:</strong> Tuto akci <u>nelze vzít zpět</u>. E-maily budou odeslány na skutečné adresy příjemců přes Resend API.
+            <div style={{ background: "rgba(239, 68, 68, 0.08)", border: "1px solid rgba(239, 68, 68, 0.25)", borderRadius: "8px", padding: "12px", marginBottom: "20px", fontSize: "12px", color: "#f87171", lineHeight: 1.5, display: "flex", alignItems: "flex-start", gap: "8px" }}>
+              <AlertTriangle size={14} style={{ flexShrink: 0, marginTop: "1px" }} />
+              <div><strong>Upozornění:</strong> Tuto akci <u>nelze vzít zpět</u>. E-maily budou odeslány na skutečné adresy příjemců přes Resend API.</div>
             </div>
 
             <div style={{ display: "flex", gap: "10px" }}>
@@ -7806,8 +7835,9 @@ function SablonyTab() {
           E-mailové šablony pro journeys a kampaně. Použijte proměnné {"{{first_name}}"}, {"{{email}}"}, {"{{unsubscribe_url}}"}, {"{{site_url}}"}.
         </p>
         <div style={{ display: "flex", gap: "8px" }}>
-          <button className="btn btn-filled" onClick={startNewVisual} style={{ borderRadius: "4px", fontSize: "12px" }}>
-            ✨ + Vizuální šablona
+          <button className="btn btn-filled" onClick={startNewVisual} style={{ borderRadius: "4px", fontSize: "12px", display: "inline-flex", alignItems: "center", gap: "6px" }}>
+            <Sparkles size={13} />
+            <span>+ Vizuální šablona</span>
           </button>
           <button className="btn" onClick={startNew} style={{ borderRadius: "4px", fontSize: "12px", borderColor: "#444" }}>
             + HTML šablona
@@ -8642,7 +8672,10 @@ function GopayDiagPanel() {
                       </div>
                       {diag.paymentTestUrl && diag.paymentTestUrl !== diag.domain && (
                         <div style={{ padding: "10px 12px", background: "#1a1000", border: "1px solid #4d3000", borderRadius: "4px", fontSize: "12px", color: "#f5b150", lineHeight: 1.8 }}>
-                          <strong>⚠ Funguje jiná URL než APP_URL!</strong><br />
+                          <div style={{ display: "flex", alignItems: "center", gap: "6px", fontWeight: 700, marginBottom: "4px" }}>
+                            <AlertTriangle size={13} />
+                            <span>Funguje jiná URL než APP_URL!</span>
+                          </div>
                           GoPay přijal: <span style={{ fontFamily: "monospace", color: DESIGN_SYSTEM.colors.textPrimary }}>{diag.paymentTestUrl}</span><br />
                           Tvůj APP_URL: <span style={{ fontFamily: "monospace", color: "#e55" }}>{diag.domain}</span><br />
                           <span style={{ color: "#e8c97a" }}>
@@ -8660,7 +8693,10 @@ function GopayDiagPanel() {
                   )}
                   {!diag.paymentTestOk && diag.allRejected && (
                     <div style={{ marginTop: "10px", padding: "14px", background: "#1a1000", border: "1px solid #4d3000", borderRadius: "4px", fontSize: "12px", color: "#f5b150", lineHeight: 1.9 }}>
-                      <div style={{ fontWeight: 700, marginBottom: "6px", fontSize: "13px" }}>⚠ Všechny URL varianty odmítnuty — nutná aktivace domény</div>
+                      <div style={{ fontWeight: 700, marginBottom: "6px", fontSize: "13px", display: "flex", alignItems: "center", gap: "6px" }}>
+                        <AlertTriangle size={14} />
+                        <span>Všechny URL varianty odmítnuty — nutná aktivace domény</span>
+                      </div>
                       <div style={{ color: "#e8c97a", marginBottom: "10px", lineHeight: 1.7 }}>
                         GoPay zamítl <strong>všechny kombinace</strong> (https/http, www/bez www) — toto <strong>není chyba v kódu</strong>.
                         Doména musí být aktivována GoPay týmem. Jde o jejich povinný Krok 4.
@@ -8705,7 +8741,7 @@ function GopayDiagPanel() {
               {row("APP_URL", (
                 <span style={{ color: diag.rawAppUrl === "(not set)" ? "#e55" : DESIGN_SYSTEM.colors.textSecondary }}>
                   {diag.rawAppUrl}
-                  {diag.rawAppUrl === "(not set)" && " ⚠ není nastaveno"}
+                  {diag.rawAppUrl === "(not set)" && " (není nastaveno)"}
                 </span>
               ))}
               {row("GOPAY_RETURN_DOMAIN", (
@@ -8717,7 +8753,7 @@ function GopayDiagPanel() {
               {row("Aktivní return URL doména", (
                 <span style={{ color: diag.domain.startsWith("http://localhost") ? "#e55" : DESIGN_SYSTEM.colors.textSecondary }}>
                   {diag.domain}
-                  {diag.domain.startsWith("http://localhost") && " ⚠ GoPay odmítá localhost — nastav APP_URL"}
+                  {diag.domain.startsWith("http://localhost") && " (GoPay odmítá localhost — nastav APP_URL)"}
                   {!diag.domain.startsWith("http://localhost") && ` (zdroj: ${diag.appUrlVar})`}
                 </span>
               ))}
@@ -8833,7 +8869,7 @@ function KonfiguraceTab() {
             border: `1px solid ${allOk ? "#1a4d1a" : "#4d1a1a"}`,
             display: "flex", alignItems: "center", gap: "10px",
           }} data-testid="config-status-banner">
-            <span style={{ fontSize: "20px" }}>{allOk ? "✓" : "⚠"}</span>
+            {allOk ? <CheckCircle2 size={18} color="#5d5" style={{ flexShrink: 0 }} /> : <AlertTriangle size={18} color="#e77" style={{ flexShrink: 0 }} />}
             <span style={{ fontSize: "13px", color: allOk ? "#5d5" : "#e77" }}>
               {allOk
                 ? "Všechny povinné proměnné jsou nastaveny."
@@ -8928,8 +8964,18 @@ function MarketingEmailSettingsTab() {
   return (
     <div style={{ maxWidth: "560px" }}>
       <div style={{ padding: "18px", background: mode === "production" ? "rgba(255,82,82,0.06)" : "rgba(36,224,83,0.06)", border: `1px solid ${mode === "production" ? "rgba(255,82,82,0.25)" : "rgba(36,224,83,0.25)"}`, borderRadius: "10px", marginBottom: "20px" }}>
-        <div style={{ fontSize: "13px", fontWeight: 600, color: mode === "production" ? "#ff5252" : "#24e053", marginBottom: "6px" }}>
-          {mode === "production" ? "⚠ Produkční režim aktivní" : "Testovací režim aktivní"}
+        <div style={{ fontSize: "13px", fontWeight: 600, color: mode === "production" ? "#ff5252" : "#24e053", marginBottom: "6px", display: "flex", alignItems: "center", gap: "6px" }}>
+          {mode === "production" ? (
+            <>
+              <AlertTriangle size={14} />
+              <span>Produkční režim aktivní</span>
+            </>
+          ) : (
+            <>
+              <CheckCircle2 size={14} />
+              <span>Testovací režim aktivní</span>
+            </>
+          )}
         </div>
         <div style={{ fontSize: "12px", color: "#888", lineHeight: 1.6 }}>
           {mode === "production"

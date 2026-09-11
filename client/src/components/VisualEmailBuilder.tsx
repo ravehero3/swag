@@ -34,7 +34,12 @@ import {
   CheckCircle2,
   Settings2,
   ExternalLink,
-  Edit3
+  Edit3,
+  Zap,
+  AlertTriangle,
+  FileText,
+  ShoppingCart,
+  BookOpen
 } from "lucide-react";
 
 export type BlockType =
@@ -223,11 +228,342 @@ const BLOCK_TYPE_LABELS: Record<BlockType, string> = {
 };
 
 const URL_PRESETS = [
-  { label: "🎵 Beaty", url: "/beaty" },
-  { label: "🔊 Zvuky", url: "/zvuky" },
-  { label: "🛒 Košík", url: "/ucet" },
-  { label: "🏠 Domů", url: "/" },
+  { label: "Beaty", url: "/beaty" },
+  { label: "Zvuky", url: "/zvuky" },
+  { label: "Košík", url: "/ucet" },
+  { label: "Domů", url: "/" },
 ];
+
+export interface StarterTemplate {
+  id: string;
+  name: string;
+  description: string;
+  subject: string;
+  preheader: string;
+  blocks: EmailBlock[];
+}
+
+export const STARTER_TEMPLATES: StarterTemplate[] = [
+  {
+    id: "beat_drop",
+    name: "Nový Beat Drop / Release",
+    description: "Ideální pro oznámení nového beatu nebo balíčku. Obsahuje hero banner, ukázku beatu, mřížku novinek a licenční tlačítko.",
+    subject: "Nový beat v katalogu: Poslechni si ukázku",
+    preheader: "Exkluzivní licence se 100% autorskými právy jsou právě dostupné ve studiu VOODOO808.",
+    blocks: [
+      {
+        id: "tpl_h1",
+        type: "heading",
+        headingText: "Nový Beat v katalogu",
+        headingLevel: "h1",
+        headingAlign: "center",
+        headingColor: "#ffffff",
+      },
+      {
+        id: "tpl_p1",
+        type: "paragraph",
+        paragraphText: "Ahoj {{first_name}},\n\nprávě jsme dokončili produkci nového beatu. Zvuk je vyladěný pro moderní trap/drill projekty s okamžitým dodáním WAV a trackoutů.",
+        paragraphAlign: "left",
+        paragraphColor: "#aaaaaa",
+        paragraphFontSize: "15px",
+      },
+      {
+        id: "tpl_hero",
+        type: "hero",
+        heroTitle: "EXCLUSIVE DROP",
+        heroSubtitle: "Poslechni si plnou verzi a vyber si licenci pro svůj příští projekt.",
+        heroImageUrl: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=1200&q=80",
+        heroButtonText: "POSLECHNOUT BEAT",
+        heroButtonUrl: "/beaty",
+      },
+      {
+        id: "tpl_grid",
+        type: "multi_beat_grid",
+      },
+      {
+        id: "tpl_btn",
+        type: "button",
+        buttonText: "PROZKOUMAT CELÝ KATALOG",
+        buttonUrl: "/beaty",
+        buttonAlign: "center",
+        buttonBgColor: "#ffffff",
+        buttonTextColor: "#000000",
+      },
+    ],
+  },
+  {
+    id: "flash_sale",
+    name: "Blesková 24h Sleva",
+    description: "Vysokokonverzní šablona s odpočtem času a promo kupónem pro časově omezené akce.",
+    subject: "Blesková sleva 30 % končí za 24 hodin",
+    preheader: "Získej licence na všechny beaty s mimořádnou slevou. Kód platí pouze dnes.",
+    blocks: [
+      {
+        id: "tpl_cnt",
+        type: "countdown",
+        countdownTitle: "LIMITOVANÁ AKCE KONČÍ ZA:",
+        countdownDays: "00",
+        countdownHours: "23",
+        countdownMinutes: "59",
+        countdownSeconds: "00",
+        countdownButtonText: "ZÍSKAT SLEVU",
+        countdownButtonUrl: "/beaty",
+      },
+      {
+        id: "tpl_cpn",
+        type: "coupon_box",
+        couponCode: "FLASH30",
+        couponDiscount: "30% SLEVA",
+        couponDescription: "Zadej tento kód v košíku a sleva se ti automaticky odečte z jakékoliv licence.",
+      },
+      {
+        id: "tpl_info",
+        type: "info_box",
+        infoTitle: "Co vše licence zahrnuje?",
+        infoText: "Každá zakoupená licence obsahuje WAV soubor, komerční práva na streamovací platformy (Spotify, Apple Music) a okamžité stažení po zaplacení.",
+        infoBorderColor: "#333333",
+        infoBgColor: "#111111",
+      },
+      {
+        id: "tpl_btn2",
+        type: "button",
+        buttonText: "VYBRAT BEATY V AKCI",
+        buttonUrl: "/beaty",
+        buttonAlign: "center",
+        buttonBgColor: "#ffffff",
+        buttonTextColor: "#000000",
+      },
+    ],
+  },
+  {
+    id: "abandoned_cart",
+    name: "Opuštěný Košík",
+    description: "Automatické nebo manuální připomenutí rozpracované objednávky pro záchranu nedokončených nákupů.",
+    subject: "Nezapomněl jsi něco v košíku?",
+    preheader: "Tvůj vybraný beat na tebe stále čeká. Dokonči objednávku ještě dnes.",
+    blocks: [
+      {
+        id: "tpl_ac_h",
+        type: "heading",
+        headingText: "Tvoje beaty v košíku na tebe čekají",
+        headingLevel: "h1",
+        headingAlign: "left",
+        headingColor: "#ffffff",
+      },
+      {
+        id: "tpl_ac_p",
+        type: "paragraph",
+        paragraphText: "Ahoj {{first_name}},\n\nvšimli jsme si, že máš v košíku rozpracovanou objednávku licence. Chceme se ujistit, že o vybraný beat nepřijdeš dříve, než ho koupí někdo jiný.",
+        paragraphAlign: "left",
+        paragraphColor: "#aaaaaa",
+        paragraphFontSize: "15px",
+      },
+      {
+        id: "tpl_ac_btn",
+        type: "button",
+        buttonText: "DOKONČIT OBJEDNÁVKU",
+        buttonUrl: "/ucet",
+        buttonAlign: "left",
+        buttonBgColor: "#ffffff",
+        buttonTextColor: "#000000",
+      },
+      {
+        id: "tpl_ac_info",
+        type: "info_box",
+        infoTitle: "100% Bezpečný nákup",
+        infoText: "Okamžité doručení souborů a smlouvy do e-mailu. Možnost platby kartou, Apple Pay i bankovním převodem.",
+        infoBorderColor: "#222222",
+        infoBgColor: "#111111",
+      },
+    ],
+  },
+  {
+    id: "vip_letter",
+    name: "VIP Dopis od Vojty",
+    description: "Osobní textový formát zaměřený na budování důvěry a vztahu se stálými interprety a producenty.",
+    subject: "Rychlý update ze studia VOODOO808",
+    preheader: "Pár slov k novým projektům a poděkování za tvoji podporu.",
+    blocks: [
+      {
+        id: "tpl_vip_h",
+        type: "heading",
+        headingText: "Zdravím ze studia,",
+        headingLevel: "h2",
+        headingAlign: "left",
+        headingColor: "#ffffff",
+      },
+      {
+        id: "tpl_vip_p1",
+        type: "paragraph",
+        paragraphText: "Ahoj {{first_name}},\n\nchci ti osobně poděkovat, že sleduješ mou tvorbu na VOODOO808. Poslední týdny jsem trávil hodiny vylepšováním zvukových textur a nových kitů, aby tvoje tracky zněly bez kompromisů.",
+        paragraphAlign: "left",
+        paragraphColor: "#cccccc",
+        paragraphFontSize: "15px",
+      },
+      {
+        id: "tpl_vip_p2",
+        type: "paragraph",
+        paragraphText: "Pokud máš rozdělaný projekt a potřebuješ specifickou úpravu nebo radu s mixem, stačí jednoduše odpovědět na tento e-mail.\n\nMěj se skvěle a ať to hraje,\nVojta / VOODOO808",
+        paragraphAlign: "left",
+        paragraphColor: "#888888",
+        paragraphFontSize: "14px",
+      },
+      {
+        id: "tpl_vip_social",
+        type: "social_links",
+        instagramUrl: "https://instagram.com/voodoo808",
+        youtubeUrl: "https://youtube.com/@voodoo808",
+      },
+    ],
+  },
+  {
+    id: "blank",
+    name: "Čisté prázdné plátno",
+    description: "Začněte od nuly s čistým e-mailem a poskládejte si vlastní rozvržení podle libosti.",
+    subject: "Nový newsletter",
+    preheader: "Náhledový text e-mailu…",
+    blocks: [
+      {
+        id: "tpl_bl_h",
+        type: "heading",
+        headingText: "Váš nadpis",
+        headingLevel: "h1",
+        headingAlign: "center",
+        headingColor: "#ffffff",
+      },
+      {
+        id: "tpl_bl_p",
+        type: "paragraph",
+        paragraphText: "Zde napište text vašeho sdělení…",
+        paragraphAlign: "left",
+        paragraphColor: "#aaaaaa",
+        paragraphFontSize: "15px",
+      },
+    ],
+  },
+];
+
+export interface PreflightCheck {
+  id: string;
+  title: string;
+  status: "pass" | "warn" | "fail";
+  message: string;
+}
+
+export function runPreflightChecks(subject: string, preheader: string, blocks: EmailBlock[]): PreflightCheck[] {
+  const checks: PreflightCheck[] = [];
+
+  const subTrim = (subject || "").trim();
+  if (!subTrim) {
+    checks.push({
+      id: "subject",
+      title: "Předmět e-mailu",
+      status: "fail",
+      message: "Předmět e-mailu je prázdný. Příjemci nebudou vědět, o co jde.",
+    });
+  } else if (subTrim.length < 10) {
+    checks.push({
+      id: "subject",
+      title: "Předmět e-mailu",
+      status: "warn",
+      message: `Předmět je příliš krátký (${subTrim.length} znaků). Doporučujeme 25–55 znaků.`,
+    });
+  } else if (subTrim.length > 65) {
+    checks.push({
+      id: "subject",
+      title: "Předmět e-mailu",
+      status: "warn",
+      message: `Předmět je delší než 65 znaků (${subTrim.length} znaků) a na mobilech se může oříznout.`,
+    });
+  } else {
+    checks.push({
+      id: "subject",
+      title: "Předmět e-mailu",
+      status: "pass",
+      message: `Optimální délka (${subTrim.length} znaků).`,
+    });
+  }
+
+  const preTrim = (preheader || "").trim();
+  if (!preTrim) {
+    checks.push({
+      id: "preheader",
+      title: "Náhledový text (Preheader)",
+      status: "warn",
+      message: "Preheader není vyplněn. E-mailoví klienti mohou zobrazit text z patičky.",
+    });
+  } else {
+    checks.push({
+      id: "preheader",
+      title: "Náhledový text (Preheader)",
+      status: "pass",
+      message: "Preheader je vyplněn a zobrazí se v inboxu.",
+    });
+  }
+
+  const imageBlocks = blocks.filter((b) => b.type === "image" || b.type === "hero");
+  const missingAlt = imageBlocks.filter((b) => b.type === "image" && !b.imageAlt?.trim());
+  if (missingAlt.length > 0) {
+    checks.push({
+      id: "images_alt",
+      title: "Alternativní texty obrázků (ALT)",
+      status: "warn",
+      message: `${missingAlt.length} obrázků nemá vyplněný ALT text (pomáhá proti spamu).`,
+    });
+  } else if (imageBlocks.length > 0) {
+    checks.push({
+      id: "images_alt",
+      title: "Alternativní texty obrázků (ALT)",
+      status: "pass",
+      message: "Všechny obrázky mají nastavený popis pro filtry a čtečky.",
+    });
+  }
+
+  const buttons = blocks.filter((b) => b.type === "button" || b.type === "hero" || b.type === "countdown");
+  const emptyUrls = buttons.filter((b) => {
+    if (b.type === "button" && !b.buttonUrl?.trim()) return true;
+    if (b.type === "hero" && b.heroButtonText && !b.heroButtonUrl?.trim()) return true;
+    if (b.type === "countdown" && b.countdownButtonText && !b.countdownButtonUrl?.trim()) return true;
+    return false;
+  });
+  if (emptyUrls.length > 0) {
+    checks.push({
+      id: "buttons_url",
+      title: "Odkazy tlačítek (CTA)",
+      status: "fail",
+      message: `${emptyUrls.length} tlačítek nemá vyplněnou cílovou URL adresu.`,
+    });
+  } else if (buttons.length > 0) {
+    checks.push({
+      id: "buttons_url",
+      title: "Odkazy tlačítek (CTA)",
+      status: "pass",
+      message: "Všechna tlačítka mají platné cílové URL adresy.",
+    });
+  }
+
+  const allText = JSON.stringify(blocks);
+  const unresolvedTokens = allText.match(/\{\{([^}]+)\}\}/g) || [];
+  const knownTokens = ["{{first_name}}", "{{email}}", "{{site_url}}", "{{unsubscribe_url}}"];
+  const unknownTokens = unresolvedTokens.filter((t) => !knownTokens.includes(t));
+  if (unknownTokens.length > 0) {
+    checks.push({
+      id: "tokens",
+      title: "Personalizační značky",
+      status: "warn",
+      message: `Nalezeny neznámé značky: ${Array.from(new Set(unknownTokens)).join(", ")}.`,
+    });
+  } else {
+    checks.push({
+      id: "tokens",
+      title: "Personalizační značky",
+      status: "pass",
+      message: "Všechny personalizační značky jsou platné.",
+    });
+  }
+
+  return checks;
+}
 
 function substituteSampleVars(text?: string): string {
   if (!text) return "";
@@ -270,7 +606,7 @@ export function VisualEmailBuilder({
     {
       id: "b1",
       type: "heading",
-      headingText: "Nová hudba na VOODOO808 🔥",
+      headingText: "Nová hudba na VOODOO808",
       headingLevel: "h1",
       headingAlign: "center",
       headingColor: "#ffffff",
@@ -444,6 +780,21 @@ export function VisualEmailBuilder({
   const [isTestSending, setIsTestSending] = useState(false);
   const [testResult, setTestResult] = useState<string | null>(null);
   const [activeInspectorTab, setActiveInspectorTab] = useState<"content" | "style">("content");
+  const [showTemplatePicker, setShowTemplatePicker] = useState(false);
+  const [showPreflightModal, setShowPreflightModal] = useState(false);
+
+  const handleLoadStarterTemplate = (tpl: StarterTemplate) => {
+    if (blocks.length > 0 && isDirty) {
+      if (!window.confirm(`Opravdu načíst šablonu „${tpl.name}“? Aktuální rozpracovaný obsah bude nahrazen.`)) {
+        return;
+      }
+    }
+    setSubject(tpl.subject);
+    setPreheader(tpl.preheader);
+    updateBlocksState(tpl.blocks);
+    setSelectedBlockId(tpl.blocks[0]?.id || null);
+    setShowTemplatePicker(false);
+  };
 
   // Store beat items from DB for selection
   const [selectItems, setSelectItems] = useState<SelectItem[]>([]);
@@ -677,7 +1028,8 @@ export function VisualEmailBuilder({
 
   const BLOCK_CATEGORIES = [
     {
-      title: "📝 Text & Obsah",
+      title: "Text & Obsah",
+      icon: FileText,
       items: [
         { type: "heading" as BlockType, label: "Nadpis", icon: Type },
         { type: "paragraph" as BlockType, label: "Odstavec", icon: AlignLeft },
@@ -686,7 +1038,8 @@ export function VisualEmailBuilder({
       ],
     },
     {
-      title: "🎨 Média & Rozvržení",
+      title: "Média & Rozvržení",
+      icon: Layout,
       items: [
         { type: "hero" as BlockType, label: "Hero Banner", icon: Layout },
         { type: "image" as BlockType, label: "Obrázek", icon: ImageIcon },
@@ -695,14 +1048,16 @@ export function VisualEmailBuilder({
       ],
     },
     {
-      title: "🎵 VOODOO808 Hudba",
+      title: "VOODOO808 Hudba",
+      icon: Music,
       items: [
         { type: "beat_highlight" as BlockType, label: "Beat Highlight", icon: Music },
         { type: "multi_beat_grid" as BlockType, label: "Grid Beatů (2x)", icon: Grid2X2 },
       ],
     },
     {
-      title: "⚡ Konverze & Odkazy",
+      title: "Konverze & Odkazy",
+      icon: Zap,
       items: [
         { type: "button" as BlockType, label: "Tlačítko (CTA)", icon: Square },
         { type: "countdown" as BlockType, label: "Odpočet (Timer)", icon: Clock },
@@ -891,6 +1246,89 @@ export function VisualEmailBuilder({
             >
               <Redo2 size={13} /> Vpřed
             </button>
+          </div>
+
+          {/* Starter Templates & Pre-flight Checklist Buttons */}
+          <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+            <button
+              onClick={() => setShowTemplatePicker(true)}
+              title="Vybrat z hotových e-commerce šablon"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+                padding: "5px 10px",
+                fontSize: "11px",
+                fontWeight: 600,
+                border: "1px solid rgba(255,255,255,0.1)",
+                borderRadius: "6px",
+                cursor: "pointer",
+                background: "rgba(255,255,255,0.05)",
+                color: "#eee",
+              }}
+            >
+              <BookOpen size={13} style={{ color: "#0B99FC" }} />
+              <span>Šablony</span>
+            </button>
+
+            {(() => {
+              const checks = runPreflightChecks(subject, preheader, blocks);
+              const fails = checks.filter((c) => c.status === "fail").length;
+              const warns = checks.filter((c) => c.status === "warn").length;
+
+              return (
+                <button
+                  onClick={() => setShowPreflightModal(true)}
+                  title="Předletová kontrola e-mailu (kontrola před odesláním)"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "5px",
+                    padding: "5px 10px",
+                    fontSize: "11px",
+                    fontWeight: 600,
+                    borderRadius: "6px",
+                    border:
+                      fails > 0
+                        ? "1px solid rgba(239,68,68,0.4)"
+                        : warns > 0
+                        ? "1px solid rgba(245,158,11,0.4)"
+                        : "1px solid rgba(34,197,94,0.4)",
+                    background:
+                      fails > 0
+                        ? "rgba(239,68,68,0.12)"
+                        : warns > 0
+                        ? "rgba(245,158,11,0.12)"
+                        : "rgba(34,197,94,0.12)",
+                    color: fails > 0 ? "#f87171" : warns > 0 ? "#fbbf24" : "#4ade80",
+                    cursor: "pointer",
+                  }}
+                >
+                  {fails > 0 ? (
+                    <AlertTriangle size={13} />
+                  ) : warns > 0 ? (
+                    <AlertTriangle size={13} />
+                  ) : (
+                    <CheckCircle2 size={13} />
+                  )}
+                  <span>Kontrola</span>
+                  {fails > 0 && (
+                    <span
+                      style={{
+                        background: "#ef4444",
+                        color: "#fff",
+                        borderRadius: "10px",
+                        padding: "1px 5px",
+                        fontSize: "10px",
+                        fontWeight: 700,
+                      }}
+                    >
+                      {fails}
+                    </span>
+                  )}
+                </button>
+              );
+            })()}
           </div>
 
           {/* Builder vs Live Preview Toggle */}
@@ -1098,11 +1536,14 @@ export function VisualEmailBuilder({
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
-            {BLOCK_CATEGORIES.map((cat) => (
-              <div key={cat.title}>
-                <div style={{ fontSize: "11px", fontWeight: 600, color: "#888", marginBottom: "8px" }}>
-                  {cat.title}
-                </div>
+            {BLOCK_CATEGORIES.map((cat) => {
+              const CatIcon = cat.icon;
+              return (
+                <div key={cat.title}>
+                  <div style={{ fontSize: "11px", fontWeight: 600, color: "#888", marginBottom: "8px", display: "flex", alignItems: "center", gap: "6px" }}>
+                    <CatIcon size={13} color="#777" />
+                    <span>{cat.title}</span>
+                  </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
                   {cat.items.map((item) => {
                     const Icon = item.icon;
@@ -1148,7 +1589,8 @@ export function VisualEmailBuilder({
                   })}
                 </div>
               </div>
-            ))}
+            );
+          })}
           </div>
 
           {/* Quick Variable Insertion Box */}
@@ -1277,7 +1719,7 @@ export function VisualEmailBuilder({
                 <input
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
-                  placeholder="např. Nový beat pack je venku 🔥"
+                  placeholder="např. Nový beat pack je venku"
                   style={{
                     ...inputStyle,
                     borderColor: subjectLen > 70 ? "#ef4444" : "#262626",
@@ -1872,6 +2314,236 @@ export function VisualEmailBuilder({
                 }}
               >
                 Zavřít
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Starter Templates Modal ─────────────────────────────────────────── */}
+      {showTemplatePicker && (
+        <div
+          onClick={() => setShowTemplatePicker(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.85)",
+            backdropFilter: "blur(4px)",
+            zIndex: 10010,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "20px",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "#0d0d0d",
+              border: "1px solid #262626",
+              borderRadius: "14px",
+              width: "min(720px, 96vw)",
+              maxHeight: "85vh",
+              display: "flex",
+              flexDirection: "column",
+              boxShadow: "0 20px 60px rgba(0,0,0,0.9)",
+              overflow: "hidden",
+            }}
+          >
+            {/* Header */}
+            <div style={{ padding: "20px 24px", borderBottom: "1px solid #1f1f1f", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <BookOpen size={18} style={{ color: "#0B99FC" }} />
+                <div>
+                  <div style={{ fontSize: "16px", fontWeight: 700, color: "#fff" }}>Výběr předpřipravené šablony</div>
+                  <div style={{ fontSize: "12px", color: "#777", marginTop: "2px" }}>E-commerce šablony ověřené pro hudební producenty</div>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowTemplatePicker(false)}
+                style={{ background: "transparent", border: "none", color: "#666", cursor: "pointer", padding: "4px" }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Templates List */}
+            <div style={{ padding: "20px 24px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "12px" }}>
+              {STARTER_TEMPLATES.map((tpl) => (
+                <div
+                  key={tpl.id}
+                  style={{
+                    background: "rgba(255,255,255,0.03)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    borderRadius: "10px",
+                    padding: "16px 18px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: "16px",
+                    transition: "all 0.15s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = "rgba(11, 153, 252, 0.4)";
+                    e.currentTarget.style.background = "rgba(255,255,255,0.05)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)";
+                    e.currentTarget.style.background = "rgba(255,255,255,0.03)";
+                  }}
+                >
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+                      <span style={{ fontSize: "14px", fontWeight: 700, color: "#fff" }}>{tpl.name}</span>
+                      <span style={{ fontSize: "10px", color: "#888", background: "rgba(255,255,255,0.06)", padding: "2px 6px", borderRadius: "4px" }}>
+                        {tpl.blocks.length} bloků
+                      </span>
+                    </div>
+                    <p style={{ fontSize: "12px", color: "#888", margin: 0, lineHeight: 1.5 }}>
+                      {tpl.description}
+                    </p>
+                    <div style={{ fontSize: "11px", color: "#555", marginTop: "6px" }}>
+                      Předmět: <span style={{ color: "#aaa" }}>{tpl.subject}</span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => handleLoadStarterTemplate(tpl)}
+                    style={{
+                      background: "#0B99FC",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: "6px",
+                      padding: "8px 16px",
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      whiteSpace: "nowrap",
+                      flexShrink: 0,
+                    }}
+                  >
+                    Načíst do editoru
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Pre-flight Checklist Modal ───────────────────────────────────────── */}
+      {showPreflightModal && (
+        <div
+          onClick={() => setShowPreflightModal(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.85)",
+            backdropFilter: "blur(4px)",
+            zIndex: 10010,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "20px",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "#0d0d0d",
+              border: "1px solid #262626",
+              borderRadius: "14px",
+              width: "min(600px, 96vw)",
+              maxHeight: "85vh",
+              display: "flex",
+              flexDirection: "column",
+              boxShadow: "0 20px 60px rgba(0,0,0,0.9)",
+              overflow: "hidden",
+            }}
+          >
+            {/* Header */}
+            <div style={{ padding: "20px 24px", borderBottom: "1px solid #1f1f1f", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <CheckCircle2 size={18} style={{ color: "#22c55e" }} />
+                <div>
+                  <div style={{ fontSize: "16px", fontWeight: 700, color: "#fff" }}>Předletová kontrola e-mailu</div>
+                  <div style={{ fontSize: "12px", color: "#777", marginTop: "2px" }}>Ověření doručitelnosti a chyb před odesláním (Mailchimp standard)</div>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowPreflightModal(false)}
+                style={{ background: "transparent", border: "none", color: "#666", cursor: "pointer", padding: "4px" }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Checklist items */}
+            <div style={{ padding: "20px 24px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "10px" }}>
+              {runPreflightChecks(subject, preheader, blocks).map((item) => {
+                const isPass = item.status === "pass";
+                const isWarn = item.status === "warn";
+                const isFail = item.status === "fail";
+
+                return (
+                  <div
+                    key={item.id}
+                    style={{
+                      background: isFail
+                        ? "rgba(239,68,68,0.06)"
+                        : isWarn
+                        ? "rgba(245,158,11,0.06)"
+                        : "rgba(34,197,94,0.06)",
+                      border: isFail
+                        ? "1px solid rgba(239,68,68,0.25)"
+                        : isWarn
+                        ? "1px solid rgba(245,158,11,0.25)"
+                        : "1px solid rgba(34,197,94,0.25)",
+                      borderRadius: "8px",
+                      padding: "12px 16px",
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: "12px",
+                    }}
+                  >
+                    <div style={{ marginTop: "2px", flexShrink: 0 }}>
+                      {isFail ? (
+                        <AlertTriangle size={16} color="#ef4444" />
+                      ) : isWarn ? (
+                        <AlertTriangle size={16} color="#f59e0b" />
+                      ) : (
+                        <CheckCircle2 size={16} color="#22c55e" />
+                      )}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: "13px", fontWeight: 600, color: isFail ? "#f87171" : isWarn ? "#fbbf24" : "#4ade80", marginBottom: "3px" }}>
+                        {item.title}
+                      </div>
+                      <div style={{ fontSize: "12px", color: "#aaa", lineHeight: 1.4 }}>
+                        {item.message}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Footer */}
+            <div style={{ padding: "16px 24px", borderTop: "1px solid #1f1f1f", display: "flex", justifyContent: "flex-end" }}>
+              <button
+                onClick={() => setShowPreflightModal(false)}
+                style={{
+                  background: "#ffffff",
+                  color: "#000",
+                  border: "none",
+                  borderRadius: "6px",
+                  padding: "8px 18px",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
+              >
+                Rozumím
               </button>
             </div>
           </div>
@@ -2826,7 +3498,7 @@ function BlockInspector({
                   }}
                   style={inputStyle}
                 >
-                  <option value="full_bleed">🌟 Plná šířka sekce (100% bez okrajů)</option>
+                  <option value="full_bleed">Plná šířka sekce (100% bez okrajů)</option>
                   <option value="100%">100% (S vnitřním okrajem)</option>
                   <option value="80%">80%</option>
                   <option value="60%">60%</option>
@@ -3334,7 +4006,7 @@ function BlockInspector({
                   <option value="">-- Vyberte existující kód z DB --</option>
                   {promoCodes.map((p) => (
                     <option key={p.id} value={p.code}>
-                      {p.code} ({p.discount_percent}% sleva {p.is_active ? "✓ aktivní" : "pozastaven"})
+                      {p.code} ({p.discount_percent}% sleva {p.is_active ? "– aktivní" : "– pozastaven"})
                     </option>
                   ))}
                 </select>
@@ -3366,8 +4038,9 @@ function BlockInspector({
                       </div>
                     ) : (
                       <div>
-                        <div style={{ color: "#f59e0b", marginBottom: "6px" }}>
-                          ⚠️ Kód <strong>{currentCode || "—"}</strong> zatím v databázi e-shopu neexistuje.
+                        <div style={{ color: "#f59e0b", marginBottom: "6px", display: "flex", alignItems: "center", gap: "6px" }}>
+                          <AlertTriangle size={13} style={{ flexShrink: 0 }} />
+                          <span>Kód <strong>{currentCode || "—"}</strong> zatím v databázi e-shopu neexistuje.</span>
                         </div>
                         <button
                           type="button"
