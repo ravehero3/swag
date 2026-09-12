@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import { createPortal } from "react-dom";
 import {
   Type,
   AlignLeft,
@@ -1084,7 +1085,7 @@ export function VisualEmailBuilder({
   const headerLogoWidth =
     headerConfig.logoSize === "sm" ? 140 : headerConfig.logoSize === "lg" ? 240 : 190;
 
-  return (
+  const builderContent = (
     <div
       style={{
         position: "fixed",
@@ -1468,10 +1469,11 @@ export function VisualEmailBuilder({
               background: "#ffffff",
               color: "#000000",
               border: "none",
-              borderRadius: "6px",
+              borderRadius: "8px",
               fontSize: "12px",
               fontWeight: 700,
               cursor: isSaving ? "not-allowed" : "pointer",
+              boxShadow: "0 2px 8px rgba(255,255,255,0.15)",
             }}
           >
             <Check size={14} /> {isSaving ? "Ukládám…" : "Uložit e-mail"}
@@ -1479,20 +1481,31 @@ export function VisualEmailBuilder({
 
           <button
             onClick={handleSafeClose}
-            title="Zavřít editor"
+            title="Zavřít editor e-mailů"
             style={{
-              background: "none",
-              border: "none",
-              color: "#888",
-              padding: "6px",
-              cursor: "pointer",
               display: "flex",
               alignItems: "center",
-              justifyContent: "center",
-              borderRadius: "4px",
+              gap: "5px",
+              padding: "7px 14px",
+              background: "rgba(255,255,255,0.06)",
+              border: "1px solid rgba(255,255,255,0.12)",
+              borderRadius: "8px",
+              color: "#ccc",
+              fontSize: "12px",
+              fontWeight: 600,
+              cursor: "pointer",
+              transition: "all 0.15s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "rgba(255,255,255,0.12)";
+              e.currentTarget.style.color = "#fff";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "rgba(255,255,255,0.06)";
+              e.currentTarget.style.color = "#ccc";
             }}
           >
-            <X size={18} />
+            <X size={14} /> Zavřít
           </button>
         </div>
       </div>
@@ -2551,6 +2564,8 @@ export function VisualEmailBuilder({
       )}
     </div>
   );
+
+  return typeof document !== "undefined" ? createPortal(builderContent, document.body) : builderContent;
 }
 
 // ── Header Inspector Component ─────────────────────────────────────────────

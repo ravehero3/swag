@@ -476,20 +476,20 @@ function App() {
     }
   }, [user, authLoading]);
 
-  const isAdminPage = location === "/admin";
+  const isAdminPage = location === "/admin" || location.startsWith("/admin");
   const isPokladnaPage = location === "/pokladna";
   const [specialOfferBarHeight, setSpecialOfferBarHeight] = useState(0);
   const headerSpacerHeight = 42 + specialOfferBarHeight;
 
   return (
     <AppContext.Provider value={{ user, setUser, authLoading, cart, addToCart, removeFromCart, clearCart, isCartOpen, setIsCartOpen, isNewsletterOpen, setIsNewsletterOpen, settings, refreshSettings, savedCount, refreshSavedCount, previewPlayer: { currentItem: previewCurrentItem, isPlaying: isPreviewPlaying, isLooping: isPreviewLooping, isShuffling: isPreviewShuffling, playPreview, handlePlayPause: handlePreviewPlayPause, handlePrevious: handlePreviewPrevious, handleNext: handlePreviewNext, handleToggleLoop: () => setIsPreviewLooping((v) => !v), handleToggleShuffle: () => setIsPreviewShuffling((v) => !v), audioRef: previewAudioRef, setPreviewMeta } }}>
-      <div style={{ minHeight: "100vh", background: "#000", display: "flex", flexDirection: "column", paddingBottom: previewCurrentItem ? "84px" : "0" }}>
+      <div style={{ minHeight: "100vh", background: "#000", display: "flex", flexDirection: "column", paddingBottom: (previewCurrentItem && !isAdminPage && !isPokladnaPage) ? "84px" : "0" }}>
         <audio
           ref={previewAudioRef}
           onEnded={handlePreviewEnded}
           onError={() => setIsPreviewPlaying(false)}
         />
-        <Header />
+        {!isAdminPage && <Header />}
         {!isAdminPage && (
           <SpecialOfferBanner
             settings={settings}
@@ -499,7 +499,7 @@ function App() {
             onHeightChange={setSpecialOfferBarHeight}
           />
         )}
-        <div style={{ height: `${headerSpacerHeight}px`, flexShrink: 0 }} aria-hidden="true" />
+        {!isAdminPage && <div style={{ height: `${headerSpacerHeight}px`, flexShrink: 0 }} aria-hidden="true" />}
         <main style={{ flex: 1, position: "relative", zIndex: 20 }} className="fade-in">
           <Suspense fallback={<PageLoader />}>
             <Switch>
