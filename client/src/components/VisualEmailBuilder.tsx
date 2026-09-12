@@ -119,15 +119,26 @@ export interface EmailBlock {
   heroTitleColor?: string;
 
   // Beat Highlight
-  beatTitle?: string;
-  beatSubtitle?: string;
-  beatCoverUrl?: string;
-  beatPrice?: string;
-  beatUrl?: string;
-  beatBpmKey?: string;
+   beatTitle?: string;
+   beatSubtitle?: string;
+   beatCoverUrl?: string;
+   beatPrice?: string;
+   beatUrl?: string;
+   beatBpmKey?: string;
+   // New style fields for beat_highlight block
+   beatBgColor?: string;
+   beatTitleColor?: string;
+   beatPriceColor?: string;
+   beatDetailColor?: string;
+   beatCardStyle?: "standard" | "gradient" | "neon";
 
   // Multi Beat Grid
-  gridItems?: EmailBlockGridItem[];
+   gridItems?: EmailBlockGridItem[];
+   // New style fields for multi_beat_grid block
+   gridBgColor?: string;
+   gridCardBgColor?: string;
+   gridPriceColor?: string;
+   gridColumns?: 1 | 2 | 3;
 
   // Info Box
   infoTitle?: string;
@@ -136,25 +147,45 @@ export interface EmailBlock {
   infoBgColor?: string;
 
   // Coupon Box
-  couponCode?: string;
-  couponDiscount?: string;
-  couponDescription?: string;
+   couponCode?: string;
+   couponDiscount?: string;
+   couponDescription?: string;
+   // New style fields for coupon_box block
+   couponBgColor?: string;
+   couponBorderColor?: string;
+   couponBorderStyle?: "solid" | "dashed" | "dotted";
+   couponCodeColor?: string;
+   couponStyle?: "minimal" | "glow" | "gradient";
 
   // Social Links
-  instagramUrl?: string;
-  youtubeUrl?: string;
-  spotifyUrl?: string;
-  beatstarsUrl?: string;
+   instagramUrl?: string;
+   youtubeUrl?: string;
+   spotifyUrl?: string;
+   beatstarsUrl?: string;
+   // New style fields for social_links block
+   socialStyle?: "filled" | "outlined" | "minimal";
+   socialIconColor?: string;
+   socialIconBg?: string;
+   socialIconSize?: "sm" | "md" | "lg";
+   socialAlign?: "left" | "center" | "right";
 
   // Countdown Timer
-  countdownTitle?: string;
-  countdownTargetDate?: string;
-  countdownDays?: number | string;
-  countdownHours?: number | string;
-  countdownMinutes?: number | string;
-  countdownSeconds?: number | string;
-  countdownButtonText?: string;
-  countdownButtonUrl?: string;
+   countdownTitle?: string;
+   countdownTargetDate?: string;
+   countdownDays?: number | string;
+   countdownHours?: number | string;
+   countdownMinutes?: number | string;
+   countdownSeconds?: number | string;
+   countdownButtonText?: string;
+   countdownButtonUrl?: string;
+   // New style fields for countdown block
+   countdownBgColor?: string;
+   countdownNumberColor?: string;
+   countdownLabelColor?: string;
+   countdownBtnBg?: string;
+   countdownBtnText?: string;
+   countdownBorderRadius?: "sharp" | "rounded" | "pill";
+   countdownGlow?: boolean;
 }
 
 interface SelectItem {
