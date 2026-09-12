@@ -418,23 +418,23 @@ function buildFreePreviewHtml(introText: string, items: DownloadItem[], appUrl: 
 
   const displayIntro = introText || "Děkujeme za zájem! Níže najdete přímé odkazy ke stažení vašich souborů zdarma. Soubory jsou dostupné kdykoliv — odkaz nevyprší.";
 
-  return `<!DOCTYPE html><html lang="cs"><head><meta charset="UTF-8"/></head>
+  return `<!DOCTYPE html><html lang="cs"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/></head>
 <body style="margin:0;padding:0;background:#0a0a0a;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:40px 0;">
-    <tr><td align="center">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:36px 0;width:100%;">
+    <tr><td align="center" style="padding:0 12px;">
       <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
-        <tr><td style="padding:0 0 32px 0;text-align:center;border-bottom:1px solid #222;">
-          <img src="${appUrl}/uploads/artwork/voodoo808-main-logo.png" alt="VOODOO808" width="220" style="display:inline-block;height:auto;max-width:220px;"/>
+        <tr><td style="padding:0 24px 32px 24px;text-align:center;border-bottom:1px solid #222;">
+          <img src="${appUrl}/uploads/artwork/voodoo808-logo-white@2x.png" alt="VOODOO808" width="240" style="display:inline-block;height:auto;max-width:240px;width:auto;"/>
         </td></tr>
-        <tr><td style="padding:32px 0 8px 0;">
+        <tr><td style="padding:32px 24px 8px 24px;">
           <p style="margin:0 0 12px 0;font-size:22px;font-weight:700;color:#fff;">Vaše soubory jsou připraveny!</p>
           <p style="margin:0;font-size:15px;color:#aaa;line-height:1.6;">${displayIntro}</p>
         </td></tr>
-        <tr><td style="padding:28px 0 0 0;">
+        <tr><td style="padding:28px 24px 0 24px;">
           <p style="margin:0 0 12px 0;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#666;">Vaše soubory</p>
           <table width="100%" cellpadding="0" cellspacing="0">${downloadRows}</table>
         </td></tr>
-        <tr><td style="padding:24px 0 0 0;">
+        <tr><td style="padding:24px 24px 0 24px;">
           <div style="background:#111;border:1px solid #222;border-radius:6px;padding:18px 22px;">
             <p style="margin:0 0 6px 0;font-size:13px;font-weight:700;color:#fff;">Přístup kdykoli</p>
             <p style="margin:0;font-size:13px;color:#888;line-height:1.6;">
@@ -442,7 +442,7 @@ function buildFreePreviewHtml(introText: string, items: DownloadItem[], appUrl: 
             </p>
           </div>
         </td></tr>
-        <tr><td style="padding:40px 0 0 0;border-top:1px solid #222;margin-top:32px;">
+        <tr><td style="padding:40px 24px 0 24px;border-top:1px solid #222;margin-top:32px;">
           <p style="margin:32px 0 0 0;font-size:12px;color:#444;text-align:center;line-height:1.7;">
             VOODOO808 &bull; Vojtěch Vojkovský<br/>
             <a href="mailto:info@voodoo808.com" style="color:#666;text-decoration:none;">info@voodoo808.com</a>
@@ -497,19 +497,19 @@ function buildPurchaseEmailHtml(
 <body style="margin:0;padding:0;background:#0a0a0a;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:40px 0;">
     <tr>
-      <td align="center">
+      <td align="center" style="padding:0 12px;">
         <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
 
           <!-- Header -->
           <tr>
-            <td style="padding:0 0 32px 0;text-align:center;border-bottom:1px solid #222;">
-              <img src="${appUrl}/uploads/artwork/voodoo808-main-logo.png" alt="VOODOO808" width="220" style="display:inline-block;height:auto;max-width:220px;"/>
+            <td style="padding:0 24px 32px 24px;text-align:center;border-bottom:1px solid #222;">
+              <img src="${appUrl}/uploads/artwork/voodoo808-logo-white@2x.png" alt="VOODOO808" width="240" style="display:inline-block;height:auto;max-width:240px;width:auto;"/>
             </td>
           </tr>
 
           <!-- Greeting -->
           <tr>
-            <td style="padding:32px 0 8px 0;">
+            <td style="padding:32px 24px 8px 24px;">
               <p style="margin:0 0 12px 0;font-size:22px;font-weight:700;color:#fff;">
                 Platba přijata — díky za nákup!
               </p>
@@ -521,7 +521,7 @@ function buildPurchaseEmailHtml(
 
           <!-- Downloads -->
           <tr>
-            <td style="padding:28px 0 0 0;">
+            <td style="padding:28px 24px 0 24px;">
               <p style="margin:0 0 12px 0;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#666;">
                 Vaše soubory
               </p>
@@ -533,7 +533,7 @@ function buildPurchaseEmailHtml(
 
           <!-- Account note -->
           <tr>
-            <td style="padding:24px 0 0 0;">
+            <td style="padding:24px 24px 0 24px;">
               <div style="background:#111;border:1px solid #222;border-radius:6px;padding:18px 22px;">
                 <p style="margin:0 0 6px 0;font-size:13px;font-weight:700;color:#fff;">
                   Přístup ke stažení kdykoliv
@@ -550,7 +550,7 @@ function buildPurchaseEmailHtml(
           ${hasBeatContracts ? `
           <!-- Contract note -->
           <tr>
-            <td style="padding:20px 0 0 0;">
+            <td style="padding:20px 24px 0 24px;">
               <div style="background:#111;border:1px solid #222;border-radius:6px;padding:18px 22px;">
                 <p style="margin:0 0 6px 0;font-size:13px;font-weight:700;color:#fff;">
                   Licenční smlouva
@@ -566,7 +566,7 @@ function buildPurchaseEmailHtml(
 
           <!-- Footer -->
           <tr>
-            <td style="padding:40px 0 0 0;border-top:1px solid #222;margin-top:32px;">
+            <td style="padding:40px 24px 0 24px;border-top:1px solid #222;margin-top:32px;">
               <p style="margin:32px 0 0 0;font-size:12px;color:#444;text-align:center;line-height:1.7;">
                 VOODOO808 &bull; Vojtěch Vojkovský<br/>
                 <a href="mailto:info@voodoo808.com" style="color:#666;text-decoration:none;">info@voodoo808.com</a>
@@ -710,17 +710,17 @@ function buildBankTransferReminderHtml(order: any, appUrl: string, customIntroTe
   return `<!DOCTYPE html>
 <html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"/></head>
 <body style="margin:0;padding:0;background:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#ddd;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:40px 0;">
-    <tr><td align="center">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:36px 0;width:100%;">
+    <tr><td align="center" style="padding:0 12px;">
       <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
-        <tr><td style="padding:0 0 32px 0;text-align:center;border-bottom:1px solid #222;">
-          <img src="${appUrl}/uploads/artwork/voodoo808-main-logo.png" alt="VOODOO808" width="200" style="display:inline-block;height:auto;max-width:200px;"/>
+        <tr><td style="padding:0 20px 32px 20px;text-align:center;border-bottom:1px solid #222;">
+          <img src="${appUrl}/uploads/artwork/voodoo808-logo-white@2x.png" alt="VOODOO808" width="220" style="display:inline-block;height:auto;max-width:220px;width:auto;"/>
         </td></tr>
-        <tr><td style="padding:28px 0 8px 0;">
+        <tr><td style="padding:28px 20px 8px 20px;">
           <p style="margin:0 0 8px 0;font-size:22px;font-weight:700;color:#fff;letter-spacing:-0.01em;">Připomínka k platbě – objednávka #${order.id}</p>
           <p style="margin:0;font-size:14px;color:#888;line-height:1.6;">${introText}</p>
         </td></tr>
-        <tr><td style="padding:24px 0 0 0;">
+        <tr><td style="padding:24px 20px 0 20px;">
           <div style="border:1px solid #2a2a2a;border-radius:4px;padding:18px;margin-bottom:16px;background:#111;">
             <div style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">Údaje k platbě</div>
             <table width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;">
@@ -746,7 +746,7 @@ function buildBankTransferReminderHtml(order: any, appUrl: string, customIntroTe
             Otázky? Napište nám na <a href="mailto:info@voodoo808.com" style="color:#aaa;">info@voodoo808.com</a>.
           </p>
         </td></tr>
-        <tr><td style="padding:32px 0 0;border-top:1px solid #222;margin-top:24px;">
+        <tr><td style="padding:32px 20px 0 20px;border-top:1px solid #222;margin-top:24px;">
           <p style="margin:0;font-size:11px;color:#444;text-align:center;line-height:1.7;">
             VOODOO808 &bull; Vojtěch Vojkovský &bull;
             <a href="mailto:info@voodoo808.com" style="color:#555;text-decoration:none;">info@voodoo808.com</a>
@@ -831,13 +831,13 @@ export async function sendBankTransferInstructionsEmail(orderId: number): Promis
 <!DOCTYPE html>
 <html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"/></head>
 <body style="margin:0;padding:0;background:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#ddd;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:40px 0;">
-    <tr><td align="center">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:36px 0;width:100%;">
+    <tr><td align="center" style="padding:0 12px;">
       <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
-        <tr><td style="padding:0 0 32px 0;text-align:center;border-bottom:1px solid #222;">
-          <img src="${appUrl}/uploads/artwork/voodoo808-main-logo.png" alt="VOODOO808" width="200" style="display:inline-block;height:auto;max-width:200px;"/>
+        <tr><td style="padding:0 20px 32px 20px;text-align:center;border-bottom:1px solid #222;">
+          <img src="${appUrl}/uploads/artwork/voodoo808-logo-white@2x.png" alt="VOODOO808" width="220" style="display:inline-block;height:auto;max-width:220px;width:auto;"/>
         </td></tr>
-        <tr><td style="padding:28px 0 8px 0;">
+        <tr><td style="padding:28px 20px 8px 20px;">
           <h1 style="margin:0 0 8px;font-size:22px;font-weight:500;color:#fff;letter-spacing:-0.01em;">Pokyny k platbě – objednávka #${order.id}</h1>
           <p style="margin:0 0 24px;color:#888;font-size:14px;line-height:1.6;">
             Děkujeme za vaši objednávku. Pro dokončení nákupu prosím odešlete níže uvedenou částku
@@ -1024,17 +1024,17 @@ export async function sendFreeDownloadEmail(lead: { id: number; email: string; i
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 </head>
 <body style="margin:0;padding:0;background:#0a0a0a;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:40px 0;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:36px 0;width:100%;">
     <tr>
-      <td align="center">
+      <td align="center" style="padding:0 12px;">
         <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
           <tr>
-            <td style="padding:0 0 32px 0;text-align:center;border-bottom:1px solid #222;">
-              <img src="${appUrl}/uploads/artwork/voodoo808-main-logo.png" alt="VOODOO808" width="220" style="display:inline-block;height:auto;max-width:220px;"/>
+            <td style="padding:0 24px 32px 24px;text-align:center;border-bottom:1px solid #222;">
+              <img src="${appUrl}/uploads/artwork/voodoo808-logo-white@2x.png" alt="VOODOO808" width="240" style="display:inline-block;height:auto;max-width:240px;width:auto;"/>
             </td>
           </tr>
           <tr>
-            <td style="padding:32px 0 8px 0;">
+            <td style="padding:32px 24px 8px 24px;">
               <p style="margin:0 0 12px 0;font-size:22px;font-weight:700;color:#fff;">Vaše soubory jsou připraveny!</p>
               <p style="margin:0;font-size:15px;color:#aaa;line-height:1.6;">
                 ${introText}
@@ -1042,13 +1042,13 @@ export async function sendFreeDownloadEmail(lead: { id: number; email: string; i
             </td>
           </tr>
           <tr>
-            <td style="padding:28px 0 0 0;">
+            <td style="padding:28px 24px 0 24px;">
               <p style="margin:0 0 12px 0;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#666;">Vaše soubory</p>
               <table width="100%" cellpadding="0" cellspacing="0">${downloadRows}</table>
             </td>
           </tr>
           <tr>
-            <td style="padding:24px 0 0 0;">
+            <td style="padding:24px 24px 0 24px;">
               <div style="background:#111;border:1px solid #222;border-radius:6px;padding:18px 22px;">
                 <p style="margin:0 0 6px 0;font-size:13px;font-weight:700;color:#fff;">Přístup kdykoli</p>
                 <p style="margin:0;font-size:13px;color:#888;line-height:1.6;">
@@ -1059,7 +1059,7 @@ export async function sendFreeDownloadEmail(lead: { id: number; email: string; i
             </td>
           </tr>
           <tr>
-            <td style="padding:40px 0 0 0;border-top:1px solid #222;margin-top:32px;">
+            <td style="padding:40px 24px 0 24px;border-top:1px solid #222;margin-top:32px;">
               <p style="margin:32px 0 0 0;font-size:12px;color:#444;text-align:center;line-height:1.7;">
                 VOODOO808 &bull; Vojtěch Vojkovský<br/>
                 <a href="mailto:info@voodoo808.com" style="color:#666;text-decoration:none;">info@voodoo808.com</a>

@@ -68,7 +68,7 @@ export interface EmailBlockGridItem {
 
 export interface EmailHeaderConfig {
   logoType: "metallic" | "white";
-  logoSize: "sm" | "md" | "lg";
+  logoSize: "sm" | "md" | "lg" | "xl";
   showText: boolean;
 }
 
@@ -596,8 +596,8 @@ export function VisualEmailBuilder({
   const [headerConfig, setHeaderConfig] = useState<EmailHeaderConfig>(() => {
     return (
       initialHeaderConfig || {
-        logoType: "metallic",
-        logoSize: "md",
+        logoType: "white",
+        logoSize: "lg",
         showText: false,
       }
     );
@@ -1079,11 +1079,17 @@ export function VisualEmailBuilder({
   };
 
   const headerLogoSrc =
-    headerConfig.logoType === "white"
-      ? "/uploads/artwork/voodoo808-logo.png"
-      : "/uploads/artwork/voodoo808-main-logo.png";
+    headerConfig.logoType === "metallic"
+      ? "/uploads/artwork/voodoo808-main-logo-cropped.png"
+      : "/uploads/artwork/voodoo808-logo-white@2x.png";
   const headerLogoWidth =
-    headerConfig.logoSize === "sm" ? 140 : headerConfig.logoSize === "lg" ? 240 : 190;
+    headerConfig.logoSize === "sm"
+      ? 180
+      : headerConfig.logoSize === "md"
+      ? 240
+      : headerConfig.logoSize === "xl"
+      ? 400
+      : 300;
 
   const builderContent = (
     <div
@@ -2614,9 +2620,9 @@ function HeaderInspector({
             }}
           >
             <img
-              src="/uploads/artwork/voodoo808-main-logo.png"
+              src="/uploads/artwork/voodoo808-main-logo-cropped.png"
               alt="Metalické logo"
-              style={{ width: "100%", maxHeight: "36px", objectFit: "contain", marginBottom: "6px" }}
+              style={{ width: "100%", maxHeight: "38px", objectFit: "contain", marginBottom: "6px" }}
             />
             <div style={{ fontSize: "11px", fontWeight: 600, color: config.logoType === "metallic" ? "#fff" : "#888" }}>
               Metalické 3D
@@ -2637,12 +2643,12 @@ function HeaderInspector({
             }}
           >
             <img
-              src="/uploads/artwork/voodoo808-logo.png"
+              src="/uploads/artwork/voodoo808-logo-white@2x.png"
               alt="Bílé logo"
-              style={{ width: "100%", maxHeight: "36px", objectFit: "contain", marginBottom: "6px" }}
+              style={{ width: "100%", maxHeight: "38px", objectFit: "contain", marginBottom: "6px" }}
             />
             <div style={{ fontSize: "11px", fontWeight: 600, color: config.logoType === "white" ? "#fff" : "#888" }}>
-              Bílé z lišty
+              Bílé (z lišty webu)
             </div>
           </div>
         </div>
@@ -2653,17 +2659,22 @@ function HeaderInspector({
         <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "6px" }}>
           Velikost loga
         </label>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "6px" }}>
-          {(["sm", "md", "lg"] as const).map((size) => {
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "6px" }}>
+          {(["sm", "md", "lg", "xl"] as const).map((size) => {
             const isSelected = config.logoSize === size;
-            const labels = { sm: "Malé (140px)", md: "Střední (190px)", lg: "Velké (240px)" };
+            const labels = {
+              sm: "180px",
+              md: "240px",
+              lg: "300px",
+              xl: "400px",
+            };
             return (
               <button
                 key={size}
                 type="button"
                 onClick={() => onChange({ ...config, logoSize: size })}
                 style={{
-                  padding: "8px 4px",
+                  padding: "8px 2px",
                   background: isSelected ? "rgba(255,255,255,0.15)" : "#141414",
                   border: isSelected ? "1px solid #ffffff" : "1px solid #282828",
                   borderRadius: "6px",

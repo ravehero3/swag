@@ -34,21 +34,23 @@ export const BRAND = {
 
 export interface EmailHeaderOptions {
   logoType?: "metallic" | "white";
-  logoSize?: "sm" | "md" | "lg";
+  logoSize?: "sm" | "md" | "lg" | "xl";
   showText?: boolean;
 }
 
 function resolveLogoUrl(appUrl: string, logoType?: "metallic" | "white"): string {
-  if (logoType === "white") {
-    return `${appUrl}/uploads/artwork/voodoo808-logo.png`;
+  if (logoType === "metallic") {
+    return `${appUrl}/uploads/artwork/voodoo808-main-logo-cropped.png`;
   }
-  return `${appUrl}/uploads/artwork/voodoo808-main-logo.png`;
+  // Default is the pure white logo from website header
+  return `${appUrl}/uploads/artwork/voodoo808-logo-white@2x.png`;
 }
 
-function resolveLogoWidth(size?: "sm" | "md" | "lg"): number {
-  if (size === "sm") return 140;
-  if (size === "lg") return 240;
-  return 190;
+function resolveLogoWidth(size?: "sm" | "md" | "lg" | "xl"): number {
+  if (size === "sm") return 180;
+  if (size === "md") return 240;
+  if (size === "xl") return 400;
+  return 300; // "lg" default
 }
 
 /**
@@ -115,23 +117,43 @@ export function renderBrandedEmailShell(opts: {
   [data-ogsc] .email-body-wrapper {
     background-color: #0a0a0a !important;
   }
+  @media only screen and (max-width: 600px) {
+    .email-container {
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+    .email-header-cell {
+      padding-left: 20px !important;
+      padding-right: 20px !important;
+      padding-bottom: 24px !important;
+    }
+    .email-content-cell {
+      padding-left: 20px !important;
+      padding-right: 20px !important;
+      padding-top: 24px !important;
+    }
+    .email-footer-cell {
+      padding-left: 20px !important;
+      padding-right: 20px !important;
+    }
+  }
 </style>
 </head>
 <body class="email-body-wrapper" style="margin:0;padding:0;background:${BRAND.bg};background-color:${BRAND.bg};font-family:${BRAND.fontFamily};-webkit-font-smoothing:antialiased;">
   ${preheader ? `<div style="display:none;font-size:1px;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;mso-hide:all;">${preheader}${preheaderPadding}</div>` : ""}
-  <table class="email-body-wrapper" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${BRAND.bg};background-color:${BRAND.bg};padding:40px 0;">
-    <tr><td align="center">
-      <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;">
-        <tr><td style="padding:0 0 28px 0;text-align:center;border-bottom:1px solid ${BRAND.border};">
+  <table class="email-body-wrapper" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${BRAND.bg};background-color:${BRAND.bg};padding:36px 0;width:100%;">
+    <tr><td align="center" style="padding:0 12px;">
+      <table class="email-container" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;margin:0 auto;">
+        <tr><td class="email-header-cell" style="padding:0 24px 28px 24px;text-align:center;border-bottom:1px solid ${BRAND.border};">
           <a href="${appUrl}" style="display:inline-block;text-decoration:none;">
-            <img src="${logoUrl}" alt="VOODOO808" width="${logoWidth}" style="display:inline-block;height:auto;max-width:${logoWidth}px;" />
+            <img src="${logoUrl}" alt="VOODOO808" width="${logoWidth}" style="display:inline-block;height:auto;max-width:${logoWidth}px;width:auto;" />
           </a>
           ${showText ? `<div style="color:#ffffff;font-size:16px;font-weight:900;letter-spacing:3px;margin-top:8px;">VOODOO808</div>` : ""}
         </td></tr>
-        <tr><td style="padding:32px 0 0 0;">
+        <tr><td class="email-content-cell" style="padding:32px 24px 0 24px;">
           ${bodyHtml}
         </td></tr>
-        <tr><td style="padding:40px 0 0 0;border-top:1px solid ${BRAND.border};margin-top:32px;">
+        <tr><td class="email-footer-cell" style="padding:40px 24px 0 24px;border-top:1px solid ${BRAND.border};margin-top:32px;">
           <div style="margin:32px 0 0 0;text-align:center;">${footer}</div>
         </td></tr>
       </table>
