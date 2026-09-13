@@ -1,10 +1,44 @@
 import { Resend } from "resend";
+import { randomBytes } from "crypto";
 import { pool } from "../../db.js";
 import type { Subscriber } from "./subscribers.js";
 import { isMarketingEligible } from "./subscribers.js";
 import { createUnsubscribeToken } from "./tokens.js";
 import { renderBrandedEmailShell } from "./brandKit.js";
 import { compileBlocksToHtml } from "./blockCompiler.js";
+
+/** Generate a short, URL-safe tracking token */
+function generateTrackingToken(): string {
+  return randomBytes(20).toString("base64url");
+}
+
+/** Wrap all trackable links through the click-redirect endpoint */
+function wrapLinksForTracking(html: string, trackingToken: string, appUrl: string): string {
+  if (!html || !trackingToken) return html;
+  return html.replace(/href=["']([^"']+)["']/gi, (match, url: string) => {
+    // Never wrap unsubscribe, mailto, anchor, or already-wrapped links
+    if (
+      url.startsWith("mailto:") ||
+      url.startsWith("#") ||
+      url.includes("odhlasit-marketing") ||
+      url.includes("/e/c?") ||
+      url.includes("/e/o/")
+    ) return match;
+    const encoded = encodeURIComponent(url);
+    return `href="${appUrl}/e/c?t=${trackingToken}&u=${encoded}"`;
+  });
+}
+
+/** Inject a 1×1 transparent GIF tracking pixel just before </body> */
+function injectTrackingPixel(html: string, trackingToken: string, appUrl: string): string {
+  if (!html || !trackingToken) return html;
+  const pixel = `<img src="${appUrl}/e/o/${trackingToken}" width="1" height="1" alt="" style="display:block;width:1px;height:1px;border:0;" />`;
+  // Insert before </body> if present, otherwise append
+  if (html.includes("</body>")) {
+    return html.replace("</body>", `${pixel}</body>`);
+  }
+  return html + pixel;
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Marketing email sender. Distinct from server/src/email.ts (transactional
@@ -56,9 +90,14 @@ export function appendUtmParams(html: string, campaign: string): string {
   const utmCampaign = encodeURIComponent(campaign || "marketing");
 
   return html.replace(/href=["']([^"']+)["']/gi, (match, url: string) => {
-    if (url.startsWith("mailto:") || url.includes("odhlasit-marketing") || url.startsWith("#")) {
-      return match;
-    }
+    // Skip mailto, anchors, unsubscribe links, and already-wrapped tracking links
+    if (
+      url.startsWith("mailto:") ||
+      url.startsWith("#") ||
+      url.includes("odhlasit-marketing") ||
+      url.includes("/e/c?") ||
+      url.includes("/e/o/")
+    ) return match;
     if (url.includes("utm_source=")) return match;
     const separator = url.includes("?") ? "&" : "?";
     return `href="${url}${separator}utm_source=${utmSource}&utm_medium=${utmMedium}&utm_campaign=${utmCampaign}"`;
@@ -281,14 +320,23 @@ export async function sendMarketingEmail(input: SendMarketingEmailInput): Promis
   const subject = fillVariables(subjectText, vars);
   const bodyHtml = fillVariables(rawBodyHtml, vars);
   const campaignTag = input.campaignId ? `campaign_${input.campaignId}` : input.journeyId ? `journey_${input.journeyId}` : "direct_send";
-  const taggedBodyHtml = appendUtmParams(bodyHtml, campaignTag);
 
-  const html = renderBrandedEmailShell({
+  // Generate a per-send tracking token for open pixel + click tracking
+  const trackingToken = generateTrackingToken();
+
+  // 1. Add UTM params to all links (before click wrapping so UTM is embedded in destination)
+  const utmTaggedHtml = appendUtmParams(bodyHtml, campaignTag);
+  // 2. Wrap links through /e/c for click tracking
+  const clickTrackedHtml = wrapLinksForTracking(utmTaggedHtml, trackingToken, appUrl);
+  // 3. Compile into the branded email shell
+  let html = renderBrandedEmailShell({
     appUrl,
-    bodyHtml: taggedBodyHtml,
+    bodyHtml: clickTrackedHtml,
     unsubscribeUrl,
     preheader: preheaderText ? fillVariables(preheaderText, vars) : undefined,
   });
+  // 4. Inject open-tracking pixel
+  html = injectTrackingPixel(html, trackingToken, appUrl);
 
   const mode = await getEmailMode();
   let recipient = subscriber.email;
@@ -309,9 +357,9 @@ export async function sendMarketingEmail(input: SendMarketingEmailInput): Promis
   const insertRes = await pool.query(
     `INSERT INTO marketing_email_sends
        (subscriber_id, journey_id, journey_step_id, enrollment_id, campaign_id, template_id,
-        idempotency_key, email_type, subject, recipient, status)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,'marketing',$8,$9,'queued')
-     ON CONFLICT (idempotency_key) DO UPDATE SET status = 'queued', error = NULL
+        idempotency_key, email_type, subject, recipient, status, tracking_token)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,'marketing',$8,$9,'queued',$10)
+     ON CONFLICT (idempotency_key) DO UPDATE SET status = 'queued', error = NULL, tracking_token = EXCLUDED.tracking_token
      RETURNING id`,
     [
       subscriber.id,
@@ -323,6 +371,7 @@ export async function sendMarketingEmail(input: SendMarketingEmailInput): Promis
       idempotencyKey,
       subject,
       recipient,
+      trackingToken,
     ]
   );
   const sendId = insertRes.rows[0].id;

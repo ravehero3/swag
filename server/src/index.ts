@@ -158,6 +158,89 @@ app.use("/api/licenses", licensesRoutes);
 app.use("/api/admin", adminLicensesRoutes);
 app.use("/api/beats", commentsRoutes);
 
+// ── Email open-pixel tracker ──────────────────────────────────────────────────
+// A 1×1 transparent GIF served at /e/o/:token — injected into every marketing
+// email by the sender. Returns the pixel instantly and records the open async.
+const TRACKING_PIXEL = Buffer.from(
+  "R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
+  "base64"
+);
+app.get("/e/o/:token", async (req: any, res: any) => {
+  res.setHeader("Content-Type", "image/gif");
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+  res.setHeader("Pragma", "no-cache");
+  res.send(TRACKING_PIXEL);
+  // Record asynchronously — never block the pixel response.
+  const token = String(req.params.token || "");
+  if (!token) return;
+  try {
+    const sendRes = await pool.query(
+      "SELECT id, campaign_id, journey_step_id FROM marketing_email_sends WHERE tracking_token = $1",
+      [token]
+    );
+    const send = sendRes.rows[0];
+    if (!send) return;
+    // Mark as opened (only set once — idempotent via WHERE opened_at IS NULL)
+    await pool.query(
+      "UPDATE marketing_email_sends SET opened_at = COALESCE(opened_at, NOW()), status = CASE WHEN status IN ('sent','delivered') THEN 'opened' ELSE status END WHERE id = $1",
+      [send.id]
+    );
+    await pool.query(
+      `INSERT INTO marketing_email_events (email_send_id, event_type, event_id, event_timestamp)
+       VALUES ($1,'email.opened','pixel/'||$2,NOW()) ON CONFLICT (event_id) DO NOTHING`,
+      [send.id, token]
+    );
+    // Increment journey step open counter
+    if (send.journey_step_id) {
+      await pool.query(
+        "UPDATE marketing_journey_steps SET stat_opens = stat_opens + 1 WHERE id = $1",
+        [send.journey_step_id]
+      );
+    }
+  } catch (err) {
+    // Non-fatal — tracking failure must never surface to end user
+  }
+});
+
+// ── Email click tracker / redirect ───────────────────────────────────────────
+// /e/c?t=<trackingToken>&u=<encodedUrl> — logs the click, then 302s to destination.
+app.get("/e/c", async (req: any, res: any) => {
+  const token = String(req.query.t || "");
+  const destination = String(req.query.u || "");
+  // Redirect first, then record — keeps latency imperceptible.
+  const safeUrl = destination && (destination.startsWith("http://") || destination.startsWith("https://"))
+    ? destination
+    : (process.env.APP_URL || "https://voodoo808.com");
+  res.redirect(302, safeUrl);
+  if (!token) return;
+  try {
+    const sendRes = await pool.query(
+      "SELECT id, journey_step_id FROM marketing_email_sends WHERE tracking_token = $1",
+      [token]
+    );
+    const send = sendRes.rows[0];
+    if (!send) return;
+    await pool.query(
+      "UPDATE marketing_email_sends SET first_clicked_at = COALESCE(first_clicked_at, NOW()), status = CASE WHEN status IN ('sent','delivered','opened') THEN 'clicked' ELSE status END WHERE id = $1",
+      [send.id]
+    );
+    const clickEventId = `click/${token}/${Buffer.from(destination).toString("base64").substring(0, 32)}`;
+    await pool.query(
+      `INSERT INTO marketing_email_events (email_send_id, event_type, event_id, event_timestamp, payload)
+       VALUES ($1,'email.clicked',$2,NOW(),$3) ON CONFLICT (event_id) DO NOTHING`,
+      [send.id, clickEventId, JSON.stringify({ url: destination })]
+    );
+    if (send.journey_step_id) {
+      await pool.query(
+        "UPDATE marketing_journey_steps SET stat_clicks = stat_clicks + 1 WHERE id = $1",
+        [send.journey_step_id]
+      );
+    }
+  } catch (err) {
+    // Non-fatal
+  }
+});
+
 // ── GoPay return redirect ─────────────────────────────────────────────────────
 // GoPay redirects the customer to return_url?id=<payment_id> after payment.
 // We look up the order by gopay_payment_id and redirect to the status page.

@@ -520,6 +520,43 @@ export async function initDatabase() {
       ALTER TABLE marketing_campaigns ADD COLUMN IF NOT EXISTS html_content TEXT;
     `);
 
+    // Phase 2: open/click tracking, double opt-in, segments, scheduling
+    await client.query(`
+      -- Open/click pixel tracking token on each send
+      ALTER TABLE marketing_email_sends ADD COLUMN IF NOT EXISTS tracking_token VARCHAR(64);
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_marketing_email_sends_tracking_token
+        ON marketing_email_sends (tracking_token) WHERE tracking_token IS NOT NULL;
+
+      -- Per-campaign open/click counts (denormalised for fast stats queries)
+      ALTER TABLE marketing_email_sends ADD COLUMN IF NOT EXISTS opened_at TIMESTAMP;
+      ALTER TABLE marketing_email_sends ADD COLUMN IF NOT EXISTS first_clicked_at TIMESTAMP;
+
+      -- Double opt-in support on subscribers
+      ALTER TABLE subscribers ADD COLUMN IF NOT EXISTS double_optin_token VARCHAR(64);
+      ALTER TABLE subscribers ADD COLUMN IF NOT EXISTS double_optin_sent_at TIMESTAMP;
+      ALTER TABLE subscribers ADD COLUMN IF NOT EXISTS double_optin_confirmed_at TIMESTAMP;
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_subscribers_double_optin_token
+        ON subscribers (double_optin_token) WHERE double_optin_token IS NOT NULL;
+
+      -- Audience segment rules stored as JSON on campaigns (replaces the old segment_id FK)
+      ALTER TABLE marketing_campaigns ADD COLUMN IF NOT EXISTS segment_rules JSONB DEFAULT '{"type":"all"}';
+
+      -- Re-send-to-non-openers: track parent campaign
+      ALTER TABLE marketing_campaigns ADD COLUMN IF NOT EXISTS parent_campaign_id INTEGER REFERENCES marketing_campaigns(id) ON DELETE SET NULL;
+      ALTER TABLE marketing_campaigns ADD COLUMN IF NOT EXISTS resend_for VARCHAR(20);
+
+      -- Scheduled send: campaigns with status='scheduled' are picked up by the cron
+      -- (scheduled_at column already exists in original schema)
+
+      -- Tag-triggered journey support (trigger_type = 'tag_applied')
+      -- no schema change needed — trigger_value holds the tag slug
+
+      -- Journey step analytics denormalised counts
+      ALTER TABLE marketing_journey_steps ADD COLUMN IF NOT EXISTS stat_sends INTEGER NOT NULL DEFAULT 0;
+      ALTER TABLE marketing_journey_steps ADD COLUMN IF NOT EXISTS stat_opens INTEGER NOT NULL DEFAULT 0;
+      ALTER TABLE marketing_journey_steps ADD COLUMN IF NOT EXISTS stat_clicks INTEGER NOT NULL DEFAULT 0;
+    `);
+
     // Backfill: normalise emails for any subscriber rows that predate the
     // email_normalized column (safe no-op on fresh installs).
     await client.query(`

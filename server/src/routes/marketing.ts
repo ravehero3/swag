@@ -3,6 +3,7 @@ import { requireAdmin } from "../middleware/auth.js";
 import { rateLimit } from "../middleware/rateLimit.js";
 import { pool } from "../db.js";
 import { compileBlocksToHtml } from "../lib/marketing/blockCompiler.js";
+import { randomBytes } from "crypto";
 import {
   verifyUnsubscribeToken,
 } from "../lib/marketing/tokens.js";
@@ -14,6 +15,8 @@ import {
   removeTagFromSubscriber,
   getSubscriberTags,
   logMarketingAction,
+  normalizeEmail,
+  upsertSubscriber,
 } from "../lib/marketing/subscribers.js";
 import {
   enrollSubscriberInJourney,
@@ -21,8 +24,10 @@ import {
   resumeEnrollment,
   cancelEnrollment,
 } from "../lib/marketing/journeys.js";
+import { resolveSegmentAudience } from "../lib/marketing/scheduler.js";
 
 const router = Router();
+
 
 // ── Public: unsubscribe (token-based, no auth) ──────────────────────────────
 
@@ -760,20 +765,20 @@ router.get("/campaigns", requireAdmin, async (_req: Request, res: Response) => {
 
 router.post("/campaigns", requireAdmin, async (req: Request, res: Response) => {
   try {
-    const { name, subject, preheader, templateId, blocks, htmlContent, headerOptions } = req.body;
+    const { name, subject, preheader, templateId, blocks, htmlContent, headerOptions, segmentRules, scheduledAt } = req.body;
     if (!name) return res.status(400).json({ error: "Chybí název kampaně" });
 
     let finalHtml = htmlContent || "";
-    if (Array.isArray(blocks) && blocks.length > 0) {
-      finalHtml = compileBlocksToHtml(blocks);
-    }
+    if (Array.isArray(blocks) && blocks.length > 0) finalHtml = compileBlocksToHtml(blocks);
     const blocksJson = Array.isArray(blocks) ? JSON.stringify(blocks) : (blocks ? JSON.stringify(blocks) : "[]");
     const headerOptionsJson = headerOptions ? JSON.stringify(headerOptions) : "{}";
+    const segmentJson = segmentRules ? JSON.stringify(segmentRules) : '{"type":"all"}';
+    const status = scheduledAt ? "scheduled" : "draft";
 
     const result = await pool.query(
-      `INSERT INTO marketing_campaigns (name, subject, preheader, template_id, status, blocks, html_content, header_options)
-       VALUES ($1,$2,$3,$4,'draft',$5::jsonb,$6,$7::jsonb) RETURNING *`,
-      [name, subject || null, preheader || null, templateId || null, blocksJson, finalHtml || null, headerOptionsJson]
+      `INSERT INTO marketing_campaigns (name, subject, preheader, template_id, status, blocks, html_content, header_options, segment_rules, scheduled_at)
+       VALUES ($1,$2,$3,$4,$5,$6::jsonb,$7,$8::jsonb,$9::jsonb,$10) RETURNING *`,
+      [name, subject || null, preheader || null, templateId || null, status, blocksJson, finalHtml || null, headerOptionsJson, segmentJson, scheduledAt || null]
     );
     await logMarketingAction("campaign.created", req.session.userId || null, { type: "campaign", id: result.rows[0].id });
     res.json(result.rows[0]);
@@ -783,22 +788,28 @@ router.post("/campaigns", requireAdmin, async (req: Request, res: Response) => {
   }
 });
 
+
 router.patch("/campaigns/:id", requireAdmin, async (req: Request, res: Response) => {
   try {
-    const { name, subject, preheader, templateId, blocks, htmlContent, headerOptions } = req.body;
+    const { name, subject, preheader, templateId, blocks, htmlContent, headerOptions, segmentRules, scheduledAt } = req.body;
     let finalHtml = htmlContent || "";
-    if (Array.isArray(blocks) && blocks.length > 0) {
-      finalHtml = compileBlocksToHtml(blocks);
-    }
+    if (Array.isArray(blocks) && blocks.length > 0) finalHtml = compileBlocksToHtml(blocks);
     const blocksJson = Array.isArray(blocks) ? JSON.stringify(blocks) : (blocks ? JSON.stringify(blocks) : "[]");
     const headerOptionsJson = headerOptions ? JSON.stringify(headerOptions) : null;
+    const segmentJson = segmentRules ? JSON.stringify(segmentRules) : null;
 
     const result = await pool.query(
       `UPDATE marketing_campaigns SET name = $1, subject = $2, preheader = $3, template_id = $4,
-       blocks = $5::jsonb, html_content = $6, header_options = COALESCE($7::jsonb, header_options), updated_at = CURRENT_TIMESTAMP WHERE id = $8 RETURNING *`,
-      [name, subject || null, preheader || null, templateId || null, blocksJson, finalHtml || null, headerOptionsJson, req.params.id]
+       blocks = $5::jsonb, html_content = $6, header_options = COALESCE($7::jsonb, header_options),
+       segment_rules = COALESCE($8::jsonb, segment_rules),
+       scheduled_at = $9,
+       status = CASE WHEN $9 IS NOT NULL AND status = 'draft' THEN 'scheduled'
+                     WHEN $9 IS NULL AND status = 'scheduled' THEN 'draft'
+                     ELSE status END,
+       updated_at = CURRENT_TIMESTAMP WHERE id = $10 RETURNING *`,
+      [name, subject || null, preheader || null, templateId || null, blocksJson, finalHtml || null, headerOptionsJson, segmentJson, scheduledAt || null, req.params.id]
     );
-    if (result.rows.length === 0) return res.status(404).json({ error: "Kampaň nenalezena" });
+    if (result.rows.length === 0) return res.status(404).json({ error: "Kampaně nenalezena" });
     await logMarketingAction("campaign.edited", req.session.userId || null, { type: "campaign", id: parseInt(req.params.id, 10) });
     res.json(result.rows[0]);
   } catch (error) {
@@ -806,6 +817,7 @@ router.patch("/campaigns/:id", requireAdmin, async (req: Request, res: Response)
     res.status(500).json({ error: "Chyba při ukládání kampaně" });
   }
 });
+
 
 router.get("/campaigns/:id/preview", requireAdmin, async (req: Request, res: Response) => {
   try {
@@ -922,13 +934,13 @@ router.get("/beats-select", requireAdmin, async (_req: Request, res: Response) =
   }
 });
 
-// Estimate recipient count for a campaign's audience (all eligible marketing subscribers today — V1 has one implicit segment: "All marketing subscribers").
-router.get("/campaigns/:id/audience-count", requireAdmin, async (_req: Request, res: Response) => {
+// Estimate recipient count for a campaign's segment-filtered audience.
+router.get("/campaigns/:id/audience-count", requireAdmin, async (req: Request, res: Response) => {
   try {
-    const result = await pool.query(
-      "SELECT COUNT(*) FROM subscribers WHERE marketing_consent = TRUE AND unsubscribed_at IS NULL AND suppressed_at IS NULL"
-    );
-    res.json({ count: parseInt(result.rows[0].count, 10) });
+    const campaignRes = await pool.query("SELECT segment_rules FROM marketing_campaigns WHERE id = $1", [req.params.id]);
+    const segmentRules = campaignRes.rows[0]?.segment_rules || { type: "all" };
+    const audience = await resolveSegmentAudience(segmentRules);
+    res.json({ count: audience.length });
   } catch (error) {
     res.status(500).json({ error: "Chyba při počítání příjemců" });
   }
@@ -971,10 +983,7 @@ router.post("/campaigns/:id/send", requireAdmin, async (req: Request, res: Respo
       return res.status(400).json({ error: "Kampaň nemá přiřazenou šablonu ani vlastní obsah" });
     }
 
-    const audienceRes = await pool.query(
-      "SELECT * FROM subscribers WHERE marketing_consent = TRUE AND unsubscribed_at IS NULL AND suppressed_at IS NULL ORDER BY id ASC"
-    );
-    const audience = audienceRes.rows;
+    const audience = await resolveSegmentAudience(campaign.segment_rules);
 
     if (typeof confirmedCount !== "number" || confirmedCount !== audience.length) {
       return res.status(409).json({
@@ -1026,40 +1035,30 @@ router.post("/campaigns/:id/send", requireAdmin, async (req: Request, res: Respo
 });
 
 // ── Admin: live block preview (WYSIWYG) ─────────────────────────────────────
-// Pure rendering endpoint — compiles blocks to full branded HTML and returns it.
-// No DB write, no email send. Used by the visual editor for real-time preview.
 router.post("/preview-blocks", requireAdmin, async (req: Request, res: Response) => {
   try {
     const { blocks, subject, preheader, headerOptions } = req.body;
     const appUrl = process.env.APP_URL || "https://voodoo808.com";
     const { renderBrandedEmailShell } = await import("../lib/marketing/brandKit.js");
-
-    // Fill sample variables so preview looks like a real email
     const sampleVars: Record<string, string> = {
       first_name: "Petr",
       email: "petr@example.com",
       unsubscribe_url: `${appUrl}/odhlasit-marketing?token=NAHLED`,
       site_url: appUrl,
     };
-
     function fillVars(text: string): string {
       return text.replace(/\{\{\s*([a-zA-Z_]+)\s*\}\}/g, (m, key) => sampleVars[key] ?? m);
     }
-
     let bodyHtml = "";
     if (Array.isArray(blocks) && blocks.length > 0) {
-      const rawHtml = compileBlocksToHtml(blocks);
-      bodyHtml = fillVars(rawHtml);
+      bodyHtml = fillVars(compileBlocksToHtml(blocks));
     }
-
     const html = renderBrandedEmailShell({
-      appUrl,
-      bodyHtml,
+      appUrl, bodyHtml,
       unsubscribeUrl: sampleVars.unsubscribe_url,
       preheader: preheader ? fillVars(String(preheader)) : undefined,
       headerOptions,
     });
-
     res.setHeader("Content-Type", "text/html; charset=utf-8");
     res.send(html);
   } catch (error) {
@@ -1068,5 +1067,340 @@ router.post("/preview-blocks", requireAdmin, async (req: Request, res: Response)
   }
 });
 
-export default router;
+// ── Campaign analytics (per-campaign stats) ──────────────────────────────────
+router.get("/campaigns/:id/stats", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const [campaign, sendsRes, eventsRes] = await Promise.all([
+      pool.query("SELECT id, name, subject, status, sent_at, recipient_count FROM marketing_campaigns WHERE id = $1", [id]),
+      pool.query(
+        `SELECT
+           COUNT(*) FILTER (WHERE status IN ('sent','delivered','opened','clicked')) AS delivered,
+           COUNT(*) FILTER (WHERE opened_at IS NOT NULL) AS opened,
+           COUNT(*) FILTER (WHERE first_clicked_at IS NOT NULL) AS clicked,
+           COUNT(*) FILTER (WHERE status = 'failed') AS failed,
+           COUNT(*) FILTER (WHERE status = 'suppressed') AS suppressed
+         FROM marketing_email_sends WHERE campaign_id = $1`,
+        [id]
+      ),
+      pool.query(
+        `SELECT event_type, COUNT(*) FROM marketing_email_events mee
+         JOIN marketing_email_sends mes ON mes.id = mee.email_send_id
+         WHERE mes.campaign_id = $1 GROUP BY event_type`,
+        [id]
+      ),
+    ]);
+    if (!campaign.rows[0]) return res.status(404).json({ error: "Kampaně nenalezena" });
+    const s = sendsRes.rows[0];
+    const delivered = parseInt(s.delivered, 10) || 0;
+    const opened = parseInt(s.opened, 10) || 0;
+    const clicked = parseInt(s.clicked, 10) || 0;
+    const eventMap: Record<string, number> = {};
+    for (const r of eventsRes.rows) eventMap[r.event_type] = parseInt(r.count, 10);
+    res.json({
+      ...campaign.rows[0],
+      delivered,
+      opened,
+      clicked,
+      failed: parseInt(s.failed, 10) || 0,
+      suppressed: parseInt(s.suppressed, 10) || 0,
+      openRate: delivered > 0 ? Math.round((opened / delivered) * 1000) / 10 : 0,
+      clickRate: delivered > 0 ? Math.round((clicked / delivered) * 1000) / 10 : 0,
+      clickToOpenRate: opened > 0 ? Math.round((clicked / opened) * 1000) / 10 : 0,
+      events: eventMap,
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při načítání statistik" });
+  }
+});
 
+// ── Resend to non-openers ─────────────────────────────────────────────────────
+router.post("/campaigns/:id/resend-non-openers", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const parentId = parseInt(req.params.id, 10);
+    const { subject, scheduledAt } = req.body;
+    const parentRes = await pool.query("SELECT * FROM marketing_campaigns WHERE id = $1", [parentId]);
+    const parent = parentRes.rows[0];
+    if (!parent) return res.status(404).json({ error: "Kampaně nenalezena" });
+    if (!['sent','sending'].includes(parent.status)) return res.status(400).json({ error: "Můžete přeposlat pouze odeslanou kampaně" });
+
+    // Count non-openers for confirmation display
+    const audience = await resolveSegmentAudience({ type: "non_openers", parent_campaign_id: parentId });
+    if (audience.length === 0) return res.status(400).json({ error: "Není žádný neotviral, kterému by se dalo znovu odeslát." });
+
+    const newName = `${parent.name} (opakovní pro neotviralé)`;
+    const newStatus = scheduledAt ? "scheduled" : "draft";
+    const result = await pool.query(
+      `INSERT INTO marketing_campaigns
+         (name, subject, preheader, template_id, status, blocks, html_content, header_options, segment_rules, scheduled_at, parent_campaign_id, resend_for)
+       VALUES ($1,$2,$3,$4,$5,$6::jsonb,$7,$8::jsonb,$9::jsonb,$10,$11,'non_openers') RETURNING *`,
+      [
+        newName,
+        subject || parent.subject,
+        parent.preheader,
+        parent.template_id,
+        newStatus,
+        JSON.stringify(parent.blocks || []),
+        parent.html_content,
+        JSON.stringify(parent.header_options || {}),
+        JSON.stringify({ type: "non_openers", parent_campaign_id: parentId }),
+        scheduledAt || null,
+        parentId,
+      ]
+    );
+    await logMarketingAction("campaign.resend_non_openers", req.session.userId || null, { type: "campaign", id: result.rows[0].id }, { parentId, audienceCount: audience.length });
+    res.json({ campaign: result.rows[0], audienceCount: audience.length });
+  } catch (error) {
+    console.error("Resend non-openers error:", error);
+    res.status(500).json({ error: "Chyba při vytváření kampaně pro neotviralé" });
+  }
+});
+
+// ── Journey step analytics ───────────────────────────────────────────────────
+router.get("/journeys/:id/analytics", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const journeyId = parseInt(req.params.id, 10);
+    const stepsRes = await pool.query(
+      `SELECT s.*,
+         (SELECT COUNT(*) FROM marketing_email_sends mes WHERE mes.journey_step_id = s.id) AS sends,
+         (SELECT COUNT(*) FROM marketing_email_sends mes WHERE mes.journey_step_id = s.id AND mes.opened_at IS NOT NULL) AS opens,
+         (SELECT COUNT(*) FROM marketing_email_sends mes WHERE mes.journey_step_id = s.id AND mes.first_clicked_at IS NOT NULL) AS clicks,
+         (SELECT COUNT(*) FROM marketing_email_sends mes WHERE mes.journey_step_id = s.id AND mes.status = 'failed') AS failures
+       FROM marketing_journey_steps s WHERE s.journey_id = $1 ORDER BY s.position ASC`,
+      [journeyId]
+    );
+    const enrollmentsRes = await pool.query(
+      `SELECT
+         COUNT(*) FILTER (WHERE status = 'active') AS active,
+         COUNT(*) FILTER (WHERE status = 'completed') AS completed,
+         COUNT(*) FILTER (WHERE status = 'cancelled') AS cancelled,
+         COUNT(*) FILTER (WHERE status = 'failed') AS failed
+       FROM marketing_enrollments WHERE journey_id = $1`,
+      [journeyId]
+    );
+    res.json({
+      steps: stepsRes.rows.map(r => ({
+        ...r,
+        sends: parseInt(r.sends, 10) || 0,
+        opens: parseInt(r.opens, 10) || 0,
+        clicks: parseInt(r.clicks, 10) || 0,
+        failures: parseInt(r.failures, 10) || 0,
+        openRate: parseInt(r.sends, 10) > 0 ? Math.round((parseInt(r.opens, 10) / parseInt(r.sends, 10)) * 1000) / 10 : 0,
+        clickRate: parseInt(r.sends, 10) > 0 ? Math.round((parseInt(r.clicks, 10) / parseInt(r.sends, 10)) * 1000) / 10 : 0,
+      })),
+      enrollments: enrollmentsRes.rows[0],
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při načítání analytiky" });
+  }
+});
+
+// ── Subscriber CSV export ─────────────────────────────────────────────────────
+router.get("/subscribers/export.csv", requireAdmin, async (_req: Request, res: Response) => {
+  try {
+    const result = await pool.query(
+      `SELECT s.email, s.name, s.marketing_consent, s.is_buyer,
+              s.first_source, s.utm_source, s.utm_campaign,
+              s.unsubscribed_at, s.suppressed_at, s.created_at,
+              COALESCE(STRING_AGG(DISTINCT t.name, '; '), '') AS tags
+       FROM subscribers s
+       LEFT JOIN subscriber_tags st ON st.subscriber_id = s.id
+       LEFT JOIN tags t ON t.id = st.tag_id
+       GROUP BY s.id ORDER BY s.created_at DESC`
+    );
+    const rows = result.rows;
+    const headers = ["email","name","marketing_consent","is_buyer","first_source","utm_source","utm_campaign","unsubscribed_at","suppressed_at","created_at","tags"];
+    const esc = (v: any) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    const csv = [
+      headers.join(","),
+      ...rows.map(r => headers.map(h => esc(r[h])).join(",")),
+    ].join("\r\n");
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", `attachment; filename="subscribers-${new Date().toISOString().substring(0,10)}.csv"`);
+    res.send("\uFEFF" + csv); // BOM for Excel UTF-8 compatibility
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při exportu" });
+  }
+});
+
+// ── Subscriber CSV import ─────────────────────────────────────────────────────
+// Accepts a CSV body with header row. Required column: email. Optional: name.
+// NEVER sets marketing_consent — imported contacts require explicit opt-in.
+const csvImportLimiter = rateLimit({ windowMs: 60_000, max: 5, keyPrefix: "csv_import" });
+router.post("/subscribers/import-csv", requireAdmin, csvImportLimiter, async (req: Request, res: Response) => {
+  try {
+    const body = String(req.body?.csv || "");
+    if (!body.trim()) return res.status(400).json({ error: "Prázdný CSV soubor" });
+
+    const lines = body.split(/\r?\n/).filter(l => l.trim());
+    if (lines.length < 2) return res.status(400).json({ error: "CSV musí obsahovat alespoň řádek s hlavičkou a jeden kontakt" });
+
+    // Parse header
+    const parseCsvLine = (line: string) =>
+      line.split(",").map(c => c.trim().replace(/^"|"$/g, "").replace(/""/g, '"'));
+    const headers = parseCsvLine(lines[0]).map(h => h.toLowerCase().trim());
+    const emailIdx = headers.indexOf("email");
+    if (emailIdx === -1) return res.status(400).json({ error: "CSV musí mít sloupec 'email'" });
+    const nameIdx = headers.indexOf("name");
+
+    let imported = 0, skipped = 0, errors = 0;
+    for (const line of lines.slice(1)) {
+      const cols = parseCsvLine(line);
+      const email = normalizeEmail(cols[emailIdx] || "");
+      if (!email || !email.includes("@")) { skipped++; continue; }
+      const name = nameIdx >= 0 ? cols[nameIdx] || null : null;
+      try {
+        await upsertSubscriber({ email, name, source: "csv_import" });
+        await pool.query(
+          `INSERT INTO subscriber_tags (subscriber_id, tag_id)
+           SELECT s.id, t.id FROM subscribers s, tags t
+           WHERE s.email_normalized = $1 AND t.slug = 'imported'
+           ON CONFLICT DO NOTHING`,
+          [email]
+        );
+        imported++;
+      } catch {
+        errors++;
+      }
+    }
+    // Ensure 'imported' tag exists
+    await pool.query("INSERT INTO tags (name, slug) VALUES ('imported','imported') ON CONFLICT DO NOTHING");
+    await logMarketingAction("subscribers.csv_imported", req.session.userId || null, undefined, { imported, skipped, errors });
+    res.json({ imported, skipped, errors, total: lines.length - 1 });
+  } catch (error) {
+    console.error("CSV import error:", error);
+    res.status(500).json({ error: "Chyba při importu CSV" });
+  }
+});
+
+// ── Double opt-in: send confirmation email ────────────────────────────────────
+const doubleOptinLimiter = rateLimit({ windowMs: 60_000, max: 10, keyPrefix: "double_optin" });
+router.post("/subscribers/:id/send-double-optin", requireAdmin, doubleOptinLimiter, async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const sub = await getSubscriberById(id);
+    if (!sub) return res.status(404).json({ error: "Odběratel nenalezen" });
+    if (sub.marketing_consent) return res.status(400).json({ error: "Odběratel již je přihlášen k odběru" });
+
+    const token = randomBytes(32).toString("hex");
+    const appUrl = process.env.APP_URL || "https://voodoo808.com";
+    const confirmUrl = `${appUrl}/potvrdit-odber?token=${token}`;
+
+    await pool.query(
+      `UPDATE subscribers SET double_optin_token = $2, double_optin_sent_at = NOW() WHERE id = $1`,
+      [id, token]
+    );
+
+    // Send confirmation email via Resend
+    const { Resend } = await import("resend");
+    const apiKey = process.env.RESEND_API_KEY || process.env.RESEND_API;
+    if (!apiKey) return res.status(503).json({ error: "RESEND_API_KEY není nastaven" });
+    const resend = new Resend(apiKey);
+    const fromAddress = process.env.RESEND_FROM || "VOODOO808 <info@voodoo808.com>";
+    const { renderBrandedEmailShell } = await import("../lib/marketing/brandKit.js");
+    const bodyHtml = `
+      <p style="margin:0 0 12px 0;font-size:22px;font-weight:700;color:#ffffff;">Potvrďte odběr</p>
+      <p style="margin:0 0 16px 0;font-size:15px;color:#aaaaaa;line-height:1.6;">
+        Klikněte na tlačítko níže pro potvrzení vašeho odběru marketingových e-mailů od VOODOO808.
+      </p>
+      <table cellpadding="0" cellspacing="0"><tr><td>
+        <a href="${confirmUrl}" style="display:inline-block;background:#ffffff;color:#000000;font-weight:700;font-size:13px;padding:14px 32px;border-radius:4px;text-decoration:none;letter-spacing:0.5px;">POTVRDIT ODBĚR</a>
+      </td></tr></table>
+      <p style="margin:16px 0 0 0;font-size:12px;color:#555555;">
+        Pokud jste o odběr nežádali, jednoduše tento e-mail ignorujte.
+      </p>`;
+    const html = renderBrandedEmailShell({
+      appUrl,
+      bodyHtml,
+      unsubscribeUrl: `${appUrl}/odhlasit-marketing`,
+      preheader: "Prosím potvrďte váš e-mailový odběr",
+    });
+    await resend.emails.send({ from: fromAddress, to: [sub.email], subject: "Potvrďte odběr VOODOO808", html });
+    await logMarketingAction("subscriber.double_optin_sent", req.session.userId || null, { type: "subscriber", id });
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Double opt-in send error:", error);
+    res.status(500).json({ error: "Chyba při odesílání potvrzovacího e-mailu" });
+  }
+});
+
+// ── Double opt-in: public confirmation endpoint ───────────────────────────────
+const optinConfirmLimiter = rateLimit({ windowMs: 60_000, max: 20, keyPrefix: "optin_confirm" });
+router.get("/potvrdit-odber", optinConfirmLimiter, async (req: Request, res: Response) => {
+  const token = String(req.query.token || "");
+  if (!token) return res.status(400).json({ error: "Chybí token" });
+  try {
+    const result = await pool.query(
+      `UPDATE subscribers
+       SET marketing_consent = TRUE,
+           marketing_consent_at = NOW(),
+           marketing_consent_source = 'double_optin',
+           double_optin_confirmed_at = NOW(),
+           double_optin_token = NULL,
+           unsubscribed_at = NULL,
+           unsubscribe_reason = NULL,
+           updated_at = NOW()
+       WHERE double_optin_token = $1
+         AND double_optin_confirmed_at IS NULL
+       RETURNING id`,
+      [token]
+    );
+    if (result.rows.length === 0) {
+      return res.send("<html><body style='background:#0a0a0a;color:#aaa;font-family:sans-serif;padding:40px;text-align:center;'><h2>Odkaz je neplatný nebo již byl použit.</h2></body></html>");
+    }
+    await logMarketingAction("subscriber.double_optin_confirmed", null, { type: "subscriber", id: result.rows[0].id });
+    res.send("<html><body style='background:#0a0a0a;color:#fff;font-family:sans-serif;padding:40px;text-align:center;'><h2 style='color:#fff;'>\u2705 Odb\u011br potvrzen!</h2><p style='color:#aaa;'>D\u011bkujeme za potvrzen\u00ed. Brzy se ozv\u00edme.</p><p><a href=\"https://voodoo808.com\" style=\"color:#fff;\">Zp\u011bt na VOODOO808</a></p></body></html>");
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při potvrzování" });
+  }
+});
+
+// ── AI subject line suggestions (Gemini) ─────────────────────────────────────
+const aiLimiter = rateLimit({ windowMs: 60_000, max: 10, keyPrefix: "ai_subject" });
+router.post("/ai/subject-suggestions", requireAdmin, aiLimiter, async (req: Request, res: Response) => {
+  try {
+    const { campaignName, blocks, subject, preheader } = req.body;
+    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY;
+    if (!apiKey) return res.status(503).json({ error: "GEMINI_API_KEY není nastaven" });
+
+    let bodyText = subject || campaignName || "";
+    if (Array.isArray(blocks) && blocks.length > 0) {
+      bodyText += " " + blocks.map((b: any) => [
+        b.headingText, b.paragraphText, b.buttonText, b.heroTitle, b.heroSubtitle, b.beatTitle
+      ].filter(Boolean).join(" ")).join(" ");
+    }
+    bodyText = bodyText.substring(0, 800);
+
+    const prompt = `You are an email marketing expert for VOODOO808, a Czech beat producer who sells beats and sound kits.
+Generate exactly 5 email subject line suggestions for a marketing campaign.
+Campaign context: "${bodyText}"
+Preheader (for context): "${preheader || ""}"
+
+Rules:
+- Each subject line should be punchy, intriguing, max 60 characters
+- Mix styles: curiosity, benefit, urgency, personal, question
+- Write in Czech language (mix of Czech and English music slang is OK)
+- Do NOT use emojis
+- Return ONLY a JSON array of 5 strings, no other text
+
+Example format: ["Subject 1", "Subject 2", "Subject 3", "Subject 4", "Subject 5"]`;
+
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+    });
+    if (!response.ok) return res.status(502).json({ error: "Chyba AI API" });
+    const data: any = await response.json();
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    const match = text.match(/\[.*\]/s);
+    if (!match) return res.status(502).json({ error: "Nepůsobný formát odpovědi AI" });
+    const suggestions = JSON.parse(match[0]);
+    res.json({ suggestions: Array.isArray(suggestions) ? suggestions.slice(0, 5) : [] });
+  } catch (error) {
+    console.error("AI subject suggestions error:", error);
+    res.status(500).json({ error: "Chyba při generování návrhů" });
+  }
+});
+
+export default router;
