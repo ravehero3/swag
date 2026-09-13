@@ -7143,6 +7143,10 @@ function OdberateleTab() {
   const [importLoading, setImportLoading] = useState(false);
   const [importRunning, setImportRunning] = useState(false);
   const [importResult, setImportResult] = useState<string | null>(null);
+  const [csvImportFile, setCsvImportFile] = useState<File | null>(null);
+  const [csvImportStatus, setCsvImportStatus] = useState<string | null>(null);
+  const [csvImportRunning, setCsvImportRunning] = useState(false);
+  const [doubleOptinSending, setDoubleOptinSending] = useState<number | null>(null);
 
   const loadImportPreview = () => {
     setImportLoading(true);
@@ -7246,7 +7250,7 @@ function OdberateleTab() {
             {f.label}
           </button>
         ))}
-        <form onSubmit={handleSearch} style={{ marginLeft: "auto", display: "flex", gap: "6px" }}>
+        <form onSubmit={handleSearch} style={{ marginLeft: "auto", display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap" }}>
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
@@ -7254,6 +7258,53 @@ function OdberateleTab() {
             style={{ padding: "7px 10px", fontSize: "12px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "4px", color: "#eee" }}
           />
           <button type="submit" className="btn" style={{ borderRadius: "4px", fontSize: "12px", borderColor: "#444" }}>Hledat</button>
+          {/* CSV Export */}
+          <a
+            href="/api/marketing/subscribers/export.csv"
+            download
+            className="btn"
+            style={{ borderRadius: "4px", fontSize: "12px", borderColor: "#24e053", color: "#24e053", textDecoration: "none", padding: "6px 10px" }}
+          >
+            ↓ Export CSV
+          </a>
+          {/* CSV Import */}
+          <label style={{ cursor: "pointer" }}>
+            <span className="btn" style={{ borderRadius: "4px", fontSize: "12px", borderColor: "#0B99FC", color: "#0B99FC", display: "inline-block", padding: "6px 10px", border: "1px solid #0B99FC" }}>
+              ↑ Import CSV
+            </span>
+            <input
+              type="file"
+              accept=".csv,text/csv"
+              style={{ display: "none" }}
+              onChange={async e => {
+                const f = e.target.files?.[0];
+                if (!f) return;
+                setCsvImportFile(f);
+                setCsvImportStatus(null);
+                setCsvImportRunning(true);
+                try {
+                  const text = await f.text();
+                  const res = await fetch("/api/marketing/subscribers/import-csv", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include",
+                    body: JSON.stringify({ csv: text }),
+                  });
+                  const data = await res.json();
+                  if (!res.ok) throw new Error(data.error || "Import selhal");
+                  setCsvImportStatus(`✅ Importováno ${data.imported} kontaktů (přeskočeno ${data.skipped}, chyby ${data.errors})`);
+                  load();
+                } catch (err: any) {
+                  setCsvImportStatus(`❌ ${err.message}`);
+                } finally {
+                  setCsvImportRunning(false);
+                  e.target.value = "";
+                }
+              }}
+            />
+          </label>
+          {csvImportRunning && <span style={{ fontSize: "11px", color: "#0B99FC" }}>Importuji…</span>}
+          {csvImportStatus && !csvImportRunning && <span style={{ fontSize: "11px", color: csvImportStatus.startsWith("❌") ? "#ff5252" : "#24e053" }}>{csvImportStatus}</span>}
         </form>
       </div>
 
@@ -7343,6 +7394,26 @@ function OdberateleTab() {
                   onClick={async () => { if (!confirm("Odhlásit tohoto odběratele z marketingu?")) return; await fetch(`/api/marketing/subscribers/${selected.subscriber.id}/unsubscribe`, { method: "POST", credentials: "include" }); openDetail(selected.subscriber.id); load(); }}
                 >
                   Odhlásit z marketingu
+                </button>
+              )}
+              {/* Double opt-in: only show if no consent yet and not suppressed */}
+              {!selected.subscriber.marketing_consent && !selected.subscriber.suppressed_at && (
+                <button
+                  className="btn"
+                  style={{ borderRadius: "4px", fontSize: "12px", borderColor: "#a78bfa", color: "#a78bfa" }}
+                  disabled={doubleOptinSending === selected.subscriber.id}
+                  onClick={async () => {
+                    if (!confirm(`Odeslat potvrzovací e-mail double opt-in na ${selected.subscriber.email}?`)) return;
+                    setDoubleOptinSending(selected.subscriber.id);
+                    try {
+                      const res = await fetch(`/api/marketing/subscribers/${selected.subscriber.id}/send-double-optin`, { method: "POST", credentials: "include" });
+                      const d = await res.json();
+                      alert(res.ok ? "✅ Potvrzovcí e-mail odeslán." : `❌ ${d.error}`);
+                    } catch { alert("❌ Chyba při odesílání"); }
+                    finally { setDoubleOptinSending(null); }
+                  }}
+                >
+                  {doubleOptinSending === selected.subscriber.id ? "Odesílám…" : "✉️ Double opt-in e-mail"}
                 </button>
               )}
             </div>
@@ -7880,6 +7951,18 @@ function KampaneTab() {
   const [previewWidth, setPreviewWidth] = useState<"desktop" | "mobile">("desktop");
   const [sendReview, setSendReview] = useState<{ campaign: any; count: number } | null>(null);
   const [isExecutingSend, setIsExecutingSend] = useState(false);
+  const [statsModal, setStatsModal] = useState<any>(null);
+  const [statsLoading, setStatsLoading] = useState(false);
+  const [scheduleAt, setScheduleAt] = useState("");
+  const [segmentType, setSegmentType] = useState("all");
+  const [segmentTag, setSegmentTag] = useState("");
+  const [segmentDays, setSegmentDays] = useState("30");
+  const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [resendTarget, setResendTarget] = useState<any>(null);
+  const [resendSubject, setResendSubject] = useState("");
+  const [resendAt, setResendAt] = useState("");
+  const [resendLoading, setResendLoading] = useState(false);
 
   const load = () => {
     setLoading(true);
@@ -7976,19 +8059,81 @@ function KampaneTab() {
   };
 
   const openSendReview = async (campaign: any) => {
+    setScheduleAt(campaign.scheduled_at ? campaign.scheduled_at.substring(0, 16) : "");
+    setSegmentType(campaign.segment_rules?.type || "all");
+    setSegmentTag(campaign.segment_rules?.tag || "");
+    setSegmentDays(String(campaign.segment_rules?.days || "30"));
+    setAiSuggestions([]);
     const count = await fetchAudienceCount(campaign.id);
     setSendReview({ campaign, count });
   };
 
-  const confirmAndSend = async () => {
+  const openStatsModal = async (campaign: any) => {
+    setStatsModal({ campaign, data: null });
+    setStatsLoading(true);
+    try {
+      const res = await fetch(`/api/marketing/campaigns/${campaign.id}/stats`, { credentials: "include" });
+      if (res.ok) {
+        const data = await res.json();
+        setStatsModal({ campaign, data });
+      }
+    } catch { /* swallow */ } finally {
+      setStatsLoading(false);
+    }
+  };
+
+  const fetchAiSuggestions = async () => {
+    if (!sendReview) return;
+    setAiLoading(true);
+    try {
+      const res = await fetch("/api/marketing/ai/subject-suggestions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          campaignName: sendReview.campaign.name,
+          subject: sendReview.campaign.subject,
+          preheader: sendReview.campaign.preheader,
+          blocks: sendReview.campaign.blocks,
+        }),
+      });
+      const data = await res.json();
+      setAiSuggestions(Array.isArray(data.suggestions) ? data.suggestions : []);
+    } catch { /* swallow */ } finally {
+      setAiLoading(false);
+    }
+  };
+
+  const confirmAndSend = async (asScheduled = false) => {
     if (!sendReview) return;
     setIsExecutingSend(true);
     try {
+      const segRules = buildSegmentRules();
+      if (asScheduled && scheduleAt) {
+        const res = await fetch(`/api/marketing/campaigns/${sendReview.campaign.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ scheduledAt: new Date(scheduleAt).toISOString(), segmentRules: segRules }),
+        });
+        if (!res.ok) { const d = await res.json(); alert(d.error || "Chyba při plánování"); return; }
+        alert(`Kampaň naplánována na ${new Date(scheduleAt).toLocaleString("cs-CZ")}`);
+        setSendReview(null);
+        load();
+        return;
+      }
+      await fetch(`/api/marketing/campaigns/${sendReview.campaign.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ segmentRules: segRules }),
+      });
+      const freshCount = await fetchAudienceCount(sendReview.campaign.id);
       const res = await fetch(`/api/marketing/campaigns/${sendReview.campaign.id}/send`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ confirmedCount: sendReview.count }),
+        body: JSON.stringify({ confirmedCount: freshCount }),
       });
       const data = await res.json();
       if (!res.ok) { alert(data.error || "Chyba při odesílání"); return; }
@@ -8002,14 +8147,47 @@ function KampaneTab() {
     }
   };
 
+  const buildSegmentRules = () => {
+    if (segmentType === "tag" || segmentType === "no_tag") return { type: segmentType, tag: segmentTag };
+    if (segmentType === "recent") return { type: segmentType, days: parseInt(segmentDays, 10) || 30 };
+    return { type: segmentType };
+  };
+
+  const handleResendNonOpeners = async () => {
+    if (!resendTarget) return;
+    setResendLoading(true);
+    try {
+      const res = await fetch(`/api/marketing/campaigns/${resendTarget.id}/resend-non-openers`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          subject: resendSubject || undefined,
+          scheduledAt: resendAt ? new Date(resendAt).toISOString() : undefined,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) { alert(data.error || "Chyba"); return; }
+      alert(`Kampaň pro neotvíralé vytvořena (${data.audienceCount} příjemců).`);
+      setResendTarget(null); setResendSubject(""); setResendAt("");
+      load();
+    } catch (err: any) {
+      alert("Chyba: " + err.message);
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
   const handleCancel = async (id: number) => {
     if (!confirm("Zrušit tuto kampaň?")) return;
     await fetch(`/api/marketing/campaigns/${id}/cancel`, { method: "POST", credentials: "include" });
     load();
   };
 
+  const inputSt: any = { padding: "7px 10px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "4px", color: "#eee", fontSize: "12px", width: "100%" };
   const cellStyle: any = { padding: "10px", borderBottom: "1px solid #1e1e1e", verticalAlign: "middle" };
-  const STATUS_COLORS: Record<string, string> = { draft: "#555", sending: "#f9a825", sent: "#24e053", cancelled: "#ff5252" };
+  const STATUS_COLORS: Record<string, string> = { draft: "#555", scheduled: "#0B99FC", sending: "#f9a825", sent: "#24e053", cancelled: "#ff5252" };
+  const STATUS_LABELS: Record<string, string> = { draft: "Draft", scheduled: "Naplánováno", sending: "Odesílám", sent: "Odesláno", cancelled: "Zrušeno" };
 
   return (
     <div>
@@ -8058,14 +8236,27 @@ function KampaneTab() {
           <tbody>
             {campaigns.map(c => (
               <tr key={c.id}>
-                <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textPrimary, fontWeight: 500 }}>{c.name}</td>
+                <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textPrimary, fontWeight: 500 }}>
+                  {c.name}
+                  {c.scheduled_at && c.status === "scheduled" && (
+                    <div style={{ fontSize: "10px", color: "#0B99FC", marginTop: "2px" }}>
+                      🕗 {new Date(c.scheduled_at).toLocaleString("cs-CZ", { dateStyle: "short", timeStyle: "short" })}
+                    </div>
+                  )}
+                </td>
                 <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "12px" }}>
                   {c.subject ? c.subject : (c.template_name || "—")}
                 </td>
-                <td style={{ ...cellStyle }}><span style={{ fontSize: "11px", color: STATUS_COLORS[c.status] || "#555" }}>{c.status}</span></td>
+                <td style={{ ...cellStyle }}><span style={{ fontSize: "11px", color: STATUS_COLORS[c.status] || "#555" }}>{STATUS_LABELS[c.status] || c.status}</span></td>
                 <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "12px" }}>{c.recipient_count ?? (audienceCounts[c.id] ?? "—")}</td>
                 <td style={{ ...cellStyle, textAlign: "right", display: "flex", gap: "6px", justifyContent: "flex-end" }}>
                   <button className="btn" onClick={() => setPreviewCampaign(c)} style={{ borderRadius: "4px", fontSize: "11px", borderColor: "#444" }}>Náhled</button>
+                  {(c.status === "sent" || c.status === "sending") && (
+                    <button className="btn" onClick={() => openStatsModal(c)} style={{ borderRadius: "4px", fontSize: "11px", borderColor: "#0B99FC", color: "#0B99FC" }}>Statistiky</button>
+                  )}
+                  {c.status === "sent" && (
+                    <button className="btn" onClick={() => setResendTarget(c)} style={{ borderRadius: "4px", fontSize: "11px", borderColor: "#f9a825", color: "#f9a825" }}>Přeposlat neotvíralým</button>
+                  )}
                   {c.status === "draft" && (
                     <>
                       <button className="btn" onClick={() => startEditVisual(c)} style={{ borderRadius: "4px", fontSize: "11px", borderColor: "#0B99FC", color: "#0B99FC" }}>Vizuální editor</button>
@@ -8073,6 +8264,9 @@ function KampaneTab() {
                       <button className="btn btn-filled" onClick={() => openSendReview(c)} style={{ borderRadius: "4px", fontSize: "11px" }}>Odeslat…</button>
                       <button className="btn" onClick={() => handleCancel(c.id)} style={{ borderRadius: "4px", fontSize: "11px", borderColor: "#ff5252", color: "#ff5252" }}>Zrušit</button>
                     </>
+                  )}
+                  {c.status === "scheduled" && (
+                    <button className="btn" onClick={() => handleCancel(c.id)} style={{ borderRadius: "4px", fontSize: "11px", borderColor: "#ff5252", color: "#ff5252" }}>Zrušit</button>
                   )}
                 </td>
               </tr>
@@ -8125,6 +8319,71 @@ function KampaneTab() {
         </div>
       )}
 
+      {/* ── Campaign Stats Modal ─────────────────────────────────────────── */}
+      {statsModal && (
+        <div onClick={() => setStatsModal(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: DESIGN_SYSTEM.zIndex.modal + 20, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: "#0d0d0d", border: "1px solid #282828", borderRadius: "12px", width: "min(520px,96vw)", padding: "24px", boxShadow: "0 20px 60px rgba(0,0,0,0.9)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+              <div style={{ fontSize: "15px", fontWeight: 700, color: "#fff" }}>📊 {statsModal.campaign.name}</div>
+              <button onClick={() => setStatsModal(null)} style={{ background: "rgba(255,255,255,0.08)", border: "1px solid #333", borderRadius: "4px", color: "#aaa", fontSize: "12px", padding: "4px 10px", cursor: "pointer" }}>Zavřít</button>
+            </div>
+            {statsLoading ? (
+              <div style={{ color: "#555", padding: "24px", textAlign: "center" }}>Načítám statistiky…</div>
+            ) : statsModal.data ? (
+              <>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "10px", marginBottom: "16px" }}>
+                  {[
+                    { label: "Doručeno", value: statsModal.data.delivered, color: "#0B99FC" },
+                    { label: "Otevřeno", value: `${statsModal.data.openRate}%`, sub: `${statsModal.data.opened} abs.`, color: "#24e053" },
+                    { label: "Kliknuto", value: `${statsModal.data.clickRate}%`, sub: `${statsModal.data.clicked} abs.`, color: "#f59e0b" },
+                    { label: "CTOR", value: `${statsModal.data.clickToOpenRate}%`, sub: "klik z oteř.", color: "#a78bfa" },
+                    { label: "Selhalo", value: statsModal.data.failed, color: "#ff5252" },
+                    { label: "Potlačeno", value: statsModal.data.suppressed, color: "#555" },
+                  ].map(s => (
+                    <div key={s.label} style={{ background: "#141414", border: "1px solid #222", borderRadius: "8px", padding: "12px", textAlign: "center" }}>
+                      <div style={{ fontSize: "20px", fontWeight: 800, color: s.color }}>{s.value}</div>
+                      <div style={{ fontSize: "10px", color: "#666", textTransform: "uppercase", marginTop: "2px" }}>{s.label}</div>
+                      {s.sub && <div style={{ fontSize: "10px", color: "#444", marginTop: "2px" }}>{s.sub}</div>}
+                    </div>
+                  ))}
+                </div>
+                {statsModal.data.sent_at && (
+                  <div style={{ fontSize: "11px", color: "#555", textAlign: "right" }}>Odesláno: {new Date(statsModal.data.sent_at).toLocaleString("cs-CZ")}</div>
+                )}
+              </>
+            ) : <div style={{ color: "#555", padding: "24px", textAlign: "center" }}>Statistiky nejsou k dispozici</div>}
+          </div>
+        </div>
+      )}
+
+      {/* ── Resend to Non-Openers Modal ──────────────────────────────────── */}
+      {resendTarget && (
+        <div onClick={() => !resendLoading && setResendTarget(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: DESIGN_SYSTEM.zIndex.modal + 15, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: "#0d0d0d", border: "1px solid #282828", borderRadius: "12px", width: "min(460px,96vw)", padding: "24px", boxShadow: "0 20px 60px rgba(0,0,0,0.9)" }}>
+            <div style={{ fontSize: "15px", fontWeight: 700, color: "#fff", marginBottom: "6px" }}>🔄 Přeposlat neotvíralým</div>
+            <p style={{ fontSize: "12px", color: "#888", marginBottom: "16px", lineHeight: 1.5 }}>
+              Vytvoří novou kampaň cílenou na příjemce, kteří <strong style={{ color: "#ddd" }}>dostali, ale neotevřeli</strong> kampaň <em>{resendTarget.name}</em>.
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "16px" }}>
+              <div>
+                <label style={{ fontSize: "11px", color: "#666", display: "block", marginBottom: "4px" }}>Nový předmět (volitelné — jinak zůstane původní)</label>
+                <input value={resendSubject} onChange={e => setResendSubject(e.target.value)} placeholder={resendTarget.subject || "(stejný jako originál)"} style={inputSt} />
+              </div>
+              <div>
+                <label style={{ fontSize: "11px", color: "#666", display: "block", marginBottom: "4px" }}>Naplánovat odeslání (volitelné)</label>
+                <input type="datetime-local" value={resendAt} onChange={e => setResendAt(e.target.value)} style={inputSt} />
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: "10px" }}>
+              <button onClick={() => setResendTarget(null)} disabled={resendLoading} style={{ flex: 1, background: "transparent", border: "1px solid #333", color: "#aaa", borderRadius: "6px", padding: "10px", fontSize: "12px", cursor: "pointer" }}>Zrušit</button>
+              <button onClick={handleResendNonOpeners} disabled={resendLoading} style={{ flex: 1.5, background: "#f9a825", color: "#000", border: "none", borderRadius: "6px", padding: "10px", fontSize: "12px", fontWeight: 700, cursor: resendLoading ? "not-allowed" : "pointer" }}>
+                {resendLoading ? "Vytvářím…" : "Vytvořit kampaň pro neotvíralé"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Send Review Modal before dispatching campaign */}
       {sendReview && (
         <div
@@ -8138,6 +8397,7 @@ function KampaneTab() {
             alignItems: "center",
             justifyContent: "center",
             padding: "20px",
+            overflowY: "auto",
           }}
         >
           <div
@@ -8146,7 +8406,7 @@ function KampaneTab() {
               background: "#0d0d0d",
               border: "1px solid #282828",
               borderRadius: "12px",
-              width: "min(480px, 96vw)",
+              width: "min(520px, 96vw)",
               padding: "24px",
               boxShadow: "0 20px 60px rgba(0,0,0,0.9)",
             }}
