@@ -25,6 +25,20 @@ router.post("/", leadSubmitLimiter, async (req: Request, res: Response) => {
 
     const lead = result.rows[0];
 
+    // Also create an order record so free downloads appear in user's account
+    // alongside paid purchases, with payment_method='free' and total=0.
+    if (userId) {
+      try {
+        await pool.query(
+          `INSERT INTO orders (user_id, email, items, total, status, payment_method)
+           VALUES ($1, $2, $3, 0, 'completed', 'free')`,
+          [userId, email, JSON.stringify(items)]
+        );
+      } catch (err) {
+        console.error("[Leads] Failed to create free order record (non-fatal):", err);
+      }
+    }
+
     try {
       await sendFreeDownloadEmail(lead);
     } catch (err) {

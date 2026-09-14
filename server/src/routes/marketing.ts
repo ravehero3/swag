@@ -382,6 +382,91 @@ router.post("/templates", requireAdmin, async (req: Request, res: Response) => {
   }
 });
 
+router.post("/templates/seed", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const defaultTemplates = [
+      {
+        name: "Welcome Series - 1",
+        description: "Úvodní uvítací e-mail s videem a slevovým kódem.",
+        subject: "Vítej ve Voodoo808, tady je tvůj dárek!",
+        preheader: "Díky za přihlášení. Uvnitř najdeš exkluzivní bonus.",
+        design_blocks: [
+          { id: "h1", type: "heading", headingText: "VÍTEJ V KLUBU", headingLevel: "h1", headingAlign: "center" },
+          { id: "p1", type: "paragraph", paragraphText: "Jsme rádi, že jsi se k nám přidal. Sleduj toto video pro krátké uvítání." },
+          { id: "v1", type: "video", videoUrl: "https://youtube.com", videoTitle: "Uvítací zpráva od Voodoo808", videoThumbnailUrl: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=800&q=80" },
+          { id: "cb1", type: "coupon_box", couponCode: "WELCOME20", couponDiscount: "20% SLEVA" },
+          { id: "sl1", type: "social_links" }
+        ],
+        header_config: { logoType: "white", logoSize: "md" }
+      },
+      {
+        name: "New Release - Video & Columns",
+        description: "Oznámení nového tracku nebo beatu se dvěma sloupci ukázek.",
+        subject: "Nový release: Poslechni si ukázku!",
+        preheader: "Právě jsme vydali nový banger.",
+        design_blocks: [
+          { id: "hero1", type: "hero", heroTitle: "NOVÝ RELEASE", heroButtonText: "PŘEHRÁT" },
+          { id: "div1", type: "divider" },
+          { id: "tc1", type: "two_column", col1Title: "Trackout", col1Text: "Plná verze s vrstvami", col1ButtonText: "Koupit", col2Title: "WAV Lease", col2Text: "Standardní licence", col2ButtonText: "Koupit" },
+          { id: "q1", type: "quote", quoteText: "Nejlepší beat roku, neskutečný zvuk.", quoteAuthor: "Producent XYZ", quoteRole: "Spokojený klient" }
+        ],
+        header_config: { logoType: "metallic", logoSize: "lg" }
+      },
+      {
+        name: "Flash Sale Countdown",
+        description: "Bleskový výprodej s odpočtem.",
+        subject: "BLESKOVÝ VÝPRODEJ končí o půlnoci!",
+        preheader: "Ušetři až 50 % na všech beatech.",
+        design_blocks: [
+          { id: "h1", type: "heading", headingText: "FLASH SALE", headingColor: "#ff2d55", headingAlign: "center" },
+          { id: "cd1", type: "countdown", countdownTitle: "SLEVA KONČÍ ZA:", countdownHours: "12", countdownButtonText: "DO KOŠÍKU" },
+          { id: "g1", type: "multi_beat_grid" }
+        ],
+        header_config: { logoType: "white", logoSize: "sm" }
+      },
+      {
+        name: "Testimonial & Quote",
+        description: "Zvýšení důvěry pomocí recenzí od zákazníků.",
+        subject: "Co říkají ostatní producenti?",
+        preheader: "Neber nás za slovo, poslechni si je.",
+        design_blocks: [
+          { id: "h1", type: "heading", headingText: "PŘÍBĚHY ÚSPĚCHU" },
+          { id: "q1", type: "quote", quoteText: "Od té doby co používám Voodoo808 packy, se můj zvuk posunul na další level.", quoteAuthor: "Beatmaker Pro" },
+          { id: "q2", type: "quote", quoteText: "Neuvěřitelná kvalita mixu a masteru.", quoteAuthor: "DJ XYZ" },
+          { id: "btn1", type: "button", buttonText: "PŘIDEJ SE K NIM" }
+        ],
+        header_config: { logoType: "metallic", logoSize: "md" }
+      },
+      {
+        name: "Newsletter Digest",
+        description: "Měsíční shrnutí novinek, beatů a slev.",
+        subject: "Tvoje měsíční nálož z Voodoo808",
+        preheader: "To nejlepší za poslední měsíc.",
+        design_blocks: [
+          { id: "h1", type: "heading", headingText: "MĚSÍČNÍ SHRNUTÍ" },
+          { id: "tc1", type: "two_column", col1Title: "Top Beat", col1Text: "Nejprodávanější beat tohoto měsíce", col2Title: "Top Kit", col2Text: "Nejoblíbenější sound kit" },
+          { id: "v1", type: "video", videoTitle: "Studio Vlog #5" },
+          { id: "cb1", type: "coupon_box", couponCode: "MONTHLY10", couponDiscount: "10% SLEVA" }
+        ],
+        header_config: { logoType: "white", logoSize: "md" }
+      }
+    ];
+
+    const inserted = [];
+    for (const tpl of defaultTemplates) {
+      const result = await pool.query(
+        `INSERT INTO marketing_templates (name, description, subject, preheader, design_blocks, header_config)
+         VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+        [tpl.name, tpl.description, tpl.subject, tpl.preheader, JSON.stringify(tpl.design_blocks), JSON.stringify(tpl.header_config)]
+      );
+      inserted.push(result.rows[0]);
+    }
+    res.json({ message: "Šablony úspěšně vytvořeny.", templates: inserted });
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při vytváření šablon." });
+  }
+});
+
 router.patch("/templates/:id", requireAdmin, async (req: Request, res: Response) => {
   try {
     const { name, subject, preheader, htmlContent, textContent, blocks, headerOptions } = req.body;
@@ -568,25 +653,50 @@ router.delete("/journeys/:id", requireAdmin, async (req: Request, res: Response)
 // ── Admin: journey steps ─────────────────────────────────────────────────────
 
 router.post("/journeys/:id/steps", requireAdmin, async (req: Request, res: Response) => {
+  const client = await pool.connect();
   try {
     const journeyId = parseInt(req.params.id, 10);
-    const { stepType, delayHours, templateId, configuration } = req.body;
+    const { stepType, delayHours, templateId, configuration, insertAtIdx } = req.body;
     if (!stepType) return res.status(400).json({ error: "Chybí typ kroku" });
 
-    const maxPosRes = await pool.query(
-      "SELECT COALESCE(MAX(position), 0) AS max_pos FROM marketing_journey_steps WHERE journey_id = $1",
+    await client.query("BEGIN");
+    
+    // Fetch current steps to rebalance positions
+    const stepsRes = await client.query(
+      "SELECT id, position FROM marketing_journey_steps WHERE journey_id = $1 ORDER BY position ASC",
       [journeyId]
     );
-    const position = parseInt(maxPosRes.rows[0].max_pos, 10) + 1;
+    const steps = stepsRes.rows;
+    
+    // Determine the target position for the new step
+    let targetPosition: number;
+    if (insertAtIdx !== undefined && insertAtIdx >= 0 && insertAtIdx <= steps.length) {
+      targetPosition = insertAtIdx + 1;
+      // Shift subsequent steps to make room
+      for (let i = insertAtIdx; i < steps.length; i++) {
+        await client.query(
+          "UPDATE marketing_journey_steps SET position = $1 WHERE id = $2",
+          [i + 2, steps[i].id]
+        );
+      }
+    } else {
+      // Append to the end
+      targetPosition = steps.length > 0 ? steps[steps.length - 1].position + 1 : 1;
+    }
 
-    const result = await pool.query(
+    const result = await client.query(
       `INSERT INTO marketing_journey_steps (journey_id, position, step_type, delay_hours, template_id, configuration)
        VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
-      [journeyId, position, stepType, delayHours || 0, templateId || null, JSON.stringify(configuration || {})]
+      [journeyId, targetPosition, stepType, delayHours || 0, templateId || null, JSON.stringify(configuration || {})]
     );
+    
+    await client.query("COMMIT");
     res.json(result.rows[0]);
   } catch (error) {
+    await client.query("ROLLBACK");
     res.status(500).json({ error: "Chyba při vytváření kroku" });
+  } finally {
+    client.release();
   }
 });
 

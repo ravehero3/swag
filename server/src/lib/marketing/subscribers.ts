@@ -204,10 +204,18 @@ export function slugify(name: string): string {
 
 export async function addTagToSubscriber(subscriberId: number, tagNameOrSlug: string): Promise<void> {
   const tag = await ensureTag(tagNameOrSlug);
-  await pool.query(
-    "INSERT INTO subscriber_tags (subscriber_id, tag_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
+  const result = await pool.query(
+    "INSERT INTO subscriber_tags (subscriber_id, tag_id) VALUES ($1, $2) ON CONFLICT DO NOTHING RETURNING *",
     [subscriberId, tag.id]
   );
+  
+  if (result.rows.length > 0) {
+    // Only trigger enrollment if the tag was newly added (didn't already exist)
+    const { enrollByTrigger } = await import("./journeys.js");
+    await enrollByTrigger("tag_added", tag.slug, subscriberId).catch(err => {
+      console.error(`Failed to trigger journey for tag_added ${tag.slug}:`, err);
+    });
+  }
 }
 
 export async function removeTagFromSubscriber(subscriberId: number, tagSlug: string): Promise<void> {

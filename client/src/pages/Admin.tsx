@@ -7467,6 +7467,8 @@ function JourneysTab() {
   const [stepForm, setStepForm] = useState<any>({ stepType: "email", delayHours: 0, templateId: "", condition: "has_purchased", conditionTag: "", onTrue: "end", onFalse: "continue" });
   const [visualStep, setVisualStep] = useState<{ step: any; template: any } | null>(null);
 
+  const [stepStats, setStepStats] = useState<Record<number, { sends: number; open_rate: number; click_rate: number }>>({});
+
   useEffect(() => {
     fetch("/api/marketing/templates", { credentials: "include" })
       .then(r => r.ok ? r.json() : [])
@@ -7488,6 +7490,22 @@ function JourneysTab() {
     fetch(`/api/marketing/journeys/${id}`, { credentials: "include" })
       .then(r => r.ok ? r.json() : null)
       .then(setDetail)
+      .catch(() => {});
+    fetch(`/api/marketing/journeys/${id}/analytics`, { credentials: "include" })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.steps) {
+          const statsMap: Record<number, any> = {};
+          data.steps.forEach((s: any) => {
+            statsMap[s.id] = {
+              sends: s.sends || 0,
+              open_rate: s.openRate ?? s.open_rate ?? 0,
+              click_rate: s.clickRate ?? s.click_rate ?? 0,
+            };
+          });
+          setStepStats(statsMap);
+        }
+      })
       .catch(() => {});
   };
 
@@ -7524,7 +7542,9 @@ function JourneysTab() {
     }
   };
 
-  const openStepForm = (step?: any) => {
+  const [insertStepIdx, setInsertStepIdx] = useState<number | null>(null);
+
+  const openStepForm = (step?: any, insertIdx?: number) => {
     if (step) {
       setEditingStep(step);
       setStepForm({
@@ -7536,9 +7556,11 @@ function JourneysTab() {
         onTrue: step.configuration?.onTrue || "end",
         onFalse: step.configuration?.onFalse || "continue",
       });
+      setInsertStepIdx(null);
     } else {
       setEditingStep(null);
       setStepForm({ stepType: "email", delayHours: 0, templateId: "", condition: "has_purchased", conditionTag: "", onTrue: "end", onFalse: "continue" });
+      setInsertStepIdx(insertIdx ?? null);
     }
     setShowStepForm(true);
   };
@@ -7549,12 +7571,15 @@ function JourneysTab() {
       : stepForm.stepType === "tag_add" || stepForm.stepType === "tag_remove"
       ? { tag: stepForm.conditionTag }
       : {};
-    const body = {
+    const body: any = {
       stepType: stepForm.stepType,
       delayHours: Number(stepForm.delayHours) || 0,
       templateId: stepForm.stepType === "email" ? (stepForm.templateId || null) : null,
       configuration,
     };
+    if (!editingStep && insertStepIdx !== null) {
+      body.insertAtIdx = insertStepIdx;
+    }
     if (editingStep) {
       await fetch(`/api/marketing/journeys/${detail.journey.id}/steps/${editingStep.id}`, {
         method: "PATCH",
@@ -7753,65 +7778,154 @@ function JourneysTab() {
               <div style={{ fontSize: "12px", color: testResult.startsWith("Chyba") ? "#ff5252" : "#24e053", marginBottom: "12px" }}>{testResult}</div>
             )}
 
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
-              <div style={{ fontSize: "11px", color: "#555", textTransform: "uppercase" }}>Kroky ({detail.steps.length})</div>
-              <button className="btn btn-filled" onClick={() => openStepForm()} style={{ borderRadius: "4px", fontSize: "11px", padding: "4px 10px" }}>+ Nový krok</button>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+              <div style={{ fontSize: "11px", color: "#555", textTransform: "uppercase" }}>Visual Journey Flow ({detail.steps.length} kroků)</div>
+              {detail.steps.length === 0 && (
+                <button className="btn btn-filled" onClick={() => openStepForm()} style={{ borderRadius: "4px", fontSize: "11px", padding: "4px 10px" }}>+ Přidat první krok</button>
+              )}
             </div>
+
             {detail.steps.length === 0 ? (
-              <div style={{ fontSize: "13px", color: "#444" }}>Tato journey zatím nemá žádné kroky. Klikněte na „+ Nový krok“ výše.</div>
+              <div style={{ textAlign: "center", padding: "40px", background: "rgba(255,255,255,0.02)", borderRadius: "8px", border: "1px dashed rgba(255,255,255,0.1)" }}>
+                <div style={{ fontSize: "13px", color: "#666", marginBottom: "16px" }}>Cesta zatím nemá žádné kroky.</div>
+                <button className="btn btn-filled" onClick={() => openStepForm()}>+ Přidat krok</button>
+              </div>
             ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", paddingBottom: "40px" }}>
+                
+                {/* Trigger Node */}
+                <div style={{ background: "#222", border: "1px solid #333", borderRadius: "24px", padding: "6px 16px", fontSize: "12px", color: "#ccc", zIndex: 2, display: "flex", alignItems: "center", gap: "8px" }}>
+                  <Zap size={14} color="#f59e0b" />
+                  Zahájení: {detail.journey.trigger_type}
+                </div>
+
                 {detail.steps.map((s: any, idx: number) => {
-                  const tpl = templates.find(t => t.id === s.template_id);
+                  const tpl = templates.find((t) => t.id === s.template_id);
+                  const isCondition = s.step_type === "condition";
+                  
                   return (
-                  <div key={s.id} style={{ padding: "10px 12px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "8px", fontSize: "12px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <span style={{ color: "#eee", fontWeight: 500 }}>{idx + 1}. {STEP_TYPE_LABELS[s.step_type] || s.step_type}</span>
-                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                        {s.delay_hours > 0 && <span style={{ color: "#555" }}>za {s.delay_hours}h</span>}
-                        <button onClick={() => openStepForm(s)} style={{ background: "none", border: "none", color: "#666", fontSize: "11px", cursor: "pointer", padding: "2px 4px" }}>Upravit</button>
-                        <button onClick={() => deleteStep(s.id)} style={{ background: "none", border: "none", color: "#ff5252", fontSize: "11px", cursor: "pointer", padding: "2px 4px" }}>Smazat</button>
+                    <React.Fragment key={s.id}>
+                      {/* Connecting Line + Add Step Button */}
+                      <div style={{ width: "2px", height: "40px", background: "#333", position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <button
+                          onClick={() => openStepForm(undefined, idx)}
+                          style={{
+                            width: "20px", height: "20px", borderRadius: "50%", background: "#0B99FC", border: "none", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                            boxShadow: "0 0 0 4px #0a0a0a", zIndex: 2, opacity: 0, transition: "opacity 0.2s"
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.opacity = "1"}
+                          onMouseLeave={(e) => e.currentTarget.style.opacity = "0"}
+                          title="Vložit krok"
+                        >
+                          <Plus size={12} />
+                        </button>
                       </div>
-                    </div>
-                    {s.step_type === "condition" && s.configuration?.condition && (
-                      <div style={{ color: "#888", marginTop: "4px" }}>Podmínka: {s.configuration.condition} {s.configuration.tag ? `(${s.configuration.tag})` : ""} → pokud ANO: {s.configuration.onTrue === "end" ? "konec" : "pokračovat"}, pokud NE: {s.configuration.onFalse === "end" ? "konec" : "pokračovat"}</div>
-                    )}
-                    {(s.step_type === "tag_add" || s.step_type === "tag_remove") && s.configuration?.tag && (
-                      <div style={{ color: "#888", marginTop: "4px" }}>Tag: {s.configuration.tag}</div>
-                    )}
-                    {s.step_type === "email" && (
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "8px", flexWrap: "wrap", gap: "6px" }}>
-                        <span style={{ color: s.template_id ? "#888" : "#f9a825", fontSize: "11px", display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                          {s.template_id ? (tpl ? tpl.name : `Šablona #${s.template_id}`) : (<><AlertTriangle size={12} /> Žádná šablona — klikněte na Vizuální editor</>)}
-                        </span>
-                        <div style={{ display: "flex", gap: "6px" }}>
-                          <button
-                            className="btn"
-                            onClick={() => openVisualStep(s)}
-                            style={{ borderRadius: "4px", fontSize: "10px", padding: "3px 8px", borderColor: "#0B99FC", color: "#0B99FC", display: "inline-flex", alignItems: "center", gap: "4px" }}
-                          >
-                            <Sparkles size={11} />
-                            Vizuální editor
-                          </button>
-                          {s.template_id && (
-                            <>
-                              <button className="btn" onClick={() => setPreviewStepId(s.id)} style={{ borderRadius: "4px", fontSize: "10px", padding: "3px 8px", borderColor: "#444" }}>Náhled</button>
-                              <button
-                                className="btn"
-                                onClick={() => handleSendTest(s.id)}
-                                disabled={testSendingStepId === s.id}
-                                style={{ borderRadius: "4px", fontSize: "10px", padding: "3px 8px", borderColor: "#24e053", color: "#24e053" }}
-                              >
-                                {testSendingStepId === s.id ? "Odesílám…" : "Odeslat test"}
-                              </button>
-                            </>
+
+                      {/* Step Node */}
+                      <div style={{ width: "320px", background: "#111", border: "1px solid #333", borderRadius: "8px", overflow: "hidden", position: "relative", zIndex: 2, boxShadow: "0 4px 12px rgba(0,0,0,0.2)" }}>
+                        <div style={{ padding: "12px", borderBottom: "1px solid #222", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            {s.step_type === "email" && <div style={{ background: "rgba(11, 153, 252, 0.1)", color: "#0B99FC", padding: "4px", borderRadius: "4px" }}><FileText size={14} /></div>}
+                            {s.step_type === "wait" && <div style={{ background: "rgba(245, 158, 11, 0.1)", color: "#f59e0b", padding: "4px", borderRadius: "4px" }}><Clock size={14} /></div>}
+                            {s.step_type === "condition" && <div style={{ background: "rgba(168, 85, 247, 0.1)", color: "#a855f7", padding: "4px", borderRadius: "4px" }}><Share2 size={14} /></div>}
+                            {s.step_type.startsWith("tag_") && <div style={{ background: "rgba(34, 197, 94, 0.1)", color: "#22c55e", padding: "4px", borderRadius: "4px" }}><Tag size={14} /></div>}
+                            
+                            <span style={{ fontSize: "12px", fontWeight: 600, color: "#eee" }}>
+                              {STEP_TYPE_LABELS[s.step_type] || s.step_type}
+                            </span>
+                          </div>
+                          <div style={{ display: "flex", gap: "4px" }}>
+                            <button onClick={() => openStepForm(s)} style={{ background: "none", border: "none", color: "#888", cursor: "pointer", padding: "4px" }}><Edit3 size={12} /></button>
+                            <button onClick={() => deleteStep(s.id)} style={{ background: "none", border: "none", color: "#ff5252", cursor: "pointer", padding: "4px" }}><Trash2 size={12} /></button>
+                          </div>
+                        </div>
+                        
+                        <div style={{ padding: "12px", fontSize: "12px", color: "#999" }}>
+                          {s.delay_hours > 0 && <div style={{ marginBottom: "8px", display: "flex", alignItems: "center", gap: "4px" }}><Clock size={10} /> Čekat {s.delay_hours}h</div>}
+                          
+                          {s.step_type === "email" && (
+                            <div>
+                              <div style={{ color: s.template_id ? "#ccc" : "#f9a825", marginBottom: "8px" }}>
+                                {s.template_id ? (tpl ? tpl.name : `Šablona #${s.template_id}`) : "Žádná šablona vybrána"}
+                              </div>
+                              <div style={{ display: "flex", gap: "6px" }}>
+                                <button className="btn" onClick={() => openVisualStep(s)} style={{ flex: 1, borderRadius: "4px", fontSize: "10px", padding: "4px 0", borderColor: "#0B99FC", color: "#0B99FC", display: "flex", alignItems: "center", justifyContent: "center", gap: "4px" }}>
+                                  <Sparkles size={11} /> Upravit design
+                                </button>
+                                {s.template_id && (
+                                  <button className="btn" onClick={() => handleSendTest(s.id)} disabled={testSendingStepId === s.id} style={{ borderRadius: "4px", fontSize: "10px", padding: "4px 8px", borderColor: "#333", color: "#ccc" }}>
+                                    {testSendingStepId === s.id ? "..." : <Send size={11} />}
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {isCondition && s.configuration?.condition && (
+                            <div>
+                              Podmínka: <strong style={{ color: "#eee" }}>{s.configuration.condition}</strong> {s.configuration.tag && `(${s.configuration.tag})`}
+                            </div>
+                          )}
+
+                          {(s.step_type === "tag_add" || s.step_type === "tag_remove") && s.configuration?.tag && (
+                            <div>Tag: <strong style={{ color: "#eee" }}>{s.configuration.tag}</strong></div>
                           )}
                         </div>
+
+                        {/* Step Analytics Footer */}
+                        {s.step_type === "email" && stepStats[s.id] && (
+                          <div style={{ padding: "8px 12px", background: "rgba(0,0,0,0.3)", borderTop: "1px solid #222", display: "flex", justifyContent: "space-between", fontSize: "10px" }}>
+                            <span style={{ color: "#0B99FC" }}>{stepStats[s.id].sends} odesláno</span>
+                            <span style={{ color: "#24e053" }}>{stepStats[s.id].open_rate}% open</span>
+                            <span style={{ color: "#a855f7" }}>{stepStats[s.id].click_rate}% click</span>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
+
+                      {/* Condition Branching Visualization */}
+                      {isCondition && (
+                        <div style={{ position: "relative", width: "100%", display: "flex", justifyContent: "center", height: "60px", marginTop: "-1px" }}>
+                          <div style={{ position: "absolute", top: "0", left: "50%", transform: "translateX(-50%)", width: "160px", height: "30px", borderBottom: "2px solid #333", borderLeft: "2px solid #333", borderRight: "2px solid #333", borderRadius: "0 0 8px 8px", zIndex: 1 }}></div>
+                          <div style={{ position: "absolute", top: "30px", left: "calc(50% - 80px)", transform: "translateX(-50%)", display: "flex", flexDirection: "column", alignItems: "center" }}>
+                            <div style={{ background: "#222", fontSize: "9px", padding: "2px 6px", borderRadius: "4px", color: "#22c55e", zIndex: 2 }}>ANO</div>
+                            {s.configuration?.onTrue === "end" && (
+                              <div style={{ marginTop: "10px", width: "8px", height: "8px", borderRadius: "50%", background: "#ff5252", border: "2px solid #0a0a0a" }} title="Konec cesty" />
+                            )}
+                          </div>
+                          <div style={{ position: "absolute", top: "30px", left: "calc(50% + 80px)", transform: "translateX(-50%)", display: "flex", flexDirection: "column", alignItems: "center" }}>
+                            <div style={{ background: "#222", fontSize: "9px", padding: "2px 6px", borderRadius: "4px", color: "#ff5252", zIndex: 2 }}>NE</div>
+                            {s.configuration?.onFalse === "end" && (
+                              <div style={{ marginTop: "10px", width: "8px", height: "8px", borderRadius: "50%", background: "#ff5252", border: "2px solid #0a0a0a" }} title="Konec cesty" />
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </React.Fragment>
                   );
                 })}
+
+                {/* Final Connecting Line & End Node */}
+                {detail.steps.length > 0 && (
+                  <>
+                    <div style={{ width: "2px", height: "40px", background: "#333", position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <button
+                          onClick={() => openStepForm(undefined, detail.steps.length)}
+                          style={{
+                            width: "20px", height: "20px", borderRadius: "50%", background: "#0B99FC", border: "none", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                            boxShadow: "0 0 0 4px #0a0a0a", zIndex: 2, opacity: 0, transition: "opacity 0.2s"
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.opacity = "1"}
+                          onMouseLeave={(e) => e.currentTarget.style.opacity = "0"}
+                          title="Přidat krok na konec"
+                        >
+                          <Plus size={12} />
+                        </button>
+                    </div>
+                    <div style={{ background: "#1a1a1a", border: "1px solid #333", borderRadius: "24px", padding: "4px 12px", fontSize: "11px", color: "#888", zIndex: 2 }}>
+                      Konec
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </div>

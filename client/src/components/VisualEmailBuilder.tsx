@@ -56,7 +56,10 @@ export type BlockType =
   | "info_box"
   | "coupon_box"
   | "social_links"
-  | "countdown";
+  | "countdown"
+  | "two_column"
+  | "video"
+  | "quote";
 
 export interface EmailBlockGridItem {
   title: string;
@@ -75,6 +78,8 @@ export interface EmailHeaderConfig {
 export interface EmailBlock {
   id: string;
   type: BlockType;
+  blockBgColor?: string; // Optional background color for the entire block section
+
   // Heading
   headingText?: string;
   headingLevel?: "h1" | "h2" | "h3";
@@ -186,6 +191,28 @@ export interface EmailBlock {
    countdownBtnText?: string;
    countdownBorderRadius?: "sharp" | "rounded" | "pill";
    countdownGlow?: boolean;
+
+  // Two Column
+  col1Image?: string;
+  col1Title?: string;
+  col1Text?: string;
+  col1ButtonText?: string;
+  col1ButtonUrl?: string;
+  col2Image?: string;
+  col2Title?: string;
+  col2Text?: string;
+  col2ButtonText?: string;
+  col2ButtonUrl?: string;
+
+  // Video
+  videoUrl?: string;
+  videoThumbnailUrl?: string;
+  videoTitle?: string;
+
+  // Quote
+  quoteText?: string;
+  quoteAuthor?: string;
+  quoteRole?: string;
 }
 
 interface SelectItem {
@@ -257,6 +284,9 @@ const BLOCK_TYPE_LABELS: Record<BlockType, string> = {
   coupon_box: "Slevový kód",
   social_links: "Sociální sítě",
   countdown: "Odpočet (Timer)",
+  two_column: "Dva sloupce",
+  video: "Video",
+  quote: "Citát",
 };
 
 const URL_PRESETS = [
@@ -928,6 +958,26 @@ export function VisualEmailBuilder({
       newBlock.countdownSeconds = "00";
       newBlock.countdownButtonText = "VYUŽÍT NABÍDKU";
       newBlock.countdownButtonUrl = "/beaty";
+    } else if (type === "two_column") {
+      newBlock.col1Image = "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=400&q=80";
+      newBlock.col1Title = "Levý sloupec";
+      newBlock.col1Text = "Krátký popis obsahu levého sloupce...";
+      newBlock.col1ButtonText = "Více";
+      newBlock.col1ButtonUrl = "/beaty";
+      
+      newBlock.col2Image = "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=400&q=80";
+      newBlock.col2Title = "Pravý sloupec";
+      newBlock.col2Text = "Krátký popis obsahu pravého sloupce...";
+      newBlock.col2ButtonText = "Více";
+      newBlock.col2ButtonUrl = "/beaty";
+    } else if (type === "video") {
+      newBlock.videoUrl = "https://youtube.com";
+      newBlock.videoThumbnailUrl = "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=800&q=80";
+      newBlock.videoTitle = "Přehrát video";
+    } else if (type === "quote") {
+      newBlock.quoteText = "Voodoo808 má nejlepší beaty co jsem kdy slyšel!";
+      newBlock.quoteAuthor = "Spokojený zákazník";
+      newBlock.quoteRole = "Rapper";
     }
 
     const nextList = [...blocks, newBlock];
@@ -1065,6 +1115,7 @@ export function VisualEmailBuilder({
       items: [
         { type: "heading" as BlockType, label: "Nadpis", icon: Type },
         { type: "paragraph" as BlockType, label: "Odstavec", icon: AlignLeft },
+        { type: "quote" as BlockType, label: "Citát", icon: FileText },
         { type: "info_box" as BlockType, label: "Info Box", icon: Info },
         { type: "coupon_box" as BlockType, label: "Slevový Kód", icon: Tag },
       ],
@@ -1074,7 +1125,9 @@ export function VisualEmailBuilder({
       icon: Layout,
       items: [
         { type: "hero" as BlockType, label: "Hero Banner", icon: Layout },
+        { type: "two_column" as BlockType, label: "Dva sloupce", icon: Layout },
         { type: "image" as BlockType, label: "Obrázek", icon: ImageIcon },
+        { type: "video" as BlockType, label: "Video", icon: Monitor },
         { type: "divider" as BlockType, label: "Oddělovač", icon: Minus },
         { type: "spacer" as BlockType, label: "Mezera", icon: Maximize2 },
       ],
@@ -3382,6 +3435,34 @@ function BlockInspector({
       {activeTab === "style" ? (
         /* ── Style Tab for All Blocks ─────────────────────────────────────── */
         <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+          
+          {/* Per-section background color (blockBgColor) */}
+          <div style={{ paddingBottom: "12px", borderBottom: "1px solid #222" }}>
+            <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "6px", fontWeight: 700, textTransform: "uppercase" }}>
+              Pozadí celého bloku
+            </label>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <input
+                type="color"
+                value={block.blockBgColor || "#000000"}
+                onChange={(e) => onChange({ blockBgColor: e.target.value })}
+                style={{ width: "32px", height: "32px", padding: "0", border: "none", borderRadius: "4px", cursor: "pointer", background: "none" }}
+              />
+              <input
+                value={block.blockBgColor || ""}
+                onChange={(e) => onChange({ blockBgColor: e.target.value })}
+                placeholder="#000000 (nechte prázdné pro výchozí)"
+                style={{ ...inputStyle, flex: 1 }}
+              />
+              <button
+                type="button"
+                onClick={() => onChange({ blockBgColor: "" })}
+                style={{ background: "none", border: "1px solid #333", color: "#888", fontSize: "10px", padding: "4px 8px", borderRadius: "4px", cursor: "pointer" }}
+              >
+                Vyčistit
+              </button>
+            </div>
+          </div>
           {/* Quick Color Palette */}
           {(block.type === "heading" ||
             block.type === "paragraph" ||
@@ -4038,6 +4119,96 @@ function BlockInspector({
               </div>
             </>
           )}
+
+          {/* Two Column Content */}
+          {block.type === "two_column" && (
+            <>
+              <div style={{ paddingBottom: "8px", borderBottom: "1px solid #222", marginBottom: "8px" }}>
+                <strong style={{ display: "block", fontSize: "12px", color: "#fff", marginBottom: "8px" }}>Sloupec 1 (Levý)</strong>
+                <div>
+                  <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "4px" }}>Obrázek URL</label>
+                  <input value={block.col1Image || ""} onChange={(e) => onChange({ col1Image: e.target.value })} style={inputStyle} />
+                </div>
+                <div style={{ marginTop: "8px" }}>
+                  <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "4px" }}>Nadpis</label>
+                  <input value={block.col1Title || ""} onChange={(e) => onChange({ col1Title: e.target.value })} style={inputStyle} />
+                </div>
+                <div style={{ marginTop: "8px" }}>
+                  <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "4px" }}>Text</label>
+                  <textarea value={block.col1Text || ""} onChange={(e) => onChange({ col1Text: e.target.value })} style={{ ...inputStyle, minHeight: "60px" }} />
+                </div>
+                <div style={{ marginTop: "8px" }}>
+                  <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "4px" }}>Tlačítko Text</label>
+                  <input value={block.col1ButtonText || ""} onChange={(e) => onChange({ col1ButtonText: e.target.value })} style={inputStyle} />
+                </div>
+                <div style={{ marginTop: "8px" }}>
+                  <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "4px" }}>Tlačítko URL</label>
+                  <input value={block.col1ButtonUrl || ""} onChange={(e) => onChange({ col1ButtonUrl: e.target.value })} style={inputStyle} />
+                </div>
+              </div>
+
+              <div>
+                <strong style={{ display: "block", fontSize: "12px", color: "#fff", marginBottom: "8px" }}>Sloupec 2 (Pravý)</strong>
+                <div>
+                  <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "4px" }}>Obrázek URL</label>
+                  <input value={block.col2Image || ""} onChange={(e) => onChange({ col2Image: e.target.value })} style={inputStyle} />
+                </div>
+                <div style={{ marginTop: "8px" }}>
+                  <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "4px" }}>Nadpis</label>
+                  <input value={block.col2Title || ""} onChange={(e) => onChange({ col2Title: e.target.value })} style={inputStyle} />
+                </div>
+                <div style={{ marginTop: "8px" }}>
+                  <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "4px" }}>Text</label>
+                  <textarea value={block.col2Text || ""} onChange={(e) => onChange({ col2Text: e.target.value })} style={{ ...inputStyle, minHeight: "60px" }} />
+                </div>
+                <div style={{ marginTop: "8px" }}>
+                  <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "4px" }}>Tlačítko Text</label>
+                  <input value={block.col2ButtonText || ""} onChange={(e) => onChange({ col2ButtonText: e.target.value })} style={inputStyle} />
+                </div>
+                <div style={{ marginTop: "8px" }}>
+                  <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "4px" }}>Tlačítko URL</label>
+                  <input value={block.col2ButtonUrl || ""} onChange={(e) => onChange({ col2ButtonUrl: e.target.value })} style={inputStyle} />
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Video Content */}
+          {block.type === "video" && (
+            <>
+              <div>
+                <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "4px" }}>Video URL (YouTube/Vimeo)</label>
+                <input value={block.videoUrl || ""} onChange={(e) => onChange({ videoUrl: e.target.value })} style={inputStyle} />
+              </div>
+              <div>
+                <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "4px" }}>Náhledový obrázek (Thumbnail URL)</label>
+                <input value={block.videoThumbnailUrl || ""} onChange={(e) => onChange({ videoThumbnailUrl: e.target.value })} style={inputStyle} />
+              </div>
+              <div>
+                <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "4px" }}>Titulek pod videem</label>
+                <input value={block.videoTitle || ""} onChange={(e) => onChange({ videoTitle: e.target.value })} style={inputStyle} />
+              </div>
+            </>
+          )}
+
+          {/* Quote Content */}
+          {block.type === "quote" && (
+            <>
+              <div>
+                <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "4px" }}>Text citátu</label>
+                <textarea value={block.quoteText || ""} onChange={(e) => onChange({ quoteText: e.target.value })} style={{ ...inputStyle, minHeight: "80px" }} />
+              </div>
+              <div>
+                <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "4px" }}>Autor</label>
+                <input value={block.quoteAuthor || ""} onChange={(e) => onChange({ quoteAuthor: e.target.value })} style={inputStyle} />
+              </div>
+              <div>
+                <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "4px" }}>Role / Pozice</label>
+                <input value={block.quoteRole || ""} onChange={(e) => onChange({ quoteRole: e.target.value })} style={inputStyle} />
+              </div>
+            </>
+          )}
+
 
           {/* Coupon Box Content with Real DB Sync & One-Click Creation */}
           {block.type === "coupon_box" && (
