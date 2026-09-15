@@ -2,7 +2,7 @@ import { Button, Input, Select, Badge, Skeleton } from '../components/UI';
 import { DESIGN_SYSTEM } from '../constants/designSystem';
 import { CZECH } from '../constants/czech';
 import { useState, useEffect, useRef, useMemo } from "react";
-import { Music, Image as ImageIcon, Upload, Star, ChevronUp, ChevronDown, Pencil, Check, X, Clock, Plus, Menu, Mail, AlertTriangle, CheckCircle2, Folder, Copy, Trash2, ArrowLeft, Tag, Zap, Sparkles, Search, Receipt, Layers, Users, ShieldCheck, MessageSquare, Settings, BarChart3, type LucideIcon } from "lucide-react";
+import { Music, Image as ImageIcon, Upload, Star, ChevronUp, ChevronDown, Pencil, Check, X, Clock, Plus, Menu, Mail, AlertTriangle, CheckCircle2, Folder, Copy, Trash2, ArrowLeft, Tag, Zap, Sparkles, Search, Receipt, Layers, Users, ShieldCheck, MessageSquare, Settings, BarChart3, FileText, Share2, Edit3, type LucideIcon } from "lucide-react";
 import { useApp } from "../App.js";
 import { useLocation } from "wouter";
 import { toAudioProxyUrl } from "../lib/audioProxy.js";
@@ -7190,10 +7190,28 @@ function OdberateleTab() {
 
   const handleSearch = (e: React.FormEvent) => { e.preventDefault(); setPage(1); load(); };
 
-  const openDetail = (id: number) => {
+  // Fetch subscriber detail
+  const openSubscriberDetail = (id: number) => {
     fetch(`/api/marketing/subscribers/${id}`, { credentials: "include" })
       .then(r => r.ok ? r.json() : null)
       .then(setSelected)
+      .catch(() => {});
+  };
+
+  // Fetch journey detail for modal
+  const openJourneyDetail = (id: number) => {
+    fetch(`/api/marketing/journeys/${id}`, { credentials: "include" })
+      .then(r => r.ok ? r.json() : null)
+      .then((data) => {
+        if (!data) { console.log('Fetched journey detail:', data); return; }
+        // Ensure the data contains a 'journey' field for the modal
+        if (!data.journey) {
+          // If API returns a plain journey object, wrap it
+          setDetail({ journey: data, steps: data.steps || [] });
+        } else {
+          setDetail({ ...data, steps: data.steps ?? [] });
+        }
+      })
       .catch(() => {});
   };
 
@@ -7326,7 +7344,7 @@ function OdberateleTab() {
             </thead>
             <tbody>
               {subscribers.map(s => (
-                <tr key={s.id} onClick={() => openDetail(s.id)} style={{ cursor: "pointer" }}>
+                <tr key={s.id} onClick={() => openSubscriberDetail(s.id)} style={{ cursor: "pointer" }}>
                   <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textPrimary, fontWeight: 500 }}>{s.email}</td>
                   <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "12px" }}>{s.first_source}</td>
                   <td style={{ ...cellStyle }}>
@@ -7375,7 +7393,7 @@ function OdberateleTab() {
                 <button
                   className="btn btn-filled"
                   style={{ borderRadius: "4px", fontSize: "12px" }}
-                  onClick={async () => { if (!confirm("Nastavit souhlas s marketingem pro tohoto odběratele ručně? Používejte pouze pokud jste s ním souhlas skutečně získali (např. telefonicky, písemně).")) return; await fetch(`/api/marketing/subscribers/${selected.subscriber.id}/resubscribe`, { method: "POST", credentials: "include" }); openDetail(selected.subscriber.id); load(); }}
+                  onClick={async () => { if (!confirm("Nastavit souhlas s marketingem pro tohoto odběratele ručně? Používejte pouze pokud jste s ním souhlas skutečně získali (např. telefonicky, písemně).")) return; await fetch(`/api/marketing/subscribers/${selected.subscriber.id}/resubscribe`, { method: "POST", credentials: "include" }); openSubscriberDetail(selected.subscriber.id); load(); }}
                 >
                   Nastavit souhlas s marketingem
                 </button>
@@ -7383,7 +7401,7 @@ function OdberateleTab() {
                 <button
                   className="btn"
                   style={{ borderRadius: "4px", fontSize: "12px", borderColor: "#24e053", color: "#24e053" }}
-                  onClick={async () => { await fetch(`/api/marketing/subscribers/${selected.subscriber.id}/resubscribe`, { method: "POST", credentials: "include" }); openDetail(selected.subscriber.id); load(); }}
+                  onClick={async () => { await fetch(`/api/marketing/subscribers/${selected.subscriber.id}/resubscribe`, { method: "POST", credentials: "include" }); openSubscriberDetail(selected.subscriber.id); load(); }}
                 >
                   Znovu přihlásit
                 </button>
@@ -7391,7 +7409,7 @@ function OdberateleTab() {
                 <button
                   className="btn"
                   style={{ borderRadius: "4px", fontSize: "12px", borderColor: "#ff5252", color: "#ff5252" }}
-                  onClick={async () => { if (!confirm("Odhlásit tohoto odběratele z marketingu?")) return; await fetch(`/api/marketing/subscribers/${selected.subscriber.id}/unsubscribe`, { method: "POST", credentials: "include" }); openDetail(selected.subscriber.id); load(); }}
+                  onClick={async () => { if (!confirm("Odhlásit tohoto odběratele z marketingu?")) return; await fetch(`/api/marketing/subscribers/${selected.subscriber.id}/unsubscribe`, { method: "POST", credentials: "include" }); openSubscriberDetail(selected.subscriber.id); load(); }}
                 >
                   Odhlásit z marketingu
                 </button>
@@ -7486,28 +7504,7 @@ function JourneysTab() {
 
   useEffect(() => { load(); }, []);
 
-  const openDetail = (id: number) => {
-    fetch(`/api/marketing/journeys/${id}`, { credentials: "include" })
-      .then(r => r.ok ? r.json() : null)
-      .then(setDetail)
-      .catch(() => {});
-    fetch(`/api/marketing/journeys/${id}/analytics`, { credentials: "include" })
-      .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (data?.steps) {
-          const statsMap: Record<number, any> = {};
-          data.steps.forEach((s: any) => {
-            statsMap[s.id] = {
-              sends: s.sends || 0,
-              open_rate: s.openRate ?? s.open_rate ?? 0,
-              click_rate: s.clickRate ?? s.click_rate ?? 0,
-            };
-          });
-          setStepStats(statsMap);
-        }
-      })
-      .catch(() => {});
-  };
+
 
   const setStatus = async (id: number, status: string) => {
     await fetch(`/api/marketing/journeys/${id}`, {
@@ -7517,7 +7514,7 @@ function JourneysTab() {
       body: JSON.stringify({ status }),
     });
     load();
-    if (detail?.journey?.id === id) openDetail(id);
+    // No longer needed for journey detail handling here
   };
 
   const handleSendTest = async (stepId: number) => {
@@ -7544,26 +7541,7 @@ function JourneysTab() {
 
   const [insertStepIdx, setInsertStepIdx] = useState<number | null>(null);
 
-  const openStepForm = (step?: any, insertIdx?: number) => {
-    if (step) {
-      setEditingStep(step);
-      setStepForm({
-        stepType: step.step_type,
-        delayHours: step.delay_hours,
-        templateId: step.template_id || "",
-        condition: step.configuration?.condition || "has_purchased",
-        conditionTag: step.configuration?.tag || "",
-        onTrue: step.configuration?.onTrue || "end",
-        onFalse: step.configuration?.onFalse || "continue",
-      });
-      setInsertStepIdx(null);
-    } else {
-      setEditingStep(null);
-      setStepForm({ stepType: "email", delayHours: 0, templateId: "", condition: "has_purchased", conditionTag: "", onTrue: "end", onFalse: "continue" });
-      setInsertStepIdx(insertIdx ?? null);
-    }
-    setShowStepForm(true);
-  };
+
 
   const saveStep = async () => {
     const configuration = stepForm.stepType === "condition"
@@ -7597,14 +7575,14 @@ function JourneysTab() {
     }
     setShowStepForm(false);
     setEditingStep(null);
-    openDetail(detail.journey.id);
+    openJourneyDetail(detail.journey.id);
     load();
   };
 
   const deleteStep = async (stepId: number) => {
     if (!confirm("Smazat tento krok? Pokud už někteří odběratelé tento krok právě provádějí, jejich journey může skončit s chybou.")) return;
     await fetch(`/api/marketing/journeys/${detail.journey.id}/steps/${stepId}`, { method: "DELETE", credentials: "include" });
-    openDetail(detail.journey.id);
+    openJourneyDetail(detail.journey.id);
     load();
   };
 
@@ -7673,7 +7651,7 @@ function JourneysTab() {
 
     const tplsRes = await fetch("/api/marketing/templates", { credentials: "include" });
     if (tplsRes.ok) setTemplates(await tplsRes.json());
-    openDetail(detail.journey.id);
+    openJourneyDetail(detail.journey.id);
     load();
     setVisualStep(null);
   };
@@ -7730,7 +7708,7 @@ function JourneysTab() {
           <tbody>
             {journeys.map(j => (
               <tr key={j.id}>
-                <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textPrimary, fontWeight: 500, cursor: "pointer" }} onClick={() => openDetail(j.id)}>{j.name}</td>
+                <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textPrimary, fontWeight: 500, cursor: "pointer" }} onClick={() => openJourneyDetail(j.id)}>{j.name}</td>
                 <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "12px" }}>{j.trigger_type}{j.trigger_value ? ` (${j.trigger_value})` : ""}</td>
                 <td style={{ ...cellStyle }}>
                   <span style={{ fontSize: "11px", color: STATUS_COLORS[j.status] || "#555" }}>{j.status}</span>
