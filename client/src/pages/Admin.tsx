@@ -137,7 +137,7 @@ interface LicenseType {
   created_at: string;
 }
 
-type AdminTab = "orders" | "beats" | "kits" | "zakaznici" | "licenses" | "marketing" | "komentare" | "nastaveni";
+type AdminTab = "orders" | "beats" | "kits" | "zakaznici" | "licenses" | "marketing" | "komentare" | "nastaveni" | "email-journey";
 
 const ADMIN_NAV: { id: AdminTab; label: string; icon: LucideIcon }[] = [
   { id: "orders",    label: "Objednávky", icon: Receipt        },
@@ -148,6 +148,7 @@ const ADMIN_NAV: { id: AdminTab; label: string; icon: LucideIcon }[] = [
   { id: "marketing", label: "Marketing",  icon: BarChart3      },
   { id: "komentare", label: "Komentáře",  icon: MessageSquare  },
   { id: "nastaveni", label: "Nastavení",  icon: Settings       },
+  { id: "email-journey", label: "E-mailová cesta zákazníka", icon: Mail },
 ];
 
 const LEGACY_TAB_MAP: Record<string, AdminTab> = {
@@ -524,6 +525,7 @@ function Admin() {
         {tab === "zakaznici" && <ZakazniciTab />}
         {tab === "licenses"  && <LicensesTab licenses={licenses} onRefresh={loadData} />}
         {tab === "marketing" && <MarketingTab settings={settings} onRefresh={refreshSettings} />}
+        {tab === "email-journey" && <VisualEmailBuilder />}
         {tab === "komentare" && <KomentareTab />}
         {tab === "nastaveni" && <NastaveniTab settings={settings} onRefresh={refreshSettings} beats={beats} />}
       </main>
@@ -7686,7 +7688,7 @@ function JourneysTab() {
   return (
     <div>
       <p style={{ color: "#555", fontSize: "12px", marginBottom: "16px" }}>
-        Automatizované sekvence e-mailů spouštěné stahováním freebie, dokončením objednávky nebo registrací. Nové journeys se vytváří v draft stavu — aktivujte je až po zkontrolování kroků.
+        journeys se vytváří v draft stavu — aktivujte je až po zkontrolování kroků.
       </p>
       {loading ? (
         <div style={{ color: "#555", padding: "24px" }}>Načítám…</div>
