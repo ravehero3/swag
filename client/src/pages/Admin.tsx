@@ -11,7 +11,8 @@ import SoundWave from "../components/SoundWave.js";
 // Force rebuild 1788444345
 import { BeatUploadModal } from "../components/BeatUploadModal.js";
 import { AdminErrorLog } from "../components/AdminErrorLog.js";
-import { VisualEmailBuilder } from "../components/VisualEmailBuilder.js";
+import { EmailJourneyBuilder } from "../components/EmailJourneyBuilder";
+import JourneyFlowBuilder from "../components/JourneyFlowBuilder.js";
 import {
   BeatArtwork,
   parseArtworkConfig,
@@ -7733,136 +7734,32 @@ function JourneysTab() {
 
       {detail?.journey ? (
         <div
-          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 10000, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 10000, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-start", padding: "0" }}
           onClick={(e) => { if (e.target === e.currentTarget) setDetail(null); }}
         >
-          <div style={{ background: "#0a0a0a", border: "1px solid #222", borderRadius: "12px", width: "min(900px, 96vw)", maxHeight: "88vh", overflowY: "auto", padding: "0" }}>
-            
-            {/* Header */}
-            <div style={{ padding: "24px", borderBottom: "1px solid #222", display: "flex", justifyContent: "space-between", alignItems: "flex-start", position: "sticky", top: 0, background: "#0a0a0a", zIndex: 100 }}>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: "20px", fontWeight: 600, color: "#fff", marginBottom: "6px" }}>{detail.journey.name}</div>
-                <div style={{ fontSize: "12px", color: "#666" }}>
-                  {detail.journey.description || "Bez popisu"} • Trigger: {detail.journey.trigger_type}
-                </div>
-              </div>
-              <button onClick={() => setDetail(null)} style={{ background: "none", border: "none", color: "#666", fontSize: "24px", cursor: "pointer", padding: "0", lineHeight: 1 }}>×</button>
+          {/* Header */}
+          <div style={{ width: "100%", background: "#0a0a0a", borderBottom: "1px solid #222", padding: "16px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              <div style={{ fontSize: "18px", fontWeight: 600, color: "#fff" }}>{detail.journey.name}</div>
+              <div style={{ fontSize: "12px", color: "#666", marginTop: "4px" }}>{detail.journey.description || "No description"}</div>
             </div>
+            <button onClick={() => setDetail(null)} style={{ background: "none", border: "none", color: "#666", fontSize: "24px", cursor: "pointer", padding: "0" }}>×</button>
+          </div>
 
-            {/* Test Email Input */}
-            <div style={{ padding: "16px 24px", borderBottom: "1px solid #1a1a1a", background: "#050505" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <label style={{ fontSize: "11px", color: "#888", whiteSpace: "nowrap" }}>Testovací e-mail:</label>
-                <input
-                  value={testEmail}
-                  onChange={e => setTestEmail(e.target.value)}
-                  placeholder="test@example.cz"
-                  style={{ flex: 1, padding: "8px 12px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "4px", color: "#fff", fontSize: "12px", boxSizing: "border-box" }}
-                />
-              </div>
-              {testResult && <div style={{ fontSize: "12px", marginTop: "8px", color: testResult.includes("Chyba") ? "#ff5252" : "#24e053" }}>{testResult}</div>}
-            </div>
-
-            {/* Flow Visualization */}
-            <div style={{ padding: "40px 24px", display: "flex", flexDirection: "column", alignItems: "center" }}>
-              {!detail.steps || detail.steps.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "60px 40px" }}>
-                  <div style={{ fontSize: "14px", color: "#666", marginBottom: "20px" }}>Journey zatím nemá žádné kroky.</div>
-                  <button className="btn btn-filled" onClick={() => { setEditingStep(null); setShowStepForm(true); }} style={{ borderRadius: "4px", fontSize: "12px" }}>+ Přidat první krok</button>
-                </div>
-              ) : (
-                <>
-                  {/* Trigger Node */}
-                  <div style={{ background: "#1a1a1a", border: "2px solid #f59e0b", borderRadius: "24px", padding: "8px 16px", fontSize: "12px", fontWeight: 600, color: "#f59e0b", marginBottom: "24px", display: "flex", alignItems: "center", gap: "8px" }}>
-                    <Zap size={14} />
-                    {detail.journey.trigger_type}
-                  </div>
-                  
-                  {/* Connecting Line */}
-                  <div style={{ width: "2px", height: "32px", background: "#333", marginBottom: "24px" }} />
-                  
-                  {/* Steps */}
-                  {detail.steps?.map((s, idx) => {
-                    const tpl = templates.find((t) => t.id === s.template_id);
-                    const stepIcon = s.step_type === "email" ? <Mail size={16} /> : s.step_type === "wait" ? <Clock size={16} /> : s.step_type === "condition" ? <Share2 size={16} /> : s.step_type.startsWith("tag_") ? <Tag size={16} /> : <Check size={16} />;
-                    return (
-                      <React.Fragment key={s.id}>
-                        {/* Step Node */}
-                        <div style={{ background: "#111", border: "1px solid #333", borderRadius: "8px", padding: "16px", width: "360px", marginBottom: "24px", boxShadow: "0 4px 12px rgba(0,0,0,0.3)" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "12px" }}>
-                            <div style={{ background: "rgba(11,153,252,0.15)", color: "#0B99FC", padding: "6px", borderRadius: "4px", display: "flex", alignItems: "center", justifyContent: "center", width: "32px", height: "32px" }}>
-                              {stepIcon}
-                            </div>
-                            <div style={{ flex: 1 }}>
-                              <div style={{ fontSize: "13px", fontWeight: 600, color: "#fff" }}>Krok {idx + 1}: {STEP_TYPE_LABELS[s.step_type] || s.step_type}</div>
-                              {s.delay_hours > 0 && <div style={{ fontSize: "11px", color: "#888" }}>Čekat {s.delay_hours}h</div>}
-                            </div>
-                            <div style={{ display: "flex", gap: "6px" }}>
-                              <button onClick={() => { setEditingStep(s); setShowStepForm(true); }} style={{ background: "none", border: "1px solid #333", color: "#888", cursor: "pointer", padding: "4px 8px", borderRadius: "4px", fontSize: "11px" }}>Upravit</button>
-                              <button onClick={() => deleteStep(s.id)} style={{ background: "none", border: "1px solid #ff5252", color: "#ff5252", cursor: "pointer", padding: "4px 8px", borderRadius: "4px", fontSize: "11px" }}>Smazat</button>
-                            </div>
-                          </div>
-                          
-                          {s.step_type === "email" && (
-                            <div style={{ fontSize: "12px", color: "#ccc", background: "#050505", padding: "10px", borderRadius: "4px", marginTop: "10px" }}>
-                              {tpl ? <div>{tpl.name}</div> : <div style={{ color: "#f9a825" }}>⚠ Žádná šablona vybrána</div>}
-                              <div style={{ display: "flex", gap: "6px", marginTop: "8px" }}>
-                                <button className="btn" onClick={() => openVisualStep(s)} style={{ flex: 1, borderRadius: "4px", fontSize: "10px", padding: "4px", borderColor: "#0B99FC", color: "#0B99FC" }}>Náhled</button>
-                                {s.template_id && <button className="btn" onClick={() => handleSendTest(s.id)} disabled={testSendingStepId === s.id} style={{ flex: 1, borderRadius: "4px", fontSize: "10px", padding: "4px", borderColor: "#333", color: "#ccc" }}>{testSendingStepId === s.id ? "..." : "Test"}</button>}
-                              </div>
-                            </div>
-                          )}
-                          
-                          {s.step_type === "condition" && s.configuration && (
-                            <div style={{ fontSize: "11px", color: "#a855f7", background: "rgba(168,85,247,0.1)", padding: "10px", borderRadius: "4px", marginTop: "10px" }}>
-                              <div>Podmínka: <strong>{s.configuration.condition}</strong></div>
-                              {s.configuration.tag && <div>Tag: <strong>{s.configuration.tag}</strong></div>}
-                              <div style={{ marginTop: "6px", display: "flex", gap: "8px", fontSize: "10px" }}>
-                                <div>✓ {s.configuration.onTrue}</div>
-                                <div>✕ {s.configuration.onFalse}</div>
-                              </div>
-                            </div>
-                          )}
-                          
-                          {(s.step_type === "tag_add" || s.step_type === "tag_remove") && s.configuration && (
-                            <div style={{ fontSize: "11px", color: "#22c55e", background: "rgba(34,197,94,0.1)", padding: "10px", borderRadius: "4px", marginTop: "10px" }}>
-                              Tag: <strong>{s.configuration.tag}</strong>
-                            </div>
-                          )}
-                        </div>
-                        
-                        {/* Connecting Line + Insert Button */}
-                        {idx < detail.steps.length - 1 && (
-                          <div style={{ width: "2px", height: "40px", background: "#333", marginBottom: "24px", position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                            <button
-                              onClick={() => { setInsertStepIdx(idx + 1); setEditingStep(null); setShowStepForm(true); }}
-                              style={{ width: "24px", height: "24px", borderRadius: "50%", background: "#0B99FC", border: "2px solid #0a0a0a", color: "#fff", cursor: "pointer", opacity: 0, transition: "opacity 0.2s" }}
-                              onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
-                              onMouseLeave={(e) => (e.currentTarget.style.opacity = "0")}
-                              title="Vložit krok"
-                            >
-                              <Plus size={12} />
-                            </button>
-                          </div>
-                        )}
-                      </React.Fragment>
-                    );
-                  })}
-                  
-                  {/* Connecting Line before End */}
-                  {detail.steps.length > 0 && <div style={{ width: "2px", height: "32px", background: "#333", marginBottom: "24px" }} />}
-                  
-                  {/* End Node */}
-                  <div style={{ background: "#1a1a1a", border: "2px solid #666", borderRadius: "24px", padding: "8px 16px", fontSize: "12px", fontWeight: 600, color: "#888", display: "flex", alignItems: "center", gap: "8px" }}>
-                    <CheckCircle2 size={14} />
-                    Konec
-                  </div>
-                  
-                  {/* Add Step Button */}
-                  <button className="btn btn-filled" onClick={() => { setInsertStepIdx(null); setEditingStep(null); setShowStepForm(true); }} style={{ marginTop: "32px", borderRadius: "4px", fontSize: "12px" }}>+ Přidat krok na konec</button>
-                </>
-              )}
-            </div>
+          {/* Journey Flow Builder */}
+          <div style={{ flex: 1, width: "100%", maxWidth: "1200px", position: "relative" }}>
+            <JourneyFlowBuilder
+              journey={detail.journey}
+              steps={detail.steps || []}
+              templates={templates}
+              onEditStep={(step) => { setEditingStep(step); setShowStepForm(true); }}
+              onDeleteStep={deleteStep}
+              onAddStep={() => { setEditingStep(null); setShowStepForm(true); }}
+              onTestEmail={handleSendTest}
+              testSendingStepId={testSendingStepId}
+              testEmail={testEmail}
+              onTestEmailChange={setTestEmail}
+            />
           </div>
         </div>
       ) : null}
