@@ -628,38 +628,108 @@ export async function initDatabase() {
     }
 
     const journeySeeds = [
+      // LEAD MAGNETS & ONBOARDING
       {
-        name: "Welcome sekvence",
-        description: "Obecná uvítácí sekvence pro nově přihlášené odběratele (bez konkrétního freebie).",
-        triggerType: "subscriber_created",
-        triggerValue: null as string | null,
+        name: "Free Beat Onboarding",
+        description: "Deliver free beat → Ask what they recorded → Offer 20% discount",
+        triggerType: "freebie_downloaded",
+        triggerValue: "beat",
         steps: [
-          { type: "email", delay: 0, templateKey: "welcome_intro" },
-          { type: "wait", delay: 72 },
-          { type: "email", delay: 0, templateKey: "producer_tip_1" },
+          { type: "email", delay: 0, templateKey: "freebie_delivery" },
+          { type: "wait", delay: 48 },
+          { type: "email", delay: 0, templateKey: "beat_onboarding_followup" },
+          { type: "wait", delay: 24 },
+          { type: "email", delay: 0, templateKey: "discount_offer_20pct" },
         ],
       },
       {
-        name: "Free 808 Kit následná sekvence",
-        description: "Sekvence po stáhnutí zdarma souboru: doručení → tip → nabídka (přeskočí nabídku, pokud už koupil).",
+        name: "Free Sound Kit Onboarding",
+        description: "Deliver kit files → Share processing tip → Introduce premium kits",
         triggerType: "freebie_downloaded",
-        triggerValue: null as string | null,
+        triggerValue: "kit",
         steps: [
           { type: "email", delay: 0, templateKey: "freebie_delivery" },
-          { type: "wait", delay: 72 },
+          { type: "wait", delay: 24 },
           { type: "email", delay: 0, templateKey: "producer_tip_1" },
-          { type: "wait", delay: 96 },
-          { type: "condition", delay: 0, condition: "has_purchased", onTrue: "end", onFalse: "continue" },
+          { type: "wait", delay: 72 },
           { type: "email", delay: 0, templateKey: "freebie_offer" },
         ],
       },
+      // CONVERSION & RECOVERY
       {
-        name: "Po nákupu (draft)",
-        description: "Draft sekvence po dokončené objednávce — poděkování a následný obsah. Zůstává v draft, dokud ji admin vědomě neaktivuje.",
-        triggerType: "order_completed",
+        name: "Abandoned Checkout Recovery",
+        description: "Cart abandoned → Remind within 1-2h → Incentive after 24h",
+        triggerType: "abandoned_checkout",
         triggerValue: null as string | null,
         steps: [
+          { type: "email", delay: 0, templateKey: "abandoned_cart_reminder" },
+          { type: "wait", delay: 24 },
+          { type: "email", delay: 0, templateKey: "abandoned_cart_incentive" },
+        ],
+      },
+      {
+        name: "Browse Abandonment Recovery",
+        description: "Viewed beat/kit but no add-to-cart → Remind with BPM/Key info",
+        triggerType: "page_view_no_action",
+        triggerValue: "product_page",
+        steps: [
+          { type: "email", delay: 0, templateKey: "browse_recovery_day1" },
+          { type: "wait", delay: 72 },
+          { type: "email", delay: 0, templateKey: "browse_recovery_day3" },
+        ],
+      },
+      // NURTURE & RELATIONSHIP
+      {
+        name: "Rapper Growth & Tips Series",
+        description: "Weekly tips: Spotify playlisting, vocal mixing, beat drops",
+        triggerType: "has_tag",
+        triggerValue: "role:rapper",
+        steps: [
+          { type: "email", delay: 0, templateKey: "rapper_tip_spotify" },
+          { type: "wait", delay: 168 },
+          { type: "email", delay: 0, templateKey: "rapper_tip_mixing" },
+          { type: "wait", delay: 168 },
+          { type: "email", delay: 0, templateKey: "rapper_beat_drop" },
+        ],
+      },
+      {
+        name: "Producer Growth & Tutorials Series",
+        description: "Share video tutorials, melody breakdowns, beat selling tips",
+        triggerType: "has_tag",
+        triggerValue: "role:producer",
+        steps: [
+          { type: "email", delay: 0, templateKey: "producer_tutorial_video" },
+          { type: "wait", delay: 168 },
+          { type: "email", delay: 0, templateKey: "producer_melody_breakdown" },
+          { type: "wait", delay: 168 },
+          { type: "email", delay: 0, templateKey: "producer_beat_selling_tips" },
+        ],
+      },
+      // POST-PURCHASE & RETENTION
+      {
+        name: "Post-Beat Purchase Upsell",
+        description: "Thank & deliver → Ask for finished track link → Upgrade offer",
+        triggerType: "has_purchased",
+        triggerValue: "beat",
+        steps: [
           { type: "email", delay: 0, templateKey: "post_purchase_thanks" },
+          { type: "wait", delay: 72 },
+          { type: "email", delay: 0, templateKey: "ask_for_track_link" },
+          { type: "wait", delay: 96 },
+          { type: "email", delay: 0, templateKey: "upgrade_to_unlimited" },
+        ],
+      },
+      {
+        name: "Kit Cross-Sell Series",
+        description: "Purchased drum kit → Offer matching melody/loop kit discount",
+        triggerType: "has_purchased",
+        triggerValue: "kit",
+        steps: [
+          { type: "email", delay: 0, templateKey: "post_purchase_thanks" },
+          { type: "wait", delay: 48 },
+          { type: "email", delay: 0, templateKey: "kit_crosssell_matching" },
+          { type: "wait", delay: 120 },
+          { type: "email", delay: 0, templateKey: "kit_bundle_discount" },
         ],
       },
     ];
