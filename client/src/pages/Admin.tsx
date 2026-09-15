@@ -7687,6 +7687,30 @@ function JourneysTab() {
   const stepInputStyle: React.CSSProperties = { width: "100%", padding: "7px 10px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "4px", color: "#eee", fontSize: "12px", boxSizing: "border-box" };
   const [selectedJourneyId, setSelectedJourneyId] = useState<number | null>(null);
 
+  // Journey categories for organization
+  const JOURNEY_CATEGORIES = [
+    {
+      title: "Lead Magnets & Onboarding",
+      description: "Instant delivery journeys triggered by free downloads",
+      journeyNames: ["Free Beat Onboarding", "Free Sound Kit Onboarding"]
+    },
+    {
+      title: "Conversion & Recovery",
+      description: "Win back users who showed purchase intent but didn't convert",
+      journeyNames: ["Abandoned Checkout Recovery", "Browse Abandonment Recovery"]
+    },
+    {
+      title: "Nurture & Relationship",
+      description: "Build trust and keep your brand top-of-mind with valuable content",
+      journeyNames: ["Rapper Growth & Tips Series", "Producer Growth & Tutorials Series"]
+    },
+    {
+      title: "Post-Purchase & Retention",
+      description: "Maximize repeat purchases and customer lifetime value",
+      journeyNames: ["Post-Beat Purchase Upsell", "Kit Cross-Sell Series"]
+    }
+  ];
+
   // Auto-select first journey on load
   useEffect(() => {
     if (journeys.length > 0 && !selectedJourneyId) {
@@ -7708,9 +7732,20 @@ function JourneysTab() {
         <div style={{ color: "#444", padding: "24px" }}>Zatím žádné journeys.</div>
       ) : (
         <>
-          {/* Journey Cards */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: "16px", marginBottom: "40px" }}>
-            {journeys.map(j => (
+          {/* Journey Cards - Organized by Category */}
+          {JOURNEY_CATEGORIES.map(category => {
+            const categoryJourneys = journeys.filter(j => category.journeyNames.includes(j.name));
+            if (categoryJourneys.length === 0) return null;
+
+            return (
+              <div key={category.title} style={{ marginBottom: "40px" }}>
+                <div style={{ marginBottom: "16px" }}>
+                  <div style={{ fontSize: "16px", fontWeight: 700, color: "#fff", marginBottom: "4px" }}>{category.title}</div>
+                  <div style={{ fontSize: "12px", color: "#666" }}>{category.description}</div>
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: "16px" }}>
+                  {categoryJourneys.map(j => (
               <div
                 key={j.id}
                 onClick={() => { setSelectedJourneyId(j.id); openJourneyDetail(j.id); }}
@@ -7789,8 +7824,11 @@ function JourneysTab() {
                   {j.status === "active" ? "Pozastavit" : "Aktivovat"}
                 </button>
               </div>
-            ))}
-          </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
 
           {/* Journey Sequence */}
           {detail?.journey && (
