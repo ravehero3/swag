@@ -7729,7 +7729,7 @@ function JourneysTab() {
         </table>
       )}
 
-      {detail && detail.journey ? (
+      {detail?.journey ? (
         <div
           style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 10000, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
           onClick={(e) => { if (e.target === e.currentTarget) setDetail(null); }}
@@ -7780,7 +7780,7 @@ function JourneysTab() {
                   <div style={{ width: "2px", height: "32px", background: "#333", marginBottom: "24px" }} />
                   
                   {/* Steps */}
-                  {detail.steps.map((s, idx) => {
+                  {detail.steps?.map((s, idx) => {
                     const tpl = templates.find((t) => t.id === s.template_id);
                     const stepIcon = s.step_type === "email" ? <Mail size={16} /> : s.step_type === "wait" ? <Clock size={16} /> : s.step_type === "condition" ? <Share2 size={16} /> : s.step_type.startsWith("tag_") ? <Tag size={16} /> : <Check size={16} />;
                     return (
