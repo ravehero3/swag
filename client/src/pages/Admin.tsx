@@ -7685,84 +7685,137 @@ function JourneysTab() {
   const STATUS_COLORS: Record<string, string> = { active: "#24e053", paused: "#f9a825", draft: "#555" };
   const STEP_TYPE_LABELS: Record<string, string> = { email: "E-mail", wait: "Čekat", condition: "Podmínka", tag_add: "Přidat tag", tag_remove: "Odebrat tag", end: "Konec" };
   const stepInputStyle: React.CSSProperties = { width: "100%", padding: "7px 10px", background: "#111", border: "1px solid #2a2a2a", borderRadius: "4px", color: "#eee", fontSize: "12px", boxSizing: "border-box" };
+  const [selectedJourneyId, setSelectedJourneyId] = useState<number | null>(null);
+
+  // Auto-select first journey on load
+  useEffect(() => {
+    if (journeys.length > 0 && !selectedJourneyId) {
+      const firstId = journeys[0].id;
+      setSelectedJourneyId(firstId);
+      openJourneyDetail(firstId);
+    }
+  }, [journeys]);
 
   return (
     <div>
-      <p style={{ color: "#555", fontSize: "12px", marginBottom: "16px" }}>
-        journeys se vytváří v draft stavu — aktivujte je až po zkontrolování kroků.
+      <p style={{ color: "#555", fontSize: "12px", marginBottom: "24px" }}>
+        Journeys se vytváří v draft stavu — aktivujte je až po zkontrolování kroků.
       </p>
+
       {loading ? (
         <div style={{ color: "#555", padding: "24px" }}>Načítám…</div>
       ) : journeys.length === 0 ? (
         <div style={{ color: "#444", padding: "24px" }}>Zatím žádné journeys.</div>
       ) : (
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-          <thead>
-            <tr>
-              <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", textAlign: "left" }}>Název</th>
-              <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", textAlign: "left" }}>Trigger</th>
-              <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", textAlign: "left" }}>Stav</th>
-              <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", textAlign: "left" }}>Aktivní</th>
-              <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", textAlign: "left" }}>Dokončeno</th>
-              <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, textTransform: "uppercase", textAlign: "left" }}>E-maily</th>
-              <th style={{ ...cellStyle, textAlign: "right" }}></th>
-            </tr>
-          </thead>
-          <tbody>
+        <>
+          {/* Journey Cards */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: "16px", marginBottom: "40px" }}>
             {journeys.map(j => (
-              <tr key={j.id}>
-                <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textPrimary, fontWeight: 500, cursor: "pointer" }} onClick={() => openJourneyDetail(j.id)}>{j.name}</td>
-                <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "12px" }}>{j.trigger_type}{j.trigger_value ? ` (${j.trigger_value})` : ""}</td>
-                <td style={{ ...cellStyle }}>
-                  <span style={{ fontSize: "11px", color: STATUS_COLORS[j.status] || "#555" }}>{j.status}</span>
-                </td>
-                <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "12px" }}>{j.activeEnrollments}</td>
-                <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "12px" }}>{j.completedEnrollments}</td>
-                <td style={{ ...cellStyle, color: DESIGN_SYSTEM.colors.textSecondary, fontSize: "12px" }}>{j.emailsSent}</td>
-                <td style={{ ...cellStyle, textAlign: "right" }}>
-                  {j.status === "active" ? (
-                    <button className="btn" onClick={() => setStatus(j.id, "paused")} style={{ borderRadius: "4px", fontSize: "11px", borderColor: "#f9a825", color: "#f9a825" }}>Pozastavit</button>
-                  ) : (
-                    <button className="btn" onClick={() => setStatus(j.id, "active")} style={{ borderRadius: "4px", fontSize: "11px", borderColor: "#24e053", color: "#24e053" }}>Aktivovat</button>
-                  )}
-                </td>
-              </tr>
+              <div
+                key={j.id}
+                onClick={() => { setSelectedJourneyId(j.id); openJourneyDetail(j.id); }}
+                style={{
+                  background: selectedJourneyId === j.id ? "#1a1a1a" : "#0f0f0f",
+                  border: selectedJourneyId === j.id ? "2px solid #333" : "1px solid #222",
+                  borderRadius: "12px",
+                  padding: "20px",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                  boxShadow: selectedJourneyId === j.id ? "0 8px 24px rgba(0,0,0,0.4)" : "none",
+                }}
+                onMouseEnter={e => { if (selectedJourneyId !== j.id) (e.currentTarget as HTMLDivElement).style.background = "#111"; }}
+                onMouseLeave={e => { if (selectedJourneyId !== j.id) (e.currentTarget as HTMLDivElement).style.background = "#0f0f0f"; }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px" }}>
+                  <div>
+                    <div style={{ fontSize: "16px", fontWeight: 600, color: "#fff", marginBottom: "4px" }}>{j.name}</div>
+                    <div style={{ fontSize: "12px", color: "#888" }}>{j.description || "No description"}</div>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span style={{
+                      fontSize: "10px",
+                      fontWeight: 700,
+                      letterSpacing: "0.05em",
+                      color: STATUS_COLORS[j.status] || "#555",
+                      background: STATUS_COLORS[j.status] ? `${STATUS_COLORS[j.status]}15` : "transparent",
+                      padding: "4px 10px",
+                      borderRadius: "4px",
+                      textTransform: "uppercase"
+                    }}>
+                      {j.status}
+                    </span>
+                  </div>
+                </div>
+
+                <div style={{ borderTop: "1px solid #222", paddingTop: "12px", marginBottom: "16px" }}>
+                  <div style={{ fontSize: "11px", color: "#666", textTransform: "uppercase", marginBottom: "8px" }}>Trigger</div>
+                  <div style={{ fontSize: "13px", color: "#ccc", fontWeight: 500 }}>{j.trigger_type}{j.trigger_value ? ` (${j.trigger_value})` : ""}</div>
+                </div>
+
+                {/* Metrics */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px", marginBottom: "16px" }}>
+                  <div style={{ background: "#050505", padding: "10px", borderRadius: "6px", textAlign: "center" }}>
+                    <div style={{ fontSize: "18px", fontWeight: 700, color: "#fff" }}>{j.activeEnrollments || 0}</div>
+                    <div style={{ fontSize: "10px", color: "#666", marginTop: "2px" }}>Aktivní</div>
+                  </div>
+                  <div style={{ background: "#050505", padding: "10px", borderRadius: "6px", textAlign: "center" }}>
+                    <div style={{ fontSize: "18px", fontWeight: 700, color: "#fff" }}>{j.completedEnrollments || 0}</div>
+                    <div style={{ fontSize: "10px", color: "#666", marginTop: "2px" }}>Hotovo</div>
+                  </div>
+                  <div style={{ background: "#050505", padding: "10px", borderRadius: "6px", textAlign: "center" }}>
+                    <div style={{ fontSize: "18px", fontWeight: 700, color: "#fff" }}>{j.emailsSent || 0}</div>
+                    <div style={{ fontSize: "10px", color: "#666", marginTop: "2px" }}>E-maily</div>
+                  </div>
+                </div>
+
+                {/* Action Button */}
+                <button
+                  onClick={(e) => { e.stopPropagation(); setStatus(j.id, j.status === "active" ? "paused" : "active"); }}
+                  style={{
+                    width: "100%",
+                    padding: "8px 12px",
+                    background: j.status === "active" ? "transparent" : "transparent",
+                    border: `1px solid ${j.status === "active" ? "#f9a825" : "#24e053"}`,
+                    color: j.status === "active" ? "#f9a825" : "#24e053",
+                    borderRadius: "6px",
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                  }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = j.status === "active" ? "#f9a82510" : "#24e05310"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
+                >
+                  {j.status === "active" ? "Pozastavit" : "Aktivovat"}
+                </button>
+              </div>
             ))}
-          </tbody>
-        </table>
+          </div>
+
+          {/* Journey Sequence */}
+          {detail?.journey && (
+            <div style={{ marginTop: "40px" }}>
+              <div style={{ fontSize: "14px", fontWeight: 600, color: "#fff", marginBottom: "20px" }}>
+                Sekvence: {detail.journey.name}
+              </div>
+              <JourneyFlowBuilder
+                journey={detail.journey}
+                steps={detail.steps || []}
+                templates={templates}
+                onEditStep={(step) => { setEditingStep(step); setShowStepForm(true); }}
+                onDeleteStep={deleteStep}
+                onAddStep={() => { setEditingStep(null); setShowStepForm(true); }}
+                onTestEmail={handleSendTest}
+                testSendingStepId={testSendingStepId}
+                testEmail={testEmail}
+                onTestEmailChange={setTestEmail}
+              />
+            </div>
+          )}
+        </>
       )}
 
-      {detail?.journey ? (
-        <div
-          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 10000, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-start", padding: "0" }}
-          onClick={(e) => { if (e.target === e.currentTarget) setDetail(null); }}
-        >
-          {/* Header */}
-          <div style={{ width: "100%", background: "#0a0a0a", borderBottom: "1px solid #222", padding: "16px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div>
-              <div style={{ fontSize: "18px", fontWeight: 600, color: "#fff" }}>{detail.journey.name}</div>
-              <div style={{ fontSize: "12px", color: "#666", marginTop: "4px" }}>{detail.journey.description || "No description"}</div>
-            </div>
-            <button onClick={() => setDetail(null)} style={{ background: "none", border: "none", color: "#666", fontSize: "24px", cursor: "pointer", padding: "0" }}>×</button>
-          </div>
 
-          {/* Journey Flow Builder */}
-          <div style={{ flex: 1, width: "100%", maxWidth: "1200px", position: "relative" }}>
-            <JourneyFlowBuilder
-              journey={detail.journey}
-              steps={detail.steps || []}
-              templates={templates}
-              onEditStep={(step) => { setEditingStep(step); setShowStepForm(true); }}
-              onDeleteStep={deleteStep}
-              onAddStep={() => { setEditingStep(null); setShowStepForm(true); }}
-              onTestEmail={handleSendTest}
-              testSendingStepId={testSendingStepId}
-              testEmail={testEmail}
-              onTestEmailChange={setTestEmail}
-            />
-          </div>
-        </div>
-      ) : null}
 
       {previewStepId && (
         <div

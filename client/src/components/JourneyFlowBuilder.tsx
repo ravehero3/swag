@@ -252,8 +252,7 @@ export default function JourneyFlowBuilder({
             width: NODE_WIDTH,
             height: NODE_HEIGHT,
             background: "#0f0f0f",
-            border: "1px solid #333",
-            borderLeft: "4px solid #f59e0b",
+            border: "2px solid #444",
             borderRadius: "8px",
             padding: "12px",
             boxSizing: "border-box",
@@ -262,26 +261,17 @@ export default function JourneyFlowBuilder({
             justifyContent: "center",
           }}
         >
-          <div style={{ fontSize: "11px", color: "#f59e0b", fontWeight: 600, letterSpacing: "0.05em", marginBottom: "4px" }}>
+          <div style={{ fontSize: "11px", color: "#888", fontWeight: 600, letterSpacing: "0.05em", marginBottom: "4px" }}>
             TRIGGER
           </div>
           <div style={{ fontSize: "13px", color: "#fff", fontWeight: 600 }}>{journey.trigger_type}</div>
-          {journey.trigger_value && <div style={{ fontSize: "11px", color: "#888", marginTop: "4px" }}>{journey.trigger_value}</div>}
+          {journey.trigger_value && <div style={{ fontSize: "11px", color: "#777", marginTop: "4px" }}>{journey.trigger_value}</div>}
         </div>
 
         {/* Step Nodes */}
         {steps?.map((step, idx) => {
           const tpl = templates.find((t) => t.id === step.template_id);
-          const borderColor =
-            step.step_type === "email"
-              ? "#0B99FC"
-              : step.step_type === "condition"
-              ? "#a855f7"
-              : step.step_type === "wait"
-              ? "#f59e0b"
-              : step.step_type.startsWith("tag_")
-              ? "#22c55e"
-              : "#666";
+          const borderColor = "#444";
 
           return (
             <div
@@ -294,7 +284,6 @@ export default function JourneyFlowBuilder({
                 height: NODE_HEIGHT,
                 background: "#0f0f0f",
                 border: "1px solid #333",
-                borderLeft: `4px solid ${borderColor}`,
                 borderRadius: "8px",
                 padding: "12px",
                 boxSizing: "border-box",
@@ -304,7 +293,7 @@ export default function JourneyFlowBuilder({
               }}
             >
               <div>
-                <div style={{ fontSize: "11px", color: borderColor, fontWeight: 600, letterSpacing: "0.05em", marginBottom: "4px" }}>
+                <div style={{ fontSize: "11px", color: "#888", fontWeight: 600, letterSpacing: "0.05em", marginBottom: "4px" }}>
                   {STEP_TYPE_LABELS[step.step_type]?.toUpperCase()}
                 </div>
                 <div style={{ fontSize: "13px", color: "#fff", fontWeight: 600 }}>
@@ -376,8 +365,7 @@ export default function JourneyFlowBuilder({
             width: NODE_WIDTH,
             height: NODE_HEIGHT,
             background: "#0f0f0f",
-            border: "1px solid #333",
-            borderLeft: "4px solid #666",
+            border: "2px solid #444",
             borderRadius: "8px",
             padding: "12px",
             boxSizing: "border-box",
@@ -436,7 +424,7 @@ export default function JourneyFlowBuilder({
           top: "0",
           left: "0",
           right: "0",
-          background: "#050505",
+          background: "#000000",
           borderBottom: "1px solid #222",
           padding: "12px 16px",
           display: "flex",
