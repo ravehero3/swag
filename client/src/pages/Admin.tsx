@@ -7809,6 +7809,7 @@ function JourneysTab() {
                 testSendingStepId={testSendingStepId}
                 testEmail={testEmail}
                 onTestEmailChange={setTestEmail}
+                stepStats={stepStats}
               />
             </div>
           )}

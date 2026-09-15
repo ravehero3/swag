@@ -28,6 +28,7 @@ interface JourneyFlowBuilderProps {
   testSendingStepId: number | null;
   testEmail: string;
   onTestEmailChange: (email: string) => void;
+  stepStats?: Record<number, { sends: number; open_rate: number; click_rate: number }>;
 }
 
 const STEP_TYPE_LABELS: Record<string, string> = {
@@ -55,6 +56,7 @@ export default function JourneyFlowBuilder({
   testSendingStepId,
   testEmail,
   onTestEmailChange,
+  stepStats = {},
 }: JourneyFlowBuilderProps) {
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
@@ -300,6 +302,15 @@ export default function JourneyFlowBuilder({
                   {step.step_type === "email" ? (tpl ? tpl.name : "No template") : STEP_TYPE_LABELS[step.step_type]}
                 </div>
                 {step.delay_hours > 0 && <div style={{ fontSize: "11px", color: "#888", marginTop: "2px" }}>Wait {step.delay_hours}h</div>}
+                
+                {/* Step Stats */}
+                {stepStats[step.id] && stepStats[step.id].sends > 0 && (
+                  <div style={{ fontSize: "10px", color: "#666", marginTop: "6px", paddingTop: "6px", borderTop: "1px solid #222", display: "flex", gap: "8px" }}>
+                    <span>{stepStats[step.id].sends} sent</span>
+                    {stepStats[step.id].open_rate > 0 && <span>{stepStats[step.id].open_rate}% open</span>}
+                    {stepStats[step.id].click_rate > 0 && <span>{stepStats[step.id].click_rate}% click</span>}
+                  </div>
+                )}
               </div>
 
               <div style={{ display: "flex", gap: "6px" }}>
