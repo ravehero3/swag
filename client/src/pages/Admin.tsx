@@ -7198,23 +7198,6 @@ function OdberateleTab() {
       .catch(() => {});
   };
 
-  // Fetch journey detail for modal
-  const openJourneyDetail = (id: number) => {
-    fetch(`/api/marketing/journeys/${id}`, { credentials: "include" })
-      .then(r => r.ok ? r.json() : null)
-      .then((data) => {
-        if (!data) { console.log('Fetched journey detail:', data); return; }
-        // Ensure the data contains a 'journey' field for the modal
-        if (!data.journey) {
-          // If API returns a plain journey object, wrap it
-          setDetail({ journey: data, steps: data.steps || [] });
-        } else {
-          setDetail({ ...data, steps: data.steps ?? [] });
-        }
-      })
-      .catch(() => {});
-  };
-
   const cellStyle: any = { padding: "10px", borderBottom: "1px solid #1e1e1e", verticalAlign: "middle" };
   const FILTERS = [
     { id: "all", label: "Všichni" },
@@ -7486,6 +7469,23 @@ function JourneysTab() {
   const [visualStep, setVisualStep] = useState<{ step: any; template: any } | null>(null);
 
   const [stepStats, setStepStats] = useState<Record<number, { sends: number; open_rate: number; click_rate: number }>>({});
+
+  // Fetch journey detail for modal
+  const openJourneyDetail = (id: number) => {
+    fetch(`/api/marketing/journeys/${id}`, { credentials: "include" })
+      .then(r => r.ok ? r.json() : null)
+      .then((data) => {
+        if (!data) { console.log('Fetched journey detail:', data); return; }
+        // Ensure the data contains a 'journey' field for the modal
+        if (!data.journey) {
+          // If API returns a plain journey object, wrap it
+          setDetail({ journey: data, steps: data.steps || [] });
+        } else {
+          setDetail({ ...data, steps: data.steps ?? [] });
+        }
+      })
+      .catch(() => {});
+  };
 
   useEffect(() => {
     fetch("/api/marketing/templates", { credentials: "include" })
