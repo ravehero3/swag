@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { pool } from "../db.js";
+import { notifyLike } from "../lib/notificationHelpers.js";
 
 const router = Router();
 
@@ -41,12 +42,33 @@ router.post("/", async (req, res) => {
   }
 
   try {
+    const checkResult = await pool.query(
+      `SELECT id FROM saved_items WHERE user_id = $1 AND item_id = $2 AND item_type = $3`,
+      [req.session.userId, itemId, itemType]
+    );
+    
+    const isNewSave = checkResult.rows.length === 0;
+
     await pool.query(
       `INSERT INTO saved_items (user_id, item_id, item_type) 
        VALUES ($1, $2, $3) 
        ON CONFLICT (user_id, item_id, item_type) DO NOTHING`,
       [req.session.userId, itemId, itemType]
     );
+
+    // Notify admin if it's a new like and it's a beat
+    if (isNewSave && itemType === "beat") {
+      try {
+        const userRes = await pool.query("SELECT email FROM users WHERE id = $1", [req.session.userId]);
+        const beatRes = await pool.query("SELECT title FROM beats WHERE id = $1", [itemId]);
+        const userEmail = userRes.rows[0]?.email || "uživatel";
+        const beatTitle = beatRes.rows[0]?.title || "beat";
+        await notifyLike(beatTitle, itemId, userEmail);
+      } catch (notifyErr) {
+        console.error("Error creating like notification:", notifyErr);
+      }
+    }
+
     res.json({ success: true });
   } catch (error) {
     console.error("Error saving item:", error);

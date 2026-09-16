@@ -128,6 +128,17 @@ router.post("/:beatId/comments", requireAuth, async (req: Request, res: Response
       avatar_url: userRes.rows[0]?.avatar_url,
       username: userRes.rows[0]?.username,
     };
+    
+    // Notify admin about the comment
+    try {
+      const beatRes = await pool.query("SELECT title FROM beats WHERE id = $1", [req.params.beatId]);
+      const beatTitle = beatRes.rows[0]?.title || "beat";
+      const userEmail = userRes.rows[0]?.email || "uživatel";
+      await notifyComment(beatTitle, parseInt(req.params.beatId), userEmail, text.trim());
+    } catch (notifyErr) {
+      console.error("Error creating comment notification:", notifyErr);
+    }
+    
     res.json(comment);
   } catch (error) {
     res.status(500).json({ error: "Chyba při přidávání komentáře" });

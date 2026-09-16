@@ -2,7 +2,7 @@ import { Button, Input, Select, Badge, Skeleton } from '../components/UI';
 import { DESIGN_SYSTEM } from '../constants/designSystem';
 import { CZECH } from '../constants/czech';
 import { useState, useEffect, useRef, useMemo } from "react";
-import { Music, Image as ImageIcon, Upload, Star, ChevronUp, ChevronDown, Pencil, Check, X, Clock, Plus, Menu, Mail, AlertTriangle, CheckCircle2, Folder, Copy, Trash2, ArrowLeft, Tag, Zap, Sparkles, Search, Receipt, Layers, Users, ShieldCheck, MessageSquare, Settings, BarChart3, FileText, Share2, Edit3, type LucideIcon } from "lucide-react";
+import { Music, Image as ImageIcon, Upload, Star, ChevronUp, ChevronDown, Pencil, Check, X, Clock, Plus, Menu, Mail, AlertTriangle, CheckCircle2, Folder, Copy, Trash2, ArrowLeft, Tag, Zap, Sparkles, Search, Receipt, Layers, Users, ShieldCheck, MessageSquare, Settings, BarChart3, FileText, Share2, Edit3, Bell, type LucideIcon } from "lucide-react";
 import { useApp } from "../App.js";
 import { useLocation } from "wouter";
 import { toAudioProxyUrl } from "../lib/audioProxy.js";
@@ -12,6 +12,7 @@ import SoundWave from "../components/SoundWave.js";
 import { BeatUploadModal } from "../components/BeatUploadModal.js";
 import { AdminErrorLog } from "../components/AdminErrorLog.js";
 import { EmailJourneyBuilder } from "../components/EmailJourneyBuilder";
+import AdminHeader from "../components/AdminHeader.js";
 import JourneyFlowBuilder from "../components/JourneyFlowBuilder.js";
 import JourneyContainers from "../components/JourneyContainers.js";
 import {
@@ -139,7 +140,7 @@ interface LicenseType {
   created_at: string;
 }
 
-type AdminTab = "orders" | "beats" | "kits" | "zakaznici" | "licenses" | "marketing" | "komentare" | "nastaveni" | "email-journey";
+type AdminTab = "orders" | "beats" | "kits" | "zakaznici" | "licenses" | "marketing" | "komentare" | "nastaveni" | "email-journey" | "notifikace";
 
 const ADMIN_NAV: { id: AdminTab; label: string; icon: LucideIcon }[] = [
   { id: "orders",    label: "Objednávky", icon: Receipt        },
@@ -151,12 +152,164 @@ const ADMIN_NAV: { id: AdminTab; label: string; icon: LucideIcon }[] = [
   { id: "komentare", label: "Komentáře",  icon: MessageSquare  },
   { id: "nastaveni", label: "Nastavení",  icon: Settings       },
   { id: "email-journey", label: "E-mailová cesta zákazníka", icon: Mail },
+  { id: "notifikace", label: "Oznámení", icon: Bell },
 ];
 
 const LEGACY_TAB_MAP: Record<string, AdminTab> = {
   emails: "nastaveni", promo: "marketing", slevy: "marketing",
   seo: "nastaveni", ig_stories: "orders", artworks: "beats", konfigurace: "nastaveni",
 };
+
+
+// Notifications Tab Component
+function NotifikaceTab() {
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState<"all" | "purchase" | "like" | "comment" | "system">("all");
+
+  useEffect(() => {
+    fetchNotifications();
+  }, [filter]);
+
+  const fetchNotifications = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/admin/notifications?limit=100`, { credentials: "include" });
+      if (res.ok) {
+        let data = await res.json();
+        if (filter !== "all") {
+          data = data.filter((n: any) => n.type === filter);
+        }
+        setNotifications(data);
+      }
+    } catch (err) {
+      console.error("Error fetching notifications:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    try {
+      await fetch(`/api/admin/notifications/${id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      setNotifications(notifications.filter((n) => n.id !== id));
+    } catch (err) {
+      console.error("Error deleting notification:", err);
+    }
+  };
+
+  const getNotificationIcon = (type: string) => {
+    const icons: Record<string, string> = {
+      purchase: "🛒",
+      like: "❤️",
+      comment: "💬",
+      system: "⚙️",
+    };
+    return icons[type] || "📬";
+  };
+
+  const getFilterLabel = (type: string) => {
+    const labels: Record<string, string> = {
+      all: "Všechna",
+      purchase: "Nákupy",
+      like: "Oblíbené",
+      comment: "Komentáře",
+      system: "Systém",
+    };
+    return labels[type] || type;
+  };
+
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString("cs-CZ", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  return (
+    <div style={{ paddingBottom: "60px" }}>
+      <div style={{ marginBottom: "24px" }}>
+        <h1 style={{ margin: 0, fontSize: "22px", fontWeight: 700, color: DESIGN_SYSTEM.colors.textPrimary }}>Oznámení</h1>
+        <p style={{ margin: "6px 0 0", fontSize: "13px", color: "#444" }}>Sledujte nákupy, oblíbené položky a komentáře</p>
+      </div>
+
+      {/* Filters */}
+      <div style={{ display: "flex", gap: "8px", marginBottom: "20px", flexWrap: "wrap" }}>
+        {(["all", "purchase", "like", "comment", "system"] as const).map((type) => (
+          <button
+            key={type}
+            onClick={() => setFilter(type)}
+            style={{
+              background: filter === type ? "#E11D48" : "rgba(255,255,255,0.05)",
+              border: filter === type ? "1px solid #E11D48" : "1px solid rgba(255,255,255,0.1)",
+              color: filter === type ? "#fff" : "#888",
+              borderRadius: "6px",
+              padding: "8px 14px",
+              fontSize: "11px",
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            {getNotificationIcon(type)} {getFilterLabel(type)}
+          </button>
+        ))}
+      </div>
+
+      {/* Notifications Table */}
+      {loading ? (
+        <div style={{ padding: "20px", color: "#555" }}>Načítání…</div>
+      ) : notifications.length === 0 ? (
+        <div style={{ padding: "20px", color: "#555" }}>Žádná oznámení</div>
+      ) : (
+        <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid #222", borderRadius: "6px", overflow: "hidden" }}>
+          {notifications.map((notif) => (
+            <div
+              key={notif.id}
+              style={{
+                padding: "16px",
+                borderBottom: "1px solid #1a1a1a",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                background: notif.is_read ? "transparent" : "rgba(225, 29, 72, 0.08)",
+              }}
+            >
+              <div style={{ display: "flex", gap: "12px", flex: 1, minWidth: 0 }}>
+                <span style={{ fontSize: "18px" }}>{getNotificationIcon(notif.type)}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: "12px", fontWeight: 600, marginBottom: "2px" }}>{notif.title}</div>
+                  <div style={{ fontSize: "11px", color: "#999", marginBottom: "2px" }}>{notif.description}</div>
+                  <div style={{ fontSize: "10px", color: "#666" }}>{formatDate(notif.created_at)}</div>
+                </div>
+              </div>
+              <button
+                onClick={() => handleDelete(notif.id)}
+                style={{
+                  background: "rgba(255,255,255,0.05)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  color: "#888",
+                  borderRadius: "4px",
+                  padding: "6px 8px",
+                  fontSize: "10px",
+                  cursor: "pointer",
+                  marginLeft: "12px",
+                }}
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function Admin() {
   const { settings, refreshSettings } = useApp() as any;
@@ -291,6 +444,7 @@ function Admin() {
   return (
     <>
       <AdminErrorLog />
+      <AdminHeader onNavigateToNotifications={() => setTab("notifikace")} />
 
       {/* Mobile sticky header */}
       {isMobile && (
@@ -529,6 +683,7 @@ function Admin() {
         {tab === "marketing" && <MarketingTab settings={settings} onRefresh={refreshSettings} />}
         {tab === "email-journey" && <VisualEmailBuilder />}
         {tab === "komentare" && <KomentareTab />}
+        {tab === "notifikace" && <NotifikaceTab />}
         {tab === "nastaveni" && <NastaveniTab settings={settings} onRefresh={refreshSettings} beats={beats} />}
       </main>
       </div>
@@ -7467,12 +7622,30 @@ function JourneysTab() {
   const [testResult, setTestResult] = useState<string | null>(null);
   const [previewStepId, setPreviewStepId] = useState<number | null>(null);
   const [templates, setTemplates] = useState<any[]>([]);
+  const [recommendedTemplates, setRecommendedTemplates] = useState<any[]>([]);
   const [showStepForm, setShowStepForm] = useState(false);
   const [editingStep, setEditingStep] = useState<any>(null);
   const [stepForm, setStepForm] = useState<any>({ stepType: "email", delayHours: 0, templateId: "", condition: "has_purchased", conditionTag: "", onTrue: "end", onFalse: "continue" });
   const [visualStep, setVisualStep] = useState<{ step: any; template: any } | null>(null);
 
-  const [stepStats, setStepStats] = useState<Record<number, { sends: number; open_rate: number; click_rate: number }>>({});
+  const [stepStats, setStepStats] = useState<Record<number, { sends: number; open_rate: number; click_rate: number }>>({})
+  
+  // Load recommended templates when step form opens
+  const loadRecommendedTemplates = async (journeyId: number, stepType: string) => {
+    try {
+      const res = await fetch(`/api/marketing/templates/recommend/${journeyId}?stepType=${stepType}`, { credentials: "include" });
+      if (res.ok) {
+        const recommended = await res.json();
+        setRecommendedTemplates(recommended);
+        // Auto-select first recommended template
+        if (recommended.length > 0 && !stepForm.templateId) {
+          setStepForm({ ...stepForm, templateId: recommended[0].id });
+        }
+      }
+    } catch (err) {
+      console.error("Error loading recommended templates:", err);
+    }
+  };
 
   // Fetch journey detail for modal
   const openJourneyDetail = (id: number) => {

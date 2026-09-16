@@ -74,6 +74,8 @@ async function notifyOrderCompletedForMarketing(orderId: number): Promise<void> 
     if (Number(order.total) <= 0) return; // $0 orders are freebies, handled by onFreebieDownloaded via claim-free
     const items: any[] = Array.isArray(order.items) ? order.items : [];
     await onOrderCompleted({ orderId, email: order.email, userId: order.user_id, items });
+    // Notify admin about the purchase
+    await notifyPurchase(order.email, items, Number(order.total), orderId);
   } catch (e) {
     console.error(`[Marketing] notifyOrderCompletedForMarketing failed for order ${orderId}:`, e);
   }

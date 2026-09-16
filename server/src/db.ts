@@ -444,6 +444,21 @@ export async function initDatabase() {
       CREATE INDEX IF NOT EXISTS idx_marketing_enrollments_subscriber ON marketing_enrollments (subscriber_id);
       CREATE INDEX IF NOT EXISTS idx_marketing_enrollments_journey ON marketing_enrollments (journey_id);
 
+      CREATE TABLE IF NOT EXISTS admin_notifications (
+        id SERIAL PRIMARY KEY,
+        admin_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        type VARCHAR(50) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        related_data JSONB,
+        is_read BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX IF NOT EXISTS idx_admin_notifications_admin ON admin_notifications (admin_id);
+      CREATE INDEX IF NOT EXISTS idx_admin_notifications_read ON admin_notifications (is_read, created_at DESC);
+      CREATE INDEX IF NOT EXISTS idx_admin_notifications_created ON admin_notifications (created_at DESC);
+
       CREATE TABLE IF NOT EXISTS marketing_segments (
         id SERIAL PRIMARY KEY,
         name VARCHAR(255) NOT NULL,

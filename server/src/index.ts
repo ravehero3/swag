@@ -18,6 +18,7 @@ import kitArtworksRoutes from "./routes/kitArtworks.js";
 import beatFilesRoutes from "./routes/beatFiles.js";
 import marketingRoutes from "./routes/marketing.js";
 import resendWebhookRoutes from "./routes/resendWebhook.js";
+import notificationsRoutes from "./routes/notifications.js";
 import { requireAuth, requireAdmin } from "./middleware/auth.js";
 import bcrypt from "bcryptjs";
 import { configureBucketCors, STORAGE_BUCKETS } from "./lib/storage.js";
@@ -153,6 +154,7 @@ app.use("/kit-artworks", (_req: any, res: any, next: any) => {
 app.use("/api/kit-artworks", kitArtworksRoutes);
 app.use("/api/beat-files", beatFilesRoutes);
 app.use("/api/marketing", marketingRoutes);
+app.use("/api/admin/notifications", notificationsRoutes);
 app.use("/api/saved", savedRoutes);
 app.use("/api/licenses", licensesRoutes);
 app.use("/api/admin", adminLicensesRoutes);
