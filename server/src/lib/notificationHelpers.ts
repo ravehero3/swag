@@ -39,49 +39,118 @@ export async function createAdminNotification(
  * Create purchase notification
  */
 export async function notifyPurchase(email: string, items: any[], total: number, orderId: number) {
-  const itemCount = items?.length || 0;
-  const itemNames = items
-    ?.slice(0, 2)
-    .map((i: any) => i.title || i.name)
-    .join(", ");
+  try {
+    // Validate inputs
+    if (!email || typeof email !== "string") {
+      console.error("Invalid email for purchase notification");
+      return;
+    }
+    if (!Array.isArray(items) || items.length === 0) {
+      console.error("No items in purchase notification");
+      return;
+    }
+    if (typeof total !== "number" || total <= 0) {
+      console.error("Invalid total for purchase notification");
+      return;
+    }
+    if (!orderId || typeof orderId !== "number") {
+      console.error("Invalid orderId for purchase notification");
+      return;
+    }
 
-  const title = `🛒 Nová objednávka od ${email}`;
-  const description = `${itemNames}${itemCount > 2 ? ` a ${itemCount - 2} dalších` : ""} • ${total.toFixed(0)} Kč`;
+    const itemCount = items.length;
+    const itemNames = items
+      .slice(0, 2)
+      .map((i: any) => (i.title || i.name || "neznámý item"))
+      .filter(Boolean)
+      .join(", ") || "položky";
 
-  await createAdminNotification("purchase", title, description, {
-    orderId,
-    email,
-    itemCount,
-    total,
-  });
+    const title = `🛒 Nová objednávka od ${email.substring(0, 50)}`;
+    const description = `${itemNames}${itemCount > 2 ? ` a ${itemCount - 2} dalších` : ""} • ${total.toFixed(0)} Kč`;
+
+    await createAdminNotification("purchase", title, description, {
+      orderId,
+      email,
+      itemCount,
+      total,
+    });
+  } catch (error) {
+    console.error("Error creating purchase notification:", error);
+  }
 }
 
 /**
  * Create like notification
  */
 export async function notifyLike(beatTitle: string, beatId: number, email: string) {
-  const title = `❤️ Někdo si oblíbil "${beatTitle}"`;
-  const description = `Uživatel ${email} si přidal beat do seznamu oblíbených`;
+  try {
+    // Validate inputs
+    if (!beatTitle || typeof beatTitle !== "string") {
+      console.error("Invalid beat title for like notification");
+      return;
+    }
+    if (!beatId || typeof beatId !== "number") {
+      console.error("Invalid beat ID for like notification");
+      return;
+    }
+    if (!email || typeof email !== "string") {
+      console.error("Invalid email for like notification");
+      return;
+    }
 
-  await createAdminNotification("like", title, description, {
-    beatId,
-    email,
-  });
+    const sanitizedTitle = beatTitle.substring(0, 100);
+    const sanitizedEmail = email.substring(0, 100);
+
+    const title = `❤️ Někdo si oblíbil "${sanitizedTitle}"`;
+    const description = `Uživatel ${sanitizedEmail} si přidal beat do seznamu oblíbených`;
+
+    await createAdminNotification("like", title, description, {
+      beatId,
+      email: sanitizedEmail,
+    });
+  } catch (error) {
+    console.error("Error creating like notification:", error);
+  }
 }
 
 /**
  * Create comment notification
  */
 export async function notifyComment(beatTitle: string, beatId: number, email: string, commentText: string) {
-  const preview = commentText.substring(0, 60) + (commentText.length > 60 ? "..." : "");
-  const title = `💬 Nový komentář na "${beatTitle}"`;
-  const description = `${email}: "${preview}"`;
+  try {
+    // Validate inputs
+    if (!beatTitle || typeof beatTitle !== "string") {
+      console.error("Invalid beat title for comment notification");
+      return;
+    }
+    if (!beatId || typeof beatId !== "number") {
+      console.error("Invalid beat ID for comment notification");
+      return;
+    }
+    if (!email || typeof email !== "string") {
+      console.error("Invalid email for comment notification");
+      return;
+    }
+    if (!commentText || typeof commentText !== "string") {
+      console.error("Invalid comment text for comment notification");
+      return;
+    }
 
-  await createAdminNotification("comment", title, description, {
-    beatId,
-    email,
-    commentPreview: preview,
-  });
+    const sanitizedTitle = beatTitle.substring(0, 100);
+    const sanitizedEmail = email.substring(0, 100);
+    const preview = commentText.substring(0, 60) + (commentText.length > 60 ? "..." : "");
+
+    const title = `💬 Nový komentář na "${sanitizedTitle}"`;
+    const description = `${sanitizedEmail}: "${preview}"`;
+
+    await createAdminNotification("comment", title, description, {
+      beatId,
+      email: sanitizedEmail,
+      commentPreview: preview,
+    });
+  } catch (error) {
+    console.error("Error creating comment notification:", error);
+  }
 }
 
 /**
@@ -89,4 +158,39 @@ export async function notifyComment(beatTitle: string, beatId: number, email: st
  */
 export async function notifySystem(title: string, description: string, data?: Record<string, any>) {
   await createAdminNotification("system", title, description, data);
+}
+
+/**
+ * Create free download notification
+ */
+export async function notifyFreeBeat(beatTitle: string, beatId: number, email: string) {
+  try {
+    // Validate inputs
+    if (!beatTitle || typeof beatTitle !== "string") {
+      console.error("Invalid beat title for free download notification");
+      return;
+    }
+    if (!beatId || typeof beatId !== "number") {
+      console.error("Invalid beat ID for free download notification");
+      return;
+    }
+    if (!email || typeof email !== "string") {
+      console.error("Invalid email for free download notification");
+      return;
+    }
+
+    const sanitizedTitle = beatTitle.substring(0, 100);
+    const sanitizedEmail = email.substring(0, 100);
+
+    const title = `🎁 Stažení free beatu: "${sanitizedTitle}"`;
+    const description = `${sanitizedEmail} si stáhl free verzi`;
+
+    await createAdminNotification("system", title, description, {
+      beatId,
+      email: sanitizedEmail,
+      type: "free_download",
+    });
+  } catch (error) {
+    console.error("Error creating free download notification:", error);
+  }
 }

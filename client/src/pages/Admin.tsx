@@ -444,7 +444,16 @@ function Admin() {
   return (
     <>
       <AdminErrorLog />
-      <AdminHeader onNavigateToNotifications={() => setTab("notifikace")} />
+      <AdminHeader 
+        adminEmail={adminEmail}
+        adminName={adminName}
+        onNavigateToNotifications={() => setTab("notifikace")}
+        onLogout={() => {
+          fetch("/api/auth/logout", { method: "POST", credentials: "include" })
+            .then(() => window.location.href = "/")
+            .catch(err => console.error("Logout error:", err));
+        }}
+      />
 
       {/* Mobile sticky header */}
       {isMobile && (

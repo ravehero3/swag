@@ -12,14 +12,18 @@ interface NotificationItem {
 
 interface AdminHeaderProps {
   adminEmail?: string;
+  adminName?: string;
   adminProfileImage?: string;
   onNavigateToNotifications?: () => void;
+  onLogout?: () => void;
 }
 
 export const AdminHeader: React.FC<AdminHeaderProps> = ({
   adminEmail = "admin@voodoo808.com",
+  adminName = "Admin",
   adminProfileImage,
   onNavigateToNotifications,
+  onLogout,
 }) => {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -156,6 +160,9 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
         <div style={{ position: "relative" }} ref={dropdownRef}>
           <button
             onClick={handleNotificationClick}
+            aria-label="Oznámení"
+            aria-expanded={showDropdown}
+            aria-haspopup="true"
             style={{
               background: "rgba(255,255,255,0.05)",
               border: "1px solid rgba(255,255,255,0.1)",
@@ -257,8 +264,10 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
                     Načítání…
                   </div>
                 ) : notifications.length === 0 ? (
-                  <div style={{ padding: "20px", textAlign: "center", color: "#888", fontSize: "12px" }}>
-                    Žádná oznámení
+                  <div style={{ padding: "40px 20px", textAlign: "center", color: "#666", fontSize: "12px" }}>
+                    <div style={{ fontSize: "24px", marginBottom: "8px" }}>📬</div>
+                    <div>Žádná oznámení</div>
+                    <div style={{ fontSize: "10px", color: "#555", marginTop: "4px" }}>Budou se zde zobrazovat nákupy, oblíbené a komentáře</div>
                   </div>
                 ) : (
                   notifications.slice(0, 10).map((notif) => (
@@ -270,6 +279,9 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
                         cursor: "pointer",
                         background: notif.is_read ? "rgba(255,255,255,0.02)" : "rgba(225, 29, 72, 0.1)",
                         transition: "background 200ms",
+                        display: "flex",
+                        gap: "12px",
+                        alignItems: "flex-start",
                       }}
                       onMouseEnter={(e) => {
                         (e.currentTarget as HTMLElement).style.background = "rgba(225, 29, 72, 0.15)";
@@ -280,17 +292,26 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
                           : "rgba(225, 29, 72, 0.1)";
                       }}
                     >
-                      <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
-                        <span style={{ fontSize: "18px", flexShrink: 0 }}>{getNotificationIcon(notif.type)}</span>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: "12px", fontWeight: 600, color: "#fff", marginBottom: "2px" }}>
-                            {notif.title}
-                          </div>
-                          <div style={{ fontSize: "11px", color: "#999", marginBottom: "4px", lineHeight: "1.4" }}>
-                            {notif.description}
-                          </div>
-                          <div style={{ fontSize: "10px", color: "#666" }}>{formatDate(notif.created_at)}</div>
+                      <span style={{ fontSize: "18px", flexShrink: 0 }}>{getNotificationIcon(notif.type)}</span>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: "12px", fontWeight: 600, color: "#fff", marginBottom: "2px", display: "flex", alignItems: "center", gap: "6px" }}>
+                          {notif.title}
+                          {!notif.is_read && (
+                            <span
+                              style={{
+                                display: "inline-block",
+                                width: "5px",
+                                height: "5px",
+                                background: "#E11D48",
+                                borderRadius: "50%",
+                              }}
+                            ></span>
+                          )}
                         </div>
+                        <div style={{ fontSize: "11px", color: "#999", marginBottom: "4px", lineHeight: "1.4" }}>
+                          {notif.description}
+                        </div>
+                        <div style={{ fontSize: "10px", color: "#666" }}>{formatDate(notif.created_at)}</div>
                       </div>
                     </div>
                   ))
@@ -326,28 +347,68 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
           )}
         </div>
 
-        {/* Profile Picture */}
-        <div
-          style={{
-            width: "40px",
-            height: "40px",
-            borderRadius: "50%",
-            background: adminProfileImage
-              ? `url('${adminProfileImage}') center / cover`
-              : "linear-gradient(135deg, #E11D48, #EA580C)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "white",
-            fontWeight: 700,
-            fontSize: "16px",
-            border: "2px solid rgba(255,255,255,0.1)",
-            cursor: "pointer",
-            overflow: "hidden",
-          }}
-          title={adminEmail}
-        >
-          {!adminProfileImage && adminEmail.charAt(0).toUpperCase()}
+        {/* Admin Info & Profile */}
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          {/* Admin Email */}
+          <div style={{ textAlign: "right", fontSize: "11px" }}>
+            <div style={{ color: "#fff", fontWeight: 600 }}>{adminName}</div>
+            <div style={{ color: "#888", fontSize: "10px" }}>{adminEmail}</div>
+          </div>
+
+          {/* Profile Picture */}
+          <div
+            style={{
+              width: "40px",
+              height: "40px",
+              borderRadius: "50%",
+              background: adminProfileImage
+                ? `url('${adminProfileImage}') center / cover`
+                : "linear-gradient(135deg, #E11D48, #EA580C)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "white",
+              fontWeight: 700,
+              fontSize: "16px",
+              border: "2px solid rgba(255,255,255,0.1)",
+              cursor: "pointer",
+              overflow: "hidden",
+              position: "relative",
+              group: true,
+            }}
+            title={adminEmail}
+          >
+            {!adminProfileImage && adminEmail.charAt(0).toUpperCase()}
+          </div>
+
+          {/* Logout Button */}
+          {onLogout && (
+            <button
+              onClick={onLogout}
+              title="Odhlásit se"
+              style={{
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                color: "#888",
+                borderRadius: "6px",
+                padding: "6px 12px",
+                fontSize: "11px",
+                cursor: "pointer",
+                fontWeight: 600,
+                transition: "all 200ms",
+              }}
+              onMouseEnter={(e) => {
+                (e.target as HTMLElement).style.background = "rgba(255,255,255,0.1)";
+                (e.target as HTMLElement).style.borderColor = "rgba(255,255,255,0.2)";
+              }}
+              onMouseLeave={(e) => {
+                (e.target as HTMLElement).style.background = "rgba(255,255,255,0.05)";
+                (e.target as HTMLElement).style.borderColor = "rgba(255,255,255,0.1)";
+              }}
+            >
+              Odhlásit
+            </button>
+          )}
         </div>
       </div>
     </div>

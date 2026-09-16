@@ -541,6 +541,13 @@ router.post("/:id/claim-free", requireAuth, async (req: Request, res: Response) 
       marketingConsent: !!marketingConsent,
     }).catch(() => {});
 
+    // Notify admin about free downloads
+    for (const item of items) {
+      if (item.productType === "beat" && item.title) {
+        await notifyFreeBeat(item.title, item.productId, order.email).catch(() => {});
+      }
+    }
+
     return res.json({ success: true });
   } catch (error) {
     console.error("Claim free error:", error);
