@@ -64,8 +64,6 @@ export default function JourneyContainers({
           : "scale(1)",
   });
 
-  const showDetails = hoveredId === journey.id || selectedJourneyId === journey.id;
-
   return (
     <div style={{ marginBottom: "32px" }}>
       {/* View Mode Toggle */}
@@ -145,7 +143,9 @@ export default function JourneyContainers({
           minHeight: viewMode === "grid" ? "320px" : "100px",
         }}
       >
-        {journeys.map((journey) => (
+        {journeys.map((journey) => {
+          const showDetails = hoveredId === journey.id || selectedJourneyId === journey.id;
+          return (
           <div
             key={journey.id}
             onMouseEnter={() => setHoveredId(journey.id)}
@@ -365,7 +365,8 @@ export default function JourneyContainers({
               </div>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
