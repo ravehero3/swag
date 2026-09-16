@@ -1,4 +1,5 @@
 import pg from "pg";
+import { TEMPLATE_SEEDS } from "./lib/templateSeeds.js";
 
 function getDatabaseConfig() {
   const connectionString = process.env.DATABASE_URL;
@@ -388,6 +389,12 @@ export async function initDatabase() {
         preheader TEXT,
         html_content TEXT NOT NULL,
         text_content TEXT,
+        category VARCHAR(50),
+        journey_name VARCHAR(255),
+        step_position INTEGER,
+        step_type VARCHAR(50),
+        is_recommended BOOLEAN DEFAULT false,
+        sort_order INTEGER DEFAULT 999,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
@@ -733,6 +740,32 @@ export async function initDatabase() {
         ],
       },
     ];
+
+    // Seed email templates (all 12 templates auto-created on first run)
+    for (const tpl of TEMPLATE_SEEDS) {
+      const existing = await client.query("SELECT id FROM marketing_templates WHERE key = $1", [tpl.key]);
+      if (existing.rows.length > 0) continue; // already seeded
+
+      await client.query(
+        `INSERT INTO marketing_templates 
+         (name, key, category, journey_name, step_position, step_type, is_recommended, sort_order, subject, preheader, html_content)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+        [
+          tpl.name,
+          tpl.key,
+          tpl.category,
+          tpl.journey_name,
+          tpl.step_position,
+          tpl.step_type,
+          tpl.is_recommended,
+          tpl.sort_order,
+          tpl.subject,
+          tpl.preheader,
+          tpl.html_content,
+        ]
+      );
+    }
+    console.log(`✅ Seeded 12 email templates`);
 
     for (const j of journeySeeds) {
       const existing = await client.query("SELECT id FROM marketing_journeys WHERE name = $1", [j.name]);

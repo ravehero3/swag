@@ -354,6 +354,43 @@ router.get("/templates", requireAdmin, async (_req: Request, res: Response) => {
   }
 });
 
+// Get recommended templates for a specific journey step
+router.get("/templates/recommend/:journeyId", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { journeyId } = req.params;
+    const { stepPosition, stepType } = req.query;
+    
+    if (!journeyId || !stepType) {
+      return res.status(400).json({ error: "Chybí journeyId nebo stepType" });
+    }
+    
+    // Get the journey name
+    const journeyResult = await pool.query(
+      "SELECT name FROM marketing_journeys WHERE id = $1",
+      [journeyId]
+    );
+    
+    if (journeyResult.rows.length === 0) {
+      return res.json([]); // Journey not found, return empty
+    }
+    
+    const journeyName = journeyResult.rows[0].name;
+    
+    // Find templates matching this journey
+    const templatesResult = await pool.query(
+      `SELECT * FROM marketing_templates 
+       WHERE journey_name = $1 AND step_type = $2 AND is_recommended = true
+       ORDER BY step_position ASC, sort_order ASC`,
+      [journeyName, stepType]
+    );
+    
+    res.json(templatesResult.rows);
+  } catch (error) {
+    console.error("Template recommendation error:", error);
+    res.status(500).json({ error: "Chyba při načítání doporučených šablon" });
+  }
+});
+
 router.post("/templates", requireAdmin, async (req: Request, res: Response) => {
   try {
     const { name, key, subject, preheader, htmlContent, textContent, blocks, headerOptions } = req.body;
