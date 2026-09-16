@@ -587,6 +587,28 @@ router.post("/templates/:id/send-test", requireAdmin, testSendLimiter, async (re
 
 router.get("/journeys", requireAdmin, async (_req: Request, res: Response) => {
   try {
+    // Auto-seed templates if they don't exist
+    const templateCount = await pool.query("SELECT COUNT(*) FROM marketing_templates");
+    if (parseInt(templateCount.rows[0].count || 0, 10) === 0) {
+      try {
+        const { TEMPLATE_SEEDS } = await import("../lib/templateSeeds.js");
+        for (const tpl of TEMPLATE_SEEDS) {
+          await pool.query(
+            `INSERT INTO marketing_templates 
+             (name, key, category, journey_name, step_position, step_type, is_recommended, sort_order, subject, preheader, html_content)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+            [
+              tpl.name, tpl.key, tpl.category, tpl.journey_name, tpl.step_position,
+              tpl.step_type, tpl.is_recommended, tpl.sort_order, tpl.subject, tpl.preheader, tpl.html_content,
+            ]
+          );
+        }
+        console.log("✅ Auto-seeded 12 email templates");
+      } catch (seedErr) {
+        console.error("Auto-seed failed:", seedErr);
+      }
+    }
+
     const journeysRes = await pool.query("SELECT * FROM marketing_journeys ORDER BY created_at DESC");
     const journeys = journeysRes.rows;
     for (const j of journeys) {
@@ -1547,6 +1569,63 @@ Example format: ["Subject 1", "Subject 2", "Subject 3", "Subject 4", "Subject 5"
   } catch (error) {
     console.error("AI subject suggestions error:", error);
     res.status(500).json({ error: "Chyba při generování návrhů" });
+  }
+});
+
+
+/**
+ * Admin endpoint to manually seed/reseed all 12 templates
+ * POST /api/marketing/templates/admin/seed
+ */
+router.post("/admin/seed", requireAdmin, async (_req: Request, res: Response) => {
+  try {
+    const { TEMPLATE_SEEDS } = await import("../lib/templateSeeds.js");
+    
+    let seeded = 0;
+    let skipped = 0;
+    
+    for (const tpl of TEMPLATE_SEEDS) {
+      const existing = await pool.query(
+        "SELECT id FROM marketing_templates WHERE key = $1",
+        [tpl.key]
+      );
+      
+      if (existing.rows.length > 0) {
+        skipped++;
+        continue;
+      }
+      
+      await pool.query(
+        `INSERT INTO marketing_templates 
+         (name, key, category, journey_name, step_position, step_type, is_recommended, sort_order, subject, preheader, html_content)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+        [
+          tpl.name,
+          tpl.key,
+          tpl.category,
+          tpl.journey_name,
+          tpl.step_position,
+          tpl.step_type,
+          tpl.is_recommended,
+          tpl.sort_order,
+          tpl.subject,
+          tpl.preheader,
+          tpl.html_content,
+        ]
+      );
+      seeded++;
+    }
+    
+    res.json({
+      success: true,
+      seeded,
+      skipped,
+      total: seeded + skipped,
+      message: `Seeded ${seeded} templates, ${skipped} already exist`
+    });
+  } catch (error) {
+    console.error("Template seeding error:", error);
+    res.status(500).json({ error: "Failed to seed templates" });
   }
 });
 
