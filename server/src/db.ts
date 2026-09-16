@@ -536,10 +536,22 @@ export async function initDatabase() {
     await client.query(`
       ALTER TABLE marketing_templates ADD COLUMN IF NOT EXISTS blocks JSONB DEFAULT '[]';
       ALTER TABLE marketing_templates ADD COLUMN IF NOT EXISTS header_options JSONB DEFAULT '{}';
+      ALTER TABLE marketing_templates ADD COLUMN IF NOT EXISTS category VARCHAR(50);
+      ALTER TABLE marketing_templates ADD COLUMN IF NOT EXISTS journey_name VARCHAR(255);
+      ALTER TABLE marketing_templates ADD COLUMN IF NOT EXISTS step_position INTEGER;
+      ALTER TABLE marketing_templates ADD COLUMN IF NOT EXISTS step_type VARCHAR(50);
+      ALTER TABLE marketing_templates ADD COLUMN IF NOT EXISTS is_recommended BOOLEAN DEFAULT false;
+      ALTER TABLE marketing_templates ADD COLUMN IF NOT EXISTS sort_order INTEGER DEFAULT 999;
       ALTER TABLE marketing_campaigns ADD COLUMN IF NOT EXISTS blocks JSONB DEFAULT '[]';
       ALTER TABLE marketing_campaigns ADD COLUMN IF NOT EXISTS header_options JSONB DEFAULT '{}';
       ALTER TABLE marketing_campaigns ADD COLUMN IF NOT EXISTS preheader TEXT;
       ALTER TABLE marketing_campaigns ADD COLUMN IF NOT EXISTS html_content TEXT;
+      ALTER TABLE admin_notifications ADD COLUMN IF NOT EXISTS admin_id INTEGER REFERENCES users(id) ON DELETE CASCADE;
+      ALTER TABLE admin_notifications ADD COLUMN IF NOT EXISTS type VARCHAR(50);
+      ALTER TABLE admin_notifications ADD COLUMN IF NOT EXISTS title VARCHAR(255);
+      ALTER TABLE admin_notifications ADD COLUMN IF NOT EXISTS description TEXT;
+      ALTER TABLE admin_notifications ADD COLUMN IF NOT EXISTS related_data JSONB;
+      ALTER TABLE admin_notifications ADD COLUMN IF NOT EXISTS is_read BOOLEAN DEFAULT FALSE;
     `);
 
     // Phase 2: open/click tracking, double opt-in, segments, scheduling
@@ -758,57 +770,80 @@ export async function initDatabase() {
 
     // Seed email templates (all 12 templates auto-created on first run)
     for (const tpl of TEMPLATE_SEEDS) {
-      const existing = await client.query("SELECT id FROM marketing_templates WHERE key = $1", [tpl.key]);
-      if (existing.rows.length > 0) continue; // already seeded
+      try {
+        const existing = await client.query("SELECT id FROM marketing_templates WHERE key = $1", [tpl.key]);
+        if (existing.rows.length > 0) {
+          // If already exists, backfill category and recommendation metadata if missing
+          await client.query(
+            `UPDATE marketing_templates 
+             SET category = COALESCE(category, $1),
+                 journey_name = COALESCE(journey_name, $2),
+                 step_position = COALESCE(step_position, $3),
+                 step_type = COALESCE(step_type, $4),
+                 is_recommended = COALESCE(is_recommended, $5),
+                 sort_order = COALESCE(sort_order, $6)
+             WHERE key = $7`,
+            [tpl.category, tpl.journey_name, tpl.step_position, tpl.step_type, tpl.is_recommended, tpl.sort_order, tpl.key]
+          );
+          continue;
+        }
 
-      await client.query(
-        `INSERT INTO marketing_templates 
-         (name, key, category, journey_name, step_position, step_type, is_recommended, sort_order, subject, preheader, html_content)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
-        [
-          tpl.name,
-          tpl.key,
-          tpl.category,
-          tpl.journey_name,
-          tpl.step_position,
-          tpl.step_type,
-          tpl.is_recommended,
-          tpl.sort_order,
-          tpl.subject,
-          tpl.preheader,
-          tpl.html_content,
-        ]
-      );
+        await client.query(
+          `INSERT INTO marketing_templates 
+           (name, key, category, journey_name, step_position, step_type, is_recommended, sort_order, subject, preheader, html_content)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+           ON CONFLICT (key) DO NOTHING`,
+          [
+            tpl.name,
+            tpl.key,
+            tpl.category,
+            tpl.journey_name,
+            tpl.step_position,
+            tpl.step_type,
+            tpl.is_recommended,
+            tpl.sort_order,
+            tpl.subject,
+            tpl.preheader,
+            tpl.html_content,
+          ]
+        );
+      } catch (tmplErr) {
+        console.error(`[Seed] Error seeding template ${tpl.key}:`, tmplErr);
+      }
     }
-    console.log(`✅ Seeded 12 email templates`);
+    console.log(`✅ Seeded email templates`);
 
     for (const j of journeySeeds) {
-      const existing = await client.query("SELECT id FROM marketing_journeys WHERE name = $1", [j.name]);
-      if (existing.rows.length > 0) continue; // already seeded on a previous boot
+      try {
+        const existing = await client.query("SELECT id FROM marketing_journeys WHERE name = $1", [j.name]);
+        if (existing.rows.length > 0) continue; // already seeded on a previous boot
 
-      const journeyRes = await client.query(
-        `INSERT INTO marketing_journeys (name, description, trigger_type, trigger_value, status)
-         VALUES ($1,$2,$3,$4,'draft') RETURNING id`,
-        [j.name, j.description, j.triggerType, j.triggerValue]
-      );
-      const journeyId = journeyRes.rows[0].id;
-
-      let position = 1;
-      for (const step of j.steps as any[]) {
-        let templateId: number | null = null;
-        if (step.templateKey) {
-          const tmplRes = await client.query("SELECT id FROM marketing_templates WHERE key = $1", [step.templateKey]);
-          templateId = tmplRes.rows[0]?.id || null;
-        }
-        const configuration = step.type === "condition"
-          ? { condition: step.condition, onTrue: step.onTrue, onFalse: step.onFalse }
-          : {};
-        await client.query(
-          `INSERT INTO marketing_journey_steps (journey_id, position, step_type, delay_hours, template_id, configuration)
-           VALUES ($1,$2,$3,$4,$5,$6)`,
-          [journeyId, position, step.type, step.delay, templateId, JSON.stringify(configuration)]
+        const journeyRes = await client.query(
+          `INSERT INTO marketing_journeys (name, description, trigger_type, trigger_value, status)
+           VALUES ($1,$2,$3,$4,'draft') RETURNING id`,
+          [j.name, j.description, j.triggerType, j.triggerValue]
         );
-        position++;
+        const journeyId = journeyRes.rows[0].id;
+
+        let position = 1;
+        for (const step of j.steps as any[]) {
+          let templateId: number | null = null;
+          if (step.templateKey) {
+            const tmplRes = await client.query("SELECT id FROM marketing_templates WHERE key = $1", [step.templateKey]);
+            templateId = tmplRes.rows[0]?.id || null;
+          }
+          const configuration = step.type === "condition"
+            ? { condition: step.condition, onTrue: step.onTrue, onFalse: step.onFalse }
+            : {};
+          await client.query(
+            `INSERT INTO marketing_journey_steps (journey_id, position, step_type, delay_hours, template_id, configuration)
+             VALUES ($1,$2,$3,$4,$5,$6)`,
+            [journeyId, position, step.type, step.delay, templateId, JSON.stringify(configuration)]
+          );
+          position++;
+        }
+      } catch (jErr) {
+        console.error(`[Seed] Error seeding journey ${j.name}:`, jErr);
       }
     }
 

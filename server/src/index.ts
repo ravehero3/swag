@@ -1153,8 +1153,12 @@ async function sendAbandonedCheckoutReminders() {
 }
 
 async function startServer() {
-  await initDatabase();
-  await seedAdmin();
+  try {
+    await initDatabase();
+    await seedAdmin();
+  } catch (dbErr) {
+    console.error("Database initialization failed during startServer:", dbErr);
+  }
 
   computeMissingWaveforms().catch(() => {});
 
@@ -1164,8 +1168,12 @@ async function startServer() {
   sendAbandonedCheckoutReminders().catch(() => {});
   setInterval(() => sendAbandonedCheckoutReminders().catch(() => {}), 60 * 60 * 1000);
 
-  const { startMarketingScheduler } = await import("./lib/marketing/scheduler.js");
-  startMarketingScheduler(2 * 60 * 1000);
+  try {
+    const { startMarketingScheduler } = await import("./lib/marketing/scheduler.js");
+    startMarketingScheduler(2 * 60 * 1000);
+  } catch (schedErr) {
+    console.error("Marketing scheduler failed to start:", schedErr);
+  }
 
   if (process.env.NODE_ENV !== "production") {
     const { createServer: createViteServer } = await import("vite");
