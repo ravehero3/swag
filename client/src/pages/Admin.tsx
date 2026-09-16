@@ -13,6 +13,7 @@ import { BeatUploadModal } from "../components/BeatUploadModal.js";
 import { AdminErrorLog } from "../components/AdminErrorLog.js";
 import { EmailJourneyBuilder } from "../components/EmailJourneyBuilder";
 import JourneyFlowBuilder from "../components/JourneyFlowBuilder.js";
+import JourneyContainers from "../components/JourneyContainers.js";
 import {
   BeatArtwork,
   parseArtworkConfig,
@@ -7732,103 +7733,13 @@ function JourneysTab() {
         <div style={{ color: "#444", padding: "24px" }}>Zatím žádné journeys.</div>
       ) : (
         <>
-          {/* Journey Cards - Organized by Category */}
-          {JOURNEY_CATEGORIES.map(category => {
-            const categoryJourneys = journeys.filter(j => category.journeyNames.includes(j.name));
-            if (categoryJourneys.length === 0) return null;
-
-            return (
-              <div key={category.title} style={{ marginBottom: "40px" }}>
-                <div style={{ marginBottom: "16px" }}>
-                  <div style={{ fontSize: "16px", fontWeight: 700, color: "#fff", marginBottom: "4px" }}>{category.title}</div>
-                  <div style={{ fontSize: "12px", color: "#666" }}>{category.description}</div>
-                </div>
-
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: "16px" }}>
-                  {categoryJourneys.map(j => (
-              <div
-                key={j.id}
-                onClick={() => { setSelectedJourneyId(j.id); openJourneyDetail(j.id); }}
-                style={{
-                  background: selectedJourneyId === j.id ? "#1a1a1a" : "#0f0f0f",
-                  border: selectedJourneyId === j.id ? "2px solid #333" : "1px solid #222",
-                  borderRadius: "12px",
-                  padding: "20px",
-                  cursor: "pointer",
-                  transition: "all 0.2s ease",
-                  boxShadow: selectedJourneyId === j.id ? "0 8px 24px rgba(0,0,0,0.4)" : "none",
-                }}
-                onMouseEnter={e => { if (selectedJourneyId !== j.id) (e.currentTarget as HTMLDivElement).style.background = "#111"; }}
-                onMouseLeave={e => { if (selectedJourneyId !== j.id) (e.currentTarget as HTMLDivElement).style.background = "#0f0f0f"; }}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "12px" }}>
-                  <div>
-                    <div style={{ fontSize: "16px", fontWeight: 600, color: "#fff", marginBottom: "4px" }}>{j.name}</div>
-                    <div style={{ fontSize: "12px", color: "#888" }}>{j.description || "No description"}</div>
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <span style={{
-                      fontSize: "10px",
-                      fontWeight: 700,
-                      letterSpacing: "0.05em",
-                      color: STATUS_COLORS[j.status] || "#555",
-                      background: STATUS_COLORS[j.status] ? `${STATUS_COLORS[j.status]}15` : "transparent",
-                      padding: "4px 10px",
-                      borderRadius: "4px",
-                      textTransform: "uppercase"
-                    }}>
-                      {j.status}
-                    </span>
-                  </div>
-                </div>
-
-                <div style={{ borderTop: "1px solid #222", paddingTop: "12px", marginBottom: "16px" }}>
-                  <div style={{ fontSize: "11px", color: "#666", textTransform: "uppercase", marginBottom: "8px" }}>Trigger</div>
-                  <div style={{ fontSize: "13px", color: "#ccc", fontWeight: 500 }}>{j.trigger_type}{j.trigger_value ? ` (${j.trigger_value})` : ""}</div>
-                </div>
-
-                {/* Metrics */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px", marginBottom: "16px" }}>
-                  <div style={{ background: "#050505", padding: "10px", borderRadius: "6px", textAlign: "center" }}>
-                    <div style={{ fontSize: "18px", fontWeight: 700, color: "#fff" }}>{j.activeEnrollments || 0}</div>
-                    <div style={{ fontSize: "10px", color: "#666", marginTop: "2px" }}>Aktivní</div>
-                  </div>
-                  <div style={{ background: "#050505", padding: "10px", borderRadius: "6px", textAlign: "center" }}>
-                    <div style={{ fontSize: "18px", fontWeight: 700, color: "#fff" }}>{j.completedEnrollments || 0}</div>
-                    <div style={{ fontSize: "10px", color: "#666", marginTop: "2px" }}>Hotovo</div>
-                  </div>
-                  <div style={{ background: "#050505", padding: "10px", borderRadius: "6px", textAlign: "center" }}>
-                    <div style={{ fontSize: "18px", fontWeight: 700, color: "#fff" }}>{j.emailsSent || 0}</div>
-                    <div style={{ fontSize: "10px", color: "#666", marginTop: "2px" }}>E-maily</div>
-                  </div>
-                </div>
-
-                {/* Action Button */}
-                <button
-                  onClick={(e) => { e.stopPropagation(); setStatus(j.id, j.status === "active" ? "paused" : "active"); }}
-                  style={{
-                    width: "100%",
-                    padding: "8px 12px",
-                    background: j.status === "active" ? "transparent" : "transparent",
-                    border: `1px solid ${j.status === "active" ? "#f9a825" : "#24e053"}`,
-                    color: j.status === "active" ? "#f9a825" : "#24e053",
-                    borderRadius: "6px",
-                    fontSize: "12px",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    transition: "all 0.2s ease",
-                  }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = j.status === "active" ? "#f9a82510" : "#24e05310"; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
-                >
-                  {j.status === "active" ? "Pozastavit" : "Aktivovat"}
-                </button>
-              </div>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
+          {/* Compact Journey Containers with View Mode Toggle */}
+          <JourneyContainers
+            journeys={journeys}
+            selectedJourneyId={selectedJourneyId}
+            onSelectJourney={(id) => { setSelectedJourneyId(id); openJourneyDetail(id); }}
+            onStatusChange={setStatus}
+          />
 
           {/* Journey Sequence */}
           {detail?.journey && (
