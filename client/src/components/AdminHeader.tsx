@@ -15,26 +15,319 @@ interface AdminHeaderProps {
   adminName?: string;
   adminProfileImage?: string;
   onNavigateToNotifications?: () => void;
-  onLogout?: () => void;
 }
+
+interface AdminInfoModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  adminEmail: string;
+  adminName: string;
+  adminProfileImage?: string;
+}
+
+const AdminInfoModal: React.FC<AdminInfoModalProps> = ({
+  isOpen,
+  onClose,
+  adminEmail,
+  adminName,
+  adminProfileImage,
+}) => {
+  const [profileImage, setProfileImage] = useState(adminProfileImage);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  if (!isOpen) return null;
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Soubor je příliš velký. Maximum je 5MB.");
+      return;
+    }
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      alert("Prosím vyberte obrázek.");
+      return;
+    }
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const result = event.target?.result as string;
+      setProfileImage(result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        onClick={onClose}
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: "rgba(0, 0, 0, 0.6)",
+          zIndex: 1000,
+        }}
+      />
+
+      {/* Modal */}
+      <div
+        style={{
+          position: "fixed",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          background: "#0a0a0a",
+          border: "1px solid #222",
+          borderRadius: "12px",
+          padding: "32px",
+          zIndex: 1001,
+          minWidth: "320px",
+          maxWidth: "420px",
+          boxShadow: "0 20px 60px rgba(0, 0, 0, 0.8)",
+        }}
+      >
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          style={{
+            position: "absolute",
+            top: "12px",
+            right: "12px",
+            background: "transparent",
+            border: "none",
+            color: "#888",
+            fontSize: "20px",
+            cursor: "pointer",
+            width: "32px",
+            height: "32px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: "6px",
+            transition: "all 200ms",
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.05)";
+            (e.currentTarget as HTMLElement).style.color = "#fff";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.background = "transparent";
+            (e.currentTarget as HTMLElement).style.color = "#888";
+          }}
+        >
+          ✕
+        </button>
+
+        {/* Title */}
+        <h2
+          style={{
+            fontSize: "16px",
+            fontWeight: 600,
+            color: "#fff",
+            margin: "0 0 24px 0",
+            paddingRight: "24px",
+          }}
+        >
+          Profil administrátora
+        </h2>
+
+        {/* Profile Picture Section */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "24px" }}>
+          {/* Profile Picture */}
+          <div
+            onClick={handleUploadClick}
+            style={{
+              width: "80px",
+              height: "80px",
+              borderRadius: "50%",
+              background: profileImage ? `url('${profileImage}') center / cover` : "linear-gradient(135deg, #E11D48, #EA580C)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "white",
+              fontWeight: 700,
+              fontSize: "28px",
+              border: "2px solid rgba(255,255,255,0.1)",
+              cursor: "pointer",
+              overflow: "hidden",
+              position: "relative",
+              transition: "all 200ms",
+              marginBottom: "12px",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLElement).style.borderColor = "rgba(225, 29, 72, 0.5)";
+              (e.currentTarget as HTMLElement).style.background = profileImage
+                ? `url('${profileImage}') center / cover, rgba(225, 29, 72, 0.2)`
+                : "linear-gradient(135deg, #E11D48, #EA580C)";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.1)";
+              (e.currentTarget as HTMLElement).style.background = profileImage
+                ? `url('${profileImage}') center / cover`
+                : "linear-gradient(135deg, #E11D48, #EA580C)";
+            }}
+            title="Kliknutím změňte fotku"
+          >
+            {!profileImage && adminEmail.charAt(0).toUpperCase()}
+            {/* Overlay hint */}
+            <div
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: "rgba(0, 0, 0, 0.4)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "white",
+                fontSize: "12px",
+                opacity: 0,
+                transition: "opacity 200ms",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.opacity = "1";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.opacity = "0";
+              }}
+            >
+              Změnit
+            </div>
+          </div>
+
+          {/* Hidden File Input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileSelect}
+            style={{ display: "none" }}
+          />
+
+          {/* Upload Button */}
+          <button
+            onClick={handleUploadClick}
+            style={{
+              background: "rgba(225, 29, 72, 0.1)",
+              border: "1px solid rgba(225, 29, 72, 0.3)",
+              color: "#E11D48",
+              borderRadius: "6px",
+              padding: "6px 12px",
+              fontSize: "11px",
+              fontWeight: 600,
+              cursor: "pointer",
+              transition: "all 200ms",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLElement).style.background = "rgba(225, 29, 72, 0.2)";
+              (e.currentTarget as HTMLElement).style.borderColor = "rgba(225, 29, 72, 0.5)";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.background = "rgba(225, 29, 72, 0.1)";
+              (e.currentTarget as HTMLElement).style.borderColor = "rgba(225, 29, 72, 0.3)";
+            }}
+          >
+            Nahrát fotografii
+          </button>
+        </div>
+
+        {/* Admin Info */}
+        <div style={{ marginBottom: "24px" }}>
+          <div
+            style={{
+              background: "rgba(255, 255, 255, 0.03)",
+              border: "1px solid rgba(255, 255, 255, 0.05)",
+              borderRadius: "8px",
+              padding: "12px",
+              marginBottom: "12px",
+            }}
+          >
+            <div style={{ fontSize: "10px", color: "#888", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "4px" }}>
+              Jméno
+            </div>
+            <div style={{ fontSize: "13px", color: "#fff", fontWeight: 500 }}>{adminName || "Admin"}</div>
+          </div>
+
+          <div
+            style={{
+              background: "rgba(255, 255, 255, 0.03)",
+              border: "1px solid rgba(255, 255, 255, 0.05)",
+              borderRadius: "8px",
+              padding: "12px",
+            }}
+          >
+            <div style={{ fontSize: "10px", color: "#888", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "4px" }}>
+              E-mail
+            </div>
+            <div style={{ fontSize: "13px", color: "#fff", fontWeight: 500, wordBreak: "break-all" }}>
+              {adminEmail}
+            </div>
+          </div>
+        </div>
+
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          style={{
+            width: "100%",
+            background: "rgba(255, 255, 255, 0.05)",
+            border: "1px solid rgba(255, 255, 255, 0.1)",
+            color: "#fff",
+            borderRadius: "6px",
+            padding: "8px",
+            fontSize: "12px",
+            fontWeight: 600,
+            cursor: "pointer",
+            transition: "all 200ms",
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.1)";
+            (e.currentTarget as HTMLElement).style.borderColor = "rgba(255, 255, 255, 0.2)";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.05)";
+            (e.currentTarget as HTMLElement).style.borderColor = "rgba(255, 255, 255, 0.1)";
+          }}
+        >
+          Zavřít
+        </button>
+      </div>
+    </>
+  );
+};
 
 export const AdminHeader: React.FC<AdminHeaderProps> = ({
   adminEmail = "admin@voodoo808.com",
   adminName = "Admin",
   adminProfileImage,
   onNavigateToNotifications,
-  onLogout,
 }) => {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Fetch unread count on mount and periodically
   useEffect(() => {
     fetchUnreadCount();
-    const interval = setInterval(fetchUnreadCount, 30000); // Check every 30 seconds
+    const interval = setInterval(fetchUnreadCount, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -69,7 +362,6 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
       if (res.ok) {
         const data = await res.json();
         setNotifications(data);
-        // Mark all as read when viewing
         await markAllAsRead();
       }
     } catch (err) {
@@ -104,15 +396,37 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case "purchase":
-        return "🛒";
+        return (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M7 4V2m10 2v-2M3.5 10h17M5 10v8c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2v-8H5z" />
+          </svg>
+        );
       case "like":
-        return "❤️";
+        return (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          </svg>
+        );
       case "comment":
-        return "💬";
+        return (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+        );
       case "system":
-        return "⚙️";
+        return (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="12" cy="12" r="1" />
+            <circle cx="19" cy="12" r="1" />
+            <circle cx="5" cy="12" r="1" />
+          </svg>
+        );
       default:
-        return "📬";
+        return (
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+        );
     }
   };
 
@@ -132,286 +446,319 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
   };
 
   return (
-    <div
-      style={{
-        background: "linear-gradient(to right, #0a0a0a, #1a1a1a)",
-        borderBottom: "1px solid #222",
-        padding: "12px 24px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        height: "60px",
-        position: "sticky",
-        top: 0,
-        zIndex: 100,
-      }}
-    >
-      {/* Left - Logo/Branding */}
-      <div style={{ fontSize: "18px", fontWeight: 700, color: "#fff", letterSpacing: "1px" }}>
-        🎵 VOODOO808
-      </div>
-
-      {/* Center - Title (optional) */}
-      <div style={{ fontSize: "14px", color: "#888", fontWeight: 500 }}></div>
-
-      {/* Right - Profile & Notifications */}
-      <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-        {/* Notifications Dropdown */}
-        <div style={{ position: "relative" }} ref={dropdownRef}>
-          <button
-            onClick={handleNotificationClick}
-            aria-label="Oznámení"
-            aria-expanded={showDropdown}
-            aria-haspopup="true"
+    <>
+      <div
+        style={{
+          background: "linear-gradient(to right, #0a0a0a, #1a1a1a)",
+          borderBottom: "1px solid #222",
+          padding: "0 24px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          height: "56px",
+          position: "sticky",
+          top: 0,
+          zIndex: 99,
+        }}
+      >
+        {/* Left - Logo */}
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <img
+            src="/uploads/artwork/voodoo808-logo.png"
+            alt="VOODOO808"
             style={{
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(255,255,255,0.1)",
-              borderRadius: "6px",
-              width: "40px",
-              height: "40px",
+              height: "28px",
               cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "18px",
-              position: "relative",
-              transition: "all 200ms",
+              filter: "invert(1)",
+              display: "block",
             }}
-            onMouseEnter={(e) => {
-              (e.target as HTMLElement).style.background = "rgba(255,255,255,0.1)";
-              (e.target as HTMLElement).style.borderColor = "rgba(255,255,255,0.2)";
-            }}
-            onMouseLeave={(e) => {
-              (e.target as HTMLElement).style.background = "rgba(255,255,255,0.05)";
-              (e.target as HTMLElement).style.borderColor = "rgba(255,255,255,0.1)";
-            }}
-          >
-            🔔
-            {unreadCount > 0 && (
+          />
+        </div>
+
+        {/* Right - Notifications & Profile */}
+        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+          {/* Notifications Dropdown */}
+          <div style={{ position: "relative" }} ref={dropdownRef}>
+            <button
+              onClick={handleNotificationClick}
+              aria-label="Oznámení"
+              aria-expanded={showDropdown}
+              aria-haspopup="true"
+              style={{
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                borderRadius: "6px",
+                width: "36px",
+                height: "36px",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#888",
+                position: "relative",
+                transition: "all 200ms",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.1)";
+                (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.2)";
+                (e.currentTarget as HTMLElement).style.color = "#fff";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)";
+                (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.1)";
+                (e.currentTarget as HTMLElement).style.color = "#888";
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+              </svg>
+
+              {unreadCount > 0 && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "-6px",
+                    right: "-6px",
+                    background: "#E11D48",
+                    color: "white",
+                    borderRadius: "50%",
+                    width: "20px",
+                    height: "20px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "9px",
+                    fontWeight: 700,
+                    border: "2px solid #0a0a0a",
+                  }}
+                >
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </div>
+              )}
+            </button>
+
+            {/* Notifications Dropdown Panel */}
+            {showDropdown && (
               <div
                 style={{
                   position: "absolute",
-                  top: "-6px",
-                  right: "-6px",
-                  background: "#E11D48",
-                  color: "white",
-                  borderRadius: "50%",
-                  width: "24px",
-                  height: "24px",
+                  top: "48px",
+                  right: 0,
+                  background: "#0a0a0a",
+                  border: "1px solid #222",
+                  borderRadius: "8px",
+                  width: "380px",
+                  maxHeight: "500px",
+                  overflow: "hidden",
                   display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: "11px",
-                  fontWeight: 700,
-                  border: "2px solid #0a0a0a",
+                  flexDirection: "column",
+                  boxShadow: "0 20px 60px rgba(0,0,0,0.8)",
                 }}
               >
-                {unreadCount > 99 ? "99+" : unreadCount}
-              </div>
-            )}
-          </button>
-
-          {/* Notifications Dropdown Panel */}
-          {showDropdown && (
-            <div
-              style={{
-                position: "absolute",
-                top: "50px",
-                right: 0,
-                background: "#0a0a0a",
-                border: "1px solid #222",
-                borderRadius: "8px",
-                width: "400px",
-                maxHeight: "600px",
-                overflow: "hidden",
-                display: "flex",
-                flexDirection: "column",
-                boxShadow: "0 20px 60px rgba(0,0,0,0.8)",
-              }}
-            >
-              {/* Header */}
-              <div
-                style={{
-                  padding: "12px 16px",
-                  borderBottom: "1px solid #222",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <span style={{ fontSize: "13px", fontWeight: 600, color: "#fff" }}>Oznámení</span>
-                <button
-                  onClick={handleNavigateToNotifications}
-                  style={{
-                    background: "transparent",
-                    border: "1px solid #E11D48",
-                    color: "#E11D48",
-                    borderRadius: "4px",
-                    padding: "4px 8px",
-                    fontSize: "10px",
-                    cursor: "pointer",
-                    fontWeight: 600,
-                  }}
-                >
-                  Podrobnosti →
-                </button>
-              </div>
-
-              {/* Notifications List */}
-              <div style={{ overflow: "auto", flex: 1 }}>
-                {loading ? (
-                  <div style={{ padding: "20px", textAlign: "center", color: "#888", fontSize: "12px" }}>
-                    Načítání…
-                  </div>
-                ) : notifications.length === 0 ? (
-                  <div style={{ padding: "40px 20px", textAlign: "center", color: "#666", fontSize: "12px" }}>
-                    <div style={{ fontSize: "24px", marginBottom: "8px" }}>📬</div>
-                    <div>Žádná oznámení</div>
-                    <div style={{ fontSize: "10px", color: "#555", marginTop: "4px" }}>Budou se zde zobrazovat nákupy, oblíbené a komentáře</div>
-                  </div>
-                ) : (
-                  notifications.slice(0, 10).map((notif) => (
-                    <div
-                      key={notif.id}
-                      style={{
-                        padding: "12px 16px",
-                        borderBottom: "1px solid #1a1a1a",
-                        cursor: "pointer",
-                        background: notif.is_read ? "rgba(255,255,255,0.02)" : "rgba(225, 29, 72, 0.1)",
-                        transition: "background 200ms",
-                        display: "flex",
-                        gap: "12px",
-                        alignItems: "flex-start",
-                      }}
-                      onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLElement).style.background = "rgba(225, 29, 72, 0.15)";
-                      }}
-                      onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLElement).style.background = notif.is_read
-                          ? "rgba(255,255,255,0.02)"
-                          : "rgba(225, 29, 72, 0.1)";
-                      }}
-                    >
-                      <span style={{ fontSize: "18px", flexShrink: 0 }}>{getNotificationIcon(notif.type)}</span>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: "12px", fontWeight: 600, color: "#fff", marginBottom: "2px", display: "flex", alignItems: "center", gap: "6px" }}>
-                          {notif.title}
-                          {!notif.is_read && (
-                            <span
-                              style={{
-                                display: "inline-block",
-                                width: "5px",
-                                height: "5px",
-                                background: "#E11D48",
-                                borderRadius: "50%",
-                              }}
-                            ></span>
-                          )}
-                        </div>
-                        <div style={{ fontSize: "11px", color: "#999", marginBottom: "4px", lineHeight: "1.4" }}>
-                          {notif.description}
-                        </div>
-                        <div style={{ fontSize: "10px", color: "#666" }}>{formatDate(notif.created_at)}</div>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              {/* Footer */}
-              {notifications.length > 0 && (
+                {/* Header */}
                 <div
                   style={{
-                    padding: "10px 16px",
-                    borderTop: "1px solid #222",
-                    textAlign: "center",
+                    padding: "12px 16px",
+                    borderBottom: "1px solid #222",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
                   }}
                 >
+                  <span style={{ fontSize: "12px", fontWeight: 600, color: "#fff" }}>Oznámení</span>
                   <button
                     onClick={handleNavigateToNotifications}
                     style={{
                       background: "transparent",
-                      border: "none",
+                      border: "1px solid #E11D48",
                       color: "#E11D48",
-                      fontSize: "11px",
+                      borderRadius: "4px",
+                      padding: "4px 8px",
+                      fontSize: "9px",
                       cursor: "pointer",
                       fontWeight: 600,
-                      padding: "4px 0",
+                      transition: "all 200ms",
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLElement).style.background = "rgba(225, 29, 72, 0.1)";
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLElement).style.background = "transparent";
                     }}
                   >
-                    Zobrazit všechny oznámení →
+                    Podrobnosti
                   </button>
                 </div>
-              )}
-            </div>
-          )}
-        </div>
 
-        {/* Admin Info & Profile */}
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          {/* Admin Email */}
-          <div style={{ textAlign: "right", fontSize: "11px" }}>
-            <div style={{ color: "#fff", fontWeight: 600 }}>{adminName}</div>
-            <div style={{ color: "#888", fontSize: "10px" }}>{adminEmail}</div>
+                {/* Notifications List */}
+                <div style={{ overflow: "auto", flex: 1 }}>
+                  {loading ? (
+                    <div style={{ padding: "20px", textAlign: "center", color: "#888", fontSize: "11px" }}>
+                      Načítání...
+                    </div>
+                  ) : notifications.length === 0 ? (
+                    <div style={{ padding: "32px 20px", textAlign: "center", color: "#666", fontSize: "11px" }}>
+                      <div style={{ marginBottom: "8px" }}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ margin: "0 auto", opacity: 0.5 }}>
+                          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                        </svg>
+                      </div>
+                      <div>Žádná oznámení</div>
+                      <div style={{ fontSize: "9px", color: "#555", marginTop: "4px" }}>
+                        Budou se zde zobrazovat nákupy, oblíbené a komentáře
+                      </div>
+                    </div>
+                  ) : (
+                    notifications.slice(0, 10).map((notif) => (
+                      <div
+                        key={notif.id}
+                        style={{
+                          padding: "12px 16px",
+                          borderBottom: "1px solid #1a1a1a",
+                          cursor: "pointer",
+                          background: notif.is_read ? "rgba(255,255,255,0.02)" : "rgba(225, 29, 72, 0.08)",
+                          transition: "background 200ms",
+                          display: "flex",
+                          gap: "12px",
+                          alignItems: "flex-start",
+                        }}
+                        onMouseEnter={(e) => {
+                          (e.currentTarget as HTMLElement).style.background = "rgba(225, 29, 72, 0.12)";
+                        }}
+                        onMouseLeave={(e) => {
+                          (e.currentTarget as HTMLElement).style.background = notif.is_read
+                            ? "rgba(255,255,255,0.02)"
+                            : "rgba(225, 29, 72, 0.08)";
+                        }}
+                      >
+                        <span style={{ fontSize: "14px", flexShrink: 0, color: "#E11D48", marginTop: "2px" }}>
+                          {getNotificationIcon(notif.type)}
+                        </span>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div
+                            style={{
+                              fontSize: "11px",
+                              fontWeight: 600,
+                              color: "#fff",
+                              marginBottom: "2px",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "6px",
+                            }}
+                          >
+                            {notif.title}
+                            {!notif.is_read && (
+                              <span
+                                style={{
+                                  display: "inline-block",
+                                  width: "4px",
+                                  height: "4px",
+                                  background: "#E11D48",
+                                  borderRadius: "50%",
+                                }}
+                              ></span>
+                            )}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: "10px",
+                              color: "#999",
+                              marginBottom: "4px",
+                              lineHeight: "1.4",
+                            }}
+                          >
+                            {notif.description}
+                          </div>
+                          <div style={{ fontSize: "9px", color: "#666" }}>
+                            {formatDate(notif.created_at)}
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                {/* Footer */}
+                {notifications.length > 0 && (
+                  <div
+                    style={{
+                      padding: "10px 16px",
+                      borderTop: "1px solid #222",
+                      textAlign: "center",
+                    }}
+                  >
+                    <button
+                      onClick={handleNavigateToNotifications}
+                      style={{
+                        background: "transparent",
+                        border: "none",
+                        color: "#E11D48",
+                        fontSize: "10px",
+                        cursor: "pointer",
+                        fontWeight: 600,
+                        padding: "4px 0",
+                        transition: "all 200ms",
+                      }}
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLElement).style.opacity = "0.7";
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLElement).style.opacity = "1";
+                      }}
+                    >
+                      Zobrazit všechna oznámení
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
-          {/* Profile Picture */}
-          <div
+          {/* Profile Picture Button */}
+          <button
+            onClick={() => setShowProfileModal(true)}
             style={{
-              width: "40px",
-              height: "40px",
+              width: "36px",
+              height: "36px",
               borderRadius: "50%",
               background: adminProfileImage
                 ? `url('${adminProfileImage}') center / cover`
                 : "linear-gradient(135deg, #E11D48, #EA580C)",
+              border: "1px solid rgba(255,255,255,0.1)",
+              cursor: "pointer",
+              overflow: "hidden",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               color: "white",
               fontWeight: 700,
-              fontSize: "16px",
-              border: "2px solid rgba(255,255,255,0.1)",
-              cursor: "pointer",
-              overflow: "hidden",
-              position: "relative",
-              group: true,
+              fontSize: "14px",
+              transition: "all 200ms",
+              padding: 0,
             }}
-            title={adminEmail}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLElement).style.borderColor = "rgba(225, 29, 72, 0.5)";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.1)";
+            }}
+            title="Profil administrátora"
           >
             {!adminProfileImage && adminEmail.charAt(0).toUpperCase()}
-          </div>
-
-          {/* Logout Button */}
-          {onLogout && (
-            <button
-              onClick={onLogout}
-              title="Odhlásit se"
-              style={{
-                background: "rgba(255,255,255,0.05)",
-                border: "1px solid rgba(255,255,255,0.1)",
-                color: "#888",
-                borderRadius: "6px",
-                padding: "6px 12px",
-                fontSize: "11px",
-                cursor: "pointer",
-                fontWeight: 600,
-                transition: "all 200ms",
-              }}
-              onMouseEnter={(e) => {
-                (e.target as HTMLElement).style.background = "rgba(255,255,255,0.1)";
-                (e.target as HTMLElement).style.borderColor = "rgba(255,255,255,0.2)";
-              }}
-              onMouseLeave={(e) => {
-                (e.target as HTMLElement).style.background = "rgba(255,255,255,0.05)";
-                (e.target as HTMLElement).style.borderColor = "rgba(255,255,255,0.1)";
-              }}
-            >
-              Odhlásit
-            </button>
-          )}
+          </button>
         </div>
       </div>
-    </div>
+
+      {/* Admin Info Modal */}
+      <AdminInfoModal
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+        adminEmail={adminEmail}
+        adminName={adminName}
+        adminProfileImage={adminProfileImage}
+      />
+    </>
   );
 };
 
