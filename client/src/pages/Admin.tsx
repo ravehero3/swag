@@ -334,6 +334,8 @@ function Admin() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminLoading, setAdminLoading] = useState(true);
   const [adminError, setAdminError] = useState<string | null>(null);
+  const [adminEmail, setAdminEmail] = useState<string>("");
+  const [adminName, setAdminName] = useState<string>("Admin");
   const [showBeatUploadModal, setShowBeatUploadModal] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -343,6 +345,23 @@ function Admin() {
     checkMobile();
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  // Fetch admin info on mount
+  useEffect(() => {
+    const fetchAdminInfo = async () => {
+      try {
+        const res = await fetch("/api/auth/me", { credentials: "include" });
+        if (res.ok) {
+          const data = await res.json();
+          setAdminEmail(data.email || "admin@voodoo808.com");
+          setAdminName(data.name || data.email?.split("@")[0] || "Admin");
+        }
+      } catch (err) {
+        console.error("Error fetching admin info:", err);
+      }
+    };
+    fetchAdminInfo();
   }, []);
 
   useEffect(() => {

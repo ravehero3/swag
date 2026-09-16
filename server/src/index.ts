@@ -47,14 +47,15 @@ import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 
 // Passport Google Strategy
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID || "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
-      callbackURL: getGoogleOAuthCallbackUrl(),
-      proxy: true,
-    },
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  passport.use(
+    new GoogleStrategy(
+      {
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL: getGoogleOAuthCallbackUrl(),
+        proxy: true,
+      },
     async (_accessToken, _refreshToken, profile, done) => {
       try {
         const email = profile.emails?.[0].value;
@@ -82,7 +83,8 @@ passport.use(
       }
     }
   )
-);
+  );
+}
 
 passport.serializeUser((user: any, done) => done(null, user.id));
 passport.deserializeUser(async (id: number, done) => {
