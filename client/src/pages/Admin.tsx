@@ -7991,7 +7991,7 @@ function JourneysTab() {
           onClick={() => { setShowStepForm(false); setEditingStep(null); }}
           style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 10002, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
         >
-          <div onClick={(e) => e.stopPropagation()} style={{ background: "#0a0a0a", border: "1px solid #222", borderRadius: "8px", width: "min(420px, 96vw)", padding: "22px" }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: "#0a0a0a", border: "1px solid #222", borderRadius: "8px", width: "min(900px, 96vw)", maxHeight: "90vh", overflowY: "auto", padding: "24px" }}>
             <div style={{ fontSize: "15px", fontWeight: 600, color: "#eee", marginBottom: "16px" }}>{editingStep ? "Upravit krok" : "Nový krok"}</div>
 
             <div style={{ marginBottom: "12px" }}>
@@ -8017,7 +8017,7 @@ function JourneysTab() {
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
                   <label style={{ fontSize: "11px", color: "#888" }}>Šablona</label>
                 </div>
-                <div style={{ maxHeight: "500px", overflowY: "auto", background: "rgba(0,0,0,0.5)", borderRadius: "6px", padding: "12px", border: "1px solid #222" }}>
+                <div style={{ maxHeight: "600px", overflowY: "auto", background: "rgba(0,0,0,0.5)", borderRadius: "6px", padding: "16px", border: "1px solid #222" }}>
                   <TemplateCardGrid
                     templates={templates}
                     recommendedTemplateIds={recommendedTemplates.map(t => t.id)}

@@ -335,7 +335,7 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
           <div style={{ fontSize: "11px", fontWeight: 600, color: "#E11D48", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
             Doporučené pro tento krok
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "12px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "12px" }}>
             {filteredRecommended.map((t) => renderTemplateCard(t, true))}
           </div>
         </div>
@@ -349,7 +349,7 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
               Další šablony
             </div>
           )}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "12px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "12px" }}>
             {filteredOther.map((t) => renderTemplateCard(t, false))}
           </div>
         </div>
