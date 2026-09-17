@@ -547,7 +547,9 @@ function Admin() {
         minHeight: "100vh",
         background: "#000",
         color: DESIGN_SYSTEM.colors.textPrimary,
+        paddingTop: "42px",
         paddingBottom: "32px",
+        marginTop: 0,
       }}>
         {/* ── Sidebar (Drawer on mobile, Sticky on desktop) ── */}
         <aside style={{

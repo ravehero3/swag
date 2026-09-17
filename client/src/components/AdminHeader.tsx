@@ -449,16 +449,19 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
     <>
       <div
         style={{
-          background: "linear-gradient(to right, #0a0a0a, #1a1a1a)",
-          borderBottom: "1px solid #222",
-          padding: "0 24px",
           display: "flex",
-          alignItems: "center",
           justifyContent: "space-between",
-          height: "56px",
-          position: "sticky",
+          alignItems: "center",
+          padding: "0 16px",
+          height: "42px",
+          borderBottom: "1px solid #333",
+          position: "fixed",
           top: 0,
-          zIndex: 99,
+          left: 0,
+          right: 0,
+          zIndex: 100,
+          backdropFilter: "blur(20px)",
+          backgroundColor: "rgba(13, 13, 13, 0.3)",
         }}
       >
         {/* Left - Logo */}
@@ -467,7 +470,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
             src="/uploads/artwork/voodoo808-logo.png"
             alt="VOODOO808"
             style={{
-              height: "28px",
+              height: "24px",
               cursor: "pointer",
               filter: "invert(1)",
               display: "block",
@@ -476,7 +479,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
         </div>
 
         {/* Right - Notifications & Profile */}
-        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px", position: "relative", zIndex: 10, paddingRight: "12px" }}>
           {/* Notifications Dropdown */}
           <div style={{ position: "relative" }} ref={dropdownRef}>
             <button
