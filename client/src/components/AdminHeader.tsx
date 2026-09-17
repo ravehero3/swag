@@ -33,6 +33,7 @@ const AdminInfoModal: React.FC<AdminInfoModalProps> = ({
   adminProfileImage,
 }) => {
   const [profileImage, setProfileImage] = useState(adminProfileImage);
+  const [isSaving, setIsSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!isOpen) return null;
@@ -64,6 +65,39 @@ const AdminInfoModal: React.FC<AdminInfoModalProps> = ({
       setProfileImage(result);
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleSaveProfile = async () => {
+    if (!profileImage || profileImage === adminProfileImage) {
+      onClose();
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const response = await fetch("/api/auth/profile/image", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          image: profileImage,
+        }),
+      });
+
+      if (response.ok) {
+        // Reload page to update with new image
+        window.location.reload();
+      } else {
+        alert("Chyba při ukládání fotografie. Zkuste to znovu.");
+      }
+    } catch (err) {
+      console.error("Error saving profile image:", err);
+      alert("Chyba při ukládání fotografie.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -280,32 +314,67 @@ const AdminInfoModal: React.FC<AdminInfoModalProps> = ({
           </div>
         </div>
 
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          style={{
-            width: "100%",
-            background: "rgba(255, 255, 255, 0.05)",
-            border: "1px solid rgba(255, 255, 255, 0.1)",
-            color: "#fff",
-            borderRadius: "6px",
-            padding: "8px",
-            fontSize: "12px",
-            fontWeight: 600,
-            cursor: "pointer",
-            transition: "all 200ms",
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.1)";
-            (e.currentTarget as HTMLElement).style.borderColor = "rgba(255, 255, 255, 0.2)";
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.05)";
-            (e.currentTarget as HTMLElement).style.borderColor = "rgba(255, 255, 255, 0.1)";
-          }}
-        >
-          Zavřít
-        </button>
+        {/* Save/Cancel Buttons */}
+        <div style={{ display: "flex", gap: "8px" }}>
+          <button
+            onClick={handleSaveProfile}
+            disabled={isSaving}
+            style={{
+              flex: 1,
+              background: "#E11D48",
+              border: "1px solid #E11D48",
+              color: "#fff",
+              borderRadius: "6px",
+              padding: "10px",
+              fontSize: "12px",
+              fontWeight: 600,
+              cursor: isSaving ? "default" : "pointer",
+              transition: "all 200ms",
+              opacity: isSaving ? 0.6 : 1,
+            }}
+            onMouseEnter={(e) => {
+              if (!isSaving) {
+                (e.currentTarget as HTMLElement).style.background = "#C91640";
+                (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 12px rgba(225, 29, 72, 0.3)";
+              }
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.background = "#E11D48";
+              (e.currentTarget as HTMLElement).style.boxShadow = "none";
+            }}
+          >
+            {isSaving ? "Ukládám..." : "Uložit"}
+          </button>
+          <button
+            onClick={onClose}
+            disabled={isSaving}
+            style={{
+              flex: 1,
+              background: "rgba(255, 255, 255, 0.05)",
+              border: "1px solid rgba(255, 255, 255, 0.1)",
+              color: "#fff",
+              borderRadius: "6px",
+              padding: "10px",
+              fontSize: "12px",
+              fontWeight: 600,
+              cursor: isSaving ? "default" : "pointer",
+              transition: "all 200ms",
+              opacity: isSaving ? 0.6 : 1,
+            }}
+            onMouseEnter={(e) => {
+              if (!isSaving) {
+                (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.1)";
+                (e.currentTarget as HTMLElement).style.borderColor = "rgba(255, 255, 255, 0.2)";
+              }
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.05)";
+              (e.currentTarget as HTMLElement).style.borderColor = "rgba(255, 255, 255, 0.1)";
+            }}
+          >
+            Zavřít
+          </button>
+        </div>
       </div>
     </>
   );
@@ -479,7 +548,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
         </div>
 
         {/* Right - Notifications & Profile */}
-        <div style={{ display: "flex", alignItems: "center", gap: "12px", position: "relative", zIndex: 10, paddingRight: "12px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", position: "relative", zIndex: 10, paddingRight: "8px" }}>
           {/* Notifications Dropdown */}
           <div style={{ position: "relative" }} ref={dropdownRef}>
             <button
@@ -623,7 +692,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
                           background: notif.is_read ? "rgba(255,255,255,0.02)" : "rgba(225, 29, 72, 0.08)",
                           transition: "background 200ms",
                           display: "flex",
-                          gap: "12px",
+                          gap: "8px",
                           alignItems: "flex-start",
                         }}
                         onMouseEnter={(e) => {
