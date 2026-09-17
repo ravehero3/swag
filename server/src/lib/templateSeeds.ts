@@ -1,7 +1,297 @@
 /**
- * Template Seed Data - Auto-creates all 12 email templates on first run
+ * Template Seed Data - Auto-creates all 20 email templates on first run
+ * All templates wrapped in professional HTML with VOODOO808 branding
  * Metadata includes: category, journey_name, step_position, is_recommended
  */
+
+// Professional email wrapper function
+const createEmailHTML = (content: string, templateName: string): string => `<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${templateName}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            color: #1a1a1a;
+            background: #f8f8f8;
+        }
+        
+        .email-wrapper {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+        }
+        
+        /* Header */
+        .email-header {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            padding: 32px 24px;
+            text-align: center;
+            border-bottom: 3px solid #E11D48;
+        }
+        
+        .logo {
+            font-size: 28px;
+            font-weight: 900;
+            color: #E11D48;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        
+        .logo-subtitle {
+            font-size: 11px;
+            color: #888;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        
+        /* Body Content */
+        .email-body {
+            padding: 32px 24px;
+        }
+        
+        .email-body p {
+            margin-bottom: 16px;
+            font-size: 14px;
+            line-height: 1.8;
+            color: #2a2a2a;
+        }
+        
+        .email-body strong {
+            font-weight: 700;
+            color: #E11D48;
+        }
+        
+        .email-body ol,
+        .email-body ul {
+            margin: 16px 0 16px 24px;
+            font-size: 14px;
+            line-height: 1.8;
+            color: #2a2a2a;
+        }
+        
+        .email-body li {
+            margin-bottom: 12px;
+        }
+        
+        .email-body li strong {
+            display: inline-block;
+            margin-right: 4px;
+            color: #E11D48;
+        }
+        
+        /* Call-to-Action */
+        .cta-button {
+            display: inline-block !important;
+            background: #E11D48 !important;
+            color: #ffffff !important;
+            padding: 14px 28px !important;
+            text-decoration: none !important;
+            border-radius: 6px !important;
+            font-weight: 700 !important;
+            font-size: 13px !important;
+            text-align: center !important;
+            margin: 16px 0 !important;
+            transition: all 200ms !important;
+            border: 1px solid #E11D48 !important;
+        }
+        
+        .cta-button:hover {
+            background: #C91640 !important;
+            border-color: #C91640 !important;
+        }
+        
+        /* Alternate CTA colors */
+        .cta-green {
+            background: #10B981 !important;
+            border-color: #10B981 !important;
+        }
+        
+        .cta-green:hover {
+            background: #059669 !important;
+            border-color: #059669 !important;
+        }
+        
+        .cta-blue {
+            background: #2563EB !important;
+            border-color: #2563EB !important;
+        }
+        
+        .cta-blue:hover {
+            background: #1D4ED8 !important;
+            border-color: #1D4ED8 !important;
+        }
+        
+        .cta-orange {
+            background: #EA580C !important;
+            border-color: #EA580C !important;
+        }
+        
+        .cta-orange:hover {
+            background: #C2470A !important;
+            border-color: #C2470A !important;
+        }
+        
+        .cta-amber {
+            background: #F59E0B !important;
+            border-color: #F59E0B !important;
+            color: #1a1a1a !important;
+        }
+        
+        .cta-amber:hover {
+            background: #D97706 !important;
+            border-color: #D97706 !important;
+        }
+        
+        .cta-purple {
+            background: #8B5CF6 !important;
+            border-color: #8B5CF6 !important;
+        }
+        
+        .cta-purple:hover {
+            background: #7C3AED !important;
+            border-color: #7C3AED !important;
+        }
+        
+        .cta-indigo {
+            background: #6366F1 !important;
+            border-color: #6366F1 !important;
+        }
+        
+        .cta-indigo:hover {
+            background: #4F46E5 !important;
+            border-color: #4F46E5 !important;
+        }
+        
+        .cta-red {
+            background: #EF4444 !important;
+            border-color: #EF4444 !important;
+        }
+        
+        .cta-red:hover {
+            background: #DC2626 !important;
+            border-color: #DC2626 !important;
+        }
+        
+        /* Footer */
+        .email-footer {
+            background: #f8f8f8;
+            padding: 24px;
+            border-top: 1px solid #e0e0e0;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .email-footer-text {
+            margin-bottom: 12px;
+            line-height: 1.6;
+        }
+        
+        .email-footer-divider {
+            height: 1px;
+            background: #e0e0e0;
+            margin: 12px 0;
+        }
+        
+        .email-footer-links {
+            font-size: 11px;
+            color: #999;
+        }
+        
+        .email-footer-links a {
+            color: #E11D48;
+            text-decoration: none;
+        }
+        
+        .email-footer-links a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Highlights and sections */
+        .highlight-box {
+            background: #f8f8f8;
+            border-left: 4px solid #E11D48;
+            padding: 16px;
+            margin: 16px 0;
+            border-radius: 4px;
+        }
+        
+        .highlight-box p {
+            margin: 0;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+        
+        /* Responsive */
+        @media (max-width: 640px) {
+            .email-wrapper {
+                border: none;
+            }
+            
+            .email-header {
+                padding: 24px 16px;
+            }
+            
+            .email-body {
+                padding: 24px 16px;
+            }
+            
+            .email-body p {
+                font-size: 13px;
+            }
+            
+            .cta-button {
+                width: 100% !important;
+                padding: 12px 16px !important;
+                font-size: 12px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-wrapper">
+        <!-- Header -->
+        <div class="email-header">
+            <div class="logo">🎹 VOODOO808</div>
+            <div class="logo-subtitle">Beat Production & Sound Design</div>
+        </div>
+        
+        <!-- Body -->
+        <div class="email-body">
+            ${content}
+        </div>
+        
+        <!-- Footer -->
+        <div class="email-footer">
+            <div class="email-footer-text">
+                © 2024 VOODOO808. Všechna práva vyhrazena.
+            </div>
+            <div class="email-footer-divider"></div>
+            <div class="email-footer-text">
+                <strong>Kontakt:</strong><br>
+                Email: <a href="mailto:info@voodoo808.cz" style="color: #E11D48; text-decoration: none;">info@voodoo808.cz</a>
+            </div>
+            <div class="email-footer-divider"></div>
+            <div class="email-footer-links">
+                Máte dotaz? Odpovězte přímo na tento email a rád vám pomůžu. 🙏
+            </div>
+        </div>
+    </div>
+</body>
+</html>`;
 
 export const TEMPLATE_SEEDS = [
   {
@@ -15,17 +305,21 @@ export const TEMPLATE_SEEDS = [
     sort_order: 1,
     subject: "Pojďme makat (20% sleva na vaši první exkluzivu)",
     preheader: "Stáhli jste si free beat. Teď je čas udělat oficiální věc.",
-    html_content: `<p>Čau {{first_name}},</p>
+    html_content: createEmailHTML(`
+      <p>Čau {{first_name}},</p>
 
-<p>Před pár dny jste u mě na webu stáhli ten free beat. Chtěl jsem se jen zeptat – už do toho něco píšete? Jestli máte hotový demo nebo nahráváte nějaký video ze studia na IG, určitě mě označte, chci slyšet, co vám v tý hlavě vzniká.</p>
+      <p>Před pár dny jste u mě na webu stáhli ten free beat. Chtěl jsem se jen zeptat – už do toho něco píšete? Jestli máte hotový demo nebo nahráváte nějaký video ze studia na IG, určitě mě označte, chci slyšet, co vám v tý hlavě vzniká.</p>
 
-<p>Pokud chcete tenhle sound posunout dál, mít k dispozici kompletní stopy (stems) pro pořádnej mix a hlavně jistotu, že ten beat nikdo jinej nekoupí a zůstane navždycky jenom váš, je čas na exkluzivní licenci.</p>
+      <p>Pokud chcete tenhle sound posunout dál, mít k dispozici kompletní stopy (stems) pro pořádnej mix a hlavně jistotu, že ten beat nikdo jinej nekoupí a zůstane navždycky jenom váš, je čas na exkluzivní licenci.</p>
 
-<p>Chci vás podpořit, takže vám dávám kód <strong>FIRST20</strong> na 20% slevu na jakoukoliv exkluzivitu z mýho katalogu.</p>
+      <p><strong>Chci vás podpořit, takže vám dávám kód FIRST20 na 20% slevu na jakoukoliv exkluzivitu z mýho katalogu.</strong></p>
 
-<p><a href="{{site_url}}/beats" style="background: #E11D48; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Kouknout na exkluzivní beaty</a></p>
+      <p style="text-align: center;">
+        <a href="{{site_url}}/beats" class="cta-button">Kouknout na exkluzivní beaty →</a>
+      </p>
 
-<p>Vidíme se ve studiu,<br>VOODOO808</p>`,
+      <p>Vidíme se ve studiu,<br><strong>VOODOO808</strong></p>
+    `, "Free Beat Onboarding"),
   },
   {
     name: "Free Kit Onboarding - Day 3",
@@ -38,17 +332,21 @@ export const TEMPLATE_SEEDS = [
     sort_order: 2,
     subject: "Posuňte svoji produkci dál (Sleva uvnitř) 🎹",
     preheader: "Jak vám sedí moje free zvuky v DAW?",
-    html_content: `<p>Čau {{first_name}},</p>
+    html_content: createEmailHTML(`
+      <p>Čau {{first_name}},</p>
 
-<p>Jen kontroluju, jak vám jedou ty free zvuky, co jste u mě před pár dny stahovali. Sedí vám to dobře do mixu?</p>
+      <p>Jen kontroluju, jak vám jedou ty free zvuky, co jste u mě před pár dny stahovali. Sedí vám to dobře do mixu?</p>
 
-<p>Pokud vás už nebaví používat dokola ty stejné recyklované zvuky z internetu a chcete unikátní, fresh textury, ze kterých vznikají opravdové hity, musíte checknout moje prémiové kity. Žádná vata, jen 100% placement-ready soundy.</p>
+      <p>Pokud vás už nebaví používat dokola ty stejné recyklované zvuky z internetu a chcete unikátní, fresh textury, ze kterých vznikají opravdové hity, musíte checknout moje prémiové kity. Žádná vata, jen 100% placement-ready soundy.</p>
 
-<p>Chci vám pomoct nakopnout další session. Použijte kód <strong>PRODUCER20</strong> a získejte 20% slevu na jakýkoliv prémiový sound kit nebo loop pack.</p>
+      <p><strong>Chci vám pomoct nakopnout další session. Použijte kód PRODUCER20 a získejte 20% slevu na jakýkoliv prémiový sound kit nebo loop pack.</strong></p>
 
-<p><a href="{{site_url}}/sound-kits" style="background: #10B981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Upgradovat banku zvuků</a></p>
+      <p style="text-align: center;">
+        <a href="{{site_url}}/sound-kits" class="cta-button cta-green">Upgradovat banku zvuků →</a>
+      </p>
 
-<p>Dělejte hudbu,<br>VOODOO808</p>`,
+      <p>Dělejte hudbu,<br><strong>VOODOO808</strong></p>
+    `, "Free Kit Onboarding"),
   },
   {
     name: "Abandoned Checkout - Reminder",
@@ -61,17 +359,23 @@ export const TEMPLATE_SEEDS = [
     sort_order: 3,
     subject: "Spadnul vám program? Nebo jste zapomněli na tohle?",
     preheader: "Váš rozdělanej projekt na vás čeká v košíku.",
-    html_content: `<p>Čau {{first_name}},</p>
+    html_content: createEmailHTML(`
+      <p>Čau {{first_name}},</p>
 
-<p>Všimnul jsem si, že vám v košíku zůstal viset pěknej leak. Chápu to – někdo vám zavolal, crashlo DAW nebo vás prostě něco vyrušilo mid-cookup.</p>
+      <p>Všimnul jsem si, že vám v košíku zůstal viset pěknej leak. Chápu to – někdo vám zavolal, crashlo DAW nebo vás prostě něco vyrušilo mid-cookup.</p>
 
-<p>Nechal jsem vám košík schovanej. U exkluzivních licencí je to ale celkem risk, protože jakmile ten beat koupí někdo jinej, je navždycky pryč a já s tím už nic neudělám. Radši vám ho zatím držím.</p>
+      <p>Nechal jsem vám košík schovanej. U exkluzivních licencí je to ale celkem risk, protože jakmile ten beat koupí někdo jinej, je navždycky pryč a já s tím už nic neudělám. Radši vám ho zatím držím.</p>
 
-<p><strong>Váš výběr:</strong> {{cart_items_summary}}</p>
+      <div class="highlight-box">
+        <p>📦 Váš výběr: {{cart_items_summary}}</p>
+      </div>
 
-<p><a href="{{checkout_url}}" style="background: #EA580C; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Dokončit objednávku a zamknout beat</a></p>
+      <p style="text-align: center;">
+        <a href="{{checkout_url}}" class="cta-button cta-orange">Dokončit objednávku a zamknout beat →</a>
+      </p>
 
-<p>Zatím,<br>VOODOO808</p>`,
+      <p>Zatím,<br><strong>VOODOO808</strong></p>
+    `, "Abandoned Checkout Reminder"),
   },
   {
     name: "Abandoned Checkout - Scarcity",
@@ -84,17 +388,23 @@ export const TEMPLATE_SEEDS = [
     sort_order: 4,
     subject: "15% sleva – vaše poslední šance!",
     preheader: "Nenechte tenhle track proklouznout mezi prsty.",
-    html_content: `<p>Čau {{first_name}},</p>
+    html_content: createEmailHTML(`
+      <p>Čau {{first_name}},</p>
 
-<p>Fakt chci, abyste tenhle projekt dotáhli do konce. Exkluzivní beaty a kity u mě v komunitě mizí dost rychle a nemůžu vám tenhle nákup držet věčně.</p>
+      <p>Fakt chci, abyste tenhle projekt dotáhli do konce. Exkluzivní beaty a kity u mě v komunitě mizí dost rychle a nemůžu vám tenhle nákup držet věčně.</p>
 
-<p>Abyste to měli o něco víc easy, vygeneroval jsem vám speciální 15% slevu. Použijte v košíku kód <strong>SAVE15</strong>.</p>
+      <p><strong>Abyste to měli o něco víc easy, vygeneroval jsem vám speciální 15% slevu. Použijte v košíku kód SAVE15.</strong></p>
 
-<p>Ten kód ale platí jenom 24 hodin, pak nadobro expiruje. Tak na to nespěte.</p>
+      <div class="highlight-box">
+        <p>⏰ Pozor! Kód SAVE15 platí jenom 24 hodin, pak nadobro expiruje.</p>
+      </div>
 
-<p><a href="{{checkout_url}}?code=SAVE15" style="background: #D97706; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Uplatnit 15% slevu</a></p>
+      <p style="text-align: center;">
+        <a href="{{checkout_url}}?code=SAVE15" class="cta-button cta-amber">Uplatnit 15% slevu teď →</a>
+      </p>
 
-<p>Pojďme na to,<br>VOODOO808</p>`,
+      <p>Pojďme na to,<br><strong>VOODOO808</strong></p>
+    `, "Abandoned Checkout Scarcity"),
   },
   {
     name: "Browse Recovery - Day 1",
@@ -107,15 +417,19 @@ export const TEMPLATE_SEEDS = [
     sort_order: 5,
     subject: "Ten beat, co jste checkovali... 👀",
     preheader: "Vibe u věci {{product_name}} je šílenej.",
-    html_content: `<p>Čau {{first_name}},</p>
+    html_content: createEmailHTML(`
+      <p>Čau {{first_name}},</p>
 
-<p>Všimnul jsem si, že jste strávili delší dobu u projektu <strong>{{product_name}}</strong>. Tenhle kousek má neskutečnej bounce – upřímně je to jedna z mých nejoblíbenějších věcí z poslední doby.</p>
+      <p>Všimnul jsem si, že jste strávili delší dobu u projektu <strong>{{product_name}}</strong>. Tenhle kousek má neskutečnej bounce – upřímně je to jedna z mých nejoblíbenějších věcí z poslední doby.</p>
 
-<p>Máte už v hlavě nějakou konkrétní vizi nebo téma, co byste do toho dali? Pokud vás zajímají detaily ohledně trackoutů (jednotlivých stop) nebo smluvních podmínek exkluzivity, stačí odpovědět na tenhle mail.</p>
+      <p>Máte už v hlavě nějakou konkrétní vizi nebo téma, co byste do toho dali? Pokud vás zajímají detaily ohledně trackoutů (jednotlivých stop) nebo smluvních podmínek exkluzivity, stačí odpovědět na tenhle mail.</p>
 
-<p><a href="{{product_url}}" style="background: #2563EB; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Poslechnout si {{product_name}} znovu</a></p>
+      <p style="text-align: center;">
+        <a href="{{product_url}}" class="cta-button cta-blue">Poslechnout si {{product_name}} znovu →</a>
+      </p>
 
-<p>Mír,<br>VOODOO808</p>`,
+      <p>Mír,<br><strong>VOODOO808</strong></p>
+    `, "Browse Recovery Day 1"),
   },
   {
     name: "Browse Recovery - Day 3",
@@ -128,22 +442,26 @@ export const TEMPLATE_SEEDS = [
     sort_order: 6,
     subject: "Hledáte jinej vibe? Zkuste tyhle věci.",
     preheader: "Fresh sound vybraný podle vašeho vkusu.",
-    html_content: `<p>Čau {{first_name}},</p>
+    html_content: createEmailHTML(`
+      <p>Čau {{first_name}},</p>
 
-<p>Protože jste nedávno procházeli můj katalog, vytáhnul jsem pro vás z vaultu pár dalších věcí, které mají podobnou energii a mohly by vám sednout.</p>
+      <p>Protože jste nedávno procházeli můj katalog, vytáhnul jsem pro vás z vaultu pár dalších věcí, které mají podobnou energii a mohly by vám sednout.</p>
 
-<p>Tohle jsou momentálně 3 nejvíc vyhledávané věci u mě na webu:</p>
-<ul>
-    <li>🔥 {{recommendation_1}}</li>
-    <li>🎹 {{recommendation_2}}</li>
-    <li>⚡ {{recommendation_3}}</li>
-</ul>
+      <p><strong>Tenhle 3 věci jsou momentálně nejvíc vyhledávané na webu:</strong></p>
+      <ul>
+        <li>🔥 {{recommendation_1}}</li>
+        <li>🎹 {{recommendation_2}}</li>
+        <li>⚡ {{recommendation_3}}</li>
+      </ul>
 
-<p>Klikněte níže, naskočte zpátky na web a najděte ten správný sound pro váš projekt.</p>
+      <p>Klikněte níže, naskočte zpátky na web a najděte ten správný sound pro váš projekt.</p>
 
-<p><a href="{{site_url}}" style="background: #4B5563; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Otevřít kompletní katalog</a></p>
+      <p style="text-align: center;">
+        <a href="{{site_url}}" class="cta-button cta-blue">Otevřít kompletní katalog →</a>
+      </p>
 
-<p>Hned jsme zpátky,<br>VOODOO808</p>`,
+      <p>Hned jsme zpátky,<br><strong>VOODOO808</strong></p>
+    `, "Browse Recovery Day 3"),
   },
   {
     name: "Rapper Tips - Spotify Strategy",
@@ -156,21 +474,25 @@ export const TEMPLATE_SEEDS = [
     sort_order: 7,
     subject: "Jak dostat vaše tracky do Spotify playlistů 📈",
     preheader: "Blueprint pro nezávislé CZ/SK interprety.",
-    html_content: `<p>Čau {{first_name}},</p>
+    html_content: createEmailHTML(`
+      <p>Čau {{first_name}},</p>
 
-<p>Můžete mít ty nejtvrdší bary a dokonalej mix, ale pokud váš track nikdo neuslyší, děláte to zbytečně. Dneska vám chci poslat rychlej návod, jak dostat vaši tvorbu do editorial a algorithmic playlistů na Spotify:</p>
+      <p>Můžete mít ty nejtvrdší bary a dokonalej mix, ale pokud váš track nikdo neuslyší, děláte to zbytečně. Dneska vám chci poslat rychlej návod, jak dostat vaši tvorbu do editorial a algorithmic playlistů na Spotify:</p>
 
-<ol>
-    <li><strong>Pitchujte včas:</strong> Nahrajte a pitchujte track přes Spotify for Artists aspoň 3 až 4 týdny před releasem. Dá to kurátorům čas a hlavně to track automaticky hodí vašim followers do Release Radaru.</li>
-    <li><strong>Tlačte traffic první dny:</strong> Prvních 48 hodin po releasu směřujte veškerou pozornost z IG, TikToku a YouTube čistě na Spotify link. Algoritmus miluje, když lidi přicházejí zvenčí.</li>
-    <li><strong>Čistá metadata:</strong> Při pitchování přesně zadejte žánr, subžánry a náladu tracku. AI Spotify podle toho hledá správné posluchače.</li>
-</ol>
+      <ol>
+        <li><strong>Pitchujte včas:</strong> Nahrajte a pitchujte track přes Spotify for Artists aspoň 3 až 4 týdny před releasem. Dá to kurátorům čas a hlavně to track automaticky hodí vašim followers do Release Radaru.</li>
+        <li><strong>Tlačte traffic první dny:</strong> Prvních 48 hodin po releasu směřujte veškerou pozornost z IG, TikToku a YouTube čistě na Spotify link. Algoritmus miluje, když lidi přicházejí zvenčí.</li>
+        <li><strong>Čistá metadata:</strong> Při pitchování přesně zadejte žánr, subžánry a náladu tracku. AI Spotify podle toho hledá správné posluchače.</li>
+      </ol>
 
-<p>Hledáte novej podklad, kterým odpálíte příští release? Skočte na web checknout nové exkluzivní beaty.</p>
+      <p><strong>Hledáte novej podklad, kterým odpálíte příští release?</strong> Skočte na web checknout nové exkluzivní beaty.</p>
 
-<p><a href="{{site_url}}/beats" style="background: #10B981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Poslechnout nové beaty</a></p>
+      <p style="text-align: center;">
+        <a href="{{site_url}}/beats" class="cta-button cta-green">Poslechnout nové beaty →</a>
+      </p>
 
-<p>Makejte na sobě,<br>VOODOO808</p>`,
+      <p>Makejte na sobě,<br><strong>VOODOO808</strong></p>
+    `, "Rapper Tips Spotify"),
   },
   {
     name: "Producer Tips - Sound Design",
@@ -183,21 +505,25 @@ export const TEMPLATE_SEEDS = [
     sort_order: 8,
     subject: "Jak dělám beaty (A mix tajemství na hard 808s)",
     preheader: "Udělejte si bicí, co proříznou každej master.",
-    html_content: `<p>Čau {{first_name}},</p>
+    html_content: createEmailHTML(`
+      <p>Čau {{first_name}},</p>
 
-<p>Hodně lidí se mě ptá, jak dělám, že moja bicí hrají tak tvrdě bez toho, aby to totálně clipovalo master fader. Dneska vám otevřu projekt a ukážu vám, jak jsem procesoval zvuky do mýho posledního kitu:</p>
+      <p>Hodně lidí se mě ptá, jak dělám, že moja bicí hrají tak tvrdě bez toho, aby to totálně clipovalo master fader. Dneska vám otevřu projekt a ukážu vám, jak jsem procesoval zvuky do mýho posledního kitu:</p>
 
-<ul>
-    <li><strong>Soft Clipping je král:</strong> Místo limiteru na masteru zkus hodit soft clipper přímo na drum bus. Můžete pak tlačit hlasitost 808s a kicků do červenejch hodnot a vytvoří to příjemnou saturaci místo hnusnýho digitálního distortionu.</li>
-    <li><strong>Paralelní komprese:</strong> Pošli kick a snare na aux stopu, tam je totálně rozbíj těžkým kompresorem a tuhle stopu pak jemně přimíchej pod původní čistý bicí. Dodá to neskutečnou váhu.</li>
-    <li><strong>Vyčisti spodky:</strong> Hoď EQ na melodie a ořízni všechno pod 120Hz. Uvolníš tím čistou runway pro sub-frekvence tvé 808.</li>
-</ul>
+      <ul>
+        <li><strong>Soft Clipping je král:</strong> Místo limiteru na masteru zkus hodit soft clipper přímo na drum bus. Můžete pak tlačit hlasitost 808s a kicků do červenejch hodnot a vytvoří to příjemnou saturaci místo hnusnýho digitálního distortionu.</li>
+        <li><strong>Paralelní komprese:</strong> Pošli kick a snare na aux stopu, tam je totálně rozbíj těžkým kompresorem a tuhle stopu pak jemně přimíchej pod původní čistý bicí. Dodá to neskutečnou váhu.</li>
+        <li><strong>Vyčisti spodky:</strong> Hoď EQ na melodie a ořízni všechno pod 120Hz. Uvolníš tím čistou runway pro sub-frekvence tvé 808.</li>
+      </ul>
 
-<p>Pokud chcete používat přesně tyhle předpřipravené zvuky, co sám házím do svejch exkluzivních beatů, bez toho, abyste trávili dlouhý noce kroucením knobů, klikněte dolů.</p>
+      <p><strong>Pokud chcete používat přesně tyhle předpřipravené zvuky, co sám házím do svejch exkluzivních beatů,</strong> bez toho, abyste trávili dlouhý noce kroucením knobů, klikněte dolů.</p>
 
-<p><a href="{{site_url}}/sound-kits" style="background: #6366F1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Získat placement-ready kity</a></p>
+      <p style="text-align: center;">
+        <a href="{{site_url}}/sound-kits" class="cta-button cta-indigo">Získat placement-ready kity →</a>
+      </p>
 
-<p>Běžte něco upéct,<br>VOODOO808</p>`,
+      <p>Běžte něco upéct,<br><strong>VOODOO808</strong></p>
+    `, "Producer Tips Sound Design"),
   },
   {
     name: "Post-Beat Purchase - Engagement",
@@ -210,15 +536,17 @@ export const TEMPLATE_SEEDS = [
     sort_order: 9,
     subject: "Co jste nahráli do {{product_name}}?",
     preheader: "Chci slyšet, co na tom soundu vzniká.",
-    html_content: `<p>Čau {{first_name}},</p>
+    html_content: createEmailHTML(`
+      <p>Čau {{first_name}},</p>
 
-<p>Ještě jednou vám moc děkuju, že jste koupili exkluzivní práva na beat <strong>{{product_name}}</strong>. Kompletní stopy (stems) i smlouvu už máte profesionálně připravenou u sebe na mailu nebo v dashboardu.</p>
+      <p>Ještě jednou vám moc děkuju, že jste koupili exkluzivní práva na beat <strong>{{product_name}}</strong>. Kompletní stopy (stems) i smlouvu už máte profesionálně připravenou u sebe na mailu nebo v dashboardu.</p>
 
-<p>Píšu vám hlavně proto, že mě ta hudba reálně zajímá a nechci bejt jenom nějakej anonymní eshop. Už jste na to položili vokál? Jak to zatím vypadá?</p>
+      <p>Píšu vám hlavně proto, že mě ta hudba reálně zajímá a nechci bejt jenom nějakej anonymní eshop. Už jste na to položili vokál? Jak to zatím vypadá?</p>
 
-<p>Odepište na tenhle mail a pošlete mi klidně nějaký hrubý demo nebo snippet z mobilu. Rád podpořím lidi, co na mých věcech dělají, a milerád váš release pak nasdílím u sebe na profilech.</p>
+      <p>Odepište na tenhle mail a pošlete mi klidně nějaký hrubý demo nebo snippet z mobilu. Rád podpořím lidi, co na mých věcech dělají, a milerád váš release pak nasdílím u sebe na profilech.</p>
 
-<p>Ať to hraje,<br>VOODOO808</p>`,
+      <p>Ať to hraje,<br><strong>VOODOO808</strong></p>
+    `, "Post-Purchase Engagement"),
   },
   {
     name: "Post-Beat Purchase - Custom Arrangement",
@@ -231,17 +559,21 @@ export const TEMPLATE_SEEDS = [
     sort_order: 10,
     subject: "Potřebujete upravit beat {{product_name}} na míru? 🚀",
     preheader: "Uděláme z toho dokonalej track pro váš release.",
-    html_content: `<p>Čau {{first_name}},</p>
+    html_content: createEmailHTML(`
+      <p>Čau {{first_name}},</p>
 
-<p>Zakoupili jste exkluzivní verzi <strong>{{product_name}}</strong>, což znamená, že ten sound je teď stoprocentně váš. Chci se ujistit, že z toho vytáhnete absolutní maximum.</p>
+      <p>Zakoupili jste exkluzivní verzi <strong>{{product_name}}</strong>, což znamená, že ten sound je teď stoprocentně váš. Chci se ujistit, že z toho vytáhnete absolutní maximum.</p>
 
-<p>Pokud vám v beatu nesedí struktura, potřebujete prodloužit intro, zkrátit refrén nebo přidat speciální breakdown na vaše sloky, nabízím vám k téhle exkluzivitě custom úpravy za přátelskou cenu.</p>
+      <p>Pokud vám v beatu nesedí struktura, potřebujete prodloužit intro, zkrátit refrén nebo přidat speciální breakdown na vaše sloky, nabízím vám k téhle exkluzivitě custom úpravy za přátelskou cenu.</p>
 
-<p>Přizpůsobím strukturu beatu přesně podle vašeho nahraného vokálu, aby to mělo to správné aranžmá.</p>
+      <p><strong>Přizpůsobím strukturu beatu přesně podle vašeho nahraného vokálu, aby to mělo to správné aranžmá.</strong></p>
 
-<p><a href="{{upgrade_url}}" style="background: #EF4444; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Objednat custom úpravu aranže</a></p>
+      <p style="text-align: center;">
+        <a href="{{upgrade_url}}" class="cta-button cta-red">Objednat custom úpravu aranže →</a>
+      </p>
 
-<p>Pojďme udělat hit,<br>VOODOO808</p>`,
+      <p>Pojďme udělat hit,<br><strong>VOODOO808</strong></p>
+    `, "Custom Arrangement"),
   },
   {
     name: "Kit Cross-Sell",
@@ -254,44 +586,52 @@ export const TEMPLATE_SEEDS = [
     sort_order: 11,
     subject: "Spárujte svůj kit s tímhle (50% sleva na bundle) 🔌",
     preheader: "Perfektní kombinace pro váš příští cookup.",
-    html_content: `<p>Čau {{first_name}},</p>
+    html_content: createEmailHTML(`
+      <p>Čau {{first_name}},</p>
 
-<p>Díky za nákup kitu {{purchased_kit_name}}. Máte v rukách solidní základ, ale pokud chcete totálně zrychlit svůj workflow a okamžitě zničit beat-block, potřebujete k němu správného parťáka.</p>
+      <p>Díky za nákup kitu {{purchased_kit_name}}. Máte v rukách solidní základ, ale pokud chcete totálně zrychlit svůj workflow a okamžitě zničit beat-block, potřebujete k němu správného parťáka.</p>
 
-<p>Navrhnul jsem k němu přímo <strong>{{complementary_kit_name}}</strong>. Používají stejný sound design a ladění, takže ty zvuky k sobě sednou bez jakéhokoliv frekvenčního bordelu.</p>
+      <p>Navrhnul jsem k němu přímo <strong>{{complementary_kit_name}}</strong>. Používají stejný sound design a ladění, takže ty zvuky k sobě sednou bez jakéhokoliv frekvenčního bordelu.</p>
 
-<p>Protože jste u mě ověření zákazníci, hodil jsem vám do odkazu automatickou 50% slevu na tenhle chybějící kousek do vaší skládačky.</p>
+      <p><strong>Protože jste u mě ověření zákazníci, hodil jsem vám do odkazu automatickou 50% slevu na tenhle chybějící kousek do vaší skládačky.</strong></p>
 
-<p><a href="{{cross_sell_url}}?discount=CROSS50" style="background: #10B981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Získat doplňkový kit s 50% slevou</a></p>
+      <p style="text-align: center;">
+        <a href="{{cross_sell_url}}?discount=CROSS50" class="cta-button cta-green">Získat doplňkový kit s 50% slevou →</a>
+      </p>
 
-<p>Běžte vařit,<br>VOODOO808</p>`,
+      <p>Běžte vařit,<br><strong>VOODOO808</strong></p>
+    `, "Kit Cross-Sell"),
   },
   {
     name: "Weekly Newsletter - New Drops",
     key: "weekly_newsletter_new_drops",
     category: "nurture",
-    journey_name: null, // Special: standalone newsletter
+    journey_name: null,
     step_position: null,
     step_type: "email",
     is_recommended: false,
     sort_order: 12,
     subject: "Dropnul jsem novej materiál [Poslouchej uvnitř] 🔥",
     preheader: "Nové exkluzivní věci a sound kity jsou online.",
-    html_content: `<p>Čau {{first_name}},</p>
+    html_content: createEmailHTML(`
+      <p>Čau {{first_name}},</p>
 
-<p>Tenhle týden jsem strávil zavřený ve studiu a kompletně jsem překopal a aktualizoval skladové zásoby. Experimentoval jsem hodně s temnýma texturama a analogovým vintage gearem.</p>
+      <p>Tenhle týden jsem strávil zavřený ve studiu a kompletně jsem překopal a aktualizoval skladové zásoby. Experimentoval jsem hodně s temnýma texturama a analogovým vintage gearem.</p>
 
-<p><strong>Co je nového na webu:</strong></p>
-<ul>
-    <li>🎤 3 nové exkluzivní beaty (Od temného trapu po melodický pluggnb)</li>
-    <li>🎹 1 novej mini-loop pack (Stahujte zdarma v sekci pro registrované)</li>
-</ul>
+      <p><strong>Co je nového na webu:</strong></p>
+      <ul>
+        <li>🎤 3 nové exkluzivní beaty (Od temného trapu po melodický pluggnb)</li>
+        <li>🎹 1 novej mini-loop pack (Stahujte zdarma v sekci pro registrované)</li>
+      </ul>
 
-<p>Skočte na web si ty věci poslechnout dřív, než si ty exkluzivity lockne někdo jinej. Kdo dřív přijde, ten bere.</p>
+      <p>Skočte na web si ty věci poslechnout dřív, než si ty exkluzivity lockne někdo jinej. Kdo dřív přijde, ten bere.</p>
 
-<p><a href="{{site_url}}" style="background: #F59E0B; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Poslechnout si novej drop</a></p>
+      <p style="text-align: center;">
+        <a href="{{site_url}}" class="cta-button cta-amber">Poslechnout si novej drop →</a>
+      </p>
 
-<p>Uvidíme se u reporbeden,<br>VOODOO808</p>`,
+      <p>Uvidíme se u reprobeden,<br><strong>VOODOO808</strong></p>
+    `, "Weekly Newsletter"),
   },
   {
     name: "First Purchase Thank You",
@@ -304,15 +644,17 @@ export const TEMPLATE_SEEDS = [
     sort_order: 13,
     subject: "Váš beat je teď oficiálně váš!",
     preheader: "Přátelský vzkaz po vašem prvním nákupu.",
-    html_content: `<p>Čau {{first_name}},</p>
+    html_content: createEmailHTML(`
+      <p>Čau {{first_name}},</p>
 
-<p>Moc gratuluju! Právě jste se stali součástí komunity eksklusivních producentů u mě. To znamená, že máte přístup k věcem, které má jen pár vyvolených.</p>
+      <p>Moc gratuluju! Právě jste se stali součástí komunity eksklusivních producentů u mě. To znamená, že máte přístup k věcem, které má jen pár vyvolených.</p>
 
-<p>Víte, co mě na tom nejvíc těší? Že když vydáte svůj track s tímhle beátem, budu moct říct: "Jo, ten sound jsem dělal pro vás." To je pecka.</p>
+      <p>Víte, co mě na tom nejvíc těší? Že když vydáte svůj track s tímhle beátem, budu moct říct: <strong>"Jo, ten sound jsem dělal pro vás."</strong> To je pecka.</p>
 
-<p>Pokud máte nějaké otázky, potřebujete help s mixem nebo se vám něco nelíbí, napište mi rovnou.</p>
+      <p>Pokud máte nějaké otázky, potřebujete help s mixem nebo se vám něco nelíbí, napište mi rovně.</p>
 
-<p>Ať se vám to daří,<br>VOODOO808</p>`,
+      <p>Ať se vám to daří,<br><strong>VOODOO808</strong></p>
+    `, "First Purchase Thank You"),
   },
   {
     name: "Bundle Recommendation",
@@ -325,15 +667,19 @@ export const TEMPLATE_SEEDS = [
     sort_order: 14,
     subject: "Kompletní setup pro váš příští track",
     preheader: "Beat + Kit combo s mega slevou.",
-    html_content: `<p>Čau {{first_name}},</p>
+    html_content: createEmailHTML(`
+      <p>Čau {{first_name}},</p>
 
-<p>Chci vám nabídnout speciální kombinaci: beat, co máte + kit, který k němu dokonale sedne. Dohromady o 40% levněji.</p>
+      <p>Chci vám nabídnout speciální kombinaci: beat, co máte + kit, který k němu dokonale sedne. Dohromady o <strong>40% levněji.</strong></p>
 
-<p>Tento bundle jsem vytvořil jenom pro vás.</p>
+      <p>Tento bundle jsem vytvořil jenom pro vás.</p>
 
-<p><a href="{{bundle_url}}" style="background: #8B5CF6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Zobrazit bundle</a></p>
+      <p style="text-align: center;">
+        <a href="{{bundle_url}}" class="cta-button cta-purple">Zobrazit bundle →</a>
+      </p>
 
-<p>Pojďte na to,<br>VOODOO808</p>`,
+      <p>Pojďte na to,<br><strong>VOODOO808</strong></p>
+    `, "Bundle Recommendation"),
   },
   {
     name: "Educational - Beat Breakdown",
@@ -346,13 +692,17 @@ export const TEMPLATE_SEEDS = [
     sort_order: 15,
     subject: "Jak jsem složil tento beat",
     preheader: "Přesný proces z nuly až po hotový track.",
-    html_content: `<p>Čau {{first_name}},</p>
+    html_content: createEmailHTML(`
+      <p>Čau {{first_name}},</p>
 
-<p>Dneska jsem pro vás natočil kompletní breakdown jednoho z mých posledních tracků.</p>
+      <p>Dneska jsem pro vás natočil kompletní breakdown jednoho z mých posledních tracků. Ukazuju všechny efekty, automaci a workflow, kterém jsem ten track dělal.</p>
 
-<p><a href="{{breakdown_url}}" style="background: #6366F1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Zhlédnout breakdown</a></p>
+      <p style="text-align: center;">
+        <a href="{{breakdown_url}}" class="cta-button cta-indigo">Zhlédnout breakdown →</a>
+      </p>
 
-<p>Naučme se spolu,<br>VOODOO808</p>`,
+      <p>Naučme se spolu,<br><strong>VOODOO808</strong></p>
+    `, "Beat Breakdown"),
   },
   {
     name: "Collaboration - Remix Request",
@@ -365,13 +715,19 @@ export const TEMPLATE_SEEDS = [
     sort_order: 16,
     subject: "Pojďme vytvořit něco spolu",
     preheader: "Hledám producenty na nový projekt.",
-    html_content: `<p>Čau {{first_name}},</p>
+    html_content: createEmailHTML(`
+      <p>Čau {{first_name}},</p>
 
-<p>Pracuji na novém projektu a hledám producenty na remix. Myslím si, že byste by do toho šli dokonale.</p>
+      <p>Pracuji na novém projektu a hledám producenty na remix. Myslím si, že byste by do toho šli dokonale. Váš workflow a estetika se mi líbí.</p>
 
-<p><a href="{{collaboration_url}}" style="background: #10B981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Chci se dozvědět víc</a></p>
+      <p><strong>Máte zájem?</strong> Pojďme si o tom popovídat.</p>
 
-<p>Skvěle,<br>VOODOO808</p>`,
+      <p style="text-align: center;">
+        <a href="{{collaboration_url}}" class="cta-button cta-green">Chci se dozvědět víc →</a>
+      </p>
+
+      <p>Skvěle,<br><strong>VOODOO808</strong></p>
+    `, "Collaboration Remix"),
   },
   {
     name: "VIP Upgrade Offer",
@@ -384,13 +740,25 @@ export const TEMPLATE_SEEDS = [
     sort_order: 17,
     subject: "Máte potenciál být VIP",
     preheader: "Speciální tier jenom pro ty nejlepší.",
-    html_content: `<p>Čau {{first_name}},</p>
+    html_content: createEmailHTML(`
+      <p>Čau {{first_name}},</p>
 
-<p>Všimnul jsem si, že u mě nakupujete pravidelně. Vytvořil jsem speciální VIP tier s 30% slevou na všechno a prvým přístupem k novým beatům.</p>
+      <p>Všimnul jsem si, že u mě nakupujete pravidelně. Vytvoří jsem speciální VIP tier jenom pro nejlepší zákazníky a myslím si, že byste tam měl/a být.</p>
 
-<p><a href="{{vip_url}}" style="background: #F59E0B; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Upgrade na VIP</a></p>
+      <p><strong>Co dostanete:</strong></p>
+      <ul>
+        <li>✨ 30% sleva na všechno, pořád</li>
+        <li>🚀 První přístup k novým beatům (3 dny dříve)</li>
+        <li>💎 Limitované exkluzivní passy</li>
+        <li>👤 Přímý přístup ke mně na support</li>
+      </ul>
 
-<p>Pojďte nahoru,<br>VOODOO808</p>`,
+      <p style="text-align: center;">
+        <a href="{{vip_url}}" class="cta-button cta-amber">Upgrade na VIP tier →</a>
+      </p>
+
+      <p>Pojďte nahoru,<br><strong>VOODOO808</strong></p>
+    `, "VIP Upgrade Offer"),
   },
   {
     name: "Rapper Feature - Collab Call",
@@ -403,15 +771,21 @@ export const TEMPLATE_SEEDS = [
     sort_order: 18,
     subject: "Chcete se objevit na mém albumu?",
     preheader: "Hledám rappery na nový projekt.",
-    html_content: `<p>Čau {{first_name}},</p>
+    html_content: createEmailHTML(`
+      <p>Čau {{first_name}},</p>
 
-<p>Pracuji na novém albumu a hledám ty nejlepší rappery. Myslím si, že byste by do toho šli dokonale.</p>
+      <p>Pracuji na novém albumu a hledám ty nejlepší rappery. Poslouchal jsem vaše tracky a myslím si, že byste by do toho šli dokonale.</p>
 
-<p>Beaty mám hotové, teď chybí jen ten správný voice.</p>
+      <p><strong>Beaty mám hotové, teď chybí jen ten správný voice.</strong></p>
 
-<p><a href="{{collab_url}}" style="background: #10B981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Chci se dozvědět víc</a></p>
+      <p>Máte zájem se na tom podílet?</p>
 
-<p>Skvěle,<br>VOODOO808</p>`,
+      <p style="text-align: center;">
+        <a href="{{collab_url}}" class="cta-button cta-green">Chci se dozvědět víc →</a>
+      </p>
+
+      <p>Skvěle,<br><strong>VOODOO808</strong></p>
+    `, "Rapper Collab Call"),
   },
 ];
 
