@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { EmailPreviewTooltip } from "./EmailPreviewTooltip";
 import { Plus, Edit3, Trash2, Send } from "lucide-react";
 
 interface Step {
@@ -63,6 +64,7 @@ export default function JourneyFlowBuilder({
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [hoveredStepId, setHoveredStepId] = useState<number | null>(null);
+  const [previewPosition, setPreviewPosition] = useState<{ x: number; y: number } | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
@@ -155,8 +157,15 @@ export default function JourneyFlowBuilder({
           return (
             <div
               key={step.id}
-              onMouseEnter={() => setHoveredStepId(step.id)}
-              onMouseLeave={() => setHoveredStepId(null)}
+              onMouseEnter={(e) => {
+                setHoveredStepId(step.id);
+                const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                setPreviewPosition({ x: rect.right + 16, y: rect.top });
+              }}
+              onMouseLeave={() => {
+                setHoveredStepId(null);
+                setPreviewPosition(null);
+              }}
               style={{
                 position: "absolute",
                 left: getNodePosition(idx + 1).x,
@@ -216,6 +225,15 @@ export default function JourneyFlowBuilder({
         <label style={{ whiteSpace: "nowrap" }}>Testovací e-mail:</label>
         <input value={testEmail} onChange={(e) => onTestEmailChange(e.target.value)} placeholder="test@example.cz" style={{ flex: 1, maxWidth: "280px", padding: "6px 10px", background: "#111", border: "1px solid #333", borderRadius: "4px", color: "#fff", fontSize: "12px", boxSizing: "border-box" }} />
       </div>
+
+      {/* Email Preview Tooltip */}
+      {hoveredStepId && (
+        <EmailPreviewTooltip
+          stepId={hoveredStepId}
+          journeyId={journey.id}
+          position={previewPosition}
+        />
+      )}
     </div>
   );
 }

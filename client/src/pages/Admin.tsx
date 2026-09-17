@@ -15,6 +15,7 @@ import { EmailJourneyBuilder } from "../components/EmailJourneyBuilder";
 import AdminHeader from "../components/AdminHeader.js";
 import JourneyFlowBuilder from "../components/JourneyFlowBuilder.js";
 import JourneyContainers from "../components/JourneyContainers.js";
+import { TemplateCardGrid } from "../components/TemplateCardGrid.js";
 import {
   BeatArtwork,
   parseArtworkConfig,
@@ -8015,93 +8016,17 @@ function JourneysTab() {
               <div style={{ marginBottom: "12px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
                   <label style={{ fontSize: "11px", color: "#888" }}>Šablona</label>
-                  {recommendedTemplates.length > 0 && (
-                    <button
-                      onClick={() => {
-                        const recommended = recommendedTemplates[0];
-                        if (recommended) {
-                          setStepForm({ ...stepForm, templateId: recommended.id });
-                        }
-                      }}
-                      style={{
-                        background: "rgba(225, 29, 72, 0.2)",
-                        border: "1px solid #E11D48",
-                        color: "#E11D48",
-                        borderRadius: "3px",
-                        padding: "3px 8px",
-                        fontSize: "9px",
-                        fontWeight: 600,
-                        cursor: "pointer",
-                        transition: "all 150ms",
-                      }}
-                      onMouseEnter={(e) => {
-                        (e.target as HTMLElement).style.background = "rgba(225, 29, 72, 0.3)";
-                      }}
-                      onMouseLeave={(e) => {
-                        (e.target as HTMLElement).style.background = "rgba(225, 29, 72, 0.2)";
-                      }}
-                    >
-                      💡 Použít doporučenou
-                    </button>
-                  )}
                 </div>
-                <select 
-                  value={stepForm.templateId} 
-                  onChange={e => setStepForm({ ...stepForm, templateId: e.target.value ? Number(e.target.value) : "" })} 
-                  style={stepInputStyle}
-                >
-                  <option value="">Vyberte šablonu…</option>
-                  
-                  {/* Recommended templates first */}
-                  {recommendedTemplates.length > 0 && (
-                    <optgroup label="⭐ Doporučené pro tento krok">
-                      {recommendedTemplates.map(t => (
-                        <option key={t.id} value={t.id}>
-                          {t.name}
-                        </option>
-                      ))}
-                    </optgroup>
-                  )}
-                  
-                  {/* Grouped by category */}
-                  {["onboarding", "recovery", "nurture", "upsell", "browse_recovery", "system"].map(category => {
-                    const categoryTemplates = templates.filter(t => 
-                      t.category === category && 
-                      !recommendedTemplates.some(r => r.id === t.id)
-                    );
-                    
-                    if (categoryTemplates.length === 0) return null;
-                    
-                    const categoryLabels: Record<string, string> = {
-                      onboarding: "🎯 Onboarding",
-                      recovery: "🔄 Recovery",
-                      nurture: "📧 Nurture",
-                      upsell: "📈 Upsell",
-                      browse_recovery: "👁️ Browse Recovery",
-                      system: "⚙️ System",
-                    };
-                    
-                    return (
-                      <optgroup key={category} label={categoryLabels[category]}>
-                        {categoryTemplates.map(t => (
-                          <option key={t.id} value={t.id}>
-                            {t.name}
-                          </option>
-                        ))}
-                      </optgroup>
-                    );
-                  })}
-                </select>
-                
-                {/* Show description of selected template */}
-                {stepForm.templateId && (
-                  <div style={{ fontSize: "10px", color: "#999", marginTop: "6px", padding: "6px 8px", background: "rgba(255,255,255,0.02)", borderRadius: "3px", borderLeft: "2px solid #E11D48" }}>
-                    <div style={{ fontWeight: 600, color: "#bbb", marginBottom: "3px" }}>
-                      {templates.find(t => t.id === stepForm.templateId)?.name}
-                    </div>
-                    <div>{templates.find(t => t.id === stepForm.templateId)?.subject}</div>
-                  </div>
-                )}
+                <div style={{ maxHeight: "500px", overflowY: "auto", background: "rgba(0,0,0,0.5)", borderRadius: "6px", padding: "12px", border: "1px solid #222" }}>
+                  <TemplateCardGrid
+                    templates={templates}
+                    recommendedTemplateIds={recommendedTemplates.map(t => t.id)}
+                    selectedTemplateId={stepForm.templateId}
+                    onSelectTemplate={(templateId) => {
+                      setStepForm({ ...stepForm, templateId });
+                    }}
+                  />
+                </div>
               </div>
             )}
 
