@@ -1,282 +1,376 @@
-# VOODOO808 Complete Journey Setup Guide
+# 🎵 VOODOO808 Email Journey Strategy
 
-## Overview
-This guide documents the 8 core customer journeys designed to maximize revenue from your two audiences: **Rappers** (beat buyers) and **Producers** (kit buyers).
+## Complete Customer Lifecycle Plan (11 Journeys)
 
-## Journey Categories & Architecture
-
-### 1. LEAD MAGNETS & ONBOARDING (Immediate Conversion)
-These journeys trigger the moment someone downloads a free item. Goal: Move free users to paid customers within 3-5 days.
-
-#### 1a. Free Beat Onboarding (For Rappers)
-**Trigger:** `freebie_downloaded` with `trigger_value: "beat"`
-
-**Sequence:**
-- **Day 0 (Immediate):** Deliver MP3 download link + welcome message
-- **Day 2:** Follow-up email: "What did you record over this beat?" (Build relationship, understand their style)
-- **Day 3:** Pitch: "Get 20% off your first exclusive beat or unlimited license" (Include discount code)
-
-**Expected Results:**
-- 15-25% conversion to paid customers
-- Average order value: $15-45 (beat lease or download)
+Your 11 templates should feed into strategic journeys that nurture customers at each stage of their lifecycle. Here's the comprehensive long-term plan:
 
 ---
 
-#### 1b. Free Sound Kit Onboarding (For Producers)
-**Trigger:** `freebie_downloaded` with `trigger_value: "kit"`
+## JOURNEY 1: Free Beat Onboarding (30 days)
+**Trigger:** Customer downloads free beat  
+**Goal:** Convert free users to paid customers
 
-**Sequence:**
-- **Day 0 (Immediate):** Deliver WAV/MIDI files + quick-start guide
-- **Day 1:** Send a production tip (e.g., "How I processed these 808s for that trap vibe")
-- **Day 3:** Introduce your flagship kits: "Level up with our Complete Producer Bundle" (Include testimonial + before/after)
+```
+Day 0:  [AUTO] Welcome email sent
+        └─ "Thanks for downloading! Here's a sample of what exclusive sounds have"
 
-**Expected Results:**
-- 10-20% conversion to kits ($29-99 each)
-- Higher LTV (Lifetime Value) than rappers
+Day 3:  [EMAIL] Free Beat Onboarding - Day 3
+        └─ FIRST20 code (20% off exclusive)
+        └─ Subject: "Pojďme makat (20% sleva...)"
+        └─ *Wait 7 days*
 
----
+Day 10: [EMAIL] Browse Recovery - Day 1
+        └─ "If you liked that vibe, check these out..."
+        └─ Subject: "Ten beat, co jste checkovali..."
+        └─ *Wait 5 days*
 
-### 2. CONVERSION & RECOVERY (High-Intent Users)
-These journeys target users who showed strong purchase intent but abandoned before completing checkout.
+Day 15: [EMAIL] Browse Recovery - Day 3
+        └─ Recommend 3 trending beats
+        └─ Subject: "Hledáte jinej vibe?..."
+        └─ *Wait 10 days*
 
-#### 2a. Abandoned Checkout Recovery
-**Trigger:** `abandoned_checkout` (Custom event: user adds to cart but doesn't buy)
+Day 25: [EMAIL] Producer Tips - Sound Design
+        └─ Value content: how to process drums
+        └─ Light CTA to browse kits
+        └─ Subject: "Jak dělám beaty..."
+        └─ *Wait 5 days*
 
-**Sequence:**
-- **1-2 hours after abandonment:** "Did you forget your [product name]?" (Simple reminder, minimal pressure)
-  - Include product image, BPM/key info, license type they selected
-  - Link directly back to checkout (prefill cart)
-- **24 hours later:** "Last chance! Grab [product] + get 15% off if you order in the next 24h"
-  - Add scarcity element (limited-time code)
-  - Include testimonial or social proof
-
-**Expected Results:**
-- 5-15% recovery rate (of abandoned carts)
-- Average recovered order: $30-60
-
----
-
-#### 2b. Browse Abandonment Recovery
-**Trigger:** `page_view_no_action` (User spends 2+ minutes on beat/kit page but doesn't add to cart)
-
-**Sequence:**
-- **Day 1:** "That [Drake-type/Juice-type] beat you were checking..." 
-  - Repackage the exact product they viewed
-  - Highlight BPM, key, mood, artist comparisons
-  - Include audio clip + specs
-  - Offer "Listen free for 7 days" or "30-day money-back guarantee"
-- **Day 3:** Follow-up: "Still thinking about it? [Discount/bonus offer]"
-  - Sample 3 similar products they might like
-  - Include FAQ about licensing
-
-**Expected Results:**
-- 3-8% conversion rate
-- Average order: $15-50
+Day 30: [EMAIL] Abandoned Checkout - Reminder
+        └─ *Only if they viewed products but didn't buy*
+        └─ Subject: "Spadnul vám program?..."
+```
 
 ---
 
-### 3. NURTURE & RELATIONSHIP (Trust Building)
-These journeys are long-term plays to establish your brand as THE go-to for music production.
+## JOURNEY 2: Free Sound Kit Onboarding (30 days)
+**Trigger:** Customer downloads free sound kit  
+**Goal:** Convert free users → kit purchasers
 
-#### 3a. Rapper Growth & Tips Series
-**Trigger:** Tag `role:rapper` (Applied when user downloads beat or purchases beat license)
+```
+Day 0:  [AUTO] Welcome email sent
 
-**Sequence** (Recurring weekly, opt-out available):
-- **Week 1:** "How to Get Your Tracks on Spotify Playlists" (Educational value)
-- **Week 2:** "Vocal Mixing Tips Over Pre-Made Beats" (Tutorial)
-- **Week 3:** "New Beat Drop: 5 Drake-Type Beats Just Added" (Sales opportunity, soft)
-- **Week 4:** "Feature Your Song on Our Instagram" (Community building, UGC request)
-- **Repeat with different content** (Avoid monotony, vary between education, entertainment, sales)
+Day 3:  [EMAIL] Free Kit Onboarding - Day 3
+        └─ PRODUCER20 code (20% off premium kits)
+        └─ Subject: "Posuňte svoji produkci dál..."
+        └─ *Wait 7 days*
 
-**Email Variations by Status:**
-- If `status:lead_free`: Focus on education, light upsells
-- If `status:customer_paid`: Higher-value upsells (exclusive rights, unlimited licenses, beat packs)
+Day 10: [EMAIL] Producer Tips - Sound Design
+        └─ "Here's how I design my exclusive sounds"
+        └─ Subject: "Jak dělám beaty..."
+        └─ Link to premium kits
+        └─ *Wait 10 days*
 
-**Expected Results:**
-- 20-30% open rate
-- 3-5% click rate
-- Drives repeat purchases over 6+ months
+Day 20: [EMAIL] Browse Recovery - Day 3
+        └─ Recommend trending sound kits
+        └─ Subject: "Hledáte jinej vibe?..."
+        └─ *Wait 7 days*
 
----
-
-#### 3b. Producer Growth & Tutorials Series
-**Trigger:** Tag `role:producer` (Applied when user downloads kit or purchases kit)
-
-**Sequence** (Recurring weekly, opt-out available):
-- **Week 1:** "How I Designed This Drum Kit (5-min video)" (Behind-the-scenes)
-- **Week 2:** "Melody Breakdown: Building the Next Hit Hook" (Tutorial)
-- **Week 3:** "Sell Your Beats Online: Licensing 101" (Value-add)
-- **Week 4:** "New Kit Alert: 500 Fresh Loops Just Released" (Sales opportunity)
-- **Repeat** (Monthly producer challenges, new kit launches, success stories)
-
-**Email Variations by Status:**
-- If `status:lead_free`: Free tutorials, free sample packs
-- If `status:customer_paid`: Exclusive templates, early access to new kits, producer interviews
-
-**Expected Results:**
-- 25-35% open rate (higher because content is specialized)
-- 5-8% click rate (strong professional interest)
-- 15-25% cross-sell rate (kit bundles)
+Day 27: [EMAIL] Weekly Newsletter - New Drops
+        └─ New releases this week
+        └─ Subject: "Dropnul jsem novej materiál..."
+```
 
 ---
 
-### 4. POST-PURCHASE & RETENTION (Maximize LTV)
-It's 5-25x cheaper to sell to existing customers than find new ones. These journeys focus on repeat purchase and upgrade upsells.
+## JOURNEY 3: Post-Beat Purchase Sequence (45 days)
+**Trigger:** Customer purchases exclusive beat license  
+**Goal:** Maximize engagement, get testimonials, drive repeat purchases
 
-#### 4a. Post-Beat Purchase Upsell
-**Trigger:** `has_purchased` with `trigger_value: "beat"` + `status:customer_paid`
+```
+Day 0:  [AUTO] Purchase confirmation + stems download
 
-**Sequence:**
-- **Day 0 (Immediate):** "Your beat is ready! Download + License info"
-  - Attach files (MP3, WAV, trackout if purchased)
-  - Include license terms & usage rights
-  - Attach contract (if applicable)
-- **Day 3:** "What did you record?" (Follow-up, engagement)
-  - Ask for finished track link
-  - Offer to feature on Instagram stories (free promo for them)
-- **Day 5:** "Upgrade Offer: Get Unlimited Rights for Just $10 More"
-  - Explain difference between lease (current) vs unlimited
-  - Show value (unlimited revisions, re-release, sampling)
-  - Include testimonial from artist who upgraded
-- **Day 10:** "Beat Packs Available: Save 30% When You Buy 3+ Beats"
-  - Bundle similar beats at discount
-  - Tease best performers from this month
+Day 1:  [EMAIL] Post-Beat Purchase - Engagement
+        └─ "What did you record on this beat?"
+        └─ Build community feeling
+        └─ Subject: "Co jste nahráli do {{product_name}}?..."
+        └─ *Wait 5 days*
 
-**Expected Results:**
-- 8-15% upgrade conversion
-- 20-35% repeat purchase within 30 days
-- Average upsell: $10-25 per customer
+Day 6:  [EMAIL] Post-Beat Purchase - Custom Arrangement
+        └─ "Need custom edits for your release?"
+        └─ Upsell custom arrangement service
+        └─ Subject: "Potřebujete upravit beat {{product_name}}...?"
+        └─ *Wait 7 days*
 
----
+Day 13: [EMAIL] Kit Cross-Sell
+        └─ "Bundle this kit with your beat purchase"
+        └─ CROSS50 code (50% off kit)
+        └─ Subject: "Spárujte svůj kit s tímhle..."
+        └─ *Wait 10 days*
 
-#### 4b. Kit Cross-Sell Series
-**Trigger:** `has_purchased` with `trigger_value: "kit"` + `status:customer_paid`
+Day 23: [EMAIL] Rapper Tips - Spotify Strategy
+        └─ "How to get your track into Spotify playlists"
+        └─ Value content before next ask
+        └─ Subject: "Jak dostat vaše tracky do Spotify playlistů..."
+        └─ *Wait 14 days*
 
-**Sequence:**
-- **Day 0 (Immediate):** "Your kit is ready! Download + Usage tips"
-  - Deliver WAV/MIDI files
-  - Quick-start guide (preset info, BPM, key)
-- **Day 2:** "Pro Tip: Pair [Drum Kit] with [Melody Kit] for Maximum Impact"
-  - Show how they complement each other
-  - Include audio demo (drum kit alone vs paired)
-  - Offer bundle discount (e.g., "Get the matching Melody Kit for 50% off")
-- **Day 7:** "Your [Category] Kit + These 3 Other Kits = Complete Production Arsenal"
-  - Show recommended bundle for their genre
-  - Include BPM/key compatibility chart
-  - Highlight savings (30-40% off buying separate)
-- **Day 14:** "New Presets Added to [Your Category]"
-  - Fresh content in kits they own
-  - New bundle options
-
-**Expected Results:**
-- 15-25% cross-sell conversion rate
-- Average cross-sell: $25-60 per customer
-- 30-40% repeat purchase rate
+Day 37: [EMAIL] Weekly Newsletter - New Drops
+        └─ New releases available
+        └─ Subject: "Dropnul jsem novej materiál..."
+```
 
 ---
 
-## Tagging Strategy (Critical for Audience Segmentation)
+## JOURNEY 4: Post-Kit Purchase Sequence (45 days)
+**Trigger:** Customer purchases sound kit  
+**Goal:** Retention, satisfaction, repeat purchases
 
-### Primary Tags: User Role
-- `role:rapper` → Applied when user downloads beat or purchases beat license
-- `role:producer` → Applied when user downloads kit or purchases kit
-- `role:both` → Applied if user purchases both beats AND kits (don't send both series)
+```
+Day 0:  [AUTO] Purchase confirmation + kit download
 
-### Status Tags: Purchase History
-- `status:lead_free` → Free download, no purchase yet
-- `status:customer_paid` → Has purchased at least once
-- `status:vip_repeat` → 3+ purchases OR $300+ lifetime value
-- `status:inactive` → No engagement in 60+ days
+Day 2:  [EMAIL] Producer Tips - Sound Design
+        └─ "Here's how I use these sounds in my productions"
+        └─ Value-first approach
+        └─ Subject: "Jak dělám beaty..."
+        └─ *Wait 8 days*
 
-### Engagement Tags: Interest & Behavior
-- `engagement:high_performer` → 50%+ email open rate
-- `engagement:low_performer` → <10% open rate (consider re-engagement campaign)
-- `engagement:vip_tier` → Purchased exclusive rights or beat packs
+Day 10: [EMAIL] Kit Cross-Sell
+        └─ "Complement this kit with [recommended kit]"
+        └─ CROSS50 code (50% off)
+        └─ Subject: "Spárujte svůj kit s tímhle..."
+        └─ *Wait 12 days*
 
-### Product Tags: Purchase Type
-- `product:beat_lease` → Purchased beat lease (lowest commitment)
-- `product:beat_unlimited` → Purchased unlimited rights
-- `product:beat_exclusive` → Purchased exclusive rights (premium)
-- `product:kit_starter` → Purchased starter kit
-- `product:kit_pro` → Purchased professional kit bundle
+Day 22: [EMAIL] Browse Recovery - Day 3
+        └─ Recommend trending beats to pair with kit
+        └─ Subject: "Hledáte jinej vibe?..."
+        └─ *Wait 15 days*
 
-### Engagement Tags: Channel Preference
-- `channel:email_only` → Prefers email (default)
-- `channel:instagram_feature` → Opted-in to Instagram features
-- `channel:newsletter` → Subscribed to weekly newsletter
-
----
-
-## Implementation Checklist
-
-- [ ] Create all 8 journeys via API or admin UI
-- [ ] Build email templates for each journey step
-- [ ] Set up tagging logic in hooks (leads.ts, orders.ts, index.ts)
-- [ ] Test tagging with sample orders
-- [ ] Create test subscribers with role tags
-- [ ] Send test emails for each journey
-- [ ] Monitor open/click rates
-- [ ] Enable analytics tracking for each journey
-- [ ] Set up revenue attribution per journey
-- [ ] Document customizations
+Day 37: [EMAIL] Weekly Newsletter - New Drops
+        └─ New drops available
+        └─ Subject: "Dropnul jsem novej materiál..."
+```
 
 ---
 
-## Key Metrics to Track
+## JOURNEY 5: Abandoned Checkout Recovery (7 days - URGENT)
+**Trigger:** Customer adds items to cart but leaves  
+**Goal:** Recover lost revenue
 
-### Immediate Metrics (Within 7 days)
-- Email open rate by journey
-- Click-through rate (CTR)
-- Conversion rate (free → paid)
+```
+Day 0 (4 hrs): [EMAIL] Abandoned Checkout - Reminder
+               └─ "You left something in your cart..."
+               └─ Subject: "Spadnul vám program?..."
+               └─ *Wait 48 hours*
 
-### Medium-term Metrics (30 days)
-- Customer acquisition cost (CAC) per journey
-- Repeat purchase rate by journey
-- Average order value (AOV) by journey
+Day 2 (1 hr):  [EMAIL] Abandoned Checkout - Scarcity
+               └─ "15% OFF - only 24 hours"
+               └─ SAVE15 code
+               └─ Subject: "15% sleva – vaše poslední šance!..."
+               └─ Create urgency
 
-### Long-term Metrics (90+ days)
-- Customer lifetime value (LTV) by journey
-- Churn rate by journey
-- Revenue generated per journey
-
----
-
-## Personalization Variables Available
-
-### Subscriber Info
-- `{{first_name}}` → Subscriber's first name
-- `{{email}}` → Subscriber's email
-- `{{subscriber_role}}` → "Rapper" or "Producer"
-
-### Product Info (for specific items)
-- `{{product_name}}` → Beat/Kit name
-- `{{product_bpm}}` → BPM
-- `{{product_key}}` → Musical key
-- `{{product_mood}}` → Mood/vibe
-- `{{artist_comparison}}` → Artist style (e.g., "Drake-type")
-
-### Purchase Info
-- `{{purchase_date}}` → When they bought
-- `{{purchase_total}}` → $ amount
-- `{{license_type}}` → Type of license
-- `{{download_link}}` → Personalized download
+Day 3:         [END] If not purchased, exit journey
+```
 
 ---
 
-## Future Enhancements (Phase 2)
+## JOURNEY 6: Browse Abandonment Recovery (10 days)
+**Trigger:** Customer views product for 2+ min but doesn't purchase  
+**Goal:** Convert browsers to buyers
 
-1. **A/B Testing**: Test subject lines, CTAs, discount levels
-2. **Dynamic Content**: Show different kits based on their past purchases
-3. **Re-engagement Campaign**: Win back inactive users (60+ days no engagement)
-4. **Revenue Attribution**: Track which journey drove each sale
-5. **Subscriber Segmentation Preview**: Before activating, see who qualifies
-6. **Conditional Send Times**: Send at subscriber's local time zone
-7. **Survey Follow-ups**: Ask why they abandoned cart or didn't convert
+```
+Day 0 (2 hrs): [EMAIL] Browse Recovery - Day 1
+               └─ "The beat you were checking out..."
+               └─ Subject: "Ten beat, co jste checkovali..."
+               └─ *Wait 3 days*
+
+Day 3 (12 hrs):[EMAIL] Browse Recovery - Day 3
+               └─ "Try these similar recommendations..."
+               └─ Subject: "Hledáte jinej vibe?..."
+               └─ *Wait 5 days*
+
+Day 8:         [EMAIL] Abandoned Checkout - Scarcity (IF still interested)
+               └─ SAVE15 code if they viewed again
+               └─ Create urgency
+```
 
 ---
 
-## Questions?
+## JOURNEY 7: Rapper Growth & Tips Series (60 days)
+**Trigger:** Customer subscribes to newsletter (optional tier)  
+**Goal:** Build authority, nurture rapport
 
-- Email strategy questions → Refer to AI recommendations
-- Technical implementation → Check Admin UI or API docs
-- Testing & optimization → Monitor metrics, A/B test subject lines and offers
+```
+Day 0:  [EMAIL] Rapper Tips - Spotify Strategy
+        └─ Spotify playlist strategy guide
+        └─ Subject: "Jak dostat vaše tracky do Spotify..."
+        └─ *Wait 14 days*
+
+Day 14: [EMAIL] Producer Tips - Sound Design
+        └─ "How I process my drums..."
+        └─ Cross-sell beats/kits
+        └─ Subject: "Jak dělám beaty..."
+        └─ *Wait 14 days*
+
+Day 28: [EMAIL] Browse Recovery - Day 3
+        └─ Trending beats for rappers
+        └─ Subject: "Hledáte jinej vibe?..."
+        └─ *Wait 14 days*
+
+Day 42: [EMAIL] Weekly Newsletter - New Drops
+        └─ "New drops this week"
+        └─ Subject: "Dropnul jsem novej materiál..."
+        └─ *Wait 14 days*
+
+Day 56: [EMAIL] Kit Cross-Sell
+        └─ "Bundle beats with pro sound kits"
+        └─ CROSS50 code
+        └─ Subject: "Spárujte svůj kit s tímhle..."
+```
+
+---
+
+## JOURNEY 8: Producer Growth & Tutorials Series (60 days)
+**Trigger:** Customer subscribes to tutorials (optional tier)  
+**Goal:** Build authority, provide value, drive kit sales
+
+```
+Day 0:  [EMAIL] Producer Tips - Sound Design
+        └─ "How I design my exclusive sounds"
+        └─ Subject: "Jak dělám beaty..."
+        └─ *Wait 14 days*
+
+Day 14: [EMAIL] Rapper Tips - Spotify Strategy
+        └─ Music distribution tips
+        └─ Subject: "Jak dostat vaše tracky do Spotify..."
+        └─ *Wait 14 days*
+
+Day 28: [EMAIL] Kit Cross-Sell
+        └─ "Get placement-ready sounds"
+        └─ CROSS50 code
+        └─ Subject: "Spárujte svůj kit s tímhle..."
+        └─ *Wait 14 days*
+
+Day 42: [EMAIL] Browse Recovery - Day 3
+        └─ Trending kits and beats
+        └─ Subject: "Hledáte jinej vibe?..."
+        └─ *Wait 14 days*
+
+Day 56: [EMAIL] Weekly Newsletter - New Drops
+        └─ "New exclusive sounds this week"
+        └─ Subject: "Dropnul jsem novej materiál..."
+```
+
+---
+
+## JOURNEY 9: Loyal Customer - Weekly Newsletter (Ongoing)
+**Trigger:** Customer has purchased 2+ items  
+**Goal:** Keep engaged, drive repeat purchases
+
+```
+Every Sunday: [EMAIL] Weekly Newsletter - New Drops
+              └─ Rotating selection of new releases
+              └─ Subject: "Dropnul jsem novej materiál..."
+              └─ *Auto-continue every 7 days*
+```
+
+---
+
+## JOURNEY 10: VIP - Premium Subscriber Series (90 days)
+**Trigger:** Customer purchased 5+ items or spent 5000+ CZK  
+**Goal:** Exclusive perks, retention
+
+```
+Day 0:  [EMAIL] Welcome VIP (custom email)
+        └─ "Thank you for your loyalty"
+        └─ Announce VIP benefits
+
+Day 15: [EMAIL] Producer Tips - Sound Design
+        └─ Advanced techniques
+        └─ Subject: "Jak dělám beaty..."
+
+Day 30: [EMAIL] Rapper Tips - Spotify Strategy
+        └─ Advanced distribution tips
+        └─ Subject: "Jak dostat vaše tracky do Spotify..."
+
+Every 14 days: [EMAIL] Weekly Newsletter - New Drops
+               └─ VIP gets early access to new sounds
+```
+
+---
+
+## JOURNEY 11: Re-engagement Campaign (90 days - For Inactive Users)
+**Trigger:** Customer hasn't purchased in 90 days  
+**Goal:** Win back lost revenue
+
+```
+Day 0:  [EMAIL] Browse Recovery - Day 1
+        └─ "We've got fresh drops since you were here"
+        └─ Subject: "Ten beat, co jste checkovali..."
+        └─ *Wait 7 days*
+
+Day 7:  [EMAIL] Browse Recovery - Day 3
+        └─ "Top 3 most popular this month"
+        └─ Subject: "Hledáte jinej vibe?..."
+        └─ *Wait 7 days*
+
+Day 14: [EMAIL] Abandoned Checkout - Scarcity
+        └─ "20% OFF - Welcome back!"
+        └─ COMEBACK20 code
+        └─ Subject: "Chyběli jste nám – speciální sleva..."
+
+Day 21: [EMAIL] Producer Tips - Sound Design
+        └─ Show new capabilities
+        └─ Subject: "Jak dělám beaty..."
+```
+
+---
+
+## EMAIL FREQUENCY GUIDELINES
+
+| Journey Type | Send Frequency | Total Duration |
+|---|---|---|
+| Onboarding | 2-3 emails/week | 30 days |
+| Recovery | Urgency-based | 3-7 days |
+| Post-Purchase | 1 email/week | 45 days |
+| Content/Tips | 1 email/week | 60+ days |
+| Newsletter | 1 email/week | Ongoing |
+
+---
+
+## WAIT TIME STRATEGY
+
+- **Day 1-3:** Strike while interest is hot (2-4 hr delays)
+- **Day 3-7:** Offer value (3-7 day spacing)
+- **Day 7-30:** Build relationship (7-14 day spacing)
+- **Day 30+:** Maintain engagement (10-14 day spacing)
+
+---
+
+## TEMPLATE ASSIGNMENTS
+
+| Template | Journeys Used In | Purpose |
+|---|---|---|
+| Free Beat Onboarding - Day 3 | #1 | Convert free → paid |
+| Free Kit Onboarding - Day 3 | #2 | Convert free → paid |
+| Abandoned Checkout - Reminder | #5 | Recover abandoned carts |
+| Abandoned Checkout - Scarcity | #5, #11 | Create urgency |
+| Browse Recovery - Day 1 | #1, #2, #6, #11 | Retarget browsers |
+| Browse Recovery - Day 3 | #1, #2, #4, #6, #7, #8, #11 | Recommend trending |
+| Rapper Tips - Spotify Strategy | #7, #8 | Content/authority |
+| Producer Tips - Sound Design | #1, #2, #3, #4, #7, #8, #11 | Content/authority |
+| Post-Beat Purchase - Engagement | #3 | Build community |
+| Post-Beat Purchase - Custom | #3 | Upsell service |
+| Kit Cross-Sell | #3, #4, #7, #8 | Increase AOV |
+| Weekly Newsletter | #3, #4, #7, #8, #9 | Ongoing engagement |
+
+---
+
+## EXPECTED RESULTS
+
+After full implementation:
+
+- **Onboarding Conversions:** 5-8% of free users → paid
+- **Abandoned Cart Recovery:** 10-15% of abandoned carts recovered
+- **Repeat Purchase Rate:** 25-35% of customers buy again within 60 days
+- **Average Customer Value:** 3.5-4.5x initial purchase
+- **List Growth:** 100+ subscribers/month from social funnels
+
+---
+
+## NEXT STEPS
+
+1. Create all 11 journeys in the admin panel
+2. Assign templates to each step
+3. Set correct wait times between emails
+4. Enable journeys one by one
+5. Monitor open rates and click-through rates
+6. Optimize based on performance data

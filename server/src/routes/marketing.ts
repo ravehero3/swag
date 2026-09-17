@@ -1629,4 +1629,125 @@ router.post("/admin/seed", requireAdmin, async (_req: Request, res: Response) =>
   }
 });
 
+
+/**
+ * Admin endpoint to seed all 11 complete customer journeys with email sequences
+ * POST /api/marketing/journeys/seed
+ * 
+ * Creates:
+ * 1. Free Beat Onboarding (30 days)
+ * 2. Free Sound Kit Onboarding (30 days)
+ * 3. Post-Beat Purchase Upsell (45 days)
+ * 4. Post-Kit Purchase Engagement (45 days)
+ * 5. Abandoned Checkout Recovery (7 days)
+ * 6. Browse Abandonment Recovery (10 days)
+ * 7. Rapper Growth & Tips Series (60 days)
+ * 8. Producer Growth & Tutorials (60 days)
+ * 9. Loyal Customer Newsletter (ongoing)
+ * 10. VIP Premium Subscriber Series (90 days)
+ * 11. Re-engagement Campaign (for inactive users)
+ */
+router.post("/journeys/seed", requireAdmin, async (_req: Request, res: Response) => {
+  try {
+    let created = 0;
+    let skipped = 0;
+    const results: any[] = [];
+
+    for (const journeyConfig of JOURNEY_CONFIGS) {
+      // Check if journey already exists
+      const existing = await pool.query(
+        "SELECT id FROM marketing_journeys WHERE name = $1",
+        [journeyConfig.name]
+      );
+
+      if (existing.rows.length > 0) {
+        skipped++;
+        results.push({
+          journey: journeyConfig.name,
+          status: "skipped",
+          reason: "Journey already exists",
+        });
+        continue;
+      }
+
+      // Create journey
+      const journeyRes = await pool.query(
+        `INSERT INTO marketing_journeys 
+         (name, description, trigger_type, trigger_value, status)
+         VALUES ($1, $2, $3, $4, 'draft')
+         RETURNING id`,
+        [
+          journeyConfig.name,
+          journeyConfig.description,
+          journeyConfig.trigger_type,
+          journeyConfig.trigger_value || null,
+        ]
+      );
+
+      const journeyId = journeyRes.rows[0].id;
+
+      // Get template IDs for each step
+      let stepIndex = 1;
+      for (const step of journeyConfig.steps) {
+        const templateRes = await pool.query(
+          "SELECT id FROM marketing_templates WHERE key = $1",
+          [step.template_key]
+        );
+
+        if (templateRes.rows.length === 0) {
+          console.error(
+            `Template not found: ${step.template_key} for journey: ${journeyConfig.name}`
+          );
+          continue;
+        }
+
+        const templateId = templateRes.rows[0].id;
+
+        // Create journey step
+        await pool.query(
+          `INSERT INTO marketing_journey_steps
+           (journey_id, position, template_id, delay_hours, description)
+           VALUES ($1, $2, $3, $4, $5)`,
+          [
+            journeyId,
+            stepIndex,
+            templateId,
+            step.delay_hours,
+            step.description,
+          ]
+        );
+
+        stepIndex++;
+      }
+
+      created++;
+      results.push({
+        journey: journeyConfig.name,
+        status: "created",
+        steps: journeyConfig.steps.length,
+        trigger: journeyConfig.trigger_type,
+      });
+    }
+
+    res.json({
+      success: true,
+      created,
+      skipped,
+      total: created + skipped,
+      journeys: JOURNEY_CONFIGS.length,
+      results,
+      message: `Created ${created} journeys, ${skipped} already exist`,
+      next_steps: [
+        "Review journeys in admin panel",
+        "Test with sample subscriber",
+        "Enable journeys one by one",
+        "Monitor email analytics",
+      ],
+    });
+  } catch (error) {
+    console.error("Journey seeding error:", error);
+    res.status(500).json({ error: "Failed to seed journeys" });
+  }
+});
+
 export default router;
