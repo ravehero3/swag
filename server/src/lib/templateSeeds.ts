@@ -293,4 +293,126 @@ export const TEMPLATE_SEEDS = [
 
 <p>Uvidíme se u reporbeden,<br>VOODOO808</p>`,
   },
+  {
+    name: "First Purchase Thank You",
+    key: "first_purchase_thank_you",
+    category: "general",
+    journey_name: "First Purchase Celebration",
+    step_position: 1,
+    step_type: "email",
+    is_recommended: false,
+    sort_order: 13,
+    subject: "Váš beat je teď oficiálně váš!",
+    preheader: "Přátelský vzkaz po vašem prvním nákupu.",
+    html_content: `<p>Čau {{first_name}},</p>
+
+<p>Moc gratuluju! Právě jste se stali součástí komunity eksklusivních producentů u mě. To znamená, že máte přístup k věcem, které má jen pár vyvolených.</p>
+
+<p>Víte, co mě na tom nejvíc těší? Že když vydáte svůj track s tímhle beátem, budu moct říct: "Jo, ten sound jsem dělal pro vás." To je pecka.</p>
+
+<p>Pokud máte nějaké otázky, potřebujete help s mixem nebo se vám něco nelíbí, napište mi rovnou.</p>
+
+<p>Ať se vám to daří,<br>VOODOO808</p>`,
+  },
+  {
+    name: "Bundle Recommendation",
+    key: "bundle_recommendation",
+    category: "general",
+    journey_name: "Bundle Upsell",
+    step_position: 1,
+    step_type: "email",
+    is_recommended: false,
+    sort_order: 14,
+    subject: "Kompletní setup pro váš příští track",
+    preheader: "Beat + Kit combo s mega slevou.",
+    html_content: `<p>Čau {{first_name}},</p>
+
+<p>Chci vám nabídnout speciální kombinaci: beat, co máte + kit, který k němu dokonale sedne. Dohromady o 40% levněji.</p>
+
+<p>Tento bundle jsem vytvořil jenom pro vás.</p>
+
+<p><a href="{{bundle_url}}" style="background: #8B5CF6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Zobrazit bundle</a></p>
+
+<p>Pojďte na to,<br>VOODOO808</p>`,
+  },
+  {
+    name: "Educational - Beat Breakdown",
+    key: "educational_beat_breakdown",
+    category: "producer",
+    journey_name: "Producer Deep Dive Series",
+    step_position: 1,
+    step_type: "email",
+    is_recommended: false,
+    sort_order: 15,
+    subject: "Jak jsem složil tento beat",
+    preheader: "Přesný proces z nuly až po hotový track.",
+    html_content: `<p>Čau {{first_name}},</p>
+
+<p>Dneska jsem pro vás natočil kompletní breakdown jednoho z mých posledních tracků.</p>
+
+<p><a href="{{breakdown_url}}" style="background: #6366F1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Zhlédnout breakdown</a></p>
+
+<p>Naučme se spolu,<br>VOODOO808</p>`,
+  },
+  {
+    name: "Collaboration - Remix Request",
+    key: "collaboration_remix",
+    category: "general",
+    journey_name: "Collaboration Series",
+    step_position: 1,
+    step_type: "email",
+    is_recommended: false,
+    sort_order: 16,
+    subject: "Pojďme vytvořit něco spolu",
+    preheader: "Hledám producenty na nový projekt.",
+    html_content: `<p>Čau {{first_name}},</p>
+
+<p>Pracuji na novém projektu a hledám producenty na remix. Myslím si, že byste by do toho šli dokonale.</p>
+
+<p><a href="{{collaboration_url}}" style="background: #10B981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Chci se dozvědět víc</a></p>
+
+<p>Skvěle,<br>VOODOO808</p>`,
+  },
+  {
+    name: "VIP Upgrade Offer",
+    key: "vip_upgrade_offer",
+    category: "general",
+    journey_name: "VIP Tier Campaign",
+    step_position: 1,
+    step_type: "email",
+    is_recommended: false,
+    sort_order: 17,
+    subject: "Máte potenciál být VIP",
+    preheader: "Speciální tier jenom pro ty nejlepší.",
+    html_content: `<p>Čau {{first_name}},</p>
+
+<p>Všimnul jsem si, že u mě nakupujete pravidelně. Vytvořil jsem speciální VIP tier s 30% slevou na všechno a prvým přístupem k novým beatům.</p>
+
+<p><a href="{{vip_url}}" style="background: #F59E0B; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Upgrade na VIP</a></p>
+
+<p>Pojďte nahoru,<br>VOODOO808</p>`,
+  },
+  {
+    name: "Rapper Feature - Collab Call",
+    key: "rapper_feature_collab",
+    category: "rapper",
+    journey_name: "Rapper Collaboration Series",
+    step_position: 1,
+    step_type: "email",
+    is_recommended: false,
+    sort_order: 18,
+    subject: "Chcete se objevit na mém albumu?",
+    preheader: "Hledám rappery na nový projekt.",
+    html_content: `<p>Čau {{first_name}},</p>
+
+<p>Pracuji na novém albumu a hledám ty nejlepší rappery. Myslím si, že byste by do toho šli dokonale.</p>
+
+<p>Beaty mám hotové, teď chybí jen ten správný voice.</p>
+
+<p><a href="{{collab_url}}" style="background: #10B981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Chci se dozvědět víc</a></p>
+
+<p>Skvěle,<br>VOODOO808</p>`,
+  },
 ];
+
+export default TEMPLATE_SEEDS;

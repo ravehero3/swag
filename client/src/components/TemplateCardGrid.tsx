@@ -14,13 +14,17 @@ interface TemplateCardGridProps {
   recommendedTemplateIds?: number[];
   selectedTemplateId?: number | string;
   onSelectTemplate: (templateId: number) => void;
-  targetAudience?: "rapper" | "producer" | "general"; // Default filter
+  journeyId?: number;
+  targetAudience?: "rapper" | "producer" | "general";
 }
 
 const TEMPLATE_AUDIENCE: Record<string, "rapper" | "producer" | "general"> = {
   "rapper_tips_spotify": "rapper",
+  "rapper_feature_collab": "rapper",
+  "rapper_collab_feature": "rapper",
   "producer_tips_sound_design": "producer",
-  // All others are general
+  "educational_beat_breakdown": "producer",
+  "seasonal_summer_guide": "producer",
 };
 
 const getAudience = (templateKey?: string): "rapper" | "producer" | "general" => {
@@ -33,13 +37,14 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
   recommendedTemplateIds = [],
   selectedTemplateId,
   onSelectTemplate,
+  journeyId,
   targetAudience = "general",
 }) => {
   const [filterBy, setFilterBy] = useState<"all" | "rapper" | "producer" | "general">(targetAudience === "general" ? "all" : targetAudience);
   const [hoveredTemplateId, setHoveredTemplateId] = useState<number | null>(null);
+  const [previewTemplateId, setPreviewTemplateId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Separate recommended from others
   const recommendedTemplates = useMemo(() => {
     return templates.filter(t => recommendedTemplateIds.includes(t.id));
   }, [templates, recommendedTemplateIds]);
@@ -48,7 +53,6 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
     return templates.filter(t => !recommendedTemplateIds.includes(t.id));
   }, [templates, recommendedTemplateIds]);
 
-  // Filter by search
   const filterBySearch = (list: Template[]) => {
     if (!searchQuery) return list;
     return list.filter(
@@ -57,14 +61,25 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
     );
   };
 
-  // Filter by audience
+  // FIXED FILTERING LOGIC - Include general in all filters
   const filterByAudience = (list: Template[]) => {
     if (filterBy === "all") return list;
+    
     return list.filter(t => {
       const audience = getAudience(t.category);
-      if (filterBy === "rapper") return audience === "rapper" || audience === "general";
-      if (filterBy === "producer") return audience === "producer" || audience === "general";
-      if (filterBy === "general") return audience === "general";
+      
+      if (filterBy === "rapper") {
+        // Show rapper-focused + general templates
+        return audience === "rapper" || audience === "general";
+      }
+      if (filterBy === "producer") {
+        // Show producer-focused + general templates
+        return audience === "producer" || audience === "general";
+      }
+      if (filterBy === "general") {
+        // Show only general templates
+        return audience === "general";
+      }
       return true;
     });
   };
@@ -78,14 +93,10 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
   }, [otherTemplates, filterBy, searchQuery]);
 
   const renderTemplateCard = (template: Template, isRecommended: boolean = false) => (
-    <button
+    <div
       key={template.id}
-      onClick={() => onSelectTemplate(template.id)}
-      onMouseEnter={() => setHoveredTemplateId(template.id)}
-      onMouseLeave={() => setHoveredTemplateId(null)}
       style={{
         position: "relative",
-        width: "100%",
         background: selectedTemplateId === template.id 
           ? "rgba(225, 29, 72, 0.15)" 
           : "rgba(255, 255, 255, 0.03)",
@@ -103,6 +114,7 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
         overflow: "hidden",
       }}
       onMouseEnter={(e) => {
+        setHoveredTemplateId(template.id);
         (e.currentTarget as HTMLElement).style.background = selectedTemplateId === template.id
           ? "rgba(225, 29, 72, 0.2)"
           : "rgba(255, 255, 255, 0.05)";
@@ -113,6 +125,7 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
         (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
       }}
       onMouseLeave={(e) => {
+        setHoveredTemplateId(null);
         (e.currentTarget as HTMLElement).style.background = selectedTemplateId === template.id 
           ? "rgba(225, 29, 72, 0.15)" 
           : "rgba(255, 255, 255, 0.03)";
@@ -179,96 +192,62 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
         {getUseCase(template.name)}
       </div>
 
-      {/* Full Preview on Hover */}
-      {hoveredTemplateId === template.id && (
-        <div
-          style={{
-            position: "fixed",
-            right: "24px",
-            top: "50%",
-            transform: "translateY(-50%)",
-            width: "360px",
-            maxHeight: "80vh",
-            background: "#0a0a0a",
-            border: "1px solid #333",
-            borderRadius: "12px",
-            overflow: "hidden",
-            zIndex: 9999,
-            boxShadow: "0 20px 60px rgba(0, 0, 0, 0.8)",
-            display: "flex",
-            flexDirection: "column",
-          }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Header */}
-          <div
-            style={{
-              padding: "12px 16px",
-              background: "rgba(225, 29, 72, 0.1)",
-              borderBottom: "1px solid #222",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <div style={{ fontSize: "12px", fontWeight: 600, color: "#fff" }}>
-              Náhled šablony
-            </div>
-            <div style={{ fontSize: "11px", color: "#888" }}>
-              {template.name}
-            </div>
-          </div>
+      {/* Click to preview button */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setPreviewTemplateId(template.id);
+        }}
+        style={{
+          background: "rgba(225, 29, 72, 0.1)",
+          border: "1px solid rgba(225, 29, 72, 0.3)",
+          color: "#E11D48",
+          borderRadius: "6px",
+          padding: "6px",
+          fontSize: "10px",
+          fontWeight: 600,
+          cursor: "pointer",
+          transition: "all 150ms",
+          marginTop: "8px",
+        }}
+        onMouseEnter={(e) => {
+          (e.currentTarget as HTMLElement).style.background = "rgba(225, 29, 72, 0.2)";
+          (e.currentTarget as HTMLElement).style.borderColor = "rgba(225, 29, 72, 0.5)";
+        }}
+        onMouseLeave={(e) => {
+          (e.currentTarget as HTMLElement).style.background = "rgba(225, 29, 72, 0.1)";
+          (e.currentTarget as HTMLElement).style.borderColor = "rgba(225, 29, 72, 0.3)";
+        }}
+      >
+        Náhled e-mailu
+      </button>
 
-          {/* Email Preview */}
-          <div
-            style={{
-              flex: 1,
-              overflow: "auto",
-              padding: "16px",
-            }}
-          >
-            <div
-              style={{
-                background: "#1a1a1a",
-                borderRadius: "8px",
-                padding: "16px",
-                border: "1px solid #333",
-              }}
-            >
-              <div style={{ fontSize: "12px", fontWeight: 600, color: "#fff", marginBottom: "8px" }}>
-                Subject:
-              </div>
-              <div style={{ fontSize: "13px", color: "#bbb", marginBottom: "16px", lineHeight: "1.5" }}>
-                {template.subject}
-              </div>
-
-              <div style={{ fontSize: "12px", fontWeight: 600, color: "#fff", marginBottom: "8px" }}>
-                Preview:
-              </div>
-              <div style={{ fontSize: "12px", color: "#999", marginBottom: "16px", lineHeight: "1.5" }}>
-                {template.preheader}
-              </div>
-
-              <div style={{ fontSize: "12px", fontWeight: 600, color: "#fff", marginBottom: "8px" }}>
-                Content:
-              </div>
-              <div
-                style={{
-                  fontSize: "12px",
-                  color: "#bbb",
-                  lineHeight: "1.6",
-                  maxHeight: "400px",
-                  overflow: "auto",
-                }}
-                dangerouslySetInnerHTML={{
-                  __html: template.html_content?.substring(0, 500) + "..." || "Žádný obsah",
-                }}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-    </button>
+      {/* Select button */}
+      <button
+        onClick={() => onSelectTemplate(template.id)}
+        style={{
+          background: selectedTemplateId === template.id ? "#E11D48" : "rgba(255, 255, 255, 0.05)",
+          border: selectedTemplateId === template.id ? "1px solid #E11D48" : "1px solid rgba(255, 255, 255, 0.1)",
+          color: selectedTemplateId === template.id ? "#fff" : "#bbb",
+          borderRadius: "6px",
+          padding: "6px",
+          fontSize: "10px",
+          fontWeight: 600,
+          cursor: "pointer",
+          transition: "all 150ms",
+        }}
+        onMouseEnter={(e) => {
+          (e.currentTarget as HTMLElement).style.background = "#E11D48";
+          (e.currentTarget as HTMLElement).style.color = "#fff";
+        }}
+        onMouseLeave={(e) => {
+          (e.currentTarget as HTMLElement).style.background = selectedTemplateId === template.id ? "#E11D48" : "rgba(255, 255, 255, 0.05)";
+          (e.currentTarget as HTMLElement).style.color = selectedTemplateId === template.id ? "#fff" : "#bbb";
+        }}
+      >
+        {selectedTemplateId === template.id ? "Vybrané ✓" : "Vybrat"}
+      </button>
+    </div>
   );
 
   return (
@@ -321,9 +300,9 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
               }}
             >
               {filter === "all" && "Všechny"}
-              {filter === "rapper" && "🎤 Rappeři"}
-              {filter === "producer" && "🎹 Produceři"}
-              {filter === "general" && "Obecné"}
+              {filter === "rapper" && "Rappeři + Obecné"}
+              {filter === "producer" && "Produceři + Obecné"}
+              {filter === "general" && "Pouze Obecné"}
             </button>
           ))}
         </div>
@@ -332,10 +311,10 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
       {/* Recommended Section */}
       {filteredRecommended.length > 0 && (
         <div>
-          <div style={{ fontSize: "11px", fontWeight: 600, color: "#E11D48", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+          <div style={{ fontSize: "11px", fontWeight: 600, color: "#E11D48", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
             Doporučené pro tento krok
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "12px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: "12px" }}>
             {filteredRecommended.map((t) => renderTemplateCard(t, true))}
           </div>
         </div>
@@ -345,11 +324,11 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
       {filteredOther.length > 0 && (
         <div>
           {filteredRecommended.length > 0 && (
-            <div style={{ fontSize: "11px", fontWeight: 600, color: "#888", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+            <div style={{ fontSize: "11px", fontWeight: 600, color: "#888", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
               Další šablony
             </div>
           )}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "12px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: "12px" }}>
             {filteredOther.map((t) => renderTemplateCard(t, false))}
           </div>
         </div>
@@ -359,6 +338,92 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
       {filteredRecommended.length === 0 && filteredOther.length === 0 && (
         <div style={{ textAlign: "center", padding: "24px", color: "#666", fontSize: "12px" }}>
           Žádné šablony se neshodují s filtrem.
+        </div>
+      )}
+
+      {/* Email Preview Modal */}
+      {previewTemplateId && (
+        <div
+          onClick={() => setPreviewTemplateId(null)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0, 0, 0, 0.8)",
+            zIndex: 10000,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "20px",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "#0a0a0a",
+              border: "1px solid #333",
+              borderRadius: "12px",
+              width: "min(800px, 90vw)",
+              maxHeight: "85vh",
+              overflow: "hidden",
+              display: "flex",
+              flexDirection: "column",
+              boxShadow: "0 20px 60px rgba(0, 0, 0, 0.9)",
+            }}
+          >
+            {/* Header */}
+            <div
+              style={{
+                padding: "16px 20px",
+                background: "rgba(225, 29, 72, 0.1)",
+                borderBottom: "1px solid #222",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <div style={{ fontSize: "13px", fontWeight: 600, color: "#fff" }}>
+                Náhled e-mailu: {templates.find(t => t.id === previewTemplateId)?.name}
+              </div>
+              <button
+                onClick={() => setPreviewTemplateId(null)}
+                style={{
+                  background: "transparent",
+                  border: "1px solid #444",
+                  color: "#888",
+                  borderRadius: "4px",
+                  padding: "4px 12px",
+                  fontSize: "12px",
+                  cursor: "pointer",
+                  transition: "all 150ms",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.borderColor = "#666";
+                  (e.currentTarget as HTMLElement).style.color = "#fff";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.borderColor = "#444";
+                  (e.currentTarget as HTMLElement).style.color = "#888";
+                }}
+              >
+                Zavřít ✕
+              </button>
+            </div>
+
+            {/* Email Content Preview */}
+            <div style={{ flex: 1, overflow: "auto" }}>
+              <iframe
+                srcDoc={templates.find(t => t.id === previewTemplateId)?.html_content || ""}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  border: "none",
+                  display: "block",
+                  minHeight: "600px",
+                }}
+                title="Email preview"
+              />
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -373,12 +438,18 @@ const getUseCase = (templateName: string): string => {
     "Abandoned Checkout - Scarcity": "Vytváří naléhavost s omezeným kódem",
     "Browse Recovery - Day 1": "Zpět na produkty, které návštěvník sledoval",
     "Browse Recovery - Day 3": "Doporučuje podobné produkty",
-    "Rapper Tips - Spotify Strategy": "Edukativní obsah pro rappery o Spotify",
+    "Rapper Tips - Spotify Strategy": "Edukativní obsah pro rappery",
     "Producer Tips - Sound Design": "Edukativní obsah pro producenty",
     "Post-Beat Purchase - Engagement": "Buduje komunitu po nákupu",
     "Post-Beat Purchase - Custom Arrangement": "Nabízí custom úpravy beatu",
     "Kit Cross-Sell": "Navrhuje doplňující kit s slevou",
-    "Weekly Newsletter - New Drops": "Pravidelný newsletter s novými materiály",
+    "Weekly Newsletter - New Drops": "Pravidelný newsletter s novými",
+    "First Purchase Thank You": "Poděkování za první nákup",
+    "Bundle Recommendation": "Nabídne bundle s mega slevou",
+    "Educational - Beat Breakdown": "Edukativní obsah - rozbor composice",
+    "Collaboration - Remix Request": "Pozvánka na kolaboraci",
+    "VIP Upgrade Offer": "Upgrade na VIP tier s benefity",
+    "Rapper Feature - Collab Call": "Pozvánka pro rappery na feature",
   };
   return useCases[templateName] || "Specifikované použití";
 };
