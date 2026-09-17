@@ -442,7 +442,7 @@ function Admin() {
 
   if (adminError) {
     return (
-      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#000", padding: "24px" }}>
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#000", padding: "20px" }}>
         <div style={{ maxWidth: "480px", textAlign: "center" }}>
           <div style={{ fontSize: "14px", color: DESIGN_SYSTEM.colors.textPrimary, marginBottom: "20px" }}>{adminError}</div>
           <button className="btn btn-filled" onClick={loadData}>Zkusit znovu</button>
@@ -5305,7 +5305,7 @@ function LicensesTab({ licenses, onRefresh }: any) {
       {showCreate && (
         <form onSubmit={handleCreate} style={{
           marginBottom: "28px",
-          padding: "24px",
+          padding: "20px",
           border: "1px solid rgba(255, 255, 255, 0.08)",
           borderRadius: "16px",
           background: "linear-gradient(135deg, rgba(255, 255, 255, 0.035) 0%, rgba(255, 255, 255, 0.012) 100%)",
@@ -5721,7 +5721,7 @@ function SlevyTab({ settings, onRefresh }: any) {
     WebkitBackdropFilter: "blur(12px)",
     border: "1px solid rgba(255, 255, 255, 0.08)",
     borderRadius: "12px",
-    padding: "24px",
+    padding: "20px",
     boxShadow: "0 8px 32px 0 rgba(0, 0, 0, 0.37)",
     maxWidth: "600px",
     margin: "0 auto",
@@ -6440,8 +6440,8 @@ function EmailsTab() {
 
   const cellStyle: any = { padding: "14px 12px", borderBottom: "1px solid #1e1e1e", verticalAlign: "top" };
 
-  if (loading) return <div style={{ color: DESIGN_SYSTEM.colors.textSecondary, padding: "24px" }}>Načítám...</div>;
-  if (error) return <div style={{ color: "#ff4444", padding: "24px" }}>{error}</div>;
+  if (loading) return <div style={{ color: DESIGN_SYSTEM.colors.textSecondary, padding: "20px" }}>Načítám...</div>;
+  if (error) return <div style={{ color: "#ff4444", padding: "20px" }}>{error}</div>;
 
   if (editingKey) {
     const scenario = EMAIL_SCENARIOS.find(s => s.key === editingKey);
@@ -7500,9 +7500,9 @@ function OdberateleTab() {
       </div>
 
       {loading ? (
-        <div style={{ color: "#555", padding: "24px" }}>Načítám…</div>
+        <div style={{ color: "#555", padding: "20px" }}>Načítám…</div>
       ) : subscribers.length === 0 ? (
-        <div style={{ color: "#444", padding: "24px" }}>Žádní odběratelé neodpovídá filtru.</div>
+        <div style={{ color: "#444", padding: "20px" }}>Žádní odběratelé neodpovídá filtru.</div>
       ) : (
         <>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
@@ -7552,7 +7552,7 @@ function OdberateleTab() {
           style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 10000, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
           onClick={(e) => { if (e.target === e.currentTarget) setSelected(null); }}
         >
-          <div style={{ background: "#0a0a0a", border: "1px solid #222", borderRadius: "8px", width: "min(640px, 96vw)", maxHeight: "88vh", overflowY: "auto", padding: "24px" }}>
+          <div style={{ background: "#0a0a0a", border: "1px solid #222", borderRadius: "8px", width: "min(640px, 96vw)", maxHeight: "88vh", overflowY: "auto", padding: "20px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px" }}>
               <div>
                 <div style={{ fontSize: "16px", fontWeight: 600, color: "#eee" }}>{selected.subscriber.email}</div>
@@ -7932,9 +7932,9 @@ function JourneysTab() {
       </p>
 
       {loading ? (
-        <div style={{ color: "#555", padding: "24px" }}>Načítám…</div>
+        <div style={{ color: "#555", padding: "20px" }}>Načítám…</div>
       ) : journeys.length === 0 ? (
-        <div style={{ color: "#444", padding: "24px" }}>Zatím žádné journeys.</div>
+        <div style={{ color: "#444", padding: "20px" }}>Zatím žádné journeys.</div>
       ) : (
         <>
           {/* Compact Journey Containers with View Mode Toggle */}
@@ -7991,7 +7991,7 @@ function JourneysTab() {
           onClick={() => { setShowStepForm(false); setEditingStep(null); }}
           style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 10002, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
         >
-          <div onClick={(e) => e.stopPropagation()} style={{ background: "#0a0a0a", border: "1px solid #222", borderRadius: "8px", width: "min(1400px, 98vw)", maxHeight: "95vh", overflowY: "auto", padding: "24px" }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ background: "#0a0a0a", border: "1px solid #222", borderRadius: "8px", width: "min(1400px, 98vw)", maxHeight: "98vh", overflowY: "auto", padding: "20px" }}>
             <div style={{ fontSize: "15px", fontWeight: 600, color: "#eee", marginBottom: "16px" }}>{editingStep ? "Upravit krok" : "Nový krok"}</div>
 
             <div style={{ marginBottom: "12px" }}>
@@ -8380,9 +8380,9 @@ function KampaneTab() {
       )}
 
       {loading ? (
-        <div style={{ color: "#555", padding: "24px" }}>Načítám…</div>
+        <div style={{ color: "#555", padding: "20px" }}>Načítám…</div>
       ) : campaigns.length === 0 ? (
-        <div style={{ color: "#444", padding: "24px" }}>Zatím žádné kampaně.</div>
+        <div style={{ color: "#444", padding: "20px" }}>Zatím žádné kampaně.</div>
       ) : (
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
@@ -8483,13 +8483,13 @@ function KampaneTab() {
       {/* ── Campaign Stats Modal ─────────────────────────────────────────── */}
       {statsModal && (
         <div onClick={() => setStatsModal(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: DESIGN_SYSTEM.zIndex.modal + 20, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
-          <div onClick={e => e.stopPropagation()} style={{ background: "#0d0d0d", border: "1px solid #282828", borderRadius: "12px", width: "min(520px,96vw)", padding: "24px", boxShadow: "0 20px 60px rgba(0,0,0,0.9)" }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: "#0d0d0d", border: "1px solid #282828", borderRadius: "12px", width: "min(520px,96vw)", padding: "20px", boxShadow: "0 20px 60px rgba(0,0,0,0.9)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
               <div style={{ fontSize: "15px", fontWeight: 700, color: "#fff" }}>📊 {statsModal.campaign.name}</div>
               <button onClick={() => setStatsModal(null)} style={{ background: "rgba(255,255,255,0.08)", border: "1px solid #333", borderRadius: "4px", color: "#aaa", fontSize: "12px", padding: "4px 10px", cursor: "pointer" }}>Zavřít</button>
             </div>
             {statsLoading ? (
-              <div style={{ color: "#555", padding: "24px", textAlign: "center" }}>Načítám statistiky…</div>
+              <div style={{ color: "#555", padding: "20px", textAlign: "center" }}>Načítám statistiky…</div>
             ) : statsModal.data ? (
               <>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "10px", marginBottom: "16px" }}>
@@ -8512,7 +8512,7 @@ function KampaneTab() {
                   <div style={{ fontSize: "11px", color: "#555", textAlign: "right" }}>Odesláno: {new Date(statsModal.data.sent_at).toLocaleString("cs-CZ")}</div>
                 )}
               </>
-            ) : <div style={{ color: "#555", padding: "24px", textAlign: "center" }}>Statistiky nejsou k dispozici</div>}
+            ) : <div style={{ color: "#555", padding: "20px", textAlign: "center" }}>Statistiky nejsou k dispozici</div>}
           </div>
         </div>
       )}
@@ -8520,7 +8520,7 @@ function KampaneTab() {
       {/* ── Resend to Non-Openers Modal ──────────────────────────────────── */}
       {resendTarget && (
         <div onClick={() => !resendLoading && setResendTarget(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: DESIGN_SYSTEM.zIndex.modal + 15, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
-          <div onClick={e => e.stopPropagation()} style={{ background: "#0d0d0d", border: "1px solid #282828", borderRadius: "12px", width: "min(460px,96vw)", padding: "24px", boxShadow: "0 20px 60px rgba(0,0,0,0.9)" }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: "#0d0d0d", border: "1px solid #282828", borderRadius: "12px", width: "min(460px,96vw)", padding: "20px", boxShadow: "0 20px 60px rgba(0,0,0,0.9)" }}>
             <div style={{ fontSize: "15px", fontWeight: 700, color: "#fff", marginBottom: "6px" }}>🔄 Přeposlat neotvíralým</div>
             <p style={{ fontSize: "12px", color: "#888", marginBottom: "16px", lineHeight: 1.5 }}>
               Vytvoří novou kampaň cílenou na příjemce, kteří <strong style={{ color: "#ddd" }}>dostali, ale neotevřeli</strong> kampaň <em>{resendTarget.name}</em>.
@@ -8568,7 +8568,7 @@ function KampaneTab() {
               border: "1px solid #282828",
               borderRadius: "12px",
               width: "min(520px, 96vw)",
-              padding: "24px",
+              padding: "20px",
               boxShadow: "0 20px 60px rgba(0,0,0,0.9)",
             }}
           >
@@ -8853,9 +8853,9 @@ function SablonyTab() {
       )}
 
       {loading ? (
-        <div style={{ color: "#555", padding: "24px" }}>Načítám…</div>
+        <div style={{ color: "#555", padding: "20px" }}>Načítám…</div>
       ) : templates.length === 0 ? (
-        <div style={{ color: "#444", padding: "24px" }}>Zatím žádné šablony.</div>
+        <div style={{ color: "#444", padding: "20px" }}>Zatím žádné šablony.</div>
       ) : (
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
@@ -9927,7 +9927,7 @@ function MarketingEmailSettingsTab() {
     }
   };
 
-  if (loading) return <div style={{ color: "#555", padding: "24px" }}>Načítám…</div>;
+  if (loading) return <div style={{ color: "#555", padding: "20px" }}>Načítám…</div>;
 
   return (
     <div style={{ maxWidth: "560px" }}>

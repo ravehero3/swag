@@ -7,6 +7,7 @@ interface Template {
   preheader: string;
   html_content?: string;
   category?: string;
+  audience?: "rapper" | "producer" | "general";
 }
 
 interface TemplateCardGridProps {
@@ -16,18 +17,6 @@ interface TemplateCardGridProps {
   onSelectTemplate: (templateId: number) => void;
   journeyId?: number;
 }
-
-const TEMPLATE_CATEGORY: Record<string, "rapper" | "producer" | "general"> = {
-  "rapper_tips_spotify": "rapper",
-  "rapper_feature_collab": "rapper",
-  "producer_tips_sound_design": "producer",
-  "educational_beat_breakdown": "producer",
-};
-
-const getCategory = (templateKey?: string): "rapper" | "producer" | "general" => {
-  if (!templateKey) return "general";
-  return TEMPLATE_CATEGORY[templateKey] || "general";
-};
 
 export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
   templates,
@@ -40,19 +29,19 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
   const [previewTemplateId, setPreviewTemplateId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Organize templates by category
+  // Organize templates by audience
   const rapperTemplates = useMemo(
-    () => templates.filter(t => getCategory(t.category) === "rapper"),
+    () => templates.filter(t => t.audience === "rapper"),
     [templates]
   );
 
   const producerTemplates = useMemo(
-    () => templates.filter(t => getCategory(t.category) === "producer"),
+    () => templates.filter(t => t.audience === "producer"),
     [templates]
   );
 
   const generalTemplates = useMemo(
-    () => templates.filter(t => getCategory(t.category) === "general"),
+    () => templates.filter(t => t.audience === "general"),
     [templates]
   );
 
@@ -265,7 +254,7 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
         </div>
       </div>
 
-      {/* Templates organized by category */}
+      {/* Templates organized by audience */}
       <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
         
         {/* RAPPEŘI SECTION */}
@@ -448,8 +437,8 @@ const getUseCase = (templateName: string): string => {
     "Abandoned Checkout - Scarcity": "Vytváří naléhavost",
     "Browse Recovery - Day 1": "Zpět na produkty",
     "Browse Recovery - Day 3": "Doporučuje podobné",
-    "Rapper Tips - Spotify Strategy": "Edukativní pro rappery",
-    "Producer Tips - Sound Design": "Edukativní pro producenty",
+    "Rapper Tips - Spotify Strategy": "Pro rappery: Spotify strategie",
+    "Producer Tips - Sound Design": "Pro producenty: Design tipů",
     "Post-Beat Purchase - Engagement": "Buduje komunitu",
     "Post-Beat Purchase - Custom Arrangement": "Nabízí custom úpravy",
     "Kit Cross-Sell": "Navrhuje doplňující kit",
