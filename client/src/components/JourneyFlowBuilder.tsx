@@ -30,6 +30,8 @@ interface JourneyFlowBuilderProps {
   testEmail: string;
   onTestEmailChange: (email: string) => void;
   stepStats?: Record<number, { sends: number; open_rate: number; click_rate: number }>;
+  selectedStepId?: number | null;
+  onSelectStep?: (stepId: number) => void;
 }
 
 const STEP_TYPE_LABELS: Record<string, string> = {
@@ -58,6 +60,8 @@ export default function JourneyFlowBuilder({
   testEmail,
   onTestEmailChange,
   stepStats = {},
+  selectedStepId,
+  onSelectStep,
 }: JourneyFlowBuilderProps) {
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
@@ -153,10 +157,12 @@ export default function JourneyFlowBuilder({
         {steps?.map((step, idx) => {
           const tpl = templates.find((t) => t.id === step.template_id);
           const isHovered = hoveredStepId === step.id;
+          const isSelected = selectedStepId === step.id;
 
           return (
             <div
               key={step.id}
+              onClick={() => onSelectStep?.(step.id)}
               onMouseEnter={(e) => {
                 setHoveredStepId(step.id);
                 const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
@@ -172,17 +178,18 @@ export default function JourneyFlowBuilder({
                 top: getNodePosition(idx + 1).y,
                 width: NODE_WIDTH,
                 height: NODE_HEIGHT,
-                background: isHovered ? "#151515" : "#0f0f0f",
-                border: `1px solid ${isHovered ? "#444" : "#333"}`,
+                background: isSelected ? "rgba(225, 29, 72, 0.15)" : (isHovered ? "#151515" : "#0f0f0f"),
+                border: `2px solid ${isSelected ? "#E11D48" : (isHovered ? "#444" : "#333")}`,
                 borderRadius: "8px",
                 padding: "12px",
                 boxSizing: "border-box",
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "space-between",
-                boxShadow: isHovered ? "0 8px 24px rgba(11,153,252,0.15)" : "none",
-                transform: isHovered ? "scale(1.02)" : "scale(1)",
+                boxShadow: isSelected ? "0 8px 24px rgba(225, 29, 72, 0.3)" : (isHovered ? "0 8px 24px rgba(11,153,252,0.15)" : "none"),
+                transform: isSelected ? "scale(1.04)" : (isHovered ? "scale(1.02)" : "scale(1)"),
                 transition: "all 200ms cubic-bezier(0.4, 0, 0.2, 1)",
+                cursor: "pointer",
               }}
             >
               <div>

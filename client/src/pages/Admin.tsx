@@ -7657,6 +7657,8 @@ function JourneysTab() {
   const [showStepForm, setShowStepForm] = useState(false);
   const [editingStep, setEditingStep] = useState<any>(null);
   const [selectedStepId, setSelectedStepId] = useState<number | null>(null);
+  const [editingTemplateId, setEditingTemplateId] = useState<number | null>(null);
+  const [showTemplateEditor, setShowTemplateEditor] = useState(false);
   const [stepForm, setStepForm] = useState<any>({ stepType: "email", delayHours: 0, templateId: "", condition: "has_purchased", conditionTag: "", onTrue: "end", onFalse: "continue" });
   const [visualStep, setVisualStep] = useState<{ step: any; template: any } | null>(null);
 
@@ -7959,6 +7961,8 @@ function JourneysTab() {
                     journey={detail.journey}
                     steps={detail.steps || []}
                     templates={templates}
+                    selectedStepId={selectedStepId}
+                    onSelectStep={setSelectedStepId}
                     onEditStep={(step) => { setEditingStep(step); setShowStepForm(true); setSelectedStepId(step.id); }}
                     onDeleteStep={deleteStep}
                     onAddStep={() => { setEditingStep(null); setShowStepForm(true); }}
@@ -7972,7 +7976,26 @@ function JourneysTab() {
               </div>
               
               {/* Right: Preview */}
-              <div style={{ width: "400px", borderLeft: "1px solid #333", paddingLeft: "20px", display: "flex", flexDirection: "column" }}>
+              <div 
+                style={{ width: "400px", borderLeft: "1px solid #333", paddingLeft: "20px", display: "flex", flexDirection: "column" }}
+                onKeyDown={(e) => {
+                  if (!detail.steps || detail.steps.length === 0) return;
+                  const currentIndex = detail.steps.findIndex((s: any) => s.id === selectedStepId);
+                  
+                  if (e.key === "ArrowDown") {
+                    e.preventDefault();
+                    if (currentIndex < detail.steps.length - 1) {
+                      setSelectedStepId(detail.steps[currentIndex + 1].id);
+                    }
+                  } else if (e.key === "ArrowUp") {
+                    e.preventDefault();
+                    if (currentIndex > 0) {
+                      setSelectedStepId(detail.steps[currentIndex - 1].id);
+                    }
+                  }
+                }}
+                tabIndex={0}
+              >
                 <div style={{ fontSize: "14px", fontWeight: 600, color: "#fff", marginBottom: "20px" }}>
                   Náhled Kroku
                 </div>
@@ -7984,8 +8007,19 @@ function JourneysTab() {
                   if (selectedStep.step_type === "email") {
                     return (
                       <div style={{ flex: 1, background: "#0a0a0a", border: "1px solid #222", borderRadius: "8px", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-                        <div style={{ padding: "12px", background: "rgba(225, 29, 72, 0.1)", borderBottom: "1px solid #222", fontSize: "12px", color: "#ddd" }}>
-                          {templates.find((t: any) => t.id === selectedStep.template_id)?.name || "Bez šablony"}
+                        <div style={{ padding: "12px", background: "rgba(225, 29, 72, 0.1)", borderBottom: "1px solid #222", fontSize: "12px", color: "#ddd", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <span>{templates.find((t: any) => t.id === selectedStep.template_id)?.name || "Bez šablony"}</span>
+                          <button
+                            onClick={() => {
+                              setEditingTemplateId(selectedStep.template_id);
+                              setShowTemplateEditor(true);
+                            }}
+                            style={{ background: "rgba(225, 29, 72, 0.2)", border: "1px solid rgba(225, 29, 72, 0.3)", color: "#E11D48", borderRadius: "4px", padding: "4px 8px", fontSize: "11px", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }}
+                            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(225, 29, 72, 0.3)"; }}
+                            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(225, 29, 72, 0.2)"; }}
+                          >
+                            ✏️ Upravit
+                          </button>
                         </div>
                         <iframe 
                           src={`/api/marketing/journeys/${detail.journey.id}/steps/${selectedStep.id}/preview`}
@@ -8122,6 +8156,10 @@ function JourneysTab() {
                     selectedTemplateId={stepForm.templateId}
                     onSelectTemplate={(templateId) => {
                       setStepForm({ ...stepForm, templateId });
+                    }}
+                    onCreateTemplate={() => {
+                      setEditingTemplateId(null);
+                      setShowTemplateEditor(true);
                     }}
                   />
                 </div>

@@ -16,6 +16,7 @@ interface TemplateCardGridProps {
   selectedTemplateId?: number | string;
   onSelectTemplate: (templateId: number) => void;
   journeyId?: number;
+  onCreateTemplate?: () => void;
 }
 
 export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
@@ -24,6 +25,7 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
   selectedTemplateId,
   onSelectTemplate,
   journeyId,
+  onCreateTemplate,
 }) => {
   const [previewTemplateId, setPreviewTemplateId] = useState<number | null>(null);
 
@@ -163,6 +165,37 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
       {/* Simple grid - no filters, no search */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: "12px" }}>
+        {onCreateTemplate && (
+          <button
+            onClick={onCreateTemplate}
+            style={{
+              background: "rgba(225, 29, 72, 0.1)",
+              border: "2px dashed rgba(225, 29, 72, 0.3)",
+              borderRadius: "10px",
+              padding: "14px",
+              cursor: "pointer",
+              display: "flex",
+              flexDirection: "column",
+              gap: "8px",
+              alignItems: "center",
+              justifyContent: "center",
+              minHeight: "150px",
+              transition: "all 200ms",
+              color: "#E11D48",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLElement).style.background = "rgba(225, 29, 72, 0.15)";
+              (e.currentTarget as HTMLElement).style.borderColor = "rgba(225, 29, 72, 0.5)";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.background = "rgba(225, 29, 72, 0.1)";
+              (e.currentTarget as HTMLElement).style.borderColor = "rgba(225, 29, 72, 0.3)";
+            }}
+          >
+            <div style={{ fontSize: "32px" }}>+</div>
+            <div style={{ fontSize: "11px", fontWeight: 600 }}>Nová Šablona</div>
+          </button>
+        )}
         {templates.map((t) => renderTemplateCard(t))}
       </div>
 
