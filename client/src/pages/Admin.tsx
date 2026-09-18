@@ -8007,9 +8007,45 @@ function JourneysTab() {
             </div>
 
             <div style={{ marginBottom: "12px" }}>
-              <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "6px" }}>Zpoždění před tímto krokem (hodiny)</label>
-              <input type="number" min={0} value={stepForm.delayHours} onChange={e => setStepForm({ ...stepForm, delayHours: e.target.value })} style={stepInputStyle} placeholder="0 = okamžitě" />
-              <div style={{ fontSize: "10px", color: "#555", marginTop: "4px" }}>0 = okamžitě, 24 = po 1 dni, 72 = po 3 dnech, 168 = po 1 týdnu</div>
+              <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "8px" }}>Zpoždění před tímto krokem</label>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "8px" }}>
+                {[
+                  { label: "Okamžitě", value: 0 },
+                  { label: "Po 1 dni", value: 24 },
+                  { label: "Po 3 dnech", value: 72 },
+                  { label: "Po týdnu", value: 168 },
+                ].map(option => (
+                  <button
+                    key={option.value}
+                    onClick={() => setStepForm({ ...stepForm, delayHours: option.value })}
+                    style={{
+                      padding: "10px 12px",
+                      background: stepForm.delayHours === option.value ? "#E11D48" : "rgba(255,255,255,0.05)",
+                      border: stepForm.delayHours === option.value ? "1px solid #E11D48" : "1px solid #222",
+                      color: stepForm.delayHours === option.value ? "#fff" : "#bbb",
+                      borderRadius: "6px",
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      transition: "all 200ms",
+                    }}
+                    onMouseEnter={(e) => {
+                      if (stepForm.delayHours !== option.value) {
+                        (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.08)";
+                        (e.currentTarget as HTMLElement).style.borderColor = "#444";
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (stepForm.delayHours !== option.value) {
+                        (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)";
+                        (e.currentTarget as HTMLElement).style.borderColor = "#222";
+                      }
+                    }}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {stepForm.stepType === "email" && (

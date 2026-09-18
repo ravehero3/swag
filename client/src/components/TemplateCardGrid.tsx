@@ -29,7 +29,7 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
   const [previewTemplateId, setPreviewTemplateId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Organize templates by audience
+  // Organize templates by audience (treat missing/null as "general")
   const rapperTemplates = useMemo(
     () => templates.filter(t => t.audience === "rapper"),
     [templates]
@@ -41,7 +41,7 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
   );
 
   const generalTemplates = useMemo(
-    () => templates.filter(t => t.audience === "general"),
+    () => templates.filter(t => !t.audience || t.audience === "general"),
     [templates]
   );
 
