@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { EmailPreviewTooltip } from "./EmailPreviewTooltip";
-import { Plus, Edit3, Trash2, Send } from "lucide-react";
+import { Plus, Edit3, Trash2, Send, Clock } from "lucide-react";
 
 interface Step {
   id: number;
@@ -200,7 +200,7 @@ export default function JourneyFlowBuilder({
                 <div style={{ fontSize: "13px", color: "#fff", fontWeight: 600 }}>
                   {step.step_type === "email" ? (tpl ? tpl.name : "No template") : STEP_TYPE_LABELS[step.step_type]}
                 </div>
-                {step.delay_hours > 0 && <div style={{ fontSize: "11px", color: "#888", marginTop: "2px" }}>Wait {step.delay_hours}h</div>}
+                {step.delay_hours > 0 && <div style={{ fontSize: "11px", color: "#888", marginTop: "2px", display: "flex", alignItems: "center", gap: "4px" }}><Clock size={12} /> {step.delay_hours}h</div>}
                 {stepStats[step.id] && stepStats[step.id].sends > 0 && (
                   <div style={{ fontSize: "10px", color: "#666", marginTop: "6px", paddingTop: "6px", borderTop: "1px solid #222", display: "flex", gap: "8px" }}>
                     <span>{stepStats[step.id].sends} sent</span>

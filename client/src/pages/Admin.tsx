@@ -2,7 +2,7 @@ import { Button, Input, Select, Badge, Skeleton } from '../components/UI';
 import { DESIGN_SYSTEM } from '../constants/designSystem';
 import { CZECH } from '../constants/czech';
 import { useState, useEffect, useRef, useMemo } from "react";
-import { Music, Image as ImageIcon, Upload, Star, ChevronUp, ChevronDown, Pencil, Check, X, Clock, Plus, Menu, Mail, AlertTriangle, CheckCircle2, Folder, Copy, Trash2, ArrowLeft, Tag, Zap, Sparkles, Search, Receipt, Layers, Users, ShieldCheck, MessageSquare, Settings, BarChart3, FileText, Share2, Edit3, Bell, type LucideIcon } from "lucide-react";
+import { Music, Image as ImageIcon, Upload, Star, ChevronUp, ChevronDown, Pencil, Check, X, Clock, Plus, Menu, Mail, AlertTriangle, CheckCircle2, Folder, Copy, Trash2, ArrowLeft, Tag, Zap, Sparkles, Search, Receipt, Layers, Users, ShieldCheck, MessageSquare, Settings, BarChart3, FileText, Share2, Edit3, Bell, Monitor, Smartphone, type LucideIcon } from "lucide-react";
 import { useApp } from "../App.js";
 import { useLocation } from "wouter";
 import { toAudioProxyUrl } from "../lib/audioProxy.js";
@@ -8032,8 +8032,8 @@ function JourneysTab() {
                   } else if (selectedStep.step_type === "wait") {
                     return (
                       <div style={{ flex: 1, background: "#0a0a0a", border: "1px solid #222", borderRadius: "8px", padding: "24px", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column" }}>
-                        <div style={{ fontSize: "14px", fontWeight: 600, color: "#0B99FC", marginBottom: "8px" }}>
-                          ⏱️ ČEKAT
+                        <div style={{ fontSize: "14px", fontWeight: 600, color: "#0B99FC", marginBottom: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
+                          <Clock size={18} /> ČEKAT
                         </div>
                         <div style={{ fontSize: "24px", fontWeight: 700, color: "#fff", marginBottom: "12px" }}>
                           {selectedStep.delay_hours}h
