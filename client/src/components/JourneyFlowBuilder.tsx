@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from "react";
-import { EmailPreviewTooltip } from "./EmailPreviewTooltip";
 import { Plus, Edit3, Trash2, Send, Clock } from "lucide-react";
 
 interface Step {
@@ -67,8 +66,7 @@ export default function JourneyFlowBuilder({
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [hoveredStepId, setHoveredStepId] = useState<number | null>(null);
-  const [previewPosition, setPreviewPosition] = useState<{ x: number; y: number } | null>(null);
+
   const canvasRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
 
@@ -168,18 +166,14 @@ export default function JourneyFlowBuilder({
 
         {steps?.map((step, idx) => {
           const tpl = templates.find((t) => t.id === step.template_id);
-          const isHovered = hoveredStepId === step.id;
+
           const isSelected = selectedStepId === step.id;
 
           return (
             <div
               key={step.id}
               onClick={() => onSelectStep?.(step.id)}
-              onMouseEnter={(e) => {
-                setHoveredStepId(step.id);
-                const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-                setPreviewPosition({ x: rect.right + 16, y: rect.top });
-              }}
+
               onMouseLeave={() => {
                 setHoveredStepId(null);
                 setPreviewPosition(null);
@@ -190,7 +184,7 @@ export default function JourneyFlowBuilder({
                 top: getNodePosition(idx + 1).y,
                 width: NODE_WIDTH,
                 height: NODE_HEIGHT,
-                background: isSelected ? "rgba(255, 255, 255, 0.08)" : (isHovered ? "#151515" : "#0f0f0f"),
+                background: isSelected ? "rgba(255, 255, 255, 0.08)" : (isHovered),
                 border: `2px solid ${isSelected ? "#fff" : (isHovered ? "#444" : "#333")}`,
                 borderRadius: "8px",
                 padding: "12px",

@@ -121,13 +121,13 @@ const createEmailHTML = (content: string, templateName: string): string => `<!DO
         
         /* Alternate CTA colors */
         .cta-green {
-            background: #10B981 !important;
-            border-color: #10B981 !important;
+            background: #ffffff !important;
+            border-color: #ffffff !important;
         }
         
         .cta-green:hover {
-            background: #059669 !important;
-            border-color: #059669 !important;
+            background: #ffffff !important;
+            border-color: #ffffff !important;
         }
         
         .cta-blue {
