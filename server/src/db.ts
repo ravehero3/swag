@@ -537,6 +537,7 @@ export async function initDatabase() {
       ALTER TABLE marketing_templates ADD COLUMN IF NOT EXISTS blocks JSONB DEFAULT '[]';
       ALTER TABLE marketing_templates ADD COLUMN IF NOT EXISTS header_options JSONB DEFAULT '{}';
       ALTER TABLE marketing_templates ADD COLUMN IF NOT EXISTS category VARCHAR(50);
+      ALTER TABLE marketing_templates ADD COLUMN IF NOT EXISTS audience VARCHAR(50);
       ALTER TABLE marketing_templates ADD COLUMN IF NOT EXISTS journey_name VARCHAR(255);
       ALTER TABLE marketing_templates ADD COLUMN IF NOT EXISTS step_position INTEGER;
       ALTER TABLE marketing_templates ADD COLUMN IF NOT EXISTS step_type VARCHAR(50);
