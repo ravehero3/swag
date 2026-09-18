@@ -4543,16 +4543,25 @@ function BlockInspector({
                     />
                   </div>
 
-                  <input
-                    value={item.coverUrl || ""}
-                    onChange={(e) => {
-                      const next = [...(block.gridItems || [])];
-                      next[idx] = { ...next[idx], coverUrl: e.target.value };
-                      onChange({ gridItems: next });
-                    }}
-                    placeholder="URL cover obrázku"
-                    style={inputStyle}
-                  />
+                  <div style={{ display: "flex", gap: "8px", alignItems: "flex-start" }}>
+                    <div style={{ flex: 1 }}>
+                      <input
+                        value={item.coverUrl || ""}
+                        onChange={(e) => {
+                          const next = [...(block.gridItems || [])];
+                          next[idx] = { ...next[idx], coverUrl: e.target.value };
+                          onChange({ gridItems: next });
+                        }}
+                        placeholder="URL cover obrázku"
+                        style={inputStyle}
+                      />
+                    </div>
+                    {item.coverUrl && (
+                      <div style={{ width: "50px", height: "50px", borderRadius: "4px", border: "1px solid #333", overflow: "hidden", flexShrink: 0 }}>
+                        <img src={item.coverUrl} alt="Preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      </div>
+                    )}
+                  </div>
 
                   <input
                     value={item.url || ""}

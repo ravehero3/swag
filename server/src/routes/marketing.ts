@@ -1139,11 +1139,12 @@ router.post("/campaigns/:id/send-test", requireAdmin, testSendLimiter, async (re
 // Helper for selecting beats and sound kits inside the Beat Highlight block of the visual editor
 router.get("/beats-select", requireAdmin, async (_req: Request, res: Response) => {
   try {
+    // Get published beats - these are the "live" beats in beaty playlist
     const beatsRes = await pool.query(
-      `SELECT id, title, bpm, scale_key, mp3_price, cover_art_url FROM beats WHERE is_published = true ORDER BY created_at DESC LIMIT 50`
+      `SELECT id, title, bpm, scale_key, mp3_price, cover_art_url FROM beats WHERE is_published = true ORDER BY created_at DESC LIMIT 100`
     );
     const kitsRes = await pool.query(
-      `SELECT id, title, price, artwork_url FROM sound_kits WHERE is_published = true ORDER BY created_at DESC LIMIT 50`
+      `SELECT id, title, price, artwork_url FROM sound_kits WHERE is_published = true ORDER BY created_at DESC LIMIT 100`
     );
 
     const items = [
@@ -1151,7 +1152,7 @@ router.get("/beats-select", requireAdmin, async (_req: Request, res: Response) =
         id: `beat-${b.id}`,
         title: b.title,
         subtitle: "Beat",
-        coverUrl: b.cover_art_url,
+        coverUrl: b.cover_art_url || "/default-beat-cover.jpg", // Fallback if no cover
         price: b.mp3_price ? `od ${b.mp3_price} Kč` : "Bez ceny",
         bpmKey: [b.bpm ? `${b.bpm} BPM` : "", b.scale_key || ""].filter(Boolean).join(" • "),
         url: `/beaty?beat=${b.id}`,
@@ -1160,7 +1161,7 @@ router.get("/beats-select", requireAdmin, async (_req: Request, res: Response) =
         id: `kit-${k.id}`,
         title: k.title,
         subtitle: "Sound Kit",
-        coverUrl: k.artwork_url,
+        coverUrl: k.artwork_url || "/default-kit-cover.jpg", // Fallback if no cover
         price: k.price ? `${k.price} Kč` : "Zdarma",
         bpmKey: "Sound Kit",
         url: `/zvuky`,
