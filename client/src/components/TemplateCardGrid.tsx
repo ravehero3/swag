@@ -25,78 +25,7 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
   onSelectTemplate,
   journeyId,
 }) => {
-  const [filterBy, setFilterBy] = useState<"all" | "rapper" | "producer" | "general">("all");
   const [previewTemplateId, setPreviewTemplateId] = useState<number | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [savingId, setSavingId] = useState<number | null>(null);
-
-  // Organize templates by audience (treat missing/null as "general")
-  const rapperTemplates = useMemo(
-    () => templates.filter(t => t.audience === "rapper"),
-    [templates]
-  );
-
-  const producerTemplates = useMemo(
-    () => templates.filter(t => t.audience === "producer"),
-    [templates]
-  );
-
-  const generalTemplates = useMemo(
-    () => templates.filter(t => !t.audience || t.audience === "general"),
-    [templates]
-  );
-
-  // Search filter
-  const filterBySearch = (list: Template[]) => {
-    if (!searchQuery) return list;
-    return list.filter(
-      t => t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-           t.subject.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  };
-
-  // Apply search to all categories
-  const filteredRapper = useMemo(() => filterBySearch(rapperTemplates), [rapperTemplates, searchQuery]);
-  const filteredProducer = useMemo(() => filterBySearch(producerTemplates), [producerTemplates, searchQuery]);
-  const filteredGeneral = useMemo(() => filterBySearch(generalTemplates), [generalTemplates, searchQuery]);
-
-  // Determine which categories to show based on filter
-  const showRapper = filterBy === "all" || filterBy === "rapper";
-  const showProducer = filterBy === "all" || filterBy === "producer";
-  const showGeneral = filterBy === "all" || filterBy === "general";
-
-  // Handle audience update - toggle on/off
-  const handleAudienceUpdate = async (templateId: number, selectedAudience: "rapper" | "producer" | "general") => {
-    const template = templates.find(t => t.id === templateId);
-    if (!template) return;
-    
-    // Toggle: if already selected, set to null (general). Otherwise set to selected
-    const newAudience = template.audience === selectedAudience ? null : selectedAudience;
-    
-    setSavingId(templateId);
-    try {
-      const response = await fetch(`/api/marketing/templates/${String(templateId)}/audience`, {
-        method: "PATCH",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ audience: newAudience }),
-      });
-      
-      if (response.ok) {
-        console.log("✅ Template audience updated:", { templateId, newAudience, responseStatus: response.status });
-        // Update local templates state instead of reloading
-        const updatedTemplate = await response.json();
-        // Show success feedback briefly then clear
-        setTimeout(() => setSavingId(null), 800);
-      } else {
-        console.error("❌ Failed to update:", response.status);
-        setSavingId(null);
-      }
-    } catch (err) {
-      console.error("❌ Error updating audience:", err);
-      setSavingId(null);
-    }
-  };
 
   const renderTemplateCard = (template: Template) => (
     <div
@@ -116,7 +45,7 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
         display: "flex",
         flexDirection: "column",
         gap: "8px",
-        minHeight: "200px",
+        minHeight: "150px",
         overflow: "hidden",
       }}
       onClick={() => onSelectTemplate(template.id)}
@@ -141,84 +70,9 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
         (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
       }}
     >
-      {/* Header with Title and Category Selector */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-        <div style={{ fontSize: "12px", fontWeight: 600, color: "#fff", textAlign: "left", flex: 1 }}>
-          {template.name}
-        </div>
-        
-        {/* Category Selector Buttons - Right Side (Toggle) */}
-        <div style={{ display: "flex", gap: "4px", marginLeft: "8px" }}>
-          <button
-            onClick={(e: any) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handleAudienceUpdate(template.id, "rapper");
-            }}
-            disabled={savingId === template.id}
-            style={{
-              padding: "4px 8px",
-              background: template.audience === "rapper" ? "#E11D48" : "rgba(255,255,255,0.05)",
-              border: template.audience === "rapper" ? "1px solid #E11D48" : "1px solid rgba(255,255,255,0.1)",
-              color: template.audience === "rapper" ? "#fff" : "#888",
-              borderRadius: "4px",
-              fontSize: "9px",
-              fontWeight: 600,
-              cursor: savingId === template.id ? "wait" : "pointer",
-              transition: "all 150ms",
-              opacity: savingId === template.id ? 0.6 : 1,
-            }}
-            onMouseEnter={(e: any) => {
-              if (savingId !== template.id) {
-                e.currentTarget.style.background = template.audience === "rapper" ? "#E11D48" : "rgba(255,255,255,0.08)";
-                e.currentTarget.style.borderColor = template.audience === "rapper" ? "#E11D48" : "rgba(255,255,255,0.2)";
-              }
-            }}
-            onMouseLeave={(e: any) => {
-              if (savingId !== template.id) {
-                e.currentTarget.style.background = template.audience === "rapper" ? "#E11D48" : "rgba(255,255,255,0.05)";
-                e.currentTarget.style.borderColor = template.audience === "rapper" ? "1px solid #E11D48" : "1px solid rgba(255,255,255,0.1)";
-              }
-            }}
-          >
-            {savingId === template.id ? "Saving..." : "Rappeři"}
-          </button>
-          
-          <button
-            onClick={(e: any) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handleAudienceUpdate(template.id, "producer");
-            }}
-            disabled={savingId === template.id}
-            style={{
-              padding: "4px 8px",
-              background: template.audience === "producer" ? "#E11D48" : "rgba(255,255,255,0.05)",
-              border: template.audience === "producer" ? "1px solid #E11D48" : "1px solid rgba(255,255,255,0.1)",
-              color: template.audience === "producer" ? "#fff" : "#888",
-              borderRadius: "4px",
-              fontSize: "9px",
-              fontWeight: 600,
-              cursor: savingId === template.id ? "wait" : "pointer",
-              transition: "all 150ms",
-              opacity: savingId === template.id ? 0.6 : 1,
-            }}
-            onMouseEnter={(e: any) => {
-              if (savingId !== template.id) {
-                e.currentTarget.style.background = template.audience === "producer" ? "#E11D48" : "rgba(255,255,255,0.08)";
-                e.currentTarget.style.borderColor = template.audience === "producer" ? "#E11D48" : "rgba(255,255,255,0.2)";
-              }
-            }}
-            onMouseLeave={(e: any) => {
-              if (savingId !== template.id) {
-                e.currentTarget.style.background = template.audience === "producer" ? "#E11D48" : "rgba(255,255,255,0.05)";
-                e.currentTarget.style.borderColor = template.audience === "producer" ? "1px solid #E11D48" : "1px solid rgba(255,255,255,0.1)";
-              }
-            }}
-          >
-            {savingId === template.id ? "Saving..." : "Produceři"}
-          </button>
-        </div>
+      {/* Template Name */}
+      <div style={{ fontSize: "12px", fontWeight: 600, color: "#fff", textAlign: "left" }}>
+        {template.name}
       </div>
 
       {/* Subject Line Preview */}
@@ -307,149 +161,16 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-      {/* Filter Section */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-        {/* Search Bar */}
-        <input
-          type="text"
-          placeholder="Hledejte šablonu..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          style={{
-            width: "100%",
-            padding: "8px 12px",
-            background: "rgba(255, 255, 255, 0.05)",
-            border: "1px solid rgba(255, 255, 255, 0.1)",
-            borderRadius: "6px",
-            color: "#fff",
-            fontSize: "12px",
-          }}
-        />
+      {/* Simple grid - no filters, no search */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: "12px" }}>
+        {templates.map((t) => renderTemplateCard(t))}
+      </div>
 
-        {/* Filter Buttons */}
-        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-          {(["all", "rapper", "producer", "general"] as const).map((filter) => (
-            <button
-              key={filter}
-              onClick={() => setFilterBy(filter)}
-              style={{
-                padding: "6px 14px",
-                background: filterBy === filter ? "#E11D48" : "rgba(255, 255, 255, 0.05)",
-                border: filterBy === filter ? "1px solid #E11D48" : "1px solid rgba(255, 255, 255, 0.1)",
-                borderRadius: "6px",
-                color: filterBy === filter ? "#000" : "#bbb",
-                fontSize: "11px",
-                fontWeight: 600,
-                cursor: "pointer",
-                transition: "all 150ms",
-              }}
-              onMouseEnter={(e) => {
-                if (filterBy !== filter) {
-                  (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.08)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (filterBy !== filter) {
-                  (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.05)";
-                }
-              }}
-            >
-              {filter === "all" && "Všechny"}
-              {filter === "rapper" && "Rappeři"}
-              {filter === "producer" && "Produceři"}
-              {filter === "general" && "Obecné"}
-            </button>
-          ))}
+      {templates.length === 0 && (
+        <div style={{ textAlign: "center", padding: "40px 20px", color: "#666", fontSize: "12px" }}>
+          Žádné šablony k dispozici.
         </div>
-      </div>
-
-      {/* Templates organized by category */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-        
-        {/* RAPPEŘI SECTION */}
-        {showRapper && filteredRapper.length > 0 && (
-          <div>
-            <div style={{ 
-              fontSize: "12px", 
-              fontWeight: 700, 
-              color: "#10B981", 
-              marginBottom: "12px", 
-              textTransform: "uppercase", 
-              letterSpacing: "0.5px",
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-            }}>
-              🎤 RAPPEŘI
-              <span style={{ fontSize: "10px", color: "#666", fontWeight: 500, textTransform: "none", letterSpacing: "normal" }}>
-                ({filteredRapper.length})
-              </span>
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "12px" }}>
-              {filteredRapper.map((t) => renderTemplateCard(t))}
-            </div>
-          </div>
-        )}
-
-        {/* PRODUCEŘI SECTION */}
-        {showProducer && filteredProducer.length > 0 && (
-          <div>
-            <div style={{ 
-              fontSize: "12px", 
-              fontWeight: 700, 
-              color: "#6366F1", 
-              marginBottom: "12px", 
-              textTransform: "uppercase", 
-              letterSpacing: "0.5px",
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-            }}>
-              🎹 PRODUCEŘI
-              <span style={{ fontSize: "10px", color: "#666", fontWeight: 500, textTransform: "none", letterSpacing: "normal" }}>
-                ({filteredProducer.length})
-              </span>
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "12px" }}>
-              {filteredProducer.map((t) => renderTemplateCard(t))}
-            </div>
-          </div>
-        )}
-
-        {/* OBECNÉ SECTION */}
-        {showGeneral && filteredGeneral.length > 0 && (
-          <div>
-            <div style={{ 
-              fontSize: "12px", 
-              fontWeight: 700, 
-              color: "#F59E0B", 
-              marginBottom: "12px", 
-              textTransform: "uppercase", 
-              letterSpacing: "0.5px",
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-            }}>
-              ⚙️ OBECNÉ
-              <span style={{ fontSize: "10px", color: "#666", fontWeight: 500, textTransform: "none", letterSpacing: "normal" }}>
-                ({filteredGeneral.length})
-              </span>
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "12px" }}>
-              {filteredGeneral.map((t) => renderTemplateCard(t))}
-            </div>
-          </div>
-        )}
-
-        {/* No Results */}
-        {(!showRapper || filteredRapper.length === 0) && 
-         (!showProducer || filteredProducer.length === 0) && 
-         (!showGeneral || filteredGeneral.length === 0) && (
-          <div style={{ textAlign: "center", padding: "40px 20px", color: "#666", fontSize: "12px" }}>
-            Žádné šablony se neshodují s vašim hledáním.
-          </div>
-        )}
-      </div>
+      )}
 
       {/* Email Preview Modal */}
       {previewTemplateId && (
