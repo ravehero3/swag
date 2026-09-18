@@ -7953,7 +7953,7 @@ function JourneysTab() {
 
           {/* Journey Sequence */}
           {detail?.journey && (
-            <div style={{ marginTop: "40px", height: "700px", display: "flex", gap: "0" }}>
+            <div style={{ marginTop: "20px", height: "calc(100vh - 280px)", maxHeight: "600px", display: "flex", gap: "0" }}>
               {/* Left: Journey Flow */}
               <div style={{ flex: 1, borderRight: "1px solid #333", paddingRight: "20px" }}>
                 <div style={{ fontSize: "14px", fontWeight: 600, color: "#fff", marginBottom: "20px" }}>

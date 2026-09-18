@@ -40,13 +40,13 @@ const createEmailHTML = (content: string, templateName: string): string => `<!DO
             background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
             padding: 32px 24px;
             text-align: center;
-            border-bottom: 2px solid #E11D48;
+            border-bottom: 2px solid #ffffff;
         }
         
         .logo {
             font-size: 32px;
             font-weight: 900;
-            color: #E11D48;
+            color: #ffffff;
             letter-spacing: 2px;
             text-transform: uppercase;
             margin-bottom: 4px;
@@ -77,7 +77,7 @@ const createEmailHTML = (content: string, templateName: string): string => `<!DO
         
         .email-body strong {
             font-weight: 700;
-            color: #E11D48;
+            color: #ffffff;
         }
         
         .email-body ol,
@@ -95,13 +95,13 @@ const createEmailHTML = (content: string, templateName: string): string => `<!DO
         .email-body li strong {
             display: inline-block;
             margin-right: 4px;
-            color: #E11D48;
+            color: #ffffff;
         }
         
         /* Call-to-Action */
         .cta-button {
             display: inline-block !important;
-            background: #E11D48 !important;
+            background: #ffffff !important;
             color: #ffffff !important;
             padding: 14px 28px !important;
             text-decoration: none !important;
@@ -111,7 +111,7 @@ const createEmailHTML = (content: string, templateName: string): string => `<!DO
             text-align: center !important;
             margin: 16px 0 !important;
             transition: all 200ms !important;
-            border: 1px solid #E11D48 !important;
+            border: 1px solid #ffffff !important;
         }
         
         .cta-button:hover {
@@ -141,8 +141,8 @@ const createEmailHTML = (content: string, templateName: string): string => `<!DO
         }
         
         .cta-orange {
-            background: #EA580C !important;
-            border-color: #EA580C !important;
+            background: #ffffff !important;
+            border-color: #ffffff !important;
         }
         
         .cta-orange:hover {
@@ -218,7 +218,7 @@ const createEmailHTML = (content: string, templateName: string): string => `<!DO
         }
         
         .email-footer-links a {
-            color: #E11D48;
+            color: #ffffff;
             text-decoration: none;
         }
         
@@ -229,7 +229,7 @@ const createEmailHTML = (content: string, templateName: string): string => `<!DO
         /* Highlights and sections */
         .highlight-box {
             background: rgba(225, 29, 72, 0.1);
-            border-left: 4px solid #E11D48;
+            border-left: 4px solid #ffffff;
             padding: 16px;
             margin: 16px 0;
             border-radius: 4px;
@@ -289,7 +289,7 @@ const createEmailHTML = (content: string, templateName: string): string => `<!DO
             <div class="email-footer-divider"></div>
             <div class="email-footer-text">
                 <strong>Kontakt:</strong><br>
-                Email: <a href="mailto:info@voodoo808.cz" style="color: #E11D48; text-decoration: none;">info@voodoo808.cz</a>
+                Email: <a href="mailto:info@voodoo808.cz" style="color: #ffffff; text-decoration: none;">info@voodoo808.cz</a>
             </div>
             <div class="email-footer-divider"></div>
             <div class="email-footer-links">

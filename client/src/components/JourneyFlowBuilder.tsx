@@ -125,6 +125,8 @@ export default function JourneyFlowBuilder({
       onWheel={handleWheel}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
       style={{
         width: "100%",
         height: "100%",
@@ -133,6 +135,7 @@ export default function JourneyFlowBuilder({
         position: "relative",
         overflow: "hidden",
         cursor: isDragging ? "grabbing" : "grab",
+        userSelect: "none",
       }}
     >
       <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} pointerEvents="none">
