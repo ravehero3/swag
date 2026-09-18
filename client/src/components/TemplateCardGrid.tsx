@@ -62,7 +62,7 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
   // Determine which categories to show based on filter
   const showRapper = filterBy === "all" || filterBy === "rapper";
   const showProducer = filterBy === "all" || filterBy === "producer";
-  const showGeneral = filterBy === "all" || filterBy === "general" || filterBy === "rapper" || filterBy === "producer";
+  const showGeneral = filterBy === "all" || filterBy === "general";
 
   const renderTemplateCard = (template: Template) => (
     <div
