@@ -119,7 +119,8 @@ export default function JourneyFlowBuilder({
       onMouseMove={handleMouseMove}
       style={{
         width: "100%",
-        height: "600px",
+        height: "100%",
+        minHeight: "600px",
         background: "#080808",
         position: "relative",
         overflow: "hidden",
@@ -179,7 +180,7 @@ export default function JourneyFlowBuilder({
                 width: NODE_WIDTH,
                 height: NODE_HEIGHT,
                 background: isSelected ? "rgba(225, 29, 72, 0.15)" : (isHovered ? "#151515" : "#0f0f0f"),
-                border: `2px solid ${isSelected ? "#E11D48" : (isHovered ? "#444" : "#333")}`,
+                border: `2px solid ${isSelected ? "#0B99FC" : (isHovered ? "#444" : "#333")}`,
                 borderRadius: "8px",
                 padding: "12px",
                 boxSizing: "border-box",

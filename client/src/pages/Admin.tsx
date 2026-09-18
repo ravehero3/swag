@@ -247,8 +247,8 @@ function NotifikaceTab() {
             key={type}
             onClick={() => setFilter(type)}
             style={{
-              background: filter === type ? "#E11D48" : "rgba(255,255,255,0.05)",
-              border: filter === type ? "1px solid #E11D48" : "1px solid rgba(255,255,255,0.1)",
+              background: filter === type ? "#0B99FC" : "rgba(255,255,255,0.05)",
+              border: filter === type ? "1px solid #0B99FC" : "1px solid rgba(255,255,255,0.1)",
               color: filter === type ? "#fff" : "#888",
               borderRadius: "6px",
               padding: "8px 14px",
@@ -7659,6 +7659,7 @@ function JourneysTab() {
   const [selectedStepId, setSelectedStepId] = useState<number | null>(null);
   const [editingTemplateId, setEditingTemplateId] = useState<number | null>(null);
   const [showTemplateEditor, setShowTemplateEditor] = useState(false);
+  const [previewMode, setPreviewMode] = useState<"desktop" | "mobile">("desktop");
   const [stepForm, setStepForm] = useState<any>({ stepType: "email", delayHours: 0, templateId: "", condition: "has_purchased", conditionTag: "", onTrue: "end", onFalse: "continue" });
   const [visualStep, setVisualStep] = useState<{ step: any; template: any } | null>(null);
 
@@ -8014,7 +8015,7 @@ function JourneysTab() {
                               setEditingTemplateId(selectedStep.template_id);
                               setShowTemplateEditor(true);
                             }}
-                            style={{ background: "rgba(225, 29, 72, 0.2)", border: "1px solid rgba(225, 29, 72, 0.3)", color: "#E11D48", borderRadius: "4px", padding: "4px 8px", fontSize: "11px", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }}
+                            style={{ background: "rgba(225, 29, 72, 0.2)", border: "1px solid rgba(225, 29, 72, 0.3)", color: "#0B99FC", borderRadius: "4px", padding: "4px 8px", fontSize: "11px", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }}
                             onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(225, 29, 72, 0.3)"; }}
                             onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(225, 29, 72, 0.2)"; }}
                           >
@@ -8031,7 +8032,7 @@ function JourneysTab() {
                   } else if (selectedStep.step_type === "wait") {
                     return (
                       <div style={{ flex: 1, background: "#0a0a0a", border: "1px solid #222", borderRadius: "8px", padding: "24px", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column" }}>
-                        <div style={{ fontSize: "14px", fontWeight: 600, color: "#E11D48", marginBottom: "8px" }}>
+                        <div style={{ fontSize: "14px", fontWeight: 600, color: "#0B99FC", marginBottom: "8px" }}>
                           ⏱️ ČEKAT
                         </div>
                         <div style={{ fontSize: "24px", fontWeight: 700, color: "#fff", marginBottom: "12px" }}>
@@ -8116,8 +8117,8 @@ function JourneysTab() {
                     onClick={() => setStepForm({ ...stepForm, delayHours: option.value })}
                     style={{
                       padding: "10px 12px",
-                      background: stepForm.delayHours === option.value ? "#E11D48" : "rgba(255,255,255,0.05)",
-                      border: stepForm.delayHours === option.value ? "1px solid #E11D48" : "1px solid #222",
+                      background: stepForm.delayHours === option.value ? "#0B99FC" : "rgba(255,255,255,0.05)",
+                      border: stepForm.delayHours === option.value ? "1px solid #0B99FC" : "1px solid #222",
                       color: stepForm.delayHours === option.value ? "#fff" : "#bbb",
                       borderRadius: "6px",
                       fontSize: "12px",
