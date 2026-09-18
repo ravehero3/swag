@@ -17,6 +17,7 @@ import JourneyFlowBuilder from "../components/JourneyFlowBuilder.js";
 import JourneyContainers from "../components/JourneyContainers.js";
 import { TemplateCardGrid } from "../components/TemplateCardGrid.js";
 import { VisualEmailBuilder } from "../components/VisualEmailBuilder.js";
+import { EmailEditorModal } from "../components/EmailEditorModal.js";
 import {
   BeatArtwork,
   parseArtworkConfig,
@@ -8250,40 +8251,22 @@ function JourneysTab() {
         />
       )}
 
-      {/* Template editing moved to Sablony tab - navigate there */}
-      {showTemplateEditor && editingTemplateId && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.9)", zIndex: 99999, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column" }}>
-          <div style={{ background: "#0a0a0a", border: "1px solid #222", borderRadius: "12px", padding: "32px", maxWidth: "420px", textAlign: "center" }}>
-            <div style={{ fontSize: "16px", fontWeight: 600, color: "#fff", marginBottom: "16px" }}>Upravit šablonu</div>
-            <div style={{ fontSize: "14px", color: "#aaa", marginBottom: "24px", lineHeight: 1.6 }}>
-              Chcete-li upravit tuto e-mailovou šablonu, přejděte na kartu <strong>Sablony</strong>.
-            </div>
-            <div style={{ display: "flex", gap: "8px" }}>
-              <button
-                onClick={() => {
-                  setShowTemplateEditor(false);
-                  setEditingTemplateId(null);
-                }}
-                style={{ flex: 1, padding: "10px", background: "rgba(255,255,255,0.05)", border: "1px solid #444", borderRadius: "6px", color: "#fff", cursor: "pointer", fontSize: "12px", fontWeight: 600 }}
-              >
-                Zavřít
-              </button>
-              <button
-                onClick={() => {
-                  // Navigate to Sablony tab
-                  const sablonyBtn = document.querySelector('[data-tab="sablony"]') as HTMLElement;
-                  if (sablonyBtn) sablonyBtn.click();
-                  setShowTemplateEditor(false);
-                  setEditingTemplateId(null);
-                }}
-                style={{ flex: 1, padding: "10px", background: "#0B99FC", border: "1px solid #0B99FC", borderRadius: "6px", color: "#000", cursor: "pointer", fontSize: "12px", fontWeight: 600 }}
-              >
-                Jít na Sablony
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Email Editor Modal - Opens directly in journeys tab */}
+      <EmailEditorModal
+        isOpen={showTemplateEditor}
+        templateId={editingTemplateId}
+        onClose={() => {
+          setShowTemplateEditor(false);
+          setEditingTemplateId(null);
+        }}
+        onSave={() => {
+          // Refresh journey detail to show updated template
+          if (detail?.journey?.id) {
+            openJourneyDetail(detail.journey.id);
+          }
+          load();
+        }}
+      />
     </div>
   );
 }
