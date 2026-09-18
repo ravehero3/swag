@@ -174,10 +174,7 @@ export default function JourneyFlowBuilder({
               key={step.id}
               onClick={() => onSelectStep?.(step.id)}
 
-              onMouseLeave={() => {
-                setHoveredStepId(null);
-                setPreviewPosition(null);
-              }}
+
               style={{
                 position: "absolute",
                 left: getNodePosition(idx + 1).x,
