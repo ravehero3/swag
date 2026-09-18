@@ -144,59 +144,75 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
         
         {/* Category Selector Buttons - Right Side (Toggle) */}
         <div style={{ display: "flex", gap: "4px", marginLeft: "8px" }}>
-          {[
-            { label: "Rappeři", value: "rapper" as const },
-            { label: "Produceři", value: "producer" as const },
-          ].map(option => (
-            <button
-              key={option.label}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleAudienceUpdate(template.id, option.value);
-              }}
-              disabled={savingId === template.id}
-              style={{
-                padding: "4px 8px",
-                background: template.audience === option.value 
-                  ? "#E11D48" 
-                  : "rgba(255,255,255,0.05)",
-                border: template.audience === option.value 
-                  ? "1px solid #E11D48" 
-                  : "1px solid rgba(255,255,255,0.1)",
-                color: template.audience === option.value ? "#fff" : "#888",
-                borderRadius: "4px",
-                fontSize: "9px",
-                fontWeight: 600,
-                cursor: savingId === template.id ? "wait" : "pointer",
-                transition: "all 150ms",
-                opacity: savingId === template.id ? 0.6 : 1,
-                whiteSpace: "nowrap",
-              }}
-              onMouseEnter={(e) => {
-                if (savingId !== template.id) {
-                  (e.currentTarget as HTMLElement).style.background = template.audience === option.value
-                    ? "#E11D48"
-                    : "rgba(255,255,255,0.08)";
-                  (e.currentTarget as HTMLElement).style.borderColor = template.audience === option.value
-                    ? "#E11D48"
-                    : "rgba(255,255,255,0.2)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (savingId !== template.id) {
-                  (e.currentTarget as HTMLElement).style.background = template.audience === option.value 
-                    ? "#E11D48" 
-                    : "rgba(255,255,255,0.05)";
-                  (e.currentTarget as HTMLElement).style.borderColor = template.audience === option.value 
-                    ? "1px solid #E11D48" 
-                    : "1px solid rgba(255,255,255,0.1)";
-                }
-              }}
-              title={template.audience === option.value ? `Click to unset ${option.label}` : `Mark as ${option.label}`}
-            >
-              {savingId === template.id ? "..." : option.label}
-            </button>
-          ))}
+          <button
+            onClick={(e: any) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleAudienceUpdate(template.id, "rapper");
+            }}
+            disabled={savingId === template.id}
+            style={{
+              padding: "4px 8px",
+              background: template.audience === "rapper" ? "#E11D48" : "rgba(255,255,255,0.05)",
+              border: template.audience === "rapper" ? "1px solid #E11D48" : "1px solid rgba(255,255,255,0.1)",
+              color: template.audience === "rapper" ? "#fff" : "#888",
+              borderRadius: "4px",
+              fontSize: "9px",
+              fontWeight: 600,
+              cursor: savingId === template.id ? "wait" : "pointer",
+              transition: "all 150ms",
+              opacity: savingId === template.id ? 0.6 : 1,
+            }}
+            onMouseEnter={(e: any) => {
+              if (savingId !== template.id) {
+                e.currentTarget.style.background = template.audience === "rapper" ? "#E11D48" : "rgba(255,255,255,0.08)";
+                e.currentTarget.style.borderColor = template.audience === "rapper" ? "#E11D48" : "rgba(255,255,255,0.2)";
+              }
+            }}
+            onMouseLeave={(e: any) => {
+              if (savingId !== template.id) {
+                e.currentTarget.style.background = template.audience === "rapper" ? "#E11D48" : "rgba(255,255,255,0.05)";
+                e.currentTarget.style.borderColor = template.audience === "rapper" ? "1px solid #E11D48" : "1px solid rgba(255,255,255,0.1)";
+              }
+            }}
+          >
+            {savingId === template.id ? "..." : "Rappeři"}
+          </button>
+          
+          <button
+            onClick={(e: any) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleAudienceUpdate(template.id, "producer");
+            }}
+            disabled={savingId === template.id}
+            style={{
+              padding: "4px 8px",
+              background: template.audience === "producer" ? "#E11D48" : "rgba(255,255,255,0.05)",
+              border: template.audience === "producer" ? "1px solid #E11D48" : "1px solid rgba(255,255,255,0.1)",
+              color: template.audience === "producer" ? "#fff" : "#888",
+              borderRadius: "4px",
+              fontSize: "9px",
+              fontWeight: 600,
+              cursor: savingId === template.id ? "wait" : "pointer",
+              transition: "all 150ms",
+              opacity: savingId === template.id ? 0.6 : 1,
+            }}
+            onMouseEnter={(e: any) => {
+              if (savingId !== template.id) {
+                e.currentTarget.style.background = template.audience === "producer" ? "#E11D48" : "rgba(255,255,255,0.08)";
+                e.currentTarget.style.borderColor = template.audience === "producer" ? "#E11D48" : "rgba(255,255,255,0.2)";
+              }
+            }}
+            onMouseLeave={(e: any) => {
+              if (savingId !== template.id) {
+                e.currentTarget.style.background = template.audience === "producer" ? "#E11D48" : "rgba(255,255,255,0.05)";
+                e.currentTarget.style.borderColor = template.audience === "producer" ? "1px solid #E11D48" : "1px solid rgba(255,255,255,0.1)";
+              }
+            }}
+          >
+            {savingId === template.id ? "..." : "Produceři"}
+          </button>
         </div>
       </div>
 

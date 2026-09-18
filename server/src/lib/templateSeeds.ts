@@ -21,15 +21,18 @@ const createEmailHTML = (content: string, templateName: string): string => `<!DO
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
             line-height: 1.6;
-            color: #1a1a1a;
-            background: #f8f8f8;
+            color: #2a2a2a;
+            background: #0f0f0f;
         }
         
         .email-wrapper {
             max-width: 600px;
-            margin: 0 auto;
-            background: #ffffff;
-            border: 1px solid #e0e0e0;
+            margin: 20px auto;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
         }
         
         /* Header */
@@ -37,35 +40,39 @@ const createEmailHTML = (content: string, templateName: string): string => `<!DO
             background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
             padding: 32px 24px;
             text-align: center;
-            border-bottom: 3px solid #E11D48;
+            border-bottom: 2px solid #E11D48;
         }
         
         .logo {
-            font-size: 28px;
+            font-size: 32px;
             font-weight: 900;
             color: #E11D48;
             letter-spacing: 2px;
             text-transform: uppercase;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
         }
         
         .logo-subtitle {
             font-size: 11px;
             color: #888;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
             text-transform: uppercase;
+            font-weight: 500;
         }
         
         /* Body Content */
         .email-body {
             padding: 32px 24px;
+            background: #1a1a1a;
+            color: #ddd;
         }
         
         .email-body p {
             margin-bottom: 16px;
             font-size: 14px;
             line-height: 1.8;
-            color: #2a2a2a;
+            color: #ccc;
         }
         
         .email-body strong {
@@ -186,9 +193,9 @@ const createEmailHTML = (content: string, templateName: string): string => `<!DO
         
         /* Footer */
         .email-footer {
-            background: #f8f8f8;
+            background: #0f0f0f;
             padding: 24px;
-            border-top: 1px solid #e0e0e0;
+            border-top: 1px solid #333;
             text-align: center;
             font-size: 12px;
             color: #666;
@@ -221,7 +228,7 @@ const createEmailHTML = (content: string, templateName: string): string => `<!DO
         
         /* Highlights and sections */
         .highlight-box {
-            background: #f8f8f8;
+            background: rgba(225, 29, 72, 0.1);
             border-left: 4px solid #E11D48;
             padding: 16px;
             margin: 16px 0;
@@ -232,7 +239,7 @@ const createEmailHTML = (content: string, templateName: string): string => `<!DO
             margin: 0;
             font-size: 13px;
             font-weight: 600;
-            color: #1a1a1a;
+            color: #ccc;
         }
         
         /* Responsive */
