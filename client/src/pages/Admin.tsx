@@ -7656,6 +7656,7 @@ function JourneysTab() {
   const [recommendedTemplates, setRecommendedTemplates] = useState<any[]>([]);
   const [showStepForm, setShowStepForm] = useState(false);
   const [editingStep, setEditingStep] = useState<any>(null);
+  const [selectedStepId, setSelectedStepId] = useState<number | null>(null);
   const [stepForm, setStepForm] = useState<any>({ stepType: "email", delayHours: 0, templateId: "", condition: "has_purchased", conditionTag: "", onTrue: "end", onFalse: "continue" });
   const [visualStep, setVisualStep] = useState<{ step: any; template: any } | null>(null);
 
@@ -7947,23 +7948,84 @@ function JourneysTab() {
 
           {/* Journey Sequence */}
           {detail?.journey && (
-            <div style={{ marginTop: "40px", minHeight: detail.steps && detail.steps.length > 0 ? Math.max(600, (detail.steps.length * 180) + 100) : 400, overflowY: "auto", paddingRight: "12px" }}>
-              <div style={{ fontSize: "14px", fontWeight: 600, color: "#fff", marginBottom: "20px" }}>
-                Sekvence: {detail.journey.name}
+            <div style={{ marginTop: "40px", minHeight: detail.steps && detail.steps.length > 0 ? Math.max(600, (detail.steps.length * 180) + 100) : 400, display: "flex", gap: "20px" }}>
+              {/* Left: Journey Flow */}
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: "14px", fontWeight: 600, color: "#fff", marginBottom: "20px" }}>
+                  Sekvence: {detail.journey.name}
+                </div>
+                <div style={{ position: "relative" }}>
+                  <JourneyFlowBuilder
+                    journey={detail.journey}
+                    steps={detail.steps || []}
+                    templates={templates}
+                    onEditStep={(step) => { setEditingStep(step); setShowStepForm(true); setSelectedStepId(step.id); }}
+                    onDeleteStep={deleteStep}
+                    onAddStep={() => { setEditingStep(null); setShowStepForm(true); }}
+                    onTestEmail={handleSendTest}
+                    testSendingStepId={testSendingStepId}
+                    testEmail={testEmail}
+                    onTestEmailChange={setTestEmail}
+                    stepStats={stepStats}
+                  />
+                </div>
               </div>
-              <JourneyFlowBuilder
-                journey={detail.journey}
-                steps={detail.steps || []}
-                templates={templates}
-                onEditStep={(step) => { setEditingStep(step); setShowStepForm(true); }}
-                onDeleteStep={deleteStep}
-                onAddStep={() => { setEditingStep(null); setShowStepForm(true); }}
-                onTestEmail={handleSendTest}
-                testSendingStepId={testSendingStepId}
-                testEmail={testEmail}
-                onTestEmailChange={setTestEmail}
-                stepStats={stepStats}
-              />
+              
+              {/* Right: Preview */}
+              <div style={{ width: "400px", borderLeft: "1px solid #333", paddingLeft: "20px", display: "flex", flexDirection: "column" }}>
+                <div style={{ fontSize: "14px", fontWeight: 600, color: "#fff", marginBottom: "20px" }}>
+                  Náhled Kroku
+                </div>
+                
+                {selectedStepId ? (() => {
+                  const selectedStep = detail.steps?.find((s: any) => s.id === selectedStepId);
+                  if (!selectedStep) return <div style={{ color: "#666", fontSize: "12px" }}>Krok nenalezen</div>;
+                  
+                  if (selectedStep.step_type === "email") {
+                    return (
+                      <div style={{ flex: 1, background: "#0a0a0a", border: "1px solid #222", borderRadius: "8px", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+                        <div style={{ padding: "12px", background: "rgba(225, 29, 72, 0.1)", borderBottom: "1px solid #222", fontSize: "12px", color: "#ddd" }}>
+                          {templates.find((t: any) => t.id === selectedStep.template_id)?.name || "Bez šablony"}
+                        </div>
+                        <iframe 
+                          src={`/api/marketing/journeys/${detail.journey.id}/steps/${selectedStep.id}/preview`}
+                          style={{ flex: 1, border: "none", display: "block" }}
+                          title="Email preview"
+                        />
+                      </div>
+                    );
+                  } else if (selectedStep.step_type === "wait") {
+                    return (
+                      <div style={{ flex: 1, background: "#0a0a0a", border: "1px solid #222", borderRadius: "8px", padding: "24px", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column" }}>
+                        <div style={{ fontSize: "14px", fontWeight: 600, color: "#E11D48", marginBottom: "8px" }}>
+                          ⏱️ ČEKAT
+                        </div>
+                        <div style={{ fontSize: "24px", fontWeight: 700, color: "#fff", marginBottom: "12px" }}>
+                          {selectedStep.delay_hours}h
+                        </div>
+                        <div style={{ fontSize: "12px", color: "#666" }}>
+                          Čeká {selectedStep.delay_hours} hodin předtím, než pokračuje
+                        </div>
+                      </div>
+                    );
+                  } else {
+                    return (
+                      <div style={{ flex: 1, background: "#0a0a0a", border: "1px solid #222", borderRadius: "8px", padding: "24px", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column" }}>
+                        <div style={{ fontSize: "14px", fontWeight: 600, color: "#888", textTransform: "uppercase", marginBottom: "12px" }}>
+                          {selectedStep.step_type}
+                        </div>
+                        <div style={{ fontSize: "12px", color: "#666" }}>
+                          Náhled není dostupný pro tento typ kroku
+                        </div>
+                      </div>
+                    );
+                  }
+                })() : (
+                  <div style={{ flex: 1, background: "#0a0a0a", border: "1px dashed #333", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", color: "#666", fontSize: "12px", textAlign: "center" }}>
+                    Klikněte na krok vlevo pro zobrazení náhledu
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </>
