@@ -544,6 +544,33 @@ router.delete("/templates/:id", requireAdmin, async (req: Request, res: Response
   }
 });
 
+
+// Update template audience/category
+router.patch("/templates/:id/audience", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { audience } = req.body;
+    const validAudiences = ["rapper", "producer", "general", null];
+    
+    if (!validAudiences.includes(audience)) {
+      return res.status(400).json({ error: "Neplatná kategorie. Použijte: 'rapper', 'producer', 'general' nebo null" });
+    }
+    
+    const result = await pool.query(
+      "UPDATE marketing_templates SET audience = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *",
+      [audience, req.params.id]
+    );
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Šablona nenalezena" });
+    }
+    
+    await logMarketingAction("template.audience_updated", req.session.userId || null, { type: "template", id: parseInt(req.params.id, 10) }, { audience: audience || "general" });
+    res.json({ success: true, template: result.rows[0] });
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při aktualizaci kategorie šablony" });
+  }
+});
+
 // Render a template with sample data for the admin preview iframe. Never sends anything.
 router.get("/templates/:id/preview", requireAdmin, async (req: Request, res: Response) => {
   try {

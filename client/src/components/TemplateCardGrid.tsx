@@ -7,7 +7,7 @@ interface Template {
   preheader: string;
   html_content?: string;
   category?: string;
-  audience?: "rapper" | "producer" | "general";
+  audience?: "rapper" | "producer" | "general" | null;
 }
 
 interface TemplateCardGridProps {
@@ -28,6 +28,7 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
   const [filterBy, setFilterBy] = useState<"all" | "rapper" | "producer" | "general">("all");
   const [previewTemplateId, setPreviewTemplateId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [savingId, setSavingId] = useState<number | null>(null);
 
   // Organize templates by audience (treat missing/null as "general")
   const rapperTemplates = useMemo(
@@ -64,6 +65,28 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
   const showProducer = filterBy === "all" || filterBy === "producer";
   const showGeneral = filterBy === "all" || filterBy === "general";
 
+  // Handle audience update
+  const handleAudienceUpdate = async (templateId: number, newAudience: "rapper" | "producer" | "general" | null) => {
+    setSavingId(templateId);
+    try {
+      const response = await fetch(`/api/marketing/templates/${templateId}/audience`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ audience: newAudience }),
+      });
+      
+      if (response.ok) {
+        // Update template in local state by refreshing
+        window.location.reload();
+      }
+    } catch (err) {
+      console.error("Error updating audience:", err);
+    } finally {
+      setSavingId(null);
+    }
+  };
+
   const renderTemplateCard = (template: Template) => (
     <div
       key={template.id}
@@ -82,7 +105,7 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
         display: "flex",
         flexDirection: "column",
         gap: "8px",
-        minHeight: "150px",
+        minHeight: "200px",
         overflow: "hidden",
       }}
       onClick={() => onSelectTemplate(template.id)}
@@ -107,9 +130,65 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
         (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
       }}
     >
-      {/* Template Name */}
-      <div style={{ fontSize: "12px", fontWeight: 600, color: "#fff", textAlign: "left" }}>
-        {template.name}
+      {/* Header with Title and Category Selector */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div style={{ fontSize: "12px", fontWeight: 600, color: "#fff", textAlign: "left", flex: 1 }}>
+          {template.name}
+        </div>
+        
+        {/* Category Selector Buttons - Right Side */}
+        <div style={{ display: "flex", gap: "4px", marginLeft: "8px" }}>
+          {[
+            { label: "Rappeři", value: "rapper" as const },
+            { label: "Produceři", value: "producer" as const },
+            { label: "Všechny", value: null as const },
+          ].map(option => (
+            <button
+              key={option.label}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleAudienceUpdate(template.id, option.value);
+              }}
+              disabled={savingId === template.id}
+              style={{
+                padding: "4px 8px",
+                background: template.audience === option.value 
+                  ? "#E11D48" 
+                  : "rgba(255,255,255,0.05)",
+                border: template.audience === option.value 
+                  ? "1px solid #E11D48" 
+                  : "1px solid rgba(255,255,255,0.1)",
+                color: template.audience === option.value ? "#fff" : "#888",
+                borderRadius: "4px",
+                fontSize: "9px",
+                fontWeight: 600,
+                cursor: savingId === template.id ? "wait" : "pointer",
+                transition: "all 150ms",
+                opacity: savingId === template.id ? 0.6 : 1,
+                whiteSpace: "nowrap",
+              }}
+              onMouseEnter={(e) => {
+                if (savingId !== template.id && template.audience !== option.value) {
+                  (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.08)";
+                  (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.2)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (savingId !== template.id) {
+                  (e.currentTarget as HTMLElement).style.background = template.audience === option.value 
+                    ? "#E11D48" 
+                    : "rgba(255,255,255,0.05)";
+                  (e.currentTarget as HTMLElement).style.borderColor = template.audience === option.value 
+                    ? "1px solid #E11D48" 
+                    : "1px solid rgba(255,255,255,0.1)";
+                }
+              }}
+              title={`Mark as ${option.label}`}
+            >
+              {savingId === template.id ? "..." : option.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Subject Line Preview */}
@@ -254,7 +333,7 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
         </div>
       </div>
 
-      {/* Templates organized by audience */}
+      {/* Templates organized by category */}
       <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
         
         {/* RAPPEŘI SECTION */}
@@ -276,7 +355,7 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
                 ({filteredRapper.length})
               </span>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: "12px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "12px" }}>
               {filteredRapper.map((t) => renderTemplateCard(t))}
             </div>
           </div>
@@ -301,7 +380,7 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
                 ({filteredProducer.length})
               </span>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: "12px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "12px" }}>
               {filteredProducer.map((t) => renderTemplateCard(t))}
             </div>
           </div>
@@ -326,14 +405,16 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
                 ({filteredGeneral.length})
               </span>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: "12px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "12px" }}>
               {filteredGeneral.map((t) => renderTemplateCard(t))}
             </div>
           </div>
         )}
 
         {/* No Results */}
-        {filteredRapper.length === 0 && filteredProducer.length === 0 && filteredGeneral.length === 0 && (
+        {(!showRapper || filteredRapper.length === 0) && 
+         (!showProducer || filteredProducer.length === 0) && 
+         (!showGeneral || filteredGeneral.length === 0) && (
           <div style={{ textAlign: "center", padding: "40px 20px", color: "#666", fontSize: "12px" }}>
             Žádné šablony se neshodují s vašim hledáním.
           </div>
