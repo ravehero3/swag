@@ -8010,31 +8010,49 @@ function JourneysTab() {
                   if (selectedStep.step_type === "email") {
                     return (
                       <div style={{ flex: 1, background: "#0a0a0a", border: "1px solid #222", borderRadius: "8px", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-                        <div style={{ padding: "12px", background: "rgba(225, 29, 72, 0.1)", borderBottom: "1px solid #222", fontSize: "12px", color: "#ddd", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <div style={{ padding: "12px", background: "rgba(255, 255, 255, 0.03)", borderBottom: "1px solid #222", fontSize: "12px", color: "#ddd", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                           <span>{templates.find((t: any) => t.id === selectedStep.template_id)?.name || "Bez šablony"}</span>
-                          <button
-                            onClick={() => {
-                              setEditingTemplateId(selectedStep.template_id);
-                              setShowTemplateEditor(true);
-                            }}
-                            style={{ background: "rgba(225, 29, 72, 0.2)", border: "1px solid rgba(225, 29, 72, 0.3)", color: "#0B99FC", borderRadius: "4px", padding: "4px 8px", fontSize: "11px", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }}
-                            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(225, 29, 72, 0.3)"; }}
-                            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(225, 29, 72, 0.2)"; }}
-                          >
-                            ✏️ Upravit
-                          </button>
+                          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                            <div style={{ display: "flex", background: "rgba(0,0,0,0.3)", borderRadius: "4px", padding: "2px", gap: "2px" }}>
+                              <button
+                                onClick={() => setPreviewMode("desktop")}
+                                style={{ padding: "6px 10px", background: previewMode === "desktop" ? "#fff" : "transparent", color: previewMode === "desktop" ? "#000" : "#888", borderRadius: "3px", border: "none", cursor: "pointer", fontSize: "10px", fontWeight: 600, display: "flex", alignItems: "center", gap: "4px" }}
+                              >
+                                <Monitor size={12} /> Desktop
+                              </button>
+                              <button
+                                onClick={() => setPreviewMode("mobile")}
+                                style={{ padding: "6px 10px", background: previewMode === "mobile" ? "#fff" : "transparent", color: previewMode === "mobile" ? "#000" : "#888", borderRadius: "3px", border: "none", cursor: "pointer", fontSize: "10px", fontWeight: 600, display: "flex", alignItems: "center", gap: "4px" }}
+                              >
+                                <Smartphone size={12} /> Mobile
+                              </button>
+                            </div>
+                            <button
+                              onClick={() => {
+                                setEditingTemplateId(selectedStep.template_id);
+                                setShowTemplateEditor(true);
+                              }}
+                              style={{ background: "rgba(255, 255, 255, 0.08)", border: "1px solid rgba(255, 255, 255, 0.15)", color: "#fff", borderRadius: "4px", padding: "6px 10px", fontSize: "11px", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px", fontWeight: 600 }}
+                              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.12)"; }}
+                              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.08)"; }}
+                            >
+                              <Pencil size={14} /> Upravit
+                            </button>
+                          </div>
                         </div>
-                        <iframe 
-                          src={`/api/marketing/journeys/${detail.journey.id}/steps/${selectedStep.id}/preview`}
-                          style={{ flex: 1, border: "none", display: "block" }}
-                          title="Email preview"
-                        />
+                        <div style={{ flex: 1, overflow: "auto", display: "flex", justifyContent: previewMode === "mobile" ? "center" : "flex-start", alignItems: "flex-start", background: "#1a1a1a", padding: previewMode === "mobile" ? "20px" : "0" }}>
+                          <iframe 
+                            src={`/api/marketing/journeys/${detail.journey.id}/steps/${selectedStep.id}/preview`}
+                            style={{ flex: previewMode === "mobile" ? "0 0 375px" : "1", width: previewMode === "mobile" ? "375px" : "100%", height: "100%", border: previewMode === "mobile" ? "1px solid #333" : "none", display: "block", borderRadius: previewMode === "mobile" ? "12px" : "0" }}
+                            title="Email preview"
+                          />
+                        </div>
                       </div>
                     );
                   } else if (selectedStep.step_type === "wait") {
                     return (
                       <div style={{ flex: 1, background: "#0a0a0a", border: "1px solid #222", borderRadius: "8px", padding: "24px", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column" }}>
-                        <div style={{ fontSize: "14px", fontWeight: 600, color: "#0B99FC", marginBottom: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
+                        <div style={{ fontSize: "14px", fontWeight: 600, color: "#fff", marginBottom: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
                           <Clock size={18} /> ČEKAT
                         </div>
                         <div style={{ fontSize: "24px", fontWeight: 700, color: "#fff", marginBottom: "12px" }}>
@@ -8080,13 +8098,13 @@ function JourneysTab() {
             <div style={{ display: "flex", background: "rgba(0,0,0,0.3)", borderRadius: "4px", padding: "2px", gap: "2px" }}>
               <button
                 onClick={() => setPreviewMode("desktop")}
-                style={{ padding: "6px 12px", background: previewMode === "desktop" ? "#0B99FC" : "transparent", color: previewMode === "desktop" ? "#000" : "#888", borderRadius: "3px", border: "none", cursor: "pointer", fontSize: "11px", fontWeight: 600, display: "flex", alignItems: "center", gap: "4px" }}
+                style={{ padding: "6px 12px", background: previewMode === "desktop" ? "#fff" : "transparent", color: previewMode === "desktop" ? "#000" : "#888", borderRadius: "3px", border: "none", cursor: "pointer", fontSize: "11px", fontWeight: 600, display: "flex", alignItems: "center", gap: "4px" }}
               >
                 <Monitor size={12} /> Desktop
               </button>
               <button
                 onClick={() => setPreviewMode("mobile")}
-                style={{ padding: "6px 12px", background: previewMode === "mobile" ? "#0B99FC" : "transparent", color: previewMode === "mobile" ? "#000" : "#888", borderRadius: "3px", border: "none", cursor: "pointer", fontSize: "11px", fontWeight: 600, display: "flex", alignItems: "center", gap: "4px" }}
+                style={{ padding: "6px 12px", background: previewMode === "mobile" ? "#fff" : "transparent", color: previewMode === "mobile" ? "#000" : "#888", borderRadius: "3px", border: "none", cursor: "pointer", fontSize: "11px", fontWeight: 600, display: "flex", alignItems: "center", gap: "4px" }}
               >
                 <Smartphone size={12} /> Mobile
               </button>
