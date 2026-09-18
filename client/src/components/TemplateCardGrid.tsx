@@ -65,8 +65,14 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
   const showProducer = filterBy === "all" || filterBy === "producer";
   const showGeneral = filterBy === "all" || filterBy === "general";
 
-  // Handle audience update
-  const handleAudienceUpdate = async (templateId: number, newAudience: "rapper" | "producer" | "general" | null) => {
+  // Handle audience update - toggle on/off
+  const handleAudienceUpdate = async (templateId: number, selectedAudience: "rapper" | "producer" | "general") => {
+    const template = templates.find(t => t.id === templateId);
+    if (!template) return;
+    
+    // Toggle: if already selected, set to null (general). Otherwise set to selected
+    const newAudience = template.audience === selectedAudience ? null : selectedAudience;
+    
     setSavingId(templateId);
     try {
       const response = await fetch(`/api/marketing/templates/${templateId}/audience`, {
@@ -136,12 +142,11 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
           {template.name}
         </div>
         
-        {/* Category Selector Buttons - Right Side */}
+        {/* Category Selector Buttons - Right Side (Toggle) */}
         <div style={{ display: "flex", gap: "4px", marginLeft: "8px" }}>
           {[
             { label: "Rappeři", value: "rapper" as const },
             { label: "Produceři", value: "producer" as const },
-            { label: "Všechny", value: null as const },
           ].map(option => (
             <button
               key={option.label}
@@ -168,9 +173,13 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
                 whiteSpace: "nowrap",
               }}
               onMouseEnter={(e) => {
-                if (savingId !== template.id && template.audience !== option.value) {
-                  (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.08)";
-                  (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.2)";
+                if (savingId !== template.id) {
+                  (e.currentTarget as HTMLElement).style.background = template.audience === option.value
+                    ? "#E11D48"
+                    : "rgba(255,255,255,0.08)";
+                  (e.currentTarget as HTMLElement).style.borderColor = template.audience === option.value
+                    ? "#E11D48"
+                    : "rgba(255,255,255,0.2)";
                 }
               }}
               onMouseLeave={(e) => {
@@ -183,7 +192,7 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
                     : "1px solid rgba(255,255,255,0.1)";
                 }
               }}
-              title={`Mark as ${option.label}`}
+              title={template.audience === option.value ? `Click to unset ${option.label}` : `Mark as ${option.label}`}
             >
               {savingId === template.id ? "..." : option.label}
             </button>
