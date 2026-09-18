@@ -7947,7 +7947,7 @@ function JourneysTab() {
 
           {/* Journey Sequence */}
           {detail?.journey && (
-            <div style={{ marginTop: "40px" }}>
+            <div style={{ marginTop: "40px", maxHeight: "800px", overflowY: "auto", paddingRight: "12px" }}>
               <div style={{ fontSize: "14px", fontWeight: 600, color: "#fff", marginBottom: "20px" }}>
                 Sekvence: {detail.journey.name}
               </div>
