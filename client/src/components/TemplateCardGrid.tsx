@@ -75,7 +75,7 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
     
     setSavingId(templateId);
     try {
-      const response = await fetch(`/api/marketing/templates/${templateId}/audience`, {
+      const response = await fetch(`/api/marketing/templates/${String(templateId)}/audience`, {
         method: "PATCH",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -83,12 +83,17 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
       });
       
       if (response.ok) {
-        // Update template in local state by refreshing
-        window.location.reload();
+        console.log("✅ Template audience updated:", { templateId, newAudience, responseStatus: response.status });
+        // Don't reload - just clear saving state and let UI update
+        setTimeout(() => setSavingId(null), 500);
+        // Reload after brief delay so user sees feedback
+        setTimeout(() => window.location.reload(), 1000);
+      } else {
+        console.error("❌ Failed to update:", response.status);
+        setSavingId(null);
       }
     } catch (err) {
-      console.error("Error updating audience:", err);
-    } finally {
+      console.error("❌ Error updating audience:", err);
       setSavingId(null);
     }
   };
@@ -176,7 +181,7 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
               }
             }}
           >
-            {savingId === template.id ? "..." : "Rappeři"}
+            {savingId === template.id ? "Saving..." : "Rappeři"}
           </button>
           
           <button
@@ -211,7 +216,7 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
               }
             }}
           >
-            {savingId === template.id ? "..." : "Produceři"}
+            {savingId === template.id ? "Saving..." : "Produceři"}
           </button>
         </div>
       </div>
