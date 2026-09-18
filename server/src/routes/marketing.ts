@@ -354,6 +354,49 @@ router.get("/templates", requireAdmin, async (_req: Request, res: Response) => {
   }
 });
 
+// Get single template by ID
+router.get("/templates/:id", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query("SELECT * FROM marketing_templates WHERE id = $1", [id]);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Šablona nenalezena" });
+    }
+    
+    const template = result.rows[0];
+    
+    // Parse blocks if stored as string
+    let blocks = template.blocks || template.design_blocks;
+    if (typeof blocks === "string") {
+      try {
+        blocks = JSON.parse(blocks);
+      } catch {
+        blocks = [];
+      }
+    }
+    
+    // Parse header options if stored as string
+    let headerOptions = template.header_options || template.header_config;
+    if (typeof headerOptions === "string") {
+      try {
+        headerOptions = JSON.parse(headerOptions);
+      } catch {
+        headerOptions = {};
+      }
+    }
+    
+    res.json({
+      ...template,
+      blocks,
+      headerOptions,
+    });
+  } catch (error) {
+    console.error("Error fetching template:", error);
+    res.status(500).json({ error: "Chyba při načítání šablony" });
+  }
+});
+
 // Get recommended templates for a specific journey step
 router.get("/templates/recommend/:journeyId", requireAdmin, async (req: Request, res: Response) => {
   try {
