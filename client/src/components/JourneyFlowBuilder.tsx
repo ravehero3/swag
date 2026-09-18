@@ -89,9 +89,17 @@ export default function JourneyFlowBuilder({
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    if (e.button !== 2 && !(e.ctrlKey || e.metaKey)) return;
-    setIsDragging(true);
-    setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
+    // Allow dragging with left-click on empty canvas or with Ctrl/Cmd+click
+    if (e.button === 0 && (e.ctrlKey || e.metaKey)) {
+      // Ctrl/Cmd + left-click
+      setIsDragging(true);
+      setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
+    } else if (e.button === 2) {
+      // Right-click
+      e.preventDefault();
+      setIsDragging(true);
+      setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
+    }
   };
 
   const handleMouseMove = (e: React.MouseEvent) => {
