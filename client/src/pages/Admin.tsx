@@ -16,6 +16,7 @@ import AdminHeader from "../components/AdminHeader.js";
 import JourneyFlowBuilder from "../components/JourneyFlowBuilder.js";
 import JourneyContainers from "../components/JourneyContainers.js";
 import { TemplateCardGrid } from "../components/TemplateCardGrid.js";
+import { VisualEmailBuilder } from "../components/VisualEmailBuilder.js";
 import {
   BeatArtwork,
   parseArtworkConfig,
