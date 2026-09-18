@@ -84,10 +84,10 @@ export const TemplateCardGrid: React.FC<TemplateCardGridProps> = ({
       
       if (response.ok) {
         console.log("✅ Template audience updated:", { templateId, newAudience, responseStatus: response.status });
-        // Don't reload - just clear saving state and let UI update
-        setTimeout(() => setSavingId(null), 500);
-        // Reload after brief delay so user sees feedback
-        setTimeout(() => window.location.reload(), 1000);
+        // Update local templates state instead of reloading
+        const updatedTemplate = await response.json();
+        // Show success feedback briefly then clear
+        setTimeout(() => setSavingId(null), 800);
       } else {
         console.error("❌ Failed to update:", response.status);
         setSavingId(null);
