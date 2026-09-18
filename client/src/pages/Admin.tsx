@@ -8248,6 +8248,19 @@ function JourneysTab() {
           onTestSend={handleTestSendVisualStep}
         />
       )}
+
+      {showTemplateEditor && editingTemplateId && (
+        <TemplateEditorModal
+          templateId={editingTemplateId}
+          isOpen={showTemplateEditor}
+          onClose={() => {
+            setShowTemplateEditor(false);
+            setEditingTemplateId(null);
+            if (detail?.journey?.id) openJourneyDetail(detail.journey.id);
+            load();
+          }}
+        />
+      )}
     </div>
   );
 }

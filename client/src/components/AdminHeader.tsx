@@ -17,368 +17,8 @@ interface AdminHeaderProps {
   onNavigateToNotifications?: () => void;
 }
 
-interface AdminInfoModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  adminEmail: string;
-  adminName: string;
-  adminProfileImage?: string;
-}
-
-const AdminInfoModal: React.FC<AdminInfoModalProps> = ({
-  isOpen,
-  onClose,
-  adminEmail,
-  adminName,
-  adminProfileImage,
-}) => {
-  const [profileImage, setProfileImage] = useState(adminProfileImage);
-  const [isSaving, setIsSaving] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  if (!isOpen) return null;
-
-  const handleUploadClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      alert("Soubor je příliš velký. Maximum je 5MB.");
-      return;
-    }
-
-    // Validate file type
-    if (!file.type.startsWith("image/")) {
-      alert("Prosím vyberte obrázek.");
-      return;
-    }
-
-    // Create preview
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const result = event.target?.result as string;
-      setProfileImage(result);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleSaveProfile = async () => {
-    if (!profileImage || profileImage === adminProfileImage) {
-      onClose();
-      return;
-    }
-
-    setIsSaving(true);
-    try {
-      const response = await fetch("/api/auth/profile/image", {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          image: profileImage,
-        }),
-      });
-
-      if (response.ok) {
-        // Reload page to update with new image
-        window.location.reload();
-      } else {
-        alert("Chyba při ukládání fotografie. Zkuste to znovu.");
-      }
-    } catch (err) {
-      console.error("Error saving profile image:", err);
-      alert("Chyba při ukládání fotografie.");
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  return (
-    <>
-      {/* Backdrop */}
-      <div
-        onClick={onClose}
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: "rgba(0, 0, 0, 0.6)",
-          zIndex: 1000,
-        }}
-      />
-
-      {/* Modal */}
-      <div
-        style={{
-          position: "fixed",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          background: "#0a0a0a",
-          border: "1px solid #222",
-          borderRadius: "12px",
-          padding: "32px",
-          zIndex: 1001,
-          minWidth: "320px",
-          maxWidth: "420px",
-          boxShadow: "0 20px 60px rgba(0, 0, 0, 0.8)",
-        }}
-      >
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          style={{
-            position: "absolute",
-            top: "12px",
-            right: "12px",
-            background: "transparent",
-            border: "none",
-            color: "#888",
-            fontSize: "20px",
-            cursor: "pointer",
-            width: "32px",
-            height: "32px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            borderRadius: "6px",
-            transition: "all 200ms",
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.05)";
-            (e.currentTarget as HTMLElement).style.color = "#fff";
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.background = "transparent";
-            (e.currentTarget as HTMLElement).style.color = "#888";
-          }}
-        >
-          ✕
-        </button>
-
-        {/* Title */}
-        <h2
-          style={{
-            fontSize: "16px",
-            fontWeight: 600,
-            color: "#fff",
-            margin: "0 0 24px 0",
-            paddingRight: "24px",
-          }}
-        >
-          Profil administrátora
-        </h2>
-
-        {/* Profile Picture Section */}
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "24px" }}>
-          {/* Profile Picture */}
-          <div
-            onClick={handleUploadClick}
-            style={{
-              width: "80px",
-              height: "80px",
-              borderRadius: "50%",
-              background: profileImage ? `url('${profileImage}') center / cover` : "linear-gradient(135deg, #E11D48, #EA580C)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "white",
-              fontWeight: 700,
-              fontSize: "28px",
-              border: "2px solid rgba(255,255,255,0.1)",
-              cursor: "pointer",
-              overflow: "hidden",
-              position: "relative",
-              transition: "all 200ms",
-              marginBottom: "12px",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor = "rgba(225, 29, 72, 0.5)";
-              (e.currentTarget as HTMLElement).style.background = profileImage
-                ? `url('${profileImage}') center / cover, rgba(225, 29, 72, 0.2)`
-                : "linear-gradient(135deg, #E11D48, #EA580C)";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.1)";
-              (e.currentTarget as HTMLElement).style.background = profileImage
-                ? `url('${profileImage}') center / cover`
-                : "linear-gradient(135deg, #E11D48, #EA580C)";
-            }}
-            title="Kliknutím změňte fotku"
-          >
-            {!profileImage && adminEmail.charAt(0).toUpperCase()}
-            {/* Overlay hint */}
-            <div
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                background: "rgba(0, 0, 0, 0.4)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "white",
-                fontSize: "12px",
-                opacity: 0,
-                transition: "opacity 200ms",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.opacity = "1";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.opacity = "0";
-              }}
-            >
-              Změnit
-            </div>
-          </div>
-
-          {/* Hidden File Input */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleFileSelect}
-            style={{ display: "none" }}
-          />
-
-          {/* Upload Button */}
-          <button
-            onClick={handleUploadClick}
-            style={{
-              background: "rgba(225, 29, 72, 0.1)",
-              border: "1px solid rgba(225, 29, 72, 0.3)",
-              color: "#E11D48",
-              borderRadius: "6px",
-              padding: "6px 12px",
-              fontSize: "11px",
-              fontWeight: 600,
-              cursor: "pointer",
-              transition: "all 200ms",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "rgba(225, 29, 72, 0.2)";
-              (e.currentTarget as HTMLElement).style.borderColor = "rgba(225, 29, 72, 0.5)";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "rgba(225, 29, 72, 0.1)";
-              (e.currentTarget as HTMLElement).style.borderColor = "rgba(225, 29, 72, 0.3)";
-            }}
-          >
-            Nahrát fotografii
-          </button>
-        </div>
-
-        {/* Admin Info */}
-        <div style={{ marginBottom: "24px" }}>
-          <div
-            style={{
-              background: "rgba(255, 255, 255, 0.03)",
-              border: "1px solid rgba(255, 255, 255, 0.05)",
-              borderRadius: "8px",
-              padding: "12px",
-              marginBottom: "12px",
-            }}
-          >
-            <div style={{ fontSize: "10px", color: "#888", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "4px" }}>
-              Jméno
-            </div>
-            <div style={{ fontSize: "13px", color: "#fff", fontWeight: 500 }}>{adminName || "Admin"}</div>
-          </div>
-
-          <div
-            style={{
-              background: "rgba(255, 255, 255, 0.03)",
-              border: "1px solid rgba(255, 255, 255, 0.05)",
-              borderRadius: "8px",
-              padding: "12px",
-            }}
-          >
-            <div style={{ fontSize: "10px", color: "#888", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "4px" }}>
-              E-mail
-            </div>
-            <div style={{ fontSize: "13px", color: "#fff", fontWeight: 500, wordBreak: "break-all" }}>
-              {adminEmail}
-            </div>
-          </div>
-        </div>
-
-        {/* Save/Cancel Buttons */}
-        <div style={{ display: "flex", gap: "8px" }}>
-          <button
-            onClick={handleSaveProfile}
-            disabled={isSaving}
-            style={{
-              flex: 1,
-              background: "#E11D48",
-              border: "1px solid #E11D48",
-              color: "#fff",
-              borderRadius: "6px",
-              padding: "10px",
-              fontSize: "12px",
-              fontWeight: 600,
-              cursor: isSaving ? "default" : "pointer",
-              transition: "all 200ms",
-              opacity: isSaving ? 0.6 : 1,
-            }}
-            onMouseEnter={(e) => {
-              if (!isSaving) {
-                (e.currentTarget as HTMLElement).style.background = "#C91640";
-                (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 12px rgba(225, 29, 72, 0.3)";
-              }
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "#E11D48";
-              (e.currentTarget as HTMLElement).style.boxShadow = "none";
-            }}
-          >
-            {isSaving ? "Ukládám..." : "Uložit"}
-          </button>
-          <button
-            onClick={onClose}
-            disabled={isSaving}
-            style={{
-              flex: 1,
-              background: "rgba(255, 255, 255, 0.05)",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
-              color: "#fff",
-              borderRadius: "6px",
-              padding: "10px",
-              fontSize: "12px",
-              fontWeight: 600,
-              cursor: isSaving ? "default" : "pointer",
-              transition: "all 200ms",
-              opacity: isSaving ? 0.6 : 1,
-            }}
-            onMouseEnter={(e) => {
-              if (!isSaving) {
-                (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.1)";
-                (e.currentTarget as HTMLElement).style.borderColor = "rgba(255, 255, 255, 0.2)";
-              }
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.05)";
-              (e.currentTarget as HTMLElement).style.borderColor = "rgba(255, 255, 255, 0.1)";
-            }}
-          >
-            Zavřít
-          </button>
-        </div>
-      </div>
-    </>
-  );
-};
+// Profile editing moved to /ucet page
+// Remove AdminInfoModal component - use existing /ucet page instead
 
 export const AdminHeader: React.FC<AdminHeaderProps> = ({
   adminEmail = "admin@voodoo808.com",
@@ -389,7 +29,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [showProfileModal, setShowProfileModal] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -787,17 +427,17 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
             )}
           </div>
 
-          {/* Profile Picture Button */}
+          {/* Profile Picture Button - Navigate to /ucet */}
           <button
-            onClick={() => setShowProfileModal(true)}
+            onClick={() => window.location.href = '/ucet'}
             style={{
               width: "36px",
               height: "36px",
               borderRadius: "50%",
               background: adminProfileImage
                 ? `url('${adminProfileImage}') center / cover`
-                : "linear-gradient(135deg, #E11D48, #EA580C)",
-              border: "1px solid rgba(255,255,255,0.1)",
+                : "linear-gradient(135deg, #0B99FC, #6366f1)",
+              border: "1px solid rgba(11, 153, 252, 0.3)",
               cursor: "pointer",
               overflow: "hidden",
               display: "flex",
@@ -810,26 +450,19 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
               padding: 0,
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor = "rgba(225, 29, 72, 0.5)";
+              (e.currentTarget as HTMLElement).style.borderColor = "rgba(11, 153, 252, 0.6)";
             }}
             onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.1)";
+              (e.currentTarget as HTMLElement).style.borderColor = "rgba(11, 153, 252, 0.3)";
             }}
-            title="Profil administrátora"
+            title="Přejít na profil (Účet)"
           >
             {!adminProfileImage && adminEmail.charAt(0).toUpperCase()}
           </button>
         </div>
       </div>
 
-      {/* Admin Info Modal */}
-      <AdminInfoModal
-        isOpen={showProfileModal}
-        onClose={() => setShowProfileModal(false)}
-        adminEmail={adminEmail}
-        adminName={adminName}
-        adminProfileImage={adminProfileImage}
-      />
+      {/* Admin Info Modal - Removed, use /ucet page instead */}
     </>
   );
 };
