@@ -8073,12 +8073,30 @@ function JourneysTab() {
           onClick={() => setPreviewStepId(null)}
           style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.9)", zIndex: 10001, display: "flex", flexDirection: "column", alignItems: "center", overflowY: "auto", padding: "24px 16px 48px" }}
         >
-          <div onClick={(e) => e.stopPropagation()} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", maxWidth: "640px", marginBottom: "16px", flexShrink: 0 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", maxWidth: "900px", marginBottom: "16px", flexShrink: 0, gap: "16px" }}>
             <span style={{ fontWeight: 600, color: "#ddd", fontSize: "13px" }}>Náhled e-mailu kroku</span>
-            <button onClick={() => setPreviewStepId(null)} style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "4px", fontSize: "13px", cursor: "pointer", color: "#eee", padding: "4px 12px" }}>Zavřít ×</button>
+            <div style={{ display: "flex", background: "rgba(0,0,0,0.3)", borderRadius: "4px", padding: "2px", gap: "2px" }}>
+              <button
+                onClick={() => setPreviewMode("desktop")}
+                style={{ padding: "6px 12px", background: previewMode === "desktop" ? "#0B99FC" : "transparent", color: previewMode === "desktop" ? "#000" : "#888", borderRadius: "3px", border: "none", cursor: "pointer", fontSize: "11px", fontWeight: 600, display: "flex", alignItems: "center", gap: "4px" }}
+              >
+                <Monitor size={12} /> Desktop
+              </button>
+              <button
+                onClick={() => setPreviewMode("mobile")}
+                style={{ padding: "6px 12px", background: previewMode === "mobile" ? "#0B99FC" : "transparent", color: previewMode === "mobile" ? "#000" : "#888", borderRadius: "3px", border: "none", cursor: "pointer", fontSize: "11px", fontWeight: 600, display: "flex", alignItems: "center", gap: "4px" }}
+              >
+                <Smartphone size={12} /> Mobile
+              </button>
+            </div>
+            <button onClick={() => setPreviewStepId(null)} style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "4px", fontSize: "13px", cursor: "pointer", color: "#eee", padding: "6px 14px", display: "flex", alignItems: "center", gap: "4px" }}>
+              <X size={14} /> Zavřít
+            </button>
           </div>
-          <div onClick={(e) => e.stopPropagation()} style={{ width: "640px", maxWidth: "100%", background: "#0a0a0a", borderRadius: "4px", overflow: "hidden", border: "1px solid #222" }}>
-            <iframe src={`/api/marketing/journeys/${detail.journey.id}/steps/${previewStepId}/preview`} style={{ width: "100%", height: "700px", border: "none", display: "block" }} title="Náhled e-mailu" />
+          <div onClick={(e) => e.stopPropagation()} style={{ width: previewMode === "mobile" ? "400px" : "900px", maxWidth: "100%", background: "#0a0a0a", borderRadius: "8px", overflow: "hidden", border: "1px solid #222", display: "flex", flexDirection: "column" }}>
+            <div style={{ flex: 1, overflow: "auto", display: "flex", justifyContent: previewMode === "mobile" ? "center" : "flex-start", alignItems: "flex-start", background: "#1a1a1a", padding: previewMode === "mobile" ? "20px" : "0" }}>
+              <iframe src={`/api/marketing/journeys/${detail.journey.id}/steps/${previewStepId}/preview`} style={{ flex: previewMode === "mobile" ? "0 0 375px" : "1", width: previewMode === "mobile" ? "375px" : "100%", height: previewMode === "mobile" ? "667px" : "700px", border: previewMode === "mobile" ? "1px solid #333" : "none", display: "block", borderRadius: previewMode === "mobile" ? "12px" : "0" }} title="Náhled e-mailu" />
+            </div>
           </div>
         </div>
       )}

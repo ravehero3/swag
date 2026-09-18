@@ -187,7 +187,7 @@ export default function JourneyFlowBuilder({
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "space-between",
-                boxShadow: isSelected ? "0 8px 24px rgba(225, 29, 72, 0.3)" : (isHovered ? "0 8px 24px rgba(11,153,252,0.15)" : "none"),
+                boxShadow: isSelected ? "0 8px 24px rgba(11, 153, 252, 0.3)" : (isHovered ? "0 8px 24px rgba(11,153,252,0.15)" : "none"),
                 transform: isSelected ? "scale(1.04)" : (isHovered ? "scale(1.02)" : "scale(1)"),
                 transition: "all 200ms cubic-bezier(0.4, 0, 0.2, 1)",
                 cursor: "pointer",
