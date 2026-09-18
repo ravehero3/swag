@@ -595,10 +595,10 @@ router.get("/journeys", requireAdmin, async (_req: Request, res: Response) => {
         for (const tpl of TEMPLATE_SEEDS) {
           await pool.query(
             `INSERT INTO marketing_templates 
-             (name, key, category, journey_name, step_position, step_type, is_recommended, sort_order, subject, preheader, html_content)
-             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+             (name, key, category, audience, journey_name, step_position, step_type, is_recommended, sort_order, subject, preheader, html_content)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
             [
-              tpl.name, tpl.key, tpl.category, tpl.journey_name, tpl.step_position,
+              tpl.name, tpl.key, tpl.category, tpl.audience || 'general', tpl.journey_name, tpl.step_position,
               tpl.step_type, tpl.is_recommended, tpl.sort_order, tpl.subject, tpl.preheader, tpl.html_content,
             ]
           );
@@ -1597,12 +1597,13 @@ router.post("/admin/seed", requireAdmin, async (_req: Request, res: Response) =>
       
       await pool.query(
         `INSERT INTO marketing_templates 
-         (name, key, category, journey_name, step_position, step_type, is_recommended, sort_order, subject, preheader, html_content)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+         (name, key, category, audience, journey_name, step_position, step_type, is_recommended, sort_order, subject, preheader, html_content)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
         [
           tpl.name,
           tpl.key,
           tpl.category,
+          tpl.audience || 'general',
           tpl.journey_name,
           tpl.step_position,
           tpl.step_type,
