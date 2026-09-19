@@ -48,6 +48,11 @@ export const JOURNEY_CONFIGS: JourneyConfig[] = [
         template_key: "abandoned_checkout_reminder",
         description: "Day 30: Final reminder if not purchased",
       },
+      {
+        delay_hours: 120, // 5 days
+        template_key: "abandoned_checkout_scarcity",
+        description: "Day 35: Last chance offer - 3 days to grab discount",
+      },
     ],
   },
   {
@@ -74,6 +79,11 @@ export const JOURNEY_CONFIGS: JourneyConfig[] = [
         delay_hours: 168, // 7 days
         template_key: "weekly_newsletter_new_drops",
         description: "Day 27: New releases this week",
+      },
+      {
+        delay_hours: 168, // 7 days
+        template_key: "kit_cross_sell",
+        description: "Day 34: Final bundle offer - beats + kits combo",
       },
     ],
   },
@@ -107,6 +117,11 @@ export const JOURNEY_CONFIGS: JourneyConfig[] = [
         template_key: "weekly_newsletter_new_drops",
         description: "Day 37: New releases available",
       },
+      {
+        delay_hours: 168, // 7 days
+        template_key: "producer_tips_sound_design",
+        description: "Day 44: Exclusive preset pack + sample collection",
+      },
     ],
   },
   {
@@ -134,6 +149,11 @@ export const JOURNEY_CONFIGS: JourneyConfig[] = [
         template_key: "weekly_newsletter_new_drops",
         description: "Day 37: New drops available",
       },
+      {
+        delay_hours: 144, // 6 days
+        template_key: "rapper_tips_spotify",
+        description: "Day 43: Community showcase - show us what you made",
+      },
     ],
   },
   {
@@ -150,6 +170,11 @@ export const JOURNEY_CONFIGS: JourneyConfig[] = [
         delay_hours: 48, // 2 days
         template_key: "abandoned_checkout_scarcity",
         description: "Day 2: 15% OFF - SAVE15 code, 24 hr urgency",
+      },
+      {
+        delay_hours: 72, // 3 days
+        template_key: "browse_recovery_day1",
+        description: "Day 5: Stock running low - final push",
       },
     ],
   },
@@ -172,6 +197,11 @@ export const JOURNEY_CONFIGS: JourneyConfig[] = [
         delay_hours: 120, // 5 days
         template_key: "abandoned_checkout_scarcity",
         description: "Day 8: Create urgency with SAVE15 (if viewed again)",
+      },
+      {
+        delay_hours: 48, // 2 days
+        template_key: "browse_recovery_day3",
+        description: "Day 10: One more try - farewell offer",
       },
     ],
   },
@@ -206,6 +236,11 @@ export const JOURNEY_CONFIGS: JourneyConfig[] = [
         template_key: "kit_cross_sell",
         description: "Day 56: Bundle beats with pro sound kits",
       },
+      {
+        delay_hours: 96, // 4 days
+        template_key: "rapper_tips_spotify",
+        description: "Day 60: Advanced Spotify playlist submission strategy",
+      },
     ],
   },
   {
@@ -238,6 +273,11 @@ export const JOURNEY_CONFIGS: JourneyConfig[] = [
         delay_hours: 336, // 14 days
         template_key: "weekly_newsletter_new_drops",
         description: "Day 56: New exclusive sounds",
+      },
+      {
+        delay_hours: 96, // 4 days
+        template_key: "producer_tips_sound_design",
+        description: "Day 60: Professional mixing/mastering checklist",
       },
     ],
   },
@@ -309,6 +349,11 @@ export const JOURNEY_CONFIGS: JourneyConfig[] = [
         delay_hours: 168, // 7 days
         template_key: "producer_tips_sound_design",
         description: "Day 21: New capabilities showcase",
+      },
+      {
+        delay_hours: 168, // 7 days
+        template_key: "abandoned_checkout_scarcity",
+        description: "Day 28: Final welcome back - biggest discount 30% OFF",
       },
     ],
   },
