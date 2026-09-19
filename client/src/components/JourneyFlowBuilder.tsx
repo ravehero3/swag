@@ -212,7 +212,7 @@ export default function JourneyFlowBuilder({
                 )}
               </div>
 
-              <div style={{ display: "flex", gap: "6px", opacity: isHovered ? 1 : 0, pointerEvents: isHovered ? "auto" : "none", transition: "opacity 150ms ease-in-out" }}>
+              <div style={{ display: "flex", gap: "6px", opacity: 0, pointerEvents: "none", transition: "opacity 150ms ease-in-out" }}>
                 <button onClick={() => onEditStep(step)} style={{ background: "none", border: "none", color: "#999", cursor: "pointer", padding: "6px 8px", fontSize: "12px", borderRadius: "4px", transition: "all 150ms ease" }} onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "#fff"; (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.1)"; }} onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "#999"; (e.currentTarget as HTMLButtonElement).style.background = "none"; }} title="Edit step"><Edit3 size={14} /></button>
                 {step.step_type === "email" && step.template_id && (<button onClick={() => onTestEmail(step.id)} disabled={testSendingStepId === step.id} style={{ background: "none", border: "none", color: testSendingStepId === step.id ? "#555" : "#0B99FC", cursor: testSendingStepId === step.id ? "default" : "pointer", padding: "6px 8px", fontSize: "12px", borderRadius: "4px", opacity: testSendingStepId === step.id ? 0.5 : 1, transition: "all 150ms ease" }} onMouseEnter={(e) => { if (testSendingStepId !== step.id) (e.currentTarget as HTMLButtonElement).style.background = "rgba(11,153,252,0.1)"; }} onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "none"; }} title="Send test email">{testSendingStepId === step.id ? "..." : <Send size={14} />}</button>)}
                 <button onClick={() => { if (confirm("Smazat tento krok?")) onDeleteStep(step.id); }} style={{ background: "none", border: "none", color: "#ff5252", cursor: "pointer", padding: "6px 8px", fontSize: "12px", borderRadius: "4px", transition: "all 150ms ease" }} onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,82,82,0.1)"; }} onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "none"; }} title="Delete step"><Trash2 size={14} /></button>
@@ -236,14 +236,7 @@ export default function JourneyFlowBuilder({
         <input value={testEmail} onChange={(e) => onTestEmailChange(e.target.value)} placeholder="test@example.cz" style={{ flex: 1, maxWidth: "280px", padding: "6px 10px", background: "#111", border: "1px solid #333", borderRadius: "4px", color: "#fff", fontSize: "12px", boxSizing: "border-box" }} />
       </div>
 
-      {/* Email Preview Tooltip */}
-      {hoveredStepId && (
-        <EmailPreviewTooltip
-          stepId={hoveredStepId}
-          journeyId={journey.id}
-          position={previewPosition}
-        />
-      )}
+      {/* Email Preview removed */}
     </div>
   );
 }
