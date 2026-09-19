@@ -218,8 +218,8 @@ export const JOURNEY_CONFIGS: JourneyConfig[] = [
       },
       {
         delay_hours: 336, // 14 days
-        template_key: "producer_tips_sound_design",
-        description: "Day 14: How I process drums",
+        template_key: "educational_beat_breakdown",
+        description: "Day 14: How to process drums like a pro",
       },
       {
         delay_hours: 336, // 14 days
@@ -256,13 +256,13 @@ export const JOURNEY_CONFIGS: JourneyConfig[] = [
       },
       {
         delay_hours: 336, // 14 days
-        template_key: "rapper_tips_spotify",
-        description: "Day 14: Music distribution tips",
+        template_key: "producer_tips_sound_design",
+        description: "Day 14: Advanced mixing techniques for professional sound",
       },
       {
         delay_hours: 336, // 14 days
-        template_key: "kit_cross_sell",
-        description: "Day 28: Get placement-ready sounds",
+        template_key: "bundle_recommendation",
+        description: "Day 28: Get placement-ready sounds - bundle recommendation",
       },
       {
         delay_hours: 336, // 14 days
@@ -276,7 +276,7 @@ export const JOURNEY_CONFIGS: JourneyConfig[] = [
       },
       {
         delay_hours: 96, // 4 days
-        template_key: "producer_tips_sound_design",
+        template_key: "educational_beat_breakdown",
         description: "Day 60: Professional mixing/mastering checklist",
       },
     ],
