@@ -7733,6 +7733,16 @@ function JourneysTab() {
 
   const handleSendTest = async (stepId: number) => {
     if (!testEmail || !testEmail.includes("@")) { alert("Zadejte platnou e-mailovou adresu."); return; }
+    
+    // Check if currently editing a step that hasn't been saved
+    if (editingStep && editingStep.id === stepId && showStepForm) {
+      const unsaved = JSON.stringify({ stepType: stepForm.stepType, templateId: stepForm.templateId, delayHours: stepForm.delayHours }) !== JSON.stringify({ stepType: editingStep.step_type, templateId: editingStep.template_id, delayHours: editingStep.delay_hours });
+      if (unsaved) {
+        alert("⚠️  Máte neuložené změny. Prosím uložte krok dříve, než odešlete testovací e-mail.");
+        return;
+      }
+    }
+    
     localStorage.setItem("voodoo808_marketing_test_email", testEmail);
     setTestSendingStepId(stepId);
     setTestResult(null);
@@ -7745,9 +7755,9 @@ function JourneysTab() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Odeslání selhalo");
-      setTestResult(`Testovací e-mail odeslán na ${testEmail}.`);
+      setTestResult(`✅ Testovací e-mail odeslán na ${testEmail}. Zkontrolujte si spam složku, pokud e-mail nevidíte.`);
     } catch (err: any) {
-      setTestResult(`Chyba: ${err.message}`);
+      setTestResult(`❌ Chyba: ${err.message}`);
     } finally {
       setTestSendingStepId(null);
     }

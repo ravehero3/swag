@@ -185,7 +185,16 @@ export async function sendTestCustomEmail(
 
   try {
     const { data, error } = await resend.emails.send(
-      { from: fromAddress, to: [toEmail], subject: `[TEST] ${subject}`, html },
+      { 
+        from: fromAddress, 
+        to: [toEmail], 
+        subject: `[TEST] ${subject}`, 
+        html,
+        headers: {
+          "X-Mailer": "VOODOO808-Marketing",
+          "X-Priority": "3",
+        },
+      },
       { idempotencyKey }
     );
     const status = error ? "failed" : "sent";
@@ -382,7 +391,16 @@ export async function sendMarketingEmail(input: SendMarketingEmailInput): Promis
   try {
     console.log(`[Marketing] email.sending send_id=${sendId} subscriber=${subscriber.id} mode=${mode} recipient=${recipient}`);
     const { data, error } = await resend.emails.send(
-      { from: fromAddress, to: [recipient], subject, html },
+      { 
+        from: fromAddress, 
+        to: [recipient], 
+        subject, 
+        html,
+        headers: {
+          "X-Mailer": "VOODOO808-Marketing",
+          "X-Priority": "3",
+        },
+      },
       { idempotencyKey }
     );
 

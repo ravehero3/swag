@@ -43,7 +43,9 @@ function resolveLogoUrl(appUrl: string, logoType?: "metallic" | "white"): string
     return `${appUrl}/uploads/artwork/voodoo808-main-logo-cropped.png`;
   }
   // Default is the pure white logo from website header
-  return `${appUrl}/uploads/artwork/voodoo808-logo-white@2x.png`;
+  const defaultLogo = `${appUrl}/uploads/artwork/voodoo808-logo-white@2x.png`;
+  // Ensure absolute URL for email clients
+  return defaultLogo.startsWith('http') ? defaultLogo : `https://voodoo808.com${defaultLogo}`;
 }
 
 function resolveLogoWidth(size?: "sm" | "md" | "lg" | "xl"): number {
