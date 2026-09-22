@@ -13,6 +13,15 @@
 // fallback chain. Visually this reads as the same brand because the actual
 // differentiators (near-black background, white text, grey secondary text,
 // white pill buttons, thin #222 borders) are all preserved exactly.
+//
+// EMAIL DELIVERABILITY NOTES:
+// 1. SPF/DKIM/DMARC: Resend handles server-side signing, but domain DNS records
+//    must be configured at your registrar for full SPF/DKIM authentication.
+//    Without these, emails may land in spam. See: https://resend.com/domains
+// 2. Image loading: Email clients block images by default. Images are fetched
+//    from absolute HTTPS URLs. Add "loading=eager" to force immediate load.
+//    Images with proper Cache-Control headers load better.
+// 3. Color scheme: "dark only" meta tags force dark mode on Outlook/Samsung Mail.
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const BRAND = {
@@ -148,7 +157,14 @@ export function renderBrandedEmailShell(opts: {
       <table class="email-container" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;margin:0 auto;">
         <tr><td class="email-header-cell" style="padding:0 24px 28px 24px;text-align:center;border-bottom:1px solid ${BRAND.border};">
           <a href="${appUrl}" style="display:inline-block;text-decoration:none;">
-            <img src="${logoUrl}" alt="VOODOO808" width="${logoWidth}" style="display:inline-block;height:auto;max-width:${logoWidth}px;width:auto;" />
+            <img 
+              src="${logoUrl}" 
+              alt="VOODOO808" 
+              width="${logoWidth}" 
+              height="auto"
+              style="display:inline-block;height:auto;max-width:${logoWidth}px;width:auto;border:0;outline:none;background:#0a0a0a;" 
+              loading="eager"
+            />
           </a>
           ${showText ? `<div style="color:#ffffff;font-size:16px;font-weight:900;letter-spacing:3px;margin-top:8px;">VOODOO808</div>` : ""}
         </td></tr>
