@@ -66,6 +66,8 @@ export default function JourneyFlowBuilder({
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [isSendingTest, setIsSendingTest] = useState(false);
+  const [testMessage, setTestMessage] = useState<string | null>(null);
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -116,6 +118,39 @@ export default function JourneyFlowBuilder({
     window.addEventListener("mouseup", handleMouseUp);
     return () => window.removeEventListener("mouseup", handleMouseUp);
   }, []);
+
+  const handleQuickTestEmail = async () => {
+    if (!selectedStepId) {
+      setTestMessage("Vyberte krok v sekvenci");
+      setTimeout(() => setTestMessage(null), 3000);
+      return;
+    }
+    
+    const step = steps.find((s) => s.id === selectedStepId);
+    if (!step || step.step_type !== "email" || !step.template_id) {
+      setTestMessage("Vybrany krok neni e-mail");
+      setTimeout(() => setTestMessage(null), 3000);
+      return;
+    }
+    
+    if (!testEmail || !testEmail.includes("@")) {
+      setTestMessage("Zadejte platnou e-mailovou adresu");
+      setTimeout(() => setTestMessage(null), 3000);
+      return;
+    }
+    
+    setIsSendingTest(true);
+    try {
+      onTestEmail(selectedStepId);
+      setTestMessage("Email odeslán!");
+      setTimeout(() => setTestMessage(null), 3000);
+    } catch (err) {
+      setTestMessage("Chyba pri odesílání");
+      setTimeout(() => setTestMessage(null), 3000);
+    } finally {
+      setIsSendingTest(false);
+    }
+  };
 
   return (
     <div
@@ -232,8 +267,52 @@ export default function JourneyFlowBuilder({
       </div>
 
       <div style={{ position: "absolute", top: "0", left: "0", right: "0", background: "#000000", borderBottom: "1px solid #222", padding: "12px 16px", display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", color: "#888", zIndex: 50 }}>
-        <label style={{ whiteSpace: "nowrap" }}>Testovací e-mail:</label>
+        <label style={{ whiteSpace: "nowrap" }}>Testovaci e-mail:</label>
         <input value={testEmail} onChange={(e) => onTestEmailChange(e.target.value)} placeholder="test@example.cz" style={{ flex: 1, maxWidth: "280px", padding: "6px 10px", background: "#111", border: "1px solid #333", borderRadius: "4px", color: "#fff", fontSize: "12px", boxSizing: "border-box" }} />
+        <button
+          onClick={handleQuickTestEmail}
+          disabled={isSendingTest || !selectedStepId}
+          style={{
+            padding: "6px 12px",
+            background: isSendingTest || !selectedStepId ? "#222" : "#0B99FC",
+            border: "1px solid " + (isSendingTest || !selectedStepId ? "#333" : "#0B99FC"),
+            borderRadius: "4px",
+            color: isSendingTest || !selectedStepId ? "#555" : "#fff",
+            fontSize: "12px",
+            fontWeight: 600,
+            cursor: isSendingTest || !selectedStepId ? "not-allowed" : "pointer",
+            whiteSpace: "nowrap",
+            transition: "all 150ms ease",
+            opacity: isSendingTest || !selectedStepId ? 0.6 : 1,
+          } as React.CSSProperties}
+          onMouseEnter={(e) => {
+            if (!isSendingTest && selectedStepId) {
+              (e.currentTarget as HTMLButtonElement).style.background = "#0099ff";
+              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 0 8px rgba(11,153,252,0.4)";
+            }
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.background = isSendingTest || !selectedStepId ? "#222" : "#0B99FC";
+            (e.currentTarget as HTMLButtonElement).style.boxShadow = "none";
+          }}
+          title="Posli test email vybranemu kroku"
+        >
+          {isSendingTest ? "Odesilan..." : "Poslat test"}
+        </button>
+        {testMessage && (
+          <div style={{
+            marginLeft: "auto",
+            padding: "4px 8px",
+            background: testMessage.includes("!") ? "rgba(11,153,252,0.2)" : testMessage.includes("Chyba") ? "rgba(255,82,82,0.2)" : "rgba(255,165,0,0.2)",
+            color: testMessage.includes("!") ? "#0B99FC" : testMessage.includes("Chyba") ? "#ff5252" : "#ffb347",
+            borderRadius: "4px",
+            fontSize: "11px",
+            fontWeight: 600,
+            whiteSpace: "nowrap",
+          }}>
+            {testMessage}
+          </div>
+        )}
       </div>
 
       {/* Email Preview removed */}
