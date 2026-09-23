@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { VisualEmailBuilder } from "./VisualEmailBuilder";
+import { ErrorLog } from "./ErrorLog";
 import { parseEmailHTMLToBlocks } from "../lib/parseEmailHTML";
 import { X } from "lucide-react";
+
+interface ErrorLogEntry {
+  timestamp: string;
+  action: string;
+  error: string;
+  details?: string;
+}
 
 interface EmailEditorModalProps {
   isOpen: boolean;
@@ -32,6 +40,13 @@ export const EmailEditorModal: React.FC<EmailEditorModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dismissWarning, setDismissWarning] = useState(false);
+  const [errorLogs, setErrorLogs] = useState<ErrorLogEntry[]>([]);
+
+  const addError = (action: string, error: string, details?: string) => {
+    const now = new Date().toLocaleTimeString();
+    setErrorLogs((prev) => [...prev, { timestamp: now, action, error, details }]);
+    console.error(`[${action}] ${error}`, details);
+  };
 
   // Fetch template data when modal opens
   useEffect(() => {
@@ -40,19 +55,22 @@ export const EmailEditorModal: React.FC<EmailEditorModalProps> = ({
     const fetchTemplate = async () => {
       setLoading(true);
       setError(null);
+      setErrorLogs([]);
       try {
         const response = await fetch(`/api/marketing/templates/${templateId}`, {
           credentials: "include",
         });
 
         if (!response.ok) {
-          throw new Error("Failed to load template");
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.error || `HTTP ${response.status}`);
         }
 
         const data = await response.json();
         setTemplate(data);
       } catch (err) {
-        console.error("Error loading template:", err);
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        addError("Load Template", errorMsg);
         setError("Chyba při načítání šablony");
       } finally {
         setLoading(false);
@@ -71,6 +89,7 @@ export const EmailEditorModal: React.FC<EmailEditorModalProps> = ({
 
   const handleSave = async (data: any) => {
     try {
+      console.log("Saving template:", { templateId, data });
       const response = await fetch(`/api/marketing/templates/${templateId}`, {
         method: "PATCH",
         credentials: "include",
@@ -85,8 +104,12 @@ export const EmailEditorModal: React.FC<EmailEditorModalProps> = ({
         }),
       });
 
+      console.log("Save response status:", response.status);
+      const responseData = await response.json();
+      console.log("Save response data:", responseData);
+
       if (!response.ok) {
-        throw new Error("Failed to save template");
+        throw new Error(responseData.error || `HTTP ${response.status}`);
       }
 
       // Trigger parent callback
@@ -96,8 +119,8 @@ export const EmailEditorModal: React.FC<EmailEditorModalProps> = ({
 
       onClose();
     } catch (err) {
-      console.error("Error saving template:", err);
-      alert("Chyba při ukládání šablony");
+      const errorMsg = err instanceof Error ? err.message : String(err);
+      addError("Save Template", errorMsg, JSON.stringify(data).slice(0, 200));
     }
   };
 
@@ -178,6 +201,11 @@ export const EmailEditorModal: React.FC<EmailEditorModalProps> = ({
             <X size={18} />
           </button>
         </div>
+
+        {/* Error Log */}
+        {errorLogs.length > 0 && (
+          <ErrorLog errors={errorLogs} onClear={() => setErrorLogs([])} />
+        )}
 
         {/* Editor Container */}
         <div
