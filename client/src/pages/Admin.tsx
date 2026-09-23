@@ -8039,6 +8039,11 @@ function JourneysTab() {
                             </div>
                             <button
                               onClick={() => {
+                                if (!selectedStep.template_id) {
+                                  // No template - create a new one
+                                  alert("No template assigned. Create a new template first by setting one in the step editor.");
+                                  return;
+                                }
                                 setEditingTemplateId(selectedStep.template_id);
                                 setShowTemplateEditor(true);
                               }}
