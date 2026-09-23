@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { VisualEmailBuilder } from "./VisualEmailBuilder";
+import { parseEmailHTMLToBlocks } from "../lib/parseEmailHTML";
 import { X } from "lucide-react";
 
 interface EmailEditorModalProps {
@@ -224,26 +225,16 @@ export const EmailEditorModal: React.FC<EmailEditorModalProps> = ({
             </div>
           )}
           {hasHtmlButNoBlocks && template && (
-            <div
-              style={{
-                flex: 1,
-                overflow: "auto",
-                background: "#1a1a1a",
-              }}
-            >
-              <iframe
-                key={`iframe-${templateId}`}
-                srcDoc={template.html_content || "<p>Chyba: Obsah emailu nebyl nalezen</p>"}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  border: "none",
-                  display: "block",
-                }}
-                title="Email preview"
-                sandbox="allow-same-origin"
-              />
-            </div>
+            <VisualEmailBuilder
+              initialSubject={template.subject}
+              initialPreheader={template.preheader}
+              initialBlocks={parseEmailHTMLToBlocks(template.html_content, template.subject)}
+              initialHeaderConfig={template.headerOptions}
+              title={template.name}
+              onSave={handleSave}
+              onClose={onClose}
+              onTestSend={onTestSend}
+            />
           )}
           {!hasHtmlButNoBlocks && loading && (
             <div
