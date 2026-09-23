@@ -193,12 +193,50 @@ export const EmailEditorModal: React.FC<EmailEditorModalProps> = ({
                 background: "rgba(255, 165, 0, 0.1)",
                 border: "1px solid rgba(255, 165, 0, 0.3)",
                 color: "#ffb347",
-                padding: "12px 16px",
+                padding: "16px",
                 fontSize: "12px",
                 marginBottom: "8px",
+                borderRadius: "4px",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
               }}
             >
-              {warningMessage}
+              <span>{warningMessage}</span>
+              <button
+                onClick={() => {
+                  if (template?.html_content) {
+                    // Create a basic block from the HTML
+                    const htmlBlock = {
+                      id: "html_block",
+                      type: "custom_html" as any,
+                      htmlContent: template.html_content,
+                    };
+                    // Call onSave with the HTML block
+                    if (onSave) {
+                      onSave({
+                        subject: template.subject || "",
+                        preheader: template.preheader || "",
+                        blocks: [htmlBlock],
+                        headerOptions: template.headerOptions || {},
+                      });
+                    }
+                  }
+                }}
+                style={{
+                  background: "#ffb347",
+                  color: "#000",
+                  border: "none",
+                  borderRadius: "4px",
+                  padding: "6px 12px",
+                  fontSize: "11px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Převést na Editor
+              </button>
             </div>
           )}
           {hasHtmlButNoBlocks && template && (
