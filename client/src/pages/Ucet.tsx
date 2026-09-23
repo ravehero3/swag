@@ -25,7 +25,7 @@ interface Order {
 }
 
 export default function Ucet() {
-  const { user, setUser, addToCart, cart, previewPlayer } = useApp() as any;
+  const { user, setUser, addToCart, cart, previewPlayer, authLoading } = useApp() as any;
   const [, setLocation] = useLocation();
   const [orders, setOrders] = useState<Order[]>([]);
   const [savedItems, setSavedItems] = useState<any[]>([]);
@@ -148,6 +148,7 @@ export default function Ucet() {
   }, []);
 
   useEffect(() => {
+    if (authLoading) return; // Still loading user session
     if (!user) {
       setLocation("/prihlasit-se");
       return;
