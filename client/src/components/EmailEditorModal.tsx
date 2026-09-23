@@ -201,7 +201,27 @@ export const EmailEditorModal: React.FC<EmailEditorModalProps> = ({
               {warningMessage}
             </div>
           )}
-          {loading && (
+          {hasHtmlButNoBlocks && template && (
+            <div
+              style={{
+                flex: 1,
+                overflow: "auto",
+                background: "#1a1a1a",
+              }}
+            >
+              <iframe
+                srcDoc={template.html_content}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  border: "none",
+                  display: "block",
+                }}
+                title="Email preview"
+              />
+            </div>
+          )}
+          {!hasHtmlButNoBlocks && loading && (
             <div
               style={{
                 display: "flex",
@@ -215,7 +235,7 @@ export const EmailEditorModal: React.FC<EmailEditorModalProps> = ({
             </div>
           )}
 
-          {error && (
+          {!hasHtmlButNoBlocks && error && (
             <div
               style={{
                 display: "flex",
@@ -229,7 +249,7 @@ export const EmailEditorModal: React.FC<EmailEditorModalProps> = ({
             </div>
           )}
 
-          {template && !loading && !error && (
+          {!hasHtmlButNoBlocks && template && !loading && !error && (
             <VisualEmailBuilder
               initialSubject={template.subject}
               initialPreheader={template.preheader}
