@@ -232,7 +232,8 @@ export const EmailEditorModal: React.FC<EmailEditorModalProps> = ({
               }}
             >
               <iframe
-                srcDoc={template.html_content}
+                key={`iframe-${templateId}`}
+                srcDoc={template.html_content || "<p>Chyba: Obsah emailu nebyl nalezen</p>"}
                 style={{
                   width: "100%",
                   height: "100%",
@@ -240,6 +241,7 @@ export const EmailEditorModal: React.FC<EmailEditorModalProps> = ({
                   display: "block",
                 }}
                 title="Email preview"
+                sandbox="allow-same-origin"
               />
             </div>
           )}
