@@ -7,6 +7,7 @@ interface EmailEditorModalProps {
   templateId: string | null;
   onClose: () => void;
   onSave?: () => void;
+  onTestSend?: (email: string, subject: string, preheader: string, blocks: any[], headerOptions?: any) => Promise<void>;
 }
 
 interface EmailTemplate {
@@ -24,6 +25,7 @@ export const EmailEditorModal: React.FC<EmailEditorModalProps> = ({
   templateId,
   onClose,
   onSave,
+  onTestSend,
 }) => {
   const [template, setTemplate] = useState<EmailTemplate | null>(null);
   const [loading, setLoading] = useState(false);
@@ -215,6 +217,7 @@ export const EmailEditorModal: React.FC<EmailEditorModalProps> = ({
               title={template.name}
               onSave={handleSave}
               onClose={onClose}
+              onTestSend={onTestSend}
             />
           )}
         </div>

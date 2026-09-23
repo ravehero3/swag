@@ -8293,7 +8293,10 @@ function JourneysTab() {
             openJourneyDetail(detail.journey.id);
           }
           load();
+          setShowTemplateEditor(false);
+          setEditingTemplateId(null);
         }}
+        onTestSend={handleTestSendVisualStep}
       />
     </div>
   );
