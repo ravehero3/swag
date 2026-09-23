@@ -62,6 +62,11 @@ export const EmailEditorModal: React.FC<EmailEditorModalProps> = ({
 
   if (!isOpen || !templateId) return null;
 
+  // Check if template has HTML content but no blocks (old templates)
+  const hasBlocksButNoHtml = template?.blocks && Array.isArray(template.blocks) && template.blocks.length > 0 && !template.html_content;
+  const hasHtmlButNoBlocks = template?.html_content && (!template?.blocks || (Array.isArray(template.blocks) && template.blocks.length === 0));
+  const warningMessage = hasHtmlButNoBlocks ? "⚠️ Tato šablona byla vytvořena starou metodou (čistý HTML). Když ji nyní upravíte, budou změny uloženy v novém blok-systému." : null;
+
   const handleSave = async (data: any) => {
     try {
       const response = await fetch(`/api/marketing/templates/${templateId}`, {
@@ -178,8 +183,24 @@ export const EmailEditorModal: React.FC<EmailEditorModalProps> = ({
             flex: 1,
             overflow: "hidden",
             background: "#0a0a0a",
+            display: "flex",
+            flexDirection: "column",
           }}
         >
+          {warningMessage && (
+            <div
+              style={{
+                background: "rgba(255, 165, 0, 0.1)",
+                border: "1px solid rgba(255, 165, 0, 0.3)",
+                color: "#ffb347",
+                padding: "12px 16px",
+                fontSize: "12px",
+                marginBottom: "8px",
+              }}
+            >
+              {warningMessage}
+            </div>
+          )}
           {loading && (
             <div
               style={{
