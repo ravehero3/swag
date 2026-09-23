@@ -30,7 +30,7 @@ export const EmailEditorModal: React.FC<EmailEditorModalProps> = ({
   const [template, setTemplate] = useState<EmailTemplate | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isConverting, setIsConverting] = useState(false);
+  const [dismissWarning, setDismissWarning] = useState(false);
 
   // Fetch template data when modal opens
   useEffect(() => {
@@ -66,7 +66,7 @@ export const EmailEditorModal: React.FC<EmailEditorModalProps> = ({
   // Check if template has HTML content but no blocks (old templates)
   const hasBlocksButNoHtml = template?.blocks && Array.isArray(template.blocks) && template.blocks.length > 0 && !template.html_content;
   const hasHtmlButNoBlocks = template?.html_content && (!template?.blocks || (Array.isArray(template.blocks) && template.blocks.length === 0));
-  const warningMessage = hasHtmlButNoBlocks ? "⚠️ Tato šablona byla vytvořena starou metodou (čistý HTML). Když ji nyní upravíte, budou změny uloženy v novém blok-systému." : null;
+  const warningMessage = hasHtmlButNoBlocks && !dismissWarning ? "⚠️ Tato šablona byla vytvořena starou metodou (čistý HTML). Zde vidíte náhled emailu. Pro úpravu budete muset vytvořit nový design s bloky." : null;
 
   const handleSave = async (data: any) => {
     try {
@@ -97,48 +97,6 @@ export const EmailEditorModal: React.FC<EmailEditorModalProps> = ({
     } catch (err) {
       console.error("Error saving template:", err);
       alert("Chyba při ukládání šablony");
-    }
-  };
-
-  const handleConvertToEditor = async () => {
-    if (!template?.html_content) return;
-    
-    setIsConverting(true);
-    try {
-      // Create a basic block from the HTML
-      const htmlBlock = {
-        id: "html_block",
-        type: "custom_html",
-        htmlContent: template.html_content,
-      };
-
-      // Save the conversion to database
-      const response = await fetch(`/api/marketing/templates/${templateId}`, {
-        method: "PATCH",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          subject: template.subject || "",
-          preheader: template.preheader || "",
-          blocks: [htmlBlock],
-          headerOptions: template.headerOptions || {},
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to convert template");
-      }
-
-      // Update local template state to trigger editor view
-      const data = await response.json();
-      setTemplate(data);
-    } catch (err) {
-      console.error("Error converting template:", err);
-      alert("Chyba při konverzi šablony");
-    } finally {
-      setIsConverting(false);
     }
   };
 
@@ -248,8 +206,7 @@ export const EmailEditorModal: React.FC<EmailEditorModalProps> = ({
             >
               <span>{warningMessage}</span>
               <button
-                onClick={handleConvertToEditor}
-                disabled={isConverting}
+                onClick={() => setDismissWarning(true)}
                 style={{
                   background: "#ffb347",
                   color: "#000",
@@ -258,16 +215,15 @@ export const EmailEditorModal: React.FC<EmailEditorModalProps> = ({
                   padding: "6px 12px",
                   fontSize: "11px",
                   fontWeight: 600,
-                  cursor: isConverting ? "not-allowed" : "pointer",
+                  cursor: "pointer",
                   whiteSpace: "nowrap",
-                  opacity: isConverting ? 0.6 : 1,
                 }}
               >
-                {isConverting ? "Převáděím..." : "Převést na Editor"}
+                Rozumím
               </button>
             </div>
           )}
-          {hasHtmlButNoBlocks && template && !isConverting && (
+          {hasHtmlButNoBlocks && template && (
             <div
               style={{
                 flex: 1,
