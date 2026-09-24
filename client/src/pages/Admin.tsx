@@ -7901,6 +7901,18 @@ function JourneysTab() {
     }
   };
 
+  const handleTestSendFromEditor = async (email: string, subject: string, preheader: string, blocks: any[], headerOptions?: any) => {
+    if (!editingTemplateId) throw new Error("No template ID");
+    const res = await fetch(`/api/marketing/templates/${editingTemplateId}/send-test`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ email }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Odeslání selhalo");
+  };
+
   const cellStyle: any = { padding: "10px", borderBottom: "1px solid #1e1e1e", verticalAlign: "middle" };
 
   const STATUS_COLORS: Record<string, string> = { active: "#24e053", paused: "#f9a825", draft: "#555" };
@@ -8301,7 +8313,7 @@ function JourneysTab() {
           setShowTemplateEditor(false);
           setEditingTemplateId(null);
         }}
-        onTestSend={handleTestSendVisualStep}
+        onTestSend={handleTestSendFromEditor}
       />
     </div>
   );
