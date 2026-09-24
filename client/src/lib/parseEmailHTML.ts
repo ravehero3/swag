@@ -24,7 +24,7 @@ export function parseEmailHTMLToBlocks(htmlContent: string, subject: string = ""
   const parser = new DOMParser();
   const doc = parser.parseFromString(htmlContent, "text/html");
 
-  // Extract heading (h1, h2, h3, or first large text)
+  // Extract heading (h1, h2, h3)
   const headings = doc.querySelectorAll("h1, h2, h3");
   if (headings.length > 0) {
     const heading = headings[0].textContent?.trim() || "";
@@ -40,11 +40,20 @@ export function parseEmailHTMLToBlocks(htmlContent: string, subject: string = ""
     }
   }
 
-  // Extract paragraphs
+  // Extract paragraphs (but skip those inside divs with borders - those are info box content)
+  const infoBoxDivs = doc.querySelectorAll("div[style*='border']");
+  const infoBoxParagraphs = new Set();
+  infoBoxDivs.forEach((box) => {
+    box.querySelectorAll("p").forEach((p) => infoBoxParagraphs.add(p));
+  });
+
   const paragraphs = doc.querySelectorAll("p");
   paragraphs.forEach((p) => {
+    // Skip if this paragraph is inside an info box
+    if (infoBoxParagraphs.has(p)) return;
+    
     const text = p.textContent?.trim() || "";
-    // Skip very short text (like single words) and paragraph tags inside other elements
+    // Skip very short text (like single words) and text with copyright/emails
     if (text.length > 20 && !text.includes("©") && !text.includes("@")) {
       blocks.push({
         id: `b${blockIdCounter++}`,
@@ -57,32 +66,24 @@ export function parseEmailHTMLToBlocks(htmlContent: string, subject: string = ""
     }
   });
 
-  // Extract info boxes (divs with specific styling)
-  const infoBoxes = doc.querySelectorAll("div[style*='border']");
-  infoBoxes.forEach((box) => {
-    const titleEl = box.querySelector("p:first-child");
-    const contentEl = box.querySelector("p:last-child");
-    
-    if (titleEl && contentEl) {
-      const title = titleEl.textContent?.trim() || "";
-      let content = contentEl.textContent?.trim() || "";
+  // Extract info boxes (divs with border styling)
+  infoBoxDivs.forEach((box) => {
+    const pElements = box.querySelectorAll("p");
+    if (pElements.length >= 2) {
+      const titleEl = pElements[0];
+      const contentEl = pElements[pElements.length - 1]; // Get last p tag
       
-      // Extract link if exists
-      const link = contentEl.querySelector("a");
-      const linkUrl = link?.getAttribute("href") || "";
+      const title = titleEl.textContent?.trim() || "";
+      const content = contentEl.textContent?.trim() || "";
       
       if (title && content.length > 10) {
-        // Remove the link text from content, keep just the descriptive part
-        const beforeLink = content.split(link?.textContent || "")[0]?.trim() || "";
-        
         blocks.push({
           id: `b${blockIdCounter++}`,
           type: "info_box",
+          infoBgColor: "#111111",
           infoBorderColor: "#222222",
           infoTitle: title,
-          infoBodyHtml: beforeLink,
-          infoLink: linkUrl,
-          infoLinkText: link?.textContent || "Learn more",
+          infoText: content,
         });
       }
     }
