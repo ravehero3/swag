@@ -703,7 +703,17 @@ export function VisualEmailBuilder({
   ];
 
   const [blocks, setBlocks] = useState<EmailBlock[]>(() => {
-    return Array.isArray(initialBlocks) && initialBlocks.length > 0 ? initialBlocks : defaultBlocks;
+    let blocksToUse = Array.isArray(initialBlocks) && initialBlocks.length > 0 ? initialBlocks : defaultBlocks;
+    
+    // Ensure there's always a heading block at the start
+    const hasHeading = blocksToUse.some(b => b.type === "heading");
+    if (!hasHeading && initialSubject) {
+      blocksToUse = [{
+        id: "b0", type: "heading", headingText: initialSubject,
+        headingLevel: "h1", headingAlign: "center", headingColor: "#ffffff"
+      }, ...blocksToUse];
+    }
+    return blocksToUse;
   });
 
   const initialSnapshotRef = useRef(
@@ -1080,7 +1090,9 @@ export function VisualEmailBuilder({
       }
       setTestResult(`Testovací e-mail byl úspěšně odeslán na ${testEmail}.`);
     } catch (err: any) {
-      setTestResult(`Chyba: ${err.message || "Odeslání selhalo"}`);
+      console.error("[VisualEmailBuilder] Test send error:", err);
+      const errorMsg = err?.message || err?.toString() || "Odeslání selhalo";
+      setTestResult(`❌ Chyba: ${errorMsg}`);
     } finally {
       setIsTestSending(false);
     }
