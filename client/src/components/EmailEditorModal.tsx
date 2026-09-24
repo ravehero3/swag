@@ -67,6 +67,7 @@ export const EmailEditorModal: React.FC<EmailEditorModalProps> = ({
         }
 
         const data = await response.json();
+        console.log("[EmailEditorModal] Template fetched:", data);
         setTemplate(data);
       } catch (err) {
         const errorMsg = err instanceof Error ? err.message : String(err);
@@ -79,6 +80,21 @@ export const EmailEditorModal: React.FC<EmailEditorModalProps> = ({
 
     fetchTemplate();
   }, [isOpen, templateId]);
+
+  // Debug: Log parsed blocks after template loads
+  useEffect(() => {
+    if (template?.html_content) {
+      const parsed = parseEmailHTMLToBlocks(template.html_content, template.subject);
+      console.log("[EmailEditorModal] Blocks to pass to VisualEmailBuilder:", {
+        templateId,
+        templateName: template.name,
+        hasHtml: !!template.html_content,
+        existingBlocks: template.blocks?.length || 0,
+        parsedBlocksCount: parsed.length,
+        parsedBlocks: parsed.map(b => ({ id: b.id, type: b.type, content: b.headingText || b.paragraphText || b.infoTitle || "..." })),
+      });
+    }
+  }, [template]);
 
   if (!isOpen || !templateId) return null;
 
