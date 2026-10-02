@@ -361,7 +361,7 @@ async function resolveDownloadItems(items: any[]): Promise<DownloadItem[]> {
   return result;
 }
 
-export function buildPreviewEmailHtml(key: string, introText: string, appUrl: string): string {
+export function buildPreviewEmailHtml(key: string, introText: string, appUrl: string, subject?: string): string {
   const datum = "3. dubna 2026";
 
   const isFree = key === "free_download";

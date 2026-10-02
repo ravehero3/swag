@@ -6384,7 +6384,7 @@ function EmailsTab() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ intro_text: editForm.intro_text }),
+        body: JSON.stringify(editForm),
       });
       const html = await res.text();
       setPreviewHtml(html);

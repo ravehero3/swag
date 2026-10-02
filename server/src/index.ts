@@ -810,9 +810,11 @@ app.patch("/api/admin/email-templates/:key", requireAdmin, async (req, res) => {
 app.post("/api/admin/email-templates/:key/preview", requireAdmin, async (req, res) => {
   try {
     const { buildPreviewEmailHtml } = await import("./email.js");
-    const { intro_text } = req.body;
+    // Accept both intro_text and subject from request body (the current form data the user typed)
+    // This ensures the preview uses the CURRENT form values, not the saved database values
+    const { intro_text, subject } = req.body;
     const appUrl = process.env.APP_URL || `https://${process.env.REPLIT_DEV_DOMAIN}` || "http://localhost:5000";
-    const html = buildPreviewEmailHtml(req.params.key, intro_text || "", appUrl);
+    const html = buildPreviewEmailHtml(req.params.key, intro_text || "", appUrl, subject);
     res.setHeader("Content-Type", "text/html");
     res.send(html);
   } catch (error) {
