@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Card, Button, Space, Tabs, message } from "antd";
 import { LogOut, Trash2 } from "lucide-react";
-import BeatPublishForm from "../components/BeatPublishForm";
+import { BeatPublishForm } from "../components/BeatPublishForm";
 import OracleBeatsModal from "../components/OracleBeatsModal";
 
 export default function Admin() {
