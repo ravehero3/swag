@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Input, Table, Tag, Button, Space, Tooltip, Spin, message } from "antd";
-import { CheckCircleOutlined, SearchOutlined } from "@ant-design/icons";
+import { CheckCircle, Search } from "lucide-react";
 
 interface OracleBeat {
   filename: string;
@@ -27,7 +27,6 @@ interface OracleBeatsModalProps {
 export default function OracleBeatsModal({ visible, onClose }: OracleBeatsModalProps) {
   const [data, setData] = useState<OracleBeatsResponse | null>(null);
   const [loading, setLoading] = useState(false);
-  const [searching, setSearching] = useState(false);
   const [search, setSearch] = useState("");
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
   const [publishing, setPublishing] = useState(false);
@@ -81,7 +80,6 @@ export default function OracleBeatsModal({ visible, onClose }: OracleBeatsModalP
       });
 
       if (!res.ok) throw new Error("Chyba při publikování");
-      const published = await res.json();
 
       message.success(`Beat "${beatToPublish.beatCode}" publikován!`);
       setSelectedRowKeys([]);
@@ -109,7 +107,7 @@ export default function OracleBeatsModal({ visible, onClose }: OracleBeatsModalP
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           {record.isPublished && (
             <Tooltip title="Publikováno live">
-              <CheckCircleOutlined style={{ color: "#52c41a", fontSize: "16px" }} />
+              <CheckCircle size={16} style={{ color: "#52c41a" }} />
             </Tooltip>
           )}
           <span>{code}</span>
@@ -201,7 +199,7 @@ export default function OracleBeatsModal({ visible, onClose }: OracleBeatsModalP
             {/* Search */}
             <Input
               placeholder="Search by beat code or filename..."
-              prefix={<SearchOutlined />}
+              prefix={<Search size={14} />}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               size="large"

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Card, Button, Space, Tabs, message } from "antd";
-import { LogoutOutlined, DeleteOutlined } from "antd/icons";
+import { LogOut, Trash2 } from "lucide-react";
 import BeatPublishForm from "../components/BeatPublishForm";
 import UpdatePlaylists from "../components/UpdatePlaylists";
 import OracleBeatsModal from "../components/OracleBeatsModal";
@@ -53,17 +53,16 @@ export default function Admin() {
             >
               🎛️ ORACLE BEATS
             </Button>
-            <Button onClick={handleClearCache} icon={<DeleteOutlined />}>
-              Clear Cache
+            <Button onClick={handleClearCache}>
+              <Trash2 size={16} style={{ marginRight: "4px" }} /> Clear Cache
             </Button>
             <Button
               type="primary"
               danger
               loading={isLoading}
               onClick={handleLogout}
-              icon={<LogoutOutlined />}
             >
-              Logout
+              <LogOut size={16} style={{ marginRight: "4px" }} /> Logout
             </Button>
           </Space>
         </div>
