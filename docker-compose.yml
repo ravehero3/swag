@@ -11,3 +11,7 @@ services:
       - ./data/kit-artworks:/app/public/kit-artworks
       # Persistent uploads (hero logo, videos, etc.)
       - ./data/uploads:/app/public/uploads
+      # Persistent beat files — CRITICAL: must survive container restarts
+      # This bind mount OVERRIDES the VOLUME declaration in the Dockerfile,
+      # ensuring beats stored at /app/public/uploads/beats survive redeploys.
+      - ./data/uploads/beats:/app/public/uploads/beats
