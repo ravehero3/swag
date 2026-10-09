@@ -66,6 +66,70 @@ router.get("/", requireAdmin, (_req: Request, res: Response) => {
   }
 });
 
+// GET /api/beat-files/oracle/all — list ALL beats from Oracle folder with published status
+router.get("/oracle/all", requireAdmin, async (_req: Request, res: Response) => {
+  try {
+    ensureDir();
+    const { pool } = await import("../db.js");
+
+    // Get all Oracle files (disk)
+    const oracleFiles = fs.readdirSync(BEATS_DIR)
+      .filter(f => {
+        const ext = path.extname(f).toLowerCase();
+        return ext === '.mp3' && !f.startsWith(".");
+      })
+      .map(filename => {
+        const stats = fs.statSync(path.join(BEATS_DIR, filename));
+        return {
+          filename,
+          url: `/uploads/beats/${filename}`,
+          size: stats.size,
+          modified: stats.mtime,
+        };
+      })
+      .sort((a, b) => a.filename.localeCompare(b.filename));
+
+    // Get all published beats from DB
+    const dbResult = await pool.query(
+      "SELECT id, title, preview_url FROM beats WHERE is_published = true ORDER BY id"
+    );
+    const publishedBeats = dbResult.rows;
+
+    // Create a set of published URLs for fast lookup
+    const publishedUrls = new Set(publishedBeats.map(b => b.preview_url));
+
+    // Mark each Oracle file as published or not
+    const beatsWithStatus = oracleFiles.map(file => {
+      const fileUrl = `/uploads/beats/${file.filename}`;
+      const isPublished = publishedUrls.has(fileUrl);
+      
+      // Extract beat name from filename (e.g., "vb4874_6-152bpm-d-minor-1784829704804.mp3" → "VB4874_6")
+      const beatCodeMatch = file.filename.match(/^([a-z0-9_-]+?)(?:-\d+)?(?:-\d{13,})?\.(mp3)$/i);
+      const beatCode = beatCodeMatch ? beatCodeMatch[1].toUpperCase() : file.filename;
+
+      return {
+        filename: file.filename,
+        url: fileUrl,
+        beatCode,
+        size: file.size,
+        modified: file.modified.toISOString(),
+        isPublished,
+        publishedBeatId: publishedBeats.find(b => b.preview_url === fileUrl)?.id || null,
+      };
+    });
+
+    res.json({
+      total: beatsWithStatus.length,
+      published: beatsWithStatus.filter(b => b.isPublished).length,
+      unpublished: beatsWithStatus.filter(b => !b.isPublished).length,
+      beats: beatsWithStatus,
+    });
+  } catch (err) {
+    console.error("Error fetching Oracle beats:", err);
+    res.status(500).json({ error: "Nepodařilo se načíst Oracle beats" });
+  }
+});
+
 // POST /api/beat-files/upload — upload a single beat file to VPS storage
 router.post("/upload", requireAdmin, upload.single("file"), (req: Request, res: Response) => {
   try {
