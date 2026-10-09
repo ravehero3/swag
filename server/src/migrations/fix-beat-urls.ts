@@ -3,8 +3,11 @@ import fs from "fs";
 import path from "path";
 
 /**
- * This migration fixes beat preview_url values in the database to match 
- * actual files on disk at /app/public/uploads/beats/
+ * This migration fixes beat preview_url values by mapping each beat 
+ * to the actual file on disk using the beat code (e.g., VB4874_6, VB4797_2).
+ * 
+ * Strategy: For each beat, extract the beat code from the title,
+ * then find the matching .mp3 file on disk.
  */
 
 async function fixBeatUrls() {
@@ -30,44 +33,37 @@ async function fixBeatUrls() {
     for (const beat of beats) {
       const { id, title, preview_url } = beat;
       
-      // Try to find a matching file by extracting the base name pattern
-      // Most files follow pattern: "prefix-param1-param2-...-timestamp.mp3"
-      // where timestamp is either 13 digits or 8 hex chars
-      
-      // Normalize title for matching
-      const titleNorm = title
-        .toLowerCase()
-        .trim()
-        .replace(/\s+/g, '_')
-        .replace(/[^\w_-]/g, '');
-
-      let bestMatch = null;
-      let matchingFile = null;
-
-      // Exact match first: file starts with title
-      matchingFile = files.find(f => 
-        f.toLowerCase().startsWith(titleNorm)
-      );
-
-      if (!matchingFile) {
-        // Fuzzy match: file contains most of the title words
-        const titleWords = titleNorm.split(/[_-]/).filter(w => w.length > 2);
-        matchingFile = files.find(f => {
-          const fileNorm = f.toLowerCase().replace(/\.mp3$/, '');
-          const matches = titleWords.filter(word => fileNorm.includes(word));
-          return matches.length >= Math.max(1, Math.ceil(titleWords.length * 0.6));
-        });
+      // Extract beat code from title (e.g., "VB4874_6 152BPM d minor" → "vb4874_6")
+      const beatCodeMatch = title.match(/^([A-Za-z0-9_-]+)/);
+      if (!beatCodeMatch) {
+        console.log(`✗ ${id.toString().padStart(3)}: Could not extract beat code from "${title}"`);
+        continue;
       }
 
-      if (matchingFile) {
-        const newUrl = `/uploads/beats/${matchingFile}`;
-        if (preview_url !== newUrl) {
-          await pool.query("UPDATE beats SET preview_url = $1 WHERE id = $2", [newUrl, id]);
-          console.log(`✓ ${id.toString().padStart(3)}: ${matchingFile}`);
-          updated++;
-        }
+      const beatCode = beatCodeMatch[1].toLowerCase();
+      
+      // Find all files matching this beat code
+      const matchingFiles = files.filter(f => 
+        f.toLowerCase().startsWith(beatCode + '-') || 
+        f.toLowerCase().startsWith(beatCode.replace(/_/g, '') + '-')
+      );
+
+      if (matchingFiles.length === 0) {
+        console.log(`✗ ${id.toString().padStart(3)}: No file for "${title}" (code: ${beatCode})`);
+        continue;
+      }
+
+      // Pick the file with the earliest timestamp (most likely the original)
+      const sortedFiles = matchingFiles.sort();
+      const bestFile = sortedFiles[0];
+      const newUrl = `/uploads/beats/${bestFile}`;
+
+      if (preview_url !== newUrl) {
+        await pool.query("UPDATE beats SET preview_url = $1 WHERE id = $2", [newUrl, id]);
+        console.log(`✓ ${id.toString().padStart(3)}: ${bestFile}`);
+        updated++;
       } else {
-        console.log(`✗ ${id.toString().padStart(3)}: No match for "${title}"`);
+        console.log(`= ${id.toString().padStart(3)}: Already correct`);
       }
     }
 
