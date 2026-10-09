@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Card, Button, Space, Tabs, message } from "antd";
 import { LogOut, Trash2 } from "lucide-react";
 import BeatPublishForm from "../components/BeatPublishForm";
-import UpdatePlaylists from "../components/UpdatePlaylists";
 import OracleBeatsModal from "../components/OracleBeatsModal";
 
 export default function Admin() {
@@ -40,7 +39,7 @@ export default function Admin() {
       <Card>
         <div style={{ marginBottom: "20px" }}>
           <h1>🔧 Admin Panel</h1>
-          <p>Manage beats, playlists, and media</p>
+          <p>Manage beats and media</p>
         </div>
 
         <div style={{ marginBottom: "20px" }}>
@@ -73,11 +72,6 @@ export default function Admin() {
               key: "publish",
               label: "Publish New Beat",
               children: <BeatPublishForm />,
-            },
-            {
-              key: "playlists",
-              label: "Update Playlists",
-              children: <UpdatePlaylists />,
             },
           ]}
         />
