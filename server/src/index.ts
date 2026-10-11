@@ -860,8 +860,16 @@ app.get("/api/audio-proxy", async (req: any, res: any) => {
   const b2PublicBase = process.env.B2_PUBLIC_BASE_URL || "";
   const r2PublicBase = process.env.R2_PUBLIC_BASE_URL || "";
   const appUrl = (process.env.APP_URL || "").replace(/\/$/, "");
-  
-  // Allow: (1) cloud CDNs, (2) relative local URLs, (3) full app URLs
+  // Build both www and non-www variants so the check works regardless of how
+  // APP_URL is configured vs. how the browser sends the URL.
+  const appUrlWww = appUrl.replace(/^https?:\/\/(?!www\.)/, (m) => m + "www.");
+  const appUrlNoWww = appUrl.replace(/^(https?:\/\/)www\./, "$1");
+
+  // Also extract just the hostname to match any subdomain variant
+  let appHostname = "";
+  try { appHostname = new URL(appUrl).hostname.replace(/^www\./, ""); } catch {}
+
+  // Allow: (1) cloud CDNs, (2) relative local URLs, (3) full app URLs (www/non-www)
   const isAllowed =
     url.includes("backblazeb2.com") ||
     url.includes("r2.dev") ||
@@ -870,7 +878,10 @@ app.get("/api/audio-proxy", async (req: any, res: any) => {
     (b2PublicBase && url.startsWith(b2PublicBase)) ||
     (r2PublicBase && url.startsWith(r2PublicBase)) ||
     url.startsWith("/uploads/") ||
-    (appUrl && url.startsWith(appUrl));
+    (appUrl && url.startsWith(appUrl)) ||
+    (appUrlWww && url.startsWith(appUrlWww)) ||
+    (appUrlNoWww && url.startsWith(appUrlNoWww)) ||
+    (appHostname && (() => { try { return new URL(url).hostname.replace(/^www\./, "") === appHostname; } catch { return false; } })());
   if (!isAllowed) return res.status(403).json({ error: "URL not allowed" });
   
   // Convert relative local URLs to absolute
