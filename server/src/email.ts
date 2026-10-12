@@ -11,7 +11,7 @@ import {
   formatDateCzech,
   formatPriceCzech,
 } from "./lib/contractTemplate.js";
-import { renderBrandedEmailShell, BRAND } from "./lib/marketing/brandKit.js";
+import { renderBrandedEmailShell, renderBrandedEmailFooter, BRAND } from "./lib/marketing/brandKit.js";
 
 export { fillContractTemplate, formatDateCzech, formatPriceCzech };
 
@@ -443,10 +443,9 @@ function buildFreePreviewHtml(introText: string, items: DownloadItem[], appUrl: 
           </div>
         </td></tr>
         <tr><td style="padding:40px 24px 0 24px;border-top:1px solid #222;margin-top:32px;">
-          <p style="margin:32px 0 0 0;font-size:12px;color:#444;text-align:center;line-height:1.7;">
-            VOODOO808 &bull; Vojtěch Vojkovský<br/>
-            <a href="mailto:info@voodoo808.com" style="color:#666;text-decoration:none;">info@voodoo808.com</a>
-          </p>
+          <div style="margin:32px 0 0 0;text-align:center;">
+            ${renderBrandedEmailFooter()}
+          </div>
         </td></tr>
       </table>
     </td></tr>
@@ -567,10 +566,9 @@ function buildPurchaseEmailHtml(
           <!-- Footer -->
           <tr>
             <td style="padding:40px 24px 0 24px;border-top:1px solid #222;margin-top:32px;">
-              <p style="margin:32px 0 0 0;font-size:12px;color:#444;text-align:center;line-height:1.7;">
-                VOODOO808 &bull; Vojtěch Vojkovský<br/>
-                <a href="mailto:info@voodoo808.com" style="color:#666;text-decoration:none;">info@voodoo808.com</a>
-              </p>
+              <div style="margin:32px 0 0 0;text-align:center;">
+                ${renderBrandedEmailFooter()}
+              </div>
             </td>
           </tr>
 
@@ -747,10 +745,9 @@ function buildBankTransferReminderHtml(order: any, appUrl: string, customIntroTe
           </p>
         </td></tr>
         <tr><td style="padding:32px 20px 0 20px;border-top:1px solid #222;margin-top:24px;">
-          <p style="margin:0;font-size:11px;color:#444;text-align:center;line-height:1.7;">
-            VOODOO808 &bull; Vojtěch Vojkovský &bull;
-            <a href="mailto:info@voodoo808.com" style="color:#555;text-decoration:none;">info@voodoo808.com</a>
-          </p>
+          <div style="margin:24px 0 0 0;text-align:center;">
+            ${renderBrandedEmailFooter()}
+          </div>
         </td></tr>
       </table>
     </td></tr>
@@ -879,6 +876,11 @@ export async function sendBankTransferInstructionsEmail(orderId: number): Promis
             Otázky? Napište nám na <a href="mailto:info@voodoo808.com" style="color:#aaa;">info@voodoo808.com</a>.
           </p>
         </td></tr>
+        <tr><td style="padding:32px 20px 0 20px;border-top:1px solid #222;margin-top:24px;">
+          <div style="margin:24px 0 0 0;text-align:center;">
+            ${renderBrandedEmailFooter()}
+          </div>
+        </td></tr>
       </table>
     </td></tr>
   </table>
@@ -948,10 +950,9 @@ export async function sendPasswordResetEmail(email: string, token: string): Prom
           </p>
         </td></tr>
         <tr><td style="border-top:1px solid #1e1e1e;padding:24px 40px;text-align:center;">
-          <p style="margin:0;color:#444;font-size:11px;">
-            &copy; ${new Date().getFullYear()} VOODOO808 &mdash;
-            <a href="mailto:info@voodoo808.com" style="color:#555;text-decoration:none;">info@voodoo808.com</a>
-          </p>
+          <div style="margin:16px 0 0 0;text-align:center;">
+            ${renderBrandedEmailFooter()}
+          </div>
         </td></tr>
       </table>
     </td></tr>
@@ -1060,10 +1061,9 @@ export async function sendFreeDownloadEmail(lead: { id: number; email: string; i
           </tr>
           <tr>
             <td style="padding:40px 24px 0 24px;border-top:1px solid #222;margin-top:32px;">
-              <p style="margin:32px 0 0 0;font-size:12px;color:#444;text-align:center;line-height:1.7;">
-                VOODOO808 &bull; Vojtěch Vojkovský<br/>
-                <a href="mailto:info@voodoo808.com" style="color:#666;text-decoration:none;">info@voodoo808.com</a>
-              </p>
+              <div style="margin:32px 0 0 0;text-align:center;">
+                ${renderBrandedEmailFooter()}
+              </div>
             </td>
           </tr>
         </table>

@@ -2204,8 +2204,27 @@ export function VisualEmailBuilder({
                   borderRadius: previewMode === "mobile" ? "0 0 28px 28px" : "0 0 10px 10px",
                 }}
               >
-                <p style={{ margin: 0, fontSize: "11px", color: "#555555", lineHeight: 1.7 }}>
-                  VOODOO808 &bull; Vojtěch Vojkovský<br />
+                <p style={{ margin: "0 0 6px 0", fontSize: "12px", fontWeight: 700, color: "#ffffff", letterSpacing: "1px", textTransform: "uppercase" }}>
+                  VOODOO808
+                </p>
+                <p style={{ margin: "0 0 6px 0", fontSize: "11px", color: "#aaaaaa", lineHeight: 1.6 }}>
+                  Vojtěch Vojkovský, Bachelor of Arts,<br />
+                  Bědovická 193e, Třebechovice pod Orebem, 503 46<br />
+                  Česká Republika<br />
+                  [IČO: 08701032]
+                </p>
+                <p style={{ margin: "0 0 10px 0", fontSize: "11px", color: "#666666", lineHeight: 1.6 }}>
+                  Více o{" "}
+                  <a
+                    href="https://www.voodoo808.com/ochrana-osobnich-udaju"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: "#888888", textDecoration: "underline" }}
+                  >
+                    zásadách ochrany osobních údajů
+                  </a>.
+                </p>
+                <p style={{ margin: "8px 0 0 0", fontSize: "11px", color: "#555555", lineHeight: 1.7 }}>
                   <span style={{ color: "#666666", textDecoration: "underline" }}>
                     Odhlásit se z marketingových e-mailů
                   </span>

@@ -64,6 +64,35 @@ function resolveLogoWidth(size?: "sm" | "md" | "lg" | "xl"): number {
   return 300; // "lg" default
 }
 
+export function renderBrandedEmailFooter(opts: { unsubscribeUrl?: string } = {}): string {
+  const { unsubscribeUrl } = opts;
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%;text-align:center;margin:0 auto;">
+    <tr>
+      <td align="center" style="text-align:center;font-size:11px;color:${BRAND.textMuted};line-height:1.7;">
+        <p style="margin:0 0 6px 0;font-size:12px;font-weight:700;color:${BRAND.textPrimary};letter-spacing:1px;text-transform:uppercase;">VOODOO808</p>
+        <p style="margin:0 0 6px 0;font-size:11px;color:${BRAND.textSecondary};line-height:1.6;">
+          Vojtěch Vojkovský, Bachelor of Arts,<br/>
+          Bědovická 193e, Třebechovice pod Orebem, 503 46<br/>
+          Česká Republika<br/>
+          [IČO: 08701032]
+        </p>
+        <p style="margin:0 0 10px 0;font-size:11px;color:${BRAND.textFaint};line-height:1.6;">
+          Více o <a href="https://www.voodoo808.com/ochrana-osobnich-udaju" target="_blank" rel="noopener noreferrer" style="color:${BRAND.textMuted};text-decoration:underline;">zásadách ochrany osobních údajů</a>.
+        </p>
+        ${
+          unsubscribeUrl
+            ? `<p style="margin:8px 0 0 0;font-size:11px;color:${BRAND.textFainter};line-height:1.6;">
+                 <a href="${unsubscribeUrl}" style="color:${BRAND.textFaint};text-decoration:underline;">Odhlásit se z marketingových e-mailů</a>
+               </p>`
+            : `<p style="margin:8px 0 0 0;font-size:11px;color:${BRAND.textFainter};line-height:1.6;">
+                 <a href="mailto:info@voodoo808.com" style="color:${BRAND.textFaint};text-decoration:none;">info@voodoo808.com</a>
+               </p>`
+        }
+      </td>
+    </tr>
+  </table>`;
+}
+
 /**
  * The outer shell every marketing email is rendered into: dark background,
  * centered 600px column, logo header, footer with business identity +
@@ -83,15 +112,7 @@ export function renderBrandedEmailShell(opts: {
   const logoWidth = resolveLogoWidth(headerOptions?.logoSize);
   const showText = !!headerOptions?.showText;
 
-  const footer = unsubscribeUrl
-    ? `<p style="margin:0;font-size:11px;color:${BRAND.textFainter};line-height:1.7;">
-         VOODOO808 &bull; Vojtěch Vojkovský<br/>
-         <a href="${unsubscribeUrl}" style="color:${BRAND.textFaint};text-decoration:underline;">Odhlásit se z marketingových e-mailů</a>
-       </p>`
-    : `<p style="margin:0;font-size:12px;color:${BRAND.textFootnote};text-align:center;line-height:1.7;">
-         VOODOO808 &bull; Vojtěch Vojkovský<br/>
-         <a href="mailto:info@voodoo808.com" style="color:${BRAND.textFaint};text-decoration:none;">info@voodoo808.com</a>
-       </p>`;
+  const footer = renderBrandedEmailFooter({ unsubscribeUrl });
 
   const preheaderPadding = "&#847; &zwnj;&nbsp;".repeat(35);
 
