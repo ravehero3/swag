@@ -1866,7 +1866,7 @@ export function VisualEmailBuilder({
                 height: "750px",
                 minHeight: "750px",
                 margin: "0 auto",
-                background: "#0a0a0a",
+                background: "#000000",
                 border: previewMode === "mobile" ? "12px solid #1a1a1a" : "1px solid #222",
                 borderRadius: previewMode === "mobile" ? "40px" : "10px",
                 boxShadow: "0 15px 50px rgba(0,0,0,0.85)",
@@ -1877,7 +1877,7 @@ export function VisualEmailBuilder({
             >
               {previewMode === "mobile" && (
                 <div style={{ background: "#1a1a1a", padding: "8px 0 4px 0", textAlign: "center" }}>
-                  <div style={{ width: "120px", height: "14px", background: "#0a0a0a", borderRadius: "10px", margin: "0 auto" }} />
+                  <div style={{ width: "120px", height: "14px", background: "#000000", borderRadius: "10px", margin: "0 auto" }} />
                 </div>
               )}
               {previewHtml ? (
@@ -1888,7 +1888,7 @@ export function VisualEmailBuilder({
                     width: "100%",
                     height: previewMode === "mobile" ? "calc(100% - 26px)" : "100%",
                     border: "none",
-                    background: "#0a0a0a",
+                    background: "#000000",
                   }}
                   sandbox="allow-same-origin allow-popups"
                 />
@@ -1914,7 +1914,7 @@ export function VisualEmailBuilder({
                 width: previewMode === "mobile" ? "390px" : "640px",
                 maxWidth: "100%",
                 margin: "0 auto",
-                background: "#0a0a0a",
+                background: "#000000",
                 border: previewMode === "mobile" ? "12px solid #1a1a1a" : "1px solid #222",
                 borderRadius: previewMode === "mobile" ? "40px" : "10px",
                 boxShadow: "0 15px 50px rgba(0,0,0,0.85)",

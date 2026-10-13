@@ -550,23 +550,41 @@ router.post("/templates/seed", requireAdmin, async (req: Request, res: Response)
 router.patch("/templates/:id", requireAdmin, async (req: Request, res: Response) => {
   try {
     const { name, subject, preheader, htmlContent, textContent, blocks, headerOptions } = req.body;
-    let finalHtml = htmlContent || "";
+    let finalHtml = htmlContent !== undefined ? htmlContent : null;
     if (Array.isArray(blocks) && blocks.length > 0) {
       finalHtml = compileBlocksToHtml(blocks);
     }
-    const blocksJson = Array.isArray(blocks) ? JSON.stringify(blocks) : (blocks ? JSON.stringify(blocks) : "[]");
+    const blocksJson = Array.isArray(blocks) ? JSON.stringify(blocks) : (blocks ? JSON.stringify(blocks) : null);
     const headerOptionsJson = headerOptions ? JSON.stringify(headerOptions) : null;
 
     const result = await pool.query(
-      `UPDATE marketing_templates SET name = $1, subject = $2, preheader = $3, html_content = $4,
-       text_content = $5, blocks = $6::jsonb, header_options = COALESCE($7::jsonb, header_options), updated_at = CURRENT_TIMESTAMP WHERE id = $8 RETURNING *`,
-      [name, subject, preheader || null, finalHtml, textContent || null, blocksJson, headerOptionsJson, req.params.id]
+      `UPDATE marketing_templates SET
+         name = COALESCE($1, name),
+         subject = COALESCE($2, subject),
+         preheader = COALESCE($3, preheader),
+         html_content = COALESCE($4, html_content),
+         text_content = COALESCE($5, text_content),
+         blocks = COALESCE($6::jsonb, blocks),
+         header_options = COALESCE($7::jsonb, header_options),
+         updated_at = CURRENT_TIMESTAMP
+       WHERE id = $8 RETURNING *`,
+      [
+        name || null,
+        subject || null,
+        preheader !== undefined ? preheader : null,
+        finalHtml,
+        textContent !== undefined ? textContent : null,
+        blocksJson,
+        headerOptionsJson,
+        req.params.id
+      ]
     );
     if (result.rows.length === 0) return res.status(404).json({ error: "Šablona nenalezena" });
     await logMarketingAction("template.edited", req.session.userId || null, { type: "template", id: parseInt(req.params.id, 10) });
     res.json(result.rows[0]);
   } catch (error) {
-    res.status(500).json({ error: "Chyba při ukládání šablony" });
+    console.error("Template update error:", error);
+    res.status(500).json({ error: "Chyba při ukládání šablony: " + (error instanceof Error ? error.message : String(error)) });
   }
 });
 
@@ -643,7 +661,13 @@ router.post("/templates/:id/send-test", requireAdmin, testSendLimiter, async (re
       return res.status(400).json({ error: "Zadejte platnou e-mailovou adresu pro test." });
     }
     const { sendTestMarketingEmail } = await import("../lib/marketing/sender.js");
-    const result = await sendTestMarketingEmail(templateId, toEmail);
+    const result = await sendTestMarketingEmail(templateId, toEmail, {
+      subject: req.body.subject,
+      preheader: req.body.preheader,
+      blocks: req.body.blocks,
+      headerOptions: req.body.headerOptions,
+      htmlContent: req.body.htmlContent,
+    });
     if (!result.ok) return res.status(500).json({ error: result.error || "Odeslání testovacího e-mailu selhalo" });
     await logMarketingAction("template.test_sent", req.session.userId || null, { type: "template", id: templateId }, { to: toEmail });
     res.json({ success: true });
@@ -896,7 +920,12 @@ router.post("/journeys/:id/steps/:stepId/send-test", requireAdmin, testSendLimit
     const templateId = stepRes.rows[0]?.template_id;
     if (!templateId) return res.status(400).json({ error: "Tento krok nemá přiřazenou šablonu." });
     const { sendTestMarketingEmail } = await import("../lib/marketing/sender.js");
-    const result = await sendTestMarketingEmail(templateId, toEmail);
+    const result = await sendTestMarketingEmail(templateId, toEmail, {
+      subject: req.body.subject,
+      preheader: req.body.preheader,
+      blocks: req.body.blocks,
+      headerOptions: req.body.headerOptions,
+    });
     if (!result.ok) return res.status(500).json({ error: result.error || "Odeslání testovacího e-mailu selhalo" });
     await logMarketingAction("journey_step.test_sent", req.session.userId || null, { type: "journey_step", id: parseInt(req.params.stepId, 10) }, { to: toEmail });
     res.json({ success: true });

@@ -113,6 +113,7 @@ export const EmailEditorModal: React.FC<EmailEditorModalProps> = ({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          name: data.name || template?.name,
           subject: data.subject,
           preheader: data.preheader,
           blocks: data.blocks,
@@ -137,6 +138,7 @@ export const EmailEditorModal: React.FC<EmailEditorModalProps> = ({
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : String(err);
       addError("Save Template", errorMsg, JSON.stringify(data).slice(0, 200));
+      alert("❌ Chyba při ukládání šablony: " + errorMsg);
     }
   };
 

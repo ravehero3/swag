@@ -21,15 +21,15 @@ const createEmailHTML = (content: string, templateName: string): string => `<!DO
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
             line-height: 1.6;
-            color: #2a2a2a;
-            background: #0f0f0f;
+            color: #ffffff;
+            background: #000000;
         }
         
         .email-wrapper {
             max-width: 600px;
             margin: 20px auto;
-            background: #1a1a1a;
-            border: 1px solid #333;
+            background: #000000;
+            border: 1px solid #222;
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 4px 12px rgba(0,0,0,0.5);
@@ -37,7 +37,7 @@ const createEmailHTML = (content: string, templateName: string): string => `<!DO
         
         /* Header */
         .email-header {
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            background: #000000;
             padding: 32px 24px;
             text-align: center;
             border-bottom: 2px solid #ffffff;
@@ -64,7 +64,7 @@ const createEmailHTML = (content: string, templateName: string): string => `<!DO
         /* Body Content */
         .email-body {
             padding: 32px 24px;
-            background: #1a1a1a;
+            background: #000000;
             color: #ddd;
         }
         

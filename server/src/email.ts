@@ -419,8 +419,8 @@ function buildFreePreviewHtml(introText: string, items: DownloadItem[], appUrl: 
   const displayIntro = introText || "Děkujeme za zájem! Níže najdete přímé odkazy ke stažení vašich souborů zdarma. Soubory jsou dostupné kdykoliv — odkaz nevyprší.";
 
   return `<!DOCTYPE html><html lang="cs"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/></head>
-<body style="margin:0;padding:0;background:#0a0a0a;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:36px 0;width:100%;">
+<body bgcolor="#000000" style="margin:0;padding:0;background:#000000;background-color:#000000;color:#ffffff;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#000000" style="background:#000000;background-color:#000000;padding:36px 0;width:100%;">
     <tr><td align="center" style="padding:0 12px;">
       <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
         <tr><td style="padding:0 24px 32px 24px;text-align:center;border-bottom:1px solid #222;">
@@ -493,8 +493,8 @@ function buildPurchaseEmailHtml(
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 </head>
-<body style="margin:0;padding:0;background:#0a0a0a;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:40px 0;">
+<body bgcolor="#000000" style="margin:0;padding:0;background:#000000;background-color:#000000;color:#ffffff;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#000000" style="background:#000000;background-color:#000000;padding:40px 0;">
     <tr>
       <td align="center" style="padding:0 12px;">
         <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
@@ -707,8 +707,8 @@ function buildBankTransferReminderHtml(order: any, appUrl: string, customIntroTe
 
   return `<!DOCTYPE html>
 <html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"/></head>
-<body style="margin:0;padding:0;background:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#ddd;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:36px 0;width:100%;">
+<body bgcolor="#000000" style="margin:0;padding:0;background:#000000;background-color:#000000;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#ffffff;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#000000" style="background:#000000;background-color:#000000;padding:36px 0;width:100%;">
     <tr><td align="center" style="padding:0 12px;">
       <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
         <tr><td style="padding:0 20px 32px 20px;text-align:center;border-bottom:1px solid #222;">
@@ -827,8 +827,8 @@ export async function sendBankTransferInstructionsEmail(orderId: number): Promis
   const html = `
 <!DOCTYPE html>
 <html lang="cs"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"/></head>
-<body style="margin:0;padding:0;background:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#ddd;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:36px 0;width:100%;">
+<body bgcolor="#000000" style="margin:0;padding:0;background:#000000;background-color:#000000;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:#ffffff;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#000000" style="background:#000000;background-color:#000000;padding:36px 0;width:100%;">
     <tr><td align="center" style="padding:0 12px;">
       <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
         <tr><td style="padding:0 20px 32px 20px;text-align:center;border-bottom:1px solid #222;">
@@ -922,8 +922,8 @@ export async function sendPasswordResetEmail(email: string, token: string): Prom
   const html = `<!DOCTYPE html>
 <html lang="cs">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#0a0a0a;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:48px 0;">
+<body bgcolor="#000000" style="margin:0;padding:0;background:#000000;background-color:#000000;color:#ffffff;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#000000" style="background:#000000;background-color:#000000;padding:48px 0;">
     <tr><td align="center">
       <table width="520" cellpadding="0" cellspacing="0" style="background:#111;border:1px solid #222;border-radius:6px;overflow:hidden;max-width:520px;width:100%;">
         <tr><td style="padding:40px 40px 0;text-align:center;">
@@ -1024,8 +1024,8 @@ export async function sendFreeDownloadEmail(lead: { id: number; email: string; i
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 </head>
-<body style="margin:0;padding:0;background:#0a0a0a;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:36px 0;width:100%;">
+<body bgcolor="#000000" style="margin:0;padding:0;background:#000000;background-color:#000000;color:#ffffff;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#000000" style="background:#000000;background-color:#000000;padding:36px 0;width:100%;">
     <tr>
       <td align="center" style="padding:0 12px;">
         <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">

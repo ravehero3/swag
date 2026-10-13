@@ -26,8 +26,8 @@
 
 export const BRAND = {
   fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
-  bg: "#0a0a0a",
-  cardBg: "#111111",
+  bg: "#000000",
+  cardBg: "#0d0d0d",
   border: "#222222",
   borderSubtle: "#1a1a1a",
   textPrimary: "#ffffff",
@@ -140,14 +140,28 @@ export function renderBrandedEmailShell(opts: {
     color-scheme: dark only;
     supported-color-schemes: dark only;
   }
+  html, body {
+    background: #000000 !important;
+    background-color: #000000 !important;
+  }
   @media (prefers-color-scheme: dark) {
-    body, .email-body-wrapper {
-      background-color: #0a0a0a !important;
+    body, .email-body-wrapper, .email-container, .email-header-cell, .email-content-cell, .email-footer-cell {
+      background-color: #000000 !important;
+      background: #000000 !important;
+    }
+  }
+  @media (prefers-color-scheme: light) {
+    body, .email-body-wrapper, .email-container, .email-header-cell, .email-content-cell, .email-footer-cell {
+      background-color: #000000 !important;
+      background: #000000 !important;
     }
   }
   /* Outlook App & Samsung Mail dark mode protection */
-  [data-ogsc] .email-body-wrapper {
-    background-color: #0a0a0a !important;
+  [data-ogsc] .email-body-wrapper,
+  [data-ogsc] .email-container,
+  [data-ogsc] body {
+    background-color: #000000 !important;
+    background: #000000 !important;
   }
   @media only screen and (max-width: 600px) {
     .email-container {
@@ -171,28 +185,28 @@ export function renderBrandedEmailShell(opts: {
   }
 </style>
 </head>
-<body class="email-body-wrapper" style="margin:0;padding:0;background:${BRAND.bg};background-color:${BRAND.bg};font-family:${BRAND.fontFamily};-webkit-font-smoothing:antialiased;">
+<body class="email-body-wrapper" bgcolor="#000000" style="margin:0;padding:0;background:#000000;background-color:#000000;color:#ffffff;font-family:${BRAND.fontFamily};-webkit-font-smoothing:antialiased;">
   ${preheader ? `<div style="display:none;font-size:1px;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;mso-hide:all;">${preheader}${preheaderPadding}</div>` : ""}
-  <table class="email-body-wrapper" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${BRAND.bg};background-color:${BRAND.bg};padding:36px 0;width:100%;">
-    <tr><td align="center" style="padding:0 12px;">
-      <table class="email-container" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;margin:0 auto;">
-        <tr><td class="email-header-cell" style="padding:0 24px 28px 24px;text-align:center;border-bottom:1px solid ${BRAND.border};">
+  <table class="email-body-wrapper" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#000000" style="background:#000000;background-color:#000000;padding:36px 0;width:100%;margin:0;">
+    <tr><td align="center" bgcolor="#000000" style="padding:0 12px;background:#000000;background-color:#000000;">
+      <table class="email-container" width="600" cellpadding="0" cellspacing="0" border="0" bgcolor="#000000" style="max-width:600px;width:100%;margin:0 auto;background:#000000;background-color:#000000;">
+        <tr><td class="email-header-cell" bgcolor="#000000" style="padding:0 24px 28px 24px;text-align:center;border-bottom:1px solid ${BRAND.border};background:#000000;background-color:#000000;">
           <a href="${appUrl}" style="display:inline-block;text-decoration:none;">
             <img 
               src="${logoUrl}" 
               alt="VOODOO808" 
               width="${logoWidth}" 
               height="auto"
-              style="display:inline-block;height:auto;max-width:${logoWidth}px;width:auto;border:0;outline:none;background:#0a0a0a;" 
+              style="display:inline-block;height:auto;max-width:${logoWidth}px;width:auto;border:0;outline:none;background:#000000;" 
               loading="eager"
             />
           </a>
           ${showText ? `<div style="color:#ffffff;font-size:16px;font-weight:900;letter-spacing:3px;margin-top:8px;">VOODOO808</div>` : ""}
         </td></tr>
-        <tr><td class="email-content-cell" style="padding:32px 24px 0 24px;">
+        <tr><td class="email-content-cell" bgcolor="#000000" style="padding:32px 24px 0 24px;background:#000000;background-color:#000000;color:#ffffff;">
           ${bodyHtml}
         </td></tr>
-        <tr><td class="email-footer-cell" style="padding:40px 24px 0 24px;border-top:1px solid ${BRAND.border};margin-top:32px;">
+        <tr><td class="email-footer-cell" bgcolor="#000000" style="padding:40px 24px 0 24px;border-top:1px solid ${BRAND.border};margin-top:32px;background:#000000;background-color:#000000;">
           <div style="margin:32px 0 0 0;text-align:center;">${footer}</div>
         </td></tr>
       </table>

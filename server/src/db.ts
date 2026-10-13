@@ -23,8 +23,8 @@ function getDatabaseConfig() {
 
 const config = getDatabaseConfig();
 
-const isServerless = process.env.NODE_ENV === "production";
-const maxDbClients = isServerless ? 1 : Number(process.env.DB_MAX_CLIENTS || 10);
+const isServerless = !!process.env.VERCEL || !!process.env.AWS_LAMBDA_FUNCTION_NAME || !!process.env.NETLIFY;
+const maxDbClients = Number(process.env.DB_MAX_CLIENTS || (isServerless ? 1 : 10));
 const pool = new pg.Pool({
   ...config,
   max: maxDbClients,

@@ -141,16 +141,18 @@ interface MarketingTemplate {
 /** Render a template's subject + HTML with sample variables, for admin preview. Never sends anything. */
 export function renderTemplatePreview(template: {
   subject: string;
-  html_content: string;
+  html_content?: string;
   preheader?: string | null;
   blocks?: any;
   headerOptions?: any;
 }): { subject: string; html: string } {
   const vars = buildPreviewVars();
-  const subject = fillVariables(template.subject, vars);
-  let bodyHtml = template.html_content ? fillVariables(template.html_content, vars) : "";
-  if (!bodyHtml && Array.isArray(template.blocks) && template.blocks.length > 0) {
+  const subject = fillVariables(template.subject || "", vars);
+  let bodyHtml = "";
+  if (Array.isArray(template.blocks) && template.blocks.length > 0) {
     bodyHtml = fillVariables(compileBlocksToHtml(template.blocks), vars);
+  } else if (template.html_content) {
+    bodyHtml = fillVariables(template.html_content, vars);
   }
   const html = renderBrandedEmailShell({
     appUrl: vars.site_url,
@@ -222,7 +224,14 @@ export async function sendTestCustomEmail(
  */
 export async function sendTestMarketingEmail(
   templateId: number,
-  toEmail: string
+  toEmail: string,
+  overrides?: {
+    subject?: string;
+    preheader?: string | null;
+    blocks?: any[];
+    headerOptions?: any;
+    htmlContent?: string;
+  }
 ): Promise<{ ok: boolean; error?: string }> {
   const apiKey = process.env.RESEND_API_KEY || process.env.RESEND_API;
   if (!apiKey) return { ok: false, error: "RESEND_API_KEY není nastaven" };
@@ -231,7 +240,16 @@ export async function sendTestMarketingEmail(
   const template = templateRes.rows[0];
   if (!template) return { ok: false, error: "Šablona nenalezena" };
 
-  const { subject, html } = renderTemplatePreview(template);
+  const effectiveTemplate = {
+    ...template,
+    subject: overrides?.subject || template.subject,
+    preheader: overrides?.preheader !== undefined ? overrides.preheader : template.preheader,
+    blocks: overrides?.blocks && overrides.blocks.length > 0 ? overrides.blocks : template.blocks,
+    html_content: overrides?.htmlContent || template.html_content,
+    headerOptions: overrides?.headerOptions || (template as any).header_options,
+  };
+
+  const { subject, html } = renderTemplatePreview(effectiveTemplate);
   const fromAddress = process.env.RESEND_FROM || "VOODOO808 <info@voodoo808.com>";
   const resend = new Resend(apiKey);
   const idempotencyKey = `test/${templateId}/${toEmail}/${Date.now()}`;
@@ -300,10 +318,10 @@ export async function sendMarketingEmail(input: SendMarketingEmailInput): Promis
     if (!subjectText) subjectText = template.subject;
     if (!preheaderText) preheaderText = template.preheader;
     if (!rawBodyHtml) {
-      rawBodyHtml = template.html_content || "";
-      if (!rawBodyHtml && Array.isArray(template.blocks) && template.blocks.length > 0) {
-        const { compileBlocksToHtml } = require("./blockCompiler.js");
+      if (Array.isArray(template.blocks) && template.blocks.length > 0) {
         rawBodyHtml = compileBlocksToHtml(template.blocks);
+      } else {
+        rawBodyHtml = template.html_content || "";
       }
     }
   }
