@@ -117,7 +117,7 @@ export function renderBrandedEmailShell(opts: {
   const preheaderPadding = "&#847; &zwnj;&nbsp;".repeat(35);
 
   return `<!DOCTYPE html>
-<html lang="cs" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<html lang="cs" bgcolor="#000000" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
 <meta charset="UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
@@ -143,6 +143,8 @@ export function renderBrandedEmailShell(opts: {
   html, body {
     background: #000000 !important;
     background-color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
   @media (prefers-color-scheme: dark) {
     body, .email-body-wrapper, .email-container, .email-header-cell, .email-content-cell, .email-footer-cell {
@@ -162,6 +164,10 @@ export function renderBrandedEmailShell(opts: {
   [data-ogsc] body {
     background-color: #000000 !important;
     background: #000000 !important;
+  }
+  /* Gmail-specific: Gmail strips <body> styles but respects inline div backgrounds */
+  .gmail-fix {
+    background-color: #000000 !important;
   }
   @media only screen and (max-width: 600px) {
     .email-container {
@@ -187,6 +193,8 @@ export function renderBrandedEmailShell(opts: {
 </head>
 <body class="email-body-wrapper" bgcolor="#000000" style="margin:0;padding:0;background:#000000;background-color:#000000;color:#ffffff;font-family:${BRAND.fontFamily};-webkit-font-smoothing:antialiased;">
   ${preheader ? `<div style="display:none;font-size:1px;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;mso-hide:all;">${preheader}${preheaderPadding}</div>` : ""}
+  <!-- Gmail-fix wrapper: Gmail ignores <body> bgcolor but does render inline div backgrounds -->
+  <div class="gmail-fix" style="background-color:#000000;background:#000000;margin:0;padding:0;width:100%;">
   <table class="email-body-wrapper" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#000000" style="background:#000000;background-color:#000000;padding:36px 0;width:100%;margin:0;">
     <tr><td align="center" bgcolor="#000000" style="padding:0 12px;background:#000000;background-color:#000000;">
       <table class="email-container" width="600" cellpadding="0" cellspacing="0" border="0" bgcolor="#000000" style="max-width:600px;width:100%;margin:0 auto;background:#000000;background-color:#000000;">
@@ -212,6 +220,7 @@ export function renderBrandedEmailShell(opts: {
       </table>
     </td></tr>
   </table>
+  </div>
 </body>
 </html>`;
 }
