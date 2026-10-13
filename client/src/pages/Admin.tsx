@@ -8019,6 +8019,8 @@ function JourneysTab() {
                     testEmail={testEmail}
                     onTestEmailChange={setTestEmail}
                     stepStats={stepStats}
+                    onOpenVisualEditor={openVisualStep}
+                    onRefresh={() => { openJourneyDetail(detail.journey.id); load(); }}
                   />
                 </div>
               </div>
@@ -8074,13 +8076,8 @@ function JourneysTab() {
                             </div>
                             <button
                               onClick={() => {
-                                if (!selectedStep.template_id) {
-                                  // No template - create a new one
-                                  alert("No template assigned. Create a new template first by setting one in the step editor.");
-                                  return;
-                                }
-                                setEditingTemplateId(selectedStep.template_id);
-                                setShowTemplateEditor(true);
+                                // Always open visual editor — creates new template if none assigned
+                                openVisualStep(selectedStep);
                               }}
                               style={{ background: "rgba(255, 255, 255, 0.08)", border: "1px solid rgba(255, 255, 255, 0.15)", color: "#fff", borderRadius: "4px", padding: "6px 10px", fontSize: "11px", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px", fontWeight: 600 }}
                               onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.12)"; }}
