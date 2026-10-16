@@ -14,6 +14,7 @@ import { AdminErrorLog } from "../components/AdminErrorLog.js";
 import { EmailJourneyBuilder } from "../components/EmailJourneyBuilder";
 import AdminHeader from "../components/AdminHeader.js";
 import JourneyFlowBuilder from "../components/JourneyFlowBuilder.js";
+import JourneyList from "../components/JourneyList";
 import JourneyContainers from "../components/JourneyContainers.js";
 import { TemplateCardGrid } from "../components/TemplateCardGrid.js";
 import { VisualEmailBuilder } from "../components/VisualEmailBuilder.js";
@@ -7988,8 +7989,8 @@ function JourneysTab() {
         <div style={{ color: "#444", padding: "20px" }}>Zatím žádné journeys.</div>
       ) : (
         <>
-          {/* Compact Journey Containers with View Mode Toggle */}
-          <JourneyContainers
+          {/* Professional Journey List */}
+          <JourneyList
             journeys={journeys}
             selectedJourneyId={selectedJourneyId}
             onSelectJourney={(id) => { setSelectedJourneyId(id); openJourneyDetail(id); }}
