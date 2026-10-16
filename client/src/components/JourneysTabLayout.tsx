@@ -115,17 +115,13 @@ export default function JourneysTabLayout({
                       ) : null}
                     </div>
                     
-                    {template?.html_content && (
-                      <div style={{ flex: 1, overflow: "auto", border: "1px solid #111", borderRadius: "4px", background: "#111", minHeight: 0, display: "flex", justifyContent: "center", alignItems: "flex-start", padding: "20px" }}>
-                        <div style={{ background: "#fff", maxWidth: "600px", width: "100%", boxShadow: "0 4px 12px rgba(0,0,0,0.5)", borderRadius: "4px", overflow: "hidden" }}>
-                          <iframe
-                            srcDoc={template.html_content}
-                            style={{ width: "100%", height: "auto", border: "none", background: "#fff", display: "block" }}
-                            title="Email preview"
-                          />
-                        </div>
-                      </div>
-                    )}
+                    <div style={{ flex: 1, overflow: "auto", border: "1px solid #111", borderRadius: "4px", background: "#1a1a1a", minHeight: 0, display: "flex", justifyContent: "center", alignItems: "flex-start", padding: "20px" }}>
+                      <iframe
+                        src={`/api/marketing/journeys/${detail.journey.id}/steps/${selectedStep.id}/preview`}
+                        style={{ flex: 1, width: "100%", height: "100%", border: "none", borderRadius: "4px", background: "#fff", maxWidth: "600px" }}
+                        title="Email preview"
+                      />
+                    </div>
                   </div>
                 );
               } else {
