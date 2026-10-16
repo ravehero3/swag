@@ -91,8 +91,45 @@ export default function JourneysTabLayout({
             }}
             tabIndex={0}
           >
-            <div style={{ fontSize: "12px", fontWeight: 600, color: "#999", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-              Náhled Kroku
+            {/* Header with Title and Edit Button */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", paddingBottom: "12px", borderBottom: "1px solid #111" }}>
+              <div style={{ fontSize: "12px", fontWeight: 600, color: "#999", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                Náhled Kroku
+              </div>
+              {selectedStepId && (() => {
+                const selectedStep = detail.steps?.find((s: any) => s.id === selectedStepId);
+                return selectedStep?.step_type === "email" ? (
+                  <button
+                    onClick={() => onOpenVisualEditor(selectedStep)}
+                    style={{
+                      background: "#1a1a1a",
+                      border: "1px solid #333",
+                      color: "#999",
+                      borderRadius: "4px",
+                      padding: "6px 12px",
+                      fontSize: "11px",
+                      cursor: "pointer",
+                      fontWeight: 600,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      transition: "all 150ms ease",
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLButtonElement).style.background = "#222";
+                      (e.currentTarget as HTMLButtonElement).style.borderColor = "#444";
+                      (e.currentTarget as HTMLButtonElement).style.color = "#ccc";
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLButtonElement).style.background = "#1a1a1a";
+                      (e.currentTarget as HTMLButtonElement).style.borderColor = "#333";
+                      (e.currentTarget as HTMLButtonElement).style.color = "#999";
+                    }}
+                  >
+                    ✏️ Upravit
+                  </button>
+                ) : null;
+              })()}
             </div>
             
             {selectedStepId ? (() => {
@@ -115,10 +152,11 @@ export default function JourneysTabLayout({
                       ) : null}
                     </div>
                     
-                    <div style={{ flex: 1, overflow: "auto", border: "1px solid #111", borderRadius: "4px", background: "#1a1a1a", minHeight: 0, display: "flex", justifyContent: "center", alignItems: "flex-start", padding: "20px" }}>
+                    {/* Email Preview Container - fills available space */}
+                    <div style={{ flex: 1, overflow: "auto", border: "1px solid #111", borderRadius: "4px", background: "#1a1a1a", minHeight: 0, display: "flex", justifyContent: "center", alignItems: "flex-start", padding: "40px 20px", width: "100%" }}>
                       <iframe
                         src={`/api/marketing/journeys/${detail.journey.id}/steps/${selectedStep.id}/preview`}
-                        style={{ flex: 1, width: "100%", height: "100%", border: "none", borderRadius: "4px", background: "#fff", maxWidth: "600px" }}
+                        style={{ flex: "0 0 auto", width: "600px", maxWidth: "100%", height: "100%", border: "none", borderRadius: "4px", background: "#fff", display: "block" }}
                         title="Email preview"
                       />
                     </div>
