@@ -145,10 +145,10 @@ export default function JourneysTabLayout({
               
               if (selectedStep.step_type === "email") {
                 return (
-                  <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
+                  <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0, overflow: "hidden" }}>
                     {!editMode && (
                       <>
-                        <div style={{ marginBottom: "12px", paddingBottom: "12px", borderBottom: "1px solid #111" }}>
+                        <div style={{ marginBottom: "12px", paddingBottom: "12px", borderBottom: "1px solid #111", flexShrink: 0 }}>
                           <div style={{ fontSize: "11px", color: "#555", marginBottom: "4px" }}>E-mailová šablona</div>
                           <div style={{ fontSize: "13px", fontWeight: 600, color: "#999" }}>
                             {template?.name || "Bez šablony"}
@@ -162,22 +162,61 @@ export default function JourneysTabLayout({
 
                         {/* Email Preview Container - fills available space */}
                         {template?.html_content && (
-                          <div style={{ flex: 1, overflow: "auto", border: "1px solid #111", borderRadius: "4px", background: "#1a1a1a", minHeight: 0, display: "flex", justifyContent: "center", alignItems: "flex-start", padding: "40px 20px", width: "100%" }}>
-                            <div style={{ background: "#fff", maxWidth: "600px", width: "100%", boxShadow: "0 4px 12px rgba(0,0,0,0.5)", borderRadius: "4px", overflow: "hidden" }}>
-                              <iframe
-                                src={`/api/marketing/journeys/${detail.journey.id}/steps/${selectedStep.id}/preview`}
-                                style={{ width: "100%", height: "100%", border: "none", background: "#fff", display: "block" }}
-                                title="Email preview"
-                              />
-                            </div>
+                          <div style={{ 
+                            flex: 1, 
+                            overflow: "auto", 
+                            border: "1px solid #111", 
+                            borderRadius: "4px", 
+                            background: "#1a1a1a", 
+                            minHeight: 0, 
+                            display: "flex", 
+                            justifyContent: "center", 
+                            alignItems: "flex-start", 
+                            padding: "40px 20px", 
+                            width: "100%",
+                            boxSizing: "border-box"
+                          }}>
+                            <iframe
+                              src={`/api/marketing/journeys/${detail.journey.id}/steps/${selectedStep.id}/preview`}
+                              style={{ 
+                                width: "100%", 
+                                maxWidth: "600px",
+                                minHeight: "400px",
+                                border: "none", 
+                                background: "#fff", 
+                                display: "block",
+                                borderRadius: "4px",
+                                boxShadow: "0 4px 12px rgba(0,0,0,0.5)"
+                              }}
+                              title="Email preview"
+                            />
                           </div>
                         )}
                       </>
                     )}
 
                     {editMode && template && (
-                      <div style={{ flex: 1, overflow: "hidden", background: "#000", borderRadius: "4px" }}>
-                        <VisualEmailBuilder />
+                      <div style={{ flex: 1, overflow: "auto", background: "#000", borderRadius: "4px", minHeight: 0 }}>
+                        <VisualEmailBuilder
+                          initialSubject={template.subject || ""}
+                          initialPreheader={template.preheader || ""}
+                          initialBlocks={template.blocks ? JSON.parse(template.blocks) : []}
+                          title={template.name}
+                          onSave={async (html) => {
+                            // Save updated template
+                            await fetch(`/api/marketing/templates/${template.id}`, {
+                              method: "PATCH",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ htmlContent: html }),
+                              credentials: "include"
+                            });
+                            onRefresh();
+                          }}
+                          onTestSend={async (email) => {
+                            onTestEmail(selectedStep.id);
+                          }}
+                          onClose={() => setEditMode(false)}
+                        />
                       </div>
                     )}
                   </div>
