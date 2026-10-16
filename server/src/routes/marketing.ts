@@ -1851,4 +1851,127 @@ router.post("/journeys/seed", requireAdmin, async (_req: Request, res: Response)
   }
 });
 
+// ── Admin: campaign emails (for KAMPANĚ tab sequence builder) ──────────────
+
+// Get all emails for a campaign
+router.get("/campaigns/:campaignId/emails", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const campaignId = parseInt(req.params.campaignId, 10);
+    const result = await pool.query(
+      `SELECT ce.*, mt.name AS template_name
+       FROM marketing_campaign_emails ce
+       LEFT JOIN marketing_templates mt ON mt.id = ce.template_id
+       WHERE ce.campaign_id = $1
+       ORDER BY ce.position ASC`,
+      [campaignId]
+    );
+    res.json(result.rows || []);
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při načítání e-mailů kampaně" });
+  }
+});
+
+// Add a new email to a campaign
+router.post("/campaigns/:campaignId/emails", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const campaignId = parseInt(req.params.campaignId, 10);
+    const { position, delayHours } = req.body;
+    
+    const result = await pool.query(
+      `INSERT INTO marketing_campaign_emails (campaign_id, position, delay_hours)
+       VALUES ($1, $2, $3) RETURNING *`,
+      [campaignId, position || 1, delayHours || 0]
+    );
+    
+    await logMarketingAction("campaign_email.created", req.session.userId || null, { type: "campaign_email", id: result.rows[0].id });
+    res.json(result.rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při vytváření e-mailu kampaně" });
+  }
+});
+
+// Update a campaign email
+router.patch("/campaigns/:campaignId/emails/:emailId", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const emailId = parseInt(req.params.emailId, 10);
+    const { templateId, delayHours, sendDate, sendTime, sendDateTime } = req.body;
+    
+    const updates: string[] = [];
+    const params: any[] = [];
+    let i = 1;
+    
+    if (templateId !== undefined) { updates.push(`template_id = $${i++}`); params.push(templateId); }
+    if (delayHours !== undefined) { updates.push(`delay_hours = $${i++}`); params.push(delayHours); }
+    if (sendDate !== undefined) { updates.push(`send_date = $${i++}`); params.push(sendDate); }
+    if (sendTime !== undefined) { updates.push(`send_time = $${i++}`); params.push(sendTime); }
+    if (sendDateTime !== undefined) { updates.push(`send_datetime = $${i++}`); params.push(sendDateTime); }
+    
+    updates.push(`updated_at = CURRENT_TIMESTAMP`);
+    params.push(emailId);
+    
+    const result = await pool.query(
+      `UPDATE marketing_campaign_emails SET ${updates.join(", ")} WHERE id = $${i} RETURNING *`,
+      params
+    );
+    
+    if (result.rows.length === 0) return res.status(404).json({ error: "E-mail kampaně nenalezen" });
+    
+    await logMarketingAction("campaign_email.updated", req.session.userId || null, { type: "campaign_email", id: emailId });
+    res.json(result.rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při aktualizaci e-mailu kampaně" });
+  }
+});
+
+// Delete a campaign email
+router.delete("/campaigns/:campaignId/emails/:emailId", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const emailId = parseInt(req.params.emailId, 10);
+    
+    await pool.query(
+      "DELETE FROM marketing_campaign_emails WHERE id = $1",
+      [emailId]
+    );
+    
+    await logMarketingAction("campaign_email.deleted", req.session.userId || null, { type: "campaign_email", id: emailId });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při mazání e-mailu kampaně" });
+  }
+});
+
+// Send test email for a campaign email
+router.post("/campaigns/:campaignId/emails/:emailId/send-test", requireAdmin, testSendLimiter, async (req: Request, res: Response) => {
+  try {
+    const emailId = parseInt(req.params.emailId, 10);
+    const toEmail = String(req.body.email || "").trim();
+    
+    if (!toEmail || !toEmail.includes("@")) {
+      return res.status(400).json({ error: "Zadejte platnou e-mailovou adresu pro test" });
+    }
+    
+    // Get the campaign email and its template
+    const emailRes = await pool.query(
+      `SELECT ce.template_id FROM marketing_campaign_emails ce WHERE ce.id = $1`,
+      [emailId]
+    );
+    
+    if (emailRes.rows.length === 0 || !emailRes.rows[0].template_id) {
+      return res.status(404).json({ error: "E-mail kampaně nebo šablona nenalezena" });
+    }
+    
+    const templateId = emailRes.rows[0].template_id;
+    const { sendTestMarketingEmail } = await import("../lib/marketing/sender.js");
+    const result = await sendTestMarketingEmail(templateId, toEmail);
+    
+    if (!result.ok) return res.status(500).json({ error: result.error || "Chyba při odesílání testovacího e-mailu" });
+    
+    await logMarketingAction("campaign_email.test_sent", req.session.userId || null, { type: "campaign_email", id: emailId }, { to: toEmail });
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Campaign email test send error:", error);
+    res.status(500).json({ error: "Chyba při odesílání testovacího e-mailu" });
+  }
+});
+
 export default router;
