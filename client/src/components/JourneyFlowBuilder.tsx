@@ -44,7 +44,7 @@ const STEP_TYPE_LABELS: Record<string, string> = {
   end: "Konec",
 };
 
-const NODE_Y_SPACING = 140;
+const NODE_X_SPACING = 380;  // Horizontal spacing (was vertical before)
 const NODE_WIDTH = 340;
 const NODE_HEIGHT = 100;
 const CANVAS_PADDING = 60;
@@ -84,12 +84,12 @@ export default function JourneyFlowBuilder({
   const svgRef = useRef<SVGSVGElement>(null);
 
   const totalSteps = (steps?.length || 0) + 2;
-  const canvasHeight = totalSteps * NODE_Y_SPACING + CANVAS_PADDING * 2;
-  const canvasWidth = 1000;
+  const canvasWidth = CANVAS_PADDING * 2 + totalSteps * NODE_X_SPACING;  // Much wider now
+  const canvasHeight = 400;  // Fixed height, much shorter
 
   const getNodePosition = (index: number) => ({
-    x: (canvasWidth - NODE_WIDTH) / 2,
-    y: CANVAS_PADDING + index * NODE_Y_SPACING,
+    x: CANVAS_PADDING + index * NODE_X_SPACING,  // Horizontal layout
+    y: (canvasHeight - NODE_HEIGHT) / 2,  // Centered vertically
   });
 
   const handleWheel = (e: React.WheelEvent) => {
@@ -277,10 +277,11 @@ export default function JourneyFlowBuilder({
       </div>
 
       <div style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`, transformOrigin: "0 0", position: "absolute", width: canvasWidth, height: canvasHeight }}>
-        <svg ref={svgRef} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }}>
-          {(steps?.length || 0) > 0 && <line x1={canvasWidth / 2} y1={getNodePosition(0).y + NODE_HEIGHT} x2={canvasWidth / 2} y2={getNodePosition(1).y} stroke="#444" strokeWidth="2" strokeDasharray="4,4" />}
-          {steps?.map((_, idx) => idx < steps.length - 1 ? <line key={`connection-${idx}`} x1={canvasWidth / 2} y1={getNodePosition(idx + 1).y + NODE_HEIGHT} x2={canvasWidth / 2} y2={getNodePosition(idx + 2).y} stroke="#444" strokeWidth="2" strokeDasharray="4,4" /> : null)}
-          {(steps?.length || 0) > 0 && <line x1={canvasWidth / 2} y1={getNodePosition(steps.length).y + NODE_HEIGHT} x2={canvasWidth / 2} y2={getNodePosition(steps.length + 1).y} stroke="#444" strokeWidth="2" strokeDasharray="4,4" />}
+      <svg ref={svgRef} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }}>
+          {/* Horizontal connections */}
+          {(steps?.length || 0) > 0 && <line x1={getNodePosition(0).x + NODE_WIDTH} y1={getNodePosition(0).y + NODE_HEIGHT / 2} x2={getNodePosition(1).x} y2={getNodePosition(1).y + NODE_HEIGHT / 2} stroke="#444" strokeWidth="2" strokeDasharray="4,4" />}
+          {steps?.map((_, idx) => idx < steps.length - 1 ? <line key={`connection-${idx}`} x1={getNodePosition(idx + 1).x + NODE_WIDTH} y1={getNodePosition(idx + 1).y + NODE_HEIGHT / 2} x2={getNodePosition(idx + 2).x} y2={getNodePosition(idx + 2).y + NODE_HEIGHT / 2} stroke="#444" strokeWidth="2" strokeDasharray="4,4" /> : null)}
+          {(steps?.length || 0) > 0 && <line x1={getNodePosition(steps.length).x + NODE_WIDTH} y1={getNodePosition(steps.length).y + NODE_HEIGHT / 2} x2={getNodePosition(steps.length + 1).x} y2={getNodePosition(steps.length + 1).y + NODE_HEIGHT / 2} stroke="#444" strokeWidth="2" strokeDasharray="4,4" />}
         </svg>
 
         {/* Trigger node */}

@@ -675,9 +675,9 @@ export default function Campaigns() {
         </button>
       </div>
 
-      {/* Main content area */}
+      {/* Main content area - wider */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", position: "relative", overflow: "hidden" }}>
-        {/* Sequence builder */}
+        {/* Sequence builder - takes full width */}
         <div style={{ flex: 1, position: "relative", overflow: "auto" }}>
           <CampaignSequenceBuilder
             campaign={selectedCampaign}
@@ -700,7 +700,7 @@ export default function Campaigns() {
           />
         </div>
 
-        {/* Email preview overlay */}
+        {/* Email preview in top-right corner */}
         {previewVisible && selectedEmailForPreview && (
           <CampaignEmailPreview
             email={selectedEmailForPreview}

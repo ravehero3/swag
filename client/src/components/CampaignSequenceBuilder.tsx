@@ -33,9 +33,9 @@ interface CampaignSequenceBuilderProps {
   onSelectEmail?: (emailId: number) => void;
 }
 
-const EMAIL_Y_SPACING = 140;
-const EMAIL_WIDTH = 340;
-const EMAIL_HEIGHT = 100;
+const EMAIL_WIDTH = 200;
+const EMAIL_HEIGHT = 120;
+const EMAIL_X_SPACING = 260;  // Horizontal spacing
 const CANVAS_PADDING = 60;
 
 export default function CampaignSequenceBuilder({
@@ -63,12 +63,12 @@ export default function CampaignSequenceBuilder({
   const svgRef = useRef<SVGSVGElement>(null);
 
   const totalEmails = (emails?.length || 0) + 2;
-  const canvasHeight = totalEmails * EMAIL_Y_SPACING + CANVAS_PADDING * 2;
-  const canvasWidth = 1000;
+  const canvasWidth = CANVAS_PADDING * 2 + totalEmails * EMAIL_X_SPACING;
+  const canvasHeight = 300;
 
   const getEmailPosition = (index: number) => ({
-    x: (canvasWidth - EMAIL_WIDTH) / 2,
-    y: CANVAS_PADDING + index * EMAIL_Y_SPACING,
+    x: CANVAS_PADDING + index * EMAIL_X_SPACING,
+    y: (canvasHeight - EMAIL_HEIGHT) / 2,
   });
 
   const handleWheel = (e: React.WheelEvent) => {
@@ -150,7 +150,7 @@ export default function CampaignSequenceBuilder({
       style={{
         width: "100%",
         height: "100%",
-        minHeight: "600px",
+        minHeight: "400px",
         background: "#080808",
         position: "relative",
         overflow: "hidden",
@@ -158,6 +158,7 @@ export default function CampaignSequenceBuilder({
         userSelect: "none",
       }}
     >
+      {/* Grid background */}
       <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} pointerEvents="none">
         <defs>
           <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
@@ -175,20 +176,21 @@ export default function CampaignSequenceBuilder({
       </div>
 
       <div style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`, transformOrigin: "0 0", position: "absolute", width: canvasWidth, height: canvasHeight }}>
-        <svg ref={svgRef} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }}>
-          {(emails?.length || 0) > 0 && <line x1={canvasWidth / 2} y1={getEmailPosition(0).y + EMAIL_HEIGHT} x2={canvasWidth / 2} y2={getEmailPosition(1).y} stroke="#444" strokeWidth="2" strokeDasharray="4,4" />}
-          {emails?.map((_, idx) => idx < emails.length - 1 ? <line key={`connection-${idx}`} x1={canvasWidth / 2} y1={getEmailPosition(idx + 1).y + EMAIL_HEIGHT} x2={canvasWidth / 2} y2={getEmailPosition(idx + 2).y} stroke="#444" strokeWidth="2" strokeDasharray="4,4" /> : null)}
-          {(emails?.length || 0) > 0 && <line x1={canvasWidth / 2} y1={getEmailPosition(emails.length).y + EMAIL_HEIGHT} x2={canvasWidth / 2} y2={getEmailPosition(emails.length + 1).y} stroke="#444" strokeWidth="2" strokeDasharray="4,4" />}
+        {/* Horizontal connections */}
+        <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }}>
+          {(emails?.length || 0) > 0 && <line x1={getEmailPosition(0).x + EMAIL_WIDTH} y1={getEmailPosition(0).y + EMAIL_HEIGHT / 2} x2={getEmailPosition(1).x} y2={getEmailPosition(1).y + EMAIL_HEIGHT / 2} stroke="#444" strokeWidth="2" strokeDasharray="4,4" />}
+          {emails?.map((_, idx) => idx < emails.length - 1 ? <line key={`connection-${idx}`} x1={getEmailPosition(idx + 1).x + EMAIL_WIDTH} y1={getEmailPosition(idx + 1).y + EMAIL_HEIGHT / 2} x2={getEmailPosition(idx + 2).x} y2={getEmailPosition(idx + 2).y + EMAIL_HEIGHT / 2} stroke="#444" strokeWidth="2" strokeDasharray="4,4" /> : null)}
+          {(emails?.length || 0) > 0 && <line x1={getEmailPosition(emails.length).x + EMAIL_WIDTH} y1={getEmailPosition(emails.length).y + EMAIL_HEIGHT / 2} x2={getEmailPosition(emails.length + 1).x} y2={getEmailPosition(emails.length + 1).y + EMAIL_HEIGHT / 2} stroke="#444" strokeWidth="2" strokeDasharray="4,4" />}
         </svg>
 
         {/* Start node */}
         <div style={{ position: "absolute", left: getEmailPosition(0).x, top: getEmailPosition(0).y, width: EMAIL_WIDTH, height: EMAIL_HEIGHT, background: "#0f0f0f", border: "2px solid #444", borderRadius: "8px", padding: "12px", boxSizing: "border-box", display: "flex", flexDirection: "column", justifyContent: "center" }}>
           <div style={{ fontSize: "11px", color: "#888", fontWeight: 600, letterSpacing: "0.05em", marginBottom: "4px" }}>AUDIENCE</div>
-          <div style={{ fontSize: "13px", color: "#fff", fontWeight: 600 }}>
-            {campaign.audience === "buyers" ? "Kupující zákazníci" : "Zdarma stahovači"}
+          <div style={{ fontSize: "12px", color: "#fff", fontWeight: 600 }}>
+            {campaign.audience === "buyers" ? "Kupující" : "Zdarma"}
           </div>
-          <div style={{ fontSize: "11px", color: "#777", marginTop: "4px" }}>
-            {campaign.audience === "buyers" ? "~250+ osob" : "~5000+ osob"}
+          <div style={{ fontSize: "10px", color: "#777", marginTop: "4px" }}>
+            {campaign.audience === "buyers" ? "~250 osob" : "~5000 osob"}
           </div>
         </div>
 
@@ -207,38 +209,43 @@ export default function CampaignSequenceBuilder({
                 top: getEmailPosition(idx + 1).y,
                 width: EMAIL_WIDTH,
                 height: EMAIL_HEIGHT,
-                background: isSelected ? "rgba(255, 255, 255, 0.08)" : "#0f0f0f",
-                border: `2px solid ${isSelected ? "#fff" : "#333"}`,
+                background: isSelected ? "rgba(11, 153, 252, 0.12)" : "#0f0f0f",
+                border: `2px solid ${isSelected ? "#0B99FC" : "#333"}`,
                 borderRadius: "8px",
                 padding: "12px",
                 boxSizing: "border-box",
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "space-between",
-                boxShadow: isSelected ? "0 8px 24px rgba(255, 255, 255, 0.1)" : "none",
+                boxShadow: isSelected ? "0 8px 24px rgba(11, 153, 252, 0.15)" : "none",
                 transform: isSelected ? "scale(1.04)" : "scale(1)",
                 transition: "all 200ms cubic-bezier(0.4, 0, 0.2, 1)",
                 cursor: "pointer",
               }}
             >
               <div>
-                <div style={{ fontSize: "11px", color: "#888", fontWeight: 600, letterSpacing: "0.05em", marginBottom: "4px" }}>
+                <div style={{ fontSize: "10px", color: "#888", fontWeight: 600, letterSpacing: "0.05em", marginBottom: "4px" }}>
                   EMAIL {idx + 1}
                 </div>
-                <div style={{ fontSize: "13px", color: "#fff", fontWeight: 600 }}>
+                <div style={{ fontSize: "12px", color: "#fff", fontWeight: 600 }}>
                   {tpl ? tpl.name : "Bez šablony"}
                 </div>
-                <div style={{ fontSize: "11px", color: "#888", marginTop: "2px", display: "flex", alignItems: "center", gap: "4px" }}>
-                  <Clock size={12} />
+                <div style={{ fontSize: "10px", color: "#666", marginTop: "3px", display: "flex", alignItems: "center", gap: "4px" }}>
+                  <Clock size={11} />
                   {email.delayHours > 0 ? `Po ${email.delayHours}h` : "Ihned"}
-                  {email.sendDate && ` | ${email.sendDate}`}
                 </div>
+                {email.sendDate && (
+                  <div style={{ fontSize: "9px", color: "#555", marginTop: "2px", display: "flex", alignItems: "center", gap: "4px" }}>
+                    <Calendar size={10} />
+                    {email.sendDate}
+                  </div>
+                )}
               </div>
 
-              <div style={{ display: "flex", gap: "6px", opacity: 0, pointerEvents: "none", transition: "opacity 150ms ease-in-out" }}>
-                <button onClick={() => onEditEmail(email)} style={{ background: "none", border: "none", color: "#999", cursor: "pointer", padding: "6px 8px", fontSize: "12px", borderRadius: "4px", transition: "all 150ms ease" }} onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "#fff"; (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.1)"; }} onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "#999"; (e.currentTarget as HTMLButtonElement).style.background = "none"; }} title="Upravit e-mail"><Edit3 size={14} /></button>
-                <button onClick={() => onTestEmail(email.id)} disabled={testSendingEmailId === email.id} style={{ background: "none", border: "none", color: testSendingEmailId === email.id ? "#555" : "#0B99FC", cursor: testSendingEmailId === email.id ? "default" : "pointer", padding: "6px 8px", fontSize: "12px", borderRadius: "4px", opacity: testSendingEmailId === email.id ? 0.5 : 1, transition: "all 150ms ease" }} onMouseEnter={(e) => { if (testSendingEmailId !== email.id) (e.currentTarget as HTMLButtonElement).style.background = "rgba(11,153,252,0.1)"; }} onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "none"; }} title="Poslat test">{testSendingEmailId === email.id ? "..." : <Send size={14} />}</button>
-                <button onClick={() => { if (confirm("Smazat tento e-mail?")) onDeleteEmail(email.id); }} style={{ background: "none", border: "none", color: "#ff5252", cursor: "pointer", padding: "6px 8px", fontSize: "12px", borderRadius: "4px", transition: "all 150ms ease" }} onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,82,82,0.1)"; }} onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "none"; }} title="Smazat e-mail"><Trash2 size={14} /></button>
+              <div style={{ display: "flex", gap: "4px", opacity: isSelected ? 1 : 0, pointerEvents: isSelected ? "auto" : "none", transition: "opacity 150ms ease-in-out" }}>
+                <button onClick={() => onEditEmail(email)} style={{ background: "none", border: "none", color: "#999", cursor: "pointer", padding: "3px 4px", fontSize: "10px", borderRadius: "3px", transition: "all 150ms ease", flex: 1 }} onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "#fff"; (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.1)"; }} onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "#999"; (e.currentTarget as HTMLButtonElement).style.background = "none"; }} title="Upravit e-mail"><Edit3 size={11} /></button>
+                <button onClick={() => onTestEmail(email.id)} disabled={testSendingEmailId === email.id} style={{ background: "none", border: "none", color: testSendingEmailId === email.id ? "#555" : "#0B99FC", cursor: testSendingEmailId === email.id ? "default" : "pointer", padding: "3px 4px", fontSize: "10px", borderRadius: "3px", opacity: testSendingEmailId === email.id ? 0.5 : 1, transition: "all 150ms ease", flex: 1 }} onMouseEnter={(e) => { if (testSendingEmailId !== email.id) (e.currentTarget as HTMLButtonElement).style.background = "rgba(11,153,252,0.1)"; }} onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "none"; }} title="Poslat test">{testSendingEmailId === email.id ? "…" : <Send size={11} />}</button>
+                <button onClick={() => { if (confirm("Smazat tento e-mail?")) onDeleteEmail(email.id); }} style={{ background: "none", border: "none", color: "#ff5252", cursor: "pointer", padding: "3px 4px", fontSize: "10px", borderRadius: "3px", transition: "all 150ms ease", flex: 1 }} onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,82,82,0.1)"; }} onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "none"; }} title="Smazat e-mail"><Trash2 size={11} /></button>
               </div>
             </div>
           );
@@ -246,17 +253,47 @@ export default function CampaignSequenceBuilder({
 
         {/* End node */}
         <div style={{ position: "absolute", left: getEmailPosition(emails?.length || 0 + 1).x, top: getEmailPosition(emails?.length || 0 + 1).y, width: EMAIL_WIDTH, height: EMAIL_HEIGHT, background: "#0f0f0f", border: "2px solid #444", borderRadius: "8px", padding: "12px", boxSizing: "border-box", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
-          <div style={{ width: "24px", height: "24px", borderRadius: "50%", border: "2px solid #666", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "8px" }}>
-            <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#666" }} />
+          <div style={{ width: "18px", height: "18px", borderRadius: "50%", border: "2px solid #666", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "6px" }}>
+            <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#666" }} />
           </div>
-          <div style={{ fontSize: "12px", color: "#888", fontWeight: 500 }}>Kampaň Skončena</div>
+          <div style={{ fontSize: "10px", color: "#888", fontWeight: 500, textAlign: "center" }}>Konec</div>
         </div>
 
-        {/* Add button */}
-        <button onClick={onAddEmail} style={{ position: "absolute", left: getEmailPosition(emails?.length || 0).x + EMAIL_WIDTH + 40, top: getEmailPosition(emails?.length || 0).y + EMAIL_HEIGHT / 2 - 16, width: "32px", height: "32px", borderRadius: "50%", background: "#0B99FC", border: "none", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(11,153,252,0.3)" }} title="Přidat e-mail"><Plus size={16} /></button>
+        {/* Add button inside sequence */}
+        <button 
+          onClick={onAddEmail} 
+          style={{ 
+            position: "absolute", 
+            left: getEmailPosition(emails?.length || 0).x + EMAIL_WIDTH + 20, 
+            top: getEmailPosition(emails?.length || 0).y + EMAIL_HEIGHT / 2 - 16, 
+            width: "32px", 
+            height: "32px", 
+            borderRadius: "50%", 
+            background: "#0B99FC", 
+            border: "none", 
+            color: "#fff", 
+            cursor: "pointer", 
+            display: "flex", 
+            alignItems: "center", 
+            justifyContent: "center", 
+            boxShadow: "0 4px 12px rgba(11,153,252,0.3)",
+            transition: "all 150ms ease",
+          }} 
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 6px 20px rgba(11,153,252,0.5)";
+            (e.currentTarget as HTMLButtonElement).style.transform = "scale(1.1)";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 12px rgba(11,153,252,0.3)";
+            (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)";
+          }}
+          title="Přidat e-mail"
+        >
+          <Plus size={16} />
+        </button>
       </div>
 
-      {/* Test email input */}
+      {/* Test email input bar */}
       <div style={{ position: "absolute", top: "0", left: "0", right: "0", background: "#000000", borderBottom: "1px solid #222", padding: "12px 16px", display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", color: "#888", zIndex: 50 }}>
         <label style={{ whiteSpace: "nowrap" }}>Testovací e-mail:</label>
         <input value={testEmail} onChange={(e) => onTestEmailChange(e.target.value)} placeholder="test@example.cz" style={{ flex: 1, maxWidth: "280px", padding: "6px 10px", background: "#111", border: "1px solid #333", borderRadius: "4px", color: "#fff", fontSize: "12px", boxSizing: "border-box" }} />

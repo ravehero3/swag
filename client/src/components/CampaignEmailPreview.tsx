@@ -48,17 +48,19 @@ export default function CampaignEmailPreview({
   return (
     <div
       style={{
-        position: "absolute",
-        top: "0",
-        left: "0",
-        right: "0",
-        bottom: "0",
-        background: "rgba(0, 0, 0, 0.95)",
-        backdropFilter: "blur(4px)",
+        position: "fixed",
+        top: "60px",
+        right: "20px",
+        width: "380px",
+        maxHeight: "calc(100vh - 80px)",
+        background: "#0f0f0f",
+        border: "1px solid #222",
+        borderRadius: "8px",
         display: "flex",
         flexDirection: "column",
-        zIndex: 1000,
-        borderTop: "1px solid #222",
+        zIndex: 500,
+        boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
+        overflow: "hidden",
       }}
     >
       {/* Header */}
@@ -67,89 +69,50 @@ export default function CampaignEmailPreview({
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          padding: "16px 20px",
+          padding: "12px 16px",
           borderBottom: "1px solid #222",
           flexShrink: 0,
         }}
       >
         <div>
-          <h3 style={{ margin: 0, fontSize: "16px", fontWeight: 600, color: "#fff" }}>
+          <h4 style={{ margin: "0", fontSize: "12px", fontWeight: 600, color: "#fff" }}>
             E-mail #{email?.position}
-            {email?.templateName && ` · ${email.templateName}`}
-          </h3>
-          <p style={{ margin: "4px 0 0 0", fontSize: "12px", color: "#888" }}>
-            {email?.delayHours > 0 ? `Poslán po ${email.delayHours} hodinách` : "Poslán ihned"}
-            {email?.sendDate && ` | ${email.sendDate} ${email.sendTime || ""}`}
+          </h4>
+          <p style={{ margin: "2px 0 0 0", fontSize: "10px", color: "#666" }}>
+            {email?.templateName || "Bez šablony"}
           </p>
         </div>
-        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-          {previewHtml && (
-            <button
-              onClick={handleCopyHtml}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                padding: "6px 12px",
-                background: copied ? "#24e053" : "#111",
-                border: copied ? "1px solid #24e053" : "1px solid #333",
-                borderRadius: "4px",
-                color: copied ? "#000" : "#999",
-                fontSize: "12px",
-                fontWeight: 600,
-                cursor: "pointer",
-                transition: "all 150ms ease",
-              }}
-              onMouseEnter={(e) => {
-                if (!copied) {
-                  (e.currentTarget as HTMLButtonElement).style.borderColor = "#666";
-                  (e.currentTarget as HTMLButtonElement).style.background = "#222";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!copied) {
-                  (e.currentTarget as HTMLButtonElement).style.borderColor = "#333";
-                  (e.currentTarget as HTMLButtonElement).style.background = "#111";
-                }
-              }}
-              title="Kopírovat HTML"
-            >
-              {copied ? <Check size={14} /> : <Copy size={14} />}
-              {copied ? "Zkopírováno" : "Kopírovat"}
-            </button>
-          )}
-          <button
-            onClick={onClose}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "32px",
-              height: "32px",
-              background: "#111",
-              border: "1px solid #333",
-              borderRadius: "4px",
-              color: "#999",
-              cursor: "pointer",
-              transition: "all 150ms ease",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.borderColor = "#666";
-              (e.currentTarget as HTMLButtonElement).style.color = "#fff";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLButtonElement).style.borderColor = "#333";
-              (e.currentTarget as HTMLButtonElement).style.color = "#999";
-            }}
-            title="Zavřít náhled"
-          >
-            <X size={18} />
-          </button>
-        </div>
+        <button
+          onClick={onClose}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "24px",
+            height: "24px",
+            background: "#111",
+            border: "1px solid #333",
+            borderRadius: "4px",
+            color: "#999",
+            cursor: "pointer",
+            transition: "all 150ms ease",
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.borderColor = "#666";
+            (e.currentTarget as HTMLButtonElement).style.color = "#fff";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLButtonElement).style.borderColor = "#333";
+            (e.currentTarget as HTMLButtonElement).style.color = "#999";
+          }}
+          title="Zavřít náhled"
+        >
+          <X size={16} />
+        </button>
       </div>
 
-      {/* Preview content */}
-      <div style={{ flex: 1, overflow: "auto", padding: "20px" }}>
+      {/* Content */}
+      <div style={{ flex: 1, overflow: "auto", padding: "12px", minHeight: "300px" }}>
         {isLoading ? (
           <div
             style={{
@@ -157,11 +120,11 @@ export default function CampaignEmailPreview({
               alignItems: "center",
               justifyContent: "center",
               height: "100%",
-              color: "#888",
-              fontSize: "14px",
+              color: "#666",
+              fontSize: "12px",
             }}
           >
-            Načítání náhledu...
+            Načítání…
           </div>
         ) : error ? (
           <div
@@ -171,7 +134,7 @@ export default function CampaignEmailPreview({
               justifyContent: "center",
               height: "100%",
               color: "#ff5252",
-              fontSize: "14px",
+              fontSize: "12px",
             }}
           >
             {error}
@@ -179,12 +142,10 @@ export default function CampaignEmailPreview({
         ) : previewHtml ? (
           <div
             style={{
-              maxWidth: "600px",
-              margin: "0 auto",
               background: "#fff",
-              borderRadius: "8px",
+              borderRadius: "4px",
               overflow: "hidden",
-              boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
+              border: "1px solid #333",
             }}
           >
             <iframe
@@ -193,7 +154,7 @@ export default function CampaignEmailPreview({
                 width: "100%",
                 border: "none",
                 background: "#fff",
-                minHeight: "600px",
+                minHeight: "400px",
               }}
               title="E-mail preview"
             />
@@ -205,14 +166,62 @@ export default function CampaignEmailPreview({
               alignItems: "center",
               justifyContent: "center",
               height: "100%",
-              color: "#888",
-              fontSize: "14px",
+              color: "#666",
+              fontSize: "12px",
             }}
           >
-            Žádný obsah k zobrazení
+            Žádný obsah
           </div>
         )}
       </div>
+
+      {/* Footer */}
+      {previewHtml && (
+        <div
+          style={{
+            padding: "8px 12px",
+            borderTop: "1px solid #222",
+            flexShrink: 0,
+            display: "flex",
+            gap: "8px",
+          }}
+        >
+          <button
+            onClick={handleCopyHtml}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+              padding: "6px 10px",
+              background: copied ? "#24e053" : "#111",
+              border: copied ? "1px solid #24e053" : "1px solid #333",
+              borderRadius: "4px",
+              color: copied ? "#000" : "#999",
+              fontSize: "11px",
+              fontWeight: 600,
+              cursor: "pointer",
+              transition: "all 150ms ease",
+              flex: 1,
+            }}
+            onMouseEnter={(e) => {
+              if (!copied) {
+                (e.currentTarget as HTMLButtonElement).style.borderColor = "#666";
+                (e.currentTarget as HTMLButtonElement).style.background = "#1a1a1a";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!copied) {
+                (e.currentTarget as HTMLButtonElement).style.borderColor = "#333";
+                (e.currentTarget as HTMLButtonElement).style.background = "#111";
+              }
+            }}
+            title="Kopírovat HTML"
+          >
+            {copied ? <Check size={12} /> : <Copy size={12} />}
+            {copied ? "Zkopír." : "Kopírovat"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
