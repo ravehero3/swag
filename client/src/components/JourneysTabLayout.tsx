@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import JourneyList from "./JourneyList";
 import JourneyFlowBuilder from "./JourneyFlowBuilder";
+import { VisualEmailBuilder } from "./VisualEmailBuilder.js";
 
 interface JourneysLayoutProps {
   journeys: any[];
@@ -46,6 +47,10 @@ export default function JourneysTabLayout({
   onOpenVisualEditor,
   onRefresh,
 }: JourneysLayoutProps) {
+  const [editMode, setEditMode] = useState(false);
+  const selectedStep = detail?.steps?.find((s: any) => s.id === selectedStepId);
+  const template = templates.find((t) => t.id === selectedStep?.template_id);
+
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", gap: "16px", background: "#000" }}>
       {/* Top: Journey List + Preview (split) - 60% of viewport */}
@@ -62,7 +67,7 @@ export default function JourneysTabLayout({
           />
         </div>
 
-        {/* Right: Email Preview (flex, takes remaining space) */}
+        {/* Right: Email Preview or Editor (flex, takes remaining space) */}
         {detail?.journey && (
           <div 
             style={{ 
@@ -91,20 +96,19 @@ export default function JourneysTabLayout({
             }}
             tabIndex={0}
           >
-            {/* Header with Title and Edit Button */}
+            {/* Header with Title and Toggle Buttons */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", paddingBottom: "12px", borderBottom: "1px solid #111" }}>
               <div style={{ fontSize: "12px", fontWeight: 600, color: "#999", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                Náhled Kroku
+                {editMode ? "Úprava Šablony" : "Náhled Kroku"}
               </div>
-              {selectedStepId && (() => {
-                const selectedStep = detail.steps?.find((s: any) => s.id === selectedStepId);
-                return selectedStep?.step_type === "email" ? (
+              {selectedStepId && selectedStep?.step_type === "email" && (
+                <div style={{ display: "flex", gap: "8px" }}>
                   <button
-                    onClick={() => onOpenVisualEditor(selectedStep)}
+                    onClick={() => setEditMode(!editMode)}
                     style={{
-                      background: "#1a1a1a",
-                      border: "1px solid #333",
-                      color: "#999",
+                      background: editMode ? "#222" : "#1a1a1a",
+                      border: `1px solid ${editMode ? "#444" : "#333"}`,
+                      color: editMode ? "#ccc" : "#999",
                       borderRadius: "4px",
                       padding: "6px 12px",
                       fontSize: "11px",
@@ -116,50 +120,66 @@ export default function JourneysTabLayout({
                       transition: "all 150ms ease",
                     }}
                     onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLButtonElement).style.background = "#222";
-                      (e.currentTarget as HTMLButtonElement).style.borderColor = "#444";
-                      (e.currentTarget as HTMLButtonElement).style.color = "#ccc";
+                      if (!editMode) {
+                        (e.currentTarget as HTMLButtonElement).style.background = "#222";
+                        (e.currentTarget as HTMLButtonElement).style.borderColor = "#444";
+                        (e.currentTarget as HTMLButtonElement).style.color = "#ccc";
+                      }
                     }}
                     onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLButtonElement).style.background = "#1a1a1a";
-                      (e.currentTarget as HTMLButtonElement).style.borderColor = "#333";
-                      (e.currentTarget as HTMLButtonElement).style.color = "#999";
+                      if (!editMode) {
+                        (e.currentTarget as HTMLButtonElement).style.background = "#1a1a1a";
+                        (e.currentTarget as HTMLButtonElement).style.borderColor = "#333";
+                        (e.currentTarget as HTMLButtonElement).style.color = "#999";
+                      }
                     }}
                   >
-                    ✏️ Upravit
+                    {editMode ? "👁️ Náhled" : "✏️ Upravit"}
                   </button>
-                ) : null;
-              })()}
+                </div>
+              )}
             </div>
             
             {selectedStepId ? (() => {
-              const selectedStep = detail.steps?.find((s: any) => s.id === selectedStepId);
               if (!selectedStep) return <div style={{ color: "#555", fontSize: "12px" }}>Krok nenalezen</div>;
               
               if (selectedStep.step_type === "email") {
-                const template = templates.find((t) => t.id === selectedStep.template_id);
                 return (
                   <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
-                    <div style={{ marginBottom: "12px", paddingBottom: "12px", borderBottom: "1px solid #111" }}>
-                      <div style={{ fontSize: "11px", color: "#555", marginBottom: "4px" }}>E-mailová šablona</div>
-                      <div style={{ fontSize: "13px", fontWeight: 600, color: "#999" }}>
-                        {template?.name || "Bez šablony"}
-                      </div>
-                      {selectedStep.delay_hours ? (
-                        <div style={{ fontSize: "11px", color: "#444", marginTop: "4px" }}>
-                          Zpoždění: {selectedStep.delay_hours} hodin
+                    {!editMode && (
+                      <>
+                        <div style={{ marginBottom: "12px", paddingBottom: "12px", borderBottom: "1px solid #111" }}>
+                          <div style={{ fontSize: "11px", color: "#555", marginBottom: "4px" }}>E-mailová šablona</div>
+                          <div style={{ fontSize: "13px", fontWeight: 600, color: "#999" }}>
+                            {template?.name || "Bez šablony"}
+                          </div>
+                          {selectedStep.delay_hours ? (
+                            <div style={{ fontSize: "11px", color: "#444", marginTop: "4px" }}>
+                              Zpoždění: {selectedStep.delay_hours} hodin
+                            </div>
+                          ) : null}
                         </div>
-                      ) : null}
-                    </div>
-                    
-                    {/* Email Preview Container - fills available space */}
-                    <div style={{ flex: 1, overflow: "auto", border: "1px solid #111", borderRadius: "4px", background: "#1a1a1a", minHeight: 0, display: "flex", justifyContent: "center", alignItems: "flex-start", padding: "40px 20px", width: "100%" }}>
-                      <iframe
-                        src={`/api/marketing/journeys/${detail.journey.id}/steps/${selectedStep.id}/preview`}
-                        style={{ flex: "0 0 auto", width: "600px", maxWidth: "100%", height: "100%", border: "none", borderRadius: "4px", background: "#fff", display: "block" }}
-                        title="Email preview"
-                      />
-                    </div>
+
+                        {/* Email Preview Container - fills available space */}
+                        {template?.html_content && (
+                          <div style={{ flex: 1, overflow: "auto", border: "1px solid #111", borderRadius: "4px", background: "#1a1a1a", minHeight: 0, display: "flex", justifyContent: "center", alignItems: "flex-start", padding: "40px 20px", width: "100%" }}>
+                            <div style={{ background: "#fff", maxWidth: "600px", width: "100%", boxShadow: "0 4px 12px rgba(0,0,0,0.5)", borderRadius: "4px", overflow: "hidden" }}>
+                              <iframe
+                                src={`/api/marketing/journeys/${detail.journey.id}/steps/${selectedStep.id}/preview`}
+                                style={{ width: "100%", height: "100%", border: "none", background: "#fff", display: "block" }}
+                                title="Email preview"
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    )}
+
+                    {editMode && template && (
+                      <div style={{ flex: 1, overflow: "hidden", background: "#000", borderRadius: "4px" }}>
+                        <VisualEmailBuilder />
+                      </div>
+                    )}
                   </div>
                 );
               } else {
