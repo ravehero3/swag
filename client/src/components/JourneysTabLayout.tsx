@@ -47,11 +47,11 @@ export default function JourneysTabLayout({
   onRefresh,
 }: JourneysLayoutProps) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%", gap: "16px" }}>
-      {/* Top: Journey List + Preview (split) */}
-      <div style={{ display: "flex", gap: "16px", height: "400px", minHeight: "300px", flexShrink: 0 }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", gap: "16px", background: "#000" }}>
+      {/* Top: Journey List + Preview (split) - 60% of viewport */}
+      <div style={{ display: "flex", gap: "16px", height: "60vh", flexShrink: 0 }}>
         {/* Left: Journey List (400px fixed) */}
-        <div style={{ width: "400px", flexShrink: 0, overflow: "auto", borderRight: "1px solid #222", paddingRight: "16px" }}>
+        <div style={{ width: "400px", flexShrink: 0, overflow: "auto", borderRight: "1px solid #111", paddingRight: "16px", background: "#000" }}>
           <JourneyList
             journeys={journeys}
             selectedJourneyId={selectedJourneyId}
@@ -69,8 +69,9 @@ export default function JourneysTabLayout({
               flex: 1, 
               display: "flex", 
               flexDirection: "column", 
-              overflow: "auto",
+              overflow: "hidden",
               minWidth: 0,
+              background: "#000",
             }}
             onKeyDown={(e) => {
               if (!detail.steps || detail.steps.length === 0) return;
@@ -90,46 +91,48 @@ export default function JourneysTabLayout({
             }}
             tabIndex={0}
           >
-            <div style={{ fontSize: "12px", fontWeight: 600, color: "#fff", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            <div style={{ fontSize: "12px", fontWeight: 600, color: "#999", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
               Náhled Kroku
             </div>
             
             {selectedStepId ? (() => {
               const selectedStep = detail.steps?.find((s: any) => s.id === selectedStepId);
-              if (!selectedStep) return <div style={{ color: "#666", fontSize: "12px" }}>Krok nenalezen</div>;
+              if (!selectedStep) return <div style={{ color: "#555", fontSize: "12px" }}>Krok nenalezen</div>;
               
               if (selectedStep.step_type === "email") {
                 const template = templates.find((t) => t.id === selectedStep.template_id);
                 return (
                   <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
-                    <div style={{ marginBottom: "12px" }}>
-                      <div style={{ fontSize: "11px", color: "#666", marginBottom: "4px" }}>E-mailová šablona</div>
-                      <div style={{ fontSize: "13px", fontWeight: 600, color: "#0B99FC" }}>
+                    <div style={{ marginBottom: "12px", paddingBottom: "12px", borderBottom: "1px solid #111" }}>
+                      <div style={{ fontSize: "11px", color: "#555", marginBottom: "4px" }}>E-mailová šablona</div>
+                      <div style={{ fontSize: "13px", fontWeight: 600, color: "#999" }}>
                         {template?.name || "Bez šablony"}
                       </div>
                       {selectedStep.delay_hours ? (
-                        <div style={{ fontSize: "11px", color: "#888", marginTop: "4px" }}>
+                        <div style={{ fontSize: "11px", color: "#444", marginTop: "4px" }}>
                           Zpoždění: {selectedStep.delay_hours} hodin
                         </div>
                       ) : null}
                     </div>
                     
                     {template?.html_content && (
-                      <div style={{ flex: 1, overflow: "auto", border: "1px solid #222", borderRadius: "4px", background: "#fff", minHeight: 0 }}>
-                        <iframe
-                          srcDoc={template.html_content}
-                          style={{ width: "100%", height: "100%", border: "none", background: "#fff" }}
-                          title="Email preview"
-                        />
+                      <div style={{ flex: 1, overflow: "auto", border: "1px solid #111", borderRadius: "4px", background: "#111", minHeight: 0, display: "flex", justifyContent: "center", alignItems: "flex-start", padding: "20px" }}>
+                        <div style={{ background: "#fff", maxWidth: "600px", width: "100%", boxShadow: "0 4px 12px rgba(0,0,0,0.5)", borderRadius: "4px", overflow: "hidden" }}>
+                          <iframe
+                            srcDoc={template.html_content}
+                            style={{ width: "100%", height: "auto", border: "none", background: "#fff", display: "block" }}
+                            title="Email preview"
+                          />
+                        </div>
                       </div>
                     )}
                   </div>
                 );
               } else {
-                return <div style={{ color: "#666", fontSize: "12px" }}>Krok: {selectedStep.step_type}</div>;
+                return <div style={{ color: "#555", fontSize: "12px" }}>Krok: {selectedStep.step_type}</div>;
               }
             })() : (
-              <div style={{ color: "#666", fontSize: "12px" }}>
+              <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "#444", fontSize: "12px", borderTop: "1px solid #111" }}>
                 Vyberte krok v sekvenci níže
               </div>
             )}
@@ -137,13 +140,13 @@ export default function JourneysTabLayout({
         )}
       </div>
 
-      {/* Bottom: Full-width Sequence Section */}
+      {/* Bottom: Full-width Sequence Section - 40% of viewport */}
       {detail?.journey && (
-        <div style={{ flex: 1, minHeight: "300px", display: "flex", flexDirection: "column" }}>
-          <div style={{ fontSize: "13px", fontWeight: 600, color: "#fff", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
+          <div style={{ fontSize: "13px", fontWeight: 600, color: "#999", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
             Sekvence: {detail.journey.name}
           </div>
-          <div style={{ flex: 1, position: "relative", background: "#0a0a0a", border: "1px solid #222", borderRadius: "8px", overflow: "hidden" }}>
+          <div style={{ flex: 1, position: "relative", background: "#000", border: "1px solid #111", borderRadius: "4px", overflow: "hidden" }}>
             <JourneyFlowBuilder
               journey={detail.journey}
               steps={detail.steps || []}
