@@ -40,7 +40,20 @@ export default function JourneyList({
     custom: "⚙️",
   };
 
-  const getTriggerLabel = (type: string): string => {
+  const TRANSACTIONAL_TRIGGERS = {
+    order_created: "Order Confirmation",
+    digital_license_ready: "License Delivery",
+    invoice_ready: "Invoice & Receipt",
+  };
+
+  const isTransactional = (journey: Journey): boolean => {
+    return journey.trigger_value ? journey.trigger_value in TRANSACTIONAL_TRIGGERS : false;
+  };
+
+  const getTriggerLabel = (type: string, triggerValue?: string): string => {
+    if (triggerValue && triggerValue in TRANSACTIONAL_TRIGGERS) {
+      return TRANSACTIONAL_TRIGGERS[triggerValue as keyof typeof TRANSACTIONAL_TRIGGERS];
+    }
     const labels: Record<string, string> = {
       free_download: "Free Download",
       purchase: "After Purchase",
