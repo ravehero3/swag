@@ -1,4 +1,5 @@
 import OracleBeatsModal from "../components/OracleBeatsModal";
+import Campaigns from "./Campaigns";
 import { DESIGN_SYSTEM } from '../constants/designSystem';
 import { CZECH } from '../constants/czech';
 import { useState, useEffect, useRef, useMemo } from "react";
@@ -7264,7 +7265,7 @@ function MarketingTab({ settings, onRefresh }: { settings: Record<string, string
       {sub === "prehled"    && <MarketingPrehledTab />}
       {sub === "odberatele" && <OdberateleTab />}
       {sub === "journeys"   && <JourneysTab />}
-      {sub === "kampane"    && <KampaneTab />}
+      {sub === "kampane"    && <Campaigns />}
       {sub === "sablony"    && <SablonyTab />}
     </div>
   );
