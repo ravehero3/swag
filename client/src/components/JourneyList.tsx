@@ -144,15 +144,46 @@ export default function JourneyList({
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div
                     style={{
-                      fontSize: "12px",
-                      fontWeight: 600,
-                      color: isSelected ? "#0B99FC" : "#fff",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      marginBottom: "4px",
                     }}
                   >
-                    {journey.name}
+                    <div
+                      style={{
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        color: isSelected ? "#0B99FC" : "#fff",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        flex: 1,
+                      }}
+                    >
+                      {journey.name}
+                    </div>
+                    {isTransactional(journey) && (
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "4px",
+                          background: "#1a2a1a",
+                          border: "1px solid #3d6d3d",
+                          borderRadius: "3px",
+                          padding: "2px 8px",
+                          fontSize: "9px",
+                          fontWeight: 700,
+                          color: "#5dd65d",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.04em",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        ⚡ Transační
+                      </div>
+                    )}
                   </div>
                   <div style={{ fontSize: "10px", color: "#666", marginTop: "2px" }}>
                     {TRIGGER_ICONS[journey.trigger_type] || "⚙️"} {getTriggerLabel(journey.trigger_type)}
