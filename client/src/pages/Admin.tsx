@@ -16,6 +16,7 @@ import { EmailJourneyBuilder } from "../components/EmailJourneyBuilder";
 import AdminHeader from "../components/AdminHeader.js";
 import JourneyFlowBuilder from "../components/JourneyFlowBuilder.js";
 import JourneyList from "../components/JourneyList";
+import JourneysTabLayout from "../components/JourneysTabLayout";
 import JourneyContainers from "../components/JourneyContainers.js";
 import { TemplateCardGrid } from "../components/TemplateCardGrid.js";
 import { VisualEmailBuilder } from "../components/VisualEmailBuilder.js";
@@ -7989,150 +7990,27 @@ function JourneysTab() {
       ) : journeys.length === 0 ? (
         <div style={{ color: "#444", padding: "20px" }}>Zatím žádné journeys.</div>
       ) : (
-        <>
-          {/* Professional Journey List */}
-          <JourneyList
-            journeys={journeys}
-            selectedJourneyId={selectedJourneyId}
-            onSelectJourney={(id) => { setSelectedJourneyId(id); openJourneyDetail(id); }}
-            onStatusChange={setStatus}
-          />
-
-          {/* Journey Sequence */}
-          {detail?.journey && (
-            <div style={{ marginTop: "20px", height: "calc(100vh - 280px)", maxHeight: "600px", display: "flex", gap: "0" }}>
-              {/* Left: Journey Flow */}
-              <div style={{ flex: 1, borderRight: "1px solid #333", paddingRight: "20px" }}>
-                <div style={{ fontSize: "14px", fontWeight: 600, color: "#fff", marginBottom: "20px" }}>
-                  Sekvence: {detail.journey.name}
-                </div>
-                <div style={{ position: "relative" }}>
-                  <JourneyFlowBuilder
-                    journey={detail.journey}
-                    steps={detail.steps || []}
-                    templates={templates}
-                    selectedStepId={selectedStepId}
-                    onSelectStep={setSelectedStepId}
-                    onEditStep={(step) => { setEditingStep(step); setShowStepForm(true); setSelectedStepId(step.id); }}
-                    onDeleteStep={deleteStep}
-                    onAddStep={() => { setEditingStep(null); setShowStepForm(true); }}
-                    onTestEmail={handleSendTest}
-                    testSendingStepId={testSendingStepId}
-                    testEmail={testEmail}
-                    onTestEmailChange={setTestEmail}
-                    stepStats={stepStats}
-                    onOpenVisualEditor={openVisualStep}
-                    onRefresh={() => { openJourneyDetail(detail.journey.id); load(); }}
-                  />
-                </div>
-              </div>
-              
-              {/* Right: Preview */}
-              <div 
-                style={{ flex: 1, paddingLeft: "20px", display: "flex", flexDirection: "column" }}
-                onKeyDown={(e) => {
-                  if (!detail.steps || detail.steps.length === 0) return;
-                  const currentIndex = detail.steps.findIndex((s: any) => s.id === selectedStepId);
-                  
-                  if (e.key === "ArrowDown") {
-                    e.preventDefault();
-                    if (currentIndex < detail.steps.length - 1) {
-                      setSelectedStepId(detail.steps[currentIndex + 1].id);
-                    }
-                  } else if (e.key === "ArrowUp") {
-                    e.preventDefault();
-                    if (currentIndex > 0) {
-                      setSelectedStepId(detail.steps[currentIndex - 1].id);
-                    }
-                  }
-                }}
-                tabIndex={0}
-              >
-                <div style={{ fontSize: "14px", fontWeight: 600, color: "#fff", marginBottom: "20px" }}>
-                  Náhled Kroku
-                </div>
-                
-                {selectedStepId ? (() => {
-                  const selectedStep = detail.steps?.find((s: any) => s.id === selectedStepId);
-                  if (!selectedStep) return <div style={{ color: "#666", fontSize: "12px" }}>Krok nenalezen</div>;
-                  
-                  if (selectedStep.step_type === "email") {
-                    return (
-                      <div style={{ flex: 1, background: "#0a0a0a", border: "1px solid #222", borderRadius: "8px", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-                        <div style={{ padding: "12px", background: "rgba(255, 255, 255, 0.03)", borderBottom: "1px solid #222", fontSize: "12px", color: "#ddd", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                          <span>{templates.find((t: any) => t.id === selectedStep.template_id)?.name || "Bez šablony"}</span>
-                          <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                            <div style={{ display: "flex", background: "rgba(0,0,0,0.3)", borderRadius: "4px", padding: "2px", gap: "2px" }}>
-                              <button
-                                onClick={() => setPreviewMode("desktop")}
-                                style={{ padding: "6px 10px", background: previewMode === "desktop" ? "#fff" : "transparent", color: previewMode === "desktop" ? "#000" : "#888", borderRadius: "3px", border: "none", cursor: "pointer", fontSize: "10px", fontWeight: 600, display: "flex", alignItems: "center", gap: "4px" }}
-                              >
-                                <Monitor size={12} /> Desktop
-                              </button>
-                              <button
-                                onClick={() => setPreviewMode("mobile")}
-                                style={{ padding: "6px 10px", background: previewMode === "mobile" ? "#fff" : "transparent", color: previewMode === "mobile" ? "#000" : "#888", borderRadius: "3px", border: "none", cursor: "pointer", fontSize: "10px", fontWeight: 600, display: "flex", alignItems: "center", gap: "4px" }}
-                              >
-                                <Smartphone size={12} /> Mobile
-                              </button>
-                            </div>
-                            <button
-                              onClick={() => {
-                                // Always open visual editor — creates new template if none assigned
-                                openVisualStep(selectedStep);
-                              }}
-                              style={{ background: "rgba(255, 255, 255, 0.08)", border: "1px solid rgba(255, 255, 255, 0.15)", color: "#fff", borderRadius: "4px", padding: "6px 10px", fontSize: "11px", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px", fontWeight: 600 }}
-                              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.12)"; }}
-                              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "rgba(255, 255, 255, 0.08)"; }}
-                            >
-                              <Pencil size={14} /> Upravit
-                            </button>
-                          </div>
-                        </div>
-                        <div style={{ flex: 1, overflow: "auto", display: "flex", justifyContent: previewMode === "mobile" ? "center" : "flex-start", alignItems: "flex-start", background: "#1a1a1a", padding: previewMode === "mobile" ? "20px" : "0" }}>
-                          <iframe 
-                            src={`/api/marketing/journeys/${detail.journey.id}/steps/${selectedStep.id}/preview`}
-                            style={{ flex: previewMode === "mobile" ? "0 0 375px" : "1", width: previewMode === "mobile" ? "375px" : "100%", height: "100%", border: previewMode === "mobile" ? "1px solid #333" : "none", display: "block", borderRadius: previewMode === "mobile" ? "12px" : "0" }}
-                            title="Email preview"
-                          />
-                        </div>
-                      </div>
-                    );
-                  } else if (selectedStep.step_type === "wait") {
-                    return (
-                      <div style={{ flex: 1, background: "#0a0a0a", border: "1px solid #222", borderRadius: "8px", padding: "24px", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column" }}>
-                        <div style={{ fontSize: "14px", fontWeight: 600, color: "#fff", marginBottom: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
-                          <Clock size={18} /> ČEKAT
-                        </div>
-                        <div style={{ fontSize: "24px", fontWeight: 700, color: "#fff", marginBottom: "12px" }}>
-                          {selectedStep.delay_hours}h
-                        </div>
-                        <div style={{ fontSize: "12px", color: "#666" }}>
-                          Čeká {selectedStep.delay_hours} hodin předtím, než pokračuje
-                        </div>
-                      </div>
-                    );
-                  } else {
-                    return (
-                      <div style={{ flex: 1, background: "#0a0a0a", border: "1px solid #222", borderRadius: "8px", padding: "24px", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column" }}>
-                        <div style={{ fontSize: "14px", fontWeight: 600, color: "#888", textTransform: "uppercase", marginBottom: "12px" }}>
-                          {selectedStep.step_type}
-                        </div>
-                        <div style={{ fontSize: "12px", color: "#666" }}>
-                          Náhled není dostupný pro tento typ kroku
-                        </div>
-                      </div>
-                    );
-                  }
-                })() : (
-                  <div style={{ flex: 1, background: "#0a0a0a", border: "1px dashed #333", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", color: "#666", fontSize: "12px", textAlign: "center" }}>
-                    Klikněte na krok vlevo pro zobrazení náhledu
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </>
+<JourneysTabLayout
+          journeys={journeys}
+          selectedJourneyId={selectedJourneyId}
+          detail={detail}
+          loading={loading}
+          selectedStepId={selectedStepId}
+          templates={templates}
+          testSendingStepId={testSendingStepId}
+          testEmail={testEmail}
+          stepStats={stepStats}
+          onSelectJourney={(id) => { setSelectedJourneyId(id); openJourneyDetail(id); }}
+          onStatusChange={setStatus}
+          onSelectStep={setSelectedStepId}
+          onEditStep={(step) => { setEditingStep(step); setShowStepForm(true); setSelectedStepId(step.id); }}
+          onDeleteStep={deleteStep}
+          onAddStep={() => { setEditingStep(null); setShowStepForm(true); }}
+          onTestEmail={handleSendTest}
+          onTestEmailChange={setTestEmail}
+          onOpenVisualEditor={openVisualStep}
+          onRefresh={() => { openJourneyDetail(detail?.journey?.id || 0); load(); }}
+        />
       )}
 
 
