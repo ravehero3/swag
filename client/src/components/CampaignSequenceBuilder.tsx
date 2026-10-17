@@ -22,15 +22,17 @@ interface CampaignSequenceBuilderProps {
   campaign: Campaign;
   emails: CampaignEmail[];
   templates: any[];
-  onEditEmail: (email: CampaignEmail) => void;
-  onDeleteEmail: (emailId: number) => void;
+  selectedEmailId: number | null;
+  onSelectEmail: (emailId: number) => void;
   onAddEmail: () => void;
-  onTestEmail: (emailId: number) => void;
-  testSendingEmailId: number | null;
-  testEmail: string;
-  onTestEmailChange: (email: string) => void;
-  selectedEmailId?: number | null;
-  onSelectEmail?: (emailId: number) => void;
+  onDeleteEmail: (emailId: number) => void;
+  onUpdateEmailTemplate?: (emailId: number, templateId: number) => void;
+  onUpdateEmailDelay?: (emailId: number, delayHours: number) => void;
+  onEditEmail?: (email: CampaignEmail) => void;
+  onTestEmail?: (emailId: number) => void;
+  testSendingEmailId?: number | null;
+  testEmail?: string;
+  onTestEmailChange?: (email: string) => void;
 }
 
 const EMAIL_WIDTH = 200;
@@ -42,15 +44,17 @@ export default function CampaignSequenceBuilder({
   campaign,
   emails,
   templates,
-  onEditEmail,
-  onDeleteEmail,
-  onAddEmail,
-  onTestEmail,
-  testSendingEmailId,
-  testEmail,
-  onTestEmailChange,
   selectedEmailId,
   onSelectEmail,
+  onAddEmail,
+  onDeleteEmail,
+  onUpdateEmailTemplate,
+  onUpdateEmailDelay,
+  onEditEmail,
+  onTestEmail,
+  testSendingEmailId = null,
+  testEmail = "",
+  onTestEmailChange,
 }: CampaignSequenceBuilderProps) {
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
