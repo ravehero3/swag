@@ -77,6 +77,7 @@ export default function CompactEmailEditor({ template, onSave, onRefresh }: Comp
               template?.blocks ? (typeof template.blocks === "string" ? JSON.parse(template.blocks) : template.blocks) : []
             }
             title={template?.name || "Editor e-mailu"}
+            embedded={true}
             onSave={async (html) => {
               try {
                 await fetch(`/api/marketing/templates/${template.id}`, {

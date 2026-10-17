@@ -239,6 +239,7 @@ interface VisualEmailBuilderProps {
   initialBlocks?: EmailBlock[];
   initialHeaderConfig?: EmailHeaderConfig;
   title?: string;
+  embedded?: boolean;
   onSave: (data: {
     subject: string;
     preheader: string;
@@ -644,6 +645,7 @@ export function VisualEmailBuilder({
   initialBlocks = [],
   initialHeaderConfig,
   title = "Vizuální editor e-mailu",
+  embedded = false,
   onSave,
   onClose,
   onTestSend,
@@ -1190,17 +1192,16 @@ export function VisualEmailBuilder({
   const builderContent = (
     <div
       style={{
-        position: "fixed",
-        inset: 0,
-        height: "100vh",
+        position: embedded ? "relative" : "fixed",
+        ...(embedded ? { height: "100%", flex: 1 } : { inset: 0, height: "100vh" }),
         background: "#080808",
-        zIndex: 10005,
+        zIndex: embedded ? "auto" : 10005,
         display: "flex",
         flexDirection: "column",
         color: "#eee",
         fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
         overflow: "hidden",
-      }}
+      } as React.CSSProperties}
     >
       {/* ── Top Bar Header ─────────────────────────────────────────────────── */}
       <div
