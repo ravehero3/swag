@@ -1,4 +1,5 @@
 import { pool } from "../../db.js";
+import { sendMarketingEmail } from "./sender.js";
 
 interface RateLimitConfig {
   dailyLimit: number;
@@ -43,7 +44,13 @@ async function updateRateLimitCounters(
            current_day_sent = $3, last_day_reset = $4,
            updated_at = CURRENT_TIMESTAMP
        WHERE campaign_id = $5`,
-      [config.currentHourSent, config.lastHourReset, config.currentDaySent, config.lastDayReset, campaignId]
+      [
+        config.currentHourSent,
+        config.lastHourReset,
+        config.currentDaySent,
+        config.lastDayReset,
+        campaignId,
+      ]
     );
   }
 
@@ -57,6 +64,34 @@ function calculateSendQuota(config: RateLimitConfig): number {
   const hourlyQuota = Math.max(0, config.hourlyLimit - config.currentHourSent);
   const dailyQuota = Math.max(0, config.dailyLimit - config.currentDaySent);
   return Math.min(hourlyQuota, dailyQuota);
+}
+
+/**
+ * Get campaign email data (subject, template, blocks, etc.)
+ */
+async function getCampaignEmail(campaignId: number): Promise<any> {
+  const res = await pool.query(
+    `SELECT id, template_id, subject, preheader, blocks, header_options
+     FROM marketing_campaign_emails
+     WHERE campaign_id = $1
+     LIMIT 1`,
+    [campaignId]
+  );
+  return res.rows[0] || null;
+}
+
+/**
+ * Get template data if needed
+ */
+async function getTemplate(templateId: number | null): Promise<any> {
+  if (!templateId) return null;
+  const res = await pool.query(
+    `SELECT id, subject, preheader, blocks, header_options, html_content
+     FROM marketing_templates
+     WHERE id = $1`,
+    [templateId]
+  );
+  return res.rows[0] || null;
 }
 
 /**
@@ -76,13 +111,18 @@ export async function processCampaignQueue(campaignId: number) {
     const campaign = campaignRes.rows[0];
 
     // Check if paused
-    if (campaign.paused_until && new Date(campaign.paused_until) > new Date()) {
+    if (
+      campaign.paused_until &&
+      new Date(campaign.paused_until) > new Date()
+    ) {
       console.log(`[Campaign Queue] Campaign ${campaignId} is paused`);
       return;
     }
 
     if (campaign.status !== "active") {
-      console.log(`[Campaign Queue] Campaign ${campaignId} not active (status: ${campaign.status})`);
+      console.log(
+        `[Campaign Queue] Campaign ${campaignId} not active (status: ${campaign.status})`
+      );
       return;
     }
 
@@ -102,7 +142,11 @@ export async function processCampaignQueue(campaignId: number) {
         `INSERT INTO campaign_rate_limits 
          (campaign_id, daily_limit, hourly_limit, current_hour_sent, current_day_sent)
          VALUES ($1, $2, $3, 0, 0)`,
-        [campaignId, campaign.daily_send_limit || 85, campaign.hourly_send_limit || 4]
+        [
+          campaignId,
+          campaign.daily_send_limit || 85,
+          campaign.hourly_send_limit || 4,
+        ]
       );
       rateLimitConfig = {
         dailyLimit: campaign.daily_send_limit || 85,
@@ -136,15 +180,16 @@ export async function processCampaignQueue(campaignId: number) {
       return;
     }
 
-    console.log(`[Campaign Queue] Campaign ${campaignId}: Can send ${quota} emails this window`);
+    console.log(
+      `[Campaign Queue] Campaign ${campaignId}: Can send ${quota} emails this window`
+    );
 
     // Get queued emails ready to send
     const queueRes = await pool.query(
       `SELECT csq.id, csq.subscriber_id, csq.retry_count,
-              s.email, mc.id as campaign_email_id
+              s.id, s.email, s.name, s.is_buyer, s.tags, s.marketing_consent, s.unsubscribed_at, s.suppressed_at
        FROM campaign_send_queue csq
        JOIN subscribers s ON s.id = csq.subscriber_id
-       LEFT JOIN marketing_campaign_emails mc ON mc.campaign_id = $1
        WHERE csq.campaign_id = $1
          AND csq.status = 'queued'
          AND (csq.scheduled_for IS NULL OR csq.scheduled_for <= CURRENT_TIMESTAMP)
@@ -154,11 +199,30 @@ export async function processCampaignQueue(campaignId: number) {
     );
 
     if (queueRes.rows.length === 0) {
-      console.log(`[Campaign Queue] No queued emails for campaign ${campaignId}`);
+      console.log(
+        `[Campaign Queue] No queued emails for campaign ${campaignId}`
+      );
       return;
     }
 
-    console.log(`[Campaign Queue] Found ${queueRes.rows.length} emails to send for campaign ${campaignId}`);
+    console.log(
+      `[Campaign Queue] Found ${queueRes.rows.length} emails to send for campaign ${campaignId}`
+    );
+
+    // Get campaign email template data
+    const campaignEmail = await getCampaignEmail(campaignId);
+    if (!campaignEmail) {
+      console.error(
+        `[Campaign Queue] No campaign email found for campaign ${campaignId}`
+      );
+      return;
+    }
+
+    // Get template if referenced
+    let template = null;
+    if (campaignEmail.template_id) {
+      template = await getTemplate(campaignEmail.template_id);
+    }
 
     // Send emails and update queue
     for (const row of queueRes.rows) {
@@ -171,23 +235,51 @@ export async function processCampaignQueue(campaignId: number) {
           [row.id]
         );
 
-        // TODO: Send email via Resend API
-        // For now, mark as sent (in production, this would call sendEmail())
-        const emailSendRes = await pool.query(
-          `INSERT INTO marketing_email_sends
-           (subscriber_id, campaign_id, idempotency_key, status, recipient, email_type)
-           VALUES ($1, $2, $3, 'sent', $4, 'campaign')
-           RETURNING id`,
-          [row.subscriber_id, campaignId, `campaign-${campaignId}-${row.subscriber_id}-${Date.now()}`, row.email]
-        );
+        // Build subscriber object
+        const subscriber = {
+          id: row.id,
+          email: row.email,
+          name: row.name || "",
+          marketing_consent: row.marketing_consent !== false,
+          unsubscribed_at: row.unsubscribed_at,
+          suppressed_at: row.suppressed_at,
+        };
 
-        // Update queue entry
+        // Prepare send input
+        const customSubject = campaignEmail.subject || template?.subject;
+        const customPreheader =
+          campaignEmail.preheader || template?.preheader || null;
+        let customHtml = "";
+
+        if (campaignEmail.blocks && campaignEmail.blocks.length > 0) {
+          // Blocks take priority over template
+          const { compileBlocksToHtml } = await import("./blockCompiler.js");
+          customHtml = compileBlocksToHtml(campaignEmail.blocks);
+        } else if (template && template.blocks && template.blocks.length > 0) {
+          const { compileBlocksToHtml } = await import("./blockCompiler.js");
+          customHtml = compileBlocksToHtml(template.blocks);
+        } else if (template?.html_content) {
+          customHtml = template.html_content;
+        }
+
+        const idempotencyKey = `campaign-${campaignId}-subscriber-${subscriber.id}-v1`;
+
+        await sendMarketingEmail({
+          subscriber,
+          templateId: campaignEmail.template_id,
+          campaignId,
+          customSubject,
+          customPreheader,
+          customHtml,
+          idempotencyKey,
+        }).catch(() => {});
+
+        // Update queue entry to sent
         await pool.query(
           `UPDATE campaign_send_queue
-           SET status = 'sent', sent_at = CURRENT_TIMESTAMP,
-               email_send_id = $1
-           WHERE id = $2`,
-          [emailSendRes.rows[0]?.id, row.id]
+           SET status = 'sent', sent_at = CURRENT_TIMESTAMP
+           WHERE id = $1`,
+          [row.id]
         );
 
         // Update campaign stats
@@ -202,9 +294,14 @@ export async function processCampaignQueue(campaignId: number) {
         rateLimitConfig.currentHourSent++;
         rateLimitConfig.currentDaySent++;
 
-        console.log(`[Campaign Queue] Sent email to ${row.email} (campaign ${campaignId})`);
+        console.log(
+          `[Campaign Queue] Sent email to ${row.email} (campaign ${campaignId})`
+        );
       } catch (err) {
-        console.error(`[Campaign Queue] Error sending email for queue ${row.id}:`, err);
+        console.error(
+          `[Campaign Queue] Error sending email for queue ${row.id}:`,
+          err
+        );
 
         // Update retry count
         const retryCount = (row.retry_count || 0) + 1;
@@ -226,9 +323,10 @@ export async function processCampaignQueue(campaignId: number) {
             [campaignId]
           );
         } else {
-          // Schedule retry
-          const retryDelays = [3600, 21600, 86400]; // 1h, 6h, 24h
-          const nextRetryMs = Date.now() + (retryDelays[retryCount - 1] * 1000);
+          // Schedule retry (1h, 6h, 24h delays)
+          const retryDelays = [3600, 21600, 86400];
+          const nextRetryMs =
+            Date.now() + retryDelays[retryCount - 1] * 1000;
 
           await pool.query(
             `UPDATE campaign_send_queue
@@ -249,14 +347,17 @@ export async function processCampaignQueue(campaignId: number) {
       `UPDATE campaign_rate_limits
        SET current_hour_sent = $1, current_day_sent = $2, updated_at = CURRENT_TIMESTAMP
        WHERE campaign_id = $3`,
-      [rateLimitConfig.currentHourSent, rateLimitConfig.currentDaySent, campaignId]
+      [
+        rateLimitConfig.currentHourSent,
+        rateLimitConfig.currentDaySent,
+        campaignId,
+      ]
     );
 
     // Check if campaign is complete
     const incompletRes = await pool.query(
       `SELECT COUNT(*) as count FROM campaign_send_queue
-       WHERE campaign_id = $1 AND status IN ('queued', 'in_progress', 'failed')
-       AND (status != 'failed' OR retry_count < 3)`,
+       WHERE campaign_id = $1 AND status IN ('queued', 'in_progress')`,
       [campaignId]
     );
 
@@ -277,11 +378,13 @@ export async function processCampaignQueue(campaignId: number) {
 /**
  * Main scheduler job - runs every 15 minutes
  */
-export async function startCampaignScheduler() {
+export function startCampaignScheduler() {
   console.log("[Campaign Scheduler] Starting campaign scheduler");
 
   // Run immediately on startup
-  await runCampaignSchedulerCycle();
+  runCampaignSchedulerCycle().catch((err) => {
+    console.error("[Campaign Scheduler] Initial cycle error:", err);
+  });
 
   // Then run every 15 minutes
   setInterval(runCampaignSchedulerCycle, 15 * 60 * 1000);
@@ -289,14 +392,18 @@ export async function startCampaignScheduler() {
 
 async function runCampaignSchedulerCycle() {
   try {
-    console.log(`[Campaign Scheduler] Running cycle at ${new Date().toISOString()}`);
+    console.log(
+      `[Campaign Scheduler] Running cycle at ${new Date().toISOString()}`
+    );
 
     // Get all active campaigns
     const campaignsRes = await pool.query(
       `SELECT id FROM marketing_campaigns WHERE status = 'active' ORDER BY campaign_started_at ASC`
     );
 
-    console.log(`[Campaign Scheduler] Found ${campaignsRes.rows.length} active campaigns`);
+    console.log(
+      `[Campaign Scheduler] Found ${campaignsRes.rows.length} active campaigns`
+    );
 
     // Process each campaign
     for (const row of campaignsRes.rows) {
