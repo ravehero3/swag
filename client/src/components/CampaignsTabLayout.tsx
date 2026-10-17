@@ -2,12 +2,13 @@ import React, { useState } from "react";
 import CampaignList from "./CampaignList";
 import CompactEmailEditor from "./CompactEmailEditor";
 import CampaignSequenceBuilder from "./CampaignSequenceBuilder";
+import { Play, Pause } from "lucide-react";
 
 interface Campaign {
   id: number;
   name: string;
   audience: "buyers" | "free_downloads";
-  status: "draft" | "test" | "live";
+  status: "draft" | "active" | "completed" | "paused";
   emailCount: number;
   createdAt: string;
 }
@@ -43,6 +44,7 @@ interface CampaignsLayoutProps {
   templates: Template[];
   loading: boolean;
   selectedEmailId: number | null;
+  campaignStatus?: "draft" | "active" | "completed" | "paused";
 
   onSelectCampaign: (id: number) => void;
   onCreateCampaign: (name: string, audience: "buyers" | "free_downloads") => void;
@@ -52,6 +54,7 @@ interface CampaignsLayoutProps {
   onUpdateEmailTemplate: (emailId: number, templateId: number) => void;
   onUpdateEmailDelay: (emailId: number, delayHours: number) => void;
   onRefresh: () => void;
+  onStartCampaign?: () => void;
 }
 
 export default function CampaignsTabLayout({
@@ -62,6 +65,7 @@ export default function CampaignsTabLayout({
   templates,
   loading,
   selectedEmailId,
+  campaignStatus,
   onSelectCampaign,
   onCreateCampaign,
   onSelectEmail,
@@ -70,6 +74,7 @@ export default function CampaignsTabLayout({
   onUpdateEmailTemplate,
   onUpdateEmailDelay,
   onRefresh,
+  onStartCampaign,
 }: CampaignsLayoutProps) {
   const selectedEmail = emails.find((e) => e.id === selectedEmailId);
   
@@ -155,9 +160,40 @@ export default function CampaignsTabLayout({
       {/* Bottom: Full-width Sequence Section - 40% of viewport */}
       {campaign && (
         <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
-          <div style={{ fontSize: "13px", fontWeight: 600, color: "#999", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-            Sekvence: {campaign.name}
+          <div style={{ 
+            display: "flex", 
+            justifyContent: "space-between", 
+            alignItems: "center",
+            marginBottom: "12px" 
+          }}>
+            <div style={{ fontSize: "13px", fontWeight: 600, color: "#999", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              Sekvence: {campaign.name}
+            </div>
+            
+            {campaignStatus === "draft" && (
+              <button
+                onClick={onStartCampaign}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  padding: "6px 14px",
+                  background: "#0f0",
+                  color: "#000",
+                  border: "none",
+                  borderRadius: "4px",
+                  fontSize: "12px",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                  letterSpacing: "0.5px"
+                }}
+              >
+                <Play size={14} />
+                Spustit kampaň
+              </button>
+            )}
           </div>
+          
           <div
             style={{
               flex: 1,

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Plus, Edit3, Trash2, Send, Play, Pause, X, Calendar, Clock, AlertCircle } from "lucide-react";
+import { Plus, Edit3, Trash2, Send, Play, Pause, X, Calendar, Clock, AlertCircle, CheckCircle, Zap } from "lucide-react";
 import CampaignsTabLayout from "../components/CampaignsTabLayout";
 
 interface CampaignEmail {
@@ -16,7 +16,11 @@ interface Campaign {
   id: number;
   name: string;
   audience: "buyers" | "free_downloads";
-  status: "draft" | "test" | "live";
+  status: "draft" | "active" | "completed" | "paused";
+  audience_segment?: "paid" | "free" | "mixed";
+  daily_send_limit?: number;
+  total_recipients?: number;
+  total_sent?: number;
   emailCount: number;
   createdAt: string;
 }
@@ -25,6 +29,27 @@ interface Template {
   id: number;
   name: string;
   subject: string;
+}
+
+interface QueueStatus {
+  queue: {
+    queued: number;
+    in_progress: number;
+    sent: number;
+    failed: number;
+    total: number;
+  };
+  rateLimit: {
+    daily_limit: number;
+    hourly_limit: number;
+    current_hour_sent: number;
+    current_day_sent: number;
+  };
+  progress: {
+    percentage: number;
+    sent: number;
+    total: number;
+  };
 }
 
 export default function Campaigns() {
@@ -38,11 +63,19 @@ export default function Campaigns() {
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
   const [campaignEmails, setCampaignEmails] = useState<CampaignEmail[]>([]);
 
+  // Campaign start dialog
+  const [showStartDialog, setShowStartDialog] = useState(false);
+  const [audienceSegment, setAudienceSegment] = useState<"paid" | "free" | "mixed">("free");
+  const [dailySendLimit, setDailySendLimit] = useState(85);
+  const [startingCampaign, setStartingCampaign] = useState(false);
+
+  // Queue status
+  const [queueStatus, setQueueStatus] = useState<QueueStatus | null>(null);
+  const [statusRefreshInterval, setStatusRefreshInterval] = useState<NodeJS.Timeout | null>(null);
+
   // Preview
   const [previewEmailId, setPreviewEmailId] = useState<number | null>(null);
   const [previewVisible, setPreviewVisible] = useState(false);
-
-
 
   // Test mode
   const [testEmail, setTestEmail] = useState("");
@@ -98,6 +131,18 @@ export default function Campaigns() {
     }
   };
 
+  const loadQueueStatus = async (campaignId: number) => {
+    try {
+      const res = await fetch(`/api/marketing/campaigns/${campaignId}/queue-status`);
+      if (res.ok) {
+        const data = await res.json();
+        setQueueStatus(data);
+      }
+    } catch (err) {
+      console.error("Error loading queue status:", err);
+    }
+  };
+
   const selectCampaign = async (campaignId: number) => {
     const campaign = campaigns.find((c) => c.id === campaignId);
     if (!campaign) return;
@@ -106,6 +151,19 @@ export default function Campaigns() {
     await loadCampaignEmails(campaignId);
     setPreviewVisible(false);
     setTestMode(false);
+
+    // Load queue status if active
+    if (campaign.status === "active") {
+      await loadQueueStatus(campaignId);
+      
+      // Set up auto-refresh
+      if (statusRefreshInterval) clearInterval(statusRefreshInterval);
+      const interval = setInterval(() => loadQueueStatus(campaignId), 10000);
+      setStatusRefreshInterval(interval);
+    } else if (statusRefreshInterval) {
+      clearInterval(statusRefreshInterval);
+      setStatusRefreshInterval(null);
+    }
   };
 
   const createNewCampaign = async (name: string, audience: "buyers" | "free_downloads") => {
@@ -126,6 +184,39 @@ export default function Campaigns() {
       }
     } catch (err) {
       console.error("Error creating campaign:", err);
+    }
+  };
+
+  const startCampaign = async () => {
+    if (!selectedCampaignId || !selectedCampaign) return;
+    
+    setStartingCampaign(true);
+    try {
+      const res = await fetch(`/api/marketing/campaigns/${selectedCampaignId}/start`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          audience_segment: audienceSegment,
+          daily_send_limit: dailySendLimit,
+        }),
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        alert(data.message);
+        setShowStartDialog(false);
+        await loadCampaigns();
+        await selectCampaign(selectedCampaignId);
+        await loadQueueStatus(selectedCampaignId);
+      } else {
+        const error = await res.json();
+        alert("Chyba: " + error.error);
+      }
+    } catch (err) {
+      console.error("Error starting campaign:", err);
+      alert("Chyba při spuštění kampanhe");
+    } finally {
+      setStartingCampaign(false);
     }
   };
 
@@ -232,31 +323,6 @@ export default function Campaigns() {
     }
   };
 
-  const scheduleEmailSend = async () => {
-    if (!schedulerEmailId || !schedulerDate || !schedulerTime) return;
-    const sendDateTime = `${schedulerDate}T${schedulerTime}:00Z`;
-    try {
-      const res = await fetch(`/api/marketing/campaigns/${selectedCampaignId}/emails/${schedulerEmailId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sendDate: schedulerDate,
-          sendTime: schedulerTime,
-          sendDateTime,
-        }),
-      });
-      if (res.ok) {
-        const updated = await res.json();
-        setCampaignEmails(
-          campaignEmails.map((e) => (e.id === schedulerEmailId ? updated : e))
-        );
-        setShowDateScheduler(false);
-      }
-    } catch (err) {
-      console.error("Error scheduling email:", err);
-    }
-  };
-
   const sendTestEmail = async (emailId: number) => {
     if (!testEmail.includes("@")) {
       alert("Zadejte platnou e-mailovou adresu");
@@ -276,32 +342,180 @@ export default function Campaigns() {
     }
   };
 
-  const publishCampaign = async () => {
-    if (!selectedCampaignId) return;
-    const confirmed = window.confirm(
-      `Opravdu chcete spustit kampaň pro ${selectedCampaign?.audience === "buyers" ? "kupující" : "zdarma stahovače"}?`
-    );
-    if (!confirmed) return;
-
-    try {
-      const res = await fetch(`/api/marketing/campaigns/${selectedCampaignId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: testMode ? "test" : "live" }),
-      });
-      if (res.ok) {
-        const updated = await res.json();
-        setCampaigns(campaigns.map((c) => (c.id === updated.id ? updated : c)));
-        setSelectedCampaign(updated);
-        alert("Kampaň spuštěna!");
-      }
-    } catch (err) {
-      console.error("Error publishing campaign:", err);
-    }
-  };
+  const estimatedDays = dailySendLimit > 0 
+    ? Math.ceil((audienceSegment === "paid" ? 500 : audienceSegment === "free" ? 5050 : 5550) / dailySendLimit)
+    : 0;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", padding: "16px", background: "#000" }}>
+      {/* Show start dialog if campaign is draft */}
+      {showStartDialog && selectedCampaign?.status === "draft" && (
+        <div style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: "rgba(0,0,0,0.8)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 1000
+        }}>
+          <div style={{
+            background: "#111",
+            border: "1px solid #222",
+            borderRadius: "8px",
+            padding: "32px",
+            maxWidth: "500px",
+            width: "90%"
+          }}>
+            <h2 style={{ color: "#fff", marginTop: 0 }}>🚀 Spustit kampaň</h2>
+            
+            <div style={{ marginBottom: "24px" }}>
+              <label style={{ color: "#aaa", fontSize: "13px", display: "block", marginBottom: "8px" }}>
+                Cílová skupina
+              </label>
+              <div style={{ display: "flex", gap: "12px" }}>
+                {(["free", "paid", "mixed"] as const).map(seg => (
+                  <label key={seg} style={{ display: "flex", alignItems: "center", gap: "8px", color: "#aaa", cursor: "pointer" }}>
+                    <input
+                      type="radio"
+                      name="segment"
+                      value={seg}
+                      checked={audienceSegment === seg}
+                      onChange={(e) => setAudienceSegment(e.target.value as any)}
+                      style={{ cursor: "pointer" }}
+                    />
+                    <span style={{ textTransform: "capitalize" }}>{seg === "free" ? "Zdarma stahovači" : seg === "paid" ? "Kupující" : "Všichni"}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div style={{ marginBottom: "24px" }}>
+              <label style={{ color: "#aaa", fontSize: "13px", display: "block", marginBottom: "8px" }}>
+                Denní limit: {dailySendLimit} emailů/den
+              </label>
+              <input
+                type="range"
+                min="10"
+                max="200"
+                value={dailySendLimit}
+                onChange={(e) => setDailySendLimit(parseInt(e.target.value))}
+                style={{ width: "100%" }}
+              />
+              <div style={{ color: "#666", fontSize: "12px", marginTop: "8px" }}>
+                Odhadem se zašle všem recipientům za <strong>{estimatedDays} dní</strong>
+              </div>
+            </div>
+
+            <div style={{
+              background: "#1a1a1a",
+              border: "1px solid #333",
+              borderRadius: "6px",
+              padding: "16px",
+              marginBottom: "24px",
+              fontSize: "13px",
+              color: "#aaa",
+              lineHeight: "1.6"
+            }}>
+              <strong>ℹ️ Jak to funguje:</strong><br/>
+              System automaticky odesílá emaily podle nastaveného denního limitu. Pokud spustíte kampaň na 5000 lidí s limitem 85/den, bude trvat asi 59 dní. Vždycky se respektují limity Resend free plánu.
+            </div>
+
+            <div style={{ display: "flex", gap: "12px" }}>
+              <button
+                onClick={() => setShowStartDialog(false)}
+                style={{
+                  flex: 1,
+                  padding: "12px",
+                  background: "#222",
+                  border: "1px solid #333",
+                  color: "#fff",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  fontWeight: "600"
+                }}
+              >
+                Zrušit
+              </button>
+              <button
+                onClick={startCampaign}
+                disabled={startingCampaign}
+                style={{
+                  flex: 1,
+                  padding: "12px",
+                  background: startingCampaign ? "#555" : "#fff",
+                  color: "#000",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: startingCampaign ? "not-allowed" : "pointer",
+                  fontSize: "14px",
+                  fontWeight: "600"
+                }}
+              >
+                {startingCampaign ? "Spouštím..." : "Spustit kampaň"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Show campaign progress if active */}
+      {selectedCampaign?.status === "active" && queueStatus && (
+        <div style={{
+          background: "#1a1a1a",
+          border: "1px solid #333",
+          borderRadius: "6px",
+          padding: "16px",
+          marginBottom: "16px",
+          color: "#fff"
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "12px" }}>
+            <Zap size={18} style={{ color: "#0f0" }} />
+            <span style={{ fontSize: "14px", fontWeight: "600" }}>Kampaň běží</span>
+          </div>
+          
+          <div style={{ marginBottom: "12px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px", fontSize: "12px", color: "#aaa" }}>
+              <span>Posláno: {queueStatus.progress.sent} / {queueStatus.progress.total}</span>
+              <span>{queueStatus.progress.percentage}%</span>
+            </div>
+            <div style={{ height: "6px", background: "#222", borderRadius: "3px", overflow: "hidden" }}>
+              <div style={{
+                height: "100%",
+                background: "#0f0",
+                width: `${queueStatus.progress.percentage}%`,
+                transition: "width 0.3s"
+              }} />
+            </div>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", fontSize: "12px" }}>
+            <div>
+              <div style={{ color: "#666" }}>Ve frontě</div>
+              <div style={{ color: "#fff", fontWeight: "600" }}>{queueStatus.queue.queued}</div>
+            </div>
+            <div>
+              <div style={{ color: "#666" }}>Selhalo</div>
+              <div style={{ color: queueStatus.queue.failed > 0 ? "#f88" : "#0f0", fontWeight: "600" }}>
+                {queueStatus.queue.failed}
+              </div>
+            </div>
+            <div>
+              <div style={{ color: "#666" }}>Denní limit</div>
+              <div style={{ color: "#fff", fontWeight: "600" }}>{queueStatus.rateLimit.current_day_sent} / {queueStatus.rateLimit.daily_limit}</div>
+            </div>
+            <div>
+              <div style={{ color: "#666" }}>Hodinový limit</div>
+              <div style={{ color: "#fff", fontWeight: "600" }}>{queueStatus.rateLimit.current_hour_sent} / {queueStatus.rateLimit.hourly_limit}</div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <CampaignsTabLayout
         campaigns={campaigns}
         selectedCampaignId={selectedCampaignId}
@@ -318,6 +532,8 @@ export default function Campaigns() {
         onUpdateEmailTemplate={updateEmailTemplate}
         onUpdateEmailDelay={updateEmailDelay}
         onRefresh={loadCampaigns}
+        onStartCampaign={() => setShowStartDialog(true)}
+        campaignStatus={selectedCampaign?.status}
       />
     </div>
   );
