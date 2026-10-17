@@ -63,9 +63,12 @@ export async function onFreebieDownloaded(event: FreebieDownloadEvent): Promise<
       if (lower.includes("midi")) await addTagToSubscriber(subscriber.id, "midi");
     }
 
-    await enrollByTrigger("freebie_downloaded", firstItem?.title || null, subscriber.id);
+    // Enroll in journey based on product type (beat_downloaded or kit_downloaded)
+    const productType = firstItem?.productType;
+    const triggerType = productType === "beat" ? "beat_downloaded" : productType === "sound_kit" ? "kit_downloaded" : "beat_downloaded";
+    await enrollByTrigger(triggerType, firstItem?.title || null, subscriber.id);
 
-    console.log(`[Marketing] freebie.recorded subscriber=${subscriber.id} email=${event.email}`);
+    console.log(`[Marketing] freebie.recorded subscriber=${subscriber.id} email=${event.email} trigger=${triggerType}`);
   } catch (err) {
     console.error("[Marketing] onFreebieDownloaded hook failed (non-fatal):", err);
   }
@@ -96,7 +99,8 @@ export async function onOrderCompleted(event: OrderCompletedEvent): Promise<void
     if (hasBeat) await addTagToSubscriber(subscriber.id, "beat-buyer");
     if (hasKit) await addTagToSubscriber(subscriber.id, "kit-buyer");
 
-    await enrollByTrigger("order_completed", null, subscriber.id);
+    // Use "order_created" trigger to match transactional journey definitions
+    await enrollByTrigger("order_created", null, subscriber.id);
 
     console.log(`[Marketing] order.completed_hook subscriber=${subscriber.id} order=${event.orderId}`);
   } catch (err) {
