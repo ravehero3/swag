@@ -1943,6 +1943,7 @@ router.post("/campaigns/:campaignId/emails", requireAdmin, async (req: Request, 
   try {
     const campaignId = parseInt(req.params.campaignId, 10);
     const { position, delayHours } = req.body;
+    console.log("[Marketing] Creating campaign email:", { campaignId, position, delayHours });
     
     const result = await pool.query(
       `INSERT INTO marketing_campaign_emails (campaign_id, position, delay_hours)
@@ -1950,9 +1951,11 @@ router.post("/campaigns/:campaignId/emails", requireAdmin, async (req: Request, 
       [campaignId, position || 1, delayHours || 0]
     );
     
+    console.log("[Marketing] Campaign email created:", result.rows[0]);
     await logMarketingAction("campaign_email.created", req.session.userId || null, { type: "campaign_email", id: result.rows[0].id });
     res.json(result.rows[0]);
   } catch (error) {
+    console.error("[Marketing] Error creating campaign email:", error);
     res.status(500).json({ error: "Chyba při vytváření e-mailu kampaně" });
   }
 });

@@ -482,6 +482,20 @@ export async function initDatabase() {
       );
       CREATE INDEX IF NOT EXISTS idx_marketing_campaigns_status ON marketing_campaigns (status, scheduled_at);
 
+      CREATE TABLE IF NOT EXISTS marketing_campaign_emails (
+        id SERIAL PRIMARY KEY,
+        campaign_id INTEGER NOT NULL REFERENCES marketing_campaigns(id) ON DELETE CASCADE,
+        template_id INTEGER REFERENCES marketing_templates(id) ON DELETE SET NULL,
+        position INTEGER NOT NULL DEFAULT 1,
+        delay_hours INTEGER NOT NULL DEFAULT 0,
+        send_date DATE,
+        send_time TIME,
+        send_datetime TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX IF NOT EXISTS idx_marketing_campaign_emails_campaign ON marketing_campaign_emails (campaign_id);
+
       CREATE TABLE IF NOT EXISTS marketing_email_sends (
         id SERIAL PRIMARY KEY,
         subscriber_id INTEGER REFERENCES subscribers(id) ON DELETE SET NULL,
