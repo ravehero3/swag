@@ -68,12 +68,12 @@ async function markExclusiveSoldForOrder(orderId: number): Promise<void> {
 // (GoPay IPN, check-payment poll, admin manual status change). Never throws.
 async function notifyOrderCompletedForMarketing(orderId: number): Promise<void> {
   try {
-    const orderRes = await pool.query("SELECT email, user_id, items, total FROM orders WHERE id = $1", [orderId]);
+    const orderRes = await pool.query("SELECT email, user_id, items, total, marketing_consent FROM orders WHERE id = $1", [orderId]);
     const order = orderRes.rows[0];
     if (!order) return;
     if (Number(order.total) <= 0) return; // $0 orders are freebies, handled by onFreebieDownloaded via claim-free
     const items: any[] = Array.isArray(order.items) ? order.items : [];
-    await onOrderCompleted({ orderId, email: order.email, userId: order.user_id, items });
+    await onOrderCompleted({ orderId, email: order.email, userId: order.user_id, items, marketingConsent: !!order.marketing_consent });
     // Notify admin about the purchase
     await notifyPurchase(order.email, items, Number(order.total), orderId);
   } catch (e) {

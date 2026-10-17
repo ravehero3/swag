@@ -79,6 +79,7 @@ export interface OrderCompletedEvent {
   email: string;
   userId?: number | null;
   items: Array<{ title?: string; productType?: string; productId?: number }>;
+  marketingConsent?: boolean;
 }
 
 export async function onOrderCompleted(event: OrderCompletedEvent): Promise<void> {
@@ -89,6 +90,8 @@ export async function onOrderCompleted(event: OrderCompletedEvent): Promise<void
       email: event.email,
       userId: event.userId,
       source: "purchase",
+      marketingConsent: event.marketingConsent,
+      consentSource: "purchase",
     });
 
     await markBuyer(subscriber.id);
