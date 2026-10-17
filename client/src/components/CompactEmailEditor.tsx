@@ -5,13 +5,14 @@ interface CompactEmailEditorProps {
   template: any;
   onSave: (html: string) => void;
   onRefresh: () => void;
+  saveEndpoint?: string; // Optional custom save endpoint for campaign emails
 }
 
 /**
  * Wrapper for VisualEmailBuilder optimized for embedding in JourneysTabLayout
  * Compresses spacing and ensures all sections fit within 60vh right panel
  */
-export default function CompactEmailEditor({ template, onSave, onRefresh }: CompactEmailEditorProps) {
+export default function CompactEmailEditor({ template, onSave, onRefresh, saveEndpoint }: CompactEmailEditorProps) {
   return (
     <div
       style={{
@@ -78,18 +79,25 @@ export default function CompactEmailEditor({ template, onSave, onRefresh }: Comp
             }
             title={template?.name || "Editor e-mailu"}
             embedded={true}
-            onSave={async (html) => {
+            onSave={async (html, subject, preheader, blocks, headerOptions) => {
               try {
-                await fetch(`/api/marketing/templates/${template.id}`, {
+                const endpoint = saveEndpoint || `/api/marketing/templates/${template.id}`;
+                await fetch(endpoint, {
                   method: "PATCH",
                   headers: { "Content-Type": "application/json" },
                   credentials: "include",
-                  body: JSON.stringify({ htmlContent: html }),
+                  body: JSON.stringify({ 
+                    htmlContent: html,
+                    subject,
+                    preheader,
+                    blocks,
+                    headerOptions
+                  }),
                 });
                 onRefresh();
                 onSave(html);
               } catch (err) {
-                console.error("Error saving template:", err);
+                console.error("Error saving:", err);
               }
             }}
             onTestSend={async (email) => {

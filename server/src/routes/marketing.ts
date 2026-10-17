@@ -2007,7 +2007,7 @@ router.post("/campaigns/:campaignId/emails", requireAdmin, async (req: Request, 
 router.patch("/campaigns/:campaignId/emails/:emailId", requireAdmin, async (req: Request, res: Response) => {
   try {
     const emailId = parseInt(req.params.emailId, 10);
-    const { templateId, delayHours, sendDate, sendTime, sendDateTime } = req.body;
+    const { templateId, delayHours, sendDate, sendTime, sendDateTime, subject, preheader, blocks, headerOptions } = req.body;
     
     const updates: string[] = [];
     const params: any[] = [];
@@ -2018,6 +2018,10 @@ router.patch("/campaigns/:campaignId/emails/:emailId", requireAdmin, async (req:
     if (sendDate !== undefined) { updates.push(`send_date = $${i++}`); params.push(sendDate); }
     if (sendTime !== undefined) { updates.push(`send_time = $${i++}`); params.push(sendTime); }
     if (sendDateTime !== undefined) { updates.push(`send_datetime = $${i++}`); params.push(sendDateTime); }
+    if (subject !== undefined) { updates.push(`subject = $${i++}`); params.push(subject); }
+    if (preheader !== undefined) { updates.push(`preheader = $${i++}`); params.push(preheader); }
+    if (blocks !== undefined) { updates.push(`blocks = $${i++}`); params.push(JSON.stringify(blocks)); }
+    if (headerOptions !== undefined) { updates.push(`header_options = $${i++}`); params.push(JSON.stringify(headerOptions)); }
     
     updates.push(`updated_at = CURRENT_TIMESTAMP`);
     params.push(emailId);
@@ -2029,8 +2033,15 @@ router.patch("/campaigns/:campaignId/emails/:emailId", requireAdmin, async (req:
     
     if (result.rows.length === 0) return res.status(404).json({ error: "E-mail kampaně nenalezen" });
     
+    // Get full email with template info
+    const fullRes = await pool.query(
+      `SELECT ce.*, mt.name AS template_name FROM marketing_campaign_emails ce
+       LEFT JOIN marketing_templates mt ON mt.id = ce.template_id WHERE ce.id = $1`,
+      [emailId]
+    );
+    
     await logMarketingAction("campaign_email.updated", req.session.userId || null, { type: "campaign_email", id: emailId });
-    res.json(result.rows[0]);
+    res.json(fullRes.rows[0]);
   } catch (error) {
     res.status(500).json({ error: "Chyba při aktualizaci e-mailu kampaně" });
   }
@@ -2058,6 +2069,7 @@ router.post("/campaigns/:campaignId/emails/:emailId/send-test", requireAdmin, te
   try {
     const emailId = parseInt(req.params.emailId, 10);
     const toEmail = String(req.body.email || "").trim();
+    const { subject, preheader, blocks, headerOptions } = req.body;
     
     if (!toEmail || !toEmail.includes("@")) {
       return res.status(400).json({ error: "Zadejte platnou e-mailovou adresu pro test" });
@@ -2065,17 +2077,39 @@ router.post("/campaigns/:campaignId/emails/:emailId/send-test", requireAdmin, te
     
     // Get the campaign email and its template
     const emailRes = await pool.query(
-      `SELECT ce.template_id FROM marketing_campaign_emails ce WHERE ce.id = $1`,
+      `SELECT ce.*, mt.subject AS template_subject, mt.preheader AS template_preheader, mt.html_content AS template_html, mt.blocks AS template_blocks, mt.header_options AS template_header_options
+       FROM marketing_campaign_emails ce
+       LEFT JOIN marketing_templates mt ON mt.id = ce.template_id
+       WHERE ce.id = $1`,
       [emailId]
     );
     
-    if (emailRes.rows.length === 0 || !emailRes.rows[0].template_id) {
-      return res.status(404).json({ error: "E-mail kampaně nebo šablona nenalezena" });
+    if (emailRes.rows.length === 0) {
+      return res.status(404).json({ error: "E-mail kampaně nenalezen" });
     }
     
-    const templateId = emailRes.rows[0].template_id;
-    const { sendTestMarketingEmail } = await import("../lib/marketing/sender.js");
-    const result = await sendTestMarketingEmail(templateId, toEmail);
+    const email = emailRes.rows[0];
+    const { renderTemplatePreview } = await import("../lib/marketing/renderer.js");
+    
+    // Use overrides from request body, fall back to database values
+    const finalSubject = subject || email.subject || email.template_subject || "Email";
+    const finalPreheader = preheader || email.preheader || email.template_preheader || "";
+    const finalBlocks = blocks || email.blocks || email.template_blocks || [];
+    const finalHeaderOptions = headerOptions || email.header_options || email.template_header_options || {};
+    
+    const htmlContent = await renderTemplatePreview({
+      subject: finalSubject,
+      preheader: finalPreheader,
+      blocks: finalBlocks,
+      headerOptions: finalHeaderOptions,
+    });
+    
+    const { sendEmail } = await import("../lib/marketing/sender.js");
+    const result = await sendEmail({
+      to: toEmail,
+      subject: finalSubject,
+      html: htmlContent,
+    });
     
     if (!result.ok) return res.status(500).json({ error: result.error || "Chyba při odesílání testovacího e-mailu" });
     

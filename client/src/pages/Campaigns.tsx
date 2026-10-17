@@ -195,6 +195,25 @@ export default function Campaigns() {
     }
   };
 
+  const saveEmailEdits = async (emailId: number, overrides: any) => {
+    if (!selectedCampaignId) return;
+    try {
+      const res = await fetch(`/api/marketing/campaigns/${selectedCampaignId}/emails/${emailId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(overrides),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setCampaignEmails(
+          campaignEmails.map((e) => (e.id === emailId ? updated : e))
+        );
+      }
+    } catch (err) {
+      console.error("Error saving email edits:", err);
+    }
+  };
+
   const updateEmailDelay = async (emailId: number, delayHours: number) => {
     try {
       const res = await fetch(`/api/marketing/campaigns/${selectedCampaignId}/emails/${emailId}`, {

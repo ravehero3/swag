@@ -567,6 +567,11 @@ export async function initDatabase() {
       ALTER TABLE admin_notifications ADD COLUMN IF NOT EXISTS description TEXT;
       ALTER TABLE admin_notifications ADD COLUMN IF NOT EXISTS related_data JSONB;
       ALTER TABLE admin_notifications ADD COLUMN IF NOT EXISTS is_read BOOLEAN DEFAULT FALSE;
+      ALTER TABLE marketing_campaign_emails ADD COLUMN IF NOT EXISTS subject TEXT;
+      ALTER TABLE marketing_campaign_emails ADD COLUMN IF NOT EXISTS preheader TEXT;
+      ALTER TABLE marketing_campaign_emails ADD COLUMN IF NOT EXISTS blocks JSONB DEFAULT '[]';
+      ALTER TABLE marketing_campaign_emails ADD COLUMN IF NOT EXISTS header_options JSONB DEFAULT '{}';
+      ALTER TABLE marketing_campaign_emails ADD COLUMN IF NOT EXISTS html_content TEXT;
     `);
 
     // Phase 2: open/click tracking, double opt-in, segments, scheduling

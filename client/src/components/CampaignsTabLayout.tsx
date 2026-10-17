@@ -20,12 +20,19 @@ interface CampaignEmail {
   sendDate?: string;
   sendTime?: string;
   templateName?: string;
+  subject?: string;
+  preheader?: string;
+  blocks?: any;
+  headerOptions?: any;
 }
 
 interface Template {
   id: number;
   name: string;
   subject: string;
+  preheader?: string;
+  blocks?: any;
+  headerOptions?: any;
 }
 
 interface CampaignsLayoutProps {
@@ -65,17 +72,25 @@ export default function CampaignsTabLayout({
   onRefresh,
 }: CampaignsLayoutProps) {
   const selectedEmail = emails.find((e) => e.id === selectedEmailId);
-  const selectedTemplate = templates.find((t) => t.id === selectedEmail?.templateId);
-  const isEmailSelected = selectedEmail && selectedTemplate;
+  
+  // Merge template with campaign email overrides
+  const selectedTemplate = selectedEmail?.templateId
+    ? templates.find((t) => t.id === selectedEmail.templateId)
+    : null;
 
-  console.log(
-    "[CampaignsTabLayout] Rendering - selectedEmailId:",
-    selectedEmailId,
-    "templateId:",
-    selectedEmail?.templateId,
-    "template found:",
-    !!selectedTemplate
-  );
+  // Create merged template that includes campaign-specific overrides
+  const mergedTemplate = selectedTemplate && selectedEmail
+    ? {
+        ...selectedTemplate,
+        subject: selectedEmail.subject || selectedTemplate.subject,
+        preheader: selectedEmail.preheader || selectedTemplate.preheader,
+        blocks: selectedEmail.blocks || selectedTemplate.blocks,
+        headerOptions: selectedEmail.headerOptions || selectedTemplate.headerOptions,
+        campaignEmailId: selectedEmail.id,
+      }
+    : null;
+
+  const isEmailSelected = !!mergedTemplate;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", gap: "16px", background: "#000" }}>
@@ -125,7 +140,8 @@ export default function CampaignsTabLayout({
             ) : (
               // Compact Email Editor - fits all 4 sections in tight space
               <CompactEmailEditor
-                template={selectedTemplate}
+                template={mergedTemplate}
+                saveEndpoint={`/api/marketing/campaigns/${selectedCampaignId}/emails/${selectedEmail?.id}`}
                 onSave={async (html) => {
                   onRefresh();
                 }}
