@@ -1973,9 +1973,18 @@ router.post("/campaigns/:campaignId/emails", requireAdmin, async (req: Request, 
       [campaignId, position || 1, delayHours || 0, defaultTemplateId]
     );
     
-    console.log("[Marketing] Campaign email created:", result.rows[0]);
+    // Get the full email record with template name
+    const emailWithTemplate = await pool.query(
+      `SELECT ce.*, mt.name AS template_name
+       FROM marketing_campaign_emails ce
+       LEFT JOIN marketing_templates mt ON mt.id = ce.template_id
+       WHERE ce.id = $1`,
+      [result.rows[0].id]
+    );
+    
+    console.log("[Marketing] Campaign email created:", emailWithTemplate.rows[0]);
     await logMarketingAction("campaign_email.created", req.session.userId || null, { type: "campaign_email", id: result.rows[0].id });
-    res.json(result.rows[0]);
+    res.json(emailWithTemplate.rows[0]);
   } catch (error) {
     console.error("[Marketing] Error creating campaign email:", error);
     res.status(500).json({ error: "Chyba při vytváření e-mailu kampaně" });
