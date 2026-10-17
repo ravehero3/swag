@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import JourneyList from "./JourneyList";
 import JourneyFlowBuilder from "./JourneyFlowBuilder";
-import { VisualEmailBuilder } from "./VisualEmailBuilder.js";
+import CompactEmailEditor from "./CompactEmailEditor";
 
 interface JourneysLayoutProps {
   journeys: any[];
@@ -67,7 +67,7 @@ export default function JourneysTabLayout({
           />
         </div>
 
-        {/* Right: Full Visual Email Editor (flex, takes remaining space) */}
+        {/* Right: Compact Email Editor (flex, takes remaining space) */}
         {detail?.journey && (
           <div 
             style={{ 
@@ -81,43 +81,23 @@ export default function JourneysTabLayout({
               borderRadius: "4px",
             }}
           >
-            {/* Content Area */}
-            <div style={{ flex: 1, overflow: "hidden", minHeight: 0, display: "flex", flexDirection: "column" }}>
-              {!isEmailSelected ? (
-                // Empty state
-                <div style={{ flex: 1, overflow: "auto", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <div style={{ color: "#444", fontSize: "13px", textAlign: "center" }}>
-                    Vyberte e-mailový krok v sekvenci níže
-                  </div>
+            {!isEmailSelected ? (
+              // Empty state
+              <div style={{ flex: 1, overflow: "auto", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <div style={{ color: "#444", fontSize: "13px", textAlign: "center" }}>
+                  Vyberte e-mailový krok v sekvenci níže
                 </div>
-              ) : (
-                // Full Visual Email Editor
-                <VisualEmailBuilder
-                  initialSubject={template?.subject || ""}
-                  initialPreheader={template?.preheader || ""}
-                  initialBlocks={template?.blocks ? (typeof template.blocks === 'string' ? JSON.parse(template.blocks) : template.blocks) : []}
-                  title={template?.name || "Editor e-mailu"}
-                  onSave={async (html) => {
-                    // Save updated template
-                    try {
-                      await fetch(`/api/marketing/templates/${template.id}`, {
-                        method: "PATCH",
-                        headers: { "Content-Type": "application/json" },
-                        credentials: "include",
-                        body: JSON.stringify({ htmlContent: html }),
-                      });
-                      onRefresh();
-                    } catch (err) {
-                      console.error("Error saving template:", err);
-                    }
-                  }}
-                  onTestSend={async (email) => {
-                    onTestEmail(selectedStep.id);
-                  }}
-                  onClose={() => {}}
-                />
-              )}
-            </div>
+              </div>
+            ) : (
+              // Compact Email Editor - fits all 4 sections in tight space
+              <CompactEmailEditor
+                template={template}
+                onSave={async (html) => {
+                  onRefresh();
+                }}
+                onRefresh={onRefresh}
+              />
+            )}
           </div>
         )}
       </div>
