@@ -703,24 +703,23 @@ router.get("/journeys", requireAdmin, async (_req: Request, res: Response) => {
       }
     }
 
-    // Auto-seed transactional journeys if they don't exist
-    const journeyCount = await pool.query("SELECT COUNT(*) FROM marketing_journeys WHERE trigger_value IN ('order_created', 'digital_license_ready', 'invoice_ready')");
-    if (parseInt(journeyCount.rows[0].count || 0, 10) === 0) {
-      try {
-        const { JOURNEY_CONFIGS } = await import("../lib/journeySeeds.js");
-        // Get only transactional journeys (first 3)
-        const transactionalJourneys = JOURNEY_CONFIGS.filter((j) => j.trigger_value && j.trigger_value in { order_created: true, digital_license_ready: true, invoice_ready: true });
+    // Auto-seed transactional journeys and ensure they have steps
+    try {
+      const { JOURNEY_CONFIGS } = await import("../lib/journeySeeds.js");
+      // Get only transactional journeys (first 3)
+      const transactionalJourneys = JOURNEY_CONFIGS.filter((j) => j.trigger_value && j.trigger_value in { order_created: true, digital_license_ready: true, invoice_ready: true });
+      
+      for (const journeyConfig of transactionalJourneys) {
+        // Check if journey already exists
+        const existing = await pool.query(
+          "SELECT id FROM marketing_journeys WHERE trigger_value = $1",
+          [journeyConfig.trigger_value]
+        );
         
-        for (const journeyConfig of transactionalJourneys) {
-          // Check if already exists
-          const existing = await pool.query(
-            "SELECT id FROM marketing_journeys WHERE trigger_value = $1",
-            [journeyConfig.trigger_value]
-          );
-          
-          if (existing.rows.length > 0) continue;
-          
-          // Create journey
+        let journeyId: number;
+        
+        if (existing.rows.length === 0) {
+          // Create journey if it doesn't exist
           const journeyRes = await pool.query(
             `INSERT INTO marketing_journeys 
              (name, description, trigger_type, trigger_value, status)
@@ -733,10 +732,19 @@ router.get("/journeys", requireAdmin, async (_req: Request, res: Response) => {
               journeyConfig.trigger_value || null,
             ]
           );
-          
-          const journeyId = journeyRes.rows[0].id;
-          
-          // Create steps
+          journeyId = journeyRes.rows[0].id;
+        } else {
+          journeyId = existing.rows[0].id;
+        }
+        
+        // Check if journey has any steps
+        const stepsCount = await pool.query(
+          "SELECT COUNT(*) FROM marketing_journey_steps WHERE journey_id = $1",
+          [journeyId]
+        );
+        
+        if (parseInt(stepsCount.rows[0].count || 0, 10) === 0) {
+          // Create missing steps
           let stepIndex = 1;
           for (const step of journeyConfig.steps) {
             const templateRes = await pool.query(
@@ -744,7 +752,10 @@ router.get("/journeys", requireAdmin, async (_req: Request, res: Response) => {
               [step.template_key]
             );
             
-            if (templateRes.rows.length === 0) continue;
+            if (templateRes.rows.length === 0) {
+              console.warn(`[Marketing] Template not found: ${step.template_key} for journey: ${journeyConfig.name}`);
+              continue;
+            }
             
             const templateId = templateRes.rows[0].id;
             
@@ -763,11 +774,11 @@ router.get("/journeys", requireAdmin, async (_req: Request, res: Response) => {
             
             stepIndex++;
           }
+          console.log(`✅ Auto-seeded steps for journey: ${journeyConfig.name}`);
         }
-        console.log("✅ Auto-seeded transactional journeys");
-      } catch (seedErr) {
-        console.error("Auto-seed journeys failed:", seedErr);
       }
+    } catch (seedErr) {
+      console.error("Auto-seed journeys failed:", seedErr);
     }
 
     const journeysRes = await pool.query("SELECT * FROM marketing_journeys ORDER BY created_at DESC");
