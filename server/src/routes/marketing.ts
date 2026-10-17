@@ -1,34 +1,4 @@
-// Get a single campaign email with template details
-router.get("/campaigns/:campaignId/emails/:emailId", requireAdmin, async (req: Request, res: Response) => {
-  try {
-    const emailId = parseInt(req.params.emailId, 10);
-    const result = await pool.query(
-      `SELECT ce.*, mt.* FROM marketing_campaign_emails ce
-       LEFT JOIN marketing_templates mt ON mt.id = ce.template_id
-       WHERE ce.id = $1`,
-      [emailId]
-    );
-    
-    if (result.rows.length === 0) return res.status(404).json({ error: "E-mail kampaně nenalezen" });
-    
-    const row = result.rows[0];
-    res.json({
-      id: row.id,
-      campaign_id: row.campaign_id,
-      position: row.position,
-      delay_hours: row.delay_hours,
-      template_id: row.template_id,
-      template_name: row.name,
-      subject: row.subject,
-      preheader: row.preheader,
-      html_content: row.html_content,
-      blocks: row.blocks,
-      header_options: row.header_options,
-    });
-  } catch (error) {
-    res.status(500).json({ error: "Chyba při načítání e-mailu kampaně" });
-  }
-});import { Router, Request, Response } from "express";
+import { Router, Request, Response } from "express";
 import { requireAdmin } from "../middleware/auth.js";
 import { rateLimit } from "../middleware/rateLimit.js";
 import { pool } from "../db.js";
