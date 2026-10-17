@@ -738,7 +738,7 @@ function Admin() {
         {tab === "zakaznici" && <ZakazniciTab />}
         {tab === "licenses"  && <LicensesTab licenses={licenses} onRefresh={loadData} />}
         {tab === "marketing" && <MarketingTab settings={settings} onRefresh={refreshSettings} />}
-        {tab === "email-journey" && <VisualEmailBuilder />}
+        {tab === "email-journey" && <div style={{ height: "100%", display: "flex", flexDirection: "column", background: "#000" }}><MarketingTab settings={settings} onRefresh={refreshSettings} /></div>}
         {tab === "komentare" && <KomentareTab />}
         {tab === "notifikace" && <NotifikaceTab />}
         {tab === "nastaveni" && <NastaveniTab settings={settings} onRefresh={refreshSettings} beats={beats} />}
