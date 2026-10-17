@@ -2689,7 +2689,7 @@ export function VisualEmailBuilder({
     </div>
   );
 
-  return typeof document !== "undefined" ? createPortal(builderContent, document.body) : builderContent;
+  return embedded ? builderContent : (typeof document !== "undefined" ? createPortal(builderContent, document.body) : builderContent);
 }
 
 // ── Header Inspector Component ─────────────────────────────────────────────
