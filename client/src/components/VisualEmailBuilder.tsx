@@ -1193,14 +1193,16 @@ export function VisualEmailBuilder({
     <div
       style={{
         position: embedded ? "relative" : "fixed",
-        ...(embedded ? { height: "100%", flex: 1 } : { inset: 0, height: "100vh" }),
+        inset: embedded ? "auto" : 0,
+        height: embedded ? "100%" : "100vh",
         background: "#080808",
-        zIndex: embedded ? "auto" : 10005,
+        zIndex: embedded ? "auto" : (10005 as any),
         display: "flex",
         flexDirection: "column",
         color: "#eee",
         fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
         overflow: "hidden",
+        flex: embedded ? 1 : "initial",
       } as React.CSSProperties}
     >
       {/* ── Top Bar Header ─────────────────────────────────────────────────── */}
