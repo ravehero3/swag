@@ -12,12 +12,56 @@ export interface JourneyStep {
 export interface JourneyConfig {
   name: string;
   description: string;
-  trigger_type: "beat_downloaded" | "kit_downloaded" | "beat_purchased" | "kit_purchased" | "cart_abandoned" | "product_viewed" | "newsletter_signup" | "inactive_90days";
+  trigger_type: "beat_downloaded" | "kit_downloaded" | "beat_purchased" | "kit_purchased" | "cart_abandoned" | "product_viewed" | "newsletter_signup" | "inactive_90days" | "order_created" | "digital_license_ready" | "invoice_ready";
   trigger_value?: string;
   steps: JourneyStep[];
 }
 
 export const JOURNEY_CONFIGS: JourneyConfig[] = [
+  {
+    name: "Order Confirmation",
+    description: "Automatically sent when a customer completes a purchase",
+    trigger_type: "order_created",
+    trigger_value: "order_created",
+    steps: [
+      {
+        delay_hours: 0,
+        template_key: "order_confirmation",
+        description: "Immediate: Confirm order, provide receipt & download links",
+      },
+    ],
+  },
+  {
+    name: "License Delivery",
+    description: "Automatically sent when a free beat/kit license is ready",
+    trigger_type: "digital_license_ready",
+    trigger_value: "digital_license_ready",
+    steps: [
+      {
+        delay_hours: 0,
+        template_key: "license_delivery",
+        description: "Immediate: Deliver license file and documentation",
+      },
+      {
+        delay_hours: 72, // 3 days
+        template_key: "free_beat_onboarding_day3",
+        description: "Day 3: Follow-up with exclusive offer on similar sounds",
+      },
+    ],
+  },
+  {
+    name: "Invoice & Receipt",
+    description: "Automatically sent when invoice is generated for an order",
+    trigger_type: "invoice_ready",
+    trigger_value: "invoice_ready",
+    steps: [
+      {
+        delay_hours: 0,
+        template_key: "invoice_receipt",
+        description: "Immediate: Send invoice, receipt, and tax documentation",
+      },
+    ],
+  },
   {
     name: "Free Beat Onboarding",
     description: "Convert free beat downloaders to paying customers over 30 days",
