@@ -261,7 +261,10 @@ export default function CampaignSequenceBuilder({
 
         {/* Add button inside sequence */}
         <button 
-          onClick={onAddEmail} 
+          onClick={() => {
+            console.log("[CampaignSequenceBuilder] + button clicked");
+            onAddEmail();
+          }} 
           style={{ 
             position: "absolute", 
             left: getEmailPosition(emails?.length || 0).x + EMAIL_WIDTH + 20, 

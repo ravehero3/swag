@@ -135,22 +135,32 @@ export default function Campaigns() {
   };
 
   const addEmailToCampaign = async () => {
-    if (!selectedCampaignId) return;
+    if (!selectedCampaignId) {
+      console.log("[Campaigns] No campaign selected");
+      return;
+    }
+    console.log("[Campaigns] Adding email to campaign", selectedCampaignId, "emails count:", campaignEmails.length);
     try {
       const res = await fetch(`/api/marketing/campaigns/${selectedCampaignId}/emails`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           position: campaignEmails.length + 1,
           delayHours: campaignEmails.length * 24,
         }),
       });
+      console.log("[Campaigns] Add email response:", res.status);
       if (res.ok) {
         const newEmail = await res.json();
+        console.log("[Campaigns] New email created:", newEmail);
         setCampaignEmails([...campaignEmails, newEmail]);
+      } else {
+        const error = await res.text();
+        console.error("[Campaigns] Error adding email:", error);
       }
     } catch (err) {
-      console.error("Error adding email:", err);
+      console.error("[Campaigns] Error adding email:", err);
     }
   };
 

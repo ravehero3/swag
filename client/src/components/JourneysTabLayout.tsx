@@ -50,6 +50,7 @@ export default function JourneysTabLayout({
   const selectedStep = detail?.steps?.find((s: any) => s.id === selectedStepId);
   const template = templates.find((t) => t.id === selectedStep?.template_id);
   const isEmailSelected = selectedStep?.step_type === "email" && template;
+  console.log("[JourneysTabLayout] Rendering - selectedStepId:", selectedStepId, "step_type:", selectedStep?.step_type, "template_id:", selectedStep?.template_id, "template found:", !!template);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", gap: "16px", background: "#000" }}>

@@ -703,6 +703,73 @@ router.get("/journeys", requireAdmin, async (_req: Request, res: Response) => {
       }
     }
 
+    // Auto-seed transactional journeys if they don't exist
+    const journeyCount = await pool.query("SELECT COUNT(*) FROM marketing_journeys WHERE trigger_value IN ('order_created', 'digital_license_ready', 'invoice_ready')");
+    if (parseInt(journeyCount.rows[0].count || 0, 10) === 0) {
+      try {
+        const { JOURNEY_CONFIGS } = await import("../lib/journeySeeds.js");
+        // Get only transactional journeys (first 3)
+        const transactionalJourneys = JOURNEY_CONFIGS.filter((j) => j.trigger_value && j.trigger_value in { order_created: true, digital_license_ready: true, invoice_ready: true });
+        
+        for (const journeyConfig of transactionalJourneys) {
+          // Check if already exists
+          const existing = await pool.query(
+            "SELECT id FROM marketing_journeys WHERE trigger_value = $1",
+            [journeyConfig.trigger_value]
+          );
+          
+          if (existing.rows.length > 0) continue;
+          
+          // Create journey
+          const journeyRes = await pool.query(
+            `INSERT INTO marketing_journeys 
+             (name, description, trigger_type, trigger_value, status)
+             VALUES ($1, $2, $3, $4, 'active')
+             RETURNING id`,
+            [
+              journeyConfig.name,
+              journeyConfig.description,
+              journeyConfig.trigger_type,
+              journeyConfig.trigger_value || null,
+            ]
+          );
+          
+          const journeyId = journeyRes.rows[0].id;
+          
+          // Create steps
+          let stepIndex = 1;
+          for (const step of journeyConfig.steps) {
+            const templateRes = await pool.query(
+              "SELECT id FROM marketing_templates WHERE key = $1",
+              [step.template_key]
+            );
+            
+            if (templateRes.rows.length === 0) continue;
+            
+            const templateId = templateRes.rows[0].id;
+            
+            await pool.query(
+              `INSERT INTO marketing_journey_steps
+               (journey_id, position, template_id, delay_hours, description)
+               VALUES ($1, $2, $3, $4, $5)`,
+              [
+                journeyId,
+                stepIndex,
+                templateId,
+                step.delay_hours,
+                step.description,
+              ]
+            );
+            
+            stepIndex++;
+          }
+        }
+        console.log("✅ Auto-seeded transactional journeys");
+      } catch (seedErr) {
+        console.error("Auto-seed journeys failed:", seedErr);
+      }
+    }
+
     const journeysRes = await pool.query("SELECT * FROM marketing_journeys ORDER BY created_at DESC");
     const journeys = journeysRes.rows;
     for (const j of journeys) {
