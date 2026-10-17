@@ -1,4 +1,34 @@
-import { Router, Request, Response } from "express";
+// Get a single campaign email with template details
+router.get("/campaigns/:campaignId/emails/:emailId", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const emailId = parseInt(req.params.emailId, 10);
+    const result = await pool.query(
+      `SELECT ce.*, mt.* FROM marketing_campaign_emails ce
+       LEFT JOIN marketing_templates mt ON mt.id = ce.template_id
+       WHERE ce.id = $1`,
+      [emailId]
+    );
+    
+    if (result.rows.length === 0) return res.status(404).json({ error: "E-mail kampaně nenalezen" });
+    
+    const row = result.rows[0];
+    res.json({
+      id: row.id,
+      campaign_id: row.campaign_id,
+      position: row.position,
+      delay_hours: row.delay_hours,
+      template_id: row.template_id,
+      template_name: row.name,
+      subject: row.subject,
+      preheader: row.preheader,
+      html_content: row.html_content,
+      blocks: row.blocks,
+      header_options: row.header_options,
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při načítání e-mailu kampaně" });
+  }
+});import { Router, Request, Response } from "express";
 import { requireAdmin } from "../middleware/auth.js";
 import { rateLimit } from "../middleware/rateLimit.js";
 import { pool } from "../db.js";
@@ -1945,10 +1975,32 @@ router.post("/campaigns/:campaignId/emails", requireAdmin, async (req: Request, 
     const { position, delayHours } = req.body;
     console.log("[Marketing] Creating campaign email:", { campaignId, position, delayHours });
     
+    // First, check if a default campaign email template exists
+    let defaultTemplateId: number | null = null;
+    const defaultTplRes = await pool.query(
+      "SELECT id FROM marketing_templates WHERE key = 'campaign_email_default' LIMIT 1"
+    );
+    
+    if (defaultTplRes.rows.length === 0) {
+      // Create a default campaign email template
+      const newTplRes = await pool.query(
+        `INSERT INTO marketing_templates 
+         (name, key, subject, preheader, html_content)
+         VALUES ('Výchozí e-mail kampaně', 'campaign_email_default', 
+                 'Nový e-mail kampaně', 'Obsah e-mailu',
+                 '<h2 style="color:#ffffff;margin:0 0 12px 0;font-size:20px;font-weight:700;">Nadpis e-mailu</h2><p style="color:#aaaaaa;margin:0 0 16px 0;font-size:14px;line-height:1.6;">Sem vložte obsah vašeho e-mailu. Tento text si můžete upravit v editoru.</p><p style="color:#aaaaaa;margin:0;font-size:13px;"><a href="#" style="color:#0B99FC;text-decoration:none;font-weight:600;">Klikněte zde pro akci</a></p>')
+         RETURNING id`,
+        []
+      );
+      defaultTemplateId = newTplRes.rows[0].id;
+    } else {
+      defaultTemplateId = defaultTplRes.rows[0].id;
+    }
+    
     const result = await pool.query(
-      `INSERT INTO marketing_campaign_emails (campaign_id, position, delay_hours)
-       VALUES ($1, $2, $3) RETURNING *`,
-      [campaignId, position || 1, delayHours || 0]
+      `INSERT INTO marketing_campaign_emails (campaign_id, position, delay_hours, template_id)
+       VALUES ($1, $2, $3, $4) RETURNING *`,
+      [campaignId, position || 1, delayHours || 0, defaultTemplateId]
     );
     
     console.log("[Marketing] Campaign email created:", result.rows[0]);
