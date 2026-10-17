@@ -812,6 +812,108 @@ export const TEMPLATE_SEEDS = [
       <p>Skvěle,<br><strong>VOODOO808</strong></p>
     `, "Rapper Collab Call"),
   },
+  {
+    name: "Order Confirmation",
+    key: "order_confirmation",
+    category: "transactional",
+    audience: "general",
+    journey_name: "Order Confirmation",
+    step_position: 1,
+    step_type: "email",
+    is_recommended: true,
+    sort_order: 1,
+    subject: "Vaše objednávka je potvrzena! ✓",
+    preheader: "Děkujeme za váš nákup. Zde jsou vaše download linky.",
+    html_content: createEmailHTML(`
+      <p>Čau {{first_name}},</p>
+
+      <p>Moc vám děkuju za nákup! Vaše objednávka byla úspěšně zpracována a všechny stahy jsou připravené.</p>
+
+      <div class="highlight-box">
+        <p><strong>📦 Vaše objednávka:</strong><br>{{order_items}}<br><br><strong>Cena:</strong> {{order_price}} CZK</p>
+      </div>
+
+      <p><strong>Všechny vaše soubory včetně kompletních stop (stems) najdete v dashboardu nebo v příloze tohoto mailu.</strong></p>
+
+      <p>Pokud máte nějaké otázky nebo potřebujete help, odpovězte přímo na tento mail.</p>
+
+      <p style="text-align: center;">
+        <a href="{{dashboard_url}}" class="cta-button">Otevřít můj dashboard →</a>
+      </p>
+
+      <p>Ať vám to hraje,<br><strong>VOODOO808</strong></p>
+    `, "Order Confirmation"),
+  },
+  {
+    name: "License Delivery",
+    key: "license_delivery",
+    category: "transactional",
+    audience: "general",
+    journey_name: "License Delivery",
+    step_position: 1,
+    step_type: "email",
+    is_recommended: true,
+    sort_order: 1,
+    subject: "Vaše license na {{product_name}} je připravena! 🔓",
+    preheader: "Kompletní soubory a právní dokumentace jsou připravené k stažení.",
+    html_content: createEmailHTML(`
+      <p>Čau {{first_name}},</p>
+
+      <p>Vaše license na <strong>{{product_name}}</strong> je finalizovaná a všechny soubory jsou k dispozici.</p>
+
+      <div class="highlight-box">
+        <p><strong>🎵 Soubory k dispozici:</strong><br>
+        • Hlavní beat (Hi-Fi WAV)<br>
+        • Kompletní trackouty (Stems)<br>
+        • Právní certifikát autenticity<br>
+        • Metadata a technické dokumenty</p>
+      </div>
+
+      <p>Všechny soubory jsou v ZIP balíčku v příloze nebo si je stáhne z vašeho dashboardu.</p>
+
+      <p><strong>Gratuluju!</strong> Teď je tenhle sound oficiálně a navždycky váš. Můžete ho vydávat kam chcete – na Spotify, YouTube, všude. Nikdo jiný ho nebude mít.</p>
+
+      <p style="text-align: center;">
+        <a href="{{download_url}}" class="cta-button cta-green">Stáhnout všechny soubory →</a>
+      </p>
+
+      <p>Užijte si to,<br><strong>VOODOO808</strong></p>
+    `, "License Delivery"),
+  },
+  {
+    name: "Invoice & Receipt",
+    key: "invoice_receipt",
+    category: "transactional",
+    audience: "general",
+    journey_name: "Invoice & Receipt",
+    step_position: 1,
+    step_type: "email",
+    is_recommended: true,
+    sort_order: 1,
+    subject: "Vaša faktura a potvrzení platby",
+    preheader: "Kompletní údaje o vašem nákupu a daňové informace.",
+    html_content: createEmailHTML(`
+      <p>Čau {{first_name}},</p>
+
+      <p>Zde je vaša daňová faktura a potvrzení platby za nákup.</p>
+
+      <div class="highlight-box">
+        <p><strong>📄 Údaje faktury:</strong><br>
+        Číslo faktury: {{invoice_number}}<br>
+        Datum: {{invoice_date}}<br>
+        Částka: {{total_price}} CZK<br>
+        DPH: {{vat_amount}} CZK</p>
+      </div>
+
+      <p>Kompletní fakturu v PDF formátu najdete v příloze tohoto mailu nebo v dashboardu.</p>
+
+      <p style="text-align: center;">
+        <a href="{{invoice_url}}" class="cta-button">Zobrazit fakturu →</a>
+      </p>
+
+      <p>Děkujeme za váš nákup,<br><strong>VOODOO808</strong></p>
+    `, "Invoice & Receipt"),
+  },
 ];
 
 export default TEMPLATE_SEEDS;
