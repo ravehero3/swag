@@ -7773,11 +7773,22 @@ function JourneysTab() {
     setTestSendingStepId(stepId);
     setTestResult(null);
     try {
+      // Get the current template from state (includes unsaved edits)
+      const step = detail?.steps?.find((s: any) => s.id === stepId);
+      const template = templates.find((t: any) => t.id === step?.template_id);
+      
       const res = await fetch(`/api/marketing/journeys/${detail.journey.id}/steps/${stepId}/send-test`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ email: testEmail }),
+        body: JSON.stringify({ 
+          email: testEmail,
+          // Pass current template state in case user has edited but not saved
+          subject: template?.subject,
+          preheader: template?.preheader,
+          blocks: template?.blocks,
+          headerOptions: template?.header_options,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Odeslání selhalo");

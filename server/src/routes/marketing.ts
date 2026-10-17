@@ -997,6 +997,7 @@ router.post("/journeys/:id/steps/:stepId/send-test", requireAdmin, testSendLimit
     const stepRes = await pool.query("SELECT template_id FROM marketing_journey_steps WHERE id = $1", [req.params.stepId]);
     const templateId = stepRes.rows[0]?.template_id;
     if (!templateId) return res.status(400).json({ error: "Tento krok nemá přiřazenou šablonu." });
+    
     const { sendTestMarketingEmail } = await import("../lib/marketing/sender.js");
     const result = await sendTestMarketingEmail(templateId, toEmail, {
       subject: req.body.subject,
