@@ -738,7 +738,7 @@ function Admin() {
         {tab === "zakaznici" && <ZakazniciTab />}
         {tab === "licenses"  && <LicensesTab licenses={licenses} onRefresh={loadData} />}
         {tab === "marketing" && <MarketingTab settings={settings} onRefresh={refreshSettings} />}
-        {tab === "email-journey" && <div style={{ height: "100%", display: "flex", flexDirection: "column", background: "#000" }}><MarketingTab settings={settings} onRefresh={refreshSettings} /></div>}
+        {tab === "email-journey" && <div style={{ height: "100%", display: "flex", flexDirection: "column", background: "#000" }}><MarketingTab settings={settings} onRefresh={refreshSettings} initialSub="journeys" /></div>}
         {tab === "komentare" && <KomentareTab />}
         {tab === "notifikace" && <NotifikaceTab />}
         {tab === "nastaveni" && <NastaveniTab settings={settings} onRefresh={refreshSettings} beats={beats} />}
@@ -6861,8 +6861,8 @@ function SlevyAKuponyTab({ settings, onRefresh }: { settings: Record<string, str
 
 type MktSubTab = "prehled" | "odberatele" | "journeys" | "kampane" | "sablony" | "analytika" | "discounts";
 
-function MarketingTab({ settings, onRefresh }: { settings: Record<string, string>; onRefresh: () => Promise<void> }) {
-  const [sub, setSub] = useState<MktSubTab>("prehled");
+function MarketingTab({ settings, onRefresh, initialSub }: { settings: Record<string, string>; onRefresh: () => Promise<void>; initialSub?: MktSubTab }) {
+  const [sub, setSub] = useState<MktSubTab>(initialSub || "prehled");
   const [analytics, setAnalytics] = useState<any>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(true);
   const [marketingMode, setMarketingMode] = useState<"production" | "test">("test");
