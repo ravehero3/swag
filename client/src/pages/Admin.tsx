@@ -7837,17 +7837,8 @@ function JourneysTab() {
   };
 
   const openVisualStep = (s: any) => {
-    let tpl = s.template_id ? templates.find(t => t.id === s.template_id) : null;
-    if (!tpl) {
-      tpl = {
-        name: `${detail?.journey?.name || "Journey"} — E-mail krok ${s.id}`,
-        subject: "",
-        preheader: "",
-        blocks: [],
-        header_options: { logoStyle: "metallic", logoSize: "medium", showBrandText: false },
-      };
-    }
-    setVisualStep({ step: s, template: tpl });
+    // Just select the step - don't open a separate modal
+    setSelectedStepId(s.id);
   };
 
   const handleSaveVisualStep = async (data: { subject: string; preheader: string; blocks: any[]; headerOptions?: any; name?: string }) => {
@@ -8181,19 +8172,6 @@ function JourneysTab() {
             </div>
           </div>
         </div>
-      )}
-
-      {visualStep && (
-        <VisualEmailBuilder
-          title={visualStep.template?.name || "E-mail kroku Journey"}
-          initialSubject={visualStep.template?.subject || ""}
-          initialPreheader={visualStep.template?.preheader || ""}
-          initialBlocks={Array.isArray(visualStep.template?.blocks) ? visualStep.template.blocks : []}
-          initialHeaderConfig={visualStep.template?.header_options || visualStep.template?.headerOptions}
-          onSave={handleSaveVisualStep}
-          onClose={() => setVisualStep(null)}
-          onTestSend={handleTestSendVisualStep}
-        />
       )}
 
       {/* Email Editor Modal - Opens directly in journeys tab */}
