@@ -1186,6 +1186,9 @@ async function startServer() {
   try {
     const { startMarketingScheduler } = await import("./lib/marketing/scheduler.js");
     startMarketingScheduler(2 * 60 * 1000);
+    
+    const { startCampaignScheduler } = await import("./lib/marketing/campaign-scheduler.js");
+    startCampaignScheduler();
   } catch (schedErr) {
     console.error("Marketing scheduler failed to start:", schedErr);
   }

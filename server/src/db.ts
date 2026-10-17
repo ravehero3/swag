@@ -576,7 +576,52 @@ export async function initDatabase() {
 
     // Phase 2: open/click tracking, double opt-in, segments, scheduling
     await client.query(`
-      -- Open/click pixel tracking token on each send
+      -- Campaign rate limiting and slow-drip queuing
+      ALTER TABLE marketing_campaigns ADD COLUMN IF NOT EXISTS audience_segment VARCHAR(20) DEFAULT 'mixed';
+      ALTER TABLE marketing_campaigns ADD COLUMN IF NOT EXISTS daily_send_limit INTEGER DEFAULT 85;
+      ALTER TABLE marketing_campaigns ADD COLUMN IF NOT EXISTS hourly_send_limit INTEGER DEFAULT 4;
+      ALTER TABLE marketing_campaigns ADD COLUMN IF NOT EXISTS total_recipients INTEGER DEFAULT 0;
+      ALTER TABLE marketing_campaigns ADD COLUMN IF NOT EXISTS total_sent INTEGER DEFAULT 0;
+      ALTER TABLE marketing_campaigns ADD COLUMN IF NOT EXISTS total_failed INTEGER DEFAULT 0;
+      ALTER TABLE marketing_campaigns ADD COLUMN IF NOT EXISTS campaign_started_at TIMESTAMP;
+      ALTER TABLE marketing_campaigns ADD COLUMN IF NOT EXISTS campaign_completed_at TIMESTAMP;
+      ALTER TABLE marketing_campaigns ADD COLUMN IF NOT EXISTS paused_until TIMESTAMP;
+
+      CREATE TABLE IF NOT EXISTS campaign_send_queue (
+        id SERIAL PRIMARY KEY,
+        campaign_id INTEGER NOT NULL REFERENCES marketing_campaigns(id) ON DELETE CASCADE,
+        subscriber_id INTEGER NOT NULL REFERENCES subscribers(id) ON DELETE CASCADE,
+        email_send_id INTEGER REFERENCES marketing_email_sends(id) ON DELETE SET NULL,
+        status VARCHAR(20) NOT NULL DEFAULT 'queued',
+        queued_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        scheduled_for TIMESTAMP,
+        sent_at TIMESTAMP,
+        failed_reason TEXT,
+        retry_count INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(campaign_id, subscriber_id)
+      );
+      CREATE INDEX IF NOT EXISTS idx_campaign_send_queue_campaign ON campaign_send_queue(campaign_id);
+      CREATE INDEX IF NOT EXISTS idx_campaign_send_queue_status ON campaign_send_queue(status, scheduled_for);
+      CREATE INDEX IF NOT EXISTS idx_campaign_send_queue_subscriber ON campaign_send_queue(subscriber_id);
+
+      CREATE TABLE IF NOT EXISTS campaign_rate_limits (
+        id SERIAL PRIMARY KEY,
+        campaign_id INTEGER NOT NULL UNIQUE REFERENCES marketing_campaigns(id) ON DELETE CASCADE,
+        daily_limit INTEGER NOT NULL DEFAULT 85,
+        hourly_limit INTEGER NOT NULL DEFAULT 4,
+        current_hour_sent INTEGER NOT NULL DEFAULT 0,
+        last_hour_reset TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        current_day_sent INTEGER NOT NULL DEFAULT 0,
+        last_day_reset TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX IF NOT EXISTS idx_campaign_rate_limits_campaign ON campaign_rate_limits(campaign_id);
+    `);
+
+    // Open/click pixel tracking token on each send
+    await client.query(`
       ALTER TABLE marketing_email_sends ADD COLUMN IF NOT EXISTS tracking_token VARCHAR(64);
       CREATE UNIQUE INDEX IF NOT EXISTS idx_marketing_email_sends_tracking_token
         ON marketing_email_sends (tracking_token) WHERE tracking_token IS NOT NULL;

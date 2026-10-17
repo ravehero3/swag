@@ -2168,4 +2168,199 @@ router.post("/admin/import-freebie-audience", requireAdmin, async (req: Request,
   }
 });
 
+// Start a campaign (populate queue and begin sending)
+router.post("/campaigns/:id/start", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const campaignId = parseInt(req.params.id, 10);
+    const { audience_segment, daily_send_limit } = req.body;
+    
+    // Get campaign
+    const campaignRes = await pool.query(
+      `SELECT id, status FROM marketing_campaigns WHERE id = $1`,
+      [campaignId]
+    );
+    
+    if (campaignRes.rows.length === 0) {
+      return res.status(404).json({ error: "Kampaně nenalezena" });
+    }
+    
+    const campaign = campaignRes.rows[0];
+    if (campaign.status !== 'draft') {
+      return res.status(400).json({ error: "Kampaně mří být v návrhu" });
+    }
+    
+    // Get subscribers for segment
+    let subscriberRes;
+    if (audience_segment === 'paid') {
+      subscriberRes = await pool.query(
+        `SELECT id, email FROM subscribers 
+         WHERE is_buyer = TRUE 
+         AND marketing_consent = TRUE 
+         AND unsubscribed_at IS NULL 
+         AND suppressed_at IS NULL`
+      );
+    } else if (audience_segment === 'free') {
+      subscriberRes = await pool.query(
+        `SELECT id, email FROM subscribers 
+         WHERE 'freebie' = ANY(tags) 
+         AND marketing_consent = TRUE 
+         AND unsubscribed_at IS NULL 
+         AND suppressed_at IS NULL`
+      );
+    } else {
+      subscriberRes = await pool.query(
+        `SELECT id, email FROM subscribers 
+         WHERE marketing_consent = TRUE 
+         AND unsubscribed_at IS NULL 
+         AND suppressed_at IS NULL`
+      );
+    }
+    
+    const subscribers = subscriberRes.rows;
+    console.log(`[Marketing] Starting campaign ${campaignId} with ${subscribers.length} subscribers`);
+    
+    if (subscribers.length === 0) {
+      return res.status(400).json({ error: "Pro této segment nemá \u017eádné přijemce" });
+    }
+    
+    // Populate queue
+    const queueInserts = subscribers.map(s => `($1, $${subscribers.indexOf(s) + 2})`).join(',');
+    const params = [campaignId, ...subscribers.map(s => s.id)];
+    
+    await pool.query(
+      `INSERT INTO campaign_send_queue (campaign_id, subscriber_id)
+       VALUES ${queueInserts}
+       ON CONFLICT (campaign_id, subscriber_id) DO NOTHING`,
+      params
+    );
+    
+    // Create rate limit config
+    const hourlyLimit = Math.ceil((daily_send_limit || 85) / 24);
+    await pool.query(
+      `INSERT INTO campaign_rate_limits (campaign_id, daily_limit, hourly_limit)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (campaign_id) DO UPDATE SET 
+         daily_limit = $2, hourly_limit = $3`,
+      [campaignId, daily_send_limit || 85, hourlyLimit]
+    );
+    
+    // Update campaign
+    const updatedRes = await pool.query(
+      `UPDATE marketing_campaigns 
+       SET status = 'active', 
+           audience_segment = $1,
+           daily_send_limit = $2,
+           hourly_send_limit = $3,
+           total_recipients = $4,
+           campaign_started_at = CURRENT_TIMESTAMP
+       WHERE id = $5
+       RETURNING *`,
+      [audience_segment, daily_send_limit || 85, hourlyLimit, subscribers.length, campaignId]
+    );
+    
+    await logMarketingAction("campaign.started", req.session.userId || null, { 
+      type: "campaign", 
+      id: campaignId, 
+      recipients: subscribers.length,
+      segment: audience_segment
+    });
+    
+    res.json({
+      success: true,
+      campaign: updatedRes.rows[0],
+      recipients: subscribers.length,
+      estimatedDays: Math.ceil(subscribers.length / (daily_send_limit || 85)),
+      message: `Kampaně spuvštěna. Zpráva bude odeslána ${subscribers.length} lidem přibližně za ${Math.ceil(subscribers.length / (daily_send_limit || 85))} dní.`
+    });
+  } catch (error) {
+    console.error("Campaign start error:", error);
+    res.status(500).json({ error: "Chyba při spuvštění kampaně" });
+  }
+});
+
+// Get campaign queue status
+router.get("/campaigns/:id/queue-status", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const campaignId = parseInt(req.params.id, 10);
+    
+    const statsRes = await pool.query(
+      `SELECT 
+         COUNT(*) FILTER (WHERE status = 'queued') as queued,
+         COUNT(*) FILTER (WHERE status = 'in_progress') as in_progress,
+         COUNT(*) FILTER (WHERE status = 'sent') as sent,
+         COUNT(*) FILTER (WHERE status = 'failed') as failed,
+         COUNT(*) as total
+       FROM campaign_send_queue
+       WHERE campaign_id = $1`,
+      [campaignId]
+    );
+    
+    const rateLimitRes = await pool.query(
+      `SELECT daily_limit, hourly_limit, current_hour_sent, current_day_sent
+       FROM campaign_rate_limits
+       WHERE campaign_id = $1`,
+      [campaignId]
+    );
+    
+    const stats = statsRes.rows[0];
+    const rateLimit = rateLimitRes.rows[0];
+    
+    res.json({
+      queue: stats,
+      rateLimit: rateLimit,
+      progress: {
+        percentage: Math.round((stats.sent / stats.total) * 100),
+        sent: stats.sent,
+        total: stats.total
+      }
+    });
+  } catch (error) {
+    console.error("Queue status error:", error);
+    res.status(500).json({ error: "Chyba při načítání stavu front" });
+  }
+});
+
+// Pause campaign
+router.patch("/campaigns/:id/pause", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const campaignId = parseInt(req.params.id, 10);
+    const { pauseUntil } = req.body;
+    
+    const result = await pool.query(
+      `UPDATE marketing_campaigns
+       SET paused_until = $1
+       WHERE id = $2
+       RETURNING *`,
+      [pauseUntil ? new Date(pauseUntil) : new Date(Date.now() + 24 * 60 * 60 * 1000), campaignId]
+    );
+    
+    await logMarketingAction("campaign.paused", req.session.userId || null, { type: "campaign", id: campaignId });
+    res.json({ success: true, campaign: result.rows[0] });
+  } catch (error) {
+    console.error("Campaign pause error:", error);
+    res.status(500).json({ error: "Chyba při pozastavení kampaně" });
+  }
+});
+
+// Resume campaign
+router.patch("/campaigns/:id/resume", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const campaignId = parseInt(req.params.id, 10);
+    
+    const result = await pool.query(
+      `UPDATE marketing_campaigns
+       SET paused_until = NULL
+       WHERE id = $1
+       RETURNING *`,
+      [campaignId]
+    );
+    
+    await logMarketingAction("campaign.resumed", req.session.userId || null, { type: "campaign", id: campaignId });
+    res.json({ success: true, campaign: result.rows[0] });
+  } catch (error) {
+    console.error("Campaign resume error:", error);
+    res.status(500).json({ error: "Chyba při obnovení kampaně" });
+  }
+});
+
 export default router;
