@@ -12,6 +12,7 @@ interface CompactEmailEditorProps {
  * Compresses spacing and ensures all sections fit within 60vh right panel
  */
 export default function CompactEmailEditor({ template, onSave, onRefresh }: CompactEmailEditorProps) {
+  console.log("[CompactEmailEditor] Rendering with template:", template?.name, template?.id);
   return (
     <div
       style={{
