@@ -2121,4 +2121,51 @@ router.post("/campaigns/:campaignId/emails/:emailId/send-test", requireAdmin, te
   }
 });
 
+// Import freebie audience from CSV data
+router.post("/admin/import-freebie-audience", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const emails: string[] = req.body.emails || [];
+    if (!Array.isArray(emails) || emails.length === 0) {
+      return res.status(400).json({ error: "Žádné e-maily k importu" });
+    }
+    
+    const insertPlaceholders = emails.map((_, i) => `($${i + 1})`).join(',');
+    const result = await pool.query(
+      `INSERT INTO subscribers (email, email_normalized, tags, marketing_consent, marketing_consent_source, first_source, imported_at, import_source)
+       SELECT 
+         email,
+         LOWER(TRIM(email)) as email_normalized,
+         ARRAY['freebie', 'imported', 'subscribed']::TEXT[] as tags,
+         TRUE as marketing_consent,
+         'import' as marketing_consent_source,
+         'freebie_download' as first_source,
+         NOW() as imported_at,
+         'audience_export_d2f83d6160' as import_source
+       FROM (VALUES ${insertPlaceholders}) AS import_data(email)
+       WHERE NOT EXISTS (
+         SELECT 1 FROM subscribers WHERE LOWER(email_normalized) = LOWER(import_data.email)
+       )
+       ON CONFLICT (email_normalized) DO UPDATE SET
+         tags = ARRAY(SELECT DISTINCT unnest(ARRAY['freebie', 'imported', 'subscribed'] || subscribers.tags)),
+         marketing_consent = TRUE
+       WHERE subscribers.marketing_consent = FALSE
+       RETURNING *`,
+      emails
+    );
+    
+    console.log(`[Marketing] Imported ${result.rows.length} freebie audience emails`);
+    await logMarketingAction("audience.imported", req.session.userId || null, { type: "freebie_audience", count: result.rows.length });
+    
+    res.json({
+      success: true,
+      imported: result.rows.length,
+      total: emails.length,
+      message: `Importováno ${result.rows.length} nových e-mailů ze ${emails.length} poskytnutých`
+    });
+  } catch (error) {
+    console.error("Freebie audience import error:", error);
+    res.status(500).json({ error: "Chyba při importu audience" });
+  }
+});
+
 export default router;
