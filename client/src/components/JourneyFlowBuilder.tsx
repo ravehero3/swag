@@ -450,9 +450,9 @@ export default function JourneyFlowBuilder({
                 </button>
 
                 {/* Upravit email - for steps with a template */}
-                {step.step_type === "email" && step.template_id && onOpenVisualEditor && (
+                {step.step_type === "email" && step.template_id && (
                   <button
-                    onClick={(e) => { e.stopPropagation(); onOpenVisualEditor(step); }}
+                    onClick={(e) => { e.stopPropagation(); onSelectStep?.(step.id); }}
                     style={{ background: "none", border: "none", color: "#0B99FC", cursor: "pointer", padding: "6px 8px", fontSize: "11px", fontWeight: 600, borderRadius: "4px", transition: "all 150ms ease", display: "flex", alignItems: "center", gap: "4px" }}
                     onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(11,153,252,0.1)"; }}
                     onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "none"; }}
@@ -463,9 +463,9 @@ export default function JourneyFlowBuilder({
                 )}
 
                 {/* Vytvorit email - for steps with NO template */}
-                {hasNoTemplate && onOpenVisualEditor && (
+                {hasNoTemplate && (
                   <button
-                    onClick={(e) => { e.stopPropagation(); onOpenVisualEditor(step); }}
+                    onClick={(e) => { e.stopPropagation(); onSelectStep?.(step.id); }}
                     style={{ background: "rgba(245,158,11,0.12)", border: "1px solid rgba(245,158,11,0.3)", color: "#f59e0b", cursor: "pointer", padding: "4px 10px", fontSize: "11px", fontWeight: 700, borderRadius: "4px", transition: "all 150ms ease", display: "flex", alignItems: "center", gap: "4px" }}
                     onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(245,158,11,0.22)"; }}
                     onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(245,158,11,0.12)"; }}
