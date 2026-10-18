@@ -2499,4 +2499,75 @@ router.get("/email-activity/journeys", requireAdmin, async (_req: Request, res: 
   }
 });
 
+// [DEV ONLY] Create sample email sends for testing dashboard
+router.post("/email-activity/test-data", requireAdmin, async (_req: Request, res: Response) => {
+  try {
+    // Get or create test subscriber
+    const subRes = await pool.query(
+      `INSERT INTO subscribers (email, source) VALUES ($1, 'test') 
+       ON CONFLICT(email) DO UPDATE SET email = EXCLUDED.email 
+       RETURNING id`,
+      ['test@example.cz']
+    );
+    const subscriberId = subRes.rows[0].id;
+
+    // Get journeys
+    const journeysRes = await pool.query('SELECT id, name FROM marketing_journeys LIMIT 3');
+    const journeys = journeysRes.rows;
+
+    let created = 0;
+    
+    // Create 20 sample email sends for the past 7 days
+    for (let i = 0; i < 20; i++) {
+      const daysAgo = Math.floor(Math.random() * 7);
+      const hoursAgo = Math.floor(Math.random() * 24);
+      const sentAt = new Date(Date.now() - daysAgo * 86400000 - hoursAgo * 3600000);
+      const journey = journeys[Math.floor(Math.random() * journeys.length)];
+      const isSuccessful = Math.random() > 0.1; // 90% success rate
+
+      await pool.query(
+        `INSERT INTO marketing_email_sends (subscriber_id, journey_id, email_type, recipient, subject, status, sent_at)
+         VALUES ($1, $2, 'transactional', $3, $4, $5, $6)`,
+        [
+          subscriberId,
+          journey?.id || null,
+          `test-${i}@example.cz`,
+          `Testovací e-mail #${i} - ${journey?.name || 'Bez cesty'}`,
+          isSuccessful ? 'sent' : 'failed',
+          sentAt
+        ]
+      );
+      created++;
+
+      // Add some engagement events for sent emails
+      if (isSuccessful && Math.random() > 0.5) {
+        const lastEmailRes = await pool.query(
+          'SELECT id FROM marketing_email_sends WHERE recipient = $1 ORDER BY id DESC LIMIT 1',
+          [`test-${i}@example.cz`]
+        );
+        if (lastEmailRes.rows.length > 0) {
+          const emailSendId = lastEmailRes.rows[0].id;
+          if (Math.random() > 0.3) {
+            await pool.query(
+              `INSERT INTO marketing_email_opens (email_send_id, event_type) VALUES ($1, 'open')`,
+              [emailSendId]
+            );
+          }
+          if (Math.random() > 0.6) {
+            await pool.query(
+              `INSERT INTO marketing_email_opens (email_send_id, event_type) VALUES ($1, 'click')`,
+              [emailSendId]
+            );
+          }
+        }
+      }
+    }
+
+    res.json({ success: true, created, message: `Vytvořeno ${created} testovacích e-mailů` });
+  } catch (error) {
+    console.error("Error creating test data:", error);
+    res.status(500).json({ error: "Chyba při vytváření testovacích dat" });
+  }
+});
+
 export default router;
