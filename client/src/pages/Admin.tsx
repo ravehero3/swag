@@ -51,18 +51,6 @@ function AdminAudioPreview({ src }: { src: string }) {
     return () => { audio.removeEventListener("ended", onEnded); audio.removeEventListener("pause", onPause); };
   }, []);
 
-  const loadOverview = async () => {
-    try {
-      const res = await fetch("/api/marketing/overview", { credentials: "include" });
-      if (res.ok) {
-        const data = await res.json();
-        setOverview(data);
-      }
-    } catch (err) {
-      console.error("Error loading overview:", err);
-    }
-  };
-
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "12px", background: DESIGN_SYSTEM.colors.elevated, borderRadius: "8px", padding: "10px 14px", border: "1px solid #1a1a1a" }}>
       <audio ref={audioRef} src={src} />
@@ -7291,7 +7279,6 @@ function MarketingTab({ settings, onRefresh, initialSub }: { settings: Record<st
 function MarketingPrehledTab() {
   const [overview, setOverview] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     fetch("/api/marketing/overview", { credentials: "include" })
@@ -7314,30 +7301,9 @@ function MarketingPrehledTab() {
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-        <p style={{ color: "#555", fontSize: "12px", margin: 0 }}>
-          Přehled marketingového systému — odběratelé, journeys a e-mailová aktivita za posledních 7 dní.
-        </p>
-        <button
-          onClick={loadOverview}
-          disabled={refreshing}
-          title="Načíst data znovu"
-          style={{
-            padding: "6px 12px",
-            background: "#222",
-            border: "1px solid #444",
-            borderRadius: "4px",
-            color: "#fff",
-            fontSize: "12px",
-            fontWeight: 600,
-            cursor: refreshing ? "wait" : "pointer",
-            opacity: refreshing ? 0.6 : 1,
-            transition: "all 150ms ease"
-          }}
-        >
-          {refreshing ? "Načítám..." : "Obnovit"}
-        </button>
-      </div>
+      <p style={{ color: "#555", fontSize: "12px", marginBottom: "20px" }}>
+        Přehled marketingového systému — odběratelé, journeys a e-mailová aktivita za posledních 7 dní.
+      </p>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "14px", marginBottom: "20px" }}>
         <div style={card}>
           <div style={statLabel}>Odběratelé celkem</div>
