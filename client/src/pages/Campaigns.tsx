@@ -172,6 +172,7 @@ export default function Campaigns() {
       const res = await fetch("/api/marketing/campaigns", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           name,
           audience,
@@ -180,10 +181,18 @@ export default function Campaigns() {
       if (res.ok) {
         const newCampaign = await res.json();
         setCampaigns([newCampaign, ...campaigns]);
-        selectCampaign(newCampaign.id);
+        setSelectedCampaignId(newCampaign.id);
+        setSelectedCampaign(newCampaign);
+        await loadCampaignEmails(newCampaign.id);
+        setPreviewVisible(false);
+        setTestMode(false);
+      } else {
+        console.error("Error creating campaign:", res.status);
+        alert("Chyba při vytváření kampaně");
       }
     } catch (err) {
       console.error("Error creating campaign:", err);
+      alert("Chyba při vytváření kampaně");
     }
   };
 

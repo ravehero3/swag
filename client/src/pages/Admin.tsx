@@ -7719,9 +7719,13 @@ function JourneysTab() {
       .then(r => r.ok ? r.json() : null)
       .then((data) => {
         if (!data) return;
+        console.log("[JourneysTab] Loaded journey detail:", data);
+        console.log("[JourneysTab] Steps count:", data.steps?.length || 0);
         setDetail(data);
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.error("[JourneysTab] Error loading journey:", err);
+      });
   };
 
   useEffect(() => {
