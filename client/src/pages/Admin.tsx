@@ -7719,20 +7719,10 @@ function JourneysTab() {
       .then(r => r.ok ? r.json() : null)
       .then((data) => {
         if (!data) return;
-        console.log("[JourneysTab] Loaded journey detail:", data);
         setDetail(data);
       })
-      .catch((err) => {
-        console.error("[JourneysTab] Error loading journey:", err);
-      });
+      .catch(() => {});
   };
-
-  // Auto-load detail when journey is selected
-  useEffect(() => {
-    if (selectedJourneyId && (!detail || detail.journey?.id !== selectedJourneyId)) {
-      openJourneyDetail(selectedJourneyId);
-    }
-  }, [selectedJourneyId]);
 
   useEffect(() => {
     fetch("/api/marketing/templates", { credentials: "include" })
