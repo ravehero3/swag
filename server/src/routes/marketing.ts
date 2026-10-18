@@ -682,25 +682,34 @@ router.post("/templates/:id/send-test", requireAdmin, testSendLimiter, async (re
 router.get("/journeys", requireAdmin, async (_req: Request, res: Response) => {
   try {
     // Auto-seed templates if they don't exist
-    const templateCount = await pool.query("SELECT COUNT(*) FROM marketing_templates");
-    if (parseInt(templateCount.rows[0].count || 0, 10) === 0) {
-      try {
-        const { TEMPLATE_SEEDS } = await import("../lib/templateSeeds.js");
-        for (const tpl of TEMPLATE_SEEDS) {
+    try {
+      const { TEMPLATE_SEEDS } = await import("../lib/templateSeeds.js");
+      let seeded = 0;
+      for (const tpl of TEMPLATE_SEEDS) {
+        const existing = await pool.query(
+          "SELECT id FROM marketing_templates WHERE key = $1",
+          [tpl.key]
+        );
+        if (existing.rows.length === 0) {
           await pool.query(
             `INSERT INTO marketing_templates 
-             (name, key, category, audience, journey_name, step_position, step_type, is_recommended, sort_order, subject, preheader, html_content)
-             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+             (name, key, category, audience, journey_name, step_position, step_type, is_recommended, sort_order, subject, preheader, html_content, blocks, header_options)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb,$14::jsonb)`,
             [
               tpl.name, tpl.key, tpl.category, tpl.audience || 'general', tpl.journey_name, tpl.step_position,
               tpl.step_type, tpl.is_recommended, tpl.sort_order, tpl.subject, tpl.preheader, tpl.html_content,
+              tpl.blocks ? JSON.stringify(tpl.blocks) : null,
+              tpl.header_options ? JSON.stringify(tpl.header_options) : null
             ]
           );
+          seeded++;
         }
-        console.log("✅ Auto-seeded 12 email templates");
-      } catch (seedErr) {
-        console.error("Auto-seed failed:", seedErr);
       }
+      if (seeded > 0) {
+        console.log(`✅ Auto-seeded ${seeded} email templates`);
+      }
+    } catch (seedErr) {
+      console.error("Auto-seed templates failed:", seedErr);
     }
 
     // Auto-seed transactional journeys and ensure they have steps
