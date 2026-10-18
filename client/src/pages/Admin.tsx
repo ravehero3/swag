@@ -7718,14 +7718,8 @@ function JourneysTab() {
     fetch(`/api/marketing/journeys/${id}`, { credentials: "include" })
       .then(r => r.ok ? r.json() : null)
       .then((data) => {
-        if (!data) { console.log('Fetched journey detail:', data); return; }
-        // Ensure the data contains a 'journey' field for the modal
-        if (!data.journey) {
-          // If API returns a plain journey object, wrap it
-          setDetail({ journey: data, steps: data.steps || [] });
-        } else {
-          setDetail({ ...data, steps: data.steps ?? [] });
-        }
+        if (!data) return;
+        setDetail(data);
       })
       .catch(() => {});
   };

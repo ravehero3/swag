@@ -509,7 +509,7 @@ export default function JourneyFlowBuilder({
           <div style={{ width: "24px", height: "24px", borderRadius: "50%", border: "2px solid #666", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "8px" }}>
             <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#666" }} />
           </div>
-          <div style={{ fontSize: "12px", color: "#888", fontWeight: 500 }}>Contact Exits</div>
+          <div style={{ fontSize: "12px", color: "#888", fontWeight: 500 }}>Kontakt Odchází</div>
         </div>
 
         {/* Add step button */}
