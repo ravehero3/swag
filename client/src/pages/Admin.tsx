@@ -6502,7 +6502,7 @@ function EmailsTab() {
                 key={s.key}
                 onClick={() => selectScenario(s.key)}
                 style={{
-                  padding: "12px",
+                  padding: "16px",
                   background: isSelected ? "#0B99FC20" : "#0f0f0f",
                   border: isSelected ? "1px solid #0B99FC" : "1px solid #333",
                   borderRadius: "6px",
@@ -6523,10 +6523,10 @@ function EmailsTab() {
                   }
                 }}
               >
-                <div style={{ fontSize: "12px", fontWeight: 600, color: "#fff", marginBottom: "4px" }}>
+                <div style={{ fontSize: "13px", fontWeight: 600, color: "#fff", marginBottom: "6px" }}>
                   {s.label}
                 </div>
-                <div style={{ fontSize: "11px", color: "#666" }}>
+                <div style={{ fontSize: "12px", color: "#666" }}>
                   {s.description}
                 </div>
               </button>
@@ -6553,30 +6553,30 @@ function EmailsTab() {
             <div style={{ display: "flex", gap: "16px", flex: 1, minHeight: 0 }}>
               {/* Edit form - left side */}
               <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "auto", paddingRight: "8px" }}>
-                <div style={{ marginBottom: "16px" }}>
-                  <label style={{ display: "block", marginBottom: "6px", fontSize: "12px", color: "#999", fontWeight: 600 }}>
+                <div style={{ marginBottom: "20px" }}>
+                  <label style={{ display: "block", marginBottom: "8px", fontSize: "13px", color: "#999", fontWeight: 600 }}>
                     Předmět emailu
                   </label>
                   <input
                     value={editForm.subject}
                     onChange={e => setEditForm(f => ({ ...f, subject: e.target.value }))}
-                    style={{ width: "100%", padding: "10px 12px", background: "#111", border: "1px solid #333", color: "#fff", borderRadius: "4px", fontSize: "13px", boxSizing: "border-box" }}
+                    style={{ width: "100%", padding: "14px 14px", background: "#111", border: "1px solid #333", color: "#fff", borderRadius: "4px", fontSize: "15px", boxSizing: "border-box" }}
                   />
-                  <p style={{ margin: "6px 0 0", fontSize: "11px", color: "#555" }}>
+                  <p style={{ margin: "8px 0 0", fontSize: "12px", color: "#555" }}>
                     Placeholdery: {"id"} = číslo objednávky, {"datum"} = datum
                   </p>
                 </div>
 
-                <div style={{ marginBottom: "16px", flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
-                  <label style={{ display: "block", marginBottom: "6px", fontSize: "12px", color: "#999", fontWeight: 600 }}>
+                <div style={{ marginBottom: "20px", flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
+                  <label style={{ display: "block", marginBottom: "8px", fontSize: "13px", color: "#999", fontWeight: 600 }}>
                     Úvodní text emailu
                   </label>
                   <textarea
                     value={editForm.intro_text}
                     onChange={e => setEditForm(f => ({ ...f, intro_text: e.target.value }))}
-                    style={{ flex: 1, padding: "10px 12px", background: "#111", border: "1px solid #333", color: "#fff", borderRadius: "4px", fontSize: "13px", resize: "none", minHeight: 0, boxSizing: "border-box" }}
+                    style={{ flex: 1, padding: "14px 14px", background: "#111", border: "1px solid #333", color: "#fff", borderRadius: "4px", fontSize: "15px", resize: "none", minHeight: 0, boxSizing: "border-box", lineHeight: "1.8" }}
                   />
-                  <p style={{ margin: "6px 0 0", fontSize: "11px", color: "#555" }}>
+                  <p style={{ margin: "8px 0 0", fontSize: "12px", color: "#555" }}>
                     Placeholdery: {"id"}, {"datum"}
                   </p>
                 </div>
