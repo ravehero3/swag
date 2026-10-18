@@ -84,13 +84,15 @@ export default function CampaignsTabLayout({
     : null;
 
   // Create merged template that includes campaign-specific overrides
-  const mergedTemplate = selectedTemplate && selectedEmail
+  // Works with or without a template - uses campaign email's own blocks if no template
+  const mergedTemplate = selectedEmail
     ? {
-        ...selectedTemplate,
-        subject: selectedEmail.subject || selectedTemplate.subject,
-        preheader: selectedEmail.preheader || selectedTemplate.preheader,
-        blocks: selectedEmail.blocks || selectedTemplate.blocks,
-        headerOptions: selectedEmail.headerOptions || selectedTemplate.headerOptions,
+        id: selectedTemplate?.id || -1,
+        name: selectedTemplate?.name || selectedEmail.subject || "E-mail kampaně",
+        subject: selectedEmail.subject || selectedTemplate?.subject || "E-mail kampaně",
+        preheader: selectedEmail.preheader || selectedTemplate?.preheader || "",
+        blocks: selectedEmail.blocks || selectedTemplate?.blocks || [],
+        headerOptions: selectedEmail.headerOptions || selectedTemplate?.headerOptions || {},
         campaignEmailId: selectedEmail.id,
       }
     : null;
