@@ -6396,7 +6396,7 @@ function EmailsTab() {
   const [templates, setTemplates] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [editingKey, setEditingKey] = useState<string | null>(null);
+  const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ subject: "", intro_text: "" });
   const [saving, setSaving] = useState(false);
   const [saveOk, setSaveOk] = useState(false);
@@ -6404,10 +6404,10 @@ function EmailsTab() {
   const [loadingPreview, setLoadingPreview] = useState(false);
 
   const handleEmailPreview = async () => {
-    if (!editingKey) return;
+    if (!selectedKey) return;
     setLoadingPreview(true);
     try {
-      const res = await fetch(`/api/admin/email-templates/${editingKey}/preview`, {
+      const res = await fetch(`/api/admin/email-templates/${selectedKey}/preview`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -6437,18 +6437,32 @@ function EmailsTab() {
 
   useEffect(() => { load(); }, []);
 
-  const startEdit = (tpl: any) => {
-    setEditingKey(tpl.key);
-    setEditForm({ subject: tpl.subject, intro_text: tpl.intro_text });
-    setSaveOk(false);
+  // Auto-select first scenario on load
+  useEffect(() => {
+    if (templates.length > 0 && !selectedKey) {
+      const firstKey = EMAIL_SCENARIOS[0]?.key;
+      if (firstKey) {
+        selectScenario(firstKey);
+      }
+    }
+  }, [templates]);
+
+  const selectScenario = (key: string) => {
+    const tpl = templates.find(t => t.key === key);
+    if (tpl) {
+      setSelectedKey(key);
+      setEditForm({ subject: tpl.subject, intro_text: tpl.intro_text });
+      setSaveOk(false);
+      setPreviewHtml(null);
+    }
   };
 
   const handleSave = async () => {
-    if (!editingKey) return;
+    if (!selectedKey) return;
     setSaving(true);
     setSaveOk(false);
     try {
-      const res = await fetch(`/api/admin/email-templates/${editingKey}`, {
+      const res = await fetch(`/api/admin/email-templates/${selectedKey}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -6457,7 +6471,7 @@ function EmailsTab() {
       if (!res.ok) throw new Error();
       await load();
       setSaveOk(true);
-      setTimeout(() => { setEditingKey(null); setSaveOk(false); }, 1200);
+      setTimeout(() => { setSaveOk(false); }, 2000);
     } catch {
       alert("Chyba při ukládání.");
     } finally {
@@ -6466,145 +6480,168 @@ function EmailsTab() {
   };
 
   const tplByKey = (key: string) => templates.find(t => t.key === key);
+  const scenario = EMAIL_SCENARIOS.find(s => s.key === selectedKey);
+  const currentTpl = tplByKey(selectedKey || "");
 
-  const cellStyle: any = { padding: "14px 12px", borderBottom: "1px solid #1e1e1e", verticalAlign: "top" };
-
-  if (loading) return <div style={{ color: DESIGN_SYSTEM.colors.textSecondary, padding: "20px" }}>Načítám...</div>;
+  if (loading) return <div style={{ color: "#555", padding: "20px" }}>Načítám...</div>;
   if (error) return <div style={{ color: "#ff4444", padding: "20px" }}>{error}</div>;
 
-  if (editingKey) {
-    const scenario = EMAIL_SCENARIOS.find(s => s.key === editingKey);
-    return (
-      <div style={{ maxWidth: "640px" }}>
-        {previewHtml && (
-          <div
-            onClick={() => setPreviewHtml(null)}
-            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)", zIndex: DESIGN_SYSTEM.zIndex.modal, display: "flex", flexDirection: "column", alignItems: "center", overflowY: "auto", padding: "24px 16px 48px" }}
-          >
-            <div onClick={(e) => e.stopPropagation()} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", maxWidth: "640px", marginBottom: "16px", flexShrink: 0 }}>
-              <span style={{ fontWeight: "600", color: "#ddd", fontSize: "13px", letterSpacing: "0.04em" }}>Náhled emailu – {scenario?.label}</span>
-              <button onClick={() => setPreviewHtml(null)} style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "4px", fontSize: "13px", cursor: "pointer", color: DESIGN_SYSTEM.colors.textPrimary, padding: "4px 12px" }}>Zavřít ×</button>
-            </div>
-            <div onClick={(e) => e.stopPropagation()} style={{ width: "640px", maxWidth: "100%", background: DESIGN_SYSTEM.colors.elevated, borderRadius: "4px", overflow: "hidden", border: "1px solid #222" }}>
-              <iframe srcDoc={previewHtml} style={{ width: "100%", height: "700px", border: "none", display: "block" }} title="Náhled emailu" />
-            </div>
-          </div>
-        )}
-        <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "24px" }}>
-          <button
-            onClick={() => setEditingKey(null)}
-            style={{ background: "none", border: "1px solid #333", color: DESIGN_SYSTEM.colors.textSecondary, padding: "6px 14px", borderRadius: "4px", cursor: "pointer", fontFamily: "inherit" }}
-          >
-            ← Zpět
-          </button>
-          <div>
-            <h3 style={{ margin: 0, fontSize: "15px" }}>{scenario?.label}</h3>
-            <p style={{ margin: 0, fontSize: "12px", color: "#555" }}>{scenario?.description}</p>
-          </div>
-        </div>
-
-        <div style={{ marginBottom: "20px" }}>
-          <label style={{ display: "block", marginBottom: "6px", fontSize: "12px", color: DESIGN_SYSTEM.colors.textSecondary }}>Předmět emailu</label>
-          <input
-            value={editForm.subject}
-            onChange={e => setEditForm(f => ({ ...f, subject: e.target.value }))}
-            style={{ width: "100%", padding: "10px 12px", background: DESIGN_SYSTEM.colors.inputs, border: "1px solid #333", color: DESIGN_SYSTEM.colors.textPrimary, borderRadius: "4px", fontFamily: "inherit", fontSize: "13px" }}
-          />
-          <p style={{ margin: "6px 0 0", fontSize: "11px", color: "#555" }}>Placeholdery: &#123;id&#125; = číslo objednávky, &#123;datum&#125; = datum</p>
-        </div>
-
-        <div style={{ marginBottom: "24px" }}>
-          <label style={{ display: "block", marginBottom: "6px", fontSize: "12px", color: DESIGN_SYSTEM.colors.textSecondary }}>Úvodní text emailu</label>
-          <textarea
-            value={editForm.intro_text}
-            onChange={e => setEditForm(f => ({ ...f, intro_text: e.target.value }))}
-            rows={5}
-            style={{ width: "100%", padding: "10px 12px", background: DESIGN_SYSTEM.colors.inputs, border: "1px solid #333", color: DESIGN_SYSTEM.colors.textPrimary, borderRadius: "4px", fontFamily: "inherit", fontSize: "13px", resize: "vertical" }}
-          />
-          <p style={{ margin: "6px 0 0", fontSize: "11px", color: "#555" }}>Tento text se zobrazí zákazníkovi hned po pozdravu. Placeholdery: &#123;id&#125;, &#123;datum&#125;</p>
-        </div>
-
-        <div style={{ background: DESIGN_SYSTEM.colors.tertiary, border: "1px solid #222", borderRadius: "6px", padding: "18px 22px", marginBottom: "24px" }}>
-          <p style={{ margin: "0 0 8px", fontSize: "11px", color: "#555", textTransform: "uppercase", letterSpacing: "1px" }}>Náhled emailu</p>
-          <div style={{ background: DESIGN_SYSTEM.colors.elevated, padding: "16px", borderRadius: "4px" }}>
-            <p style={{ margin: "0 0 8px", fontSize: "11px", color: DESIGN_SYSTEM.colors.textSecondary }}>Předmět: <span style={{ color: DESIGN_SYSTEM.colors.textSecondary }}>{editForm.subject.replace("{id}", "1234").replace("{datum}", "1. ledna 2026")}</span></p>
-            <hr style={{ border: "none", borderTop: "1px solid #222", margin: "10px 0" }} />
-            <p style={{ margin: 0, fontSize: "13px", color: DESIGN_SYSTEM.colors.textSecondary, lineHeight: "1.6" }}>
-              {editForm.intro_text.replace("{id}", "1234").replace("{datum}", "1. ledna 2026")}
-            </p>
-            <p style={{ margin: "12px 0 0", fontSize: "12px", color: "#555" }}>[... odkaz ke stažení ...]</p>
-          </div>
-        </div>
-
-        <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="btn btn-filled"
-            style={{ borderRadius: "4px" }}
-          >
-            {saving ? "Ukládám..." : saveOk ? "Uloženo ✓" : "Uložit šablonu"}
-          </button>
-          <button
-            onClick={handleEmailPreview}
-            disabled={loadingPreview}
-            className="btn btn-admin"
-            style={{ borderRadius: "4px" }}
-          >
-            {loadingPreview ? "Načítám..." : "Náhled emailu"}
-          </button>
-          <button
-            onClick={() => setEditingKey(null)}
-            className="btn"
-            style={{ borderRadius: "4px" }}
-          >
-            Zrušit
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div>
-      <p style={{ color: "#555", fontSize: "13px", marginBottom: "24px" }}>
-        Šablony emailů, které zákazníci obdrží po dokončení objednávky. Předmět a úvodní text lze upravit, zbytek (odkaz ke stažení, smlouva) se generuje automaticky.
-      </p>
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr>
-            <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, letterSpacing: "0.08em", textTransform: "uppercase" }}>Scénář</th>
-            <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, letterSpacing: "0.08em", textTransform: "uppercase" }}>Předmět</th>
-            <th style={{ ...cellStyle, color: "#555", fontSize: "11px", fontWeight: 400, letterSpacing: "0.08em", textTransform: "uppercase", textAlign: "right" }}>Akce</th>
-          </tr>
-        </thead>
-        <tbody>
-          {EMAIL_SCENARIOS.map(scenario => {
-            const tpl = tplByKey(scenario.key);
+    <div style={{ display: "flex", height: "100%", gap: "16px", background: "#000" }}>
+      {/* Left: List of scenarios */}
+      <div style={{ width: "350px", flexShrink: 0, overflow: "auto", borderRight: "1px solid #222", paddingRight: "16px" }}>
+        <h3 style={{ fontSize: "13px", fontWeight: 600, color: "#fff", marginBottom: "12px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+          Scénáře
+        </h3>
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+          {EMAIL_SCENARIOS.map(s => {
+            const tpl = tplByKey(s.key);
+            const isSelected = selectedKey === s.key;
             return (
-              <tr key={scenario.key}>
-                <td style={cellStyle}>
-                  <div style={{ fontWeight: 600, fontSize: "14px", color: DESIGN_SYSTEM.colors.textPrimary, marginBottom: "2px" }}>{scenario.label}</div>
-                  <div style={{ fontSize: "12px", color: "#555" }}>{scenario.description}</div>
-                </td>
-                <td style={{ ...cellStyle, fontSize: "13px", color: DESIGN_SYSTEM.colors.textSecondary, maxWidth: "260px" }}>
-                  {tpl ? <span style={{ overflow: "hidden", textOverflow: "ellipsis", display: "block", whiteSpace: "nowrap" }}>{tpl.subject}</span> : <span style={{ color: "#444" }}>Nenačteno</span>}
-                </td>
-                <td style={{ ...cellStyle, textAlign: "right" }}>
-                  {tpl && (
-                    <button
-                      onClick={() => startEdit(tpl)}
-                      style={{ background: "transparent", border: "1px solid #333", color: DESIGN_SYSTEM.colors.textSecondary, padding: "4px 14px", fontSize: "12px", borderRadius: "3px", cursor: "pointer", fontFamily: "inherit" }}
-                    >
-                      Upravit
-                    </button>
-                  )}
-                </td>
-              </tr>
+              <button
+                key={s.key}
+                onClick={() => selectScenario(s.key)}
+                style={{
+                  padding: "12px",
+                  background: isSelected ? "#0B99FC20" : "#0f0f0f",
+                  border: isSelected ? "1px solid #0B99FC" : "1px solid #333",
+                  borderRadius: "6px",
+                  textAlign: "left",
+                  cursor: "pointer",
+                  transition: "all 150ms ease",
+                }}
+                onMouseEnter={(e) => {
+                  if (!isSelected) {
+                    (e.currentTarget as HTMLButtonElement).style.borderColor = "#666";
+                    (e.currentTarget as HTMLButtonElement).style.background = "#1a1a1a";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isSelected) {
+                    (e.currentTarget as HTMLButtonElement).style.borderColor = "#333";
+                    (e.currentTarget as HTMLButtonElement).style.background = "#0f0f0f";
+                  }
+                }}
+              >
+                <div style={{ fontSize: "12px", fontWeight: 600, color: "#fff", marginBottom: "4px" }}>
+                  {s.label}
+                </div>
+                <div style={{ fontSize: "11px", color: "#666" }}>
+                  {s.description}
+                </div>
+              </button>
             );
           })}
-        </tbody>
-      </table>
+        </div>
+      </div>
+
+      {/* Right: Email edit + preview */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden" }}>
+        {selectedKey && scenario && currentTpl ? (
+          <>
+            {/* Header with scenario name */}
+            <div style={{ marginBottom: "16px", paddingBottom: "12px", borderBottom: "1px solid #222" }}>
+              <h2 style={{ fontSize: "16px", fontWeight: 600, color: "#fff", margin: 0, marginBottom: "4px" }}>
+                {scenario.label}
+              </h2>
+              <p style={{ fontSize: "12px", color: "#666", margin: 0 }}>
+                {scenario.description}
+              </p>
+            </div>
+
+            {/* Main content area - split into edit form (left) and preview (right) */}
+            <div style={{ display: "flex", gap: "16px", flex: 1, minHeight: 0 }}>
+              {/* Edit form - left side */}
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "auto", paddingRight: "8px" }}>
+                <div style={{ marginBottom: "16px" }}>
+                  <label style={{ display: "block", marginBottom: "6px", fontSize: "12px", color: "#999", fontWeight: 600 }}>
+                    Předmět emailu
+                  </label>
+                  <input
+                    value={editForm.subject}
+                    onChange={e => setEditForm(f => ({ ...f, subject: e.target.value }))}
+                    style={{ width: "100%", padding: "10px 12px", background: "#111", border: "1px solid #333", color: "#fff", borderRadius: "4px", fontSize: "13px", boxSizing: "border-box" }}
+                  />
+                  <p style={{ margin: "6px 0 0", fontSize: "11px", color: "#555" }}>
+                    Placeholdery: {"id"} = číslo objednávky, {"datum"} = datum
+                  </p>
+                </div>
+
+                <div style={{ marginBottom: "16px", flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
+                  <label style={{ display: "block", marginBottom: "6px", fontSize: "12px", color: "#999", fontWeight: 600 }}>
+                    Úvodní text emailu
+                  </label>
+                  <textarea
+                    value={editForm.intro_text}
+                    onChange={e => setEditForm(f => ({ ...f, intro_text: e.target.value }))}
+                    style={{ flex: 1, padding: "10px 12px", background: "#111", border: "1px solid #333", color: "#fff", borderRadius: "4px", fontSize: "13px", resize: "none", minHeight: 0, boxSizing: "border-box" }}
+                  />
+                  <p style={{ margin: "6px 0 0", fontSize: "11px", color: "#555" }}>
+                    Placeholdery: {"id"}, {"datum"}
+                  </p>
+                </div>
+
+                <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+                  <button
+                    onClick={handleSave}
+                    disabled={saving}
+                    style={{
+                      padding: "10px 16px",
+                      background: "#0B99FC",
+                      color: "#000",
+                      border: "none",
+                      borderRadius: "4px",
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      cursor: saving ? "wait" : "pointer",
+                      opacity: saving ? 0.6 : 1,
+                    }}
+                  >
+                    {saving ? "Ukládám..." : saveOk ? "Uloženo " : "Uložit šablonu"}
+                  </button>
+                  <button
+                    onClick={handleEmailPreview}
+                    disabled={loadingPreview}
+                    style={{
+                      padding: "10px 16px",
+                      background: "#222",
+                      color: "#fff",
+                      border: "1px solid #444",
+                      borderRadius: "4px",
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      cursor: loadingPreview ? "wait" : "pointer",
+                      opacity: loadingPreview ? 0.6 : 1,
+                    }}
+                  >
+                    {loadingPreview ? "Načítám..." : "Obnovit náhled"}
+                  </button>
+                </div>
+              </div>
+
+              {/* Preview - right side */}
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 300, minHeight: 0, background: "#0a0a0a", border: "1px solid #222", borderRadius: "6px", overflow: "hidden" }}>
+                <div style={{ padding: "12px", borderBottom: "1px solid #222", fontSize: "11px", color: "#666", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                  Náhled emailu
+                </div>
+                <div style={{ flex: 1, overflow: "auto", background: "#000" }}>
+                  {previewHtml ? (
+                    <iframe srcDoc={previewHtml} style={{ width: "100%", height: "100%", border: "none", display: "block" }} title="Náhled emailu" />
+                  ) : (
+                    <div style={{ padding: "24px", textAlign: "center", color: "#555", fontSize: "12px" }}>
+                      Kliknutím na "Obnovit náhled" se zde zobrazí podgles emailu
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div style={{ color: "#555", fontSize: "13px", textAlign: "center", padding: "40px 20px" }}>
+            Vyberte scénář ze seznamu
+          </div>
+        )}
+      </div>
     </div>
   );
 }
