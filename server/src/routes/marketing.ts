@@ -770,14 +770,15 @@ router.get("/journeys", requireAdmin, async (_req: Request, res: Response) => {
             
             await pool.query(
               `INSERT INTO marketing_journey_steps
-               (journey_id, position, template_id, delay_hours, description)
-               VALUES ($1, $2, $3, $4, $5)`,
+               (journey_id, position, step_type, template_id, delay_hours, configuration)
+               VALUES ($1, $2, $3, $4, $5, $6)`,
               [
                 journeyId,
                 stepIndex,
+                "email",
                 templateId,
                 step.delay_hours,
-                step.description,
+                JSON.stringify({ description: step.description })
               ]
             );
             
