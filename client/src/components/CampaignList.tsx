@@ -257,7 +257,7 @@ export default function CampaignList({
                     cursor: "pointer",
                   }}
                 >
-                  💳 Kupující
+                  Kupující
                 </button>
                 <button
                   onClick={() => setNewCampaignAudience("free_downloads")}
@@ -272,7 +272,7 @@ export default function CampaignList({
                     cursor: "pointer",
                   }}
                 >
-                  🎁 Zdarma
+                  Zdarma
                 </button>
               </div>
             </div>
