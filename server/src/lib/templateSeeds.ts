@@ -272,7 +272,7 @@ const createEmailHTML = (content: string, templateName: string): string => `<!DO
     <div class="email-wrapper">
         <!-- Header -->
         <div class="email-header">
-            <div class="logo">🎹 VOODOO808</div>
+            <div class="logo">VOODOO808</div>
             <div class="logo-subtitle">Beat Production & Sound Design</div>
         </div>
         
@@ -284,16 +284,16 @@ const createEmailHTML = (content: string, templateName: string): string => `<!DO
         <!-- Footer -->
         <div class="email-footer">
             <div class="email-footer-text">
-                © 2024 VOODOO808. Všechna práva vyhrazena.
-            </div>
-            <div class="email-footer-divider"></div>
-            <div class="email-footer-text">
-                <strong>Kontakt:</strong><br>
-                Email: <a href="mailto:info@voodoo808.cz" style="color: #ffffff; text-decoration: none;">info@voodoo808.cz</a>
+                <strong>VOODOO808</strong><br>
+                Vojtěch Vojkovský, Bachelor of Arts<br>
+                Bědovická 193e, Třebechovice pod Orebem, 503 46<br>
+                Česká Republika<br>
+                IČO: 08701032
             </div>
             <div class="email-footer-divider"></div>
             <div class="email-footer-links">
-                Máte dotaz? Odpovězte přímo na tento email a rád vám pomůžu. 🙏
+                <a href="https://www.voodoo808.com/privacy" style="color: #ffffff; text-decoration: none;">Více o zásadách ochrany osobních údajů</a><br>
+                <a href="https://www.voodoo808.com/unsubscribe?email={{email}}" style="color: #ffffff; text-decoration: none;">Odhlásit se z marketingových e-mailů</a>
             </div>
         </div>
     </div>
@@ -318,7 +318,7 @@ export const TEMPLATE_SEEDS = [
 
       <p>Před pár dny jste u mě na webu stáhli ten free beat. Chtěl jsem se jen zeptat – už do toho něco píšete? Jestli máte hotový demo nebo nahráváte nějaký video ze studia na IG, určitě mě označte, chci slyšet, co vám v tý hlavě vzniká.</p>
 
-      <p>Pokud chcete tenhle sound posunout dál, mít k dispozici kompletní stopy (stems) pro pořádnej mix a hlavně jistotu, že ten beat nikdo jinej nekoupí a zůstane navždycky jenom váš, je čas na exkluzivní licenci.</p>
+      <p>Pokud chcete tenhle sound posunout dál, mít k dispozici kompletní stopy (stems) pro pořádný mix a hlavně jistotu, že ten beat nikdo jinej nekoupí a zůstane navždycky jenom váš, je čas na exkluzivní licenci.</p>
 
       <p><strong>Chci vás podpořit, takže vám dávám kód FIRST20 na 20% slevu na jakoukoliv exkluzivitu z mýho katalogu.</strong></p>
 
@@ -339,7 +339,7 @@ export const TEMPLATE_SEEDS = [
     step_type: "email",
     is_recommended: true,
     sort_order: 2,
-    subject: "Posuňte svoji produkci dál (Sleva uvnitř) 🎹",
+    subject: "Posuňte svoji produkci dál - Sleva uvnitř",
     preheader: "Jak vám sedí moje free zvuky v DAW?",
     html_content: createEmailHTML(`
       <p>Čau {{first_name}},</p>
@@ -377,7 +377,7 @@ export const TEMPLATE_SEEDS = [
       <p>Nechal jsem vám košík schovanej. U exkluzivních licencí je to ale celkem risk, protože jakmile ten beat koupí někdo jinej, je navždycky pryč a já s tím už nic neudělám. Radši vám ho zatím držím.</p>
 
       <div class="highlight-box">
-        <p>📦 Váš výběr: {{cart_items_summary}}</p>
+        <p>Váš výběr: {{cart_items_summary}}</p>
       </div>
 
       <p style="text-align: center;">
@@ -407,7 +407,7 @@ export const TEMPLATE_SEEDS = [
       <p><strong>Abyste to měli o něco víc easy, vygeneroval jsem vám speciální 15% slevu. Použijte v košíku kód SAVE15.</strong></p>
 
       <div class="highlight-box">
-        <p>⏰ Pozor! Kód SAVE15 platí jenom 24 hodin, pak nadobro expiruje.</p>
+        <p>Pozor! Kód SAVE15 platí jenom 24 hodin, pak nadobro expiruje.</p>
       </div>
 
       <p style="text-align: center;">
@@ -427,7 +427,7 @@ export const TEMPLATE_SEEDS = [
     step_type: "email",
     is_recommended: true,
     sort_order: 5,
-    subject: "Ten beat, co jste checkovali... 👀",
+    subject: "Ten beat, co jste checkovali...",
     preheader: "Vibe u věci {{product_name}} je šílenej.",
     html_content: createEmailHTML(`
       <p>Čau {{first_name}},</p>
@@ -462,9 +462,9 @@ export const TEMPLATE_SEEDS = [
 
       <p><strong>Tenhle 3 věci jsou momentálně nejvíc vyhledávané na webu:</strong></p>
       <ul>
-        <li>🔥 {{recommendation_1}}</li>
-        <li>🎹 {{recommendation_2}}</li>
-        <li>⚡ {{recommendation_3}}</li>
+        <li>{{recommendation_1}}</li>
+        <li>{{recommendation_2}}</li>
+        <li>{{recommendation_3}}</li>
       </ul>
 
       <p>Klikněte níže, naskočte zpátky na web a najděte ten správný sound pro váš projekt.</p>
@@ -475,38 +475,6 @@ export const TEMPLATE_SEEDS = [
 
       <p>Hned jsme zpátky,<br><strong>VOODOO808</strong></p>
     `, "Browse Recovery Day 3"),
-  },
-  {
-    name: "Rapper Tips - Spotify Strategy",
-    key: "rapper_tips_spotify",
-    category: "nurture",
-    audience: "rapper",
-    journey_name: "Rapper Growth & Tips Series",
-    step_position: 1,
-    step_type: "email",
-    is_recommended: true,
-    sort_order: 7,
-    subject: "Jak dostat vaše tracky do Spotify playlistů 📈",
-    preheader: "Blueprint pro nezávislé CZ/SK interprety.",
-    html_content: createEmailHTML(`
-      <p>Čau {{first_name}},</p>
-
-      <p>Můžete mít ty nejtvrdší bary a dokonalej mix, ale pokud váš track nikdo neuslyší, děláte to zbytečně. Dneska vám chci poslat rychlej návod, jak dostat vaši tvorbu do editorial a algorithmic playlistů na Spotify:</p>
-
-      <ol>
-        <li><strong>Pitchujte včas:</strong> Nahrajte a pitchujte track přes Spotify for Artists aspoň 3 až 4 týdny před releasem. Dá to kurátorům čas a hlavně to track automaticky hodí vašim followers do Release Radaru.</li>
-        <li><strong>Tlačte traffic první dny:</strong> Prvních 48 hodin po releasu směřujte veškerou pozornost z IG, TikToku a YouTube čistě na Spotify link. Algoritmus miluje, když lidi přicházejí zvenčí.</li>
-        <li><strong>Čistá metadata:</strong> Při pitchování přesně zadejte žánr, subžánry a náladu tracku. AI Spotify podle toho hledá správné posluchače.</li>
-      </ol>
-
-      <p><strong>Hledáte novej podklad, kterým odpálíte příští release?</strong> Skočte na web checknout nové exkluzivní beaty.</p>
-
-      <p style="text-align: center;">
-        <a href="{{site_url}}/beats" class="cta-button cta-green">Poslechnout nové beaty →</a>
-      </p>
-
-      <p>Makejte na sobě,<br><strong>VOODOO808</strong></p>
-    `, "Rapper Tips Spotify"),
   },
   {
     name: "Producer Tips - Sound Design",
@@ -565,34 +533,6 @@ export const TEMPLATE_SEEDS = [
     `, "Post-Purchase Engagement"),
   },
   {
-    name: "Post-Beat Purchase - Custom Arrangement",
-    key: "post_beat_purchase_custom_arrangement",
-    category: "upsell",
-    audience: "general",
-    journey_name: "Post-Beat Purchase Upsell",
-    step_position: 2,
-    step_type: "email",
-    is_recommended: true,
-    sort_order: 10,
-    subject: "Potřebujete upravit beat {{product_name}} na míru? 🚀",
-    preheader: "Uděláme z toho dokonalej track pro váš release.",
-    html_content: createEmailHTML(`
-      <p>Čau {{first_name}},</p>
-
-      <p>Zakoupili jste exkluzivní verzi <strong>{{product_name}}</strong>, což znamená, že ten sound je teď stoprocentně váš. Chci se ujistit, že z toho vytáhnete absolutní maximum.</p>
-
-      <p>Pokud vám v beatu nesedí struktura, potřebujete prodloužit intro, zkrátit refrén nebo přidat speciální breakdown na vaše sloky, nabízím vám k téhle exkluzivitě custom úpravy za přátelskou cenu.</p>
-
-      <p><strong>Přizpůsobím strukturu beatu přesně podle vašeho nahraného vokálu, aby to mělo to správné aranžmá.</strong></p>
-
-      <p style="text-align: center;">
-        <a href="{{upgrade_url}}" class="cta-button cta-red">Objednat custom úpravu aranže →</a>
-      </p>
-
-      <p>Pojďme udělat hit,<br><strong>VOODOO808</strong></p>
-    `, "Custom Arrangement"),
-  },
-  {
     name: "Kit Cross-Sell",
     key: "kit_cross_sell",
     category: "upsell",
@@ -602,7 +542,7 @@ export const TEMPLATE_SEEDS = [
     step_type: "email",
     is_recommended: true,
     sort_order: 11,
-    subject: "Spárujte svůj kit s tímhle (50% sleva na bundle) 🔌",
+    subject: "Spárujte svůj kit s tímhle (50% sleva na bundle)",
     preheader: "Perfektní kombinace pro váš příští cookup.",
     html_content: createEmailHTML(`
       <p>Čau {{first_name}},</p>
@@ -630,7 +570,7 @@ export const TEMPLATE_SEEDS = [
     step_type: "email",
     is_recommended: false,
     sort_order: 12,
-    subject: "Dropnul jsem novej materiál [Poslouchej uvnitř] 🔥",
+    subject: "Dropnul jsem novej materiál [Poslouchej uvnitř]",
     preheader: "Nové exkluzivní věci a sound kity jsou online.",
     html_content: createEmailHTML(`
       <p>Čau {{first_name}},</p>
@@ -639,8 +579,8 @@ export const TEMPLATE_SEEDS = [
 
       <p><strong>Co je nového na webu:</strong></p>
       <ul>
-        <li>🎤 3 nové exkluzivní beaty (Od temného trapu po melodický pluggnb)</li>
-        <li>🎹 1 novej mini-loop pack (Stahujte zdarma v sekci pro registrované)</li>
+        <li>3 nové exkluzivní beaty (Od temného trapu po melodický pluggnb)</li>
+        <li>1 novej mini-loop pack (Stahujte zdarma v sekci pro registrované)</li>
       </ul>
 
       <p>Skočte na web si ty věci poslechnout dřív, než si ty exkluzivity lockne někdo jinej. Kdo dřív přijde, ten bere.</p>
@@ -771,10 +711,10 @@ export const TEMPLATE_SEEDS = [
 
       <p><strong>Co dostanete:</strong></p>
       <ul>
-        <li>✨ 30% sleva na všechno, pořád</li>
-        <li>🚀 První přístup k novým beatům (3 dny dříve)</li>
-        <li>💎 Limitované exkluzivní passy</li>
-        <li>👤 Přímý přístup ke mně na support</li>
+        <li>30% sleva na všechno, pořád</li>
+        <li>První přístup k novým beatům (3 dny dříve)</li>
+        <li>Limitované exkluzivní passy</li>
+        <li>Přímý přístup ke mně na support</li>
       </ul>
 
       <p style="text-align: center;">
@@ -822,7 +762,7 @@ export const TEMPLATE_SEEDS = [
     step_type: "email",
     is_recommended: true,
     sort_order: 1,
-    subject: "Vaše objednávka je potvrzena! ✓",
+    subject: "Vaše objednávka je potvrzena!",
     preheader: "Děkujeme za váš nákup. Zde jsou vaše download linky.",
     html_content: createEmailHTML(`
       <p>Čau {{first_name}},</p>
@@ -830,7 +770,7 @@ export const TEMPLATE_SEEDS = [
       <p>Moc vám děkuju za nákup! Vaše objednávka byla úspěšně zpracována a všechny stahy jsou připravené.</p>
 
       <div class="highlight-box">
-        <p><strong>📦 Vaše objednávka:</strong><br>{{order_items}}<br><br><strong>Cena:</strong> {{order_price}} CZK</p>
+        <p><strong>Vaše objednávka:</strong><br>{{order_items}}<br><br><strong>Cena:</strong> {{order_price}} CZK</p>
       </div>
 
       <p><strong>Všechny vaše soubory včetně kompletních stop (stems) najdete v dashboardu nebo v příloze tohoto mailu.</strong></p>
@@ -854,7 +794,7 @@ export const TEMPLATE_SEEDS = [
     step_type: "email",
     is_recommended: true,
     sort_order: 1,
-    subject: "Vaše license na {{product_name}} je připravena! 🔓",
+    subject: "Vaše license na {{product_name}} je připravena!",
     preheader: "Kompletní soubory a právní dokumentace jsou připravené k stažení.",
     html_content: createEmailHTML(`
       <p>Čau {{first_name}},</p>
@@ -862,7 +802,7 @@ export const TEMPLATE_SEEDS = [
       <p>Vaše license na <strong>{{product_name}}</strong> je finalizovaná a všechny soubory jsou k dispozici.</p>
 
       <div class="highlight-box">
-        <p><strong>🎵 Soubory k dispozici:</strong><br>
+        <p><strong>Soubory k dispozici:</strong><br>
         • Hlavní beat (Hi-Fi WAV)<br>
         • Kompletní trackouty (Stems)<br>
         • Právní certifikát autenticity<br>
@@ -898,7 +838,7 @@ export const TEMPLATE_SEEDS = [
       <p>Zde je vaša daňová faktura a potvrzení platby za nákup.</p>
 
       <div class="highlight-box">
-        <p><strong>📄 Údaje faktury:</strong><br>
+        <p><strong>Údaje faktury:</strong><br>
         Číslo faktury: {{invoice_number}}<br>
         Datum: {{invoice_date}}<br>
         Částka: {{total_price}} CZK<br>
