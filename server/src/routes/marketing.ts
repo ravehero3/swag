@@ -2379,4 +2379,123 @@ router.patch("/campaigns/:id/resume", requireAdmin, async (req: Request, res: Re
   }
 });
 
+// Get email activity logs (transactional + campaign emails sent)
+router.get("/email-activity", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const { days = 7, journeyId, emailType, status, limit = 100, offset = 0 } = req.query;
+    const daysNum = parseInt(String(days), 10) || 7;
+    const limitNum = Math.min(parseInt(String(limit), 10) || 100, 500);
+    const offsetNum = parseInt(String(offset), 10) || 0;
+
+    let whereConditions = ["mes.sent_at > NOW() - ($1::text || ' days')::interval"];
+    const params: any[] = [daysNum];
+
+    if (journeyId) {
+      whereConditions.push(`mj.id = $${params.length + 1}`);
+      params.push(parseInt(String(journeyId), 10));
+    }
+
+    if (emailType && emailType !== "all") {
+      whereConditions.push(`mes.email_type = $${params.length + 1}`);
+      params.push(String(emailType));
+    }
+
+    if (status && status !== "all") {
+      whereConditions.push(`mes.status = $${params.length + 1}`);
+      params.push(String(status));
+    }
+
+    const whereClause = whereConditions.join(" AND ");
+
+    // Get total count
+    const countRes = await pool.query(
+      `SELECT COUNT(*) as total FROM marketing_email_sends mes
+       LEFT JOIN marketing_journeys mj ON mes.journey_id = mj.id
+       WHERE ${whereClause}`,
+      params
+    );
+    const total = parseInt(countRes.rows[0]?.total || 0, 10);
+
+    // Get emails with engagement stats
+    const emailsRes = await pool.query(
+      `SELECT
+         mes.id,
+         mes.recipient,
+         mes.subject,
+         mes.email_type,
+         COALESCE(mj.name, 'N/A') as journey_name,
+         mes.status,
+         mes.sent_at,
+         COUNT(DISTINCT meo.id) FILTER (WHERE meo.event_type = 'open') as open_count,
+         COUNT(DISTINCT meo.id) FILTER (WHERE meo.event_type = 'click') as click_count,
+         COUNT(DISTINCT meo.id) FILTER (WHERE meo.event_type = 'unsubscribe') as unsubscribe_count
+       FROM marketing_email_sends mes
+       LEFT JOIN marketing_journeys mj ON mes.journey_id = mj.id
+       LEFT JOIN marketing_email_opens meo ON mes.id = meo.email_send_id
+       WHERE ${whereClause}
+       GROUP BY mes.id, mes.recipient, mes.subject, mes.email_type, mj.name, mes.status, mes.sent_at
+       ORDER BY mes.sent_at DESC
+       LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
+      [...params, limitNum, offsetNum]
+    );
+
+    // Get stats
+    const statsRes = await pool.query(
+      `SELECT
+         COUNT(*) as total_sent,
+         COUNT(*) FILTER (WHERE status = 'sent') as successful,
+         COUNT(*) FILTER (WHERE status = 'failed') as failed,
+         COUNT(DISTINCT CASE WHEN meo.event_type = 'open' THEN mes.id END) as opened,
+         COUNT(DISTINCT CASE WHEN meo.event_type = 'click' THEN mes.id END) as clicked,
+         COUNT(DISTINCT CASE WHEN meo.event_type = 'unsubscribe' THEN mes.id END) as unsubscribed
+       FROM marketing_email_sends mes
+       LEFT JOIN marketing_email_opens meo ON mes.id = meo.email_send_id
+       WHERE ${whereClause}`,
+      params
+    );
+
+    const stats = statsRes.rows[0];
+    const successRate = stats.total_sent > 0 ? Math.round((stats.successful / stats.total_sent) * 100) : 0;
+    const openRate = stats.total_sent > 0 ? Math.round((stats.opened / stats.total_sent) * 100) : 0;
+    const clickRate = stats.total_sent > 0 ? Math.round((stats.clicked / stats.total_sent) * 100) : 0;
+
+    res.json({
+      emails: emailsRes.rows,
+      pagination: {
+        total,
+        limit: limitNum,
+        offset: offsetNum,
+        hasMore: offsetNum + limitNum < total,
+      },
+      stats: {
+        totalSent: parseInt(stats.total_sent, 10),
+        successful: parseInt(stats.successful, 10),
+        failed: parseInt(stats.failed, 10),
+        opened: parseInt(stats.opened, 10),
+        clicked: parseInt(stats.clicked, 10),
+        unsubscribed: parseInt(stats.unsubscribed, 10),
+        successRate,
+        openRate,
+        clickRate,
+      },
+    });
+  } catch (error) {
+    console.error("Email activity error:", error);
+    res.status(500).json({ error: "Chyba při načítání aktivity e-mailů" });
+  }
+});
+
+// Get available journeys for filtering
+router.get("/email-activity/journeys", requireAdmin, async (_req: Request, res: Response) => {
+  try {
+    const res_journeys = await pool.query(
+      `SELECT id, name FROM marketing_journeys ORDER BY name ASC`
+    );
+    res.json(res_journeys.rows);
+  } catch (error) {
+    console.error("Error fetching journeys:", error);
+    res.status(500).json({ error: "Chyba při načítání cest" });
+  }
+});
+
 export default router;
