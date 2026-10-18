@@ -21,6 +21,7 @@ import JourneyContainers from "../components/JourneyContainers.js";
 import { TemplateCardGrid } from "../components/TemplateCardGrid.js";
 import { VisualEmailBuilder } from "../components/VisualEmailBuilder.js";
 import { EmailEditorModal } from "../components/EmailEditorModal.js";
+import { EmailActivityTab } from "../components/EmailActivityTab.js";
 import {
   BeatArtwork,
   parseArtworkConfig,
@@ -6859,7 +6860,7 @@ function SlevyAKuponyTab({ settings, onRefresh }: { settings: Record<string, str
   );
 }
 
-type MktSubTab = "prehled" | "odberatele" | "journeys" | "kampane" | "sablony" | "analytika" | "discounts";
+type MktSubTab = "prehled" | "odberatele" | "journeys" | "kampane" | "sablony" | "analytika" | "discounts" | "email-activity";
 
 function MarketingTab({ settings, onRefresh, initialSub }: { settings: Record<string, string>; onRefresh: () => Promise<void>; initialSub?: MktSubTab }) {
   const [sub, setSub] = useState<MktSubTab>(initialSub || "prehled");
@@ -6916,6 +6917,7 @@ function MarketingTab({ settings, onRefresh, initialSub }: { settings: Record<st
     { id: "odberatele", label: "Odběratelé" },
     { id: "journeys",   label: "Journeys" },
     { id: "kampane",    label: "Kampaně" },
+    { id: "email-activity", label: "Email Aktivita" },
     { id: "sablony",    label: "Šablony" },
     { id: "analytika",  label: "Analytika" },
     { id: "discounts",  label: "Slevy & Kupóny" },
@@ -7267,6 +7269,7 @@ function MarketingTab({ settings, onRefresh, initialSub }: { settings: Record<st
       {sub === "odberatele" && <OdberateleTab />}
       {sub === "journeys"   && <JourneysTab />}
       {sub === "kampane"    && <Campaigns />}
+      {sub === "email-activity" && <EmailActivityTab />}
       {sub === "sablony"    && <SablonyTab />}
     </div>
   );
