@@ -755,6 +755,7 @@ router.get("/journeys", requireAdmin, async (_req: Request, res: Response) => {
         if (parseInt(stepsCount.rows[0].count || 0, 10) === 0) {
           // Create missing steps
           let stepIndex = 1;
+          console.log(`[Marketing] Creating steps for journey: ${journeyConfig.name}`);
           for (const step of journeyConfig.steps) {
             const templateRes = await pool.query(
               "SELECT id FROM marketing_templates WHERE key = $1",
@@ -767,6 +768,7 @@ router.get("/journeys", requireAdmin, async (_req: Request, res: Response) => {
             }
             
             const templateId = templateRes.rows[0].id;
+            console.log(`[Marketing] Inserting step for ${journeyConfig.name}: template ${step.template_key} (id: ${templateId})`);
             
             await pool.query(
               `INSERT INTO marketing_journey_steps
@@ -781,7 +783,7 @@ router.get("/journeys", requireAdmin, async (_req: Request, res: Response) => {
                 JSON.stringify({ description: step.description })
               ]
             );
-            
+            console.log(`[Marketing] Step inserted successfully`);
             stepIndex++;
           }
           console.log(`✅ Auto-seeded steps for journey: ${journeyConfig.name}`);
