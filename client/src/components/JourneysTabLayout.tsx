@@ -49,7 +49,13 @@ export default function JourneysTabLayout({
 }: JourneysLayoutProps) {
   const selectedStep = detail?.steps?.find((s: any) => s.id === selectedStepId);
   const template = templates.find((t) => t.id === selectedStep?.template_id);
-  const isEmailSelected = selectedStep?.step_type === "email" && template;
+  
+  // Show editor if: step is selected AND it's an email step
+  const isEmailSelected = selectedStep?.step_type === "email";
+  
+  // If we have a template, use it. Otherwise use the step's data directly (for campaign emails without templates)
+  const displayTemplate = template || selectedStep;
+  
   console.log("[JourneysTabLayout] Rendering - selectedStepId:", selectedStepId, "step_type:", selectedStep?.step_type, "template_id:", selectedStep?.template_id, "template found:", !!template);
 
   return (
@@ -92,7 +98,7 @@ export default function JourneysTabLayout({
             ) : (
               // Compact Email Editor - fits all 4 sections in tight space
               <CompactEmailEditor
-                template={template}
+                template={displayTemplate}
                 onSave={async (html) => {
                   onRefresh();
                 }}
