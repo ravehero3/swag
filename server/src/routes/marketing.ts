@@ -1950,53 +1950,60 @@ router.get("/campaigns/:campaignId/emails", requireAdmin, async (req: Request, r
   }
 });
 
-// Add a new email to a campaign
+// Add a new email to a campaign with default blocks (header, title, body, footer)
 router.post("/campaigns/:campaignId/emails", requireAdmin, async (req: Request, res: Response) => {
   try {
     const campaignId = parseInt(req.params.campaignId, 10);
     const { position, delayHours } = req.body;
     console.log("[Marketing] Creating campaign email:", { campaignId, position, delayHours });
     
-    // First, check if a default campaign email template exists
-    let defaultTemplateId: number | null = null;
-    const defaultTplRes = await pool.query(
-      "SELECT id FROM marketing_templates WHERE key = 'campaign_email_default' LIMIT 1"
-    );
+    // Create default blocks (header, title, body text, footer)
+    const defaultBlocks = [
+      {
+        id: "header-1",
+        type: "header",
+        headerType: "logo",
+        logoType: "white",
+        logoSize: "md"
+      },
+      {
+        id: "title-1",
+        type: "heading",
+        headingText: "Nadpis vašeho e-mailu",
+        headingLevel: "h1",
+        headingAlign: "center"
+      },
+      {
+        id: "body-1",
+        type: "paragraph",
+        paragraphText: "Sem vložte obsah vašeho e-mailu. Klikněte na e-mail v sekvenci a upravte jej v editoru. Můžete přidat více bloků, obrázky, videa, tlačítka a další prvky."
+      },
+      {
+        id: "footer-1",
+        type: "footer",
+        footerText: "© 2025 VOODOO808. Všechna práva vyhrazena."
+      }
+    ];
     
-    if (defaultTplRes.rows.length === 0) {
-      // Create a default campaign email template
-      const newTplRes = await pool.query(
-        `INSERT INTO marketing_templates 
-         (name, key, subject, preheader, html_content)
-         VALUES ('Výchozí e-mail kampaně', 'campaign_email_default', 
-                 'Nový e-mail kampaně', 'Obsah e-mailu',
-                 '<h2 style="color:#ffffff;margin:0 0 12px 0;font-size:20px;font-weight:700;">Nadpis e-mailu</h2><p style="color:#aaaaaa;margin:0 0 16px 0;font-size:14px;line-height:1.6;">Sem vložte obsah vašeho e-mailu. Tento text si můžete upravit v editoru.</p><p style="color:#aaaaaa;margin:0;font-size:13px;"><a href="#" style="color:#0B99FC;text-decoration:none;font-weight:600;">Klikněte zde pro akci</a></p>')
-         RETURNING id`,
-        []
-      );
-      defaultTemplateId = newTplRes.rows[0].id;
-    } else {
-      defaultTemplateId = defaultTplRes.rows[0].id;
-    }
-    
+    // Insert campaign email directly with blocks (no template reference)
     const result = await pool.query(
-      `INSERT INTO marketing_campaign_emails (campaign_id, position, delay_hours, template_id)
-       VALUES ($1, $2, $3, $4) RETURNING *`,
-      [campaignId, position || 1, delayHours || 0, defaultTemplateId]
+      `INSERT INTO marketing_campaign_emails 
+       (campaign_id, position, delay_hours, template_id, subject, preheader, blocks)
+       VALUES ($1, $2, $3, NULL, $4, $5, $6::jsonb) 
+       RETURNING *`,
+      [
+        campaignId, 
+        position || 1, 
+        delayHours || 0,
+        'E-mail kampaně',
+        'Přečtěte si',
+        JSON.stringify(defaultBlocks)
+      ]
     );
     
-    // Get the full email record with template name
-    const emailWithTemplate = await pool.query(
-      `SELECT ce.*, mt.name AS template_name
-       FROM marketing_campaign_emails ce
-       LEFT JOIN marketing_templates mt ON mt.id = ce.template_id
-       WHERE ce.id = $1`,
-      [result.rows[0].id]
-    );
-    
-    console.log("[Marketing] Campaign email created:", emailWithTemplate.rows[0]);
+    console.log("[Marketing] Campaign email created:", result.rows[0]);
     await logMarketingAction("campaign_email.created", req.session.userId || null, { type: "campaign_email", id: result.rows[0].id });
-    res.json(emailWithTemplate.rows[0]);
+    res.json(result.rows[0]);
   } catch (error) {
     console.error("[Marketing] Error creating campaign email:", error);
     res.status(500).json({ error: "Chyba při vytváření e-mailu kampaně" });

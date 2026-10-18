@@ -9,6 +9,8 @@ interface CampaignEmail {
   sendDate?: string;
   sendTime?: string;
   templateName?: string;
+  subject?: string;
+  blocks?: any[];
 }
 
 interface Campaign {
@@ -232,7 +234,7 @@ export default function CampaignSequenceBuilder({
                   EMAIL {idx + 1}
                 </div>
                 <div style={{ fontSize: "12px", color: "#fff", fontWeight: 600 }}>
-                  {tpl ? tpl.name : "Bez šablony"}
+                  {tpl ? tpl.name : email.subject || "E-mail kampaně"}
                 </div>
                 <div style={{ fontSize: "10px", color: "#666", marginTop: "3px", display: "flex", alignItems: "center", gap: "4px" }}>
                   <Clock size={11} />
