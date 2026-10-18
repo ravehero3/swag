@@ -50,13 +50,20 @@ export default function JourneysTabLayout({
   const selectedStep = detail?.steps?.find((s: any) => s.id === selectedStepId);
   const template = templates.find((t) => t.id === selectedStep?.template_id);
   
+  // Debug: Log what we're getting
+  React.useEffect(() => {
+    if (selectedStepId) {
+      console.log("[JourneysTabLayout] Selected step:", selectedStep);
+      console.log("[JourneysTabLayout] Template found:", !!template);
+      console.log("[JourneysTabLayout] All templates:", templates.length);
+    }
+  }, [selectedStepId, selectedStep, template]);
+  
   // Show editor if: step is selected AND it's an email step
   const isEmailSelected = selectedStep?.step_type === "email";
   
-  // If we have a template, use it. Otherwise use the step's data directly (for campaign emails without templates)
+  // If we have a template, use it. Otherwise use the step's data directly
   const displayTemplate = template || selectedStep;
-  
-  console.log("[JourneysTabLayout] Rendering - selectedStepId:", selectedStepId, "step_type:", selectedStep?.step_type, "template_id:", selectedStep?.template_id, "template found:", !!template);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", gap: "16px", background: "#000" }}>
