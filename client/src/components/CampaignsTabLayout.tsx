@@ -48,6 +48,7 @@ interface CampaignsLayoutProps {
 
   onSelectCampaign: (id: number) => void;
   onCreateCampaign: (name: string, audience: "buyers" | "free_downloads") => void;
+  onDeleteCampaign: (id: number) => void;
   onSelectEmail: (emailId: number) => void;
   onAddEmail: () => void;
   onDeleteEmail: (emailId: number) => void;
@@ -68,6 +69,7 @@ export default function CampaignsTabLayout({
   campaignStatus,
   onSelectCampaign,
   onCreateCampaign,
+  onDeleteCampaign,
   onSelectEmail,
   onAddEmail,
   onDeleteEmail,
@@ -119,6 +121,7 @@ export default function CampaignsTabLayout({
             selectedCampaignId={selectedCampaignId}
             onSelectCampaign={onSelectCampaign}
             onCreateCampaign={onCreateCampaign}
+            onDeleteCampaign={onDeleteCampaign}
             loading={loading}
           />
         </div>

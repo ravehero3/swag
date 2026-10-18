@@ -2380,6 +2380,40 @@ router.patch("/campaigns/:id/resume", requireAdmin, async (req: Request, res: Re
   }
 });
 
+// Delete a campaign
+router.delete("/campaigns/:id", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const campaignId = parseInt(req.params.id, 10);
+    
+    // Check campaign status - only allow deletion of draft campaigns
+    const campaignRes = await pool.query(
+      "SELECT status FROM marketing_campaigns WHERE id = $1",
+      [campaignId]
+    );
+    
+    if (campaignRes.rows.length === 0) {
+      return res.status(404).json({ error: "Kampaně nenalezena" });
+    }
+    
+    const campaign = campaignRes.rows[0];
+    if (campaign.status !== 'draft') {
+      return res.status(400).json({ error: "Lze mazat pouze kampaňě v návrhu" });
+    }
+    
+    // Delete campaign (cascade will handle related records)
+    await pool.query(
+      "DELETE FROM marketing_campaigns WHERE id = $1",
+      [campaignId]
+    );
+    
+    await logMarketingAction("campaign.deleted", req.session.userId || null, { type: "campaign", id: campaignId });
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Campaign delete error:", error);
+    res.status(500).json({ error: "Chyba při mazání kampaně" });
+  }
+});
+
 // Get email activity logs (transactional + campaign emails sent)
 router.get("/email-activity", requireAdmin, async (req: Request, res: Response) => {
   try {

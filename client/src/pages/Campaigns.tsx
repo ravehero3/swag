@@ -187,6 +187,39 @@ export default function Campaigns() {
     }
   };
 
+  const deleteCampaign = async (campaignId: number) => {
+    if (!confirm("Opravdu chcete smazat tuto kampan? Tato akce je nevratná.")) {
+      return;
+    }
+    
+    try {
+      const res = await fetch(`/api/marketing/campaigns/${campaignId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+      
+      if (res.ok) {
+        setCampaigns(campaigns.filter((c) => c.id !== campaignId));
+        if (selectedCampaignId === campaignId) {
+          setSelectedCampaignId(null);
+          setSelectedCampaign(null);
+          setCampaignEmails([]);
+          setQueueStatus(null);
+          if (statusRefreshInterval) {
+            clearInterval(statusRefreshInterval);
+            setStatusRefreshInterval(null);
+          }
+        }
+      } else {
+        const error = await res.json();
+        alert("Chyba: " + error.error);
+      }
+    } catch (err) {
+      console.error("Error deleting campaign:", err);
+      alert("Chyba při mazání kampaně");
+    }
+  };
+
   const startCampaign = async () => {
     if (!selectedCampaignId || !selectedCampaign) return;
     
@@ -526,6 +559,7 @@ export default function Campaigns() {
         selectedEmailId={previewEmailId}
         onSelectCampaign={selectCampaign}
         onCreateCampaign={createNewCampaign}
+        onDeleteCampaign={deleteCampaign}
         onSelectEmail={setPreviewEmailId}
         onAddEmail={addEmailToCampaign}
         onDeleteEmail={deleteEmailFromCampaign}

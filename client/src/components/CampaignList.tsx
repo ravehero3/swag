@@ -16,6 +16,7 @@ interface CampaignListProps {
   loading: boolean;
   onSelectCampaign: (id: number) => void;
   onCreateCampaign: (name: string, audience: "buyers" | "free_downloads") => void;
+  onDeleteCampaign: (id: number) => void;
 }
 
 export default function CampaignList({
@@ -24,6 +25,7 @@ export default function CampaignList({
   loading,
   onSelectCampaign,
   onCreateCampaign,
+  onDeleteCampaign,
 }: CampaignListProps) {
   const [showNewCampaignModal, setShowNewCampaignModal] = useState(false);
   const [newCampaignName, setNewCampaignName] = useState("");
@@ -40,7 +42,7 @@ export default function CampaignList({
     <div>
       <div style={{ marginBottom: "20px" }}>
         <h2 style={{ margin: "0 0 12px 0", fontSize: "14px", fontWeight: 700, color: "#fff", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-          🎯 KAMPANĚ
+          KAMPANĚ
         </h2>
 
         <button
@@ -86,42 +88,73 @@ export default function CampaignList({
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
           {campaigns.map((campaign) => (
-            <button
+            <div
               key={campaign.id}
-              onClick={() => onSelectCampaign(campaign.id)}
               style={{
                 padding: "12px",
                 background: selectedCampaignId === campaign.id ? "#0B99FC20" : "#0f0f0f",
                 border: selectedCampaignId === campaign.id ? "1px solid #0B99FC" : "1px solid #333",
                 borderRadius: "6px",
-                textAlign: "left",
                 cursor: "pointer",
                 transition: "all 150ms ease",
               }}
               onMouseEnter={(e) => {
-                const btn = e.currentTarget as HTMLButtonElement;
                 if (selectedCampaignId !== campaign.id) {
-                  btn.style.borderColor = "#666";
-                  btn.style.background = "#1a1a1a";
+                  (e.currentTarget as HTMLDivElement).style.borderColor = "#666";
+                  (e.currentTarget as HTMLDivElement).style.background = "#1a1a1a";
                 }
               }}
               onMouseLeave={(e) => {
-                const btn = e.currentTarget as HTMLButtonElement;
                 if (selectedCampaignId !== campaign.id) {
-                  btn.style.borderColor = "#333";
-                  btn.style.background = "#0f0f0f";
+                  (e.currentTarget as HTMLDivElement).style.borderColor = "#333";
+                  (e.currentTarget as HTMLDivElement).style.background = "#0f0f0f";
                 }
               }}
             >
-              <div style={{ marginBottom: "8px" }}>
-                <h3 style={{ margin: 0, fontSize: "12px", fontWeight: 600, color: "#fff" }}>
-                  {campaign.name}
-                </h3>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "8px", marginBottom: "8px" }}>
+                <div style={{ flex: 1, cursor: "pointer" }} onClick={() => onSelectCampaign(campaign.id)}>
+                  <h3 style={{ margin: 0, fontSize: "12px", fontWeight: 600, color: "#fff" }}>
+                    {campaign.name}
+                  </h3>
+                </div>
+                {campaign.status === "draft" && (
+                  <button
+                    onClick={() => onDeleteCampaign(campaign.id)}
+                    title="Smazat kampaň"
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: "24px",
+                      height: "24px",
+                      padding: 0,
+                      background: "transparent",
+                      border: "1px solid #555",
+                      borderRadius: "4px",
+                      color: "#999",
+                      cursor: "pointer",
+                      transition: "all 150ms ease",
+                      flexShrink: 0,
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLButtonElement).style.borderColor = "#ff5252";
+                      (e.currentTarget as HTMLButtonElement).style.color = "#ff5252";
+                      (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,82,82,0.1)";
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLButtonElement).style.borderColor = "#555";
+                      (e.currentTarget as HTMLButtonElement).style.color = "#999";
+                      (e.currentTarget as HTMLButtonElement).style.background = "transparent";
+                    }}
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                )}
               </div>
 
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
                 <span style={{ fontSize: "10px", color: "#888" }}>
-                  {campaign.audience === "buyers" ? "💳 Kupující" : "🎁 Zdarma"}
+                  {campaign.audience === "buyers" ? "Kupující" : "Zdarma"}
                 </span>
                 <span
                   style={{
@@ -130,16 +163,16 @@ export default function CampaignList({
                     padding: "2px 6px",
                     background:
                       campaign.status === "live"
-                        ? "#24e05320"
+                        ? "#3a3a3a"
                         : campaign.status === "test"
-                        ? "#f9a82520"
-                        : "#0B99FC20",
+                        ? "#2a2a2a"
+                        : "#1a1a1a",
                     color:
                       campaign.status === "live"
-                        ? "#24e053"
+                        ? "#ccc"
                         : campaign.status === "test"
-                        ? "#f9a825"
-                        : "#0B99FC",
+                        ? "#888"
+                        : "#666",
                     borderRadius: "3px",
                   }}
                 >
@@ -150,7 +183,7 @@ export default function CampaignList({
               <div style={{ fontSize: "11px", color: "#666" }}>
                 {campaign.emailCount} e-mailů
               </div>
-            </button>
+            </div>
           ))}
         </div>
       )}
