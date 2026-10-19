@@ -367,7 +367,7 @@ export default function Campaigns() {
   };
 
   const sendTestEmail = async (emailId: number) => {
-    if (!testEmail.includes("@")) {
+    if (!testEmail || !testEmail.includes("@")) {
       alert("Zadejte platnou e-mailovou adresu");
       return;
     }
@@ -378,16 +378,12 @@ export default function Campaigns() {
         credentials: "include",
         body: JSON.stringify({ email: testEmail }),
       });
-      if (res.ok) {
-        alert("Testovací e-mail odeslán! Zkontrolujte si doručenou poštu (nebo spam).");
-      } else {
-        const err = await res.json();
-        alert("Chyba: " + (err.error || "Odesílání selhalo"));
-        console.error("Test email error:", err);
-      }
-    } catch (err) {
-      console.error("Error sending test email:", err);
-      alert("Chyba při odesílání: " + String(err));
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Odeslání selhalo");
+      alert("Testovací e-mail odeslán na " + testEmail + ".");
+    } catch (err: any) {
+      alert("Chyba: " + err.message);
+      console.error("Test email error:", err);
     }
   };
 

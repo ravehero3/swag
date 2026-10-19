@@ -7815,59 +7815,27 @@ function JourneysTab() {
   };
 
   const handleSendTest = async (stepId: number) => {
-    console.log("[TEST SEND] Starting", { stepId, testEmail, detail: detail?.journey?.id, selectedStepId });
-    
     if (!testEmail || !testEmail.includes("@")) { alert("Zadejte platnou e-mailovou adresu."); return; }
-    
-    if (!detail || !detail.journey || !detail.journey.id) {
-      console.error("[TEST SEND] Missing journey detail", { detail });
-      alert("Chyba: Journey není načtena. Prosím obnovte stránku.");
-      return;
-    }
-    
-    // Check if currently editing a step that hasn't been saved
-    if (editingStep && editingStep.id === stepId && showStepForm) {
-      const unsaved = JSON.stringify({ stepType: stepForm.stepType, templateId: stepForm.templateId, delayHours: stepForm.delayHours }) !== JSON.stringify({ stepType: editingStep.step_type, templateId: editingStep.template_id, delayHours: editingStep.delay_hours });
-      if (unsaved) {
-        alert("⚠️  Máte neuložené změny. Prosím uložte krok dříve, než odešlete testovací e-mail.");
-        return;
-      }
-    }
-    
     localStorage.setItem("voodoo808_marketing_test_email", testEmail);
     setTestSendingStepId(stepId);
     setTestResult(null);
     try {
-      // Get the current template from state (includes unsaved edits)
       const step = detail?.steps?.find((s: any) => s.id === stepId);
-      const template = templates.find((t: any) => t.id === step?.template_id);
-      
-      const url = `/api/marketing/journeys/${detail.journey.id}/steps/${stepId}/send-test`;
-      console.log("[TEST SEND] Sending to URL:", url, { stepId, templateId: step?.template_id, email: testEmail });
-      
-      const res = await fetch(url, {
+      const templateId = step?.template_id;
+      if (!templateId) {
+        throw new Error("Šablona nebyla nalezena");
+      }
+      const res = await fetch(`/api/marketing/journeys/${detail.journey.id}/steps/${stepId}/send-test`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ 
-          email: testEmail,
-          // Pass current template state in case user has edited but not saved
-          subject: template?.subject,
-          preheader: template?.preheader,
-          blocks: template?.blocks,
-          headerOptions: template?.header_options,
-        }),
+        body: JSON.stringify({ email: testEmail }),
       });
-      
-      console.log("[TEST SEND] Response status:", res.status, res.ok);
       const data = await res.json();
-      console.log("[TEST SEND] Response data:", data);
-      
       if (!res.ok) throw new Error(data.error || "Odeslání selhalo");
-      setTestResult(`✅ Testovací e-mail odeslán na ${testEmail}. Zkontrolujte si spam složku, pokud e-mail nevidíte.`);
+      setTestResult(`Testovací e-mail odeslán na ${testEmail}.`);
     } catch (err: any) {
-      console.error("[TEST SEND] Error:", err);
-      setTestResult(`❌ Chyba: ${err.message}`);
+      setTestResult(`Chyba: ${err.message}`);
     } finally {
       setTestSendingStepId(null);
     }
