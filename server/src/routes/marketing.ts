@@ -2087,8 +2087,8 @@ router.delete("/campaigns/:campaignId/emails/:emailId", requireAdmin, async (req
 router.post("/campaigns/:campaignId/emails/:emailId/send-test", requireAdmin, testSendLimiter, async (req: Request, res: Response) => {
   try {
     const emailId = parseInt(req.params.emailId, 10);
+    const campaignId = parseInt(req.params.campaignId, 10);
     const toEmail = String(req.body.email || "").trim();
-    const { subject, preheader, blocks, headerOptions } = req.body;
     
     if (!toEmail || !toEmail.includes("@")) {
       return res.status(400).json({ error: "Zadejte platnou e-mailovou adresu pro test" });
@@ -2097,10 +2097,10 @@ router.post("/campaigns/:campaignId/emails/:emailId/send-test", requireAdmin, te
     // Get the campaign email and its template
     const emailRes = await pool.query(
       `SELECT ce.*, mt.subject AS template_subject, mt.preheader AS template_preheader, mt.html_content AS template_html, mt.blocks AS template_blocks, mt.header_options AS template_header_options
-       FROM marketing_campaign_emails ce
+       FROM campaign_emails ce
        LEFT JOIN marketing_templates mt ON mt.id = ce.template_id
-       WHERE ce.id = $1`,
-      [emailId]
+       WHERE ce.id = $1 AND ce.campaign_id = $2`,
+      [emailId, campaignId]
     );
     
     if (emailRes.rows.length === 0) {
@@ -2108,30 +2108,32 @@ router.post("/campaigns/:campaignId/emails/:emailId/send-test", requireAdmin, te
     }
     
     const email = emailRes.rows[0];
-    const { renderTemplatePreview } = await import("../lib/marketing/renderer.js");
     
     // Use overrides from request body, fall back to database values
-    const finalSubject = subject || email.subject || email.template_subject || "Email";
-    const finalPreheader = preheader || email.preheader || email.template_preheader || "";
-    const finalBlocks = blocks || email.blocks || email.template_blocks || [];
-    const finalHeaderOptions = headerOptions || email.header_options || email.template_header_options || {};
+    const finalSubject = email.subject || email.template_subject || "Email";
+    const finalPreheader = email.preheader || email.template_preheader || "";
+    const finalBlocks = email.blocks || email.template_blocks || [];
+    const finalHeaderOptions = email.header_options || email.template_header_options || {};
+    const finalHtmlContent = email.html_content || email.template_html || "";
     
-    const htmlContent = await renderTemplatePreview({
-      subject: finalSubject,
-      preheader: finalPreheader,
-      blocks: finalBlocks,
-      headerOptions: finalHeaderOptions,
-    });
+    // Use sendTestCustomEmail to actually send via Resend
+    const { sendTestCustomEmail } = await import("../lib/marketing/sender.js");
+    const result = await sendTestCustomEmail(
+      {
+        subject: finalSubject,
+        preheader: finalPreheader,
+        htmlContent: finalHtmlContent || "",
+        headerOptions: finalHeaderOptions,
+      },
+      toEmail
+    );
     
-    const { sendEmail } = await import("../lib/marketing/sender.js");
-    const result = await sendEmail({
-      to: toEmail,
-      subject: finalSubject,
-      html: htmlContent,
-    });
+    if (!result.ok) {
+      console.error(`[Campaign Email Test] Failed for ${emailId} to ${toEmail}: ${result.error}`);
+      return res.status(500).json({ error: result.error || "Chyba při odesílání testovacího e-mailu" });
+    }
     
-    if (!result.ok) return res.status(500).json({ error: result.error || "Chyba při odesílání testovacího e-mailu" });
-    
+    console.log(`[Campaign Email Test] Success: email ${emailId} sent to ${toEmail}`);
     await logMarketingAction("campaign_email.test_sent", req.session.userId || null, { type: "campaign_email", id: emailId }, { to: toEmail });
     res.json({ success: true });
   } catch (error) {

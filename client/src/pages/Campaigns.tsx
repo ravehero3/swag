@@ -375,13 +375,19 @@ export default function Campaigns() {
       const res = await fetch(`/api/marketing/campaigns/${selectedCampaignId}/emails/${emailId}/send-test`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ email: testEmail }),
       });
       if (res.ok) {
-        alert("Testovací e-mail odeslán!");
+        alert("Testovací e-mail odeslán! Zkontrolujte si doručenou poštu (nebo spam).");
+      } else {
+        const err = await res.json();
+        alert("Chyba: " + (err.error || "Odesílání selhalo"));
+        console.error("Test email error:", err);
       }
     } catch (err) {
       console.error("Error sending test email:", err);
+      alert("Chyba při odesílání: " + String(err));
     }
   };
 
