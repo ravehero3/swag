@@ -60,8 +60,9 @@ function resolveLogoUrl(appUrl: string, logoType?: "metallic" | "white"): string
 function resolveLogoWidth(size?: "sm" | "md" | "lg" | "xl"): number {
   if (size === "sm") return 180;
   if (size === "md") return 240;
+  if (size === "lg") return 300;
   if (size === "xl") return 400;
-  return 300; // "lg" default
+  return 180; // Default is now "sm" (180px)
 }
 
 export function renderBrandedEmailFooter(opts: { unsubscribeUrl?: string } = {}): string {

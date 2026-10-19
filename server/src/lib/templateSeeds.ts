@@ -273,7 +273,6 @@ const createEmailHTML = (content: string, templateName: string): string => `<!DO
         <!-- Header -->
         <div class="email-header">
             <div class="logo">VOODOO808</div>
-            <div class="logo-subtitle">Beat Production & Sound Design</div>
         </div>
         
         <!-- Body -->
