@@ -54,8 +54,12 @@ interface CampaignsLayoutProps {
   onDeleteEmail: (emailId: number) => void;
   onUpdateEmailTemplate: (emailId: number, templateId: number) => void;
   onUpdateEmailDelay: (emailId: number, delayHours: number) => void;
+  onSaveEmailEdits?: (emailId: number, overrides: any) => Promise<void>;
   onRefresh: () => void;
   onStartCampaign?: () => void;
+  onTestEmail?: (emailId: number) => Promise<void>;
+  testEmail?: string;
+  onTestEmailChange?: (email: string) => void;
 }
 
 export default function CampaignsTabLayout({

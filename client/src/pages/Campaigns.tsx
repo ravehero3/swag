@@ -531,6 +531,7 @@ export default function Campaigns() {
         onDeleteEmail={deleteEmailFromCampaign}
         onUpdateEmailTemplate={updateEmailTemplate}
         onUpdateEmailDelay={updateEmailDelay}
+        onSaveEmailEdits={saveEmailEdits}
         onRefresh={loadCampaigns}
         onStartCampaign={() => setShowStartDialog(true)}
         campaignStatus={selectedCampaign?.status}

@@ -2020,7 +2020,7 @@ router.post("/campaigns/:campaignId/emails", requireAdmin, async (req: Request, 
 router.patch("/campaigns/:campaignId/emails/:emailId", requireAdmin, async (req: Request, res: Response) => {
   try {
     const emailId = parseInt(req.params.emailId, 10);
-    const { templateId, delayHours, sendDate, sendTime, sendDateTime, subject, preheader, blocks, headerOptions } = req.body;
+    const { templateId, delayHours, sendDate, sendTime, sendDateTime, subject, preheader, blocks, headerOptions, htmlContent } = req.body;
     
     const updates: string[] = [];
     const params: any[] = [];
