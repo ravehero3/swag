@@ -1990,10 +1990,11 @@ router.post("/campaigns/:campaignId/emails", requireAdmin, async (req: Request, 
     ];
     
     // Insert campaign email directly with blocks (no template reference)
+    const htmlContent = compileBlocksToHtml(defaultBlocks);
     const result = await pool.query(
       `INSERT INTO marketing_campaign_emails 
-       (campaign_id, position, delay_hours, template_id, subject, preheader, blocks)
-       VALUES ($1, $2, $3, NULL, $4, $5, $6::jsonb) 
+       (campaign_id, position, delay_hours, template_id, subject, preheader, blocks, html_content)
+       VALUES ($1, $2, $3, NULL, $4, $5, $6::jsonb, $7) 
        RETURNING *`,
       [
         campaignId, 
@@ -2001,7 +2002,8 @@ router.post("/campaigns/:campaignId/emails", requireAdmin, async (req: Request, 
         delayHours || 0,
         'E-mail kampaně',
         'Přečtěte si',
-        JSON.stringify(defaultBlocks)
+        JSON.stringify(defaultBlocks),
+        htmlContent
       ]
     );
     
