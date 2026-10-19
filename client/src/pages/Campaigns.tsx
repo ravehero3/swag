@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Plus, Edit3, Trash2, Send, Play, Pause, X, Calendar, Clock, AlertCircle, CheckCircle, Zap } from "lucide-react";
 import CampaignsTabLayout from "../components/CampaignsTabLayout";
+import { CampaignProgress } from "../components/CampaignProgress";
 
 interface CampaignEmail {
   id: number;
@@ -506,55 +507,9 @@ export default function Campaigns() {
       )}
 
       {/* Show campaign progress if active */}
-      {selectedCampaign?.status === "active" && queueStatus && (
-        <div style={{
-          background: "#1a1a1a",
-          border: "1px solid #333",
-          borderRadius: "6px",
-          padding: "16px",
-          marginBottom: "16px",
-          color: "#fff"
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "12px" }}>
-            <Zap size={18} style={{ color: "#0f0" }} />
-            <span style={{ fontSize: "14px", fontWeight: "600" }}>Kampaň běží</span>
-          </div>
-          
-          <div style={{ marginBottom: "12px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px", fontSize: "12px", color: "#aaa" }}>
-              <span>Posláno: {queueStatus.progress.sent} / {queueStatus.progress.total}</span>
-              <span>{queueStatus.progress.percentage}%</span>
-            </div>
-            <div style={{ height: "6px", background: "#222", borderRadius: "3px", overflow: "hidden" }}>
-              <div style={{
-                height: "100%",
-                background: "#0f0",
-                width: `${queueStatus.progress.percentage}%`,
-                transition: "width 0.3s"
-              }} />
-            </div>
-          </div>
-
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", fontSize: "12px" }}>
-            <div>
-              <div style={{ color: "#666" }}>Ve frontě</div>
-              <div style={{ color: "#fff", fontWeight: "600" }}>{queueStatus.queue.queued}</div>
-            </div>
-            <div>
-              <div style={{ color: "#666" }}>Selhalo</div>
-              <div style={{ color: queueStatus.queue.failed > 0 ? "#f88" : "#0f0", fontWeight: "600" }}>
-                {queueStatus.queue.failed}
-              </div>
-            </div>
-            <div>
-              <div style={{ color: "#666" }}>Denní limit</div>
-              <div style={{ color: "#fff", fontWeight: "600" }}>{queueStatus.rateLimit.current_day_sent} / {queueStatus.rateLimit.daily_limit}</div>
-            </div>
-            <div>
-              <div style={{ color: "#666" }}>Hodinový limit</div>
-              <div style={{ color: "#fff", fontWeight: "600" }}>{queueStatus.rateLimit.current_hour_sent} / {queueStatus.rateLimit.hourly_limit}</div>
-            </div>
-          </div>
+      {selectedCampaign?.status === "active" && selectedCampaignId && (
+        <div style={{ marginBottom: "24px" }}>
+          <CampaignProgress campaignId={selectedCampaignId} autoRefresh={true} refreshInterval={10000} />
         </div>
       )}
 
