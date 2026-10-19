@@ -29,6 +29,7 @@ import {
   type ArtworkConfig,
   type BlendMode,
 } from "../components/BeatArtwork.js";
+import { SlowDripTab } from "../components/SlowDripTab";
 
 function AdminAudioPreview({ src }: { src: string }) {
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -6911,7 +6912,7 @@ function SlevyAKuponyTab({ settings, onRefresh }: { settings: Record<string, str
   );
 }
 
-type MktSubTab = "prehled" | "odberatele" | "journeys" | "kampane" | "sablony" | "emaily" | "analytika" | "discounts" | "email-activity";
+type MktSubTab = "prehled" | "odberatele" | "journeys" | "kampane" | "sablony" | "emaily" | "analytika" | "discounts" | "email-activity" | "slow-drip";
 
 function MarketingTab({ settings, onRefresh, initialSub }: { settings: Record<string, string>; onRefresh: () => Promise<void>; initialSub?: MktSubTab }) {
   const [sub, setSub] = useState<MktSubTab>(initialSub || "prehled");
@@ -6971,6 +6972,7 @@ function MarketingTab({ settings, onRefresh, initialSub }: { settings: Record<st
     { id: "email-activity", label: "Email Aktivita" },
     { id: "sablony",    label: "Šablony" },
     { id: "emaily",     label: "E-maily" },
+    { id: "slow-drip",  label: "Slow Drip" },
     { id: "analytika",  label: "Analytika" },
     { id: "discounts",  label: "Slevy & Kupóny" },
   ];
@@ -7324,6 +7326,7 @@ function MarketingTab({ settings, onRefresh, initialSub }: { settings: Record<st
       {sub === "email-activity" && <EmailActivityTab />}
       {sub === "sablony"    && <SablonyTab />}
       {sub === "emaily"     && <EmailsTab />}
+      {sub === "slow-drip"  && <SlowDripTab />}
     </div>
   );
 }
