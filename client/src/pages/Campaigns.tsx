@@ -538,6 +538,9 @@ export default function Campaigns() {
         onRefresh={loadCampaigns}
         onStartCampaign={() => setShowStartDialog(true)}
         campaignStatus={selectedCampaign?.status}
+        onTestEmail={sendTestEmail}
+        testEmail={testEmail}
+        onTestEmailChange={setTestEmail}
       />
     </div>
   );
