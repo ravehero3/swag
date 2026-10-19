@@ -1261,30 +1261,22 @@ router.get("/beats-select", requireAdmin, async (_req: Request, res: Response) =
   try {
     // Get published beats - these are the "live" beats in beaty playlist
     const beatsRes = await pool.query(
-      `SELECT id, title, bpm, scale_key, mp3_price, cover_art_url FROM beats WHERE is_published = true ORDER BY created_at DESC LIMIT 100`
+      `SELECT id, title FROM beats WHERE is_published = true ORDER BY created_at DESC LIMIT 100`
     );
     const kitsRes = await pool.query(
-      `SELECT id, title, price, artwork_url FROM sound_kits WHERE is_published = true ORDER BY created_at DESC LIMIT 100`
+      `SELECT id, title FROM sound_kits WHERE is_published = true ORDER BY created_at DESC LIMIT 100`
     );
 
     const items = [
       ...beatsRes.rows.map((b: any) => ({
         id: `beat-${b.id}`,
-        title: b.title,
+        title: b.title || "Beat",
         subtitle: "Beat",
-        coverUrl: b.cover_art_url || "/default-beat-cover.jpg", // Fallback if no cover
-        price: b.mp3_price ? `od ${b.mp3_price} Kč` : "Bez ceny",
-        bpmKey: [b.bpm ? `${b.bpm} BPM` : "", b.scale_key || ""].filter(Boolean).join(" • "),
-        url: `/beaty?beat=${b.id}`,
       })),
       ...kitsRes.rows.map((k: any) => ({
         id: `kit-${k.id}`,
-        title: k.title,
+        title: k.title || "Kit",
         subtitle: "Sound Kit",
-        coverUrl: k.artwork_url || "/default-kit-cover.jpg", // Fallback if no cover
-        price: k.price ? `${k.price} Kč` : "Zdarma",
-        bpmKey: "Sound Kit",
-        url: `/zvuky`,
       })),
     ];
 
