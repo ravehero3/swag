@@ -8955,7 +8955,7 @@ function SablonyTab() {
     load();
   };
 
-  const handleSendTest = async (templateId: number) => {
+  const handleSendTestTemplate = async (templateId: number) => {
     if (!testEmail || !testEmail.includes("@")) { alert("Zadejte platnou e-mailovou adresu."); return; }
     localStorage.setItem("voodoo808_marketing_test_email", testEmail);
     setTestSendingId(templateId);
@@ -9058,7 +9058,7 @@ function SablonyTab() {
                   <button className="btn" onClick={() => setPreviewTemplate(t)} style={{ borderRadius: "4px", fontSize: "11px", borderColor: "#444" }}>Náhled</button>
                   <button
                     className="btn"
-                    onClick={() => handleSendTest(t.id)}
+                    onClick={() => handleSendTestTemplate(t.id)}
                     disabled={testSendingId === t.id}
                     style={{ borderRadius: "4px", fontSize: "11px", borderColor: "#0B99FC", color: "#0B99FC" }}
                   >
