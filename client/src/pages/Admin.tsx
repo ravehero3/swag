@@ -549,6 +549,23 @@ function Admin() {
         />
       )}
 
+      <style>{`
+        ::-webkit-scrollbar {
+          width: 8px;
+          height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+          background: #333;
+          border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+          background: #555;
+        }
+      `}</style>
+
       <div style={{
         display: "flex",
         flexDirection: isMobile ? "column" : "row",
@@ -6437,15 +6454,12 @@ function EmailsTab() {
 
   useEffect(() => { load(); }, []);
 
-  // Auto-select first scenario on load
+  // Auto-load detail when journey is selected
   useEffect(() => {
-    if (templates.length > 0 && !selectedKey) {
-      const firstKey = EMAIL_SCENARIOS[0]?.key;
-      if (firstKey) {
-        selectScenario(firstKey);
-      }
+    if (selectedKey && (!previewHtml)) {
+      handleEmailPreview();
     }
-  }, [templates]);
+  }, [selectedKey]);
 
   const selectScenario = (key: string) => {
     const tpl = templates.find(t => t.key === key);
@@ -6624,12 +6638,12 @@ function EmailsTab() {
                 <div style={{ padding: "12px", borderBottom: "1px solid #222", fontSize: "11px", color: "#666", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>
                   Náhled emailu
                 </div>
-                <div style={{ flex: 1, overflow: "auto", background: "#000" }}>
+                <div style={{ flex: 1, overflow: "auto", background: "#000", minHeight: "600px" }}>
                   {previewHtml ? (
                     <iframe srcDoc={previewHtml} style={{ width: "100%", height: "100%", border: "none", display: "block" }} title="Náhled emailu" />
                   ) : (
                     <div style={{ padding: "24px", textAlign: "center", color: "#555", fontSize: "12px" }}>
-                      Kliknutím na "Obnovit náhled" se zde zobrazí podgles emailu
+                      Načítání...
                     </div>
                   )}
                 </div>

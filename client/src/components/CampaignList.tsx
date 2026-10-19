@@ -90,6 +90,7 @@ export default function CampaignList({
           {campaigns.map((campaign) => (
             <div
               key={campaign.id}
+              onClick={() => onSelectCampaign(campaign.id)}
               style={{
                 padding: "12px",
                 background: selectedCampaignId === campaign.id ? "#0B99FC20" : "#0f0f0f",
@@ -112,7 +113,7 @@ export default function CampaignList({
               }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "8px", marginBottom: "8px" }}>
-                <div style={{ flex: 1, cursor: "pointer" }} onClick={() => onSelectCampaign(campaign.id)}>
+                <div style={{ flex: 1 }}>
                   <h3 style={{ margin: 0, fontSize: "12px", fontWeight: 600, color: "#fff" }}>
                     {campaign.name}
                   </h3>
