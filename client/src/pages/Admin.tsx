@@ -163,7 +163,7 @@ const ADMIN_NAV: { id: AdminTab; label: string; icon: LucideIcon }[] = [
 ];
 
 const LEGACY_TAB_MAP: Record<string, AdminTab> = {
-  emails: "nastaveni", promo: "marketing", slevy: "marketing",
+  emails: "marketing", promo: "marketing", slevy: "marketing",
   seo: "nastaveni", ig_stories: "orders", artworks: "beats", konfigurace: "nastaveni",
 };
 
@@ -6911,7 +6911,7 @@ function SlevyAKuponyTab({ settings, onRefresh }: { settings: Record<string, str
   );
 }
 
-type MktSubTab = "prehled" | "odberatele" | "journeys" | "kampane" | "sablony" | "analytika" | "discounts" | "email-activity";
+type MktSubTab = "prehled" | "odberatele" | "journeys" | "kampane" | "sablony" | "emaily" | "analytika" | "discounts" | "email-activity";
 
 function MarketingTab({ settings, onRefresh, initialSub }: { settings: Record<string, string>; onRefresh: () => Promise<void>; initialSub?: MktSubTab }) {
   const [sub, setSub] = useState<MktSubTab>(initialSub || "prehled");
@@ -6970,6 +6970,7 @@ function MarketingTab({ settings, onRefresh, initialSub }: { settings: Record<st
     { id: "kampane",    label: "Kampaně" },
     { id: "email-activity", label: "Email Aktivita" },
     { id: "sablony",    label: "Šablony" },
+    { id: "emaily",     label: "E-maily" },
     { id: "analytika",  label: "Analytika" },
     { id: "discounts",  label: "Slevy & Kupóny" },
   ];
@@ -7322,6 +7323,7 @@ function MarketingTab({ settings, onRefresh, initialSub }: { settings: Record<st
       {sub === "kampane"    && <Campaigns />}
       {sub === "email-activity" && <EmailActivityTab />}
       {sub === "sablony"    && <SablonyTab />}
+      {sub === "emaily"     && <EmailsTab />}
     </div>
   );
 }
@@ -10053,7 +10055,7 @@ function KonfiguraceTab() {
   );
 }
 
-type NastaveniSubTab = "artworks" | "seo" | "emaily" | "marketing" | "konfigurace";
+type NastaveniSubTab = "artworks" | "seo" | "marketing" | "konfigurace";
 
 function MarketingEmailSettingsTab() {
   const [mode, setMode] = useState<"production" | "test">("test");
@@ -10161,7 +10163,6 @@ function NastaveniTab({ settings, onRefresh, beats }: { settings: Record<string,
   const SUB_TABS: { id: NastaveniSubTab; label: string }[] = [
     { id: "artworks",    label: "Artwork" },
     { id: "seo",         label: "SEO" },
-    { id: "emaily",      label: "E-maily" },
     { id: "marketing",   label: "Marketing e-maily" },
     { id: "konfigurace", label: "Konfigurace" },
   ];
@@ -10215,7 +10216,6 @@ function NastaveniTab({ settings, onRefresh, beats }: { settings: Record<string,
 
       {sub === "artworks"    && <ArtworksTab settings={settings} onRefresh={onRefresh} beats={beats} />}
       {sub === "seo"         && <SEOTab settings={settings} onRefresh={onRefresh} />}
-      {sub === "emaily"      && <EmailsTab />}
       {sub === "marketing"   && <MarketingEmailSettingsTab />}
       {sub === "konfigurace" && <KonfiguraceTab />}
     </div>
