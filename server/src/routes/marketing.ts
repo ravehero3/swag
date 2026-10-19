@@ -2090,24 +2090,29 @@ router.post("/campaigns/:campaignId/emails/:emailId/send-test", requireAdmin, te
     const campaignId = parseInt(req.params.campaignId, 10);
     const toEmail = String(req.body.email || "").trim();
     
+    console.log(`[Campaign Email Test] Starting: campaign=${campaignId}, email=${emailId}, to=${toEmail}`);
+    
     if (!toEmail || !toEmail.includes("@")) {
+      console.warn(`[Campaign Email Test] Invalid email: ${toEmail}`);
       return res.status(400).json({ error: "Zadejte platnou e-mailovou adresu pro test" });
     }
     
     // Get the campaign email and its template
     const emailRes = await pool.query(
       `SELECT ce.*, mt.subject AS template_subject, mt.preheader AS template_preheader, mt.html_content AS template_html, mt.blocks AS template_blocks, mt.header_options AS template_header_options
-       FROM campaign_emails ce
+       FROM marketing_campaign_emails ce
        LEFT JOIN marketing_templates mt ON mt.id = ce.template_id
        WHERE ce.id = $1 AND ce.campaign_id = $2`,
       [emailId, campaignId]
     );
     
     if (emailRes.rows.length === 0) {
+      console.warn(`[Campaign Email Test] Email not found: email=${emailId}, campaign=${campaignId}`);
       return res.status(404).json({ error: "E-mail kampaně nenalezen" });
     }
     
     const email = emailRes.rows[0];
+    console.log(`[Campaign Email Test] Email found: subject=${email.template_subject || email.subject}`);
     
     // Use overrides from request body, fall back to database values
     const finalSubject = email.subject || email.template_subject || "Email";
@@ -2115,6 +2120,8 @@ router.post("/campaigns/:campaignId/emails/:emailId/send-test", requireAdmin, te
     const finalBlocks = email.blocks || email.template_blocks || [];
     const finalHeaderOptions = email.header_options || email.template_header_options || {};
     const finalHtmlContent = email.html_content || email.template_html || "";
+    
+    console.log(`[Campaign Email Test] Using: subject=${finalSubject}, hasHtml=${!!finalHtmlContent}`);
     
     // Use sendTestCustomEmail to actually send via Resend
     const { sendTestCustomEmail } = await import("../lib/marketing/sender.js");
@@ -2138,7 +2145,7 @@ router.post("/campaigns/:campaignId/emails/:emailId/send-test", requireAdmin, te
     res.json({ success: true });
   } catch (error) {
     console.error("Campaign email test send error:", error);
-    res.status(500).json({ error: "Chyba při odesílání testovacího e-mailu" });
+    res.status(500).json({ error: "Chyba při odesílání testovacího e-mailu: " + String(error) });
   }
 });
 
