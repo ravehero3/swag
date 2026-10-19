@@ -367,23 +367,33 @@ export default function Campaigns() {
   };
 
   const sendTestEmail = async (emailId: number) => {
+    console.log("[CAMPAIGNS] sendTestEmail called", { emailId, selectedCampaignId, testEmail });
     if (!testEmail || !testEmail.includes("@")) {
+      console.log("[CAMPAIGNS] Invalid email", testEmail);
       alert("Zadejte platnou e-mailovou adresu");
       return;
     }
+    if (!selectedCampaignId) {
+      console.log("[CAMPAIGNS] No campaign selected");
+      alert("Vyberte kampaň!");
+      return;
+    }
     try {
+      console.log("[CAMPAIGNS] Sending test email", { url: `/api/marketing/campaigns/${selectedCampaignId}/emails/${emailId}/send-test` });
       const res = await fetch(`/api/marketing/campaigns/${selectedCampaignId}/emails/${emailId}/send-test`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({ email: testEmail }),
       });
+      console.log("[CAMPAIGNS] Response received", { status: res.status, ok: res.ok });
       const data = await res.json();
+      console.log("[CAMPAIGNS] Response data", data);
       if (!res.ok) throw new Error(data.error || "Odeslání selhalo");
       alert("Testovací e-mail odeslán na " + testEmail + ".");
     } catch (err: any) {
+      console.error("[CAMPAIGNS] Test email error:", err);
       alert("Chyba: " + err.message);
-      console.error("Test email error:", err);
     }
   };
 
