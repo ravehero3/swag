@@ -2478,7 +2478,7 @@ router.get("/email-activity", requireAdmin, async (req: Request, res: Response) 
          COUNT(DISTINCT meo.id) FILTER (WHERE meo.event_type = 'unsubscribe') as unsubscribe_count
        FROM marketing_email_sends mes
        LEFT JOIN marketing_journeys mj ON mes.journey_id = mj.id
-       LEFT JOIN marketing_email_opens meo ON mes.id = meo.email_send_id
+       LEFT JOIN marketing_email_events meo ON mes.id = meo.email_send_id
        WHERE ${whereClause}
        GROUP BY mes.id, mes.recipient, mes.subject, mes.email_type, mj.name, mes.status, mes.sent_at
        ORDER BY mes.sent_at DESC
@@ -2496,7 +2496,7 @@ router.get("/email-activity", requireAdmin, async (req: Request, res: Response) 
          COUNT(DISTINCT CASE WHEN meo.event_type = 'click' THEN mes.id END) as clicked,
          COUNT(DISTINCT CASE WHEN meo.event_type = 'unsubscribe' THEN mes.id END) as unsubscribed
        FROM marketing_email_sends mes
-       LEFT JOIN marketing_email_opens meo ON mes.id = meo.email_send_id
+       LEFT JOIN marketing_email_events meo ON mes.id = meo.email_send_id
        WHERE ${whereClause}`,
       params
     );
@@ -2595,13 +2595,13 @@ router.post("/email-activity/test-data", requireAdmin, async (_req: Request, res
           const emailSendId = lastEmailRes.rows[0].id;
           if (Math.random() > 0.3) {
             await pool.query(
-              `INSERT INTO marketing_email_opens (email_send_id, event_type) VALUES ($1, 'open')`,
+              `INSERT INTO marketing_email_events (email_send_id, event_type) VALUES ($1, 'open')`,
               [emailSendId]
             );
           }
           if (Math.random() > 0.6) {
             await pool.query(
-              `INSERT INTO marketing_email_opens (email_send_id, event_type) VALUES ($1, 'click')`,
+              `INSERT INTO marketing_email_events (email_send_id, event_type) VALUES ($1, 'click')`,
               [emailSendId]
             );
           }
