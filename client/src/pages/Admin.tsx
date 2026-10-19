@@ -7815,7 +7815,15 @@ function JourneysTab() {
   };
 
   const handleSendTest = async (stepId: number) => {
+    console.log("[TEST SEND] Starting", { stepId, testEmail, detail: detail?.journey?.id, selectedStepId });
+    
     if (!testEmail || !testEmail.includes("@")) { alert("Zadejte platnou e-mailovou adresu."); return; }
+    
+    if (!detail || !detail.journey || !detail.journey.id) {
+      console.error("[TEST SEND] Missing journey detail", { detail });
+      alert("Chyba: Journey není načtena. Prosím obnovte stránku.");
+      return;
+    }
     
     // Check if currently editing a step that hasn't been saved
     if (editingStep && editingStep.id === stepId && showStepForm) {
@@ -7834,7 +7842,10 @@ function JourneysTab() {
       const step = detail?.steps?.find((s: any) => s.id === stepId);
       const template = templates.find((t: any) => t.id === step?.template_id);
       
-      const res = await fetch(`/api/marketing/journeys/${detail.journey.id}/steps/${stepId}/send-test`, {
+      const url = `/api/marketing/journeys/${detail.journey.id}/steps/${stepId}/send-test`;
+      console.log("[TEST SEND] Sending to URL:", url, { stepId, templateId: step?.template_id, email: testEmail });
+      
+      const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -7847,10 +7858,15 @@ function JourneysTab() {
           headerOptions: template?.header_options,
         }),
       });
+      
+      console.log("[TEST SEND] Response status:", res.status, res.ok);
       const data = await res.json();
+      console.log("[TEST SEND] Response data:", data);
+      
       if (!res.ok) throw new Error(data.error || "Odeslání selhalo");
       setTestResult(`✅ Testovací e-mail odeslán na ${testEmail}. Zkontrolujte si spam složku, pokud e-mail nevidíte.`);
     } catch (err: any) {
+      console.error("[TEST SEND] Error:", err);
       setTestResult(`❌ Chyba: ${err.message}`);
     } finally {
       setTestSendingStepId(null);
