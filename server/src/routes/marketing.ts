@@ -2085,6 +2085,7 @@ router.delete("/campaigns/:campaignId/emails/:emailId", requireAdmin, async (req
 
 // Send test email for a campaign email
 router.post("/campaigns/:campaignId/emails/:emailId/send-test", requireAdmin, testSendLimiter, async (req: Request, res: Response) => {
+  console.log("[CAMPAIGN EMAIL TEST] Request received", { campaignId: req.params.campaignId, emailId: req.params.emailId, toEmail: req.body.email });
   try {
     const emailId = parseInt(req.params.emailId, 10);
     const campaignId = parseInt(req.params.campaignId, 10);
