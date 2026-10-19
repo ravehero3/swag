@@ -7815,30 +7815,28 @@ function JourneysTab() {
   };
 
   const handleSendTest = async (stepId: number) => {
-    console.log("[JOURNEYS TEST SEND] Starting", { stepId, testEmail, detail: detail?.journey?.id });
     if (!testEmail || !testEmail.includes("@")) { alert("Zadejte platnou e-mailovou adresu."); return; }
     localStorage.setItem("voodoo808_marketing_test_email", testEmail);
     setTestSendingStepId(stepId);
     setTestResult(null);
     try {
       const step = detail?.steps?.find((s: any) => s.id === stepId);
-      console.log("[JOURNEYS TEST SEND] Found step:", step);
-      const templateId = step?.template_id;
-      console.log("[JOURNEYS TEST SEND] Template ID:", templateId);
-      if (!templateId) {
-        throw new Error("Šablona nebyla nalezena");
-      }
+      // Always call the backend — it handles steps with or without a template_id
       const url = `/api/marketing/journeys/${detail.journey.id}/steps/${stepId}/send-test`;
-      console.log("[JOURNEYS TEST SEND] Calling:", url);
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ email: testEmail }),
+        body: JSON.stringify({
+          email: testEmail,
+          to: testEmail,
+          subject: step?.subject || step?.configuration?.subject || "",
+          preheader: step?.preheader || step?.configuration?.preheader || "",
+          blocks: step?.blocks || step?.configuration?.blocks || [],
+          headerOptions: step?.header_options || step?.configuration?.headerOptions || {},
+        }),
       });
-      console.log("[JOURNEYS TEST SEND] Response:", res.status, res.ok);
       const data = await res.json();
-      console.log("[JOURNEYS TEST SEND] Data:", data);
       if (!res.ok) throw new Error(data.error || "Odeslání selhalo");
       setTestResult(`Testovací e-mail odeslán na ${testEmail}.`);
     } catch (err: any) {

@@ -50,20 +50,77 @@ export default function JourneysTabLayout({
   const selectedStep = detail?.steps?.find((s: any) => s.id === selectedStepId);
   const template = templates.find((t) => t.id === selectedStep?.template_id);
   
-  // Debug: Log what we're getting
-  React.useEffect(() => {
-    if (selectedStepId) {
-      console.log("[JourneysTabLayout] Selected step:", selectedStep);
-      console.log("[JourneysTabLayout] Template found:", !!template);
-      console.log("[JourneysTabLayout] All templates:", templates.length);
-    }
-  }, [selectedStepId, selectedStep, template]);
   
   // Show editor if: step is selected AND it's an email step
   const isEmailSelected = selectedStep?.step_type === "email";
   
   // If we have a template, use it. Otherwise use the step's data directly
   const displayTemplate = template || selectedStep;
+
+  const handleSaveStepEmail = async (data: { subject: string; preheader: string; blocks: any[]; headerOptions?: any; name?: string }) => {
+    if (!selectedStep || !detail?.journey?.id) return;
+    const tplName = data.name || template?.name || `${detail.journey.name} — E-mail krok`;
+
+    if (selectedStep.template_id) {
+      const res = await fetch(`/api/marketing/templates/${selectedStep.template_id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          name: tplName,
+          subject: data.subject,
+          preheader: data.preheader,
+          blocks: data.blocks,
+          headerOptions: data.headerOptions,
+        }),
+      });
+      const resData = await res.json();
+      if (!res.ok) throw new Error(resData?.error || "Chyba při ukládání šablony");
+    } else {
+      const res = await fetch("/api/marketing/templates", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          name: tplName,
+          subject: data.subject,
+          preheader: data.preheader,
+          blocks: data.blocks,
+          headerOptions: data.headerOptions,
+        }),
+      });
+      const created = await res.json();
+      if (!res.ok) throw new Error(created?.error || "Chyba při vytváření šablony");
+      await fetch(`/api/marketing/journeys/${detail.journey.id}/steps/${selectedStep.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          templateId: created.id,
+        }),
+      });
+    }
+  };
+
+  const handleTestSendStepEmail = async (email: string, subject: string, preheader: string, blocks: any[], headerOptions?: any) => {
+    if (!selectedStep || !detail?.journey?.id) throw new Error("Vyberte journey a krok");
+    const url = `/api/marketing/journeys/${detail.journey.id}/steps/${selectedStep.id}/send-test`;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        email,
+        to: email,
+        subject,
+        preheader,
+        blocks,
+        headerOptions,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.error || "Odeslání testovacího e-mailu selhalo");
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", gap: "16px", background: "#000" }}>
@@ -106,9 +163,8 @@ export default function JourneysTabLayout({
               // Compact Email Editor - fits all 4 sections in tight space
               <CompactEmailEditor
                 template={displayTemplate}
-                onSave={async (html) => {
-                  onRefresh();
-                }}
+                onSave={handleSaveStepEmail}
+                onTestSend={handleTestSendStepEmail}
                 onRefresh={onRefresh}
               />
             )}
