@@ -20,6 +20,7 @@ jobs:
             git fetch origin
             git reset --hard origin/main
             cd ~/apps
+            docker compose down swag --remove-orphans || true
             docker compose build swag
             docker compose up -d swag
             docker image prune -f
