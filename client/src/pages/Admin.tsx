@@ -7326,7 +7326,7 @@ function MarketingTab({ settings, onRefresh, initialSub }: { settings: Record<st
       {sub === "email-activity" && <EmailActivityTab />}
       {sub === "sablony"    && <SablonyTab />}
       {sub === "emaily"     && <EmailsTab />}
-      {sub === "slow-drip"  && <SlowDripTab />}
+      {sub === "slow-drip"  && <SlowDripTab onNavigateToCampaigns={() => setSub("kampane")} />}
     </div>
   );
 }
@@ -7335,12 +7335,30 @@ function MarketingTab({ settings, onRefresh, initialSub }: { settings: Record<st
 function MarketingPrehledTab() {
   const [overview, setOverview] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [lastRefreshed, setLastRefreshed] = useState<Date>(new Date());
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
+  const fetchOverview = (isManual = false) => {
+    if (isManual) setRefreshing(true);
     fetch("/api/marketing/overview", { credentials: "include" })
       .then(r => r.ok ? r.json() : null)
-      .then(data => { setOverview(data); setLoading(false); })
-      .catch(() => setLoading(false));
+      .then(data => {
+        if (data) {
+          setOverview(data);
+          setLastRefreshed(new Date());
+        }
+        setLoading(false);
+      })
+      .catch(() => setLoading(false))
+      .finally(() => {
+        if (isManual) setRefreshing(false);
+      });
+  };
+
+  useEffect(() => {
+    fetchOverview();
+    const interval = setInterval(() => fetchOverview(false), 15000);
+    return () => clearInterval(interval);
   }, []);
 
   const card: React.CSSProperties = {
@@ -7348,54 +7366,104 @@ function MarketingPrehledTab() {
     border: "1px solid rgba(255,255,255,0.07)",
     borderRadius: "14px",
     padding: "22px 24px",
+    position: "relative",
+    overflow: "hidden",
   };
-  const statLabel: React.CSSProperties = { fontSize: "11px", color: "#555", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 600, marginBottom: "8px" };
-  const statValue: React.CSSProperties = { fontSize: "30px", fontWeight: 700, color: DESIGN_SYSTEM.colors.textPrimary, lineHeight: 1, letterSpacing: "-0.02em" };
+  const statLabel: React.CSSProperties = { fontSize: "11px", color: "#888", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 600, marginBottom: "8px" };
+  const statValue: React.CSSProperties = { fontSize: "28px", fontWeight: 700, color: DESIGN_SYSTEM.colors.textPrimary, lineHeight: 1.1, letterSpacing: "-0.02em" };
 
   if (loading) return <div style={{ color: "#444", fontSize: "13px", padding: "40px 0", textAlign: "center" }}>Načítám data…</div>;
   if (!overview) return <div style={{ color: "#ff4444", fontSize: "13px" }}>Nepodařilo se načíst přehled.</div>;
 
   return (
     <div>
-      <p style={{ color: "#555", fontSize: "12px", marginBottom: "20px" }}>
-        Přehled marketingového systému — odběratelé, journeys a e-mailová aktivita za posledních 7 dní.
-      </p>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "14px", marginBottom: "20px" }}>
-        <div style={card}>
-          <div style={statLabel}>Odběratelé celkem</div>
-          <div style={statValue}>{overview.totalSubscribers.toLocaleString("cs-CZ")}</div>
-        </div>
-        <div style={card}>
-          <div style={statLabel}>Aktivní marketing</div>
-          <div style={statValue}>{overview.marketingSubscribers.toLocaleString("cs-CZ")}</div>
-        </div>
-        <div style={card}>
-          <div style={statLabel}>Odhlášení</div>
-          <div style={statValue}>{overview.unsubscribed.toLocaleString("cs-CZ")}</div>
-        </div>
-        <div style={card}>
-          <div style={statLabel}>Potlačeno (bounce)</div>
-          <div style={statValue}>{overview.suppressed.toLocaleString("cs-CZ")}</div>
-        </div>
-        <div style={card}>
-          <div style={statLabel}>Aktivní journeys</div>
-          <div style={statValue}>{overview.activeJourneys.toLocaleString("cs-CZ")}</div>
-        </div>
-        <div style={card}>
-          <div style={statLabel}>E-maily za 7 dní</div>
-          <div style={statValue}>{overview.emailsSent7d.toLocaleString("cs-CZ")}</div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
+        <p style={{ color: "#888", fontSize: "12px", margin: 0 }}>
+          Přehled marketingového systému — odběratelé, platící zákazníci, free downloaders a e-mailová aktivita.
+        </p>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <span style={{ fontSize: "11px", color: "#666", display: "inline-flex", alignItems: "center", gap: "6px" }}>
+            <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: "#24e053", display: "inline-block", boxShadow: "0 0 6px rgba(36,224,83,0.6)" }} />
+            Auto-obnovení (15s) • {lastRefreshed.toLocaleTimeString("cs-CZ")}
+          </span>
+          <button
+            onClick={() => fetchOverview(true)}
+            disabled={refreshing}
+            style={{
+              padding: "4px 10px",
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.12)",
+              borderRadius: "6px",
+              color: "#ccc",
+              fontSize: "11px",
+              cursor: refreshing ? "default" : "pointer",
+            }}
+          >
+            {refreshing ? "Aktualizuji…" : "↻ Obnovit"}
+          </button>
         </div>
       </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "14px", marginBottom: "20px" }}>
+        <div style={card}>
+          <div style={statLabel}>Odběratelé celkem</div>
+          <div style={statValue}>{(overview.totalSubscribers ?? 0).toLocaleString("cs-CZ")}</div>
+          <div style={{ fontSize: "11px", color: "#666", marginTop: "6px" }}>Všichni v databázi</div>
+        </div>
+
+        <div style={{ ...card, borderColor: "rgba(11,153,252,0.25)", background: "rgba(11,153,252,0.04)" }}>
+          <div style={{ ...statLabel, color: "#0B99FC" }}>Aktivní marketing (souhlas)</div>
+          <div style={{ ...statValue, color: "#fff" }}>{(overview.marketingSubscribers ?? 0).toLocaleString("cs-CZ")}</div>
+          <div style={{ fontSize: "11px", color: "#0B99FC", marginTop: "6px" }}>Příjemci kampaní</div>
+        </div>
+
+        <div style={{ ...card, borderColor: "rgba(36,224,83,0.25)", background: "rgba(36,224,83,0.04)" }}>
+          <div style={{ ...statLabel, color: "#24e053" }}>Platící zákazníci</div>
+          <div style={{ ...statValue, color: "#24e053" }}>{(overview.paidCustomers ?? 0).toLocaleString("cs-CZ")}</div>
+          <div style={{ fontSize: "11px", color: "#888", marginTop: "6px" }}>Objednávky & kupující</div>
+        </div>
+
+        <div style={{ ...card, borderColor: "rgba(176,102,255,0.25)", background: "rgba(176,102,255,0.04)" }}>
+          <div style={{ ...statLabel, color: "#b066ff" }}>Stahovatelé zdarma</div>
+          <div style={{ ...statValue, color: "#d9a8ff" }}>{(overview.freeDownloaders ?? 0).toLocaleString("cs-CZ")}</div>
+          <div style={{ fontSize: "11px", color: "#888", marginTop: "6px" }}>BeatStars & web freebies</div>
+        </div>
+
+        <div style={card}>
+          <div style={statLabel}>Odhlášení</div>
+          <div style={statValue}>{(overview.unsubscribed ?? 0).toLocaleString("cs-CZ")}</div>
+          <div style={{ fontSize: "11px", color: "#666", marginTop: "6px" }}>Vyřazeni z rozesílek</div>
+        </div>
+
+        <div style={card}>
+          <div style={statLabel}>Potlačeno (bounce)</div>
+          <div style={statValue}>{(overview.suppressed ?? 0).toLocaleString("cs-CZ")}</div>
+          <div style={{ fontSize: "11px", color: "#666", marginTop: "6px" }}>Neplatné / vrácené</div>
+        </div>
+
+        <div style={card}>
+          <div style={statLabel}>Aktivní journeys</div>
+          <div style={statValue}>{(overview.activeJourneys ?? 0).toLocaleString("cs-CZ")}</div>
+          <div style={{ fontSize: "11px", color: "#666", marginTop: "6px" }}>Automatizace v běhu</div>
+        </div>
+
+        <div style={card}>
+          <div style={statLabel}>E-maily za 7 dní</div>
+          <div style={statValue}>{(overview.emailsSent7d ?? 0).toLocaleString("cs-CZ")}</div>
+          <div style={{ fontSize: "11px", color: "#666", marginTop: "6px" }}>Odesláno za týden</div>
+        </div>
+      </div>
+
       <div style={card}>
         <div style={{ fontSize: "13px", fontWeight: 600, color: DESIGN_SYSTEM.colors.textPrimary, marginBottom: "14px" }}>Události e-mailů (7 dní)</div>
         {Object.keys(overview.eventCounts7d || {}).length === 0 ? (
           <div style={{ color: "#444", fontSize: "13px" }}>Zatím žádné události.</div>
         ) : (
-          <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: "24px", flexWrap: "wrap" }}>
             {Object.entries(overview.eventCounts7d).map(([type, count]) => (
               <div key={type}>
                 <div style={{ fontSize: "20px", fontWeight: 700, color: DESIGN_SYSTEM.colors.textPrimary }}>{count as number}</div>
-                <div style={{ fontSize: "11px", color: "#555", textTransform: "uppercase" }}>{type}</div>
+                <div style={{ fontSize: "11px", color: "#777", textTransform: "uppercase" }}>{type}</div>
               </div>
             ))}
           </div>

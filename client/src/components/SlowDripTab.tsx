@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { ArrowRight, ShieldCheck, Zap, Clock, Gauge, Mail, Users, CheckCircle2, AlertCircle } from "lucide-react";
 
 interface SlowDripData {
   total: number;
@@ -14,11 +15,16 @@ interface Campaign {
   status: string;
 }
 
-export function SlowDripTab() {
+interface SlowDripTabProps {
+  onNavigateToCampaigns?: () => void;
+}
+
+export function SlowDripTab({ onNavigateToCampaigns }: SlowDripTabProps) {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [selectedCampaignId, setSelectedCampaignId] = useState<number | null>(null);
   const [data, setData] = useState<SlowDripData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loadingCampaigns, setLoadingCampaigns] = useState(true);
+  const [loadingData, setLoadingData] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [nextUpdateIn, setNextUpdateIn] = useState(10);
 
@@ -30,17 +36,20 @@ export function SlowDripTab() {
   useEffect(() => {
     const loadCampaigns = async () => {
       try {
+        setLoadingCampaigns(true);
         const res = await fetch("/api/marketing/campaigns", { credentials: "include" });
         if (res.ok) {
           const all = await res.json();
-          const active = all.filter((c: Campaign) => c.status === "active");
+          const active = all.filter((c: Campaign) => c.status === "active" || c.status === "live");
           setCampaigns(active);
-          if (active.length > 0 && !selectedCampaignId) {
+          if (active.length > 0) {
             setSelectedCampaignId(active[0].id);
           }
         }
       } catch (err) {
         console.error("Error loading campaigns:", err);
+      } finally {
+        setLoadingCampaigns(false);
       }
     };
     loadCampaigns();
@@ -52,6 +61,7 @@ export function SlowDripTab() {
 
     const loadData = async () => {
       try {
+        setLoadingData(true);
         const res = await fetch(`/api/marketing/campaigns/${selectedCampaignId}/queue-status`, {
           credentials: "include",
         });
@@ -59,9 +69,9 @@ export function SlowDripTab() {
           const json = await res.json();
           const { queue, rateLimit } = json;
           setData({
-            total: queue.total,
-            sent: queue.sent,
-            failed: queue.failed,
+            total: queue?.total || 0,
+            sent: queue?.sent || 0,
+            failed: queue?.failed || 0,
             hour: rateLimit?.current_hour_sent || 0,
             day: rateLimit?.current_day_sent || 0,
           });
@@ -70,7 +80,7 @@ export function SlowDripTab() {
       } catch (err) {
         console.error("Error loading campaign data:", err);
       } finally {
-        setLoading(false);
+        setLoadingData(false);
       }
     };
 
@@ -87,23 +97,6 @@ export function SlowDripTab() {
     return () => clearInterval(interval);
   }, []);
 
-  if (!data || loading) {
-    return (
-      <div style={{ padding: "40px", textAlign: "center", color: "#666" }}>
-        Načítám data...
-      </div>
-    );
-  }
-
-  const total = data.total;
-  const sent = data.sent;
-  const failed = data.failed;
-  const queued = Math.max(0, total - sent - failed);
-  const pct = total ? (sent / total) * 100 : 0;
-  const failedPct = total ? (failed / total) * 100 : 0;
-  const remaining = Math.max(0, total - sent);
-  const days = Math.ceil(remaining / LIMIT_D);
-
   const nf = new Intl.NumberFormat("cs-CZ");
   const pf = new Intl.NumberFormat("cs-CZ", {
     minimumFractionDigits: 1,
@@ -118,6 +111,270 @@ export function SlowDripTab() {
     if (n >= 2 && n <= 4) return few;
     return many;
   };
+
+  // Loading state
+  if (loadingCampaigns) {
+    return (
+      <div style={{ padding: "60px 0", textAlign: "center", color: "#666", fontSize: "13px" }}>
+        Načítám stav Slow Drip ochrany…
+      </div>
+    );
+  }
+
+  // Empty state when no campaign is active
+  if (campaigns.length === 0 || !data) {
+    return (
+      <div style={{ paddingBottom: "60px" }}>
+        {/* Hero Card with CTA */}
+        <div
+          style={{
+            background: "linear-gradient(135deg, rgba(11,153,252,0.12) 0%, rgba(36,224,83,0.06) 100%)",
+            border: "1px solid rgba(11,153,252,0.3)",
+            borderRadius: "14px",
+            padding: "32px",
+            marginBottom: "32px",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: "24px",
+            flexWrap: "wrap",
+            boxShadow: "0 10px 40px rgba(0,0,0,0.5)",
+          }}
+        >
+          <div style={{ maxWidth: "620px" }}>
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                background: "rgba(36,224,83,0.15)",
+                border: "1px solid rgba(36,224,83,0.35)",
+                padding: "4px 12px",
+                borderRadius: "999px",
+                color: "#24e053",
+                fontSize: "11px",
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+                marginBottom: "12px",
+              }}
+            >
+              <ShieldCheck size={13} />
+              Režim ochrany domény připraven (Slow Drip)
+            </div>
+            <h2 style={{ fontSize: "22px", fontWeight: 700, color: "#fff", margin: "0 0 10px 0" }}>
+              Žádná kampaň právě neběží v režimu Slow Drip
+            </h2>
+            <p style={{ fontSize: "13px", color: "#aaa", lineHeight: 1.55, margin: 0 }}>
+              Slow Drip slouží k bezpečnému rozesílání e-mailů s přísnými limity (<strong>max 4 e-maily za hodinu</strong> a <strong>85 e-mailů za den</strong>). Tím je zaručeno, že vaše doména a e-mailový server nikdy neskončí ve spamovém filtru Gmailu nebo Seznamu a všech <strong>5 000+ kontaktů</strong> bude spolehlivě doručeno do primární schránky.
+            </p>
+          </div>
+
+          <button
+            onClick={() => onNavigateToCampaigns?.()}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "10px",
+              padding: "14px 26px",
+              background: "#0B99FC",
+              border: "none",
+              borderRadius: "8px",
+              color: "#000",
+              fontSize: "14px",
+              fontWeight: 700,
+              cursor: "pointer",
+              boxShadow: "0 4px 24px rgba(11,153,252,0.45)",
+              transition: "all 150ms ease",
+              flexShrink: 0,
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-1px)";
+              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 8px 30px rgba(11,153,252,0.65)";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.transform = "none";
+              (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 24px rgba(11,153,252,0.45)";
+            }}
+          >
+            <span>Přejít do Kampaní</span>
+            <ArrowRight size={16} />
+          </button>
+        </div>
+
+        {/* Skeleton Preview Section Title */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+          <div style={{ fontSize: "11px", color: "#666", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.08em" }}>
+            UKÁZKA ROZHRANÍ PŘI BĚHU KAMPANĚ (SKELETON PREVIEW)
+          </div>
+          <div style={{ fontSize: "11px", color: "#444" }}>
+            Informativní ukázka
+          </div>
+        </div>
+
+        {/* Skeleton Dashboard Card */}
+        <section
+          style={{
+            background: "#0f0f0f",
+            border: "1px dashed rgba(255,255,255,0.15)",
+            borderRadius: "12px",
+            overflow: "hidden",
+            opacity: 0.9,
+          }}
+        >
+          {/* Skeleton Header */}
+          <div
+            style={{
+              padding: "22px 24px",
+              borderBottom: "1px solid #1c1c1c",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "16px",
+              flexWrap: "wrap",
+            }}
+          >
+            <div>
+              <div style={{ fontSize: "11px", textTransform: "uppercase", color: "#555", letterSpacing: "0.08em", marginBottom: "4px" }}>
+                Ukázka kampaně
+              </div>
+              <h2 style={{ margin: 0, fontSize: "17px", fontWeight: 600, color: "#fff" }}>
+                Beat Drop Announcement (Náhled Slow Drip fronty)
+              </h2>
+            </div>
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                border: "1px solid rgba(36,224,83,0.3)",
+                background: "rgba(36,224,83,0.06)",
+                borderRadius: "999px",
+                padding: "4px 12px",
+                fontSize: "12px",
+                color: "#24e053",
+              }}
+            >
+              <span
+                style={{
+                  width: "6px",
+                  height: "6px",
+                  borderRadius: "50%",
+                  background: "#24e053",
+                  boxShadow: "0 0 6px rgba(36,224,83,0.8)",
+                }}
+              />
+              <span>Pohotovostní režim</span>
+            </div>
+          </div>
+
+          {/* Skeleton Progress */}
+          <div style={{ padding: "22px 24px", borderBottom: "1px solid #1c1c1c" }}>
+            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "16px", flexWrap: "wrap", marginBottom: "16px" }}>
+              <div style={{ fontSize: "42px", fontWeight: 600, letterSpacing: "-0.03em", lineHeight: 1, color: "#aaa" }}>
+                0.0 %
+              </div>
+              <div style={{ fontFamily: "monospace", fontSize: "13px", color: "#777" }}>
+                <strong style={{ color: "#fff" }}>0</strong> z <span>5 066</span> odesláno
+              </div>
+            </div>
+            <div
+              style={{
+                display: "flex",
+                height: "10px",
+                borderRadius: "4px",
+                background: "#1a1a1a",
+                overflow: "hidden",
+              }}
+            >
+              <div style={{ width: "2%", background: "#0B99FC" }} />
+            </div>
+          </div>
+
+          {/* Skeleton Gauges */}
+          <div
+            style={{
+              padding: "24px",
+              borderBottom: "1px solid #1c1c1c",
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+              gap: "24px",
+            }}
+          >
+            {/* Hourly Gauge Skeleton */}
+            <div style={{ padding: "18px", background: "#141414", borderRadius: "10px", border: "1px solid #222" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                <span style={{ fontSize: "11px", textTransform: "uppercase", color: "#888", fontWeight: 600 }}>Limit za hodinu</span>
+                <span style={{ fontSize: "11px", color: "#0B99FC", fontFamily: "monospace" }}>0 / 4</span>
+              </div>
+              <div style={{ height: "6px", background: "#222", borderRadius: "3px", overflow: "hidden", marginBottom: "10px" }}>
+                <div style={{ width: "0%", height: "100%", background: "#0B99FC" }} />
+              </div>
+              <div style={{ fontSize: "11px", color: "#666" }}>
+                Bezpečná rychlost max 4 e-maily / hod. Reset každou hodinu.
+              </div>
+            </div>
+
+            {/* Daily Gauge Skeleton */}
+            <div style={{ padding: "18px", background: "#141414", borderRadius: "10px", border: "1px solid #222" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                <span style={{ fontSize: "11px", textTransform: "uppercase", color: "#888", fontWeight: 600 }}>Denní limit (ochrana)</span>
+                <span style={{ fontSize: "11px", color: "#24e053", fontFamily: "monospace" }}>0 / 85</span>
+              </div>
+              <div style={{ height: "6px", background: "#222", borderRadius: "3px", overflow: "hidden", marginBottom: "10px" }}>
+                <div style={{ width: "0%", height: "100%", background: "#24e053" }} />
+              </div>
+              <div style={{ fontSize: "11px", color: "#666" }}>
+                Garantuje nulové riziko zařazení na blacklist. Reset o půlnoci.
+              </div>
+            </div>
+
+            {/* ETA Skeleton */}
+            <div style={{ padding: "18px", background: "#141414", borderRadius: "10px", border: "1px solid #222" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                <span style={{ fontSize: "11px", textTransform: "uppercase", color: "#888", fontWeight: 600 }}>Odhadované dokončení</span>
+                <Clock size={13} color="#f9a825" />
+              </div>
+              <div style={{ fontSize: "20px", fontWeight: 700, color: "#fff", marginBottom: "4px" }}>
+                cca 60 dní
+              </div>
+              <div style={{ fontSize: "11px", color: "#666" }}>
+                Při 85 e-mailech denně pro všech 5 066 kontaktů.
+              </div>
+            </div>
+          </div>
+
+          {/* Skeleton Info Footer */}
+          <div
+            style={{
+              padding: "16px 24px",
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              color: "#888",
+              fontSize: "12px",
+              background: "#0c0c0c",
+            }}
+          >
+            <AlertCircle size={15} color="#0B99FC" style={{ flexShrink: 0 }} />
+            <div>
+              Spusťte kampaň v záložce <strong>Kampaně</strong> kliknutím na tlačítko <em>"Spustit kampaň"</em> nebo <em>"Odeslat…"</em>. Zde uvidíte živý teploměr odesílání.
+            </div>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  // Active Campaign view
+  const total = data.total;
+  const sent = data.sent;
+  const failed = data.failed;
+  const queued = Math.max(0, total - sent - failed);
+  const pct = total ? (sent / total) * 100 : 0;
+  const failedPct = total ? (failed / total) * 100 : 0;
+  const remaining = Math.max(0, total - sent);
+  const days = Math.ceil(remaining / LIMIT_D);
 
   const getStatus = () => {
     if (remaining === 0 || queued === 0) return { state: "done", text: "Dokončeno" };
@@ -138,17 +395,16 @@ export function SlowDripTab() {
             value={selectedCampaignId || ""}
             onChange={(e) => setSelectedCampaignId(parseInt(e.target.value, 10))}
             style={{
-              padding: "10px 12px",
-              background: "#1a1a1a",
+              padding: "10px 14px",
+              background: "#141414",
               border: "1px solid #333",
-              borderRadius: "6px",
+              borderRadius: "8px",
               color: "#fff",
               fontSize: "14px",
               fontFamily: "inherit",
               cursor: "pointer",
             }}
           >
-            <option value="">Vyberte kampaň...</option>
             {campaigns.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
@@ -158,297 +414,177 @@ export function SlowDripTab() {
         </div>
       )}
 
-      {campaigns.length === 0 ? (
-        <div style={{ padding: "40px", textAlign: "center", color: "#666" }}>
-          Žádné aktivní kampaně
-        </div>
-      ) : (
-        <section
+      <section
+        style={{
+          background: "#0f0f0f",
+          border: "1px solid #222",
+          borderRadius: "12px",
+          overflow: "hidden",
+        }}
+      >
+        {/* Header */}
+        <div
           style={{
-            background: "#0f0f0f",
-            border: "1px solid #222",
-            borderRadius: "10px",
-            overflow: "hidden",
+            padding: "22px 24px",
+            borderBottom: "1px solid #222",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "16px",
+            flexWrap: "wrap",
           }}
         >
-          {/* Header */}
+          <div>
+            <div style={{ fontSize: "11px", textTransform: "uppercase", color: "#666", letterSpacing: "0.08em", marginBottom: "4px" }}>
+              Kampaň
+            </div>
+            <h2 style={{ margin: 0, fontSize: "18px", fontWeight: 600, letterSpacing: "-0.01em", color: "#fff" }}>
+              {campaigns.find((c) => c.id === selectedCampaignId)?.name || "—"}
+            </h2>
+          </div>
           <div
             style={{
-              padding: "22px 24px",
-              borderBottom: "1px solid #222",
-              display: "flex",
+              display: "inline-flex",
               alignItems: "center",
-              justifyContent: "space-between",
-              gap: "16px",
-              flexWrap: "wrap",
-            }}
-          >
-            <div>
-              <div style={{ fontSize: "11px", textTransform: "uppercase", color: "#666", letterSpacing: "0.08em", marginBottom: "4px" }}>
-                Kampaň
-              </div>
-              <h2 style={{ margin: 0, fontSize: "17px", fontWeight: 600, letterSpacing: "-0.01em", color: "#fff" }}>
-                {campaigns.find((c) => c.id === selectedCampaignId)?.name || "—"}
-              </h2>
-            </div>
-            <div
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "8px",
-                border: "1px solid #333",
-                borderRadius: "999px",
-                padding: "4px 12px",
-                fontSize: "12px",
-                color: "#999",
-              }}
-            >
-              <span
-                style={{
-                  width: "6px",
-                  height: "6px",
-                  borderRadius: "50%",
-                  background: status.state === "done" ? "#666" : status.state === "waiting" ? "transparent" : "#fff",
-                  border: status.state === "waiting" ? "1px solid #999" : "none",
-                  animation: status.state === "sending" ? "pulse 1.8s ease-in-out infinite" : "none",
-                }}
-              />
-              <span>{status.text}</span>
-            </div>
-          </div>
-
-          {/* Main progress */}
-          <div style={{ padding: "22px 24px", borderBottom: "1px solid #222" }}>
-            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "16px", flexWrap: "wrap", marginBottom: "16px" }}>
-              <div style={{ fontSize: "46px", fontWeight: 500, letterSpacing: "-0.03em", lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
-                {formatPct(pct)}
-              </div>
-              <div style={{ fontFamily: "monospace", fontSize: "13px", color: "#999", fontVariantNumeric: "tabular-nums" }}>
-                <strong style={{ color: "#fff" }}>{formatInt(sent)}</strong> z <span>{formatInt(total)}</span> odesláno
-              </div>
-            </div>
-            <div
-              style={{
-                display: "flex",
-                height: "12px",
-                borderRadius: "3px",
-                background: "#1b1b1e",
-                overflow: "hidden",
-              }}
-              role="progressbar"
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={Math.round(pct)}
-            >
-              <div style={{ flex: 1, width: `${pct}%`, background: "#fff", transition: "width 0.8s cubic-bezier(0.22, 1, 0.36, 1)" }} />
-              {failed > 0 && (
-                <div
-                  style={{
-                    width: `${failedPct}%`,
-                    backgroundImage: "repeating-linear-gradient(135deg, #999 0 2px, transparent 2px 4px)",
-                    transition: "width 0.8s cubic-bezier(0.22, 1, 0.36, 1)",
-                  }}
-                />
-              )}
-            </div>
-          </div>
-
-          {/* Stats grid */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(4, 1fr)",
-              gap: "1px",
-              background: "#222",
-              padding: 0,
-              borderBottom: "1px solid #222",
-            }}
-          >
-            {[
-              { label: "Odesláno", value: sent, color: "#fff" },
-              { label: "Ve frontě", value: queued, color: "#999" },
-              { label: "Selhalo", value: failed, color: failed > 0 ? "#f44336" : "#666" },
-              { label: "Celkem", value: total, color: "#fff" },
-            ].map((stat, i) => (
-              <div key={i} style={{ background: "#0f0f0f", padding: "18px 24px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", color: "#999" }}>
-                  <span
-                    style={{
-                      width: "10px",
-                      height: "10px",
-                      borderRadius: i === 3 ? "50%" : "2px",
-                      background:
-                        i === 0 ? "#fff" : i === 1 ? "transparent" : i === 2 ? (failed > 0 ? "#f44336" : "transparent") : "transparent",
-                      border: i === 1 || i === 2 || i === 3 ? "1px solid #666" : "none",
-                    }}
-                  />
-                  {stat.label}
-                </div>
-                <div
-                  style={{
-                    marginTop: "6px",
-                    fontSize: "26px",
-                    fontWeight: 500,
-                    letterSpacing: "-0.02em",
-                    fontVariantNumeric: "tabular-nums",
-                    color: stat.color,
-                  }}
-                >
-                  {formatInt(stat.value)}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Rate limits + timeline */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "1px",
-              background: "#222",
-              padding: 0,
-              borderBottom: "1px solid #222",
-            }}
-          >
-            {/* Limits */}
-            <div style={{ background: "#0f0f0f", padding: "22px 24px", display: "flex", flexDirection: "column", gap: "18px" }}>
-              <div>
-                <div style={{ fontSize: "11px", textTransform: "uppercase", color: "#666", letterSpacing: "0.08em", marginBottom: "8px" }}>
-                  Limity odesílání
-                </div>
-              </div>
-              <div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-                  <span style={{ color: "#999", fontSize: "13px" }}>Za hodinu</span>
-                  <span style={{ fontFamily: "monospace", fontSize: "13px", fontVariantNumeric: "tabular-nums", color: "#fff" }}>
-                    {data.hour} <span style={{ color: "#666" }}>/ {LIMIT_H}</span>
-                  </span>
-                </div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "4px" }}>
-                  {[0, 1, 2, 3].map((i) => (
-                    <span
-                      key={i}
-                      style={{
-                        height: "4px",
-                        borderRadius: "1px",
-                        background: i < data.hour ? "#fff" : "#1b1b1e",
-                        transition: "background 0.4s",
-                      }}
-                    />
-                  ))}
-                </div>
-              </div>
-              <div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
-                  <span style={{ color: "#999", fontSize: "13px" }}>Za den</span>
-                  <span style={{ fontFamily: "monospace", fontSize: "13px", fontVariantNumeric: "tabular-nums", color: "#fff" }}>
-                    {data.day} <span style={{ color: "#666" }}>/ {LIMIT_D}</span>
-                  </span>
-                </div>
-                <div style={{ height: "4px", borderRadius: "1px", background: "#1b1b1e", overflow: "hidden" }}>
-                  <div
-                    style={{
-                      height: "100%",
-                      background: "#fff",
-                      width: `${Math.min(100, (data.day / LIMIT_D) * 100)}%`,
-                      transition: "width 0.8s cubic-bezier(0.22, 1, 0.36, 1)",
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Timeline */}
-            <div style={{ background: "#0f0f0f", padding: "22px 24px", display: "flex", flexDirection: "column", gap: "18px" }}>
-              <div>
-                <div style={{ fontSize: "11px", textTransform: "uppercase", color: "#666", letterSpacing: "0.08em", marginBottom: "8px" }}>
-                  Časový plán
-                </div>
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: "14px", borderBottom: "1px solid #222" }}>
-                  <span style={{ color: "#999", fontSize: "13px" }}>Zbývajících e-mailů</span>
-                  <span style={{ fontSize: "20px", fontWeight: 500, letterSpacing: "-0.01em", fontVariantNumeric: "tabular-nums", color: "#fff" }}>
-                    {formatInt(remaining)}
-                  </span>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", paddingBottom: "14px", borderBottom: "1px solid #222" }}>
-                  <span style={{ color: "#999", fontSize: "13px" }}>Zbývajících dní</span>
-                  <span style={{ fontSize: "20px", fontWeight: 500, letterSpacing: "-0.01em", fontVariantNumeric: "tabular-nums", color: "#fff" }}>
-                    {days}
-                    <span style={{ fontSize: "12px", color: "#666", marginLeft: "4px" }}>
-                      {plural(days, "den", "dny", "dní")}
-                    </span>
-                  </span>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between" }}>
-                  <span style={{ color: "#999", fontSize: "13px" }}>Odhad dokončení</span>
-                  <span style={{ fontSize: "20px", fontWeight: 500, letterSpacing: "-0.01em", fontVariantNumeric: "tabular-nums", color: "#fff" }}>
-                    {etaStr}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Info note */}
-          <div
-            style={{
-              padding: "22px 24px",
-              display: "flex",
-              gap: "12px",
+              gap: "8px",
+              border: "1px solid #333",
+              borderRadius: "999px",
+              padding: "4px 12px",
+              fontSize: "12px",
               color: "#999",
-              fontSize: "13px",
-              lineHeight: 1.55,
-              borderBottom: "1px solid #222",
             }}
           >
-            <span style={{ width: "16px", height: "16px", border: "1px solid #666", borderRadius: "50%", display: "grid", placeItems: "center", fontSize: "10px", color: "#666", flex: "none", marginTop: "2px" }}>
-              i
-            </span>
-            <p style={{ margin: 0 }}>
-              E-maily se odesílají automaticky v dávkách každých 15 minut. Systém dodržuje limity za hodinu i za den, takže kampaň nemusíte nijak hlídat.
-            </p>
-          </div>
-
-          {/* Refresh timer */}
-          <div
-            style={{
-              padding: "12px 24px",
-              display: "flex",
-              justifyContent: "space-between",
-              gap: "12px",
-              flexWrap: "wrap",
-              fontFamily: "monospace",
-              fontSize: "11px",
-              color: "#666",
-              position: "relative",
-            }}
-          >
-            <div
+            <span
               style={{
-                position: "absolute",
-                left: 0,
-                top: 0,
-                height: "1px",
-                background: "#999",
-                width: `${((REFRESH_INTERVAL - nextUpdateIn) / REFRESH_INTERVAL) * 100}%`,
-                transition: "width 1s linear",
+                width: "6px",
+                height: "6px",
+                borderRadius: "50%",
+                background: status.state === "done" ? "#666" : status.state === "waiting" ? "#f9a825" : "#24e053",
+                boxShadow: status.state === "sending" ? "0 0 8px rgba(36,224,83,0.8)" : "none",
               }}
             />
-            <span>Aktualizováno {lastUpdate?.toLocaleTimeString("cs-CZ") || "–"}</span>
-            <span>Další aktualizace za {nextUpdateIn} s</span>
+            <span style={{ color: status.state === "sending" ? "#fff" : "#aaa" }}>{status.text}</span>
           </div>
-        </section>
-      )}
+        </div>
 
-      <style>{`
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.25; }
-        }
-      `}</style>
+        {/* Main progress */}
+        <div style={{ padding: "22px 24px", borderBottom: "1px solid #222" }}>
+          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "16px", flexWrap: "wrap", marginBottom: "16px" }}>
+            <div style={{ fontSize: "46px", fontWeight: 600, letterSpacing: "-0.03em", lineHeight: 1, fontVariantNumeric: "tabular-nums", color: "#fff" }}>
+              {formatPct(pct)}
+            </div>
+            <div style={{ fontFamily: "monospace", fontSize: "13px", color: "#999", fontVariantNumeric: "tabular-nums" }}>
+              <strong style={{ color: "#fff" }}>{formatInt(sent)}</strong> z <span>{formatInt(total)}</span> odesláno
+            </div>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              height: "12px",
+              borderRadius: "4px",
+              background: "#1b1b1e",
+              overflow: "hidden",
+            }}
+          >
+            <div style={{ width: `${pct}%`, background: "#0B99FC", transition: "width 0.8s cubic-bezier(0.22, 1, 0.36, 1)" }} />
+            {failed > 0 && (
+              <div
+                style={{
+                  width: `${failedPct}%`,
+                  background: "#ff5252",
+                  transition: "width 0.8s cubic-bezier(0.22, 1, 0.36, 1)",
+                }}
+              />
+            )}
+          </div>
+        </div>
+
+        {/* Gauges */}
+        <div
+          style={{
+            padding: "24px",
+            borderBottom: "1px solid #222",
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+            gap: "24px",
+          }}
+        >
+          {/* Hourly */}
+          <div style={{ padding: "18px", background: "#141414", borderRadius: "10px", border: "1px solid #222" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+              <span style={{ fontSize: "11px", textTransform: "uppercase", color: "#888", fontWeight: 600 }}>Tato hodina</span>
+              <span style={{ fontSize: "12px", color: data.hour >= LIMIT_H ? "#f9a825" : "#0B99FC", fontFamily: "monospace", fontWeight: 700 }}>
+                {data.hour} / {LIMIT_H}
+              </span>
+            </div>
+            <div style={{ height: "6px", background: "#222", borderRadius: "3px", overflow: "hidden", marginBottom: "10px" }}>
+              <div style={{ width: `${Math.min(100, (data.hour / LIMIT_H) * 100)}%`, height: "100%", background: "#0B99FC" }} />
+            </div>
+            <div style={{ fontSize: "11px", color: "#666" }}>
+              Max 4 e-maily / hodinu.
+            </div>
+          </div>
+
+          {/* Daily */}
+          <div style={{ padding: "18px", background: "#141414", borderRadius: "10px", border: "1px solid #222" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+              <span style={{ fontSize: "11px", textTransform: "uppercase", color: "#888", fontWeight: 600 }}>Dnes odesláno</span>
+              <span style={{ fontSize: "12px", color: data.day >= LIMIT_D ? "#f9a825" : "#24e053", fontFamily: "monospace", fontWeight: 700 }}>
+                {data.day} / {LIMIT_D}
+              </span>
+            </div>
+            <div style={{ height: "6px", background: "#222", borderRadius: "3px", overflow: "hidden", marginBottom: "10px" }}>
+              <div style={{ width: `${Math.min(100, (data.day / LIMIT_D) * 100)}%`, height: "100%", background: "#24e053" }} />
+            </div>
+            <div style={{ fontSize: "11px", color: "#666" }}>
+              Max 85 e-mailů / den.
+            </div>
+          </div>
+
+          {/* ETA */}
+          <div style={{ padding: "18px", background: "#141414", borderRadius: "10px", border: "1px solid #222" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+              <span style={{ fontSize: "11px", textTransform: "uppercase", color: "#888", fontWeight: 600 }}>Odhadované dokončení</span>
+              <Clock size={13} color="#f9a825" />
+            </div>
+            <div style={{ fontSize: "20px", fontWeight: 700, color: "#fff", marginBottom: "4px" }}>
+              {etaStr} ({days} {plural(days, "den", "dny", "dní")})
+            </div>
+            <div style={{ fontSize: "11px", color: "#666" }}>
+              Zbývá {formatInt(remaining)} e-mailů.
+            </div>
+          </div>
+        </div>
+
+        {/* Refresh timer */}
+        <div
+          style={{
+            padding: "12px 24px",
+            display: "flex",
+            justifyContent: "space-between",
+            gap: "12px",
+            flexWrap: "wrap",
+            fontFamily: "monospace",
+            fontSize: "11px",
+            color: "#666",
+            position: "relative",
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              left: 0,
+              top: 0,
+              height: "1px",
+              background: "#0B99FC",
+              width: `${((REFRESH_INTERVAL - nextUpdateIn) / REFRESH_INTERVAL) * 100}%`,
+              transition: "width 1s linear",
+            }}
+          />
+          <span>Aktualizováno {lastUpdate?.toLocaleTimeString("cs-CZ") || "–"}</span>
+          <span>Další kontrola za {nextUpdateIn} s</span>
+        </div>
+      </section>
     </div>
   );
 }

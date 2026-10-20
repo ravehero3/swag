@@ -192,7 +192,7 @@ router.post("/subscribers/:id/resubscribe", requireAdmin, async (req: Request, r
 
 router.get("/overview", requireAdmin, async (_req: Request, res: Response) => {
   try {
-    const [subs, marketingSubs, unsub, suppressed, activeJourneys, sends7d, events7d] = await Promise.all([
+    const [subs, marketingSubs, unsub, suppressed, activeJourneys, sends7d, events7d, paidBuyers, freebies] = await Promise.all([
       pool.query("SELECT COUNT(*) FROM subscribers"),
       pool.query("SELECT COUNT(*) FROM subscribers WHERE marketing_consent = TRUE AND unsubscribed_at IS NULL AND suppressed_at IS NULL"),
       pool.query("SELECT COUNT(*) FROM subscribers WHERE unsubscribed_at IS NOT NULL"),
@@ -202,8 +202,20 @@ router.get("/overview", requireAdmin, async (_req: Request, res: Response) => {
       pool.query(
         `SELECT event_type, COUNT(*) FROM marketing_email_events WHERE created_at > NOW() - INTERVAL '7 days' GROUP BY event_type`
       ),
-      pool.query("SELECT COUNT(*) FROM subscribers WHERE created_at > NOW() - INTERVAL '7 days'"),
-      pool.query("SELECT COUNT(*) FROM subscribers WHERE created_at > NOW() - INTERVAL '30 days'"),
+      pool.query(`
+        SELECT COUNT(DISTINCT s.id) 
+        FROM subscribers s
+        WHERE s.is_buyer = TRUE 
+           OR EXISTS (SELECT 1 FROM orders o WHERE LOWER(o.email) = s.email_normalized AND o.status IN ('completed', 'paid') AND o.total > 0)
+      `),
+      pool.query(`
+        SELECT COUNT(DISTINCT s.id)
+        FROM subscribers s
+        WHERE s.first_source IN ('freebie_download', 'beatstars_free_download', 'checkout_free_item')
+           OR EXISTS (SELECT 1 FROM subscriber_tags st JOIN tags t ON t.id = st.tag_id WHERE st.subscriber_id = s.id AND t.slug IN ('freebie', 'beatstars'))
+           OR EXISTS (SELECT 1 FROM subscriber_freebies sf WHERE sf.subscriber_id = s.id)
+           OR EXISTS (SELECT 1 FROM leads l WHERE LOWER(l.email) = s.email_normalized)
+      `),
     ]);
 
     const eventCounts: Record<string, number> = {};
@@ -212,6 +224,8 @@ router.get("/overview", requireAdmin, async (_req: Request, res: Response) => {
     res.json({
       totalSubscribers: parseInt(subs.rows[0].count, 10),
       marketingSubscribers: parseInt(marketingSubs.rows[0].count, 10),
+      paidCustomers: parseInt(paidBuyers.rows[0].count, 10),
+      freeDownloaders: parseInt(freebies.rows[0].count, 10),
       unsubscribed: parseInt(unsub.rows[0].count, 10),
       suppressed: parseInt(suppressed.rows[0].count, 10),
       activeJourneys: parseInt(activeJourneys.rows[0].count, 10),
@@ -1175,11 +1189,33 @@ router.post("/settings", requireAdmin, async (req: Request, res: Response) => {
 router.get("/campaigns", requireAdmin, async (_req: Request, res: Response) => {
   try {
     const result = await pool.query(
-      `SELECT c.*, t.name AS template_name FROM marketing_campaigns c
+      `SELECT c.*, t.name AS template_name,
+        COALESCE((SELECT COUNT(*) FROM campaign_emails ce WHERE ce.campaign_id = c.id), 0) AS email_count
+       FROM marketing_campaigns c
        LEFT JOIN marketing_templates t ON t.id = c.template_id
        ORDER BY c.created_at DESC`
     );
-    res.json(result.rows);
+    const campaigns = await Promise.all(
+      result.rows.map(async (camp: any) => {
+        try {
+          const audience = await resolveSegmentAudience(camp.segment_rules || { type: "all" });
+          return {
+            ...camp,
+            emailCount: parseInt(camp.email_count || "0", 10),
+            recipient_count: audience.length,
+            total_recipients: audience.length,
+          };
+        } catch {
+          return {
+            ...camp,
+            emailCount: parseInt(camp.email_count || "0", 10),
+            recipient_count: 0,
+            total_recipients: 0,
+          };
+        }
+      })
+    );
+    res.json(campaigns);
   } catch (error) {
     res.status(500).json({ error: "Chyba při načítání kampaní" });
   }
@@ -1371,6 +1407,58 @@ router.get("/campaigns/:id/audience-count", requireAdmin, async (req: Request, r
     res.json({ count: audience.length });
   } catch (error) {
     res.status(500).json({ error: "Chyba při počítání příjemců" });
+  }
+});
+
+// Detailed audience statistics for campaign recipient badge / modal
+router.get("/campaigns/:id/audience-stats", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const campaignId = parseInt(req.params.id, 10);
+    const campaignRes = await pool.query("SELECT * FROM marketing_campaigns WHERE id = $1", [campaignId]);
+    const campaign = campaignRes.rows[0];
+    if (!campaign) return res.status(404).json({ error: "Kampaň nenalezena" });
+
+    const segmentRules = campaign.segment_rules || { type: "all" };
+    const audience = await resolveSegmentAudience(segmentRules);
+
+    let buyersCount = 0;
+    let freebiesCount = 0;
+    for (const s of audience) {
+      if (s.is_buyer) buyersCount++;
+      else freebiesCount++;
+    }
+
+    const [unsubRes, suppRes, totalSubsRes] = await Promise.all([
+      pool.query("SELECT COUNT(*) FROM subscribers WHERE unsubscribed_at IS NOT NULL"),
+      pool.query("SELECT COUNT(*) FROM subscribers WHERE suppressed_at IS NOT NULL"),
+      pool.query("SELECT COUNT(*) FROM subscribers"),
+    ]);
+
+    const sampleRecipients = audience.slice(0, 50).map((s: any) => ({
+      id: s.id,
+      email: s.email,
+      name: s.name || "Bez jména",
+      first_source: s.first_source || "web",
+      is_buyer: !!s.is_buyer,
+      created_at: s.created_at,
+    }));
+
+    res.json({
+      campaignId,
+      campaignName: campaign.name,
+      segmentRules,
+      totalRecipients: audience.length,
+      totalSubscribers: parseInt(totalSubsRes.rows[0].count, 10),
+      buyersCount,
+      freebiesCount,
+      excludedUnsubscribed: parseInt(unsubRes.rows[0].count, 10),
+      excludedSuppressed: parseInt(suppRes.rows[0].count, 10),
+      estimatedDaysSlowDrip: Math.ceil(audience.length / 85),
+      sampleRecipients,
+    });
+  } catch (error) {
+    console.error("Audience stats error:", error);
+    res.status(500).json({ error: "Chyba při načítání statistik publika" });
   }
 });
 
