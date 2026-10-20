@@ -192,7 +192,7 @@ router.post("/subscribers/:id/resubscribe", requireAdmin, async (req: Request, r
 
 router.get("/overview", requireAdmin, async (_req: Request, res: Response) => {
   try {
-    const [subs, marketingSubs, unsub, suppressed, activeJourneys, sends7d, events7d, paidBuyers, freebies] = await Promise.all([
+    const [subs, marketingSubs, unsub, suppressed, activeJourneys, sends7d, events7d, paidBuyers, freebies, sendAgg7d] = await Promise.all([
       pool.query("SELECT COUNT(*) FROM subscribers"),
       pool.query("SELECT COUNT(*) FROM subscribers WHERE marketing_consent = TRUE AND unsubscribed_at IS NULL AND suppressed_at IS NULL"),
       pool.query("SELECT COUNT(*) FROM subscribers WHERE unsubscribed_at IS NOT NULL"),
@@ -216,10 +216,33 @@ router.get("/overview", requireAdmin, async (_req: Request, res: Response) => {
            OR EXISTS (SELECT 1 FROM subscriber_freebies sf WHERE sf.subscriber_id = s.id)
            OR EXISTS (SELECT 1 FROM leads l WHERE LOWER(l.email) = s.email_normalized)
       `),
+      pool.query(`
+        SELECT 
+          COUNT(*) FILTER (WHERE status IN ('sent', 'delivered', 'opened', 'clicked')) as sent,
+          COUNT(*) FILTER (WHERE status = 'delivered') as delivered,
+          COUNT(*) FILTER (WHERE opened_at IS NOT NULL OR status = 'opened') as opened,
+          COUNT(*) FILTER (WHERE first_clicked_at IS NOT NULL OR status = 'clicked') as clicked,
+          COUNT(*) FILTER (WHERE status = 'failed') as failed
+        FROM marketing_email_sends
+        WHERE created_at > NOW() - INTERVAL '7 days'
+      `),
     ]);
 
     const eventCounts: Record<string, number> = {};
     for (const row of events7d.rows) eventCounts[row.event_type] = parseInt(row.count, 10);
+
+    const agg = sendAgg7d.rows[0] || {};
+    const sentCount = Math.max(parseInt(agg.sent || "0", 10), eventCounts["email.sent"] || 0, parseInt(sends7d.rows[0].count, 10));
+    const failedCount = Math.max(parseInt(agg.failed || "0", 10), eventCounts["email.bounced"] || eventCounts["email.failed"] || 0);
+    const deliveredCount = Math.max(parseInt(agg.delivered || "0", 10), eventCounts["email.delivered"] || Math.max(0, sentCount - failedCount));
+    const openedCount = Math.max(parseInt(agg.opened || "0", 10), eventCounts["email.opened"] || eventCounts["open"] || 0);
+    const clickedCount = Math.max(parseInt(agg.clicked || "0", 10), eventCounts["email.clicked"] || eventCounts["click"] || 0);
+
+    eventCounts["email.sent"] = sentCount;
+    eventCounts["email.delivered"] = deliveredCount;
+    eventCounts["email.opened"] = openedCount;
+    eventCounts["email.clicked"] = clickedCount;
+    eventCounts["email.bounced"] = failedCount;
 
     res.json({
       totalSubscribers: parseInt(subs.rows[0].count, 10),
@@ -229,7 +252,7 @@ router.get("/overview", requireAdmin, async (_req: Request, res: Response) => {
       unsubscribed: parseInt(unsub.rows[0].count, 10),
       suppressed: parseInt(suppressed.rows[0].count, 10),
       activeJourneys: parseInt(activeJourneys.rows[0].count, 10),
-      emailsSent7d: parseInt(sends7d.rows[0].count, 10),
+      emailsSent7d: sentCount,
       eventCounts7d: eventCounts,
     });
   } catch (error) {

@@ -201,13 +201,23 @@ export async function sendTestCustomEmail(
     );
     const status = error ? "failed" : "sent";
     const sentAt = error ? null : new Date();
-    await pool.query(
+    const sendRes = await pool.query(
       `INSERT INTO marketing_email_sends
          (subscriber_id, template_id, idempotency_key, email_type, subject, recipient, status, resend_email_id, sent_at, error)
        VALUES (NULL,NULL,$1,'test',$2,$3,$4,$5,$6,$7)
-       ON CONFLICT (idempotency_key) DO NOTHING`,
+       ON CONFLICT (idempotency_key) DO UPDATE SET status = EXCLUDED.status, sent_at = EXCLUDED.sent_at, resend_email_id = EXCLUDED.resend_email_id, error = EXCLUDED.error
+       RETURNING id`,
       [idempotencyKey, subject, toEmail, status, data?.id || null, sentAt, error ? String(error.message || error) : null]
     );
+    const sendId = sendRes.rows[0]?.id;
+    if (sendId && !error) {
+      await pool.query(
+        `INSERT INTO marketing_email_events (email_send_id, subscriber_id, resend_email_id, event_type, event_id, event_timestamp)
+         VALUES ($1, NULL, $2, 'email.sent', 'send/' || $1, NOW())
+         ON CONFLICT (event_id) DO NOTHING`,
+        [sendId, data?.id || null]
+      );
+    }
     if (error) return { ok: false, error: String(error.message || error) };
     return { ok: true };
   } catch (err) {
@@ -261,13 +271,23 @@ export async function sendTestMarketingEmail(
     );
     const status = error ? "failed" : "sent";
     const sentAt = error ? null : new Date();
-    await pool.query(
+    const sendRes = await pool.query(
       `INSERT INTO marketing_email_sends
          (subscriber_id, template_id, idempotency_key, email_type, subject, recipient, status, resend_email_id, sent_at, error)
        VALUES (NULL,$1,$2,'test',$3,$4,$5,$6,$7,$8)
-       ON CONFLICT (idempotency_key) DO NOTHING`,
+       ON CONFLICT (idempotency_key) DO UPDATE SET status = EXCLUDED.status, sent_at = EXCLUDED.sent_at, resend_email_id = EXCLUDED.resend_email_id, error = EXCLUDED.error
+       RETURNING id`,
       [templateId, idempotencyKey, subject, toEmail, status, data?.id || null, sentAt, error ? String(error.message || error) : null]
     );
+    const sendId = sendRes.rows[0]?.id;
+    if (sendId && !error) {
+      await pool.query(
+        `INSERT INTO marketing_email_events (email_send_id, subscriber_id, resend_email_id, event_type, event_id, event_timestamp)
+         VALUES ($1, NULL, $2, 'email.sent', 'send/' || $1, NOW())
+         ON CONFLICT (event_id) DO NOTHING`,
+        [sendId, data?.id || null]
+      );
+    }
     if (error) return { ok: false, error: String(error.message || error) };
     return { ok: true };
   } catch (err) {
@@ -434,6 +454,12 @@ export async function sendMarketingEmail(input: SendMarketingEmailInput): Promis
     await pool.query(
       "UPDATE marketing_email_sends SET status = 'sent', resend_email_id = $2, sent_at = CURRENT_TIMESTAMP WHERE id = $1",
       [sendId, data?.id || null]
+    );
+    await pool.query(
+      `INSERT INTO marketing_email_events (email_send_id, subscriber_id, resend_email_id, event_type, event_id, event_timestamp)
+       VALUES ($1, $2, $3, 'email.sent', 'send/' || $1, NOW())
+       ON CONFLICT (event_id) DO NOTHING`,
+      [sendId, subscriber.id, data?.id || null]
     );
     console.log(`[Marketing] email.sent send_id=${sendId} resend_id=${data?.id}`);
     return { skipped: false };

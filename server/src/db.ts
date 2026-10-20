@@ -531,8 +531,7 @@ export async function initDatabase() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
       CREATE INDEX IF NOT EXISTS idx_marketing_email_events_send_id ON marketing_email_events (email_send_id);
-      CREATE INDEX IF NOT EXISTS idx_marketing_email_events_created_at ON marketing_email_events (created_at DESC);
-      CREATE UNIQUE INDEX IF NOT EXISTS idx_marketing_email_events_event_id ON marketing_email_events (event_id) WHERE event_id IS NOT NULL;
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_marketing_email_events_event_id ON marketing_email_events (event_id);
 
       CREATE TABLE IF NOT EXISTS marketing_audit_log (
         id SERIAL PRIMARY KEY,

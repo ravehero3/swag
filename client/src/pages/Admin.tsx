@@ -7455,19 +7455,56 @@ function MarketingPrehledTab() {
       </div>
 
       <div style={card}>
-        <div style={{ fontSize: "13px", fontWeight: 600, color: DESIGN_SYSTEM.colors.textPrimary, marginBottom: "14px" }}>Události e-mailů (7 dní)</div>
-        {Object.keys(overview.eventCounts7d || {}).length === 0 ? (
-          <div style={{ color: "#444", fontSize: "13px" }}>Zatím žádné události.</div>
-        ) : (
-          <div style={{ display: "flex", gap: "24px", flexWrap: "wrap" }}>
-            {Object.entries(overview.eventCounts7d).map(([type, count]) => (
-              <div key={type}>
-                <div style={{ fontSize: "20px", fontWeight: 700, color: DESIGN_SYSTEM.colors.textPrimary }}>{count as number}</div>
-                <div style={{ fontSize: "11px", color: "#777", textTransform: "uppercase" }}>{type}</div>
-              </div>
-            ))}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", flexWrap: "wrap", gap: "8px" }}>
+          <div style={{ fontSize: "13px", fontWeight: 600, color: DESIGN_SYSTEM.colors.textPrimary }}>
+            Události e-mailů (posledních 7 dní)
           </div>
-        )}
+          <span style={{ fontSize: "11px", color: "#666" }}>
+            Aktivita rozesílek, doručení a zapojení příjemců
+          </span>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "12px" }}>
+          <div style={{ padding: "12px 14px", background: "rgba(11,153,252,0.05)", border: "1px solid rgba(11,153,252,0.18)", borderRadius: "8px" }}>
+            <div style={{ fontSize: "11px", color: "#0B99FC", fontWeight: 600, textTransform: "uppercase" }}>Odesláno</div>
+            <div style={{ fontSize: "22px", fontWeight: 700, color: "#fff", marginTop: "4px" }}>
+              {(overview.eventCounts7d?.["email.sent"] ?? overview.emailsSent7d ?? 0).toLocaleString("cs-CZ")}
+            </div>
+            <div style={{ fontSize: "10.5px", color: "#888", marginTop: "2px" }}>E-maily opustily server</div>
+          </div>
+
+          <div style={{ padding: "12px 14px", background: "rgba(36,224,83,0.05)", border: "1px solid rgba(36,224,83,0.18)", borderRadius: "8px" }}>
+            <div style={{ fontSize: "11px", color: "#24e053", fontWeight: 600, textTransform: "uppercase" }}>Doručeno</div>
+            <div style={{ fontSize: "22px", fontWeight: 700, color: "#fff", marginTop: "4px" }}>
+              {(overview.eventCounts7d?.["email.delivered"] ?? overview.emailsSent7d ?? 0).toLocaleString("cs-CZ")}
+            </div>
+            <div style={{ fontSize: "10.5px", color: "#888", marginTop: "2px" }}>Přijato schránkami</div>
+          </div>
+
+          <div style={{ padding: "12px 14px", background: "rgba(176,102,255,0.05)", border: "1px solid rgba(176,102,255,0.18)", borderRadius: "8px" }}>
+            <div style={{ fontSize: "11px", color: "#d9a8ff", fontWeight: 600, textTransform: "uppercase" }}>Otevřeno</div>
+            <div style={{ fontSize: "22px", fontWeight: 700, color: "#fff", marginTop: "4px" }}>
+              {(overview.eventCounts7d?.["email.opened"] ?? 0).toLocaleString("cs-CZ")}
+            </div>
+            <div style={{ fontSize: "10.5px", color: "#888", marginTop: "2px" }}>Unikátní otevření</div>
+          </div>
+
+          <div style={{ padding: "12px 14px", background: "rgba(255,179,0,0.05)", border: "1px solid rgba(255,179,0,0.18)", borderRadius: "8px" }}>
+            <div style={{ fontSize: "11px", color: "#ffb300", fontWeight: 600, textTransform: "uppercase" }}>Prokliknuto</div>
+            <div style={{ fontSize: "22px", fontWeight: 700, color: "#fff", marginTop: "4px" }}>
+              {(overview.eventCounts7d?.["email.clicked"] ?? 0).toLocaleString("cs-CZ")}
+            </div>
+            <div style={{ fontSize: "10.5px", color: "#888", marginTop: "2px" }}>Kliknutí na odkaz</div>
+          </div>
+
+          <div style={{ padding: "12px 14px", background: "rgba(255,82,82,0.05)", border: "1px solid rgba(255,82,82,0.18)", borderRadius: "8px" }}>
+            <div style={{ fontSize: "11px", color: "#ff5252", fontWeight: 600, textTransform: "uppercase" }}>Chyba / Bounce</div>
+            <div style={{ fontSize: "22px", fontWeight: 700, color: (overview.eventCounts7d?.["email.bounced"] ?? 0) > 0 ? "#ff5252" : "#fff", marginTop: "4px" }}>
+              {(overview.eventCounts7d?.["email.bounced"] ?? 0).toLocaleString("cs-CZ")}
+            </div>
+            <div style={{ fontSize: "10.5px", color: "#888", marginTop: "2px" }}>Nedoručené e-maily</div>
+          </div>
+        </div>
       </div>
     </div>
   );
