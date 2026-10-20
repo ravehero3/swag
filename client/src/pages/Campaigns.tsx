@@ -89,7 +89,7 @@ export default function Campaigns() {
   const [schedulerTime, setSchedulerTime] = useState("09:00");
 
   useEffect(() => {
-    const savedId = sessionStorage.getItem("voodoo808_selected_campaign_id");
+    const savedId = localStorage.getItem("voodoo808_selected_campaign_id") || sessionStorage.getItem("voodoo808_selected_campaign_id");
     Promise.all([loadCampaigns(savedId ? parseInt(savedId, 10) : null), loadTemplates()]);
   }, []);
 
@@ -100,18 +100,24 @@ export default function Campaigns() {
       if (res.ok) {
         const data = await res.json();
         setCampaigns(data || []);
-        // Auto-restore previously selected campaign
+        // Auto-restore previously selected campaign or fallback to first
+        let found = null;
         if (autoSelectId) {
-          const found = (data || []).find((c: Campaign) => c.id === autoSelectId);
-          if (found) {
-            setSelectedCampaignId(found.id);
-            setSelectedCampaign(found);
-            // Load its emails in background
-            fetch(`/api/marketing/campaigns/${found.id}/emails`)
-              .then(r => r.ok ? r.json() : [])
-              .then(emails => setCampaignEmails(emails || []))
-              .catch(() => {});
-          }
+          found = (data || []).find((c: Campaign) => c.id === autoSelectId);
+        }
+        if (!found && (data || []).length > 0) {
+          found = data[0];
+        }
+        if (found) {
+          setSelectedCampaignId(found.id);
+          setSelectedCampaign(found);
+          localStorage.setItem("voodoo808_selected_campaign_id", String(found.id));
+          sessionStorage.setItem("voodoo808_selected_campaign_id", String(found.id));
+          // Load its emails in background
+          fetch(`/api/marketing/campaigns/${found.id}/emails`)
+            .then(r => r.ok ? r.json() : [])
+            .then(emails => setCampaignEmails(emails || []))
+            .catch(() => {});
         }
       }
     } catch (err) {
@@ -162,7 +168,8 @@ export default function Campaigns() {
     if (!campaign) return;
     setSelectedCampaignId(campaignId);
     setSelectedCampaign(campaign);
-    // Persist selection so it survives tab switches
+    // Persist selection so it survives tab switches and page reloads
+    localStorage.setItem("voodoo808_selected_campaign_id", String(campaignId));
     sessionStorage.setItem("voodoo808_selected_campaign_id", String(campaignId));
     await loadCampaignEmails(campaignId);
     setPreviewVisible(false);
@@ -199,6 +206,8 @@ export default function Campaigns() {
         setCampaigns([newCampaign, ...campaigns]);
         setSelectedCampaignId(newCampaign.id);
         setSelectedCampaign(newCampaign);
+        localStorage.setItem("voodoo808_selected_campaign_id", String(newCampaign.id));
+        sessionStorage.setItem("voodoo808_selected_campaign_id", String(newCampaign.id));
         await loadCampaignEmails(newCampaign.id);
         setPreviewVisible(false);
         setTestMode(false);
@@ -302,6 +311,12 @@ export default function Campaigns() {
         const newEmail = await res.json();
         console.log("[Campaigns] New email created:", newEmail);
         setCampaignEmails([...campaignEmails, newEmail]);
+        setCampaigns((prev) =>
+          prev.map((c) =>
+            c.id === selectedCampaignId ? { ...c, emailCount: (c.emailCount || 0) + 1 } : c
+          )
+        );
+        setSelectedCampaign((prev) => prev ? { ...prev, emailCount: (prev.emailCount || 0) + 1 } : prev);
       } else {
         const error = await res.text();
         console.error("[Campaigns] Error adding email:", error);
@@ -319,6 +334,12 @@ export default function Campaigns() {
       });
       if (res.ok) {
         setCampaignEmails(campaignEmails.filter((e) => e.id !== emailId));
+        setCampaigns((prev) =>
+          prev.map((c) =>
+            c.id === selectedCampaignId ? { ...c, emailCount: Math.max(0, (c.emailCount || 1) - 1) } : c
+          )
+        );
+        setSelectedCampaign((prev) => prev ? { ...prev, emailCount: Math.max(0, (prev.emailCount || 1) - 1) } : prev);
         if (previewEmailId === emailId) {
           setPreviewEmailId(null);
           setPreviewVisible(false);

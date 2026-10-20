@@ -2180,6 +2180,7 @@ export function VisualEmailBuilder({
                           <BlockRenderer
                             block={block}
                             isSelected={isSelected}
+                            onSelect={() => setSelectedBlockId(block.id)}
                             onChangeBlock={(patch) => {
                               const nextList = blocks.map((b) => b.id === block.id ? { ...b, ...patch } : b);
                               updateBlocksState(nextList);
@@ -2853,10 +2854,12 @@ function BlockRenderer({
   block,
   isSelected,
   onChangeBlock,
+  onSelect,
 }: {
   block: EmailBlock;
   isSelected?: boolean;
   onChangeBlock?: (patch: Partial<EmailBlock>) => void;
+  onSelect?: () => void;
 }) {
   // Helper: handle contentEditable blur -> commit text change
   const handleTextBlur = (
@@ -2867,15 +2870,17 @@ function BlockRenderer({
     onChangeBlock?.({ [key]: val } as Partial<EmailBlock>);
   };
 
-  // Only enable inline editing when block is already selected
-  const canEdit = !!onChangeBlock && !!isSelected;
+  // Inline editing enabled directly whenever onChangeBlock is provided
+  const canEdit = !!onChangeBlock;
 
   const editableStyle: React.CSSProperties = canEdit
     ? {
         outline: "none",
         cursor: "text",
-        borderRadius: "3px",
-        transition: "background 0.15s",
+        borderRadius: "4px",
+        transition: "border-color 0.15s, background 0.15s",
+        border: isSelected ? "1px dashed #0B99FC" : "1px dashed rgba(255,255,255,0.18)",
+        padding: "2px 4px",
       }
     : {};
 
@@ -2896,14 +2901,17 @@ function BlockRenderer({
           <span
             contentEditable={canEdit}
             suppressContentEditableWarning
+            onFocus={() => onSelect?.()}
             onBlur={(e) => handleTextBlur(e, "headingText")}
-            onClick={(e) => canEdit && e.stopPropagation()}
-            onDoubleClick={(e) => canEdit && e.stopPropagation()}
+            onClick={(e) => {
+              onSelect?.();
+              e.stopPropagation();
+            }}
             style={{
               ...editableStyle,
               display: "block",
             }}
-            title={canEdit ? "Klikni pro přímou úpravu" : undefined}
+            title={canEdit ? "Klikněte pro přímou úpravu textu" : undefined}
           >
             {substituteSampleVars(block.headingText) || "Nadpis"}
           </span>
@@ -2926,17 +2934,20 @@ function BlockRenderer({
           <span
             contentEditable={canEdit}
             suppressContentEditableWarning
+            onFocus={() => onSelect?.()}
             onBlur={(e) => handleTextBlur(e, "paragraphText")}
-            onClick={(e) => canEdit && e.stopPropagation()}
-            onDoubleClick={(e) => canEdit && e.stopPropagation()}
+            onClick={(e) => {
+              onSelect?.();
+              e.stopPropagation();
+            }}
             style={{
               ...editableStyle,
               display: "block",
               whiteSpace: "pre-wrap",
             }}
-            title={canEdit ? "Klikni pro přímou úpravu" : undefined}
+            title={canEdit ? "Klikněte pro přímou úpravu textu" : undefined}
           >
-            {substituteSampleVars(block.paragraphText) || "Text odstavce\u2026"}
+            {substituteSampleVars(block.paragraphText) || "Text odstavce…"}
           </span>
         </div>
       );
@@ -2947,10 +2958,13 @@ function BlockRenderer({
           <span
             contentEditable={canEdit}
             suppressContentEditableWarning
+            onFocus={() => onSelect?.()}
             onBlur={(e) => handleTextBlur(e, "buttonText")}
-            onClick={(e) => canEdit && e.stopPropagation()}
-            onDoubleClick={(e) => canEdit && e.stopPropagation()}
-            title={canEdit ? "Klikni pro přímou úpravu" : undefined}
+            onClick={(e) => {
+              onSelect?.();
+              e.stopPropagation();
+            }}
+            title={canEdit ? "Klikněte pro přímou úpravu textu" : undefined}
             style={{
               ...editableStyle,
               display: "inline-block",
@@ -2964,7 +2978,7 @@ function BlockRenderer({
               textTransform: "uppercase",
             }}
           >
-            {substituteSampleVars(block.buttonText) || "TLA\u010c\u00cdTKO"}
+            {substituteSampleVars(block.buttonText) || "TLAČÍTKO"}
           </span>
         </div>
       );
@@ -3059,20 +3073,58 @@ function BlockRenderer({
           )}
           <div style={{ padding: "20px 16px", textAlign: "center" }}>
             <div
+              contentEditable={canEdit}
+              suppressContentEditableWarning
+              onFocus={() => onSelect?.()}
+              onBlur={(e) => handleTextBlur(e, "heroTitle")}
+              onClick={(e) => {
+                onSelect?.();
+                e.stopPropagation();
+              }}
+              title={canEdit ? "Klikněte pro přímou úpravu textu" : undefined}
               style={{
+                ...editableStyle,
                 fontSize: "18px",
                 fontWeight: 700,
                 color: block.heroTitleColor || "#ffffff",
                 marginBottom: "6px",
+                display: "block",
               }}
             >
               {substituteSampleVars(block.heroTitle) || "HERO NADPIS"}
             </div>
-            <div style={{ fontSize: "13px", color: "#aaaaaa", marginBottom: "14px" }}>
+            <div
+              contentEditable={canEdit}
+              suppressContentEditableWarning
+              onFocus={() => onSelect?.()}
+              onBlur={(e) => handleTextBlur(e, "heroSubtitle")}
+              onClick={(e) => {
+                onSelect?.();
+                e.stopPropagation();
+              }}
+              title={canEdit ? "Klikněte pro přímou úpravu textu" : undefined}
+              style={{
+                ...editableStyle,
+                fontSize: "13px",
+                color: "#aaaaaa",
+                marginBottom: "14px",
+                display: "block",
+              }}
+            >
               {substituteSampleVars(block.heroSubtitle) || "Podnadpis hero sekce"}
             </div>
             <span
+              contentEditable={canEdit}
+              suppressContentEditableWarning
+              onFocus={() => onSelect?.()}
+              onBlur={(e) => handleTextBlur(e, "heroButtonText")}
+              onClick={(e) => {
+                onSelect?.();
+                e.stopPropagation();
+              }}
+              title={canEdit ? "Klikněte pro přímou úpravu textu" : undefined}
               style={{
+                ...editableStyle,
                 display: "inline-block",
                 background: "#ffffff",
                 color: "#000000",

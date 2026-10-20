@@ -9,7 +9,7 @@ export async function getCampaignEmails(req: any, res: any, pool: any) {
     const { campaignId } = req.params;
     const result = await pool.query(
       `SELECT ce.*, mt.name as template_name
-       FROM campaign_emails ce
+       FROM marketing_campaign_emails ce
        LEFT JOIN marketing_templates mt ON mt.id = ce.template_id
        WHERE ce.campaign_id = $1
        ORDER BY ce.position ASC`,
@@ -29,7 +29,7 @@ export async function addEmailToCampaign(req: any, res: any, pool: any) {
     const { templateId, delayHours, position, sendDate, sendTime } = req.body;
     
     const result = await pool.query(
-      `INSERT INTO campaign_emails 
+      `INSERT INTO marketing_campaign_emails 
        (campaign_id, template_id, delay_hours, position, send_date, send_time)
        VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING *`,
@@ -70,7 +70,7 @@ export async function updateCampaignEmail(req: any, res: any, pool: any) {
     params.push(emailId);
     
     const result = await pool.query(
-      `UPDATE campaign_emails SET ${updates.join(", ")} 
+      `UPDATE marketing_campaign_emails SET ${updates.join(", ")} 
        WHERE id = $${i} AND campaign_id = $1 RETURNING *`,
       [campaignId, ...params]
     );
@@ -93,7 +93,7 @@ export async function deleteEmailFromCampaign(req: any, res: any, pool: any) {
     const { campaignId, emailId } = req.params;
     
     const result = await pool.query(
-      `DELETE FROM campaign_emails 
+      `DELETE FROM marketing_campaign_emails 
        WHERE id = $1 AND campaign_id = $2 
        RETURNING id`,
       [emailId, campaignId]
@@ -124,7 +124,7 @@ export async function sendTestCampaignEmail(req: any, res: any, pool: any, logMa
     // Get the email details
     const emailRes = await pool.query(
       `SELECT ce.*, mt.subject, mt.html_content, mt.preheader, mt.header_options
-       FROM campaign_emails ce
+       FROM marketing_campaign_emails ce
        LEFT JOIN marketing_templates mt ON mt.id = ce.template_id
        WHERE ce.id = $1 AND ce.campaign_id = $2`,
       [emailId, campaignId]

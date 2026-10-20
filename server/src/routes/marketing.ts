@@ -1213,11 +1213,12 @@ router.get("/campaigns", requireAdmin, async (_req: Request, res: Response) => {
   try {
     const result = await pool.query(
       `SELECT c.*, t.name AS template_name,
-        COALESCE((SELECT COUNT(*) FROM campaign_emails ce WHERE ce.campaign_id = c.id), 0) AS email_count,
+        COALESCE((SELECT COUNT(*) FROM marketing_campaign_emails ce WHERE ce.campaign_id = c.id), 0) AS email_count,
         CASE
-          WHEN (c.segment_rules->>'type') = 'buyers'
+          WHEN c.total_recipients > 0 AND c.status IN ('active', 'completed', 'paused') THEN c.total_recipients
+          WHEN (c.segment_rules->>'type') = 'buyers' OR c.audience_segment = 'paid'
             THEN (SELECT COUNT(*) FROM subscribers WHERE marketing_consent=TRUE AND unsubscribed_at IS NULL AND suppressed_at IS NULL AND is_buyer=TRUE)
-          WHEN (c.segment_rules->>'type') = 'non_buyers'
+          WHEN (c.segment_rules->>'type') = 'non_buyers' OR (c.segment_rules->>'type') = 'free_downloads' OR c.audience_segment = 'free'
             THEN (SELECT COUNT(*) FROM subscribers WHERE marketing_consent=TRUE AND unsubscribed_at IS NULL AND suppressed_at IS NULL AND is_buyer=FALSE)
           ELSE
             (SELECT COUNT(*) FROM subscribers WHERE marketing_consent=TRUE AND unsubscribed_at IS NULL AND suppressed_at IS NULL)
@@ -1230,34 +1231,70 @@ router.get("/campaigns", requireAdmin, async (_req: Request, res: Response) => {
       ...camp,
       emailCount: parseInt(camp.email_count || "0", 10),
       recipient_count: parseInt(camp.recipient_count || "0", 10),
-      total_recipients: parseInt(camp.recipient_count || "0", 10),
+      total_recipients: parseInt(camp.recipient_count || camp.total_recipients || "0", 10),
     }));
     res.json(campaigns);
   } catch (error) {
+    console.error("Error listing campaigns:", error);
     res.status(500).json({ error: "Chyba při načítání kampaní" });
   }
 });
 
 
+
 router.post("/campaigns", requireAdmin, async (req: Request, res: Response) => {
   try {
-    const { name, subject, preheader, templateId, blocks, htmlContent, headerOptions, segmentRules, scheduledAt } = req.body;
+    const { name, subject, preheader, templateId, blocks, htmlContent, headerOptions, segmentRules, scheduledAt, audience } = req.body;
     if (!name) return res.status(400).json({ error: "Chybí název kampaně" });
+
+    let audienceSegment = req.body.audience_segment || "mixed";
+    let resolvedSegmentRules = segmentRules;
+    if (audience === "buyers") {
+      audienceSegment = "paid";
+      resolvedSegmentRules = resolvedSegmentRules || { type: "buyers" };
+    } else if (audience === "free_downloads") {
+      audienceSegment = "free";
+      resolvedSegmentRules = resolvedSegmentRules || { type: "non_buyers" };
+    } else if (!resolvedSegmentRules) {
+      resolvedSegmentRules = { type: "all" };
+    }
 
     let finalHtml = htmlContent || "";
     if (Array.isArray(blocks) && blocks.length > 0) finalHtml = compileBlocksToHtml(blocks);
     const blocksJson = Array.isArray(blocks) ? JSON.stringify(blocks) : (blocks ? JSON.stringify(blocks) : "[]");
     const headerOptionsJson = headerOptions ? JSON.stringify(headerOptions) : "{}";
-    const segmentJson = segmentRules ? JSON.stringify(segmentRules) : '{"type":"all"}';
+    const segmentJson = JSON.stringify(resolvedSegmentRules);
     const status = scheduledAt ? "scheduled" : "draft";
 
+    let recipientCount = 0;
+    try {
+      const baseWhere = `marketing_consent = TRUE AND unsubscribed_at IS NULL AND suppressed_at IS NULL`;
+      let countRes;
+      if (audienceSegment === "paid") {
+        countRes = await pool.query(`SELECT COUNT(*) FROM subscribers WHERE ${baseWhere} AND is_buyer = TRUE`);
+      } else if (audienceSegment === "free") {
+        countRes = await pool.query(`SELECT COUNT(*) FROM subscribers WHERE ${baseWhere} AND is_buyer = FALSE`);
+      } else {
+        countRes = await pool.query(`SELECT COUNT(*) FROM subscribers WHERE ${baseWhere}`);
+      }
+      recipientCount = parseInt(countRes.rows[0].count, 10);
+    } catch (e) {
+      console.warn("Could not calculate initial recipient count:", e);
+    }
+
     const result = await pool.query(
-      `INSERT INTO marketing_campaigns (name, subject, preheader, template_id, status, blocks, html_content, header_options, segment_rules, scheduled_at)
-       VALUES ($1,$2,$3,$4,$5,$6::jsonb,$7,$8::jsonb,$9::jsonb,$10) RETURNING *`,
-      [name, subject || null, preheader || null, templateId || null, status, blocksJson, finalHtml || null, headerOptionsJson, segmentJson, scheduledAt || null]
+      `INSERT INTO marketing_campaigns (name, subject, preheader, template_id, status, blocks, html_content, header_options, segment_rules, scheduled_at, audience_segment, total_recipients)
+       VALUES ($1,$2,$3,$4,$5,$6::jsonb,$7,$8::jsonb,$9::jsonb,$10,$11,$12) RETURNING *`,
+      [name, subject || null, preheader || null, templateId || null, status, blocksJson, finalHtml || null, headerOptionsJson, segmentJson, scheduledAt || null, audienceSegment, recipientCount]
     );
     await logMarketingAction("campaign.created", req.session.userId || null, { type: "campaign", id: result.rows[0].id });
-    res.json(result.rows[0]);
+    res.json({
+      ...result.rows[0],
+      emailCount: 0,
+      recipient_count: recipientCount,
+      total_recipients: recipientCount,
+      audience: audience || (audienceSegment === "paid" ? "buyers" : "free_downloads"),
+    });
   } catch (error) {
     console.error("Campaign create error:", error);
     res.status(500).json({ error: "Chyba při vytváření kampaně" });
@@ -2455,15 +2492,13 @@ router.post("/campaigns/:id/start", requireAdmin, async (req: Request, res: Resp
       return res.status(400).json({ error: `Segment '${audience_segment || 'mixed'}' nemá žádné aktivní příjemce` });
     }
     
-    // Bulk-insert subscribers into send queue (safe parameterized, no indexOf)
-    const valuePlaceholders = subscribers.map((_: any, i: number) => `($1, $${i + 2})`).join(',');
-    const queueParams: any[] = [campaignId, ...subscribers.map((s: any) => s.id)];
-    
+    // Bulk-insert subscribers into send queue using UNNEST
+    const subscriberIds: number[] = subscribers.map((s: any) => s.id);
     await pool.query(
       `INSERT INTO campaign_send_queue (campaign_id, subscriber_id)
-       VALUES ${valuePlaceholders}
+       SELECT $1, UNNEST($2::int[])
        ON CONFLICT (campaign_id, subscriber_id) DO NOTHING`,
-      queueParams
+      [campaignId, subscriberIds]
     );
     
     // Create / update rate limit config
