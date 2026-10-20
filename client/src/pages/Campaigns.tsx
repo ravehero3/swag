@@ -264,9 +264,11 @@ export default function Campaigns() {
         const data = await res.json();
         alert(data.message);
         setShowStartDialog(false);
-        await loadCampaigns();
-        await selectCampaign(selectedCampaignId);
-        await loadQueueStatus(selectedCampaignId);
+        // Pass the ID directly so loadCampaigns auto-restores selection from fresh data
+        // (avoids stale-closure bug where selectCampaign reads old campaigns array)
+        const savedCampaignId = selectedCampaignId;
+        await loadCampaigns(savedCampaignId);
+        await loadQueueStatus(savedCampaignId);
       } else {
         const error = await res.json();
         alert("Chyba: " + error.error);

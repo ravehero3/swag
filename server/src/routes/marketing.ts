@@ -2422,56 +2422,52 @@ router.post("/campaigns/:id/start", requireAdmin, async (req: Request, res: Resp
     
     const campaign = campaignRes.rows[0];
     if (campaign.status !== 'draft') {
-      return res.status(400).json({ error: "Kampaně mří být v návrhu" });
+      return res.status(400).json({ error: `Kampaň není ve stavu draft (stav: ${campaign.status}). Tuto kampaň nelze znovu spustit.` });
     }
-    
-    // Get subscribers for segment
+
+    // Ensure campaign has at least one email step
+    const emailCheckRes = await pool.query(
+      `SELECT COUNT(*) FROM marketing_campaign_emails WHERE campaign_id = $1`,
+      [campaignId]
+    );
+    if (parseInt(emailCheckRes.rows[0].count, 10) === 0) {
+      return res.status(400).json({ error: "Přidejte alespoň jeden e-mail do sekvence kampaňe před spuštěním." });
+    }
+
+    // Build subscriber query by segment
+    // 'paid'  = is_buyer = TRUE
+    // 'free'  = is_buyer = FALSE (free downloaders, non-buyers)
+    // 'mixed' = all active marketing subscribers
+    const baseWhere = `marketing_consent = TRUE AND unsubscribed_at IS NULL AND suppressed_at IS NULL`;
     let subscriberRes;
     if (audience_segment === 'paid') {
-      subscriberRes = await pool.query(
-        `SELECT id, email FROM subscribers 
-         WHERE is_buyer = TRUE 
-         AND marketing_consent = TRUE 
-         AND unsubscribed_at IS NULL 
-         AND suppressed_at IS NULL`
-      );
+      subscriberRes = await pool.query(`SELECT id FROM subscribers WHERE ${baseWhere} AND is_buyer = TRUE`);
     } else if (audience_segment === 'free') {
-      subscriberRes = await pool.query(
-        `SELECT id, email FROM subscribers 
-         WHERE 'freebie' = ANY(tags) 
-         AND marketing_consent = TRUE 
-         AND unsubscribed_at IS NULL 
-         AND suppressed_at IS NULL`
-      );
+      subscriberRes = await pool.query(`SELECT id FROM subscribers WHERE ${baseWhere} AND is_buyer = FALSE`);
     } else {
-      subscriberRes = await pool.query(
-        `SELECT id, email FROM subscribers 
-         WHERE marketing_consent = TRUE 
-         AND unsubscribed_at IS NULL 
-         AND suppressed_at IS NULL`
-      );
+      subscriberRes = await pool.query(`SELECT id FROM subscribers WHERE ${baseWhere}`);
     }
     
     const subscribers = subscriberRes.rows;
-    console.log(`[Marketing] Starting campaign ${campaignId} with ${subscribers.length} subscribers`);
+    console.log(`[Marketing] Starting campaign ${campaignId} with ${subscribers.length} subscribers (segment: ${audience_segment})`);
     
     if (subscribers.length === 0) {
-      return res.status(400).json({ error: "Pro této segment nemá \u017eádné přijemce" });
+      return res.status(400).json({ error: `Segment '${audience_segment || 'mixed'}' nemá žádné aktivní příjemce` });
     }
     
-    // Populate queue
-    const queueInserts = subscribers.map(s => `($1, $${subscribers.indexOf(s) + 2})`).join(',');
-    const params = [campaignId, ...subscribers.map(s => s.id)];
+    // Bulk-insert subscribers into send queue (safe parameterized, no indexOf)
+    const valuePlaceholders = subscribers.map((_: any, i: number) => `($1, $${i + 2})`).join(',');
+    const queueParams: any[] = [campaignId, ...subscribers.map((s: any) => s.id)];
     
     await pool.query(
       `INSERT INTO campaign_send_queue (campaign_id, subscriber_id)
-       VALUES ${queueInserts}
+       VALUES ${valuePlaceholders}
        ON CONFLICT (campaign_id, subscriber_id) DO NOTHING`,
-      params
+      queueParams
     );
     
-    // Create rate limit config
-    const hourlyLimit = Math.ceil((daily_send_limit || 85) / 24);
+    // Create / update rate limit config
+    const hourlyLimit = Math.max(1, Math.ceil((daily_send_limit || 85) / 24));
     await pool.query(
       `INSERT INTO campaign_rate_limits (campaign_id, daily_limit, hourly_limit)
        VALUES ($1, $2, $3)
@@ -2501,16 +2497,17 @@ router.post("/campaigns/:id/start", requireAdmin, async (req: Request, res: Resp
       segment: audience_segment
     });
     
+    const estimatedDays = Math.ceil(subscribers.length / (daily_send_limit || 85));
     res.json({
       success: true,
       campaign: updatedRes.rows[0],
       recipients: subscribers.length,
-      estimatedDays: Math.ceil(subscribers.length / (daily_send_limit || 85)),
-      message: `Kampaně spuvštěna. Zpráva bude odeslána ${subscribers.length} lidem přibližně za ${Math.ceil(subscribers.length / (daily_send_limit || 85))} dní.`
+      estimatedDays,
+      message: `Kampaň spustěna! E-mail bude odeslán ${subscribers.length.toLocaleString('cs-CZ')} příjemci (přibližně za ${estimatedDays} dní při limitu ${daily_send_limit || 85}/den).`
     });
   } catch (error) {
     console.error("Campaign start error:", error);
-    res.status(500).json({ error: "Chyba při spuvštění kampaně" });
+    res.status(500).json({ error: "Chyba při spouštění kampaňě: " + (error instanceof Error ? error.message : String(error)) });
   }
 });
 
