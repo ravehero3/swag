@@ -2177,7 +2177,14 @@ export function VisualEmailBuilder({
                           </div>
 
                           {/* Render Block visually with variable substitutions */}
-                          <BlockRenderer block={block} />
+                          <BlockRenderer
+                            block={block}
+                            isSelected={isSelected}
+                            onChangeBlock={(patch) => {
+                              const nextList = blocks.map((b) => b.id === block.id ? { ...b, ...patch } : b);
+                              updateBlocksState(nextList);
+                            }}
+                          />
                         </div>
 
                         {/* Distinct Section Separator Line */}
@@ -2842,7 +2849,36 @@ function HeaderInspector({
 }
 
 // ── Block Renderer Component ───────────────────────────────────────────────
-function BlockRenderer({ block }: { block: EmailBlock }) {
+function BlockRenderer({
+  block,
+  isSelected,
+  onChangeBlock,
+}: {
+  block: EmailBlock;
+  isSelected?: boolean;
+  onChangeBlock?: (patch: Partial<EmailBlock>) => void;
+}) {
+  // Helper: handle contentEditable blur -> commit text change
+  const handleTextBlur = (
+    e: React.FocusEvent<HTMLElement>,
+    key: keyof EmailBlock
+  ) => {
+    const val = e.currentTarget.innerText;
+    onChangeBlock?.({ [key]: val } as Partial<EmailBlock>);
+  };
+
+  // Only enable inline editing when block is already selected
+  const canEdit = !!onChangeBlock && !!isSelected;
+
+  const editableStyle: React.CSSProperties = canEdit
+    ? {
+        outline: "none",
+        cursor: "text",
+        borderRadius: "3px",
+        transition: "background 0.15s",
+      }
+    : {};
+
   switch (block.type) {
     case "heading": {
       const level = block.headingLevel || "h1";
@@ -2857,7 +2893,20 @@ function BlockRenderer({ block }: { block: EmailBlock }) {
             lineHeight: 1.3,
           }}
         >
-          {substituteSampleVars(block.headingText) || "Nadpis"}
+          <span
+            contentEditable={canEdit}
+            suppressContentEditableWarning
+            onBlur={(e) => handleTextBlur(e, "headingText")}
+            onClick={(e) => canEdit && e.stopPropagation()}
+            onDoubleClick={(e) => canEdit && e.stopPropagation()}
+            style={{
+              ...editableStyle,
+              display: "block",
+            }}
+            title={canEdit ? "Klikni pro přímou úpravu" : undefined}
+          >
+            {substituteSampleVars(block.headingText) || "Nadpis"}
+          </span>
         </div>
       );
     }
@@ -2874,7 +2923,21 @@ function BlockRenderer({ block }: { block: EmailBlock }) {
             whiteSpace: "pre-wrap",
           }}
         >
-          {substituteSampleVars(block.paragraphText) || "Text odstavce…"}
+          <span
+            contentEditable={canEdit}
+            suppressContentEditableWarning
+            onBlur={(e) => handleTextBlur(e, "paragraphText")}
+            onClick={(e) => canEdit && e.stopPropagation()}
+            onDoubleClick={(e) => canEdit && e.stopPropagation()}
+            style={{
+              ...editableStyle,
+              display: "block",
+              whiteSpace: "pre-wrap",
+            }}
+            title={canEdit ? "Klikni pro přímou úpravu" : undefined}
+          >
+            {substituteSampleVars(block.paragraphText) || "Text odstavce\u2026"}
+          </span>
         </div>
       );
     }
@@ -2882,7 +2945,14 @@ function BlockRenderer({ block }: { block: EmailBlock }) {
       return (
         <div style={{ textAlign: block.buttonAlign || "left", margin: "8px 0" }}>
           <span
+            contentEditable={canEdit}
+            suppressContentEditableWarning
+            onBlur={(e) => handleTextBlur(e, "buttonText")}
+            onClick={(e) => canEdit && e.stopPropagation()}
+            onDoubleClick={(e) => canEdit && e.stopPropagation()}
+            title={canEdit ? "Klikni pro přímou úpravu" : undefined}
             style={{
+              ...editableStyle,
               display: "inline-block",
               background: block.buttonBgColor || "#ffffff",
               color: block.buttonTextColor || "#000000",
@@ -2894,7 +2964,7 @@ function BlockRenderer({ block }: { block: EmailBlock }) {
               textTransform: "uppercase",
             }}
           >
-            {substituteSampleVars(block.buttonText) || "TLAČÍTKO"}
+            {substituteSampleVars(block.buttonText) || "TLA\u010c\u00cdTKO"}
           </span>
         </div>
       );

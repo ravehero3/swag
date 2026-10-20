@@ -1213,36 +1213,31 @@ router.get("/campaigns", requireAdmin, async (_req: Request, res: Response) => {
   try {
     const result = await pool.query(
       `SELECT c.*, t.name AS template_name,
-        COALESCE((SELECT COUNT(*) FROM campaign_emails ce WHERE ce.campaign_id = c.id), 0) AS email_count
+        COALESCE((SELECT COUNT(*) FROM campaign_emails ce WHERE ce.campaign_id = c.id), 0) AS email_count,
+        CASE
+          WHEN (c.segment_rules->>'type') = 'buyers'
+            THEN (SELECT COUNT(*) FROM subscribers WHERE marketing_consent=TRUE AND unsubscribed_at IS NULL AND suppressed_at IS NULL AND is_buyer=TRUE)
+          WHEN (c.segment_rules->>'type') = 'non_buyers'
+            THEN (SELECT COUNT(*) FROM subscribers WHERE marketing_consent=TRUE AND unsubscribed_at IS NULL AND suppressed_at IS NULL AND is_buyer=FALSE)
+          ELSE
+            (SELECT COUNT(*) FROM subscribers WHERE marketing_consent=TRUE AND unsubscribed_at IS NULL AND suppressed_at IS NULL)
+        END AS recipient_count
        FROM marketing_campaigns c
        LEFT JOIN marketing_templates t ON t.id = c.template_id
        ORDER BY c.created_at DESC`
     );
-    const campaigns = await Promise.all(
-      result.rows.map(async (camp: any) => {
-        try {
-          const audience = await resolveSegmentAudience(camp.segment_rules || { type: "all" });
-          return {
-            ...camp,
-            emailCount: parseInt(camp.email_count || "0", 10),
-            recipient_count: audience.length,
-            total_recipients: audience.length,
-          };
-        } catch {
-          return {
-            ...camp,
-            emailCount: parseInt(camp.email_count || "0", 10),
-            recipient_count: 0,
-            total_recipients: 0,
-          };
-        }
-      })
-    );
+    const campaigns = result.rows.map((camp: any) => ({
+      ...camp,
+      emailCount: parseInt(camp.email_count || "0", 10),
+      recipient_count: parseInt(camp.recipient_count || "0", 10),
+      total_recipients: parseInt(camp.recipient_count || "0", 10),
+    }));
     res.json(campaigns);
   } catch (error) {
     res.status(500).json({ error: "Chyba při načítání kampaní" });
   }
 });
+
 
 router.post("/campaigns", requireAdmin, async (req: Request, res: Response) => {
   try {

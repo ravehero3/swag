@@ -89,17 +89,30 @@ export default function Campaigns() {
   const [schedulerTime, setSchedulerTime] = useState("09:00");
 
   useEffect(() => {
-    loadCampaigns();
-    loadTemplates();
+    const savedId = sessionStorage.getItem("voodoo808_selected_campaign_id");
+    Promise.all([loadCampaigns(savedId ? parseInt(savedId, 10) : null), loadTemplates()]);
   }, []);
 
-  const loadCampaigns = async () => {
+  const loadCampaigns = async (autoSelectId?: number | null) => {
     try {
       setLoading(true);
       const res = await fetch("/api/marketing/campaigns");
       if (res.ok) {
         const data = await res.json();
         setCampaigns(data || []);
+        // Auto-restore previously selected campaign
+        if (autoSelectId) {
+          const found = (data || []).find((c: Campaign) => c.id === autoSelectId);
+          if (found) {
+            setSelectedCampaignId(found.id);
+            setSelectedCampaign(found);
+            // Load its emails in background
+            fetch(`/api/marketing/campaigns/${found.id}/emails`)
+              .then(r => r.ok ? r.json() : [])
+              .then(emails => setCampaignEmails(emails || []))
+              .catch(() => {});
+          }
+        }
       }
     } catch (err) {
       console.error("Error loading campaigns:", err);
@@ -149,6 +162,8 @@ export default function Campaigns() {
     if (!campaign) return;
     setSelectedCampaignId(campaignId);
     setSelectedCampaign(campaign);
+    // Persist selection so it survives tab switches
+    sessionStorage.setItem("voodoo808_selected_campaign_id", String(campaignId));
     await loadCampaignEmails(campaignId);
     setPreviewVisible(false);
     setTestMode(false);
@@ -215,6 +230,7 @@ export default function Campaigns() {
           setSelectedCampaign(null);
           setCampaignEmails([]);
           setQueueStatus(null);
+          sessionStorage.removeItem("voodoo808_selected_campaign_id");
           if (statusRefreshInterval) {
             clearInterval(statusRefreshInterval);
             setStatusRefreshInterval(null);
