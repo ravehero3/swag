@@ -329,23 +329,10 @@ export default function Campaigns() {
     }
   };
 
-  const saveEmailEdits = async (emailId: number, overrides: any) => {
-    if (!selectedCampaignId) return;
-    try {
-      const res = await fetch(`/api/marketing/campaigns/${selectedCampaignId}/emails/${emailId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(overrides),
-      });
-      if (res.ok) {
-        const updated = await res.json();
-        setCampaignEmails(
-          campaignEmails.map((e) => (e.id === emailId ? updated : e))
-        );
-      }
-    } catch (err) {
-      console.error("Error saving email edits:", err);
-    }
+  const saveEmailEdits = (emailId: number, updatedData: any) => {
+    setCampaignEmails((prev) =>
+      prev.map((e) => (e.id === emailId ? { ...e, ...updatedData } : e))
+    );
   };
 
   const updateEmailDelay = async (emailId: number, delayHours: number) => {
@@ -353,12 +340,13 @@ export default function Campaigns() {
       const res = await fetch(`/api/marketing/campaigns/${selectedCampaignId}/emails/${emailId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ delayHours }),
       });
       if (res.ok) {
         const updated = await res.json();
-        setCampaignEmails(
-          campaignEmails.map((e) => (e.id === emailId ? updated : e))
+        setCampaignEmails((prev) =>
+          prev.map((e) => (e.id === emailId ? { ...e, ...updated } : e))
         );
       }
     } catch (err) {
@@ -374,8 +362,8 @@ export default function Campaigns() {
     if (!selectedCampaignId) { alert("Vyberte kampaň!"); return; }
     localStorage.setItem("voodoo808_marketing_test_email", testEmail);
     try {
-      // Find the email to pass live blocks/subject to backend
-      const em = emails.find((e) => e.id === emailId);
+      // Find the email in campaignEmails state to pass live blocks/subject to backend
+      const em = campaignEmails.find((e) => e.id === emailId);
       const res = await fetch(`/api/marketing/campaigns/${selectedCampaignId}/emails/${emailId}/send-test`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -386,7 +374,7 @@ export default function Campaigns() {
           subject: em?.subject || "",
           preheader: em?.preheader || "",
           blocks: em?.blocks || [],
-          headerOptions: em?.headerOptions || {},
+          headerOptions: (em as any)?.header_options || em?.headerOptions || {},
         }),
       });
       const data = await res.json();

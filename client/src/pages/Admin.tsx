@@ -7838,9 +7838,11 @@ function JourneysTab() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Odeslání selhalo");
+      alert(`Testovací e-mail odeslán na ${testEmail}.`);
       setTestResult(`Testovací e-mail odeslán na ${testEmail}.`);
     } catch (err: any) {
       console.error("[JOURNEYS TEST SEND] Error:", err);
+      alert(`Chyba: ${err.message}`);
       setTestResult(`Chyba: ${err.message}`);
     } finally {
       setTestSendingStepId(null);

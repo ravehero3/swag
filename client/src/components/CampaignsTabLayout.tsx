@@ -79,14 +79,19 @@ export default function CampaignsTabLayout({
   onDeleteEmail,
   onUpdateEmailTemplate,
   onUpdateEmailDelay,
+  onSaveEmailEdits,
   onRefresh,
   onStartCampaign,
+  onTestEmail,
+  testEmail = "",
+  onTestEmailChange,
 }: CampaignsLayoutProps) {
   const selectedEmail = emails.find((e) => e.id === selectedEmailId);
   
   // Merge template with campaign email overrides
-  const selectedTemplate = selectedEmail?.templateId
-    ? templates.find((t) => t.id === selectedEmail.templateId)
+  const templateId = selectedEmail?.template_id || selectedEmail?.templateId;
+  const selectedTemplate = templateId
+    ? templates.find((t) => t.id === templateId)
     : null;
 
   // Create merged template that includes campaign-specific overrides
@@ -98,12 +103,56 @@ export default function CampaignsTabLayout({
         subject: selectedEmail.subject || selectedTemplate?.subject || "E-mail kampaně",
         preheader: selectedEmail.preheader || selectedTemplate?.preheader || "",
         blocks: selectedEmail.blocks || selectedTemplate?.blocks || [],
-        headerOptions: selectedEmail.headerOptions || selectedTemplate?.headerOptions || {},
+        headerOptions: selectedEmail.header_options || selectedEmail.headerOptions || selectedTemplate?.header_options || selectedTemplate?.headerOptions || {},
         campaignEmailId: selectedEmail.id,
       }
     : null;
 
   const isEmailSelected = !!mergedTemplate;
+
+  const handleSaveCampaignEmail = async (data: { subject: string; preheader: string; blocks: any[]; headerOptions?: any; name?: string }) => {
+    if (!selectedCampaignId || !selectedEmail?.id) return;
+    const res = await fetch(`/api/marketing/campaigns/${selectedCampaignId}/emails/${selectedEmail.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        subject: data.subject,
+        preheader: data.preheader,
+        blocks: data.blocks,
+        headerOptions: data.headerOptions,
+      }),
+    });
+    const resData = await res.json();
+    if (!res.ok) throw new Error(resData?.error || "Chyba při ukládání e-mailu");
+    if (onSaveEmailEdits) {
+      await onSaveEmailEdits(selectedEmail.id, {
+        subject: data.subject,
+        preheader: data.preheader,
+        blocks: data.blocks,
+        headerOptions: data.headerOptions,
+      });
+    }
+  };
+
+  const handleTestSendCampaignEmail = async (email: string, subject: string, preheader: string, blocks: any[], headerOptions?: any) => {
+    if (!selectedCampaignId || !selectedEmail?.id) throw new Error("Vyberte kampaň a e-mail");
+    const res = await fetch(`/api/marketing/campaigns/${selectedCampaignId}/emails/${selectedEmail.id}/send-test`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        email,
+        to: email,
+        subject,
+        preheader,
+        blocks,
+        headerOptions,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.error || "Odeslání testovacího e-mailu selhalo");
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%", gap: "16px", background: "#000" }}>
@@ -155,10 +204,8 @@ export default function CampaignsTabLayout({
               // Compact Email Editor - fits all 4 sections in tight space
               <CompactEmailEditor
                 template={mergedTemplate}
-                saveEndpoint={`/api/marketing/campaigns/${selectedCampaignId}/emails/${selectedEmail?.id}`}
-                onSave={async (html) => {
-                  onRefresh();
-                }}
+                onSave={handleSaveCampaignEmail}
+                onTestSend={handleTestSendCampaignEmail}
                 onRefresh={onRefresh}
               />
             )}
@@ -223,6 +270,9 @@ export default function CampaignsTabLayout({
               onDeleteEmail={onDeleteEmail}
               onUpdateEmailTemplate={onUpdateEmailTemplate}
               onUpdateEmailDelay={onUpdateEmailDelay}
+              onTestEmail={onTestEmail}
+              testEmail={testEmail}
+              onTestEmailChange={onTestEmailChange}
             />
           </div>
         </div>

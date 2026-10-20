@@ -31,7 +31,7 @@ interface CampaignSequenceBuilderProps {
   onUpdateEmailTemplate?: (emailId: number, templateId: number) => void;
   onUpdateEmailDelay?: (emailId: number, delayHours: number) => void;
   onEditEmail?: (email: CampaignEmail) => void;
-  onTestEmail?: (emailId: number) => void;
+  onTestEmail?: (emailId: number) => Promise<void> | void;
   testSendingEmailId?: number | null;
   testEmail?: string;
   onTestEmailChange?: (email: string) => void;
@@ -114,32 +114,35 @@ export default function CampaignSequenceBuilder({
 
   const handleQuickTestEmail = async () => {
     if (!selectedEmailId) {
-      setTestMessage("Vyberte e-mail v sekvenci");
-      setTimeout(() => setTestMessage(null), 3000);
+      setTestMessage("⚠️ Vyberte e-mail v sekvenci");
+      setTimeout(() => setTestMessage(null), 4000);
       return;
     }
 
     const email = emails.find((e) => e.id === selectedEmailId);
-    if (!email || !email.templateId) {
-      setTestMessage("Vybraný e-mail nemá přiřazenou šablonu");
-      setTimeout(() => setTestMessage(null), 3000);
+    if (!email) {
+      setTestMessage("⚠️ E-mail nebyl nalezen");
+      setTimeout(() => setTestMessage(null), 4000);
       return;
     }
 
     if (!testEmail || !testEmail.includes("@")) {
-      setTestMessage("Zadejte platnou e-mailovou adresu");
-      setTimeout(() => setTestMessage(null), 3000);
+      setTestMessage("⚠️ Zadejte platnou e-mailovou adresu");
+      setTimeout(() => setTestMessage(null), 4000);
       return;
     }
 
     setIsSendingTest(true);
+    setTestMessage(null);
     try {
-      onTestEmail(selectedEmailId);
-      setTestMessage("E-mail odeslán!");
-      setTimeout(() => setTestMessage(null), 3000);
-    } catch (err) {
-      setTestMessage("Chyba při odesílání");
-      setTimeout(() => setTestMessage(null), 3000);
+      if (onTestEmail) {
+        await onTestEmail(selectedEmailId);
+        setTestMessage("✅ Testovací e-mail odeslán!");
+        setTimeout(() => setTestMessage(null), 5000);
+      }
+    } catch (err: any) {
+      setTestMessage(`❌ Chyba: ${err?.message || "Odeslání selhalo"}`);
+      setTimeout(() => setTestMessage(null), 6000);
     } finally {
       setIsSendingTest(false);
     }
@@ -202,8 +205,9 @@ export default function CampaignSequenceBuilder({
 
         {/* Email nodes */}
         {emails?.map((email, idx) => {
-          const tpl = templates.find((t) => t.id === email.templateId);
+          const tpl = templates.find((t) => t.id === (email.template_id || email.templateId));
           const isSelected = selectedEmailId === email.id;
+          const delay = email.delay_hours ?? email.delayHours ?? 0;
 
           return (
             <div
@@ -238,7 +242,7 @@ export default function CampaignSequenceBuilder({
                 </div>
                 <div style={{ fontSize: "10px", color: "#666", marginTop: "3px", display: "flex", alignItems: "center", gap: "4px" }}>
                   <Clock size={11} />
-                  {email.delayHours > 0 ? `Po ${email.delayHours}h` : "Ihned"}
+                  {delay > 0 ? `Po ${delay}h` : "Ihned"}
                 </div>
                 {email.sendDate && (
                   <div style={{ fontSize: "9px", color: "#555", marginTop: "2px", display: "flex", alignItems: "center", gap: "4px" }}>

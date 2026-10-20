@@ -1,18 +1,27 @@
-import React, { useState } from "react";
+import React from "react";
 import { VisualEmailBuilder } from "./VisualEmailBuilder.js";
 
 interface CompactEmailEditorProps {
   template: any;
-  onSave: (html: string) => void;
+  onSave?: (data: any) => Promise<void> | void;
   onRefresh: () => void;
   saveEndpoint?: string; // Optional custom save endpoint for campaign emails
+  testSendEndpoint?: string;
+  onTestSend?: (email: string, subject: string, preheader: string, blocks: any[], headerOptions?: any) => Promise<void>;
 }
 
 /**
- * Wrapper for VisualEmailBuilder optimized for embedding in JourneysTabLayout
- * Compresses spacing and ensures all sections fit within 60vh right panel
+ * Wrapper for VisualEmailBuilder optimized for embedding in JourneysTabLayout and CampaignsTabLayout
+ * Compresses spacing and ensures all sections fit within right panel
  */
-export default function CompactEmailEditor({ template, onSave, onRefresh, saveEndpoint }: CompactEmailEditorProps) {
+export default function CompactEmailEditor({
+  template,
+  onSave,
+  onRefresh,
+  saveEndpoint,
+  testSendEndpoint,
+  onTestSend,
+}: CompactEmailEditorProps) {
   return (
     <div
       style={{
@@ -32,7 +41,6 @@ export default function CompactEmailEditor({ template, onSave, onRefresh, saveEn
           flexDirection: "column",
           minHeight: 0,
           overflow: "hidden",
-          // Compress internal spacing
           fontSize: "12px",
         }}
       >
@@ -77,31 +85,69 @@ export default function CompactEmailEditor({ template, onSave, onRefresh, saveEn
             initialBlocks={
               template?.blocks ? (typeof template.blocks === "string" ? JSON.parse(template.blocks) : template.blocks) : []
             }
-            title={template?.name || "Editor e-mailu"}
+            initialHeaderConfig={template?.headerOptions || template?.header_options}
+            title={template?.name || template?.subject || "Editor e-mailu"}
             embedded={true}
-            onSave={async (html, subject, preheader, blocks, headerOptions) => {
+            onSave={async (data: { subject: string; preheader: string; blocks: any[]; headerOptions?: any; name?: string }) => {
               try {
-                const endpoint = saveEndpoint || `/api/marketing/templates/${template.id}`;
-                await fetch(endpoint, {
+                if (onSave) {
+                  await onSave(data);
+                  alert("✅ Změny v e-mailu byly úspěšně uloženy!");
+                  onRefresh();
+                  return;
+                }
+                const endpoint = saveEndpoint || (template?.id ? `/api/marketing/templates/${template.id}` : null);
+                if (!endpoint) {
+                  throw new Error("Cílový koncový bod pro uložení nebyl nalezen.");
+                }
+                const res = await fetch(endpoint, {
                   method: "PATCH",
                   headers: { "Content-Type": "application/json" },
                   credentials: "include",
                   body: JSON.stringify({ 
-                    htmlContent: html,
+                    subject: data.subject,
+                    preheader: data.preheader,
+                    blocks: data.blocks,
+                    headerOptions: data.headerOptions,
+                    name: data.name,
+                  }),
+                });
+                const resData = await res.json();
+                if (!res.ok) throw new Error(resData?.error || "Chyba při ukládání");
+                alert("✅ Změny v e-mailu byly úspěšně uloženy!");
+                onRefresh();
+              } catch (err: any) {
+                console.error("Error saving:", err);
+                alert("❌ Chyba při ukládání: " + (err?.message || String(err)));
+                throw err;
+              }
+            }}
+            onTestSend={async (email, subject, preheader, blocks, headerConfig) => {
+              try {
+                if (onTestSend) {
+                  await onTestSend(email, subject, preheader, blocks, headerConfig);
+                  return;
+                }
+                const endpoint = testSendEndpoint || (template?.id && template.id > 0 ? `/api/marketing/templates/${template.id}/send-test` : "/api/marketing/test-email");
+                const res = await fetch(endpoint, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  credentials: "include",
+                  body: JSON.stringify({
+                    email,
+                    to: email,
                     subject,
                     preheader,
                     blocks,
-                    headerOptions
+                    headerOptions: headerConfig,
                   }),
                 });
-                onRefresh();
-                onSave(html);
-              } catch (err) {
-                console.error("Error saving:", err);
+                const data = await res.json();
+                if (!res.ok) throw new Error(data?.error || "Odeslání testovacího e-mailu selhalo");
+              } catch (err: any) {
+                console.error("Test send error:", err);
+                throw err;
               }
-            }}
-            onTestSend={async (email) => {
-              console.log("Test send to:", email);
             }}
             onClose={() => {}}
           />

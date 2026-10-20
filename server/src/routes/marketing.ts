@@ -652,7 +652,38 @@ router.get("/templates/:id/preview", requireAdmin, async (req: Request, res: Res
 // Send a real test email for this template to an admin-specified address.
 // Bypasses subscriber eligibility/test-mode redirect entirely — this call IS
 // the test. Rate-limited lightly since it costs a real Resend send.
-const testSendLimiter = rateLimit({ windowMs: 60_000, max: 10, keyPrefix: "marketing_test_send" });
+// Generic test-email endpoint: send from raw blocks/HTML without needing a saved template.
+// Used by visual editors when there is no template ID yet.
+router.post("/test-email", requireAdmin, testSendLimiter, async (req: Request, res: Response) => {
+  try {
+    const toEmail = String(req.body.to || req.body.email || "").trim();
+    if (!toEmail || !toEmail.includes("@")) {
+      return res.status(400).json({ error: "Zadejte platnou e-mailovou adresu pro test." });
+    }
+    const { sendTestCustomEmail } = await import("../lib/marketing/sender.js");
+    const { compileBlocksToHtml } = await import("../lib/marketing/blockCompiler.js");
+    let htmlContent = req.body.htmlContent || "";
+    if (!htmlContent && Array.isArray(req.body.blocks) && req.body.blocks.length > 0) {
+      htmlContent = compileBlocksToHtml(req.body.blocks);
+    }
+    const result = await sendTestCustomEmail(
+      {
+        subject: req.body.subject || "Test e-mail",
+        preheader: req.body.preheader || req.body.previewText || null,
+        htmlContent,
+        headerOptions: req.body.headerOptions,
+      },
+      toEmail
+    );
+    if (!result.ok) return res.status(500).json({ error: result.error || "Odeslání testovacího e-mailu selhalo" });
+    await logMarketingAction("template.test_sent", req.session.userId || null, { type: "template", id: 0 }, { to: toEmail });
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Generic test send error:", error);
+    res.status(500).json({ error: "Chyba při odesílání testovacího e-mailu: " + (error instanceof Error ? error.message : String(error)) });
+  }
+});
+
 router.post("/templates/:id/send-test", requireAdmin, testSendLimiter, async (req: Request, res: Response) => {
   try {
     const templateId = parseInt(req.params.id, 10);
@@ -1002,27 +1033,58 @@ router.get("/journeys/:id/steps/:stepId/preview", requireAdmin, async (req: Requ
 
 router.post("/journeys/:id/steps/:stepId/send-test", requireAdmin, testSendLimiter, async (req: Request, res: Response) => {
   try {
-    const toEmail = String(req.body.email || "").trim();
+    const toEmail = String(req.body.email || req.body.to || "").trim();
     if (!toEmail || !toEmail.includes("@")) {
       return res.status(400).json({ error: "Zadejte platnou e-mailovou adresu pro test." });
     }
-    const stepRes = await pool.query("SELECT template_id FROM marketing_journey_steps WHERE id = $1", [req.params.stepId]);
-    const templateId = stepRes.rows[0]?.template_id;
-    if (!templateId) return res.status(400).json({ error: "Tento krok nemá přiřazenou šablonu." });
+    const stepRes = await pool.query("SELECT * FROM marketing_journey_steps WHERE id = $1", [req.params.stepId]);
+    const step = stepRes.rows[0];
+    const templateId = step?.template_id;
     
-    const { sendTestMarketingEmail } = await import("../lib/marketing/sender.js");
-    const result = await sendTestMarketingEmail(templateId, toEmail, {
-      subject: req.body.subject,
-      preheader: req.body.preheader,
-      blocks: req.body.blocks,
-      headerOptions: req.body.headerOptions,
-    });
-    if (!result.ok) return res.status(500).json({ error: result.error || "Odeslání testovacího e-mailu selhalo" });
+    let sent = false;
+    let lastError = "";
+
+    if (templateId) {
+      const { sendTestMarketingEmail } = await import("../lib/marketing/sender.js");
+      const result = await sendTestMarketingEmail(templateId, toEmail, {
+        subject: req.body.subject,
+        preheader: req.body.preheader,
+        blocks: req.body.blocks,
+        headerOptions: req.body.headerOptions,
+        htmlContent: req.body.htmlContent,
+      });
+      if (result.ok) {
+        sent = true;
+      } else {
+        lastError = result.error || "";
+      }
+    }
+
+    if (!sent) {
+      // Step does not have a valid template_id or sending failed - send custom email from provided blocks / step configuration
+      const { sendTestCustomEmail } = await import("../lib/marketing/sender.js");
+      const { compileBlocksToHtml } = await import("../lib/marketing/blockCompiler.js");
+      let htmlContent = req.body.htmlContent || "";
+      if (!htmlContent && Array.isArray(req.body.blocks) && req.body.blocks.length > 0) {
+        htmlContent = compileBlocksToHtml(req.body.blocks);
+      }
+      const result = await sendTestCustomEmail(
+        {
+          subject: req.body.subject || step?.subject || "Test e-mail kroku",
+          preheader: req.body.preheader || step?.preheader || null,
+          htmlContent,
+          headerOptions: req.body.headerOptions || step?.header_options,
+        },
+        toEmail
+      );
+      if (!result.ok) return res.status(500).json({ error: result.error || lastError || "Odeslání testovacího e-mailu selhalo" });
+    }
+
     await logMarketingAction("journey_step.test_sent", req.session.userId || null, { type: "journey_step", id: parseInt(req.params.stepId, 10) }, { to: toEmail });
     res.json({ success: true });
   } catch (error) {
     console.error("Journey step test send error:", error);
-    res.status(500).json({ error: "Chyba při odesílání testovacího e-mailu" });
+    res.status(500).json({ error: "Chyba při odesílání testovacího e-mailu: " + (error instanceof Error ? error.message : String(error)) });
   }
 });
 
@@ -1227,24 +1289,37 @@ router.post("/campaigns/:id/send-test", requireAdmin, testSendLimiter, async (re
     const campaign = campaignRes.rows[0];
     if (!campaign) return res.status(404).json({ error: "Kampaň nenalezena" });
 
-    let subject = campaign.subject || "Test kampaň";
-    let htmlContent = campaign.html_content || "";
-    if (!htmlContent && Array.isArray(campaign.blocks) && campaign.blocks.length > 0) {
+    // Prefer live blocks/subject passed from the editor UI (unsaved state), fall back to DB
+    const overrideBlocks = Array.isArray(req.body.blocks) && req.body.blocks.length > 0 ? req.body.blocks : null;
+    const overrideSubject = req.body.subject || null;
+    const overridePreheader = req.body.preheader !== undefined ? req.body.preheader : null;
+    const overrideHeaderOptions = req.body.headerOptions || null;
+
+    let subject = overrideSubject || campaign.subject || "Test kampaň";
+    let preheader = overridePreheader !== null ? overridePreheader : campaign.preheader;
+    let headerOptions = overrideHeaderOptions || campaign.header_options;
+    let htmlContent = "";
+
+    if (overrideBlocks) {
+      htmlContent = compileBlocksToHtml(overrideBlocks);
+    } else if (Array.isArray(campaign.blocks) && campaign.blocks.length > 0) {
       htmlContent = compileBlocksToHtml(campaign.blocks);
-    }
-    if (!htmlContent && campaign.template_id) {
+    } else if (campaign.html_content) {
+      htmlContent = campaign.html_content;
+    } else if (campaign.template_id) {
       const templateRes = await pool.query("SELECT subject, html_content, preheader, blocks, header_options FROM marketing_templates WHERE id = $1", [campaign.template_id]);
       const template = templateRes.rows[0];
       if (template) {
         if (!subject) subject = template.subject;
+        if (!preheader) preheader = template.preheader;
         htmlContent = template.html_content || (Array.isArray(template.blocks) ? compileBlocksToHtml(template.blocks) : "");
-        if (!campaign.header_options) campaign.header_options = template.header_options;
+        if (!headerOptions) headerOptions = template.header_options;
       }
     }
 
     const { sendTestCustomEmail } = await import("../lib/marketing/sender.js");
     const result = await sendTestCustomEmail(
-      { subject, preheader: campaign.preheader, htmlContent, headerOptions: campaign.header_options },
+      { subject, preheader, htmlContent, headerOptions },
       toEmail
     );
     if (!result.ok) return res.status(500).json({ error: result.error || "Odeslání testovacího e-mailu selhalo" });
@@ -1252,7 +1327,7 @@ router.post("/campaigns/:id/send-test", requireAdmin, testSendLimiter, async (re
     res.json({ success: true });
   } catch (error) {
     console.error("Campaign test send error:", error);
-    res.status(500).json({ error: "Chyba při odesílání testovacího e-mailu" });
+    res.status(500).json({ error: "Chyba při odesílání testovacího e-mailu: " + (error instanceof Error ? error.message : String(error)) });
   }
 });
 
@@ -2033,8 +2108,27 @@ router.patch("/campaigns/:campaignId/emails/:emailId", requireAdmin, async (req:
     if (sendDateTime !== undefined) { updates.push(`send_datetime = $${i++}`); params.push(sendDateTime); }
     if (subject !== undefined) { updates.push(`subject = $${i++}`); params.push(subject); }
     if (preheader !== undefined) { updates.push(`preheader = $${i++}`); params.push(preheader); }
-    if (blocks !== undefined) { updates.push(`blocks = $${i++}`); params.push(JSON.stringify(blocks)); }
-    if (headerOptions !== undefined) { updates.push(`header_options = $${i++}`); params.push(JSON.stringify(headerOptions)); }
+    if (blocks !== undefined) {
+      const blocksArr = Array.isArray(blocks) ? blocks : (typeof blocks === "string" ? JSON.parse(blocks) : []);
+      updates.push(`blocks = $${i++}::jsonb`);
+      params.push(JSON.stringify(blocksArr));
+      
+      let finalHtml = htmlContent;
+      if (!finalHtml && blocksArr.length > 0) {
+        finalHtml = compileBlocksToHtml(blocksArr);
+      }
+      if (finalHtml !== undefined) {
+        updates.push(`html_content = $${i++}`);
+        params.push(finalHtml);
+      }
+    } else if (htmlContent !== undefined) {
+      updates.push(`html_content = $${i++}`);
+      params.push(htmlContent);
+    }
+    if (headerOptions !== undefined) {
+      updates.push(`header_options = $${i++}::jsonb`);
+      params.push(JSON.stringify(headerOptions));
+    }
     
     updates.push(`updated_at = CURRENT_TIMESTAMP`);
     params.push(emailId);
@@ -2056,7 +2150,8 @@ router.patch("/campaigns/:campaignId/emails/:emailId", requireAdmin, async (req:
     await logMarketingAction("campaign_email.updated", req.session.userId || null, { type: "campaign_email", id: emailId });
     res.json(fullRes.rows[0]);
   } catch (error) {
-    res.status(500).json({ error: "Chyba při aktualizaci e-mailu kampaně" });
+    console.error("Campaign email update error:", error);
+    res.status(500).json({ error: "Chyba při aktualizaci e-mailu kampaně: " + (error instanceof Error ? error.message : String(error)) });
   }
 });
 
@@ -2079,11 +2174,11 @@ router.delete("/campaigns/:campaignId/emails/:emailId", requireAdmin, async (req
 
 // Send test email for a campaign email
 router.post("/campaigns/:campaignId/emails/:emailId/send-test", requireAdmin, testSendLimiter, async (req: Request, res: Response) => {
-  console.log("[CAMPAIGN EMAIL TEST] Request received", { campaignId: req.params.campaignId, emailId: req.params.emailId, toEmail: req.body.email });
+  console.log("[CAMPAIGN EMAIL TEST] Request received", { campaignId: req.params.campaignId, emailId: req.params.emailId, toEmail: req.body.email || req.body.to });
   try {
     const emailId = parseInt(req.params.emailId, 10);
     const campaignId = parseInt(req.params.campaignId, 10);
-    const toEmail = String(req.body.email || "").trim();
+    const toEmail = String(req.body.email || req.body.to || "").trim();
     
     console.log(`[Campaign Email Test] Starting: campaign=${campaignId}, email=${emailId}, to=${toEmail}`);
     
@@ -2107,14 +2202,25 @@ router.post("/campaigns/:campaignId/emails/:emailId/send-test", requireAdmin, te
     }
     
     const email = emailRes.rows[0];
-    console.log(`[Campaign Email Test] Email found: subject=${email.template_subject || email.subject}`);
     
-    // Use overrides from request body, fall back to database values
-    const finalSubject = email.subject || email.template_subject || "Email";
-    const finalPreheader = email.preheader || email.template_preheader || "";
-    const finalBlocks = email.blocks || email.template_blocks || [];
-    const finalHeaderOptions = email.header_options || email.template_header_options || {};
-    const finalHtmlContent = email.html_content || email.template_html || "";
+    // Prefer live overrides from editor UI, fall back to DB
+    const overrideBlocks = Array.isArray(req.body.blocks) && req.body.blocks.length > 0 ? req.body.blocks : null;
+    const overrideSubject = req.body.subject || null;
+    const overridePreheader = req.body.preheader !== undefined ? req.body.preheader : null;
+    const overrideHeaderOptions = req.body.headerOptions || null;
+
+    const finalSubject = overrideSubject || email.subject || email.template_subject || "Email kampaně";
+    const finalPreheader = overridePreheader !== null ? overridePreheader : (email.preheader || email.template_preheader || "");
+    const finalBlocks = overrideBlocks || email.blocks || email.template_blocks || [];
+    const finalHeaderOptions = overrideHeaderOptions || email.header_options || email.template_header_options || {};
+
+    let finalHtmlContent = req.body.htmlContent || "";
+    if (!finalHtmlContent && Array.isArray(finalBlocks) && finalBlocks.length > 0) {
+      finalHtmlContent = compileBlocksToHtml(finalBlocks);
+    }
+    if (!finalHtmlContent) {
+      finalHtmlContent = email.html_content || email.template_html || "";
+    }
     
     console.log(`[Campaign Email Test] Using: subject=${finalSubject}, hasHtml=${!!finalHtmlContent}`);
     
@@ -2124,7 +2230,7 @@ router.post("/campaigns/:campaignId/emails/:emailId/send-test", requireAdmin, te
       {
         subject: finalSubject,
         preheader: finalPreheader,
-        htmlContent: finalHtmlContent || "",
+        htmlContent: finalHtmlContent,
         headerOptions: finalHeaderOptions,
       },
       toEmail
@@ -2140,7 +2246,7 @@ router.post("/campaigns/:campaignId/emails/:emailId/send-test", requireAdmin, te
     res.json({ success: true });
   } catch (error) {
     console.error("Campaign email test send error:", error);
-    res.status(500).json({ error: "Chyba při odesílání testovacího e-mailu: " + String(error) });
+    res.status(500).json({ error: "Chyba při odesílání testovacího e-mailu: " + (error instanceof Error ? error.message : String(error)) });
   }
 });
 

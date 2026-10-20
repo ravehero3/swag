@@ -24,7 +24,7 @@ interface JourneyFlowBuilderProps {
   onEditStep: (step: Step) => void;
   onDeleteStep: (stepId: number) => void;
   onAddStep: () => void;
-  onTestEmail: (stepId: number) => void;
+  onTestEmail: (stepId: number) => Promise<void> | void;
   testSendingStepId: number | null;
   testEmail: string;
   onTestEmailChange: (email: string) => void;
@@ -211,32 +211,35 @@ export default function JourneyFlowBuilder({
 
   const handleQuickTestEmail = async () => {
     if (!selectedStepId) {
-      setTestMessage("Vyberte krok v sekvenci");
-      setTimeout(() => setTestMessage(null), 3000);
+      setTestMessage("⚠️ Vyberte e-mailový krok v sekvenci");
+      setTimeout(() => setTestMessage(null), 4000);
       return;
     }
 
     const step = steps.find((s) => s.id === selectedStepId);
-    if (!step || step.step_type !== "email" || !step.template_id) {
-      setTestMessage("Vybrany krok neni e-mail");
-      setTimeout(() => setTestMessage(null), 3000);
+    if (!step || step.step_type !== "email") {
+      setTestMessage("⚠️ Vybraný krok není e-mail");
+      setTimeout(() => setTestMessage(null), 4000);
       return;
     }
 
     if (!testEmail || !testEmail.includes("@")) {
-      setTestMessage("Zadejte platnou e-mailovou adresu");
-      setTimeout(() => setTestMessage(null), 3000);
+      setTestMessage("⚠️ Zadejte platnou e-mailovou adresu");
+      setTimeout(() => setTestMessage(null), 4000);
       return;
     }
 
     setIsSendingTest(true);
+    setTestMessage(null);
     try {
-      onTestEmail(selectedStepId);
-      setTestMessage("Email odeslán!");
-      setTimeout(() => setTestMessage(null), 3000);
-    } catch (err) {
-      setTestMessage("Chyba pri odesílání");
-      setTimeout(() => setTestMessage(null), 3000);
+      if (onTestEmail) {
+        await onTestEmail(selectedStepId);
+        setTestMessage("✅ Testovací e-mail odeslán!");
+        setTimeout(() => setTestMessage(null), 5000);
+      }
+    } catch (err: any) {
+      setTestMessage(`❌ Chyba: ${err?.message || "Odeslání selhalo"}`);
+      setTimeout(() => setTestMessage(null), 6000);
     } finally {
       setIsSendingTest(false);
     }
