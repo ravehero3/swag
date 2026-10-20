@@ -32,6 +32,7 @@ const router = Router();
 // ── Public: unsubscribe (token-based, no auth) ──────────────────────────────
 
 const unsubscribeLimiter = rateLimit({ windowMs: 60_000, max: 20, keyPrefix: "unsubscribe" });
+const testSendLimiter = rateLimit({ windowMs: 60_000, max: 60, keyPrefix: "test_send" });
 
 router.get("/unsubscribe/verify", unsubscribeLimiter, async (req: Request, res: Response) => {
   const token = String(req.query.token || "");
