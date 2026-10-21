@@ -17,7 +17,7 @@ interface CampaignListProps {
   selectedCampaignId: number | null;
   loading: boolean;
   onSelectCampaign: (id: number) => void;
-  onCreateCampaign: (name: string, audience: "buyers" | "free_downloads") => void;
+  onCreateCampaign: (name: string, audience: "all" | "buyers" | "free_downloads") => void;
   onDeleteCampaign: (id: number) => void;
 }
 
@@ -31,7 +31,7 @@ export default function CampaignList({
 }: CampaignListProps) {
   const [showNewCampaignModal, setShowNewCampaignModal] = useState(false);
   const [newCampaignName, setNewCampaignName] = useState("");
-  const [newCampaignAudience, setNewCampaignAudience] = useState<"buyers" | "free_downloads">("buyers");
+  const [newCampaignAudience, setNewCampaignAudience] = useState<"all" | "buyers" | "free_downloads">("all");
 
   // Audience Stats Modal State
   const [audienceModalCampaign, setAudienceModalCampaign] = useState<Campaign | null>(null);
@@ -607,7 +607,7 @@ export default function CampaignList({
               </label>
               <select
                 value={newCampaignAudience}
-                onChange={(e) => setNewCampaignAudience(e.target.value as "buyers" | "free_downloads")}
+                onChange={(e) => setNewCampaignAudience(e.target.value as "all" | "buyers" | "free_downloads")}
                 style={{
                   width: "100%",
                   padding: "10px 12px",
@@ -619,8 +619,9 @@ export default function CampaignList({
                   boxSizing: "border-box",
                 }}
               >
-                <option value="buyers">Kupující (Platící zákazníci)</option>
-                <option value="free_downloads">Všichni odběratelé (Kupující + Free downloaders)</option>
+                <option value="all">Všichni odběratelé (Kupující + Free downloaders – 5 066)</option>
+                <option value="free_downloads">Pouze Free downloaders (Zatím nenakoupili – 4 785)</option>
+                <option value="buyers">Pouze kupující (Platící zákazníci – 281)</option>
               </select>
             </div>
 

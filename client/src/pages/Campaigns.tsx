@@ -202,7 +202,7 @@ export default function Campaigns() {
     }
   };
 
-  const createNewCampaign = async (name: string, audience: "buyers" | "free_downloads") => {
+  const createNewCampaign = async (name: string, audience: "all" | "buyers" | "free_downloads") => {
     if (!name.trim()) return;
     try {
       const res = await fetch("/api/marketing/campaigns", {

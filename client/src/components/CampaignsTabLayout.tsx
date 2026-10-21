@@ -47,7 +47,7 @@ interface CampaignsLayoutProps {
   campaignStatus?: "draft" | "active" | "completed" | "paused";
 
   onSelectCampaign: (id: number) => void;
-  onCreateCampaign: (name: string, audience: "buyers" | "free_downloads") => void;
+  onCreateCampaign: (name: string, audience: "all" | "buyers" | "free_downloads") => void;
   onDeleteCampaign: (id: number) => void;
   onSelectEmail: (emailId: number) => void;
   onAddEmail: () => void;

@@ -1249,7 +1249,10 @@ router.post("/campaigns", requireAdmin, async (req: Request, res: Response) => {
 
     let audienceSegment = req.body.audience_segment || "mixed";
     let resolvedSegmentRules = segmentRules;
-    if (audience === "buyers") {
+    if (audience === "all") {
+      audienceSegment = "mixed";
+      resolvedSegmentRules = resolvedSegmentRules || { type: "all" };
+    } else if (audience === "buyers") {
       audienceSegment = "paid";
       resolvedSegmentRules = resolvedSegmentRules || { type: "buyers" };
     } else if (audience === "free_downloads") {
@@ -1287,13 +1290,31 @@ router.post("/campaigns", requireAdmin, async (req: Request, res: Response) => {
        VALUES ($1,$2,$3,$4,$5,$6::jsonb,$7,$8::jsonb,$9::jsonb,$10,$11,$12) RETURNING *`,
       [name, subject || null, preheader || null, templateId || null, status, blocksJson, finalHtml || null, headerOptionsJson, segmentJson, scheduledAt || null, audienceSegment, recipientCount]
     );
-    await logMarketingAction("campaign.created", req.session.userId || null, { type: "campaign", id: result.rows[0].id });
+
+    const campaignId = result.rows[0].id;
+
+    // Automatically create initial email step if blocks provided or default
+    const initialBlocks = (Array.isArray(blocks) && blocks.length > 0) ? blocks : [
+      { id: "header-1", type: "header", headerType: "logo", logoType: "white", logoSize: "md" },
+      { id: "title-1", type: "heading", headingText: "Nadpis vašeho e-mailu", headingLevel: "h1", headingAlign: "center" },
+      { id: "body-1", type: "paragraph", paragraphText: "Sem vložte obsah vašeho e-mailu..." },
+      { id: "footer-1", type: "footer", footerText: "© 2025 VOODOO808. Všechna práva vyhrazena." }
+    ];
+    const initialEmailHtml = finalHtml || compileBlocksToHtml(initialBlocks);
+    await pool.query(
+      `INSERT INTO marketing_campaign_emails 
+       (campaign_id, position, delay_hours, template_id, subject, preheader, blocks, html_content)
+       VALUES ($1, 1, 0, $2, $3, $4, $5::jsonb, $6)`,
+      [campaignId, templateId || null, subject || name || 'E-mail kampaně', preheader || 'Přečtěte si', JSON.stringify(initialBlocks), initialEmailHtml]
+    );
+
+    await logMarketingAction("campaign.created", req.session.userId || null, { type: "campaign", id: campaignId });
     res.json({
       ...result.rows[0],
-      emailCount: 0,
+      emailCount: 1,
       recipient_count: recipientCount,
       total_recipients: recipientCount,
-      audience: audience || (audienceSegment === "paid" ? "buyers" : "free_downloads"),
+      audience: audience || (audienceSegment === "paid" ? "buyers" : (audienceSegment === "free" ? "free_downloads" : "all")),
     });
   } catch (error) {
     console.error("Campaign create error:", error);
@@ -2205,6 +2226,29 @@ router.get("/campaigns/:campaignId/emails", requireAdmin, async (req: Request, r
        ORDER BY ce.position ASC`,
       [campaignId]
     );
+
+    if (result.rows.length === 0) {
+      const camp = await pool.query("SELECT name, subject, preheader, blocks, html_content FROM marketing_campaigns WHERE id = $1", [campaignId]);
+      if (camp.rows.length > 0) {
+        const c = camp.rows[0];
+        const defaultBlocks = (c.blocks && Array.isArray(c.blocks) && c.blocks.length > 0) ? c.blocks : [
+          { id: "header-1", type: "header", headerType: "logo", logoType: "white", logoSize: "md" },
+          { id: "title-1", type: "heading", headingText: "Nadpis vašeho e-mailu", headingLevel: "h1", headingAlign: "center" },
+          { id: "body-1", type: "paragraph", paragraphText: "Sem vložte obsah vašeho e-mailu..." },
+          { id: "footer-1", type: "footer", footerText: "© 2025 VOODOO808. Všechna práva vyhrazena." }
+        ];
+        const finalHtml = c.html_content || compileBlocksToHtml(defaultBlocks);
+        const inserted = await pool.query(
+          `INSERT INTO marketing_campaign_emails 
+           (campaign_id, position, delay_hours, template_id, subject, preheader, blocks, html_content)
+           VALUES ($1, 1, 0, NULL, $2, $3, $4::jsonb, $5)
+           RETURNING *`,
+          [campaignId, c.subject || c.name || 'E-mail kampaně', c.preheader || 'Přečtěte si', JSON.stringify(defaultBlocks), finalHtml]
+        );
+        return res.json(inserted.rows);
+      }
+    }
+
     res.json(result.rows || []);
   } catch (error) {
     res.status(500).json({ error: "Chyba při načítání e-mailů kampaně" });
