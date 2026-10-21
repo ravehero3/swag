@@ -1304,26 +1304,64 @@ router.post("/campaigns", requireAdmin, async (req: Request, res: Response) => {
 
 router.patch("/campaigns/:id", requireAdmin, async (req: Request, res: Response) => {
   try {
+    const campaignId = parseInt(req.params.id, 10);
     const { name, subject, preheader, templateId, blocks, htmlContent, headerOptions, segmentRules, scheduledAt } = req.body;
-    let finalHtml = htmlContent || "";
-    if (Array.isArray(blocks) && blocks.length > 0) finalHtml = compileBlocksToHtml(blocks);
-    const blocksJson = Array.isArray(blocks) ? JSON.stringify(blocks) : (blocks ? JSON.stringify(blocks) : "[]");
-    const headerOptionsJson = headerOptions ? JSON.stringify(headerOptions) : null;
-    const segmentJson = segmentRules ? JSON.stringify(segmentRules) : null;
+    
+    const updates: string[] = [];
+    const params: any[] = [];
+    let i = 1;
+
+    if (name !== undefined) { updates.push(`name = $${i++}`); params.push(name); }
+    if (subject !== undefined) { updates.push(`subject = $${i++}`); params.push(subject); }
+    if (preheader !== undefined) { updates.push(`preheader = $${i++}`); params.push(preheader); }
+    if (templateId !== undefined) { updates.push(`template_id = $${i++}`); params.push(templateId); }
+    if (blocks !== undefined) {
+      const blocksArr = Array.isArray(blocks) ? blocks : (typeof blocks === "string" ? JSON.parse(blocks) : []);
+      updates.push(`blocks = $${i++}::jsonb`);
+      params.push(JSON.stringify(blocksArr));
+
+      let finalHtml = htmlContent;
+      if (!finalHtml && blocksArr.length > 0) {
+        finalHtml = compileBlocksToHtml(blocksArr);
+      }
+      if (finalHtml !== undefined) {
+        updates.push(`html_content = $${i++}`);
+        params.push(finalHtml);
+      }
+    } else if (htmlContent !== undefined) {
+      updates.push(`html_content = $${i++}`);
+      params.push(htmlContent);
+    }
+    if (headerOptions !== undefined) {
+      updates.push(`header_options = $${i++}::jsonb`);
+      params.push(JSON.stringify(headerOptions));
+    }
+    if (segmentRules !== undefined) {
+      updates.push(`segment_rules = $${i++}::jsonb`);
+      params.push(JSON.stringify(segmentRules));
+    }
+    if (scheduledAt !== undefined) {
+      updates.push(`scheduled_at = $${i++}`);
+      params.push(scheduledAt);
+      updates.push(`status = CASE WHEN $${i - 1} IS NOT NULL AND status = 'draft' THEN 'scheduled'
+                                  WHEN $${i - 1} IS NULL AND status = 'scheduled' THEN 'draft'
+                                  ELSE status END`);
+    }
+
+    if (updates.length === 0) {
+      const existing = await pool.query(`SELECT * FROM marketing_campaigns WHERE id = $1`, [campaignId]);
+      return res.json(existing.rows[0]);
+    }
+
+    updates.push(`updated_at = CURRENT_TIMESTAMP`);
+    params.push(campaignId);
 
     const result = await pool.query(
-      `UPDATE marketing_campaigns SET name = $1, subject = $2, preheader = $3, template_id = $4,
-       blocks = $5::jsonb, html_content = $6, header_options = COALESCE($7::jsonb, header_options),
-       segment_rules = COALESCE($8::jsonb, segment_rules),
-       scheduled_at = $9,
-       status = CASE WHEN $9 IS NOT NULL AND status = 'draft' THEN 'scheduled'
-                     WHEN $9 IS NULL AND status = 'scheduled' THEN 'draft'
-                     ELSE status END,
-       updated_at = CURRENT_TIMESTAMP WHERE id = $10 RETURNING *`,
-      [name, subject || null, preheader || null, templateId || null, blocksJson, finalHtml || null, headerOptionsJson, segmentJson, scheduledAt || null, req.params.id]
+      `UPDATE marketing_campaigns SET ${updates.join(", ")} WHERE id = $${i} RETURNING *`,
+      params
     );
     if (result.rows.length === 0) return res.status(404).json({ error: "Kampaně nenalezena" });
-    await logMarketingAction("campaign.edited", req.session.userId || null, { type: "campaign", id: parseInt(req.params.id, 10) });
+    await logMarketingAction("campaign.edited", req.session.userId || null, { type: "campaign", id: campaignId });
     res.json(result.rows[0]);
   } catch (error) {
     console.error("Campaign update error:", error);

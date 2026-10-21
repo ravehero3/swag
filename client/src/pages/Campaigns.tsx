@@ -101,9 +101,14 @@ export default function Campaigns() {
         const data = await res.json();
         setCampaigns(data || []);
         // Auto-restore previously selected campaign or fallback to first
+        const targetId = autoSelectId ?? selectedCampaignId ?? (
+          localStorage.getItem("voodoo808_selected_campaign_id")
+            ? parseInt(localStorage.getItem("voodoo808_selected_campaign_id")!, 10)
+            : null
+        );
         let found = null;
-        if (autoSelectId) {
-          found = (data || []).find((c: Campaign) => c.id === autoSelectId);
+        if (targetId) {
+          found = (data || []).find((c: Campaign) => c.id === targetId);
         }
         if (!found && (data || []).length > 0) {
           found = data[0];
@@ -116,7 +121,12 @@ export default function Campaigns() {
           // Load its emails in background
           fetch(`/api/marketing/campaigns/${found.id}/emails`)
             .then(r => r.ok ? r.json() : [])
-            .then(emails => setCampaignEmails(emails || []))
+            .then(emails => {
+              setCampaignEmails(emails || []);
+              if (emails && emails.length > 0) {
+                setPreviewEmailId(prev => (prev && emails.some((e: any) => e.id === prev) ? prev : emails[0].id));
+              }
+            })
             .catch(() => {});
         }
       }
@@ -145,6 +155,9 @@ export default function Campaigns() {
       if (res.ok) {
         const data = await res.json();
         setCampaignEmails(data || []);
+        if (data && data.length > 0) {
+          setPreviewEmailId(prev => (prev && data.some((e: any) => e.id === prev) ? prev : data[0].id));
+        }
       }
     } catch (err) {
       console.error("Error loading campaign emails:", err);
@@ -274,6 +287,37 @@ export default function Campaigns() {
   const startCampaign = async () => {
     if (!selectedCampaignId || !selectedCampaign) return;
     
+    // Safety check: ensure active email's latest state is saved to backend before start
+    if (campaignEmails.length > 0 && selectedCampaignId) {
+      const activeEmail = campaignEmails.find(e => e.id === previewEmailId) || campaignEmails[0];
+      try {
+        await fetch(`/api/marketing/campaigns/${selectedCampaignId}/emails/${activeEmail.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            subject: activeEmail.subject,
+            preheader: activeEmail.preheader,
+            blocks: activeEmail.blocks,
+            headerOptions: activeEmail.header_options || activeEmail.headerOptions,
+          }),
+        });
+        await fetch(`/api/marketing/campaigns/${selectedCampaignId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            subject: activeEmail.subject,
+            preheader: activeEmail.preheader,
+            blocks: activeEmail.blocks,
+            headerOptions: activeEmail.header_options || activeEmail.headerOptions,
+          }),
+        }).catch(() => {});
+      } catch (e) {
+        console.warn("Could not pre-save email before start:", e);
+      }
+    }
+
     setStartingCampaign(true);
     try {
       const res = await fetch(`/api/marketing/campaigns/${selectedCampaignId}/start`, {
@@ -290,7 +334,6 @@ export default function Campaigns() {
         alert(data.message);
         setShowStartDialog(false);
         // Pass the ID directly so loadCampaigns auto-restores selection from fresh data
-        // (avoids stale-closure bug where selectCampaign reads old campaigns array)
         const savedCampaignId = selectedCampaignId;
         await loadCampaigns(savedCampaignId);
         await loadQueueStatus(savedCampaignId);
@@ -333,6 +376,7 @@ export default function Campaigns() {
           )
         );
         setSelectedCampaign((prev) => prev ? { ...prev, emailCount: (prev.emailCount || 0) + 1 } : prev);
+        setPreviewEmailId(newEmail.id);
       } else {
         const error = await res.text();
         console.error("[Campaigns] Error adding email:", error);
@@ -384,10 +428,38 @@ export default function Campaigns() {
     }
   };
 
-  const saveEmailEdits = (emailId: number, updatedData: any) => {
+  const saveEmailEdits = async (emailId: number, updatedData: any) => {
     setCampaignEmails((prev) =>
       prev.map((e) => (e.id === emailId ? { ...e, ...updatedData } : e))
     );
+    if (!selectedCampaignId) return;
+    try {
+      await fetch(`/api/marketing/campaigns/${selectedCampaignId}/emails/${emailId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(updatedData),
+      });
+      await fetch(`/api/marketing/campaigns/${selectedCampaignId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          subject: updatedData.subject,
+          preheader: updatedData.preheader,
+          blocks: updatedData.blocks,
+          headerOptions: updatedData.headerOptions || updatedData.header_options,
+        }),
+      }).catch(() => {});
+    } catch (err) {
+      console.error("Error persisting email edits:", err);
+    }
+  };
+
+  const refreshCampaignEmails = async () => {
+    if (selectedCampaignId) {
+      await loadCampaignEmails(selectedCampaignId);
+    }
   };
 
   const updateEmailDelay = async (emailId: number, delayHours: number) => {
@@ -585,7 +657,7 @@ export default function Campaigns() {
         onUpdateEmailTemplate={updateEmailTemplate}
         onUpdateEmailDelay={updateEmailDelay}
         onSaveEmailEdits={saveEmailEdits}
-        onRefresh={loadCampaigns}
+        onRefresh={refreshCampaignEmails}
         onStartCampaign={() => setShowStartDialog(true)}
         campaignStatus={selectedCampaign?.status}
         onTestEmail={sendTestEmail}

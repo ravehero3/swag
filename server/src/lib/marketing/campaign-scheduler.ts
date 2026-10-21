@@ -66,18 +66,86 @@ function calculateSendQuota(config: RateLimitConfig): number {
   return Math.min(hourlyQuota, dailyQuota);
 }
 
+function parseBlocks(raw: any): any[] {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw;
+  if (typeof raw === "string") {
+    try {
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
 /**
  * Get campaign email data (subject, template, blocks, etc.)
+ * Checks both marketing_campaign_emails (sequence step) and marketing_campaigns (campaign root)
  */
 async function getCampaignEmail(campaignId: number): Promise<any> {
-  const res = await pool.query(
-    `SELECT id, template_id, subject, preheader, blocks, header_options
+  // 1. Get sequence email
+  const seqRes = await pool.query(
+    `SELECT id, template_id, subject, preheader, blocks, header_options, html_content
      FROM marketing_campaign_emails
      WHERE campaign_id = $1
+     ORDER BY position ASC
      LIMIT 1`,
     [campaignId]
   );
-  return res.rows[0] || null;
+  
+  // 2. Also check parent campaign
+  const campRes = await pool.query(
+    `SELECT id, template_id, subject, preheader, blocks, header_options, html_content
+     FROM marketing_campaigns
+     WHERE id = $1`,
+    [campaignId]
+  );
+
+  const seq = seqRes.rows[0] || null;
+  const camp = campRes.rows[0] || null;
+
+  if (!seq && !camp) return null;
+
+  const seqBlocks = parseBlocks(seq?.blocks);
+  const campBlocks = parseBlocks(camp?.blocks);
+
+  const isSeqPlaceholder = seqBlocks.length === 0 || seqBlocks.some((b: any) => b.headingText === "Nadpis vašeho e-mailu");
+  const isCampCustom = campBlocks.length > 0 && !campBlocks.some((b: any) => b.headingText === "Nadpis vašeho e-mailu");
+
+  let chosenBlocks = seqBlocks;
+  let chosenSubject = seq?.subject;
+  let chosenPreheader = seq?.preheader;
+  let chosenHtml = seq?.html_content;
+  let templateId = seq?.template_id;
+
+  if ((isSeqPlaceholder && isCampCustom) || (!seq && camp)) {
+    chosenBlocks = campBlocks;
+    chosenSubject = camp?.subject || chosenSubject;
+    chosenPreheader = camp?.preheader || chosenPreheader;
+    chosenHtml = camp?.html_content || chosenHtml;
+    templateId = camp?.template_id || templateId;
+  } else if (seq) {
+    if (!chosenSubject || chosenSubject === "E-mail kampaně") {
+      if (camp?.subject && camp.subject !== "E-mail kampaně") {
+        chosenSubject = camp.subject;
+      }
+    }
+    if ((!chosenBlocks || chosenBlocks.length === 0) && campBlocks.length > 0) {
+      chosenBlocks = campBlocks;
+    }
+  }
+
+  return {
+    id: seq?.id || camp?.id,
+    template_id: templateId,
+    subject: chosenSubject,
+    preheader: chosenPreheader,
+    blocks: chosenBlocks,
+    html_content: chosenHtml,
+    header_options: seq?.header_options || camp?.header_options,
+  };
 }
 
 /**
@@ -250,14 +318,17 @@ export async function processCampaignQueue(campaignId: number) {
         const customPreheader =
           campaignEmail.preheader || template?.preheader || null;
         let customHtml = "";
+        const emailBlocks = parseBlocks(campaignEmail.blocks);
+        const templateBlocks = parseBlocks(template?.blocks);
 
-        if (campaignEmail.blocks && campaignEmail.blocks.length > 0) {
-          // Blocks take priority over template
+        if (emailBlocks.length > 0) {
           const { compileBlocksToHtml } = await import("./blockCompiler.js");
-          customHtml = compileBlocksToHtml(campaignEmail.blocks);
-        } else if (template && template.blocks && template.blocks.length > 0) {
+          customHtml = compileBlocksToHtml(emailBlocks);
+        } else if (campaignEmail.html_content) {
+          customHtml = campaignEmail.html_content;
+        } else if (templateBlocks.length > 0) {
           const { compileBlocksToHtml } = await import("./blockCompiler.js");
-          customHtml = compileBlocksToHtml(template.blocks);
+          customHtml = compileBlocksToHtml(templateBlocks);
         } else if (template?.html_content) {
           customHtml = template.html_content;
         }
@@ -271,6 +342,7 @@ export async function processCampaignQueue(campaignId: number) {
           customSubject,
           customPreheader,
           customHtml,
+          headerOptions: campaignEmail.header_options,
           idempotencyKey,
         });
 

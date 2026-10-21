@@ -80,6 +80,7 @@ export default function CompactEmailEditor({
 
         <div className="compact-editor-wrapper" style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
           <VisualEmailBuilder
+            key={`builder-${template?.campaignEmailId || template?.id || "default"}`}
             initialSubject={template?.subject || ""}
             initialPreheader={template?.preheader || ""}
             initialBlocks={

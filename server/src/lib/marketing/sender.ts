@@ -126,6 +126,7 @@ interface SendMarketingEmailInput {
   customSubject?: string;
   customPreheader?: string;
   customHtml?: string;
+  headerOptions?: any;
 }
 
 interface MarketingTemplate {
@@ -381,6 +382,7 @@ export async function sendMarketingEmail(input: SendMarketingEmailInput): Promis
     bodyHtml: clickTrackedHtml,
     unsubscribeUrl,
     preheader: preheaderText ? fillVariables(preheaderText, vars) : undefined,
+    headerOptions: input.headerOptions,
   });
   // 4. Inject open-tracking pixel
   html = injectTrackingPixel(html, trackingToken, appUrl);

@@ -86,7 +86,7 @@ export default function CampaignsTabLayout({
   testEmail = "",
   onTestEmailChange,
 }: CampaignsLayoutProps) {
-  const selectedEmail = emails.find((e) => e.id === selectedEmailId);
+  const selectedEmail = (selectedEmailId ? emails.find((e) => e.id === selectedEmailId) : null) || (emails.length > 0 ? emails[0] : null);
   
   // Merge template with campaign email overrides
   const templateId = selectedEmail?.template_id || selectedEmail?.templateId;
@@ -125,6 +125,20 @@ export default function CampaignsTabLayout({
     });
     const resData = await res.json();
     if (!res.ok) throw new Error(resData?.error || "Chyba při ukládání e-mailu");
+
+    // Mirror save directly to parent campaign as well for safety
+    await fetch(`/api/marketing/campaigns/${selectedCampaignId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        subject: data.subject,
+        preheader: data.preheader,
+        blocks: data.blocks,
+        headerOptions: data.headerOptions,
+      }),
+    }).catch(() => {});
+
     if (onSaveEmailEdits) {
       await onSaveEmailEdits(selectedEmail.id, {
         subject: data.subject,
