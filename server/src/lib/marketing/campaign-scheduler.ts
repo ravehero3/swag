@@ -186,8 +186,8 @@ export async function processCampaignQueue(campaignId: number) {
 
     // Get queued emails ready to send
     const queueRes = await pool.query(
-      `SELECT csq.id, csq.subscriber_id, csq.retry_count,
-              s.id, s.email, s.name, s.is_buyer, s.tags, s.marketing_consent, s.unsubscribed_at, s.suppressed_at
+      `SELECT csq.id AS queue_id, csq.subscriber_id, csq.retry_count,
+              s.email, s.name, s.is_buyer, s.marketing_consent, s.unsubscribed_at, s.suppressed_at
        FROM campaign_send_queue csq
        JOIN subscribers s ON s.id = csq.subscriber_id
        WHERE csq.campaign_id = $1
@@ -232,12 +232,12 @@ export async function processCampaignQueue(campaignId: number) {
           `UPDATE campaign_send_queue
            SET status = 'in_progress'
            WHERE id = $1`,
-          [row.id]
+          [row.queue_id]
         );
 
         // Build subscriber object
         const subscriber = {
-          id: row.id,
+          id: row.subscriber_id,
           email: row.email,
           name: row.name || "",
           marketing_consent: row.marketing_consent !== false,
@@ -272,14 +272,14 @@ export async function processCampaignQueue(campaignId: number) {
           customPreheader,
           customHtml,
           idempotencyKey,
-        }).catch(() => {});
+        });
 
         // Update queue entry to sent
         await pool.query(
           `UPDATE campaign_send_queue
            SET status = 'sent', sent_at = CURRENT_TIMESTAMP
            WHERE id = $1`,
-          [row.id]
+          [row.queue_id]
         );
 
         // Update campaign stats
@@ -299,7 +299,7 @@ export async function processCampaignQueue(campaignId: number) {
         );
       } catch (err) {
         console.error(
-          `[Campaign Queue] Error sending email for queue ${row.id}:`,
+          `[Campaign Queue] Error sending email for queue ${row.queue_id}:`,
           err
         );
 
@@ -313,7 +313,7 @@ export async function processCampaignQueue(campaignId: number) {
             `UPDATE campaign_send_queue
              SET status = 'failed', failed_reason = $1, retry_count = $2
              WHERE id = $3`,
-            [String(err).substring(0, 200), retryCount, row.id]
+            [String(err).substring(0, 200), retryCount, row.queue_id]
           );
 
           await pool.query(
@@ -332,11 +332,11 @@ export async function processCampaignQueue(campaignId: number) {
             `UPDATE campaign_send_queue
              SET status = 'queued', scheduled_for = $1, retry_count = $2
              WHERE id = $3`,
-            [new Date(nextRetryMs), retryCount, row.id]
+            [new Date(nextRetryMs), retryCount, row.queue_id]
           );
 
           console.log(
-            `[Campaign Queue] Email queued for retry (attempt ${retryCount}/${maxRetries}) for queue ${row.id}`
+            `[Campaign Queue] Email queued for retry (attempt ${retryCount}/${maxRetries}) for queue ${row.queue_id}`
           );
         }
       }
@@ -361,7 +361,7 @@ export async function processCampaignQueue(campaignId: number) {
       [campaignId]
     );
 
-    if (incompletRes.rows[0].count === 0) {
+    if (parseInt(String(incompletRes.rows[0]?.count || "0"), 10) === 0) {
       console.log(`[Campaign Queue] Campaign ${campaignId} is complete!`);
       await pool.query(
         `UPDATE marketing_campaigns

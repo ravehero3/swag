@@ -183,42 +183,40 @@ export default function CampaignList({
                       {campaign.name}
                     </h3>
                   </div>
-                  {campaign.status === "draft" && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDeleteCampaign(campaign.id);
-                      }}
-                      title="Smazat kampaň"
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        width: "22px",
-                        height: "22px",
-                        padding: 0,
-                        background: "transparent",
-                        border: "1px solid #444",
-                        borderRadius: "4px",
-                        color: "#888",
-                        cursor: "pointer",
-                        transition: "all 150ms ease",
-                        flexShrink: 0,
-                      }}
-                      onMouseEnter={(e) => {
-                        (e.currentTarget as HTMLButtonElement).style.borderColor = "#ff5252";
-                        (e.currentTarget as HTMLButtonElement).style.color = "#ff5252";
-                        (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,82,82,0.1)";
-                      }}
-                      onMouseLeave={(e) => {
-                        (e.currentTarget as HTMLButtonElement).style.borderColor = "#444";
-                        (e.currentTarget as HTMLButtonElement).style.color = "#888";
-                        (e.currentTarget as HTMLButtonElement).style.background = "transparent";
-                      }}
-                    >
-                      <Trash2 size={11} />
-                    </button>
-                  )}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDeleteCampaign(campaign.id);
+                    }}
+                    title={campaign.status === "active" ? "Smazat a zrušit aktivní kampaň" : "Smazat kampaň"}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: "22px",
+                      height: "22px",
+                      padding: 0,
+                      background: "transparent",
+                      border: "1px solid #444",
+                      borderRadius: "4px",
+                      color: "#888",
+                      cursor: "pointer",
+                      transition: "all 150ms ease",
+                      flexShrink: 0,
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLButtonElement).style.borderColor = "#ff5252";
+                      (e.currentTarget as HTMLButtonElement).style.color = "#ff5252";
+                      (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,82,82,0.1)";
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLButtonElement).style.borderColor = "#444";
+                      (e.currentTarget as HTMLButtonElement).style.color = "#888";
+                      (e.currentTarget as HTMLButtonElement).style.background = "transparent";
+                    }}
+                  >
+                    <Trash2 size={11} />
+                  </button>
                 </div>
 
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "8px", marginBottom: "8px" }}>

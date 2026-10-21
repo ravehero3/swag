@@ -222,7 +222,11 @@ export default function Campaigns() {
   };
 
   const deleteCampaign = async (campaignId: number) => {
-    if (!confirm("Opravdu chcete smazat tuto kampan? Tato akce je nevratná.")) {
+    const target = campaigns.find((c) => c.id === campaignId);
+    const msg = target?.status === "active"
+      ? `Opravdu chcete smazat aktivní kampaň "${target.name}"? Odesílání e-mailů bude okamžitě zastaveno a fronta vymazána.`
+      : `Opravdu chcete smazat tuto kampaň? Tato akce je nevratná.`;
+    if (!confirm(msg)) {
       return;
     }
     
@@ -233,16 +237,28 @@ export default function Campaigns() {
       });
       
       if (res.ok) {
-        setCampaigns(campaigns.filter((c) => c.id !== campaignId));
+        const remaining = campaigns.filter((c) => c.id !== campaignId);
+        setCampaigns(remaining);
         if (selectedCampaignId === campaignId) {
-          setSelectedCampaignId(null);
-          setSelectedCampaign(null);
-          setCampaignEmails([]);
-          setQueueStatus(null);
-          sessionStorage.removeItem("voodoo808_selected_campaign_id");
-          if (statusRefreshInterval) {
-            clearInterval(statusRefreshInterval);
-            setStatusRefreshInterval(null);
+          const next = remaining[0] || null;
+          setSelectedCampaignId(next ? next.id : null);
+          setSelectedCampaign(next);
+          if (next) {
+            localStorage.setItem("voodoo808_selected_campaign_id", String(next.id));
+            sessionStorage.setItem("voodoo808_selected_campaign_id", String(next.id));
+            await loadCampaignEmails(next.id);
+            if (next.status === "active") {
+              await loadQueueStatus(next.id);
+            }
+          } else {
+            setCampaignEmails([]);
+            setQueueStatus(null);
+            localStorage.removeItem("voodoo808_selected_campaign_id");
+            sessionStorage.removeItem("voodoo808_selected_campaign_id");
+            if (statusRefreshInterval) {
+              clearInterval(statusRefreshInterval);
+              setStatusRefreshInterval(null);
+            }
           }
         }
       } else {

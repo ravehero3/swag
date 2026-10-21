@@ -2532,6 +2532,13 @@ router.post("/campaigns/:id/start", requireAdmin, async (req: Request, res: Resp
       segment: audience_segment
     });
     
+    // Trigger first send batch immediately in background
+    import("../lib/marketing/campaign-scheduler.js").then(({ processCampaignQueue }) => {
+      processCampaignQueue(campaignId).catch((err: any) => {
+        console.error(`[Marketing] Immediate send error for campaign ${campaignId}:`, err);
+      });
+    }).catch(() => {});
+
     const estimatedDays = Math.ceil(subscribers.length / (daily_send_limit || 85));
     res.json({
       success: true,
@@ -2543,6 +2550,20 @@ router.post("/campaigns/:id/start", requireAdmin, async (req: Request, res: Resp
   } catch (error) {
     console.error("Campaign start error:", error);
     res.status(500).json({ error: "Chyba při spouštění kampaňě: " + (error instanceof Error ? error.message : String(error)) });
+  }
+});
+
+// Trigger send batch immediately (without waiting for 15-minute cron cycle)
+router.post("/campaigns/:id/process-now", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const campaignId = parseInt(req.params.id, 10);
+    const { processCampaignQueue } = await import("../lib/marketing/campaign-scheduler.js");
+    processCampaignQueue(campaignId).catch((err: any) => {
+      console.error(`[Marketing] Manual process error for campaign ${campaignId}:`, err);
+    });
+    res.json({ success: true, message: "Zpracování fronty spuštěno." });
+  } catch (error) {
+    res.status(500).json({ error: "Chyba při spouštění fronty" });
   }
 });
 
@@ -2636,19 +2657,14 @@ router.delete("/campaigns/:id", requireAdmin, async (req: Request, res: Response
   try {
     const campaignId = parseInt(req.params.id, 10);
     
-    // Check campaign status - only allow deletion of draft campaigns
+    // Check if campaign exists
     const campaignRes = await pool.query(
-      "SELECT status FROM marketing_campaigns WHERE id = $1",
+      "SELECT id, status FROM marketing_campaigns WHERE id = $1",
       [campaignId]
     );
     
     if (campaignRes.rows.length === 0) {
       return res.status(404).json({ error: "Kampaně nenalezena" });
-    }
-    
-    const campaign = campaignRes.rows[0];
-    if (campaign.status !== 'draft') {
-      return res.status(400).json({ error: "Lze mazat pouze kampaňě v návrhu" });
     }
     
     // Delete campaign (cascade will handle related records)
