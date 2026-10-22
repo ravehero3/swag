@@ -15,6 +15,16 @@ interface Campaign {
   status: string;
 }
 
+
+interface CampaignEmail {
+  id: number;
+  subject: string;
+  preheader?: string;
+  blocks?: any[];
+  html_content?: string;
+  header_options?: any;
+}
+
 interface SlowDripTabProps {
   onNavigateToCampaigns?: () => void;
 }
@@ -27,6 +37,9 @@ export function SlowDripTab({ onNavigateToCampaigns }: SlowDripTabProps) {
   const [loadingData, setLoadingData] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [nextUpdateIn, setNextUpdateIn] = useState(10);
+  const [campaignEmail, setCampaignEmail] = useState<CampaignEmail | null>(null);
+  const [emailPreviewHtml, setEmailPreviewHtml] = useState<string | null>(null);
+
 
   const REFRESH_INTERVAL = 10;
   const LIMIT_H = 4;
@@ -54,6 +67,35 @@ export function SlowDripTab({ onNavigateToCampaigns }: SlowDripTabProps) {
     };
     loadCampaigns();
   }, []);
+
+  // Load campaign email preview
+  useEffect(() => {
+    if (!selectedCampaignId) return;
+
+    const loadEmailPreview = async () => {
+      try {
+        const res = await fetch(`/api/marketing/campaigns/${selectedCampaignId}/emails`, { credentials: "include" });
+        if (res.ok) {
+          const emails = await res.json();
+          if (emails.length > 0) {
+            setCampaignEmail(emails[0]);
+            // Fetch the preview HTML
+            const previewRes = await fetch(`/api/marketing/campaigns/${selectedCampaignId}/emails/${emails[0].id}/preview`, { credentials: "include" });
+            if (previewRes.ok) {
+              const { html } = await previewRes.json();
+              setEmailPreviewHtml(html);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Error loading email preview:", err);
+      }
+    };
+
+    loadEmailPreview();
+  }, [selectedCampaignId]);
+
+
 
   // Load campaign data
   useEffect(() => {
@@ -411,6 +453,49 @@ export function SlowDripTab({ onNavigateToCampaigns }: SlowDripTabProps) {
               </option>
             ))}
           </select>
+        </div>
+      )}
+
+      {/* Email Preview Section */}
+      {emailPreviewHtml && (
+        <div style={{ marginBottom: "24px" }}>
+          <div style={{ fontSize: "11px", textTransform: "uppercase", color: "#666", letterSpacing: "0.08em", marginBottom: "12px" }}>
+            Náhled odesílaného e-mailu
+          </div>
+          <div
+            style={{
+              background: "#0f0f0f",
+              border: "1px solid #222",
+              borderRadius: "2px",
+              overflow: "hidden",
+              boxShadow: "0 8px 32px rgba(0, 0, 0, 0.8)",
+              aspectRatio: "16 / 10",
+              maxHeight: "600px",
+            }}
+          >
+            <iframe
+              srcDoc={emailPreviewHtml}
+              style={{
+                width: "100%",
+                height: "100%",
+                border: "none",
+                background: "#fff",
+              }}
+              title="Email Preview"
+              sandbox={{ allow: ["same-origin"] }}
+            />
+          </div>
+          {campaignEmail && (
+            <div style={{ marginTop: "8px", fontSize: "12px", color: "#999" }}>
+              <strong style={{ color: "#ccc" }}>Předmět:</strong> {campaignEmail.subject}
+              {campaignEmail.preheader && (
+                <>
+                  <br />
+                  <strong style={{ color: "#ccc" }}>Náhled textu:</strong> {campaignEmail.preheader}
+                </>
+              )}
+            </div>
+          )}
         </div>
       )}
 

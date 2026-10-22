@@ -2398,6 +2398,67 @@ router.delete("/campaigns/:campaignId/emails/:emailId", requireAdmin, async (req
   }
 });
 
+// Get preview of a campaign email
+router.get("/campaigns/:campaignId/emails/:emailId/preview", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const emailId = parseInt(req.params.emailId, 10);
+    const campaignId = parseInt(req.params.campaignId, 10);
+
+    // Get the campaign email
+    const emailRes = await pool.query(
+      `SELECT ce.*, mt.name AS template_name FROM marketing_campaign_emails ce
+       LEFT JOIN marketing_templates mt ON mt.id = ce.template_id WHERE ce.id = $1 AND ce.campaign_id = $2`,
+      [emailId, campaignId]
+    );
+    const email = emailRes.rows[0];
+    if (!email) {
+      return res.status(404).json({ error: "E-mail kampaně nenalezen" });
+    }
+
+    let subject = email.subject || "Náhled e-mailu";
+    let htmlContent = email.html_content || "";
+
+    // Use blocks if available
+    if (!htmlContent && Array.isArray(email.blocks) && email.blocks.length > 0) {
+      const { compileBlocksToHtml } = await import("../lib/marketing/blockCompiler.js");
+      htmlContent = compileBlocksToHtml(email.blocks);
+    }
+
+    // Fall back to template
+    if (!htmlContent && email.template_id) {
+      const templateRes = await pool.query(
+        "SELECT subject, html_content, preheader, blocks, header_options FROM marketing_templates WHERE id = $1",
+        [email.template_id]
+      );
+      const template = templateRes.rows[0];
+      if (template) {
+        if (!subject) subject = template.subject;
+        htmlContent = template.html_content || "";
+        if (!htmlContent && Array.isArray(template.blocks) && template.blocks.length > 0) {
+          const { compileBlocksToHtml } = await import("../lib/marketing/blockCompiler.js");
+          htmlContent = compileBlocksToHtml(template.blocks);
+        }
+        if (!email.header_options && template.header_options) {
+          email.header_options = template.header_options;
+        }
+      }
+    }
+
+    const { renderTemplatePreview } = await import("../lib/marketing/sender.js");
+    const { html } = renderTemplatePreview({
+      subject,
+      preheader: email.preheader,
+      html_content: htmlContent,
+      headerOptions: email.header_options,
+    });
+
+    res.json({ html });
+  } catch (error) {
+    console.error("Campaign email preview error:", error);
+    res.status(500).json({ error: "Chyba při generování náhledu e-mailu" });
+  }
+});
+
 // Send test email for a campaign email
 router.post("/campaigns/:campaignId/emails/:emailId/send-test", requireAdmin, testSendLimiter, async (req: Request, res: Response) => {
   console.log("[CAMPAIGN EMAIL TEST] Request received", { campaignId: req.params.campaignId, emailId: req.params.emailId, toEmail: req.body.email || req.body.to });
