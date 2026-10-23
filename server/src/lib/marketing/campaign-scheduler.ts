@@ -19,7 +19,6 @@ async function updateRateLimitCounters(
 ): Promise<RateLimitConfig> {
   const now = new Date();
   const hourAgo = new Date(now.getTime() - 60 * 60 * 1000);
-  const dayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
   let updated = false;
 
@@ -30,11 +29,21 @@ async function updateRateLimitCounters(
     updated = true;
   }
 
-  // Reset daily counter if a day has passed
-  if (config.lastDayReset < dayAgo) {
+  // Reset daily counter at midnight (00:00) every day, not on a rolling 24h basis
+  // This ensures you get exactly 85 emails per calendar day
+  const lastResetDate = new Date(config.lastDayReset);
+  const nowDate = new Date(now);
+  
+  // Get today's midnight in the same timezone
+  const todayMidnight = new Date(nowDate.getFullYear(), nowDate.getMonth(), nowDate.getDate(), 0, 0, 0, 0);
+  const lastResetMidnight = new Date(lastResetDate.getFullYear(), lastResetDate.getMonth(), lastResetDate.getDate(), 0, 0, 0, 0);
+  
+  // If we've crossed into a new day (different date), reset
+  if (lastResetMidnight < todayMidnight) {
     config.currentDaySent = 0;
-    config.lastDayReset = now;
+    config.lastDayReset = new Date(todayMidnight.getTime() + 24 * 60 * 60 * 1000); // Set to tomorrow's midnight for tracking
     updated = true;
+    console.log(`[Campaign Queue] Daily counter reset for campaign ${campaignId}. Last reset was ${lastResetMidnight.toISOString()}, now is ${nowDate.toISOString()}`);
   }
 
   if (updated) {
