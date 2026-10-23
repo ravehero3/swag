@@ -58,47 +58,63 @@ export default function JourneysTabLayout({
   const displayTemplate = template || selectedStep;
 
   const handleSaveStepEmail = async (data: { subject: string; preheader: string; blocks: any[]; headerOptions?: any; name?: string }) => {
-    if (!selectedStep || !detail?.journey?.id) return;
+    if (!selectedStep || !detail?.journey?.id) throw new Error("Journey nebo krok nebyl vybrán");
     const tplName = data.name || template?.name || `${detail.journey.name} — E-mail krok`;
 
-    if (selectedStep.template_id) {
-      const res = await fetch(`/api/marketing/templates/${selectedStep.template_id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          name: tplName,
-          subject: data.subject,
-          preheader: data.preheader,
-          blocks: data.blocks,
-          headerOptions: data.headerOptions,
-        }),
-      });
-      const resData = await res.json();
-      if (!res.ok) throw new Error(resData?.error || "Chyba při ukládání šablony");
-    } else {
-      const res = await fetch("/api/marketing/templates", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          name: tplName,
-          subject: data.subject,
-          preheader: data.preheader,
-          blocks: data.blocks,
-          headerOptions: data.headerOptions,
-        }),
-      });
-      const created = await res.json();
-      if (!res.ok) throw new Error(created?.error || "Chyba při vytváření šablony");
-      await fetch(`/api/marketing/journeys/${detail.journey.id}/steps/${selectedStep.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          templateId: created.id,
-        }),
-      });
+    try {
+      if (selectedStep.template_id) {
+        // PATCH existing template
+        const res = await fetch(`/api/marketing/templates/${selectedStep.template_id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            name: tplName,
+            subject: data.subject,
+            preheader: data.preheader,
+            blocks: data.blocks,
+            headerOptions: data.headerOptions,
+          }),
+        });
+        const resData = await res.json();
+        if (!res.ok) throw new Error(resData?.error || "Chyba při ukládání šablony");
+        console.log("[Journey Email Save] Template updated successfully", selectedStep.template_id);
+      } else {
+        // CREATE new template
+        const createRes = await fetch("/api/marketing/templates", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            name: tplName,
+            subject: data.subject,
+            preheader: data.preheader,
+            blocks: data.blocks,
+            headerOptions: data.headerOptions,
+          }),
+        });
+        const created = await createRes.json();
+        if (!createRes.ok) throw new Error(created?.error || "Chyba při vytváření šablony");
+        console.log("[Journey Email Save] Template created", created.id);
+        
+        // LINK template to step - THIS IS CRITICAL, MUST CHECK RESPONSE
+        const linkRes = await fetch(`/api/marketing/journeys/${detail.journey.id}/steps/${selectedStep.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            templateId: created.id,
+          }),
+        });
+        const linkData = await linkRes.json();
+        if (!linkRes.ok) {
+          throw new Error(linkData?.error || "Chyba při linkování šablony ke kroku");
+        }
+        console.log("[Journey Email Save] Template linked to step", created.id);
+      }
+    } catch (err) {
+      console.error("[Journey Email Save] Error:", err);
+      throw err;
     }
   };
 

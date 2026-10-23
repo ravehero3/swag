@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { VisualEmailBuilder } from "./VisualEmailBuilder.js";
 
 interface CompactEmailEditorProps {
@@ -13,6 +13,7 @@ interface CompactEmailEditorProps {
 /**
  * Wrapper for VisualEmailBuilder optimized for embedding in JourneysTabLayout and CampaignsTabLayout
  * Compresses spacing and ensures all sections fit within right panel
+ * Includes local draft backup to prevent data loss
  */
 export default function CompactEmailEditor({
   template,
@@ -22,6 +23,18 @@ export default function CompactEmailEditor({
   testSendEndpoint,
   onTestSend,
 }: CompactEmailEditorProps) {
+  const draftKeyRef = useRef<string>(`email_draft_${template?.id || template?.campaignEmailId || "new"}`);
+  const [hasDraft, setHasDraft] = useState(false);
+
+  // Check if there's a draft available on mount
+  useEffect(() => {
+    const draft = localStorage.getItem(draftKeyRef.current);
+    if (draft) {
+      setHasDraft(true);
+      console.log("[Draft] Found auto-saved draft for", draftKeyRef.current);
+    }
+  }, [template?.id]);
+
   return (
     <div
       style={{
@@ -33,6 +46,41 @@ export default function CompactEmailEditor({
         overflow: "hidden",
       }}
     >
+      {/* Show draft recovery option */}
+      {hasDraft && (
+        <div style={{
+          background: "rgba(249, 168, 37, 0.15)",
+          border: "1px solid rgba(249, 168, 37, 0.3)",
+          borderRadius: "4px",
+          padding: "8px 12px",
+          marginBottom: "8px",
+          fontSize: "12px",
+          color: "#f9a825",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center"
+        }}>
+          <span>💾 <strong>Byl nalezen automaticky uložený koncept e-mailu.</strong> Pokud jste ztratili změny, obnov-ji-li browser cache.</span>
+          <button
+            onClick={() => {
+              localStorage.removeItem(draftKeyRef.current);
+              setHasDraft(false);
+            }}
+            style={{
+              background: "transparent",
+              border: "1px solid rgba(249, 168, 37, 0.5)",
+              color: "#f9a825",
+              padding: "4px 8px",
+              borderRadius: "3px",
+              cursor: "pointer",
+              fontSize: "11px"
+            }}
+          >
+            Vymazat
+          </button>
+        </div>
+      )}
+
       {/* Compact wrapper that constrains VisualEmailBuilder */}
       <div
         style={{
@@ -89,10 +137,22 @@ export default function CompactEmailEditor({
             initialHeaderConfig={template?.headerOptions || template?.header_options}
             title={template?.name || template?.subject || "Editor e-mailu"}
             embedded={true}
+            onAutoSave={(data: any) => {
+              // Save draft to localStorage whenever data changes
+              try {
+                localStorage.setItem(draftKeyRef.current, JSON.stringify(data));
+                console.log("[Draft] Auto-saved draft to localStorage");
+              } catch (e) {
+                console.error("[Draft] Failed to save draft:", e);
+              }
+            }}
             onSave={async (data: { subject: string; preheader: string; blocks: any[]; headerOptions?: any; name?: string }) => {
               try {
                 if (onSave) {
                   await onSave(data);
+                  // Only clear draft after successful save
+                  localStorage.removeItem(draftKeyRef.current);
+                  setHasDraft(false);
                   alert("✅ Změny v e-mailu byly úspěšně uloženy!");
                   onRefresh();
                   return;
@@ -115,6 +175,10 @@ export default function CompactEmailEditor({
                 });
                 const resData = await res.json();
                 if (!res.ok) throw new Error(resData?.error || "Chyba při ukládání");
+                
+                // Clear draft only after successful save
+                localStorage.removeItem(draftKeyRef.current);
+                setHasDraft(false);
                 alert("✅ Změny v e-mailu byly úspěšně uloženy!");
                 onRefresh();
               } catch (err: any) {

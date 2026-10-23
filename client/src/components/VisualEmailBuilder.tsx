@@ -247,6 +247,12 @@ interface VisualEmailBuilderProps {
     headerOptions?: EmailHeaderConfig;
     name?: string;
   }) => Promise<void>;
+  onAutoSave?: (data: {
+    subject: string;
+    preheader: string;
+    blocks: EmailBlock[];
+    headerOptions?: EmailHeaderConfig;
+  }) => void;
   onClose: () => void;
   onTestSend?: (
     email: string,
