@@ -41,9 +41,9 @@ async function updateRateLimitCounters(
   // If we've crossed into a new day (different date), reset
   if (lastResetMidnight < todayMidnight) {
     config.currentDaySent = 0;
-    config.lastDayReset = new Date(todayMidnight.getTime() + 24 * 60 * 60 * 1000); // Set to tomorrow's midnight for tracking
+    config.lastDayReset = todayMidnight; // Set to TODAY's midnight so next check at midnight tomorrow will trigger reset
     updated = true;
-    console.log(`[Campaign Queue] Daily counter reset for campaign ${campaignId}. Last reset was ${lastResetMidnight.toISOString()}, now is ${nowDate.toISOString()}`);
+    console.log(`[Campaign Queue] Daily counter reset for campaign ${campaignId}. Current date: ${todayMidnight.toISOString()}, Previous reset: ${lastResetMidnight.toISOString()}`);
   }
 
   if (updated) {
