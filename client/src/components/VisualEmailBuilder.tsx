@@ -2332,6 +2332,10 @@ export function VisualEmailBuilder({
                     .catch(() => {});
                 }}
                 activeTab={activeInspectorTab}
+                onUndo={handleUndo}
+                onRedo={handleRedo}
+                canUndo={historyIndex > 0}
+                canRedo={historyIndex < history.length - 1}
               />
             </div>
           ) : (
@@ -3487,6 +3491,10 @@ function BlockInspector({
   promoCodes,
   onPromoCodesRefresh,
   activeTab,
+  onUndo,
+  onRedo,
+  canUndo = false,
+  canRedo = false,
 }: {
   block: EmailBlock;
   onChange: (patch: Partial<EmailBlock>) => void;
@@ -3494,6 +3502,10 @@ function BlockInspector({
   promoCodes: PromoCodeItem[];
   onPromoCodesRefresh: () => void;
   activeTab: "content" | "style";
+  onUndo?: () => void;
+  onRedo?: () => void;
+  canUndo?: boolean;
+  canRedo?: boolean;
 }) {
   const inputStyle: React.CSSProperties = {
     width: "100%",
@@ -3505,6 +3517,39 @@ function BlockInspector({
     fontSize: "12px",
     boxSizing: "border-box",
   };
+
+  const renderUndoButton = (label: string, extraNote?: string) => (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "4px" }}>
+      <label style={{ fontSize: "11px", color: "#888", fontWeight: 600 }}>{label}</label>
+      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+        {onUndo && (
+          <button
+            type="button"
+            onClick={onUndo}
+            disabled={!canUndo}
+            title="Vrátit změnu textu (Ctrl+Z)"
+            style={{
+              background: canUndo ? "rgba(11, 153, 252, 0.15)" : "rgba(255,255,255,0.04)",
+              border: canUndo ? "1px solid rgba(11, 153, 252, 0.4)" : "1px solid rgba(255,255,255,0.08)",
+              borderRadius: "4px",
+              padding: "2px 8px",
+              fontSize: "10px",
+              fontWeight: 600,
+              color: canUndo ? "#0B99FC" : "#555",
+              cursor: canUndo ? "pointer" : "not-allowed",
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+              transition: "all 150ms",
+            }}
+          >
+            <Undo2 size={11} /> Zpět
+          </button>
+        )}
+        {extraNote && <span style={{ fontSize: "10px", color: "#666" }}>{extraNote}</span>}
+      </div>
+    </div>
+  );
 
   const [isRegisteringPromo, setIsRegisteringPromo] = useState(false);
   const [promoRegisterSuccess, setPromoRegisterSuccess] = useState<string | null>(null);
@@ -3581,17 +3626,65 @@ function BlockInspector({
         <span>
           Nastavení: <strong style={{ color: "#0B99FC" }}>{BLOCK_TYPE_LABELS[block.type] || block.type}</strong>
         </span>
-        <span
-          style={{
-            fontSize: "10px",
-            background: "rgba(255,255,255,0.06)",
-            padding: "2px 6px",
-            borderRadius: "4px",
-            color: "#888",
-          }}
-        >
-          #{block.id.slice(-4)}
-        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          {onUndo && (
+            <button
+              type="button"
+              onClick={onUndo}
+              disabled={!canUndo}
+              title="Vrátit změnu textu (Ctrl+Z)"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "3px",
+                padding: "3px 8px",
+                fontSize: "11px",
+                fontWeight: 600,
+                border: canUndo ? "1px solid rgba(11, 153, 252, 0.4)" : "1px solid rgba(255,255,255,0.08)",
+                borderRadius: "4px",
+                cursor: canUndo ? "pointer" : "not-allowed",
+                background: canUndo ? "rgba(11, 153, 252, 0.15)" : "transparent",
+                color: canUndo ? "#0B99FC" : "#555",
+              }}
+            >
+              <Undo2 size={12} /> Zpět
+            </button>
+          )}
+          {onRedo && (
+            <button
+              type="button"
+              onClick={onRedo}
+              disabled={!canRedo}
+              title="Vpřed (Ctrl+Y)"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "3px",
+                padding: "3px 8px",
+                fontSize: "11px",
+                fontWeight: 600,
+                border: "1px solid rgba(255,255,255,0.08)",
+                borderRadius: "4px",
+                cursor: canRedo ? "pointer" : "not-allowed",
+                background: "transparent",
+                color: canRedo ? "#ccc" : "#444",
+              }}
+            >
+              <Redo2 size={12} /> Vpřed
+            </button>
+          )}
+          <span
+            style={{
+              fontSize: "10px",
+              background: "rgba(255,255,255,0.06)",
+              padding: "2px 6px",
+              borderRadius: "4px",
+              color: "#888",
+            }}
+          >
+            #{block.id.slice(-4)}
+          </span>
+        </div>
       </div>
 
       {activeTab === "style" ? (
@@ -3933,9 +4026,7 @@ function BlockInspector({
           {block.type === "heading" && (
             <>
               <div>
-                <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "4px" }}>
-                  Text nadpisu
-                </label>
+                {renderUndoButton("Text nadpisu")}
                 <input
                   value={block.headingText || ""}
                   onChange={(e) => onChange({ headingText: e.target.value })}
@@ -3963,17 +4054,7 @@ function BlockInspector({
           {block.type === "paragraph" && (
             <>
               <div>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    marginBottom: "4px",
-                  }}
-                >
-                  <label style={{ fontSize: "11px", color: "#888" }}>Text odstavce</label>
-                  <span style={{ fontSize: "10px", color: "#666" }}>Podporuje proměnné</span>
-                </div>
+                {renderUndoButton("Text odstavce", "Podporuje proměnné")}
                 <textarea
                   rows={6}
                   value={block.paragraphText || ""}
@@ -4009,9 +4090,7 @@ function BlockInspector({
           {block.type === "button" && (
             <>
               <div>
-                <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "4px" }}>
-                  Text tlačítka
-                </label>
+                {renderUndoButton("Text tlačítka")}
                 <input
                   value={block.buttonText || ""}
                   onChange={(e) => onChange({ buttonText: e.target.value })}
@@ -4357,7 +4436,7 @@ function BlockInspector({
           {block.type === "quote" && (
             <>
               <div>
-                <label style={{ display: "block", fontSize: "11px", color: "#888", marginBottom: "4px" }}>Text citátu</label>
+                {renderUndoButton("Text citátu")}
                 <textarea value={block.quoteText || ""} onChange={(e) => onChange({ quoteText: e.target.value })} style={{ ...inputStyle, minHeight: "80px" }} />
               </div>
               <div>

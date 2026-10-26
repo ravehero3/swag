@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { ArrowRight, ShieldCheck, Zap, Clock, Gauge, Mail, Users, CheckCircle2, AlertCircle } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { ArrowRight, ShieldCheck, Zap, Clock, Gauge, Mail, Users, CheckCircle2, AlertCircle, Eye, EyeOff, ChevronDown, ChevronUp, XCircle } from "lucide-react";
 
 interface SlowDripData {
   total: number;
@@ -15,7 +15,6 @@ interface Campaign {
   status: string;
 }
 
-
 interface CampaignEmail {
   id: number;
   subject: string;
@@ -25,8 +24,24 @@ interface CampaignEmail {
   header_options?: any;
 }
 
+interface RecentSend {
+  recipient: string;
+  sent_at: string | null;
+  status: string;
+}
+
 interface SlowDripTabProps {
   onNavigateToCampaigns?: () => void;
+}
+
+/** Mask an email address: show first 3 chars + ••• + @domain */
+function maskEmail(email: string): string {
+  const at = email.indexOf("@");
+  if (at <= 0) return email;
+  const local = email.slice(0, at);
+  const domain = email.slice(at);
+  const visible = local.slice(0, Math.min(3, local.length));
+  return `${visible}${"•".repeat(Math.max(2, local.length - visible.length))}${domain}`;
 }
 
 export function SlowDripTab({ onNavigateToCampaigns }: SlowDripTabProps) {
@@ -40,6 +55,13 @@ export function SlowDripTab({ onNavigateToCampaigns }: SlowDripTabProps) {
   const [campaignEmail, setCampaignEmail] = useState<CampaignEmail | null>(null);
   const [emailPreviewHtml, setEmailPreviewHtml] = useState<string | null>(null);
 
+
+  // Recent sends state
+  const [recentSends, setRecentSends] = useState<RecentSend[]>([]);
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewHtml, setPreviewHtml] = useState<string>("");
+  const [loadingPreview, setLoadingPreview] = useState(false);
+  const [previewError, setPreviewError] = useState<string | null>(null);
 
   const REFRESH_INTERVAL = 10;
   const LIMIT_H = 4;
@@ -131,6 +153,52 @@ export function SlowDripTab({ onNavigateToCampaigns }: SlowDripTabProps) {
     return () => clearInterval(interval);
   }, [selectedCampaignId]);
 
+  // Load recent sends
+  useEffect(() => {
+    if (!selectedCampaignId) return;
+
+    const loadRecentSends = async () => {
+      try {
+        const res = await fetch(`/api/marketing/campaigns/${selectedCampaignId}/recent-sends?limit=25`, {
+          credentials: "include",
+        });
+        if (res.ok) {
+          const json = await res.json();
+          setRecentSends(json.sends || []);
+        }
+      } catch (err) {
+        console.error("Error loading recent sends:", err);
+      }
+    };
+
+    loadRecentSends();
+    const interval = setInterval(loadRecentSends, REFRESH_INTERVAL * 1000);
+    return () => clearInterval(interval);
+  }, [selectedCampaignId]);
+
+  // Load email preview when toggled on
+  useEffect(() => {
+    if (!showPreview || !selectedCampaignId) return;
+    const loadPreview = async () => {
+      try {
+        setLoadingPreview(true);
+        setPreviewError(null);
+        const res = await fetch(`/api/marketing/campaigns/${selectedCampaignId}/preview`, {
+          credentials: "include",
+        });
+        if (!res.ok) throw new Error("Nepodařilo se načíst náhled");
+        const html = await res.text();
+        setPreviewHtml(html);
+      } catch (err) {
+        setPreviewError("Chyba při načítání náhledu e-mailu.");
+        console.error(err);
+      } finally {
+        setLoadingPreview(false);
+      }
+    };
+    loadPreview();
+  }, [showPreview, selectedCampaignId]);
+
   // Countdown timer
   useEffect(() => {
     const interval = setInterval(() => {
@@ -152,6 +220,14 @@ export function SlowDripTab({ onNavigateToCampaigns }: SlowDripTabProps) {
     if (n === 1) return one;
     if (n >= 2 && n <= 4) return few;
     return many;
+  };
+
+  const formatRelativeTime = (ts: string | null) => {
+    if (!ts) return "–";
+    const diff = Math.floor((Date.now() - new Date(ts).getTime()) / 1000);
+    if (diff < 60) return `před ${diff}s`;
+    if (diff < 3600) return `před ${Math.floor(diff / 60)}m`;
+    return `před ${Math.floor(diff / 3600)}h`;
   };
 
   // Loading state
@@ -641,6 +717,229 @@ export function SlowDripTab({ onNavigateToCampaigns }: SlowDripTabProps) {
           </div>
         </div>
 
+        {/* ── NEW: Recent Sends Bar ─────────────────────────────────────── */}
+        <div style={{ borderBottom: "1px solid #222" }}>
+          {/* Section label */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "14px 24px 10px",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <Mail size={13} color="#0B99FC" />
+              <span style={{ fontSize: "11px", textTransform: "uppercase", color: "#888", fontWeight: 700, letterSpacing: "0.08em" }}>
+                Naposledy odesláno
+              </span>
+              {recentSends.length > 0 && (
+                <span
+                  style={{
+                    background: "rgba(11,153,252,0.15)",
+                    border: "1px solid rgba(11,153,252,0.3)",
+                    borderRadius: "999px",
+                    padding: "1px 7px",
+                    fontSize: "10px",
+                    color: "#0B99FC",
+                    fontWeight: 700,
+                    fontFamily: "monospace",
+                  }}
+                >
+                  {recentSends.length}
+                </span>
+              )}
+            </div>
+            <span style={{ fontSize: "10px", color: "#444", fontFamily: "monospace" }}>
+              live · obnovení za {nextUpdateIn}s
+            </span>
+          </div>
+
+          {/* Email chips */}
+          {recentSends.length === 0 ? (
+            <div style={{ padding: "12px 24px 16px", fontSize: "12px", color: "#444", fontStyle: "italic" }}>
+              Zatím žádné e-maily…
+            </div>
+          ) : (
+            <div
+              style={{
+                overflowX: "auto",
+                paddingBottom: "16px",
+                paddingLeft: "24px",
+                paddingRight: "24px",
+              }}
+            >
+              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                {recentSends.map((s, i) => (
+                  <div
+                    key={i}
+                    title={`${s.recipient} · ${s.sent_at ? new Date(s.sent_at).toLocaleString("cs-CZ") : "–"}`}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      padding: "5px 10px",
+                      background: s.status === "failed" ? "rgba(255,82,82,0.08)" : "rgba(11,153,252,0.07)",
+                      border: `1px solid ${s.status === "failed" ? "rgba(255,82,82,0.25)" : "rgba(11,153,252,0.2)"}`,
+                      borderRadius: "6px",
+                      fontSize: "11px",
+                      fontFamily: "monospace",
+                      color: s.status === "failed" ? "#ff7070" : "#8dcfff",
+                      flexShrink: 0,
+                    }}
+                  >
+                    {s.status === "failed" ? (
+                      <XCircle size={10} color="#ff5252" style={{ flexShrink: 0 }} />
+                    ) : (
+                      <CheckCircle2 size={10} color="#0B99FC" style={{ flexShrink: 0 }} />
+                    )}
+                    <span>{maskEmail(s.recipient)}</span>
+                    <span style={{ color: "#555", fontSize: "10px" }}>{formatRelativeTime(s.sent_at)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ── NEW: Email Preview Toggle ─────────────────────────────────── */}
+        <div>
+          <button
+            onClick={() => {
+              setShowPreview((v) => !v);
+              // reset preview html when toggling campaign
+              if (showPreview) setPreviewHtml("");
+            }}
+            style={{
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "14px 24px",
+              background: "none",
+              border: "none",
+              borderBottom: showPreview ? "1px solid #222" : "none",
+              cursor: "pointer",
+              color: "#fff",
+              textAlign: "left",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.02)";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.background = "none";
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <Eye size={13} color="#f9a825" />
+              <span style={{ fontSize: "11px", textTransform: "uppercase", color: "#888", fontWeight: 700, letterSpacing: "0.08em" }}>
+                Náhled odesílaného e-mailu
+              </span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "11px", color: "#555" }}>
+              <span>{showPreview ? "Skrýt" : "Zobrazit"}</span>
+              {showPreview ? <ChevronUp size={13} color="#555" /> : <ChevronDown size={13} color="#555" />}
+            </div>
+          </button>
+
+          {showPreview && (
+            <div style={{ padding: "20px 24px" }}>
+              {loadingPreview ? (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    height: "180px",
+                    color: "#555",
+                    fontSize: "12px",
+                    gap: "8px",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: "14px",
+                      height: "14px",
+                      borderRadius: "50%",
+                      border: "2px solid #333",
+                      borderTopColor: "#0B99FC",
+                      animation: "sdSpin 0.7s linear infinite",
+                    }}
+                  />
+                  Načítám náhled e-mailu…
+                </div>
+              ) : previewError ? (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    padding: "16px",
+                    background: "rgba(255,82,82,0.06)",
+                    border: "1px solid rgba(255,82,82,0.2)",
+                    borderRadius: "8px",
+                    color: "#ff7070",
+                    fontSize: "12px",
+                  }}
+                >
+                  <AlertCircle size={14} style={{ flexShrink: 0 }} />
+                  {previewError}
+                </div>
+              ) : previewHtml ? (
+                <div
+                  style={{
+                    borderRadius: "8px",
+                    overflow: "hidden",
+                    border: "1px solid #2a2a2a",
+                  }}
+                >
+                  {/* Browser-style chrome bar */}
+                  <div
+                    style={{
+                      background: "#1a1a1a",
+                      padding: "8px 14px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                      borderBottom: "1px solid #2a2a2a",
+                    }}
+                  >
+                    <div style={{ display: "flex", gap: "5px" }}>
+                      <span style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#ff5252", display: "block" }} />
+                      <span style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#f9a825", display: "block" }} />
+                      <span style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#24e053", display: "block" }} />
+                    </div>
+                    <div
+                      style={{
+                        flex: 1,
+                        background: "#111",
+                        borderRadius: "4px",
+                        padding: "4px 10px",
+                        fontSize: "10px",
+                        color: "#555",
+                        fontFamily: "monospace",
+                      }}
+                    >
+                      {campaigns.find((c) => c.id === selectedCampaignId)?.name || "Kampaň"} — náhled e-mailu
+                    </div>
+                  </div>
+                  <iframe
+                    srcDoc={previewHtml}
+                    style={{
+                      width: "100%",
+                      border: "none",
+                      background: "#fff",
+                      minHeight: "520px",
+                      display: "block",
+                    }}
+                    title="Náhled e-mailu kampaně"
+                  />
+                </div>
+              ) : null}
+            </div>
+          )}
+        </div>
+
         {/* Refresh timer */}
         <div
           style={{
@@ -653,6 +952,7 @@ export function SlowDripTab({ onNavigateToCampaigns }: SlowDripTabProps) {
             fontSize: "11px",
             color: "#666",
             position: "relative",
+            borderTop: "1px solid #1a1a1a",
           }}
         >
           <div
@@ -670,6 +970,14 @@ export function SlowDripTab({ onNavigateToCampaigns }: SlowDripTabProps) {
           <span>Další kontrola za {nextUpdateIn} s</span>
         </div>
       </section>
+
+      {/* Keyframe animations */}
+      <style>{`
+        @keyframes sdSpin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }
+

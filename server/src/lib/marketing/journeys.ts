@@ -212,17 +212,31 @@ export async function processEnrollment(enrollment: Enrollment): Promise<void> {
     try {
       if (step.step_type === "email") {
         const eligibility = isMarketingEligible(subscriber);
+        const config = (step.configuration || {}) as any;
+        const hasCustomBlocks = config.blocks && Array.isArray(config.blocks) && config.blocks.length > 0;
+        
         if (!eligibility.eligible) {
           console.log(`[Marketing] email.skipped subscriber=${subscriber.id} step=${step.id} reason=${eligibility.reason}`);
-        } else if (!step.template_id) {
-          console.warn(`[Marketing] journey step ${step.id} has no template_id — skipping send`);
+        } else if (!step.template_id && !hasCustomBlocks) {
+          console.warn(`[Marketing] journey step ${step.id} has no template_id and no blocks — skipping send`);
         } else {
+          const customSubject = config.subject || undefined;
+          const customPreheader = config.preheader || undefined;
+          let customHtml: string | undefined = undefined;
+          if (hasCustomBlocks) {
+            const { compileBlocksToHtml } = await import("./blockCompiler.js");
+            customHtml = compileBlocksToHtml(config.blocks);
+          }
           await sendMarketingEmail({
             subscriber,
             templateId: step.template_id,
             journeyId: currentEnrollment.journey_id,
             journeyStepId: step.id,
             enrollmentId: currentEnrollment.id,
+            customSubject,
+            customPreheader,
+            customHtml,
+            headerOptions: config.headerOptions || config.header_options,
             idempotencyKey: `journey/${currentEnrollment.id}/step/${step.id}`,
           });
         }

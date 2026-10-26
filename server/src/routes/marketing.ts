@@ -888,7 +888,17 @@ router.get("/journeys/:id", requireAdmin, async (req: Request, res: Response) =>
     const journeyRes = await pool.query("SELECT * FROM marketing_journeys WHERE id = $1", [req.params.id]);
     if (journeyRes.rows.length === 0) return res.status(404).json({ error: "Journey nenalezena" });
     const stepsRes = await pool.query(
-      "SELECT * FROM marketing_journey_steps WHERE journey_id = $1 ORDER BY position ASC",
+      `SELECT js.*, 
+              mt.name as template_name, 
+              COALESCE(NULLIF(js.configuration->>'subject', ''), mt.subject) as subject, 
+              COALESCE(NULLIF(js.configuration->>'preheader', ''), mt.preheader) as preheader, 
+              COALESCE(js.configuration->'blocks', mt.blocks) as blocks, 
+              COALESCE(js.configuration->'header_options', mt.header_options) as header_options,
+              mt.html_content as html_content
+       FROM marketing_journey_steps js
+       LEFT JOIN marketing_templates mt ON mt.id = js.template_id
+       WHERE js.journey_id = $1 
+       ORDER BY js.position ASC`,
       [req.params.id]
     );
     res.json({ journey: journeyRes.rows[0], steps: stepsRes.rows });
@@ -1052,15 +1062,41 @@ router.delete("/journeys/:id/steps/:stepId", requireAdmin, async (req: Request, 
 // buttons directly next to each email step.
 router.get("/journeys/:id/steps/:stepId/preview", requireAdmin, async (req: Request, res: Response) => {
   try {
-    const stepRes = await pool.query("SELECT template_id FROM marketing_journey_steps WHERE id = $1", [req.params.stepId]);
-    const templateId = stepRes.rows[0]?.template_id;
-    if (!templateId) return res.status(404).send("<p style='padding:40px;color:#666;font-family:sans-serif'>Tento krok nemá přiřazenou šablonu.</p>");
-    const tplRes = await pool.query("SELECT subject, html_content, preheader, blocks, header_options FROM marketing_templates WHERE id = $1", [templateId]);
-    if (tplRes.rows.length === 0) return res.status(404).send("<p style='padding:40px;color:#666;font-family:sans-serif'>Šablona nenalezena.</p>");
+    const stepRes = await pool.query("SELECT * FROM marketing_journey_steps WHERE id = $1", [req.params.stepId]);
+    const step = stepRes.rows[0];
+    if (!step) return res.status(404).send("<p style='padding:40px;color:#666;font-family:sans-serif'>Krok nenalezen.</p>");
+    
+    let subject = "Náhled e-mailu";
+    let preheader = null;
+    let blocks: any = [];
+    let htmlContent = "";
+    let headerOptions: any = {};
+
+    if (step.template_id) {
+      const tplRes = await pool.query("SELECT subject, html_content, preheader, blocks, header_options FROM marketing_templates WHERE id = $1", [step.template_id]);
+      if (tplRes.rows.length > 0) {
+        const t = tplRes.rows[0];
+        subject = t.subject || subject;
+        preheader = t.preheader;
+        blocks = t.blocks;
+        htmlContent = t.html_content;
+        headerOptions = t.header_options || {};
+      }
+    }
+
+    const config = step.configuration || {};
+    if (config.subject) subject = config.subject;
+    if (config.preheader) preheader = config.preheader;
+    if (config.blocks && Array.isArray(config.blocks) && config.blocks.length > 0) blocks = config.blocks;
+    if (config.headerOptions) headerOptions = config.headerOptions;
+
     const { renderTemplatePreview } = await import("../lib/marketing/sender.js");
     const { html } = renderTemplatePreview({
-      ...tplRes.rows[0],
-      headerOptions: tplRes.rows[0].header_options,
+      subject,
+      preheader,
+      blocks,
+      html_content: htmlContent,
+      headerOptions,
     });
     res.setHeader("Content-Type", "text/html");
     res.send(html);
@@ -2749,6 +2785,29 @@ router.get("/campaigns/:id/queue-status", requireAdmin, async (req: Request, res
   } catch (error) {
     console.error("Queue status error:", error);
     res.status(500).json({ error: "Chyba při načítání stavu front" });
+  }
+});
+
+// Recent sends — last N emails sent for a campaign (for the Slow Drip live feed)
+router.get("/campaigns/:id/recent-sends", requireAdmin, async (req: Request, res: Response) => {
+  try {
+    const campaignId = parseInt(req.params.id, 10);
+    const limit = Math.min(parseInt((req.query.limit as string) || "25", 10), 100);
+
+    const result = await pool.query(
+      `SELECT mes.recipient, mes.sent_at, mes.status
+       FROM marketing_email_sends mes
+       WHERE mes.campaign_id = $1
+         AND mes.status IN ('sent', 'failed')
+       ORDER BY COALESCE(mes.sent_at, mes.created_at) DESC
+       LIMIT $2`,
+      [campaignId, limit]
+    );
+
+    res.json({ sends: result.rows });
+  } catch (error) {
+    console.error("Recent sends error:", error);
+    res.status(500).json({ error: "Chyba při načítání posledních odeslaných e-mailů" });
   }
 });
 

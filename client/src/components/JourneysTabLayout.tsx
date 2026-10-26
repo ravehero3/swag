@@ -47,24 +47,44 @@ export default function JourneysTabLayout({
   onOpenVisualEditor,
   onRefresh,
 }: JourneysLayoutProps) {
-  const selectedStep = detail?.steps?.find((s: any) => s.id === selectedStepId);
+  const selectedStep = (selectedStepId ? detail?.steps?.find((s: any) => s.id === selectedStepId) : null)
+    || detail?.steps?.find((s: any) => s.step_type === "email")
+    || (detail?.steps?.length > 0 ? detail.steps[0] : null);
   const template = templates.find((t) => t.id === selectedStep?.template_id);
-  
   
   // Show editor if: step is selected AND it's an email step
   const isEmailSelected = selectedStep?.step_type === "email";
   
-  // If we have a template, use it. Otherwise use the step's data directly
-  const displayTemplate = template || selectedStep;
+  // Priority: step's custom blocks/subject (from db join or configuration) > linked template
+  const stepBlocks = selectedStep?.blocks || selectedStep?.configuration?.blocks;
+  const templateBlocks = template?.blocks;
+  const resolvedBlocks = (stepBlocks && Array.isArray(stepBlocks) && stepBlocks.length > 0)
+    ? stepBlocks
+    : (typeof stepBlocks === "string" ? (() => { try { return JSON.parse(stepBlocks); } catch { return []; } })() : null)
+    || (templateBlocks && Array.isArray(templateBlocks) && templateBlocks.length > 0 ? templateBlocks : null)
+    || (typeof templateBlocks === "string" ? (() => { try { return JSON.parse(templateBlocks); } catch { return []; } })() : null)
+    || [];
+
+  const displayTemplate = {
+    ...selectedStep,
+    ...(template || {}),
+    id: template?.id || selectedStep?.template_id || selectedStep?.id,
+    campaignEmailId: `journey-step-${selectedStep?.id}`,
+    name: template?.name || selectedStep?.template_name || `${detail?.journey?.name || "Journey"} — E-mail`,
+    subject: selectedStep?.subject || selectedStep?.configuration?.subject || template?.subject || "",
+    preheader: selectedStep?.preheader || selectedStep?.configuration?.preheader || template?.preheader || "",
+    blocks: resolvedBlocks,
+    headerOptions: selectedStep?.header_options || selectedStep?.configuration?.headerOptions || template?.header_options || template?.headerOptions,
+  };
 
   const handleSaveStepEmail = async (data: { subject: string; preheader: string; blocks: any[]; headerOptions?: any; name?: string }) => {
     if (!selectedStep || !detail?.journey?.id) throw new Error("Journey nebo krok nebyl vybrán");
     const tplName = data.name || template?.name || `${detail.journey.name} — E-mail krok`;
-
+    let activeTemplateId = selectedStep.template_id;
     try {
-      if (selectedStep.template_id) {
+      if (activeTemplateId) {
         // PATCH existing template
-        const res = await fetch(`/api/marketing/templates/${selectedStep.template_id}`, {
+        const res = await fetch(`/api/marketing/templates/${activeTemplateId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
@@ -78,7 +98,7 @@ export default function JourneysTabLayout({
         });
         const resData = await res.json();
         if (!res.ok) throw new Error(resData?.error || "Chyba při ukládání šablony");
-        console.log("[Journey Email Save] Template updated successfully", selectedStep.template_id);
+        console.log("[Journey Email Save] Template updated successfully", activeTemplateId);
       } else {
         // CREATE new template
         const createRes = await fetch("/api/marketing/templates", {
@@ -96,26 +116,29 @@ export default function JourneysTabLayout({
         const created = await createRes.json();
         if (!createRes.ok) throw new Error(created?.error || "Chyba při vytváření šablony");
         console.log("[Journey Email Save] Template created", created.id);
-        
-        // LINK template to step - THIS IS CRITICAL, MUST CHECK RESPONSE
-        const linkRes = await fetch(`/api/marketing/journeys/${detail.journey.id}/steps/${selectedStep.id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({
-            templateId: created.id,
-          }),
-        });
-        const linkData = await linkRes.json();
-        if (!linkRes.ok) {
-          throw new Error(linkData?.error || "Chyba při linkování šablony ke kroku");
-        }
-        console.log("[Journey Email Save] Template linked to step", created.id);
+        activeTemplateId = created.id;
       }
     } catch (err) {
       console.error("[Journey Email Save] Error:", err);
       throw err;
     }
+
+    // Always mirror save directly to the journey step's configuration as well
+    await fetch(`/api/marketing/journeys/${detail.journey.id}/steps/${selectedStep.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        templateId: activeTemplateId,
+        configuration: {
+          ...(selectedStep.configuration || {}),
+          subject: data.subject,
+          preheader: data.preheader,
+          blocks: data.blocks,
+          headerOptions: data.headerOptions,
+        },
+      }),
+    });
   };
 
   const handleTestSendStepEmail = async (email: string, subject: string, preheader: string, blocks: any[], headerOptions?: any) => {

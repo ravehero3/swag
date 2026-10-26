@@ -5115,6 +5115,444 @@ const PLACEHOLDER_GUIDE = [
   { ph: "{{CENA}}", desc: "Cena licence (automaticky)" },
 ];
 
+
+// ─── Generate License Modal ──────────────────────────────────────────────────
+
+interface GeneratedLicenseEntry {
+  id: string;
+  legalName: string;
+  artistName: string;
+  email: string;
+  beatTitle: string;
+  licenseId: number;
+  licenseName: string;
+  language: string;
+  price: number;
+  generatedAt: string;
+}
+
+interface GenerateLicenseModalProps {
+  license: LicenseType;
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+function GenerateLicenseModal({ license, isOpen, onClose }: GenerateLicenseModalProps) {
+  const [form, setForm] = useState({ legalName: "", artistName: "", email: "", beatTitle: "", language: "cs" });
+  const [generating, setGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [history, setHistory] = useState<GeneratedLicenseEntry[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
+  const fetchHistory = async () => {
+    setHistoryLoading(true);
+    try {
+      const res = await fetch("/api/admin/contracts/history", { credentials: "include" });
+      if (res.ok) {
+        const data = await res.json();
+        // Filter history to this license type
+        setHistory(Array.isArray(data) ? data.filter((h: GeneratedLicenseEntry) => h.licenseId === license.id) : []);
+      }
+    } catch { /* silent */ }
+    setHistoryLoading(false);
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchHistory();
+      setError(null);
+      setSuccessMsg(null);
+    }
+  }, [isOpen, license.id]);
+
+  const handleGenerate = async () => {
+    if (!form.legalName.trim() || !form.artistName.trim() || !form.email.trim() || !form.beatTitle.trim()) {
+      setError("Vyplňte všechna povinná pole.");
+      return;
+    }
+    setError(null);
+    setGenerating(true);
+    try {
+      const res = await fetch("/api/admin/contracts/generate-custom", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          legalName: form.legalName.trim(),
+          artistName: form.artistName.trim(),
+          email: form.email.trim(),
+          beatTitle: form.beatTitle.trim(),
+          licenseId: license.id,
+          language: form.language,
+          fallbackTemplate: license.contract_template,
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Chyba při generování licence");
+      }
+      // Download the PDF
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      const safeArtist = form.artistName.replace(/[^a-zA-Z0-9_\-]/g, "_").slice(0, 40);
+      const safeBeat = form.beatTitle.replace(/[^a-zA-Z0-9_\-]/g, "_").slice(0, 40);
+      a.download = `Licence_${safeArtist}_${safeBeat}_${form.language.toUpperCase()}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      setSuccessMsg(`✓ Licence vygenerována pro ${form.artistName}`);
+      // Refresh history
+      await fetchHistory();
+    } catch (err: any) {
+      setError(err.message || "Chyba při generování");
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  const inputStyle: React.CSSProperties = {
+    width: "100%",
+    background: "rgba(255,255,255,0.06)",
+    border: "1px solid rgba(255,255,255,0.12)",
+    borderRadius: "10px",
+    color: "#ffffff",
+    padding: "10px 14px",
+    fontSize: "13px",
+    fontFamily: "inherit",
+    outline: "none",
+    boxSizing: "border-box",
+    transition: "border-color 150ms ease",
+  };
+  const labelStyle: React.CSSProperties = {
+    display: "block",
+    fontSize: "11px",
+    fontWeight: 600,
+    color: "rgba(255,255,255,0.45)",
+    textTransform: "uppercase",
+    letterSpacing: "0.06em",
+    marginBottom: "6px",
+  };
+
+  const formatDate = (iso: string) => {
+    const d = new Date(iso);
+    return d.toLocaleDateString("cs-CZ", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  };
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed", inset: 0,
+        background: "rgba(0,0,0,0.88)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        zIndex: 99999,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "20px",
+        animation: "genModalBgFade 0.2s ease-out",
+      }}
+    >
+      <style>{`
+        @keyframes genModalBgFade { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes genModalSlideUp { from { opacity: 0; transform: translateY(20px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .gen-input:focus { border-color: rgba(255,255,255,0.35) !important; background: rgba(255,255,255,0.09) !important; }
+        .gen-lang-btn { transition: all 150ms ease; cursor: pointer; }
+        .gen-lang-btn:hover { background: rgba(255,255,255,0.1) !important; }
+        .gen-history-row:hover { background: rgba(255,255,255,0.04) !important; }
+      `}</style>
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          background: "#0d0d0d",
+          border: "1px solid rgba(255,255,255,0.1)",
+          borderRadius: "20px",
+          width: "min(100%, 680px)",
+          maxHeight: "90vh",
+          display: "flex",
+          flexDirection: "column",
+          boxShadow: "0 32px 80px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.08)",
+          animation: "genModalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+          overflow: "hidden",
+        }}
+      >
+        {/* Header */}
+        <div style={{
+          display: "flex", alignItems: "center", gap: "14px",
+          padding: "20px 24px",
+          borderBottom: "1px solid rgba(255,255,255,0.07)",
+          flexShrink: 0,
+        }}>
+          <div style={{
+            width: "36px", height: "36px", borderRadius: "10px",
+            background: "linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.04))",
+            border: "1px solid rgba(255,255,255,0.12)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            flexShrink: 0,
+          }}>
+            <FileText size={16} style={{ color: "#ffffff" }} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: "15px", fontWeight: 700, color: "#ffffff", letterSpacing: "-0.02em" }}>
+              Generovat licenci
+            </div>
+            <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.4)", marginTop: "2px" }}>
+              {license.name} · {Number(license.price).toLocaleString("cs-CZ")} CZK
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: "8px", padding: "6px 10px", color: "rgba(255,255,255,0.6)",
+              cursor: "pointer", fontSize: "16px", lineHeight: 1,
+              transition: "all 150ms ease",
+            }}
+          >×</button>
+        </div>
+
+        {/* Body */}
+        <div style={{ overflowY: "auto", flex: 1 }}>
+          {/* Form section */}
+          <div style={{ padding: "24px 24px 0" }}>
+            <div style={{ fontSize: "11px", fontWeight: 600, color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "16px" }}>
+              Údaje zákazníka
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+              <div>
+                <label style={labelStyle}>Právní jméno *</label>
+                <input
+                  className="gen-input"
+                  style={inputStyle}
+                  placeholder="Jan Novák"
+                  value={form.legalName}
+                  onChange={e => setForm({ ...form, legalName: e.target.value })}
+                />
+              </div>
+              <div>
+                <label style={labelStyle}>Umělecké jméno *</label>
+                <input
+                  className="gen-input"
+                  style={inputStyle}
+                  placeholder="YourArtistName"
+                  value={form.artistName}
+                  onChange={e => setForm({ ...form, artistName: e.target.value })}
+                />
+              </div>
+              <div>
+                <label style={labelStyle}>E-mail *</label>
+                <input
+                  className="gen-input"
+                  type="email"
+                  style={inputStyle}
+                  placeholder="artist@email.com"
+                  value={form.email}
+                  onChange={e => setForm({ ...form, email: e.target.value })}
+                />
+              </div>
+              <div>
+                <label style={labelStyle}>Název beatu / díla *</label>
+                <input
+                  className="gen-input"
+                  style={inputStyle}
+                  placeholder="Název díla"
+                  value={form.beatTitle}
+                  onChange={e => setForm({ ...form, beatTitle: e.target.value })}
+                />
+              </div>
+            </div>
+
+            {/* Language selector */}
+            <div style={{ marginTop: "16px" }}>
+              <label style={labelStyle}>Jazyk smlouvy</label>
+              <div style={{ display: "flex", gap: "8px" }}>
+                {[
+                  { value: "cs", label: "🇨🇿 Česky", sublabel: "Czech" },
+                  { value: "en", label: "🇬🇧 English", sublabel: "Anglicky" },
+                ].map(opt => (
+                  <button
+                    key={opt.value}
+                    className="gen-lang-btn"
+                    onClick={() => setForm({ ...form, language: opt.value })}
+                    style={{
+                      padding: "10px 18px",
+                      borderRadius: "10px",
+                      border: form.language === opt.value
+                        ? "1px solid rgba(255,255,255,0.35)"
+                        : "1px solid rgba(255,255,255,0.1)",
+                      background: form.language === opt.value
+                        ? "rgba(255,255,255,0.12)"
+                        : "rgba(255,255,255,0.04)",
+                      color: form.language === opt.value ? "#ffffff" : "rgba(255,255,255,0.55)",
+                      fontSize: "13px",
+                      fontWeight: form.language === opt.value ? 600 : 400,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: "2px",
+                      minWidth: "110px",
+                    }}
+                  >
+                    <span>{opt.label}</span>
+                    <span style={{ fontSize: "10px", opacity: 0.6 }}>{opt.sublabel}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Error / Success */}
+            {error && (
+              <div style={{
+                marginTop: "14px", padding: "10px 14px",
+                background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)",
+                borderRadius: "10px", color: "#ff6b6b", fontSize: "13px",
+              }}>
+                {error}
+              </div>
+            )}
+            {successMsg && (
+              <div style={{
+                marginTop: "14px", padding: "10px 14px",
+                background: "rgba(36,224,83,0.08)", border: "1px solid rgba(36,224,83,0.2)",
+                borderRadius: "10px", color: "#24e053", fontSize: "13px",
+              }}>
+                {successMsg}
+              </div>
+            )}
+
+            {/* Generate button */}
+            <button
+              onClick={handleGenerate}
+              disabled={generating}
+              style={{
+                marginTop: "20px",
+                width: "100%",
+                padding: "13px",
+                background: generating ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #ffffff 0%, #d0d0d0 100%)",
+                color: generating ? "rgba(255,255,255,0.4)" : "#000000",
+                border: "none",
+                borderRadius: "12px",
+                fontSize: "14px",
+                fontWeight: 700,
+                cursor: generating ? "not-allowed" : "pointer",
+                letterSpacing: "-0.01em",
+                transition: "all 200ms ease",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "8px",
+                boxShadow: generating ? "none" : "0 4px 20px rgba(255,255,255,0.15)",
+              }}
+            >
+              {generating ? (
+                <>
+                  <div style={{ width: "14px", height: "14px", borderRadius: "50%", border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", animation: "spin 0.8s linear infinite" }} />
+                  Generuji PDF...
+                </>
+              ) : (
+                <>
+                  <FileText size={15} />
+                  Vygenerovat a stáhnout licenci ({form.language === "en" ? "EN" : "CZ"})
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* History section */}
+          <div style={{ padding: "24px 24px 24px", marginTop: "8px" }}>
+            <div style={{
+              borderTop: "1px solid rgba(255,255,255,0.07)",
+              paddingTop: "20px",
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "14px" }}>
+                <div style={{ fontSize: "11px", fontWeight: 600, color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                  Historie vygenerovaných licencí
+                </div>
+                <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.2)", fontWeight: 400 }}>
+                  ({history.length} pro tuto licenci)
+                </div>
+              </div>
+
+              {historyLoading ? (
+                <div style={{ textAlign: "center", padding: "20px", color: "rgba(255,255,255,0.25)", fontSize: "12px" }}>
+                  Načítám historii...
+                </div>
+              ) : history.length === 0 ? (
+                <div style={{
+                  textAlign: "center", padding: "24px",
+                  background: "rgba(255,255,255,0.02)",
+                  border: "1px dashed rgba(255,255,255,0.08)",
+                  borderRadius: "12px",
+                  color: "rgba(255,255,255,0.25)", fontSize: "13px",
+                }}>
+                  Zatím žádné vygenerované licence pro tento typ
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px", maxHeight: "260px", overflowY: "auto" }}>
+                  {history.map(entry => (
+                    <div
+                      key={entry.id}
+                      className="gen-history-row"
+                      style={{
+                        padding: "10px 14px",
+                        background: "rgba(255,255,255,0.025)",
+                        border: "1px solid rgba(255,255,255,0.06)",
+                        borderRadius: "10px",
+                        display: "grid",
+                        gridTemplateColumns: "1fr auto",
+                        gap: "8px",
+                        alignItems: "center",
+                        transition: "background 150ms ease",
+                      }}
+                    >
+                      <div>
+                        <div style={{ fontSize: "13px", fontWeight: 600, color: "#ffffff", marginBottom: "3px" }}>
+                          {entry.artistName}
+                          <span style={{ fontWeight: 400, color: "rgba(255,255,255,0.4)", marginLeft: "8px", fontSize: "12px" }}>
+                            ({entry.legalName})
+                          </span>
+                        </div>
+                        <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.35)" }}>
+                          {entry.beatTitle} · {entry.email}
+                        </div>
+                      </div>
+                      <div style={{ textAlign: "right", flexShrink: 0 }}>
+                        <div style={{
+                          fontSize: "10px",
+                          fontWeight: 600,
+                          padding: "2px 8px",
+                          borderRadius: "9999px",
+                          background: entry.language === "en" ? "rgba(59,130,246,0.15)" : "rgba(255,255,255,0.06)",
+                          color: entry.language === "en" ? "#60a5fa" : "rgba(255,255,255,0.5)",
+                          border: `0.5px solid ${entry.language === "en" ? "rgba(59,130,246,0.3)" : "rgba(255,255,255,0.1)"}`,
+                          marginBottom: "4px",
+                          display: "inline-block",
+                        }}>
+                          {entry.language.toUpperCase()}
+                        </div>
+                        <div style={{ fontSize: "10px", color: "rgba(255,255,255,0.25)", display: "block" }}>
+                          {formatDate(entry.generatedAt)}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function LicensesTab({ licenses, onRefresh }: any) {
   const emptyForm = { name: "", description: "", price: 0, file_types: [] as string[], terms_text: "", is_negotiable: false, is_active: true, contract_template: DEFAULT_CONTRACT_TEMPLATE };
   const [showCreate, setShowCreate] = useState(false);
@@ -5124,6 +5562,7 @@ function LicensesTab({ licenses, onRefresh }: any) {
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [previewHtml, setPreviewHtml] = useState<string | null>(null);
+  const [generateModalLicense, setGenerateModalLicense] = useState<LicenseType | null>(null);
 
   const fieldStyle: React.CSSProperties = {
     width: "100%",
@@ -5569,7 +6008,7 @@ function LicensesTab({ licenses, onRefresh }: any) {
                           {license.contract_template.slice(0, 200)}...
                         </div>
                       )}
-                      <div style={{ display: "flex", gap: "10px" }}>
+                      <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
                         <button style={{
                           background: "rgba(255, 255, 255, 0.08)",
                           border: "0.5px solid rgba(255, 255, 255, 0.15)",
@@ -5594,6 +6033,27 @@ function LicensesTab({ licenses, onRefresh }: any) {
                             transition: "all 140ms ease",
                           }} onClick={() => previewContract(license.contract_template!)}>Náhled smlouvy</button>
                         )}
+                        <button
+                          data-testid={`button-generate-license-${license.id}`}
+                          onClick={() => setGenerateModalLicense(license)}
+                          style={{
+                            background: "rgba(36,224,83,0.1)",
+                            border: "0.5px solid rgba(36,224,83,0.3)",
+                            borderRadius: "8px",
+                            color: "#24e053",
+                            padding: "6px 14px",
+                            fontSize: "12px",
+                            fontWeight: 600,
+                            cursor: "pointer",
+                            transition: "all 140ms ease",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "5px",
+                          }}
+                        >
+                          <FileText size={12} />
+                          Generovat licenci pro zákazníka
+                        </button>
                       </div>
                     </div>
                   )}
@@ -5603,9 +6063,19 @@ function LicensesTab({ licenses, onRefresh }: any) {
           ))}
         </div>
       )}
+
+      {/* Generate License Modal */}
+      {generateModalLicense && (
+        <GenerateLicenseModal
+          license={generateModalLicense}
+          isOpen={true}
+          onClose={() => setGenerateModalLicense(null)}
+        />
+      )}
     </div>
   );
 }
+
 
 function CharCounter({ value, ideal, max }: { value: string; ideal: [number, number]; max: number }) {
   const len = value.length;
@@ -7880,9 +8350,11 @@ function JourneysTab() {
       .then(r => r.ok ? r.json() : null)
       .then((data) => {
         if (!data) return;
-        console.log("[JourneysTab] Loaded journey detail:", data);
-        console.log("[JourneysTab] Steps count:", data.steps?.length || 0);
         setDetail(data);
+        const emailStep = data.steps?.find((s: any) => s.step_type === "email");
+        if (emailStep) {
+          setSelectedStepId(prev => (prev && data.steps?.some((s: any) => s.id === prev) ? prev : emailStep.id));
+        }
       })
       .catch((err) => {
         console.error("[JourneysTab] Error loading journey:", err);
@@ -8165,7 +8637,15 @@ function JourneysTab() {
           onTestEmail={handleSendTest}
           onTestEmailChange={setTestEmail}
           onOpenVisualEditor={openVisualStep}
-          onRefresh={() => { openJourneyDetail(detail?.journey?.id || 0); load(); }}
+          onRefresh={() => {
+            const jId = detail?.journey?.id || selectedJourneyId || 0;
+            if (jId) openJourneyDetail(jId);
+            fetch("/api/marketing/templates", { credentials: "include" })
+              .then(r => r.ok ? r.json() : [])
+              .then(setTemplates)
+              .catch(() => {});
+            load();
+          }}
         />
       )}
 
