@@ -9,6 +9,17 @@ export function formatDateCzech(date: Date): string {
   return `${day}. ${month} ${year}`;
 }
 
+export function formatDateEnglish(date: Date): string {
+  const months = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+  const day = date.getDate();
+  const month = months[date.getMonth()];
+  const year = date.getFullYear();
+  return `${month} ${day}, ${year}`;
+}
+
 export function formatPriceCzech(amount: number): string {
   return (
     amount.toLocaleString("cs-CZ", {
@@ -16,6 +27,13 @@ export function formatPriceCzech(amount: number): string {
       maximumFractionDigits: 2,
     }) + " Kč"
   );
+}
+
+export function formatPriceEnglish(amount: number): string {
+  return `${amount.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })} CZK`;
 }
 
 export function fillContractTemplate(

@@ -28,4 +28,11 @@ await build({
   },
 });
 
+import fs from "fs";
+
+if (fs.existsSync("server/assets")) {
+  fs.cpSync("server/assets", "dist/assets", { recursive: true });
+  console.log("Assets copied to dist/assets");
+}
+
 console.log("Server bundle written to dist/index.cjs");

@@ -5016,95 +5016,64 @@ function OrdersTab({ orders, onRefresh }: any) {
 }
 
 const DEFAULT_CONTRACT_TEMPLATE = `SMLUVNÍ STRANY
-Tato licenční smlouva (dále jen „Smlouva") je uzavřena dne {{DATUM}} (dále jen „Den účinnosti") mezi těmito stranami:
+Tato neexkluzivní licenční smlouva k hudebnímu dílu (dále jen „Smlouva") se uzavírá dne {{DATUM}} (dále jen „Den účinnosti") mezi těmito smluvními stranami:
 
-Nabyvatel licence: {{PRAVNI_JMENO}}, uměleckým jménem {{UMELECKE_JMENO}}, s bydlištěm na adrese {{ADRESA}}, Česká republika (dále jen „Nabyvatel").
+Poskytovatel licence: Vojtěch Vojkovský, uměleckým jménem VOODOO808, s bydlištěm Bedovická 193, 503 46 Třebechovice pod Orebem, Česká republika, e-mail: info@voodoo808.com (dále jen „Poskytovatel").
 
-Poskytovatel licence: Vojtěch Vojkovský, uměleckým jménem VOODOO808, s bydlištěm na adrese Bedovická č. 193, Třebechovice pod Orebem, 503 46, Česká republika (dále jen „Poskytovatel").
+Nabyvatel licence: {{PRAVNI_JMENO}}, uměleckým jménem {{UMELECKE_JMENO}}, kontaktní údaj/adresa: {{ADRESA}} (dále jen „Nabyvatel").
 
-Tato Smlouva se řídí zákonem č. 89/2012 Sb., občanský zákoník (dále jen „OZ"), a zákonem č. 121/2000 Sb., o právu autorském (dále jen „AZ").
+Tato Smlouva se řídí zákonem č. 89/2012 Sb., občanský zákoník (zejména § 2358 a násl. – licenční smlouva), a zákonem č. 121/2000 Sb., o právu autorském a právech souvisejících s právem autorským (autorský zákon).
 
-PŘEDMĚT SMLOUVY
-Poskytovatel prohlašuje, že je nositelem majetkových autorských práv k hudebnímu dílu s názvem {{BEAT_NAZEV}} (dále jen „Dílo") ve smyslu § 12 a násl. AZ. Dílo bylo vytvořeno Vojtěchem Vojkovským („Autor") v rámci činnosti Poskytovatele.
+1. PŘEDMĚT SMLOUVY
+Poskytovatel prohlašuje a zaručuje, že je výlučným autorem a nositelem majetkových autorských práv k původnímu hudebnímu dílu a zvukovému záznamu s názvem „{{BEAT_NAZEV}}" (dále jen „Beat" nebo „Dílo"), a má plné oprávnění udělit licenci specifikovanou v této Smlouvě.
 
-Dle § 46 AZ udělá Poskytovatel Nabyvateli níže specifikované oprávnění k výkonu práva Dílo užít.
+2. UDĚLENÍ NEEXKLUZIVNÍ LICENCE
+Poskytovatel uděluje Nabyvateli nevýhradní (neexkluzivní), nepřevoditelnou celosvětovou licenci k zaznamenání vokálního či textového projevu synchronizovaného s Beatem za účelem vytvoření jedné (1) odvozené zvukové nahrávky (dále jen „Nová píseň"), za podmínek stanovených níže.
 
-1. PRÁVO NA POŘÍZENÍ ZVUKOVÉHO ZÁZNAMU
-Poskytovatel udělí Nabyvateli exkluzivní licenci k zaznamenání vokální složky synchronizované s Dílem, zčásti nebo v celém rozsahu a v podstatě v jeho původní formě (dále jen „Zvukový záznam").
+3. STREAMOVÁNÍ A SPOTIFY LIMIT (<100 000 POSLUCHAČŮ)
+• Nabyvatel je oprávněn šířit Novou píseň prostřednictvím digitálních streamovacích služeb (zejména Spotify, Apple Music, Tidal, Amazon Music, YouTube Music, Deezer).
+• Tato licence je výslovně určena a omezena pro umělecký profil s méně než 100 000 měsíčními posluchači na Spotify (Monthly Listeners) nebo do kumulativního limitu 100 000 streamů napříč všemi platformami.
+• Při překročení 100 000 měsíčních posluchačů na Spotify nebo 100 000 streamů je Nabyvatel povinen kontaktovat Poskytovatele za účelem sjednání rozšířené (Unlimited) nebo exkluzivní licence. Šíření nad rámec tohoto limitu bez rozšířené licence zakládá porušení autorských práv.
 
-2. PRÁVO NA ROZMNOŽOVÁNÍ A ROZŠIŘOVÁNÍ
-Poskytovatel udělí Nabyvateli exkluzivní licenci k užití Zvukového záznamu při rozmnožování, výrobě a rozšiřování ve formě gramofonových desek, kazet, CD, digitálních stažení, jiných zvukových nosičů a digitálních záznamů (souhrnně „Záznamy") po celém světě v neomezeném počtu kopií.
+4. ROZMNOŽOVÁNÍ A DISTRIBUCE FYZICKÝCH NOSIČŮ
+Nabyvatel je oprávněn vyrobit a distribuovat nejvýše 3 000 kusů fyzických nosičů (CD, vinyl, kazety) a digitálních stažení (downloadů) Nové písně.
 
-Toto právo odpovídá § 13 a § 14 AZ (právo na rozmnožování a rozšiřování rozmnoženin díla).
+5. VIDEO A SYNCHRONIZACE
+• Nabyvateli se uděluje synchronizační právo pro jedno (1) hudební video na online video platformách (YouTube, Vimeo, TikTok, Instagram) do maximálního limitu 100 000 zhlédnutí.
+• Užití v televizním vysílání, celovečerním filmu nebo komerčních videohrách vyžaduje samostatnou synchronizační smlouvu.
 
-3. PRÁVO NA SDĚLOVÁNÍ VEŘEJNOSTI A STREAMOVÁNÍ
-Nabyvateli je uděleno oprávnění ke sdělování Zvukového záznamu veřejnosti prostřednictvím internetu bez omezení počtu stažení či streamů - jak bezplatných, tak pro komerční účely (např. Spotify, Apple Music a podobné platformy).
+6. ZÁKAZ REGISTRACE DO CONTENT ID A AUDIO FINGERPRINTINGU
+Nabyvatel se výslovně zavazuje, že nezaregistruje ani neumožní třetím stranám (včetně digitálních distributorů jako DistroKid, TuneCore, CDBaby, Songtrust apod.) zaregistrovat Novou píseň ani Beat do systému YouTube Content ID, Meta Rights Manager ani do jiných automatizovaných systémů rozpoznávání zvuku (audio fingerprinting). Beat je poskytován neexkluzivně; registrace by způsobila neoprávněné blokování a demonetizaci Poskytovatele a ostatních držitelů licence. Porušení tohoto zákazu zakládá právo Poskytovatele na okamžité odstoupení od smlouvy a náhradu škody.
 
-Toto právo vychází z § 18 AZ (právo na sdělování díla veřejnosti).
+7. VEŘEJNÉ PROVOZOVÁNÍ A VYSTOUPENÍ
+Nabyvatel je oprávněn veřejně provozovat Novou píseň na živých vystoupeních a koncertech s celkovým hrubým příjmem z vystoupení nepřesahujícím ekvivalent 2 000 USD.
 
-4. SYNCHRONIZAČNÍ PRÁVA
-Poskytovatel udělí Nabyvateli neomezená synchronizační práva k užití Díla v hudebních videích šířených online (YouTube, Vimeo apod.) bez omezení počtu přehrání.
+8. AUTORSKÝ PODÍL, OSA A NAKLADATELSKÁ PRÁVA
+Ohledně hudební kompozice Nové písně smluvní strany sjednávají standardní hudební dělení:
+• Hudba / Beat (Poskytovatel): 50 % autorského podílu (Writer's Share) a 50 % nakladatelského podílu (Publisher's Share).
+• Text / Vokál (Nabyvatel): 50 % autorského podílu (Writer's Share) a 50 % nakladatelského podílu (Publisher's Share).
+• Při registraci Nové písně u organizací kolektivní správy práv (OSA, BMI, ASCAP, SOZA apod.) je Nabyvatel povinen uvést Poskytovatele (Vojtěch Vojkovský / VOODOO808) jako autora hudby s podílem 50 %.
+• Příjmy z masteru (streamy a prodeje nahrávky) v povoleném limitu náleží v plné výši Nabyvateli.
 
-Neomezená synchronizační práva jsou rovněž udělena pro distribuci prostřednictvím televizního vysílání, filmů nebo počítačových her.
+9. UVEDENÍ AUTORSTVÍ
+V souladu s § 11 odst. 2 autorského zákona je Nabyvatel povinen uvádět autorství Poskytovatele:
+• V názvu skladby a metadatech: „[Název skladby] (Prod. VOODOO808)“ nebo „Prod. by VOODOO808“.
+• V metadatech streamovacích platforem a na obalu: Producent: VOODOO808.
 
-5. PRÁVO NA VEŘEJNÉ PROVOZOVÁNÍ
-Poskytovatel udělí Nabyvateli exkluzivní licenci k užití Zvukového záznamu při neomezeném počtu nevýdělečných i výdělečných vystoupení, show a koncertů. Nabyvatel je oprávněn přijímat odměnu z vystoupení realizovaných na základě této licence.
+10. ODMĚNA ZA LICENCI A PŘEDÁNÍ DÍLA
+Jako protiplnění za udělení licence se Nabyvatel zavazuje uhradit jednorázovou odměnu ve výši {{CENA}}, jejíž přijetí Poskytovatel tímto potvrzuje. Poskytovatel předá Beat v audio formátu vysoké kvality elektronicky na e-mail sdělený Nabyvatelem.
 
-Toto právo odpovídá § 20 AZ (provozování díla ze záznamu a přenos provozování díla).
+11. ZÁRUKY A PŮVODNOST
+Poskytovatel zaručuje, že Beat je původním hudebním dílem vytvořeným Poskytovatelem a neporušuje autorská práva třetích osob. Nabyvatel zaručuje, že jím doplněný text, vokály a další prvky jsou původní a nezasahují do práv třetích osob.
 
-6. PRÁVO NA VYSÍLÁNÍ
-Poskytovatel udělí Nabyvateli právo na vysílání Zvukového záznamu neomezeným počtem rozhlasových stanic.
-
-Toto právo odpovídá § 19 a § 21 AZ (vysílání díla rozhlasem nebo televizí).
-
-7. UVEDENÍ AUTORSTVÍ
-Nabyvatel je povinen v souladu s § 11 odst. 2 AZ uvádět původní autorství Díla přiměřeným způsobem ve všech médiích a formátech pod jménem „VOODOO808" – písemně kde je to možné, jinak ústně.
-
-8. ODMĚNA ZA LICENCI
-Jako protiplnění za práva udělená touto Smlouvou je Nabyvatel povinen zaplatit Poskytovateli jednorázovou odměnu ve výši {{CENA}}, splatnou Vojtěchu Vojkovskému, přičemž převzetí tohoto plnění je tímto potvrzeno.
-
-Pokud Nabyvatel nesplní povinnost platby, nedostojí jiným závazkům dle této Smlouvy nebo bude-li mít nedostatečný zůstatek na bankovním účtu, je Poskytovatel oprávněn Smlouvu vypovědět písemným oznámením doručeným Nabyvateli dle § 2001 a násl. OZ.
-
-Taková výpověď způsobí, že rozmnožování, výroba a/nebo distribuce Záznamů, za něž nebylo zaplaceno, bude posuzována jako porušení autorských práv dle AZ.
-
-Dle § 2 odst. 1 OZ a § 46 odst. 3 AZ musí být výpověď licence provedena písemnou formou. Licence zaniká uplynutím výpovědní doby, která činí 30 dní od doručení výpovědi.
-
-9. PŘEDÁNÍ DÍLA
-Dílo bude Nabyvateli předáno ve formě souboru ve vysoké kvalitě (WAV + stems) prostřednictvím e-mailu na adresu, kterou Nabyvatel Poskytovateli sdělí. Nabyvatel obdrží e-mail s přílohou nebo odkazem ke stažení Díla.
-
-10. ZVUKOVÉ VZORKY (SAMPLESY)
-Zajištění clearance práv třetích stran k případným zvukovým vzorkům obsaženým v Dílu je výlučnou odpovědností Nabyvatele.
-
-11. OMEZENÍ A NEPŘEVODITELNOST
-Tato licence je nepřevoditelná a vztahuje se výhradně na specifikované Dílo. Tato Smlouva představuje úplnou dohodu mezi Poskytovatelem a Nabyvatelem týkající se Díla a je závazná pro obě smluvní strany, jakož i pro jejich právní nástupce a zástupce.
-
-Dle § 48 AZ nelze licenci bez souhlasu autora postoupit třetí osobě, ledaže je licence převedena spolu s podnikem nebo jeho částí.
-
-12. AUTORSKÝ PODÍL A NAKLADATELSKÁ PRÁVA
-Ohledně nakladatelských práv a vlastnictví k podkladovému Dílu vtělenému do Zvukového záznamu smluvní strany sjednávají tento podíl:
-• Poskytovatel vlastní a spravuje 50 % tzv. „autorského podílu" (Writer's Share) podkladového Díla.
-• Poskytovatel vlastní a spravuje 50 % tzv. „nakladatelského podílu" (Publisher's Share) podkladového Díla.
-• Poskytovatel vlastní a spravuje 3 % tzv. „licenčních poplatků z masteru" (Master Royalties), vypočtených z čistého zisku po odečtení všech nákladů Nabyvatele.
-
-Rozdělení autorských podílů je v souladu s § 100 a násl. AZ. Strany mohou smluvně sjednat rozdělení výnosu z kolektivní správy práv (OSA, INTERGRAM apod.).
+12. NEPŘEVODITELNOST A VÝHRADA PRÁV
+Tato licence je nepřevoditelná na třetí osoby bez předchozího písemného souhlasu Poskytovatele (§ 2375 občanského zákoníku). Poskytovatel si vyhrazuje veškerá práva výslovně neudělená a zůstává výlučným vlastníkem Beatu s právem pokračovat v neexkluzivním licencování Beatu dalším zájemcům.
 
 13. ROZHODNÉ PRÁVO A ŘEŠENÍ SPORŮ
-Tato Smlouva se řídí právním řádem České republiky, zejména zákonem č. 89/2012 Sb., občanský zákoník, a zákonem č. 121/2000 Sb., autorský zákon, v jejich platném znění.
+Tato Smlouva se řídí právním řádem České republiky, zejména zákonem č. 89/2012 Sb., občanský zákoník, a zákonem č. 121/2000 Sb., autorský zákon. Spory budou řešeny přednostně smírnou cestou, případně věcně a místně příslušnými soudy České republiky.
 
-Veškeré spory vzniklé z této Smlouvy budou strany řešit přednostně smírnou cestou. Nebude-li dosaženo dohody, rozhodne věcně a místně příslušný soud České republiky.
-
-ELEKTRONICKÉ PŘIJETÍ PODMÍNEK
-Tato Smlouva nabývá platnosti a účinnosti okamžikem dokončení platby za licenci prostřednictvím platformy VOODOO808. Nabyvatel — {{PRAVNI_JMENO}}, uměleckým jménem {{UMELECKE_JMENO}} — dokončením nákupu výslovně potvrzuje, že:
-
-• si tuto Smlouvu přečetl/a a porozuměl/a jejímu obsahu v plném rozsahu,
-• souhlasí se všemi podmínkami zde uvedenými,
-• tato Smlouva odpovídá jeho/její pravé a svobodné vůli a je uzavírána dobrovolně, nikoli v tísni ani za nápadně nevýhodných podmínek.
-
-Elektronické potvrzení nákupu (platební transakce) nahrazuje vlastnoruční podpis ve smyslu § 562 zákona č. 89/2012 Sb., občanský zákoník, a má stejné právní účinky jako podpis listinný. Datum uzavření Smlouvy je {{DATUM}}.
-
-Tato Smlouva je vyhotovena a doručena Nabyvateli elektronicky prostřednictvím e-mailu. Fyzický výtisk ani vlastnoruční podpisy nejsou k platnosti a účinnosti Smlouvy vyžadovány.
-
-Poskytovatel licence: Vojtěch Vojkovský, uměleckým jménem VOODOO808, potvrzuje uzavření Smlouvy vydáním potvrzení o přijetí platby a odesláním licenčních souborů Nabyvateli.`;
+14. ELEKTRONICKÉ UZAVŘENÍ A PLATNOST SMLOUVY
+Dle § 562 zákona č. 89/2012 Sb., občanský zákoník, a evropské směrnice 2000/31/ES nabývá tato Smlouva platnosti a účinnosti okamžikem uhrazení licence a jejího elektronického vystavení Poskytovatelem. K platnosti smlouvy není vyžadován vlastnoruční listinný podpis.`;
 
 const PLACEHOLDER_GUIDE = [
   { ph: "{{DATUM}}", desc: "Datum uzavření smlouvy (automaticky)" },

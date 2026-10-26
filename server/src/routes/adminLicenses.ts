@@ -1,73 +1,180 @@
 import { Router, Request, Response } from "express";
 import { pool } from "../db.js";
 import { requireAdmin } from "../middleware/auth.js";
-import { generateContractHtml, formatDateCzech, formatPriceCzech } from "../email.js";
+import { generateContractHtml } from "../email.js";
 import { generateOrderItemContractPdf } from "../lib/contracts.js";
-import { fillContractTemplate } from "../lib/contractTemplate.js";
+import {
+  fillContractTemplate,
+  formatDateCzech,
+  formatDateEnglish,
+  formatPriceCzech,
+  formatPriceEnglish,
+} from "../lib/contractTemplate.js";
 import { contractTextToPdfBuffer } from "../lib/contractPdf.js";
 
-// English license agreement template
+// ─── English Non-Exclusive License (<100k Monthly Spotify Listeners) ───────────
 const DEFAULT_CONTRACT_TEMPLATE_EN = `CONTRACTING PARTIES
-This Exclusive License Agreement (hereinafter the "Agreement") is entered into on {{DATUM}} (hereinafter the "Effective Date") between the following parties:
+This Non-Exclusive Beat License Agreement (hereinafter the "Agreement") is entered into on {{DATUM}} (the "Effective Date") by and between:
 
-Licensee: {{PRAVNI_JMENO}}, artist name {{UMELECKE_JMENO}} (hereinafter the "Licensee").
+Licensor: Vojtěch Vojkovský, professionally known as VOODOO808, residing at Bedovická 193, 503 46 Třebechovice pod Orebem, Czech Republic, email: info@voodoo808.com (hereinafter the "Licensor").
 
-Licensor: Vojtěch Vojkovský, artist name VOODOO808, residing at Bedovická č. 193, Třebechovice pod Orebem, 503 46, Czech Republic (hereinafter the "Licensor").
+Licensee: {{PRAVNI_JMENO}}, professionally known as {{UMELECKE_JMENO}}, contact/email: {{ADRESA}} (hereinafter the "Licensee").
 
-SUBJECT MATTER
-The Licensor represents that they are the sole owner of the master and publishing rights to the musical composition titled {{BEAT_NAZEV}} (hereinafter the "Beat" or the "Composition"), and has the full right to grant the license set forth in this Agreement.
+1. SUBJECT COMPOSITION
+Licensor represents and warrants that Licensor is the sole author, producer, and copyright holder of the original instrumental musical composition and sound recording titled "{{BEAT_NAZEV}}" (hereinafter the "Beat" or "Composition"). Licensor warrants that Licensor possesses all rights necessary to grant the license set forth herein.
 
-1. MASTER USE
-Licensee is hereby granted an exclusive license to record vocal performances to the Beat, synchronize the Beat with video content, and release the resulting master recording(s) (hereinafter "New Song") worldwide.
+2. GRANT OF NON-EXCLUSIVE LICENSE
+Licensor hereby grants to Licensee a non-exclusive, non-transferable, non-sublicensable, worldwide license to record one (1) new original vocal and/or lyrical performance synchronized with the Beat, creating one (1) derivative sound recording (hereinafter the "New Song"), subject to the terms and limitations below.
 
-2. REPRODUCTION AND DISTRIBUTION
-Licensee is hereby granted the exclusive right to reproduce, manufacture, and distribute the New Song in unlimited copies worldwide, including all physical and digital formats (CDs, digital downloads, streaming platforms such as Spotify, Apple Music, etc.).
+3. STREAMING AND SPOTIFY LISTENER LIMITS (<100K LISTENERS)
+• Licensee is authorized to distribute the New Song on digital audio streaming services (including Spotify, Apple Music, Tidal, Amazon Music, YouTube Music, and Deezer).
+• This license specifically permits distribution for an artist profile with fewer than 100,000 monthly active Spotify listeners, or up to a cumulative maximum of 100,000 total audio streams across all platforms.
+• If Licensee exceeds 100,000 monthly Spotify listeners or 100,000 cumulative streams, Licensee must contact Licensor to upgrade this license to an Unlimited or Exclusive license upon mutual agreement. Continued distribution beyond these thresholds without an upgraded license shall constitute copyright infringement.
 
-3. PUBLIC PERFORMANCE AND STREAMING
-Licensee is hereby granted the exclusive right to publicly perform the New Song, including monetized live performances, concerts, and tours, as well as unlimited streaming on all platforms. Licensee may collect performance royalties from the New Song.
+4. REPRODUCTION AND PHYSICAL DISTRIBUTION
+Licensee is granted the right to manufacture, distribute, and sell up to 3,000 physical copies (CDs, vinyl, cassettes) and digital download copies (e.g. iTunes, Bandcamp) of the New Song.
 
-4. SYNCHRONIZATION RIGHTS
-Licensee is hereby granted unlimited synchronization rights to use the Beat in music videos distributed online (YouTube, Vimeo, etc.) without limitation on views. Synchronization rights are also granted for use in television broadcasts, films, and video games.
+5. VIDEO AND SYNCHRONIZATION
+• Licensee is granted synchronization rights for one (1) non-commercial or monetized promotional music video on online video platforms (such as YouTube, Vimeo, TikTok, Instagram) up to a maximum of 100,000 total combined video views.
+• Commercial television broadcasts, theatrical feature films, or video games require a separate synchronization agreement.
 
-5. RADIO AND BROADCAST
-Licensee is hereby granted the right to broadcast the New Song on an unlimited number of radio and television stations worldwide.
+6. CONTENT ID AND AUDIO FINGERPRINTING RESTRICTION (STRICT)
+Licensee is strictly prohibited from registering or allowing any third party (including digital distributors, aggregators, or collection agencies such as DistroKid, TuneCore, CDBaby, Identifyy, or Songtrust) to register the New Song or Beat with YouTube Content ID, Meta Rights Manager, TikTok audio fingerprinting, or any automated copyright recognition/fingerprinting system. The underlying Beat is non-exclusive; registration with Content ID generates false copyright claims against Licensor and other authorized licensees. Any violation will result in immediate termination of this license and liability for damages.
 
-6. CREDIT
-Licensee agrees to credit the Licensor as the producer of the Beat in all formats and media with the name "Prod. VOODOO808", in writing where possible, otherwise verbally.
+7. PUBLIC PERFORMANCE AND LIVE SHOWS
+Licensee is granted the non-exclusive right to perform the New Song in live concerts, shows, and festivals with cumulative gross performance revenue not to exceed $2,000 USD (or equivalent in local currency).
 
-7. LICENSE FEE
-In consideration for the rights granted under this Agreement, Licensee agrees to pay the Licensor a one-time fee of {{CENA}}, receipt of which is hereby acknowledged.
+8. PUBLISHING, PRO REGISTRATION, AND WRITER'S SHARE
+The parties agree to the music industry standard split regarding the musical composition (publishing) of the New Song:
+• Music / Instrumental Composition (Licensor): Licensor retains and administers 50% of the Writer's Share and 50% of the Publisher's Share.
+• Lyrics / Vocal Melody (Licensee): Licensee owns and administers 50% of the Writer's Share and 50% of the Publisher's Share.
+• In any registration with Performing Rights Organizations (e.g. OSA, BMI, ASCAP, PRS, SOCAN, GEMA), Licensor (Vojtěch Vojkovský / VOODOO808) must be credited and registered as a 50% composer/writer.
+• Master Recording Royalties: Licensee retains 100% of master streaming and sales revenue generated within the permitted streaming limits.
 
-Should Licensee fail to make the required payment or breach any other obligation under this Agreement, Licensor may terminate this Agreement by written notice, and any reproduction, manufacture, or distribution of the New Song without payment shall constitute copyright infringement.
+9. CREDIT AND ATTRIBUTION
+In accordance with moral rights and industry standards, Licensee must credit Licensor in all commercial and promotional releases of the New Song:
+• In track titles and release metadata where possible: "[Song Title] (Prod. VOODOO808)" or "[Song Title] (Prod. by VOODOO808)".
+• In DSP metadata and liner notes: Producer: VOODOO808.
 
-8. DELIVERY
-The Beat will be delivered to Licensee in high-quality format (WAV + stems) via e-mail to the address provided by the Licensee.
+10. LICENSE FEE AND DELIVERY
+In consideration for the rights granted herein, Licensee agrees to pay the one-time fee of {{CENA}}, receipt of which is hereby acknowledged. Licensor delivers the Beat in high-resolution audio format (WAV and/or stems as specified in the purchased tier) electronically to the email address provided by Licensee.
 
-9. SAMPLES
-Clearance of any third-party sample rights contained within the Beat is the sole responsibility of the Licensee.
+11. SAMPLES AND WARRANTIES
+Licensor warrants that the Beat is an original musical composition created by Licensor and does not infringe upon any third-party copyrights. Licensee warrants that any lyrics, vocal recordings, or additional instrumentation added by Licensee are original and do not infringe any third-party rights.
 
-10. NON-TRANSFERABILITY
-This license is non-transferable and applies exclusively to the specified Beat and Licensee. This Agreement constitutes the entire agreement between Licensor and Licensee concerning the Beat and is binding upon both parties and their respective successors and assigns.
+12. NON-TRANSFERABILITY AND RESERVATION OF RIGHTS
+This license is non-transferable, non-exclusive, and personal to Licensee. Licensor reserves all rights not expressly granted herein and retains full ownership of the underlying Beat, including the right to continue licensing the Beat non-exclusively to other artists until an exclusive license is sold.
 
-11. PUBLISHING AND WRITER'S SHARE
-Regarding publishing rights and ownership of the underlying Beat incorporated into the New Song, the parties agree to the following split:
-• Licensor retains and administers 50% of the Writer's Share of the underlying Composition.
-• Licensor retains and administers 50% of the Publisher's Share of the underlying Composition.
-• Licensor retains and administers 3% of the Master Royalties, calculated from the Licensee's net profits after deducting all costs.
+13. GOVERNING LAW AND DISPUTE RESOLUTION
+This Agreement is governed by and construed in accordance with the laws of the Czech Republic (specifically Act No. 89/2012 Coll., Civil Code § 2358 et seq., and Act No. 121/2000 Coll., Copyright Act), in harmony with international copyright conventions. Any disputes shall first be resolved through good-faith amicable negotiation, failing which the competent courts of the Czech Republic shall have jurisdiction.
 
-12. GOVERNING LAW AND DISPUTE RESOLUTION
-This Agreement shall be governed by the laws of the Czech Republic. Any disputes arising from this Agreement shall first be resolved through good-faith negotiation. If no agreement is reached, the dispute shall be submitted to the competent courts of the Czech Republic.
+14. ELECTRONIC ACCEPTANCE AND LEGAL VALIDITY
+Pursuant to Section 562 of the Czech Civil Code (Act No. 89/2012 Coll.) and EU Directive 2000/31/EC on electronic commerce, this Agreement becomes legally valid and binding upon completion of payment and electronic issuance by Licensor. Physical handwritten signatures are not required for legal validity.`;
 
-ELECTRONIC ACCEPTANCE
-This Agreement becomes effective upon completion of payment for the license through the VOODOO808 platform. Licensee — {{PRAVNI_JMENO}}, artist name {{UMELECKE_JMENO}} — by completing the purchase expressly confirms that:
+// ─── English Exclusive License Agreement ──────────────────────────────────────
+const DEFAULT_EXCLUSIVE_CONTRACT_TEMPLATE_EN = `CONTRACTING PARTIES
+This Exclusive Beat License Agreement (hereinafter the "Agreement") is entered into on {{DATUM}} (the "Effective Date") by and between:
 
-• they have read and fully understood this Agreement,
-• they agree to all terms set forth herein,
-• this Agreement reflects their true and voluntary will.
+Licensor: Vojtěch Vojkovský, professionally known as VOODOO808, residing at Bedovická 193, 503 46 Třebechovice pod Orebem, Czech Republic, email: info@voodoo808.com (hereinafter the "Licensor").
 
-The electronic payment confirmation serves as the equivalent of a handwritten signature. The date of this Agreement is {{DATUM}}.
+Licensee: {{PRAVNI_JMENO}}, professionally known as {{UMELECKE_JMENO}}, contact/email: {{ADRESA}} (hereinafter the "Licensee").
 
-Licensor: Vojtěch Vojkovský, artist name VOODOO808, confirms the conclusion of this Agreement by issuing a payment confirmation and delivering the licensed files to the Licensee.`;
+1. SUBJECT COMPOSITION
+Licensor represents and warrants that Licensor is the sole author, producer, and copyright holder of the original instrumental musical composition and sound recording titled "{{BEAT_NAZEV}}" (hereinafter the "Beat" or "Composition"), and has the full legal right and authority to grant the exclusive license set forth herein.
+
+2. GRANT OF EXCLUSIVE LICENSE
+Licensor hereby grants to Licensee the exclusive, perpetual, worldwide license to record vocal and/or instrumental performances synchronized with the Beat, creating one or more derivative sound recordings (hereinafter "New Song"), and to commercially exploit the New Song without limitation on copies or streaming volume.
+
+3. FULL EXCLUSIVITY & RETIREMENT OF THE BEAT
+Upon execution of this Agreement and receipt of payment, Licensor shall retire the Beat from public sale and agrees not to sell, license, or grant any further rights to the Beat to any third party. Licensor confirms that any prior non-exclusive licenses granted prior to this exclusive sale shall remain valid only until their natural expiration or terms, and no new licenses shall be issued.
+
+4. REPRODUCTION, DISTRIBUTION AND STREAMING
+Licensee is granted the exclusive right to manufacture, distribute, sell, and stream the New Song in unlimited copies and unlimited streams worldwide, across all physical and digital formats (CDs, vinyl, downloads, Spotify, Apple Music, YouTube Music, Tidal, etc.).
+
+5. SYNCHRONIZATION AND BROADCAST
+Licensee is granted unlimited synchronization rights to synchronize the Beat and New Song with visual media worldwide, including music videos, television broadcasts, motion pictures, advertisements, and video games. Licensee is granted unlimited radio and television broadcasting rights.
+
+6. PUBLISHING AND WRITER'S SHARE
+The parties agree to the industry standard publishing split regarding the underlying musical composition:
+• Music / Instrumental Composition (Licensor): Licensor retains and administers 50% of the Writer's Share and 50% of the Publisher's Share.
+• Lyrics / Vocal Melody (Licensee): Licensee owns and administers 50% of the Writer's Share and 50% of the Publisher's Share.
+• Licensee shall register Licensor (Vojtěch Vojkovský / VOODOO808) with the relevant Performing Rights Organization (OSA, BMI, ASCAP, PRS, etc.) as 50% composer/writer.
+
+7. CREDIT AND ATTRIBUTION
+Licensee agrees to credit Licensor as the producer of the Beat in all formats and metadata with the name "Prod. VOODOO808" or "Prod. by VOODOO808".
+
+8. LICENSE FEE AND DELIVERY
+In consideration for the exclusive rights granted herein, Licensee agrees to pay the one-time fee of {{CENA}}, receipt of which is hereby acknowledged. Licensor delivers the Beat in uncompressed WAV and multitrack stems electronically to Licensee.
+
+9. SAMPLES AND WARRANTIES
+Licensor warrants that the Beat is an original musical composition created by Licensor and does not infringe third-party copyrights. Licensee warrants that any additional elements incorporated into the New Song are original.
+
+10. GOVERNING LAW AND JURISDICTION
+This Agreement is governed by the laws of the Czech Republic (specifically Act No. 89/2012 Coll., Civil Code § 2358 et seq., and Act No. 121/2000 Coll., Copyright Act). Disputes shall be submitted to the competent courts of the Czech Republic.
+
+11. ELECTRONIC ACCEPTANCE
+Pursuant to Section 562 of the Czech Civil Code (Act No. 89/2012 Coll.) and EU Directive 2000/31/EC, this Agreement is legally formed and valid upon payment completion and electronic issuance by Licensor.`;
+
+// ─── Czech Non-Exclusive License (<100k Monthly Spotify Listeners) ─────────────
+const DEFAULT_CONTRACT_TEMPLATE_CS = `SMLUVNÍ STRANY
+Tato neexkluzivní licenční smlouva k hudebnímu dílu (dále jen „Smlouva") se uzavírá dne {{DATUM}} (dále jen „Den účinnosti") mezi těmito smluvními stranami:
+
+Poskytovatel licence: Vojtěch Vojkovský, uměleckým jménem VOODOO808, s bydlištěm Bedovická 193, 503 46 Třebechovice pod Orebem, Česká republika, e-mail: info@voodoo808.com (dále jen „Poskytovatel").
+
+Nabyvatel licence: {{PRAVNI_JMENO}}, uměleckým jménem {{UMELECKE_JMENO}}, kontaktní údaj/adresa: {{ADRESA}} (dále jen „Nabyvatel").
+
+Tato Smlouva se řídí zákonem č. 89/2012 Sb., občanský zákoník (zejména § 2358 a násl. – licenční smlouva), a zákonem č. 121/2000 Sb., o právu autorském a právech souvisejících s právem autorským (autorský zákon).
+
+1. PŘEDMĚT SMLOUVY
+Poskytovatel prohlašuje a zaručuje, že je výlučným autorem a nositelem majetkových autorských práv k původnímu hudebnímu dílu a zvukovému záznamu s názvem „{{BEAT_NAZEV}}" (dále jen „Beat" nebo „Dílo"), a má plné oprávnění udělit licenci specifikovanou v této Smlouvě.
+
+2. UDĚLENÍ NEEXKLUZIVNÍ LICENCE
+Poskytovatel uděluje Nabyvateli nevýhradní (neexkluzivní), nepřevoditelnou celosvětovou licenci k zaznamenání vokálního či textového projevu synchronizovaného s Beatem za účelem vytvoření jedné (1) odvozené zvukové nahrávky (dále jen „Nová píseň"), za podmínek stanovených níže.
+
+3. STREAMOVÁNÍ A SPOTIFY LIMIT (<100 000 POSLUCHAČŮ)
+• Nabyvatel je oprávněn šířit Novou píseň prostřednictvím digitálních streamovacích služeb (zejména Spotify, Apple Music, Tidal, Amazon Music, YouTube Music, Deezer).
+• Tato licence je výslovně určena a omezena pro umělecký profil s méně než 100 000 měsíčními posluchači na Spotify (Monthly Listeners) nebo do kumulativního limitu 100 000 streamů napříč všemi platformami.
+• Při překročení 100 000 měsíčních posluchačů na Spotify nebo 100 000 streamů je Nabyvatel povinen kontaktovat Poskytovatele za účelem sjednání rozšířené (Unlimited) nebo exkluzivní licence. Šíření nad rámec tohoto limitu bez rozšířené licence zakládá porušení autorských práv.
+
+4. ROZMNOŽOVÁNÍ A DISTRIBUCE FYZICKÝCH NOSIČŮ
+Nabyvatel je oprávněn vyrobit a distribuovat nejvýše 3 000 kusů fyzických nosičů (CD, vinyl, kazety) a digitálních stažení (downloadů) Nové písně.
+
+5. VIDEO A SYNCHRONIZACE
+• Nabyvateli se uděluje synchronizační právo pro jedno (1) hudební video na online video platformách (YouTube, Vimeo, TikTok, Instagram) do maximálního limitu 100 000 zhlédnutí.
+• Užití v televizním vysílání, celovečerním filmu nebo komerčních videohrách vyžaduje samostatnou synchronizační smlouvu.
+
+6. ZÁKAZ REGISTRACE DO CONTENT ID A AUDIO FINGERPRINTINGU
+Nabyvatel se výslovně zavazuje, že nezaregistruje ani neumožní třetím stranám (včetně digitálních distributorů jako DistroKid, TuneCore, CDBaby, Songtrust apod.) zaregistrovat Novou píseň ani Beat do systému YouTube Content ID, Meta Rights Manager ani do jiných automatizovaných systémů rozpoznávání zvuku (audio fingerprinting). Beat je poskytován neexkluzivně; registrace by způsobila neoprávněné blokování a demonetizaci Poskytovatele a ostatních držitelů licence. Porušení tohoto zákazu zakládá právo Poskytovatele na okamžité odstoupení od smlouvy a náhradu škody.
+
+7. VEŘEJNÉ PROVOZOVÁNÍ A VYSTOUPENÍ
+Nabyvatel je oprávněn veřejně provozovat Novou píseň na živých vystoupeních a koncertech s celkovým hrubým příjmem z vystoupení nepřesahujícím ekvivalent 2 000 USD.
+
+8. AUTORSKÝ PODÍL, OSA A NAKLADATELSKÁ PRÁVA
+Ohledně hudební kompozice Nové písně smluvní strany sjednávají standardní hudební dělení:
+• Hudba / Beat (Poskytovatel): 50 % autorského podílu (Writer's Share) a 50 % nakladatelského podílu (Publisher's Share).
+• Text / Vokál (Nabyvatel): 50 % autorského podílu (Writer's Share) a 50 % nakladatelského podílu (Publisher's Share).
+• Při registraci Nové písně u organizací kolektivní správy práv (OSA, BMI, ASCAP, SOZA apod.) je Nabyvatel povinen uvést Poskytovatele (Vojtěch Vojkovský / VOODOO808) jako autora hudby s podílem 50 %.
+• Příjmy z masteru (streamy a prodeje nahrávky) v povoleném limitu náleží v plné výši Nabyvateli.
+
+9. UVEDENÍ AUTORSTVÍ
+V souladu s § 11 odst. 2 autorského zákona je Nabyvatel povinen uvádět autorství Poskytovatele:
+• V názvu skladby a metadatech: „[Název skladby] (Prod. VOODOO808)“ nebo „Prod. by VOODOO808“.
+• V metadatech streamovacích platforem a na obalu: Producent: VOODOO808.
+
+10. ODMĚNA ZA LICENCI A PŘEDÁNÍ DÍLA
+Jako protiplnění za udělení licence se Nabyvatel zavazuje uhradit jednorázovou odměnu ve výši {{CENA}}, jejíž přijetí Poskytovatel tímto potvrzuje. Poskytovatel předá Beat v audio formátu vysoké kvality elektronicky na e-mail sdělený Nabyvatelem.
+
+11. ZÁRUKY A PŮVODNOST
+Poskytovatel zaručuje, že Beat je původním hudebním dílem vytvořeným Poskytovatelem a neporušuje autorská práva třetích osob. Nabyvatel zaručuje, že jím doplněný text, vokály a další prvky jsou původní a nezasahují do práv třetích osob.
+
+12. NEPŘEVODITELNOST A VÝHRADA PRÁV
+Tato licence je nepřevoditelná na třetí osoby bez předchozího písemného souhlasu Poskytovatele (§ 2375 občanského zákoníku). Poskytovatel si vyhrazuje veškerá práva výslovně neudělená a zůstává výlučným vlastníkem Beatu s právem pokračovat v neexkluzivním licencování Beatu dalším zájemcům.
+
+13. ROZHODNÉ PRÁVO A ŘEŠENÍ SPORŮ
+Tato Smlouva se řídí právním řádem České republiky, zejména zákonem č. 89/2012 Sb., občanský zákoník, a zákonem č. 121/2000 Sb., autorský zákon. Spory budou řešeny přednostně smírnou cestou, případně věcně a místně příslušnými soudy České republiky.
+
+14. ELEKTRONICKÉ UZAVŘENÍ A PLATNOST SMLOUVY
+Dle § 562 zákona č. 89/2012 Sb., občanský zákoník, a evropské směrnice 2000/31/ES nabývá tato Smlouva platnosti a účinnosti okamžikem uhrazení licence a jejího elektronického vystavení Poskytovatelem. K platnosti smlouvy není vyžadován vlastnoruční listinný podpis.`;
 
 // In-memory history of generated licenses (persists per server process)
 const generatedLicenseHistory: Array<{
@@ -125,20 +232,25 @@ router.post("/contracts/generate-custom", requireAdmin, async (req: Request, res
     }
     const licenseType = licenseRes.rows[0];
 
-    // Use language-specific template or license's own template
+    const isExclusive =
+      /exclusive|výhradní|exkluzivní/i.test(licenseType.name) ||
+      Boolean((licenseType as any).is_exclusive);
+
+    // Pick appropriate language & exclusivity template
     let template: string;
     if (lang === "en") {
-      template = DEFAULT_CONTRACT_TEMPLATE_EN;
+      template = isExclusive ? DEFAULT_EXCLUSIVE_CONTRACT_TEMPLATE_EN : DEFAULT_CONTRACT_TEMPLATE_EN;
     } else {
-      template = licenseType.contract_template || req.body.fallbackTemplate || "";
-      if (!template) {
-        return res.status(400).json({ error: "Licence nemá nastavenou šablonu smlouvy" });
+      if (licenseType.contract_template && licenseType.contract_template.trim().length > 50) {
+        template = licenseType.contract_template;
+      } else {
+        template = DEFAULT_CONTRACT_TEMPLATE_CS;
       }
     }
 
     const today = new Date();
-    const datum = formatDateCzech(today);
-    const cena = formatPriceCzech(Number(licenseType.price));
+    const datum = lang === "en" ? formatDateEnglish(today) : formatDateCzech(today);
+    const cena = lang === "en" ? formatPriceEnglish(Number(licenseType.price)) : formatPriceCzech(Number(licenseType.price));
 
     const filled = fillContractTemplate(template, {
       datum,
@@ -149,7 +261,11 @@ router.post("/contracts/generate-custom", requireAdmin, async (req: Request, res
       cena,
     });
 
-    const buffer = await contractTextToPdfBuffer(filled, beatTitle, datum);
+    const buffer = await contractTextToPdfBuffer(filled, beatTitle, datum, {
+      language: lang,
+      licenseName: licenseType.name,
+      isExclusive,
+    });
 
     // Save to in-memory history
     const historyEntry = {
@@ -165,7 +281,6 @@ router.post("/contracts/generate-custom", requireAdmin, async (req: Request, res
       generatedAt: new Date().toISOString(),
     };
     generatedLicenseHistory.unshift(historyEntry);
-    // Keep only last 200 entries
     if (generatedLicenseHistory.length > 200) generatedLicenseHistory.length = 200;
 
     const safeArtist = artistName.replace(/[^\p{L}\p{N}\-_]+/gu, "_").slice(0, 40);
